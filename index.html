@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+
+
+<head>
+
+	<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-WRBDRDQ4L8');
+</script>
+
+
+    <title>Luciano Manenti Home, scala40, machiavelli, spider card game,Quasi-real metronome, Hanon  piano keyboard exercises</title>
+
+    <meta charset="utf-8"> 
+
+    <link rel="stylesheet" href="home.css" />
+
+<meta name="google-site-verification" content="HczGE3blChW6QEkClRXFQMJc3Z_9fl8feUwWl6LpX6I" />
+
+<meta name="Description" content="Play free at Scala40, machiavelli and Spider card games.Free online quasi-real metronome with more than real performances. Perform Hanon exercises to improve your piano technique and measure your progress. ">
+       
+</head>
+
+
+<body>
+
+
+   <div id="campogioco">
+
+	<div id="intestazione"></div>
+	
+		
+		<a href="scala40V1.html"><div id="icoscala" ><img src="images/home/scala40.png"></div></a>
+		<a href="machiavelli.html"><div id="icomachia" ><img src="images/home/machiavelli.png"></div></a>
+		<a href="spider.html"><div id="icospider" ><img src="images/home/spiderhome.png"></div></a>
+
+		<a href="metronome.html"><div id="icometro"><img src="images/home/metronome.png"></div></a>
+		<a href="hanon.html"><div id="icohanon"><img src="images/home/hanontest.png"></div></a>
+		<a href="aboutme.html"><div id="aboutme"><img src="images/home/aboutme.png"></div></a>
+	
+
+
+
+
+	</div>  <!-- campogioco--> 
+
+
+
+
+	
+</body>
+<script src="jquery-2.1.1.js"></script>
+<script>
+	var adjustscreen=function(){
+	zm=1,wh=$(window).height(),ww=$(window).width();
+	//if (wh<750) 
+	zm=wh/750;
+	//if (ww<1600) 
+	zm=Math.min(zm,ww/1024)
+	//$('body').css('zoom',zm+'%'); /* Webkit browsers */
+  	//$('body').css('zoom',zm); /* Other non-webkit browsers */
+  	//$('body').css('-moz-transform',"scale("+zm+", "+zm+")"); /* Moz-browsers */
+  	$("body").css({transform:"scale("+zm+")"});
+	//$("body").css({transform:"translate("+($("body").offset().left)+"px,"+($("body").offset().top)+"px)"});
+	$("#campogioco").css({"position":"absolute","left":(ww/zm-1024)/2})
+};
+adjustscreen();
+
+$(window).resize(function () {
+	//scala.offsetxx=$("#campogioco").offset().left;
+	//scala.offsetyy=$("#campogioco").offset().top;
+	adjustscreen();
+});
+</script>
+</html>

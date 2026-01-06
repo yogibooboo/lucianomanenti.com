@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+
+
+<head>
+
+	<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-WRBDRDQ4L8');
+</script>
+
+
+    <title>Free Machiavelli online</title>
+
+    <meta charset="utf-8"> 
+
+    <link rel="stylesheet" href="machiavelli.css" />
+    
+    <meta name="Description" content="Play free Machiavelli card game online no registration. Choose between one, two or three opponents. Gioca Machiavelli gratis online senza registrazione"
+       
+</head>
+
+
+<body>
+	   <div id="schermo"></div>	
+	   <div id="sfondo">
+
+
+	   <div id="campogioco">
+	   	   <div id="accessorisinistra" class="campo">
+			<!--<div id="istruzioni" class="pulsante2" style="top: 5px; left: 10px; ">ISTRUZIONI</div> -->
+	   		<div class="pulsantehelp" style="top: 10px; left: 10px; "></div>
+	   		<div class="pulsanteaiuto" style="top: 60px; left: 10px; "></div>
+			<div style="position:absolute; top: 105px; left: 10px;"><img src="images/machiavelli/machiavelli.png"   height="600px" width="120px"></div>
+			<a href="index.html"><div class="pulsanteback" style="top: 710px; left: 5px; "></div></a>
+
+	   </div>	<!--accessorisinistra-->
+
+	   <div id="accessoridestra" class="campo">
+	   		
+			<div id="nuovo" class="pulsante5" style="top: 5px; left: 10px; z-index:1000">PLAYERS<br>giocatori</div>
+			<div id="pulsante2" class="pulsante2" style="top: 125px; left:10px; z-index:1000">UNDO (0)</div> 
+			<div id="scoperte" class="pulsante5" style="top: 65px; left: 10px; z-index:1000">UNCOVER<br>scoperte</div> 
+
+	   		<div id="passopasso" class="pulsante5" style="top: 350px; left: 10px; ">STEPBYSTEP<br>passopasso</div> 
+	   		<div id="group" class="pulsante5" style="top: 410px; left: 10px; ">GROUP<br>raggruppa</div> 
+			<div id="autosort" class="pulsante5" style="top: 470px; left: 10px; ">AUTO SORT<br>ordina auto</div> 
+			<div id="sort" class="pulsante5" style="top: 530px; left: 10px; z-index:1000">SORT<br>ordina</div>
+			<a href="scala40v1.html"><div class="pulsantescala40" style="top: 590px; left: 10px; "></div></a>
+			<a href="spider.html"><div class="pulsantespider" style="top: 650px; left: 10px; "></div></a>
+			<div class="pulsantecomments" style="top: 710px; left: 10px; "></div>
+
+
+    
+	   </div>	<!--accessoridestra-->
+
+		<div id="mazzo">
+			 <span>deck (mazzo)</span>
+		</div>   <!-- mazzo-->
+
+	
+
+	   <div id="avversariob" class="campo2" style="top: 0px; left: 270px;  width:1054px;height:104px;">   
+	   			<div id="etavversariob" class="etichetta" style="position: absolute; top: 3px; left: 700px; "> &nbsp;avversariob</div>
+	   </div>
+	   <div id="campotris" style="top:110px; left: 270px; width:1054px;height:550px;"> 
+	   </div>   <!--campotris serve solo come sfondo e riferimento dimensionale-->
+	 	<div id="campotris0" class="campo2" style="top:110px; left: 270px; width:1054px;height:104px;"> </div>
+		<div id="campotris1" class="campo2" style="top: 220px; left: 270px;  width:1054px;height:104px;"> </div>
+		<div id="campotris2" class="campo2" style="top: 330px; left: 270px;  width:1054px;height:104px;">  </div>
+		<div id="campotris3" class="campo2" style="top: 440px; left: 270px;  width:1054px;height:104px;"> </div>
+		<div id="campotris4" class="campo2" style="top: 550px; left: 270px;  width:1054px;height:104px;"></div>
+
+	   <div id="giocatore" class="campo2" style="top: 660px; left: 270px;  width:1054px;height:104px;"> 
+			<div id="etgiocatore" class="etichetta" style="position: absolute; top: 3px; left: 700px;"> PLAYER<br>giocatore</div>
+			<div id="showstep">
+				<div id="etstep" style="position: absolute; top: 10px; left: 180px;"> &nbsp;etichetta</div>
+				<div id="etstep2" style="position: absolute; top: 70px; left: 180px;"> &nbsp;etichetta2</div>
+				<div id="indietro" class="pulsante2" style="top: 5px; left: 10px; ">INDIETRO</div> 
+				<div id="avanti" class="pulsante2" style="top: 55px; left: 10px; ">AVANTI</div> 
+			 </div>
+
+	   </div>
+	   <div id="avversarioa" class="campo2" style="top: 330px; left: -170px;  width:764px;height:104px;transform: rotate(90deg)">  
+	   			<div id="etavversarioa" class="etichetta" style="position: absolute;  top: 3px; left: 400px; "> &nbsp;avversarioa</div>
+		</div>
+	   <div id="avversarioc" class="campo2" style="top: 330px; left: 1000px;  width:764px;height:104px;transform: rotate(270deg)">    
+	   			<div id="etavversarioc" class="etichetta" style="position: absolute; top: 3px; left: 400px; "> &nbsp;avversarioc</div>
+		</div>
+	  
+	  <div id="formistruzioni" class="formistruzioni"> 
+		<h2>Istruzioni per giocare a Machiavelli Luciano:</h2>
+I tris si formano come nella SCALA 40, ma nelle scale dopo il K si può arrivare fino a tre (es. 10,J,Q,K,1,2,3).<br><br>
+Per formare un tris cliccare sulle carte che lo compongono, che devono essere ordinate correttamente. Una volta selezionato, si può scartare il tris cliccando nell’area immediatamente superiore a quella del giocatore (player).<br><br>
+Per aggiungere una carta a un tris già scartato trascinare la carta nella posizione dove si intende collocare.<br><br>
+Cliccando con il tasto destro su una carta di un tris in campo il tris viene spezzato in quel punto 
+(la carta selezionata resterà nella parte destra del tris, a meno che non si tratti della prima carta o di una carta di un poker, nel qual caso verrà isolata).<br>
+Una volta spezzato il tris è possibile aggiungere carte oppure muovere le carte del tris spezzato.<br><br>
+Al termine delle operazioni il giocatore deve cliccare sulla parte libera del suo campo, oppure sul mazzo.
+Se durante il proprio turno il giocatore ha aggiunto almeno una carta ai tris il gioco passerà al primo avversario senza pescare, altrimenti verrà automaticamente pascata una carta.<br><br>
+Per riordinare le proprie carte, trascinare la carta che si intende spostare a destra della carta dopo cui si intende inserirla, oppure a sinistra della prima carta.<br><br>
+Il tasto UNDO permette di annullare la mosse più recenti.<br>
+Il tasto UNCOVER permette di giocare a carte scoperte.<br>
+il tasto PLAYERS consente di scegliere il numero di avversari e/o iniziare una nuova partita<br>
+il tasto GROUP raggruppa i tris che possono essere uniti <br>
+il tasto STEPBYSTEP permette di vedere le mosse degli avversari una alla volta.<br>
+
+<button class= "bottone1" type="button1" style="left: 650px;" >OK</button>
+	  </div> 
+	   
+	  <div id="formhelp" class="formistruzioni"> 
+		<h2>How to play Machiavelli Luciano:</h2>
+The sets are formed as in SCALA 40 (rummy), but the sequences after the King can go up to three (e.g. 10, J, Q, K, 1, 2, 3). <br><br>
+To form a set click on the cards that make it up, which must be ordered correctly. Once selected, you can discard the set clicking in the area immediately above the player area. <br><br>
+To add a card to a deployed set move the card in the position where you want to place it. <br><br>
+Right clicking on a card in a positioned set, the set is broken at that point
+(The selected card will remain on the right side of the set, unless it is the first card or a card in a "four of a type" set, in which case it will be isolated). <br>
+Once the set is broken you can add cards or move the cards of the broken sets. <br><br>
+When finished, the player must click on the free part of his field, or on the deck.
+If during your turn the you have added at least one card to the deployed sets, the turn will pass to the first opponent without drawing a card, otherwise it will be automatically drawn. <br><br>
+To reorder the player cards, move the card that you want to move to the right of the card after which you wish to insert it, or to the left of the first card. <br><br>
+The UNDO button undoes the most recent moves. <br><br>
+UNCOVER button allows you to play with uncovered cards. <br><br>
+PLAYERS button lets you choose the number of opponents and / or start a new game <br><br>
+GROUP button groups the sets that can be joined <br><br>
+STEPBYSTEP button allows you to see the moves of opponents one by one. <br><br>
+<button class= "bottone1" type="button1" style="left: 650px;" >OK</button>
+	  </div> 
+
+	  <div id="formnuovo" class="formistruzioni"> 
+		<h2>How many opponents do you want?<br><br>
+		Quanti avversari vuoi avere?</h2>
+
+		<input type="radio" name="avversari" value="1" checked>1<br>
+		<input type="radio" name="avversari" value="2" >2<br>
+		<input type="radio" name="avversari" value="3" >3<br>
+
+<button class= "bottone1" type="button"  style="left: 650px;" >OK</button>
+	  </div> 
+
+
+	   
+	  <div id="haivinto" class="form" style="background-image:url(images/scala40/haivinto.jpg)">  
+	  <!--<button id= "vintoOK" type="button" style="left: 100px;" >OK</button>
+	  <button id= "vintoNEW" type="button" style="left: 200px;" >NUOVA PARTITA</button>-->
+	  <button class= "bottone1" type="button" style="left: 200px;" >NUOVA PARTITA</button>
+	   </div> 
+	   
+	   <div id="haiperso" class="form" style="background-image:url(images/scala40/haiperso.jpg)">  
+	  <!--<button id= "persoOK" type="button" style="left: 100px;" >OK</button>
+	  <button id= "persoNEW" type="button" style="left: 200px;" >NUOVA PARTITA</button>-->
+	  <button class= "bottone1" type="button" style="left: 100px;" >NUOVA PARTITA</button>
+	  <button class= "bottone2" type="button" style="left: 300px;" >CONTINUA</button>
+	  </div> 
+
+
+	  <div id="haipersotorneo" class="form" style="background-image:url(images/scala40/haipersotorneo.jpg)">  
+	  <button class= "bottone1" type="button" style="left: 100px;" >NUOVO TORNEO</button>
+	  <button class= "bottone2" type="button" style="left: 300px;" >GIOCA ANCORA</button>
+	  </div> 
+
+	  <div id="haivintotorneo" class="form" style="background-image:url(images/scala40/haivintotorneo.jpg)">  
+	  <button class= "bottone1" type="button" style="left: 100px;" >NUOVO TORNEO</button>
+	  <button class= "bottone2" type="button" style="left: 300px;" >GIOCA ANCORA</button>
+	  </div> 
+
+
+
+	   <div id="oltre40" class="form" style="background-image:url(images/machiavelli/scollegate.jpg)">  
+	  <button class= "bottone1" type="button" style="left: 100px;" >ANNULLA TAGLI</button>
+	  <button class= "bottone2" type="button" style="left: 300px;" >CONTINUA</button>
+	  </div> 
+	  <div id="allerta" class="form" style="background-image:url(images/scala40/allerta.jpg)">
+	  		<div id="testoallerta"> prova </div>
+	  <button class= "bottone1" type="button" style="left: 200px;" >OK</button>
+	  </div> 
+
+
+
+	
+      
+   
+	</div>  <!-- campogioco schermo-->  
+	   <audio id="pesca" src="sounds/scala40/cardplace1.mp3"></audio>
+	   <audio id="scartatris" src="sounds/scala40/cardplace3.mp3"></audio>
+	   <audio id="ordina" src="sounds/scala40/cardslide5.mp3"></audio>
+	   <audio id="scarta" src="sounds/scala40/cardslide1.mp3"></audio>
+	    <audio id="perjolly" src="sounds/scala40/chimes.mp3"></audio>
+	    <audio id="tada" src="sounds/scala40/tada.mp3"></audio>
+	   <audio id="perso" src="sounds/scala40/haiperso.mp3"></audio>
+	 <audio id="dascarti" src="sounds/scala40/magic.mp3"></audio>
+	 <audio id="slitta" src="sounds/scala40/slitta.mp3"></audio>
+	 <audio id="ding" src="sounds/scala40/ding.mp3"></audio>
+	 <audio id="thunder" src="sounds/scala40/thunder.mp3"></audio>
+	 <audio id="applause" src="sounds/scala40/applause.mp3"></audio>
+	 <audio id="distribuisci" src="sounds/scala40/distribuisci10.mp3"></audio>
+	 <audio id="tick" src="sounds/scala40/tick.mp3"></audio>
+	 <audio id="dindon" src="sounds/scala40/dindon.mp3"></audio>
+	 <audio id="split" src="sounds/scala40/split.mp3"></audio>
+
+	<script src="jquery-2.1.1.js"></script>
+	<script src="machiavellicode.js"></script>
+	<script src="machiavellic2.js"></script>
+
+
+	</div>	<!-- sfondo-->
+</body>
+
+</html>
