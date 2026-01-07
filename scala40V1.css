@@ -568,7 +568,7 @@ h1,h2,h3,h4,h5,h6{
 
 /* Sidebar dinamiche per banner pubblicitari */
 .ad-sidebar {
-	position: fixed;
+	position: absolute;
 	top: 0;
 	height: 100vh;
 	z-index: 1; /* Z-index basso per non interferire con il gioco (gioco usa z-index fino a 50000) */
@@ -580,13 +580,7 @@ h1,h2,h3,h4,h5,h6{
 	pointer-events: auto; /* I banner devono essere cliccabili */
 }
 
-#sidebar-left {
-	left: 0;
-}
 
-#sidebar-right {
-	right: 0;
-}
 
 /* Banner placeholder styles */
 .ad-banner {

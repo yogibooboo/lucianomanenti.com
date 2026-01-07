@@ -30,19 +30,16 @@ Array.prototype.togli =function(elemento){
 //var isChrome = !!window.chrome && !isOpera;              // Chrome 1+
 //var isIE = /*@cc_on!@*/false || !!document.documentMode; // At least IE6
 
-var adjustscreen=function(){
-	zm=1,wh=$(window).height(),ww=$(window).width();
-	//if ((wh>=750)&&(ww>=1024)) zm=Math.min(wh/750,ww/1024)
-	//else{
-		//if (wh<750) 
-		zm=wh/750;
-		//if (ww<1024) 
-		zm=Math.min(zm,ww/1024);
-		zm*=0.98;
-	//} 
- 	$("body").css({transform:"scale("+zm+")"});
- 	$("#campogioco").css({"position":"absolute","left":(ww/zm-1024)/2})
- 	
+var adjustscreen = function(){
+    zm = 1, wh = $(window).height(), ww = $(window).width();
+    zm = wh / 750;
+    zm = Math.min(zm, ww / 1024);
+    zm *= 0.98;
+    $("body").css({transform:"scale("+zm+")"});
+    var campogioco_left = (ww / zm - 1024) / 2;
+    $("#campogioco").css({"position":"absolute","left": campogioco_left});
+    // Trigger sidebar update here or in resize
+    
 };
 adjustscreen();
 
@@ -2960,18 +2957,47 @@ calcolapuntitris: function(gruppo){
 var sidebarManager = {
 	bannerSize: null, // '300', '160', o null se nascosto
 	trackingInterval: null,
-	
-	// Calcola lo spazio disponibile su ogni lato
-	// Usa la larghezza di <html> come riferimento (non window o body)
-	// e sottrae la larghezza riservata per #campogioco
+
 	calculateAvailableSpace: function() {
-		// Usa document.documentElement.clientWidth per ottenere la larghezza di <html>
-		var htmlWidth = document.documentElement.clientWidth || $(window).width();
-		var gameWidth = 1024; // Larghezza fissa di #campogioco
-		var availableSpace = (htmlWidth - gameWidth) / 2;
-		return availableSpace;
-	},
+        var ww = $(window).width(); // Or document.documentElement.clientWidth
+        return (ww - 1024) / 2; // Unscaled, but we'll use effective in update
+    },
+
+    // Update to use effective space (post-scale visual margins)
+    updateSidebars: function() {
+        var ww = $(window).width();
+        var zm = window.zm || Math.min($(window).height() / 750, $(window).width() / 1024) * 0.98;
+        var effectiveSpace = (ww - 1024 * zm) / 2;
+        var newBannerSize = this.determineBannerSize(effectiveSpace); // Use effective for accuracy
+        if (newBannerSize === null) {
+            $("#sidebar-left, #sidebar-right").hide();
+            return;
+        }
+
+        var bannerWidth = (newBannerSize === '300') ? 300 : 160;
+        var campogioco_left = parseFloat($("#campogioco").css("left")) || (ww / zm - 1024) / 2;
+
+		console.log("campogioco_left:", campogioco_left, "typeof:", typeof campogioco_left);
+		console.log("Sidebar right left:", (campogioco_left + 1024));
+
+        // Position sidebars adjacent to #campogioco (unscaled coords)
+        $("#sidebar-left").css({
+            "left": (campogioco_left - bannerWidth) + "px",
+            "width": bannerWidth + "px",
+            "display": "block" // Show if hidden
+        });
+        $("#sidebar-right").css({
+            "left": (campogioco_left + 1024) + "px",
+            "width": bannerWidth + "px",
+            "display": "block"
+        });
+
+        // If banners are appended here, do so with class `ad-banner ad-banner-${newBannerSize}`
+        // e.g., var banner = $('<div class="ad-banner ad-banner-' + newBannerSize + '"></div>'); // Then append/clone to sidebars
+        console.log("Updated sidebars: size=" + newBannerSize + ", effectiveSpace=" + effectiveSpace);
+    },
 	
+
 	// Determina la dimensione del banner in base allo spazio disponibile
 	determineBannerSize: function(space) {
 		if (space > 320) {
@@ -2983,21 +3009,7 @@ var sidebarManager = {
 		}
 	},
 	
-	// Aggiorna le sidebar in base allo spazio disponibile
-	updateSidebars: function() {
-		var htmlWidth = document.documentElement.clientWidth || $(window).width();
-		var space = this.calculateAvailableSpace();
-		var newBannerSize = this.determineBannerSize(space);
-		
-		// Log per debug (mostra calcolo basato su <html> invece che su window/body)
-		log('Sidebar: html width=' + htmlWidth + 'px, spazio disponibile=' + space + 'px, banner size=' + (newBannerSize || 'nascosto'));
-		
-		// Se la dimensione è cambiata, aggiorna
-		if (this.bannerSize !== newBannerSize) {
-			this.bannerSize = newBannerSize;
-			this.renderSidebars();
-		}
-	},
+
 	
 	// Renderizza le sidebar con i banner appropriati
 	renderSidebars: function() {
@@ -3114,6 +3126,7 @@ $(document) .ready(function () {
 	
 	// Inizializza le sidebar dopo che il gioco è pronto
 	sidebarManager.init();
+	adjustscreen();
 });
 
  
