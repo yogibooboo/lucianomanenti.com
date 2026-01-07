@@ -565,3 +565,57 @@ h1,h2,h3,h4,h5,h6{
 	left:12px;
 	display:none;	
 }
+
+/* Sidebar dinamiche per banner pubblicitari */
+.ad-sidebar {
+	position: fixed;
+	top: 0;
+	height: 100vh;
+	z-index: 1; /* Z-index basso per non interferire con il gioco (gioco usa z-index fino a 50000) */
+	background-color: #f0f0f0;
+	border: 1px solid #ccc;
+	display: none; /* Nascosto di default, mostrato via JavaScript */
+	overflow-y: auto;
+	/* Assicura che le sidebar non interferiscano con il gioco */
+	pointer-events: auto; /* I banner devono essere cliccabili */
+}
+
+#sidebar-left {
+	left: 0;
+}
+
+#sidebar-right {
+	right: 0;
+}
+
+/* Banner placeholder styles */
+.ad-banner {
+	width: 100%;
+	background-color: #e0e0e0;
+	border: 2px dashed #999;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: #666;
+	font-size: 14px;
+	text-align: center;
+	margin: 10px auto;
+	box-sizing: border-box;
+}
+
+.ad-banner-300 {
+	width: 300px;
+	height: 600px;
+	min-height: 600px;
+}
+
+.ad-banner-160 {
+	width: 160px;
+	height: 600px;
+	min-height: 600px;
+}
+
+.ad-banner::before {
+	content: "Banner " attr(data-size) "px";
+	font-weight: bold;
+}

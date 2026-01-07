@@ -50,6 +50,7 @@ $(window).resize(function () {
 	scala.offsetxx=$("#campogioco").offset().left;
 	scala.offsetyy=$("#campogioco").offset().top;
 	adjustscreen();
+	updateSidebars(); // Aggiorna le sidebar al resize
 });
 
 
@@ -2955,11 +2956,164 @@ calcolapuntitris: function(gruppo){
 
 }  //scala
 
+// Gestione sidebar dinamiche per banner pubblicitari
+var sidebarManager = {
+	bannerSize: null, // '300', '160', o null se nascosto
+	trackingInterval: null,
+	
+	// Calcola lo spazio disponibile su ogni lato
+	// Usa la larghezza di <html> come riferimento (non window o body)
+	// e sottrae la larghezza riservata per #campogioco
+	calculateAvailableSpace: function() {
+		// Usa document.documentElement.clientWidth per ottenere la larghezza di <html>
+		var htmlWidth = document.documentElement.clientWidth || $(window).width();
+		var gameWidth = 1024; // Larghezza fissa di #campogioco
+		var availableSpace = (htmlWidth - gameWidth) / 2;
+		return availableSpace;
+	},
+	
+	// Determina la dimensione del banner in base allo spazio disponibile
+	determineBannerSize: function(space) {
+		if (space > 320) {
+			return '300';
+		} else if (space >= 180 && space <= 320) {
+			return '160';
+		} else {
+			return null; // Nascosto
+		}
+	},
+	
+	// Aggiorna le sidebar in base allo spazio disponibile
+	updateSidebars: function() {
+		var htmlWidth = document.documentElement.clientWidth || $(window).width();
+		var space = this.calculateAvailableSpace();
+		var newBannerSize = this.determineBannerSize(space);
+		
+		// Log per debug (mostra calcolo basato su <html> invece che su window/body)
+		log('Sidebar: html width=' + htmlWidth + 'px, spazio disponibile=' + space + 'px, banner size=' + (newBannerSize || 'nascosto'));
+		
+		// Se la dimensione è cambiata, aggiorna
+		if (this.bannerSize !== newBannerSize) {
+			this.bannerSize = newBannerSize;
+			this.renderSidebars();
+		}
+	},
+	
+	// Renderizza le sidebar con i banner appropriati
+	renderSidebars: function() {
+		var $leftSidebar = $('#sidebar-left');
+		var $rightSidebar = $('#sidebar-right');
+		
+		// Pulisci le sidebar
+		$leftSidebar.empty();
+		$rightSidebar.empty();
+		
+		if (this.bannerSize === null) {
+			// Nascondi le sidebar
+			$leftSidebar.hide();
+			$rightSidebar.hide();
+			return;
+		}
+		
+		// Crea il banner placeholder
+		var bannerClass = 'ad-banner ad-banner-' + this.bannerSize;
+		var $banner = $('<div>')
+			.addClass(bannerClass)
+			.attr('data-size', this.bannerSize);
+		
+		// Imposta la larghezza della sidebar
+		var sidebarWidth = this.bannerSize === '300' ? 300 : 160;
+		$leftSidebar.css('width', sidebarWidth + 'px');
+		$rightSidebar.css('width', sidebarWidth + 'px');
+		
+		// Aggiungi i banner alle sidebar
+		$leftSidebar.append($banner.clone());
+		$rightSidebar.append($banner.clone());
+		
+		// Mostra le sidebar
+		$leftSidebar.show();
+		$rightSidebar.show();
+	},
+	
+	// Invia evento GA4 per impressione banner
+	sendGA4Impression: function() {
+		if (this.bannerSize === null) {
+			return; // Non inviare se i banner sono nascosti
+		}
+		
+		var eventData = {
+			'banner_size': this.bannerSize,
+			'event_category': 'advertising',
+			'event_label': 'sidebar_banner'
+		};
+		
+		// Verifica che gtag sia disponibile
+		if (typeof gtag !== 'undefined') {
+			try {
+				gtag('event', 'sim_ad_impression', eventData);
+				log('GA4 Event: sim_ad_impression - banner_size: ' + this.bannerSize);
+			} catch (e) {
+				log('Errore nell\'invio evento GA4: ' + e.message);
+				console.error('Errore GA4:', e);
+			}
+		} else {
+			// Fallback: prova a usare dataLayer direttamente
+			if (typeof window.dataLayer !== 'undefined') {
+				try {
+					window.dataLayer.push({
+						'event': 'sim_ad_impression',
+						'banner_size': this.bannerSize,
+						'event_category': 'advertising',
+						'event_label': 'sidebar_banner'
+					});
+					log('Evento inviato tramite dataLayer');
+				} catch (e) {
+					log('Errore con dataLayer: ' + e.message);
+				}
+			}
+		}
+	},
+	
+	// Avvia il tracking periodico
+	startTracking: function() {
+		var self = this;
+		
+		// Invia subito il primo evento
+		this.sendGA4Impression();
+		
+		// Poi invia ogni 60 secondi
+		this.trackingInterval = setInterval(function() {
+			self.sendGA4Impression();
+		}, 60000); // 60 secondi
+	},
+	
+	// Ferma il tracking
+	stopTracking: function() {
+		if (this.trackingInterval) {
+			clearInterval(this.trackingInterval);
+			this.trackingInterval = null;
+		}
+	},
+	
+	// Inizializza le sidebar
+	init: function() {
+		this.updateSidebars();
+		this.startTracking();
+	}
+};
+
+// Funzione globale per aggiornare le sidebar (chiamata dal resize handler)
+function updateSidebars() {
+	sidebarManager.updateSidebars();
+}
 
 $(document) .ready(function () {
 
     scala.start();
     scala.collegaeventi();
+	
+	// Inizializza le sidebar dopo che il gioco è pronto
+	sidebarManager.init();
 });
 
  
