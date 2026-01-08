@@ -35,7 +35,7 @@ var adjustscreen = function(){
     zm = 1, wh = $(window).height(), ww = $(window).width();
     zm = wh / 750;
     zm = Math.min(zm, ww / 1024);
-    zm *= 0.98;
+    //zm *= 0.98;
     $("body").css({transform:"scale("+zm+")"});
     var campogioco_left = (ww / zm - 1024) / 2;
     $("#campogioco").css({"position":"absolute","left": campogioco_left});
@@ -50,6 +50,7 @@ $(window).resize(function () {
 	scala.offsetyy=$("#campogioco").offset().top;
 	adjustscreen();
 	updateSidebars(); // Aggiorna le sidebar al resize
+
 });
 
 

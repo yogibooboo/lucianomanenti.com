@@ -15,6 +15,8 @@ body{
 	height:700px;
 	background-color:green;
 	margin:0;
+	overflow-x: hidden; 
+	overflow-y: hidden; 
 	-ms-transform-origin: left top;
 	-moz-transform-origin: left top;
 	-webkit-transform-origin: left top;
