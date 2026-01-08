@@ -31,6 +31,7 @@ Array.prototype.togli =function(elemento){
 //var isIE = /*@cc_on!@*/false || !!document.documentMode; // At least IE6
 
 var adjustscreen = function(){
+	console.log("adjustscreen called! ww=", $(window).width(), "wh=", $(window).height());  // Debug: verifica chiamata e dimensioni
     zm = 1, wh = $(window).height(), ww = $(window).width();
     zm = wh / 750;
     zm = Math.min(zm, ww / 1024);
@@ -44,6 +45,7 @@ var adjustscreen = function(){
 adjustscreen();
 
 $(window).resize(function () {
+	console.log("Resize triggered!");  // Debug: verifica resize
 	scala.offsetxx=$("#campogioco").offset().left;
 	scala.offsetyy=$("#campogioco").offset().top;
 	adjustscreen();
@@ -2963,90 +2965,103 @@ var sidebarManager = {
         return (ww - 1024) / 2; // Unscaled, but we'll use effective in update
     },
 
-    // Update to use effective space (post-scale visual margins)
-    updateSidebars: function() {
-        var ww = $(window).width();
-        var zm = window.zm || Math.min($(window).height() / 750, $(window).width() / 1024) * 0.98;
-        var effectiveSpace = (ww - 1024 * zm) / 2;
-        var newBannerSize = this.determineBannerSize(effectiveSpace); // Use effective for accuracy
-        if (newBannerSize === null) {
-            $("#sidebar-left, #sidebar-right").hide();
-            return;
+	determineBannerSize: function(space) {  // Aggiungi/ripristina questa!
+        if (space > 320) {
+            return '300';
+        } else if (space >= 180 && space <= 320) {
+            return '160';
+        } else {
+            return null;
         }
-
-        var bannerWidth = (newBannerSize === '300') ? 300 : 160;
-        var campogioco_left = parseFloat($("#campogioco").css("left")) || (ww / zm - 1024) / 2;
-
-		console.log("campogioco_left:", campogioco_left, "typeof:", typeof campogioco_left);
-		console.log("Sidebar right left:", (campogioco_left + 1024));
-
-        // Position sidebars adjacent to #campogioco (unscaled coords)
-        $("#sidebar-left").css({
-            "left": (campogioco_left - bannerWidth) + "px",
-            "width": bannerWidth + "px",
-            "display": "block" // Show if hidden
-        });
-        $("#sidebar-right").css({
-            "left": (campogioco_left + 1024) + "px",
-            "width": bannerWidth + "px",
-            "display": "block"
-        });
-
-        // If banners are appended here, do so with class `ad-banner ad-banner-${newBannerSize}`
-        // e.g., var banner = $('<div class="ad-banner ad-banner-' + newBannerSize + '"></div>'); // Then append/clone to sidebars
-        console.log("Updated sidebars: size=" + newBannerSize + ", effectiveSpace=" + effectiveSpace);
     },
-	
 
-	// Determina la dimensione del banner in base allo spazio disponibile
-	determineBannerSize: function(space) {
-		if (space > 320) {
-			return '300';
-		} else if (space >= 180 && space <= 320) {
-			return '160';
-		} else {
-			return null; // Nascosto
-		}
-	},
+    // Update to use effective space (post-scale visual margins)
+updateSidebars: function() {
+    console.log("updateSidebars called! ww=", $(window).width(), "zm=", window.zm);  // Già presente
+    var ww = $(window).width();
+    var zm = window.zm || Math.min($(window).height() / 750, $(window).width() / 1024) * 0.98;
+    var effectiveSpace = (ww - 1024 * zm) / 2;
+    var newBannerSize = this.determineBannerSize(effectiveSpace);
+    if (newBannerSize === null) {
+        $("#sidebar-left, #sidebar-right").hide();
+        return;
+    }
+
+    var bannerWidth = (newBannerSize === '300') ? 300 : 160;
+    var campogioco_left = parseFloat($("#campogioco").css("left")) || (ww / zm - 1024) / 2;
+    console.log("campogioco_left:", campogioco_left, "typeof:", typeof campogioco_left);
+    console.log("Sidebar right left:", (campogioco_left + 1024));
+
+    $("#sidebar-left").css({
+        "left": (campogioco_left - bannerWidth) + "px",
+        "width": bannerWidth + "px",
+        "display": "block"
+    });
+    $("#sidebar-right").css({
+        "left": (campogioco_left + 1024) + "px",
+        "width": bannerWidth + "px",
+        "display": "block"
+    });
+
+    // Forza il render sempre (rimuovi/commenta l'if per debug)
+    // if (this.bannerSize !== newBannerSize) {  // Commenta questo if temporaneamente
+        this.bannerSize = newBannerSize;
+        this.renderSidebars();
+    // } 
+
+    console.log("Updated sidebars: size=" + newBannerSize + ", effectiveSpace=" + effectiveSpace);
+},
 	
 
 	
 	// Renderizza le sidebar con i banner appropriati
-	renderSidebars: function() {
-		var $leftSidebar = $('#sidebar-left');
-		var $rightSidebar = $('#sidebar-right');
-		
-		// Pulisci le sidebar
-		$leftSidebar.empty();
-		$rightSidebar.empty();
-		
-		if (this.bannerSize === null) {
-			// Nascondi le sidebar
-			$leftSidebar.hide();
-			$rightSidebar.hide();
-			return;
-		}
-		
-		// Crea il banner placeholder
-		var bannerClass = 'ad-banner ad-banner-' + this.bannerSize;
-		var $banner = $('<div>')
-			.addClass(bannerClass)
-			.attr('data-size', this.bannerSize);
-		
-		// Imposta la larghezza della sidebar
-		var sidebarWidth = this.bannerSize === '300' ? 300 : 160;
-		$leftSidebar.css('width', sidebarWidth + 'px');
-		$rightSidebar.css('width', sidebarWidth + 'px');
-		
-		// Aggiungi i banner alle sidebar
-		$leftSidebar.append($banner.clone());
-		$rightSidebar.append($banner.clone());
-		
-		// Mostra le sidebar
-		$leftSidebar.show();
-		$rightSidebar.show();
-	},
-	
+renderSidebars: function() {
+    console.log("renderSidebars called! Banner size: " + this.bannerSize);
+    var $leftSidebar = $('#sidebar-left');
+    var $rightSidebar = $('#sidebar-right');
+    
+    $leftSidebar.empty();
+    $rightSidebar.empty();
+    
+    if (this.bannerSize === null) {
+        $leftSidebar.hide();
+        $rightSidebar.hide();
+        return;
+    }
+    
+    var bannerClass = 'ad-banner ad-banner-' + this.bannerSize;
+    var bannerText = 'Banner ' + this.bannerSize + 'x750';
+    var $banner = $('<div>')
+        .addClass(bannerClass)
+        .attr('data-size', this.bannerSize)
+        .text(bannerText)
+        .css({
+            'display': 'flex',
+            'justify-content': 'center',
+            'align-items': 'center',
+            'color': '#000',
+            'font-size': '20px',
+            'background': '#ccc',
+            'margin': '0',
+            'padding': '0'
+        });
+    
+    var sidebarWidth = this.bannerSize === '300' ? 300 : 160;
+    $leftSidebar.css({
+        'width': sidebarWidth + 'px',
+        'height': '750px',  // Setta esplicitamente qui per override
+        'margin': '0',
+        'padding': '0'
+    }).append($banner.clone()).show();
+    $rightSidebar.css({
+        'width': sidebarWidth + 'px',
+        'height': '750px',
+        'margin': '0',
+        'padding': '0'
+    }).append($banner.clone()).show();
+    
+    console.log("Banner height applied: " + $banner.css('height'));
+},
 	// Invia evento GA4 per impressione banner
 	sendGA4Impression: function() {
 		if (this.bannerSize === null) {
@@ -3120,13 +3135,13 @@ function updateSidebars() {
 }
 
 $(document) .ready(function () {
-
+	console.log("Document ready!");
     scala.start();
     scala.collegaeventi();
 	
 	// Inizializza le sidebar dopo che il gioco è pronto
 	sidebarManager.init();
-	adjustscreen();
+	adjustscreen();  // Chiamata iniziale
 });
 
  

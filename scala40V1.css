@@ -570,7 +570,7 @@ h1,h2,h3,h4,h5,h6{
 .ad-sidebar {
 	position: absolute;
 	top: 0;
-	height: 100vh;
+	height: 750px;
 	z-index: 1; /* Z-index basso per non interferire con il gioco (gioco usa z-index fino a 50000) */
 	background-color: #f0f0f0;
 	border: 1px solid #ccc;
