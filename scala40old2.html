@@ -11,7 +11,7 @@
 	<meta http-Equiv="Pragma" Content="no-cache">
 	<meta http-Equiv="Expires" Content="0">
 
-<link rel="stylesheet" href="scala40V1.css?v=1.3" />
+    <link rel="stylesheet" href="scala40V1.css?v=1.2" />
 
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
@@ -27,7 +27,7 @@
         window.gameScale = 1;
 
         // Funzione per inviare un evento Google Analytics per un banner
-        function sendAnalyticsEvent(bannerElement, triggerType) {
+        function sendAnalyticsEvent(bannerElement) {
             if (typeof gtag === 'function') { // Verifica se gtag è disponibile
                 const width = bannerElement.style.width;
                 const height = bannerElement.style.height;
@@ -35,22 +35,21 @@
                 gtag('event', 'simulated_banner_impression', {
                     'event_category': 'Banner_Simulation',
                     'event_label': dimensions,
-                    'trigger_type': triggerType, // Parametro aggiunto
                     'non_interaction': true // Per non influenzare la frequenza di rimbalzo
                 });
-                console.log(`GA Evento Inviato: Simulazione Banner - ${dimensions} - Trigger: ${triggerType}`); // Per debugging
+                console.log(`GA Evento Inviato: Simulazione Banner - ${dimensions}`); // Per debugging
             } else {
                 console.warn('Funzione gtag non trovata. Google Analytics potrebbe non essere inizializzato.');
             }
         }
 
         // Funzione per tracciare tutti i banner visibili
-        function trackVisibleBanners(triggerType) {
+        function trackVisibleBanners() {
             const visibleBanners = document.querySelectorAll('.ad-banner');
             visibleBanners.forEach(banner => {
                 // Verifica base se il banner è visibile (non display:none, o larghezza/altezza 0)
                 if (banner.offsetWidth > 0 && banner.offsetHeight > 0) {
-                    sendAnalyticsEvent(banner, triggerType);
+                    sendAnalyticsEvent(banner);
                 }
             });
         }
@@ -146,17 +145,10 @@
         
         window.addEventListener('load', () => {
             adjustLayout();
-            // Chiamata immediata per il primo invio con il trigger corretto
-            trackVisibleBanners('initial_load');
-            
-            // Inizializza un contatore per i minuti
-            let minuteCounter = 0;
-            
+            // Chiamata immediata per il primo invio
+            trackVisibleBanners();
             // Poi avvia l'intervallo per i successivi invii ogni minuto
-            setInterval(function() {
-                minuteCounter++; // Incrementa il contatore
-                trackVisibleBanners('timer_refresh_' + minuteCounter);
-            }, 60 * 1000); // 1 minuto
+            setInterval(trackVisibleBanners, 60 * 1000); // 1 minuto
 
             // Ascolta la combinazione di tasti per mostrare/nascondere le sidebar
             document.addEventListener('keydown', (event) => {
@@ -293,7 +285,7 @@
 
 <!-- Scripts for game logic -->
 <script src="jquery-2.1.1.js"></script>
-<script src="scala40codeV1.js?v=1.3"></script>
+<script src="scala40codeV1.js?v=1.2"></script>
 
 </body>
 </html>

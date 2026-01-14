@@ -1,27 +1,87 @@
 
 
-body{
-	-webkit-touch-callout:none;
+/* ==== STYLES FROM CONTAINER (scala40provacss.css) ==== */
+
+/* Stili di base per il body e html */
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    font-family: sans-serif;
+    background-color:green;
+    /* Added from game's body CSS for consistency */
+    -webkit-touch-callout:none;
 	-webkit-user-select:none;
 	-khtml-user-select:none;
 	-moz-user-select:none;
 	-ms-user-select:none;
 	user-select:none;
+}
 
-	font-size:.75em;
-	font-family:'Open Sans',"Lucida Grande","Lucida Sans Unicode",Tahoma,Geneva,Arial,Verdana,sans-serif;
-	color:#fff;
-	width:auto;
-	height:700px;
-	background-color:green;
-	margin:0;
-	overflow-x: hidden; 
-	overflow-y: hidden; 
-	-ms-transform-origin: left top;
-	-moz-transform-origin: left top;
-	-webkit-transform-origin: left top;
+/* Contenitore principale per stabilire il contesto di posizionamento */
+.main-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+/* Stile per le sidebar */
+.sidebar {
+    position: absolute; /* Changed back from fixed */
+    top: 0;
+    height: 100%;
+    background-color: #f0f0f0;
+    overflow-y: auto;
+    box-sizing: border-box;
+    display: none; /* Nascoste di default, mostrate via JS */
+    flex-direction: column;
+    align-items: center;
+    z-index: 1; /* Keep sidebars behind game popups */
+    opacity: 0; /* Nascoste visivamente di default */
+    pointer-events: none; /* Non intercettano il mouse quando invisibili */
+    transition: opacity 0.3s ease; /* Transizione per la comparsa */
+}
+
+body.sidebars-visible .sidebar {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+#sidebar-left {
+    left: 0;
+}
+
+#sidebar-right {
+    right: 0;
+}
+
+/* Stile per i banner di simulazione */
+.ad-banner {
+    background-color: #ddd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #333;
+    text-align: center;
+    box-sizing: border-box;
+    flex-shrink: 0;
+}
 
 
+/* ==== STYLES FROM GAME (scala40V1.css) ==== */
+
+/* The original #campogioco rule is replaced by this one to work with the new scaling model */
+#campogioco{
+	position:absolute;
+	top: 50%;
+	left: 50%;
+	width:1024px;
+	height:750px;
+	background-image:url(images/scala40/tappetoverde.png);
+    /* The game's JS calculates positions relative to a top-left origin */
+    transform-origin: center center;
 }
 
 
@@ -35,7 +95,8 @@ body{
 	padding:5px;
 	border-style:solid;
 	border-color:white;
-	/* z-index:50000; */
+    background-color: green; /* Ensure it has a background */
+	z-index:50000; 
 }
 
 
@@ -79,18 +140,6 @@ body{
     top:50%;
     transform: translate(0%, -50%);	
 }
-#campogioco{
-	position:relative;
-	top:0px;
-	left:auto;
-	width:1024px;
-	height:750px;
-	background-image:url(images/scala40/tappetoverde.png);
-	margin:0px  auto 0px;
-
-}
-
-
 
 img{
 	border-style:none
@@ -99,10 +148,6 @@ img{
 h1,h2,h3,h4,h5,h6{
 	text-align:center
 }
-
-
-
-
 
 .campo{
 	margin-top:auto;
@@ -168,11 +213,7 @@ h1,h2,h3,h4,h5,h6{
 
 .cardselected{
 	background-image:url(images/scala40/conjollyselplus.png);
-	
-	
 }
-
-
 
 .pulsante{
 	font-size:25px;
@@ -193,7 +234,7 @@ h1,h2,h3,h4,h5,h6{
 	padding:2px;
 	font-size:22px;
 	font-family:Slackey,"Lucida Grande","Lucida Sans Unicode",Tahoma,Geneva,Arial,Verdana,sans-serif;
-	color:#8888oo;
+	color:#ffffff;
 	text-align:center;
 	border-radius:9px;
 	width:126px;
@@ -202,7 +243,6 @@ h1,h2,h3,h4,h5,h6{
 	cursor:pointer;
 	background-size: 130px 40px;
 	background-image:url(images/scala40/wbutton.png);
-	
 }
 
 .pulsanteback{
@@ -220,7 +260,6 @@ h1,h2,h3,h4,h5,h6{
 	cursor:pointer;
 	background-size: 130px 40px;
 	background-image:url(images/home/manentibutton.png);
-	
 }
 
 .pulsantemachiavelli{
@@ -238,7 +277,6 @@ h1,h2,h3,h4,h5,h6{
 	cursor:pointer;
 	background-size: 130px 40px;
 	background-image:url(images/home/pulsantemachiavelli.png);
-	
 }
 
 
@@ -257,7 +295,6 @@ h1,h2,h3,h4,h5,h6{
 	cursor:pointer;
 	background-size: 130px 40px;
 	background-image:url(images/home/pulsantecomments.png);
-	
 }
 
 
@@ -276,7 +313,6 @@ h1,h2,h3,h4,h5,h6{
 	cursor:pointer;
 	background-size: 130px 40px;
 	background-image:url(images/home/spider.png);
-	
 }
 
 
@@ -291,17 +327,15 @@ h1,h2,h3,h4,h5,h6{
 	cursor:pointer;
 	background-size: 115px 36px;
 	background-image:url(images/help.png);
-	
 }
 
 .pulsanteazz{
-	
 	border-style:solid;
 	border-color:#888888;
 	padding:2px;
 	font-size:14px;
 	font-family:Slackey,"Lucida Grande","Lucida Sans Unicode",Tahoma,Geneva,Arial,Verdana,sans-serif;
-	color:#8888oo;
+	color:#ffffff;
 	text-align:center;
 	border-radius:9px;
 	width:100px;
@@ -314,7 +348,6 @@ h1,h2,h3,h4,h5,h6{
 
 
 .pulsante3{
-	
 	font-size:10px;
 	font-family:Slackey,"Lucida Grande","Lucida Sans Unicode",Tahoma,Geneva,Arial,Verdana,sans-serif;
 	color:black;
@@ -332,7 +365,6 @@ h1,h2,h3,h4,h5,h6{
 	height:450px;
 	position:absolute;
 	background:#E6E68A;
-	
 	top:100px;
 	left:500px;
 	z-index:10000;
@@ -342,12 +374,9 @@ h1,h2,h3,h4,h5,h6{
 	color:#000;
 	border:solid 2px #666!important;
 	display:none;
-	
-	
 }
 
 #jollyoptions-page button{
-	
 	top:350px;
 	left:130px;
 	position:absolute;
@@ -357,38 +386,24 @@ h1,h2,h3,h4,h5,h6{
 	margin:auto;
 	margin-top:10px;
 	margin-bottom:15px
-
 }
 
 #jollyoptions label{
 	border-style:solid;
-	
 	border-radius:9px;
-
 	position:absolute;
 	left:40px;
 	width:200px;
-	
-
 	font-size:30px;
 }
 
 :checked  {
-	
-	
 	background-color:yellow;
-
-
 }
 .seme:hover {
-	
 	border-color: yellow;
-	
-   
-	
 }
 .seme:not(hover) {
-	
 	border-color: grey;
 }
 
@@ -399,9 +414,7 @@ h1,h2,h3,h4,h5,h6{
             appearance:none;
 }
 
-
 .digit {
-	
 	position:absolute;
 	cursor:pointer;
 	width:40px;
@@ -411,7 +424,6 @@ h1,h2,h3,h4,h5,h6{
 }
 
 .digit1 {
-	
 	position:absolute;
 	cursor:pointer;
 	width:27px;
@@ -421,15 +433,12 @@ h1,h2,h3,h4,h5,h6{
 }
 
 .digitx {
-	
 	position:absolute;
 	cursor:pointer;
 	background-image:url(images/scala40/numeridorovr.png);
 }
 
-
 .digit2 {
-	
 	position:absolute;
 	cursor:pointer;
 	width:14px;
@@ -439,28 +448,21 @@ h1,h2,h3,h4,h5,h6{
 }
 
 .contatore {
-	
 	position:absolute;
 	cursor:pointer;
 }
 
-
 .totalizzatore {
-	
 	position:absolute;
 	cursor:pointer;
 	top:100px;
 	left:880px;
-
 	width:130px;
 	height:300px;
-
 	background-size: 130px 300px;
 	background-image:url(images/scala40/mtotalizzatore.png);  
 	z-index:40000;
-	
 }
-
 
 #schermo{
 	position:absolute;
@@ -473,14 +475,9 @@ h1,h2,h3,h4,h5,h6{
 	margin:0px  auto 0px;
 	opacity:0.6;
 	display:none; 
-
 }
 
-
-
-
 .form {
-	
 	z-index:40000;
 	position:absolute;
 	width:500px;
@@ -491,16 +488,13 @@ h1,h2,h3,h4,h5,h6{
 	display:none;
 }
 
-
 .formistruzioni {
-	
 	z-index:40000;
+	color:#ffffff;
 	line-height:140%;
 	border-style:solid;
-	
 	border-radius:9px;
 	font-size:12px;
-
 	position:absolute;
 	width:700px;
 	left:150px;
@@ -512,26 +506,20 @@ h1,h2,h3,h4,h5,h6{
 }  
 
 #testoallerta {
-	
 	font-family: "Comic Sans MS", cursive, sans-serif;
 	line-height:140%;
 	border-style:solid;
-	
 	border-radius:9px;
 	font-size:24px;
 	color:orange;
-
 	position:absolute;
 	width:200px;
 	left:210px;
 	top:20px;
 	padding:25px;
-
 }  
-
 	
 .formistruzioni button{
-
 	border-radius:10px;
 	-moz-border-radius:10px;
 	-ms-border-radius:10px;
@@ -541,13 +529,9 @@ h1,h2,h3,h4,h5,h6{
 	width:100px;
 	height:36px;
 	z-index:50000;
-
-	
-	
 }
 
 .form button{
-
 	border-radius:10px;
 	-moz-border-radius:10px;
 	-ms-border-radius:10px;
@@ -557,8 +541,6 @@ h1,h2,h3,h4,h5,h6{
 	height:36px;
 	top:240px;
 	z-index:50000;
-	
-	
 }
 
 #accessi{
@@ -566,52 +548,4 @@ h1,h2,h3,h4,h5,h6{
 	top:700px;
 	left:12px;
 	display:none;	
-}
-
-/* Sidebar dinamiche per banner pubblicitari */
-.ad-sidebar {
-	position: absolute;
-	top: 0;
-	height: 750px;
-	z-index: 1; /* Z-index basso per non interferire con il gioco (gioco usa z-index fino a 50000) */
-	background-color: #f0f0f0;
-	border: 1px solid #ccc;
-	display: none; /* Nascosto di default, mostrato via JavaScript */
-	overflow-y: auto;
-	/* Assicura che le sidebar non interferiscano con il gioco */
-	pointer-events: auto; /* I banner devono essere cliccabili */
-}
-
-
-
-/* Banner placeholder styles */
-.ad-banner {
-	width: 100%;
-	background-color: #e0e0e0;
-	border: 2px dashed #999;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	color: #666;
-	font-size: 14px;
-	text-align: center;
-	margin: 10px auto;
-	box-sizing: border-box;
-}
-
-.ad-banner-300 {
-	width: 300px;
-	height: 600px;
-	min-height: 600px;
-}
-
-.ad-banner-160 {
-	width: 160px;
-	height: 600px;
-	min-height: 600px;
-}
-
-.ad-banner::before {
-	content: "Banner " attr(data-size) "px";
-	font-weight: bold;
 }

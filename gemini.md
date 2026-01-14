@@ -2,57 +2,91 @@
 
 ## Obiettivo
 
-L'obiettivo era perfezionare il layout della pagina `scala40prova.html` per ottimizzare lo spazio dedicato ai banner pubblicitari (stile AdSense) nelle barre laterali, mantenendo l'area di gioco centrale (`campogioco`) scalabile.
+L'obiettivo era perfezionare il layout della pagina `scala40nuovo.html` per ottimizzare lo spazio dedicato ai banner pubblicitari (stile AdSense) nelle barre laterali, mantenendo l'area di gioco centrale (`campogioco`) scalabile, e poi aggiungere funzionalità di monitoraggio e controllo della visibilità.
 
 ## Stato Iniziale
 
--   `scala40prova.html`: Conteneva un layout responsive con un `campogioco` che si adattava allo schermo.
--   Le barre laterali (`sidebar`) erano statiche, con dimensioni e banner pre-impostati e titoli di testo ("Sidebar Sinistra"/"Sidebar Destra").
--   `scala40provacss.css`: Conteneva gli stili per il layout, inclusi quelli per i titoli delle sidebar.
+-   `scala40nuovo.html`: Conteneva un layout responsive con un `campogioco` che si adattava allo schermo. Le barre laterali (`sidebar`) erano configurate per apparire in base allo spazio disponibile.
+-   `scala40nuovo.css`: Conteneva gli stili per il layout.
+-   `scala40codeV2.js`: Conteneva la logica del gioco Scala 40.
 
 ## Modifiche Apportate
 
-1.  **Rimozione Elementi Statici**:
-    -   In `scala40prova.html`, sono stati rimossi i titoli `<h2>` dalle sidebar e i `div` dei banner preesistenti.
+1.  **Risoluzione del Problema di Scaling del `<body>`**:
+    *   È stato individuato che la funzione `adjustscreen()` era ancora richiamata in `scala40codeV2.js` (nonostante la documentazione precedente indicasse la sua rimozione), causando uno scaling indesiderato all'intero `<body>` e influenzando il posizionamento delle sidebar.
+    *   È stata **rimossa la chiamata a `adjustscreen()`** da `scala40codeV2.js`.
 
-2.  **Implementazione Logica Dinamica (JavaScript)**:
-    -   La funzione `adjustLayout` in `scala40prova.html` è stata riscritta per:
-        -   Mantenere la logica di scalatura proporzionale del `campogioco`.
-        -   Calcolare dinamicamente la larghezza disponibile per le sidebar.
-        -   Implementare una nuova logica per inserire i banner:
-            -   Viene verificata la larghezza della sidebar.
-            -   Se la larghezza è sufficiente (>= 160px), la funzione tenta di inserire i formati di banner standard (`300x600`, `300x250`, `160x600`), partendo dai più larghi.
-            -   I banner vengono impilati verticalmente se c'è abbastanza altezza.
-            -   Se lo spazio non è sufficiente, le sidebar non vengono mostrate.
+2.  **Correzione del Colore del Testo dei Pulsanti**:
+    *   Il testo di alcuni pulsanti (`#istruzioni`, `#nuovo`, `#pulsante2` (UNDO), `#scoperte`, `#azzeratotale`) appariva nero anziché grigio chiaro.
+    *   È stato corretto un errore di battitura nel codice colore CSS (`#8888oo` anziché `#888888`) nelle classi `.pulsante2` e `.pulsanteazz` all'interno di `scala40nuovo.css`.
 
-3.  **Pulizia del CSS**:
-    -   In `scala40provacss.css`, è stata rimossa la regola CSS `.sidebar h2` che non era più necessaria.
+3.  **Implementazione Tracciamento Eventi Google Analytics per Banner (Simulazione)**:
+    *   **Obiettivo:** Quantificare il potenziale di monetizzazione dei banner inviando eventi ad Google Analytics ogni minuto per ogni banner visibile, includendo le sue dimensioni.
+    *   **Implementazione:**
+        *   Aggiunte al file `scala40nuovo.html` le funzioni JavaScript `sendAnalyticsEvent(bannerElement)` e `trackVisibleBanners()`.
+        *   La funzione `sendAnalyticsEvent` estrae le dimensioni del banner e invia un evento `simulated_banner_impression` (non interattivo) a Google Analytics tramite `gtag()`.
+        *   La funzione `trackVisibleBanners` itera su tutti i banner `.ad-banner` visibili e invia un evento per ciascuno.
+        *   Un `setInterval` è stato aggiunto all'evento `window.load` per chiamare `trackVisibleBanners()` ogni 60 secondi.
+    *   **Nota per l'utente:** È stata inserita una nota esplicita per l'utente affinché inserisca il proprio snippet `gtag.js` con il proprio `GA_MEASUREMENT_ID` nella sezione `<head>` del file.
+    *   **Correzione Errore Nidificazione Script:** È stato corretto un errore in cui gli script di `gtag.js` erano erroneamente nidificati all'interno di un altro tag `<script>`, rendendoli invalidi. Gli snippet di `gtag.js` sono stati spostati in blocchi `<script>` separati e validi all'interno della sezione `<head>`.
+
+4.  **Controllo Visibilità Sidebar tramite Comando Nascosto**:
+    *   **Obiettivo:** Rendere le sidebar invisibili di default (mantenendo gli eventi Analytics attivi in background) e fornire un modo per attivarle/disattivarle tramite una combinazione di tasti.
+    *   **Implementazione:**
+        *   **In `scala40nuovo.css`**: Modificata la regola `.sidebar` aggiungendo `opacity: 0;`, `pointer-events: none;` e `transition: opacity 0.3s ease;`. È stata aggiunta una nuova regola `body.sidebars-visible .sidebar` per impostare `opacity: 1;` e `pointer-events: auto;` quando la classe è presente.
+        *   **In `scala40nuovo.html`**: Aggiunto un `keydown` event listener al `document` che, alla pressione di **`Ctrl + Alt + S`**, alterna la classe `sidebars-visible` sul `document.body`, controllando così la visibilità delle sidebar.
 
 ## Risultato Finale
 
-Ora la pagina `scala40prova.html` presenta un layout più intelligente e flessibile:
--   L'area di gioco centrale continua a scalare correttamente.
--   Le barre laterali appaiono solo se c'è spazio sufficiente e vengono popolate dinamicamente con i banner pubblicitari più grandi possibili, massimizzando l'utilizzo dello spazio.
+La pagina `scala40nuovo.html` ora:
+-   Non dovrebbe più presentare problemi di scaling dovuti a `adjustscreen()`.
+-   Ha i pulsanti con il colore del testo corretto.
+-   Invia eventi a Google Analytics ogni minuto per ogni banner visibile, permettendo di quantificare l'inventario potenziale.
+-   Ha le barre laterali invisibili di default (con lo sfondo verde del gioco in primo piano) ma possono essere attivate/disattivate con la combinazione di tasti `Ctrl + Alt + S`.
 
-## Perfezionamenti Successivi
+## Considerazioni sulla Monetizzazione con Dati Utente Aggiornati
 
-Dopo la prima implementazione, abbiamo effettuato diversi cicli di perfezionamento per risolvere alcuni casi limite emersi durante i test.
+Con 1.565 utenti/giorno e una durata media di sessione di 40 minuti, il potenziale di impressioni è molto elevato. È stato evidenziato che una semplice strategia di aggiornamento a tempo potrebbe compromettere l'esperienza utente e diminuire il valore degli annunci nel tempo. Si è suggerito di considerare l'implementazione di **Google Ad Manager (GAM)** per gestire gli annunci e implementare una strategia di **refresh intelligente (event-based)** legata agli eventi di gioco, per bilanciare monetizzazione e user experience, massimizzando il valore di un pubblico così fidelizzato.
 
-### 1. Gestione Dinamica del `gap` Verticale
+---
+## Sessione del 12/01/2026
 
--   **Problema:** Un `gap` verticale fisso di 15px poteva impedire l'inserimento di un ultimo banner se lo spazio rimanente era poco.
--   **Soluzione:** Abbiamo rimosso la proprietà `gap` dal CSS. La logica JavaScript è stata aggiornata per aggiungere un `margin-top: 15px` ai banner successivi al primo, ma solo se c'è abbastanza spazio sia per il banner che per il margine. Se lo spazio è sufficiente solo per il banner, questo viene aggiunto senza margine per massimizzare l'utilizzo dello spazio.
+### Obiettivo
 
-### 2. Risoluzione del Problema delle Larghezze Miste
+Garantire che gli utenti carichino sempre le versioni più recenti dei file CSS e JavaScript dopo un aggiornamento, evitando problemi dovuti alla cache del browser.
 
--   **Problema:** In certe condizioni, una sidebar poteva contenere banner di larghezze diverse (es. un banner da 300px sopra uno da 160px).
--   **Soluzione:** L'algoritmo `populateSidebar` è stato riscritto. Ora, come primo passo, determina la "famiglia" di banner da utilizzare (300px, 160px, o 120px) in base alla larghezza totale della sidebar. Successivamente, popola lo spazio verticale usando **esclusivamente** banner appartenenti a quella famiglia, garantendo coerenza visiva.
+### Problema
 
-### 3. Ampliamento della Lista dei Formati
+Dopo aver modificato i file `scala40V1.css` e `scala40codeV1.js`, c'era il rischio che i browser degli utenti continuassero a usare le vecchie versioni salvate nella loro cache, causando potenziali malfunzionamenti o la mancata visualizzazione delle nuove modifiche.
 
--   **Problema:** L'algoritmo non riusciva a riempire tutto lo spazio verticale perché la lista dei formati disponibili era incompleta.
--   **Soluzione:** La lista dei banner (`allAdFormats`) è stata estesa per includere più formati standard IAB, tra cui `300x100`, `160x250`, `160x160`, `120x600` e `120x240`, rendendo il riempimento dello spazio molto più efficiente.
+### Modifiche Apportate
 
-## Stato Finale del Codice
+1.  **Implementazione del "Cache Busting"**:
+    *   **Tecnica:** È stata utilizzata la tecnica della "query string".
+    *   **Azione:** Il file `scala40V1.html` è stato modificato per aggiungere un parametro di versione (`?v=1.1`) agli URL dei file CSS e JavaScript.
+        *   `<link rel="stylesheet" href="scala40V1.css">` è diventato `<link rel="stylesheet" href="scala40V1.css?v=1.1">`.
+        *   `<script src="scala40codeV1.js">` è diventato `<script src="scala40codeV1.js?v=1.1">`.
+    *   **Risultato:** Questa modifica forza il browser a trattare il file come una nuova risorsa e a scaricarlo nuovamente, bypassando la cache.
 
-Il codice JavaScript in `scala40prova.html` è ora robusto e gestisce in modo intelligente la disposizione dei banner, garantendo coerenza nella larghezza e massimizzando l'utilizzo dello spazio sia verticale che orizzontale in base ai formati standard disponibili.
+2.  **Discussione sulla Strategia di Deploy**:
+    *   È stata discussa e confermata la procedura di caricamento ottimale per minimizzare problemi per gli utenti attivi.
+    *   **Ordine corretto**:
+        1.  Caricare prima i file modificati (`scala40V1.css`, `scala40codeV1.js`).
+        2.  Caricare per ultimo il file `scala40V1.html` che contiene i nuovi link.
+    *   **Motivazione**: Questo assicura che le nuove risorse siano già presenti sul server nel momento in cui la pagina HTML aggiornata le richiede.
+
+### Risultato Finale
+
+Il sito è ora configurato per forzare l'aggiornamento dei file statici critici, garantendo che gli utenti vedano sempre l'ultima versione del gioco. L'utente è stato informato sulla tecnica e sulla corretta procedura di deploy.
+
+### Ulteriori Modifiche e Aggiornamenti
+
+1.  **Invio Immediato del Primo Evento Banner**:
+    *   **Obiettivo:** Correggere la tempistica dell'invio degli eventi `simulated_banner_impression` per includere utenti con sessioni brevi.
+    *   **Azione:** Modificato `scala40V1.html`. La funzione `trackVisibleBanners()` viene ora chiamata una volta immediatamente al caricamento della pagina (dopo `adjustLayout()`) e solo successivamente `setInterval` gestisce gli invii ogni minuto.
+    *   **Risultato:** Gli eventi di impression banner vengono registrati anche per le sessioni che durano meno di 60 secondi.
+
+2.  **Incremento Versione Cache Busting**:
+    *   **Obiettivo:** Forzare l'aggiornamento rapido della nuova logica di tracciamento e delle future modifiche dei file CSS/JS.
+    *   **Azione:** La versione nel "cache busting" di `scala40V1.css` e `scala40codeV1.js` all'interno di `scala40V1.html` è stata incrementata da `?v=1.1` a `?v=1.2`.
+    *   **Risultato:** I browser percepiranno queste risorse come nuove versioni, forzandone il ricaricamento.

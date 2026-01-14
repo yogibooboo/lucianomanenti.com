@@ -1,4 +1,3 @@
-
 function log(msg) {
     if (window.console && log.enabled) {
         console.log(msg);
@@ -31,7 +30,27 @@ Array.prototype.togli =function(elemento){
 //var isChrome = !!window.chrome && !isOpera;              // Chrome 1+
 //var isIE = /*@cc_on!@*/false || !!document.documentMode; // At least IE6
 
+var adjustscreen=function(){
+	zm=1,wh=$(window).height(),ww=$(window).width();
+	//if ((wh>=750)&&(ww>=1024)) zm=Math.min(wh/750,ww/1024)
+	//else{
+		//if (wh<750) 
+		zm=wh/750;
+		//if (ww<1024) 
+		zm=Math.min(zm,ww/1024);
+		zm*=0.98;
+	//} 
+ 	$("body").css({transform:"scale("+zm+")"});
+ 	$("#campogioco").css({"position":"absolute","left":(ww/zm-1024)/2})
+ 	
+};
+adjustscreen();
 
+$(window).resize(function () {
+	scala.offsetxx=$("#campogioco").offset().left;
+	scala.offsetyy=$("#campogioco").offset().top;
+	adjustscreen();
+});
 
 
 
@@ -123,7 +142,6 @@ var scala = {
 		
     	this.inizializzazioni();
 		if ($('#campogioco').offset().left<250) $('#messaggio').hide(); 
-		if ($('#campogioco').offset().left<300) $("#messaggio").css({"padding":"0px","left":"0px","width":"220px","height":"72%"});
         this.creamazzi();
         this.shuffle();
         this.shuffle();   //provo a mescolare 2 volte
@@ -798,16 +816,16 @@ var scala = {
         
         this.scaladown=true;
         this.scalamove=false;
-        this.scaladownx=(ev.pageX-scala.offsetxx)/window.gameScale;
-        this.scaladowny=(ev.pageY-scala.offsetyy)/window.gameScale;
+        this.scaladownx=(ev.pageX-scala.offsetxx)/zm;
+        this.scaladowny=(ev.pageY-scala.offsetyy)/zm;
         
         return;
     },
     
     scalamousemove:function(ev){
         
-        var deltax=(ev.pageX-scala.offsetxx)/window.gameScale-this.scaladownx;
-        var deltay=(ev.pageY-scala.offsetyy)/window.gameScale-this.scaladowny;
+        var deltax=(ev.pageX-scala.offsetxx)/zm-this.scaladownx;
+        var deltay=(ev.pageY-scala.offsetyy)/zm-this.scaladowny;
         if (!this.scalamove) { if((Math.abs(deltax)<5)&& (Math.abs(deltay)<5)) return;}
 
         var divCard=this.cartadown;
@@ -1183,7 +1201,7 @@ var scala = {
 	mostradialogo:function(dialogo){
 			$(dialogo).show();
 			
-			$("#schermo").css({"width":$(window).width()/window.gameScale});
+			$("#schermo").css({"width":$(window).width()/zm});
 			$("#schermo").show();
 			this.fmodale=true;
 	},
@@ -1657,10 +1675,10 @@ var scala = {
         maxx=minx+parseInt($(element).css("width"));
         miny=parseInt($(element).css("top"));
         maxy=miny+parseInt($(element).css("height"));
-        if(((ev.pageX-scala.offsetxx)/window.gameScale)<minx) return false;
-        if(((ev.pageX-scala.offsetxx)/window.gameScale)>maxx) return false;
-        if(((ev.pageY-scala.offsetyy)/window.gameScale<miny)) return false;
-        if(((ev.pageY-scala.offsetyy)/window.gameScale>maxy)) return false;
+        if(((ev.pageX-scala.offsetxx)/zm)<minx) return false;
+        if(((ev.pageX-scala.offsetxx)/zm)>maxx) return false;
+        if(((ev.pageY-scala.offsetyy)/zm<miny)) return false;
+        if(((ev.pageY-scala.offsetyy)/zm>maxy)) return false;
         return true;
     },
   
@@ -2936,11 +2954,11 @@ calcolapuntitris: function(gruppo){
 
 }  //scala
 
-$(document).ready(function () {
-	console.log("Document ready!");
+
+$(document) .ready(function () {
+
     scala.start();
     scala.collegaeventi();
-
 });
 
  

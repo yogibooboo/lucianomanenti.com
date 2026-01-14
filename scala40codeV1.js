@@ -1,3 +1,4 @@
+
 function log(msg) {
     if (window.console && log.enabled) {
         console.log(msg);
@@ -30,28 +31,7 @@ Array.prototype.togli =function(elemento){
 //var isChrome = !!window.chrome && !isOpera;              // Chrome 1+
 //var isIE = /*@cc_on!@*/false || !!document.documentMode; // At least IE6
 
-var adjustscreen = function(){
-	console.log("adjustscreen called! ww=", $(window).width(), "wh=", $(window).height());  // Debug: verifica chiamata e dimensioni
-    zm = 1, wh = $(window).height(), ww = $(window).width();
-    zm = wh / 750;
-    zm = Math.min(zm, ww / 1024);
-    //zm *= 0.98;
-    $("body").css({transform:"scale("+zm+")"});
-    var campogioco_left = (ww / zm - 1024) / 2;
-    $("#campogioco").css({"position":"absolute","left": campogioco_left});
-    // Trigger sidebar update here or in resize
-    
-};
-adjustscreen();
 
-$(window).resize(function () {
-	console.log("Resize triggered!");  // Debug: verifica resize
-	scala.offsetxx=$("#campogioco").offset().left;
-	scala.offsetyy=$("#campogioco").offset().top;
-	adjustscreen();
-	updateSidebars(); // Aggiorna le sidebar al resize
-
-});
 
 
 
@@ -818,16 +798,16 @@ var scala = {
         
         this.scaladown=true;
         this.scalamove=false;
-        this.scaladownx=(ev.pageX-scala.offsetxx)/zm;
-        this.scaladowny=(ev.pageY-scala.offsetyy)/zm;
+        this.scaladownx=(ev.pageX-scala.offsetxx)/window.gameScale;
+        this.scaladowny=(ev.pageY-scala.offsetyy)/window.gameScale;
         
         return;
     },
     
     scalamousemove:function(ev){
         
-        var deltax=(ev.pageX-scala.offsetxx)/zm-this.scaladownx;
-        var deltay=(ev.pageY-scala.offsetyy)/zm-this.scaladowny;
+        var deltax=(ev.pageX-scala.offsetxx)/window.gameScale-this.scaladownx;
+        var deltay=(ev.pageY-scala.offsetyy)/window.gameScale-this.scaladowny;
         if (!this.scalamove) { if((Math.abs(deltax)<5)&& (Math.abs(deltay)<5)) return;}
 
         var divCard=this.cartadown;
@@ -1203,7 +1183,7 @@ var scala = {
 	mostradialogo:function(dialogo){
 			$(dialogo).show();
 			
-			$("#schermo").css({"width":$(window).width()/zm});
+			$("#schermo").css({"width":$(window).width()/window.gameScale});
 			$("#schermo").show();
 			this.fmodale=true;
 	},
@@ -1677,10 +1657,10 @@ var scala = {
         maxx=minx+parseInt($(element).css("width"));
         miny=parseInt($(element).css("top"));
         maxy=miny+parseInt($(element).css("height"));
-        if(((ev.pageX-scala.offsetxx)/zm)<minx) return false;
-        if(((ev.pageX-scala.offsetxx)/zm)>maxx) return false;
-        if(((ev.pageY-scala.offsetyy)/zm<miny)) return false;
-        if(((ev.pageY-scala.offsetyy)/zm>maxy)) return false;
+        if(((ev.pageX-scala.offsetxx)/window.gameScale)<minx) return false;
+        if(((ev.pageX-scala.offsetxx)/window.gameScale)>maxx) return false;
+        if(((ev.pageY-scala.offsetyy)/window.gameScale<miny)) return false;
+        if(((ev.pageY-scala.offsetyy)/window.gameScale>maxy)) return false;
         return true;
     },
   
@@ -2956,193 +2936,11 @@ calcolapuntitris: function(gruppo){
 
 }  //scala
 
-// Gestione sidebar dinamiche per banner pubblicitari
-var sidebarManager = {
-	bannerSize: null, // '300', '160', o null se nascosto
-	trackingInterval: null,
-
-	calculateAvailableSpace: function() {
-        var ww = $(window).width(); // Or document.documentElement.clientWidth
-        return (ww - 1024) / 2; // Unscaled, but we'll use effective in update
-    },
-
-	determineBannerSize: function(space) {  // Aggiungi/ripristina questa!
-        if (space > 320) {
-            return '300';
-        } else if (space >= 180 && space <= 320) {
-            return '160';
-        } else {
-            return null;
-        }
-    },
-
-    // Update to use effective space (post-scale visual margins)
-updateSidebars: function() {
-    console.log("updateSidebars called! ww=", $(window).width(), "zm=", window.zm);  // Già presente
-    var ww = $(window).width();
-    var zm = window.zm || Math.min($(window).height() / 750, $(window).width() / 1024) * 0.98;
-    var effectiveSpace = (ww - 1024 * zm) / 2;
-    var newBannerSize = this.determineBannerSize(effectiveSpace);
-    if (newBannerSize === null) {
-        $("#sidebar-left, #sidebar-right").hide();
-        return;
-    }
-
-    var bannerWidth = (newBannerSize === '300') ? 300 : 160;
-    var campogioco_left = parseFloat($("#campogioco").css("left")) || (ww / zm - 1024) / 2;
-    console.log("campogioco_left:", campogioco_left, "typeof:", typeof campogioco_left);
-    console.log("Sidebar right left:", (campogioco_left + 1024));
-
-    $("#sidebar-left").css({
-        "left": (campogioco_left - bannerWidth) + "px",
-        "width": bannerWidth + "px",
-        "display": "block"
-    });
-    $("#sidebar-right").css({
-        "left": (campogioco_left + 1024) + "px",
-        "width": bannerWidth + "px",
-        "display": "block"
-    });
-
-    // Forza il render sempre (rimuovi/commenta l'if per debug)
-    // if (this.bannerSize !== newBannerSize) {  // Commenta questo if temporaneamente
-        this.bannerSize = newBannerSize;
-        this.renderSidebars();
-    // } 
-
-    console.log("Updated sidebars: size=" + newBannerSize + ", effectiveSpace=" + effectiveSpace);
-},
-	
-
-	
-	// Renderizza le sidebar con i banner appropriati
-renderSidebars: function() {
-    console.log("renderSidebars called! Banner size: " + this.bannerSize);
-    var $leftSidebar = $('#sidebar-left');
-    var $rightSidebar = $('#sidebar-right');
-    
-    $leftSidebar.empty();
-    $rightSidebar.empty();
-    
-    if (this.bannerSize === null) {
-        $leftSidebar.hide();
-        $rightSidebar.hide();
-        return;
-    }
-    
-    var bannerClass = 'ad-banner ad-banner-' + this.bannerSize;
-    var bannerText = 'Banner ' + this.bannerSize + 'x750';
-    var $banner = $('<div>')
-        .addClass(bannerClass)
-        .attr('data-size', this.bannerSize)
-        .text(bannerText)
-        .css({
-            'display': 'flex',
-            'justify-content': 'center',
-            'align-items': 'center',
-            'color': '#000',
-            'font-size': '20px',
-            'background': '#ccc',
-            'margin': '0',
-            'padding': '0'
-        });
-    
-    var sidebarWidth = this.bannerSize === '300' ? 300 : 160;
-    $leftSidebar.css({
-        'width': sidebarWidth + 'px',
-        'height': '750px',  // Setta esplicitamente qui per override
-        'margin': '0',
-        'padding': '0'
-    }).append($banner.clone()).show();
-    $rightSidebar.css({
-        'width': sidebarWidth + 'px',
-        'height': '750px',
-        'margin': '0',
-        'padding': '0'
-    }).append($banner.clone()).show();
-    
-    console.log("Banner height applied: " + $banner.css('height'));
-},
-	// Invia evento GA4 per impressione banner
-	sendGA4Impression: function() {
-		if (this.bannerSize === null) {
-			return; // Non inviare se i banner sono nascosti
-		}
-		
-		var eventData = {
-			'banner_size': this.bannerSize,
-			'event_category': 'advertising',
-			'event_label': 'sidebar_banner'
-		};
-		
-		// Verifica che gtag sia disponibile
-		if (typeof gtag !== 'undefined') {
-			try {
-				gtag('event', 'sim_ad_impression', eventData);
-				log('GA4 Event: sim_ad_impression - banner_size: ' + this.bannerSize);
-			} catch (e) {
-				log('Errore nell\'invio evento GA4: ' + e.message);
-				console.error('Errore GA4:', e);
-			}
-		} else {
-			// Fallback: prova a usare dataLayer direttamente
-			if (typeof window.dataLayer !== 'undefined') {
-				try {
-					window.dataLayer.push({
-						'event': 'sim_ad_impression',
-						'banner_size': this.bannerSize,
-						'event_category': 'advertising',
-						'event_label': 'sidebar_banner'
-					});
-					log('Evento inviato tramite dataLayer');
-				} catch (e) {
-					log('Errore con dataLayer: ' + e.message);
-				}
-			}
-		}
-	},
-	
-	// Avvia il tracking periodico
-	startTracking: function() {
-		var self = this;
-		
-		// Invia subito il primo evento
-		this.sendGA4Impression();
-		
-		// Poi invia ogni 60 secondi
-		this.trackingInterval = setInterval(function() {
-			self.sendGA4Impression();
-		}, 60000); // 60 secondi
-	},
-	
-	// Ferma il tracking
-	stopTracking: function() {
-		if (this.trackingInterval) {
-			clearInterval(this.trackingInterval);
-			this.trackingInterval = null;
-		}
-	},
-	
-	// Inizializza le sidebar
-	init: function() {
-		this.updateSidebars();
-		this.startTracking();
-	}
-};
-
-// Funzione globale per aggiornare le sidebar (chiamata dal resize handler)
-function updateSidebars() {
-	sidebarManager.updateSidebars();
-}
-
-$(document) .ready(function () {
+$(document).ready(function () {
 	console.log("Document ready!");
     scala.start();
     scala.collegaeventi();
-	
-	// Inizializza le sidebar dopo che il gioco è pronto
-	sidebarManager.init();
-	adjustscreen();  // Chiamata iniziale
+
 });
 
  
