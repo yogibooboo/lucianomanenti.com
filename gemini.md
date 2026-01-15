@@ -25,7 +25,7 @@ L'obiettivo era perfezionare il layout della pagina `scala40nuovo.html` per otti
     *   **Implementazione:**
         *   Aggiunte al file `scala40nuovo.html` le funzioni JavaScript `sendAnalyticsEvent(bannerElement)` e `trackVisibleBanners()`.
         *   La funzione `sendAnalyticsEvent` estrae le dimensioni del banner e invia un evento `simulated_banner_impression` (non interattivo) a Google Analytics tramite `gtag()`.
-        *   La funzione `trackVisibleBanners` itera su tutti i banner `.ad-banner` visibili e invia un evento per ciascuno.
+        *   La funzione `trackVisibleBanners` itererà su tutti i banner `.ad-banner` visibili e invia un evento per ciascuno.
         *   Un `setInterval` è stato aggiunto all'evento `window.load` per chiamare `trackVisibleBanners()` ogni 60 secondi.
     *   **Nota per l'utente:** È stata inserita una nota esplicita per l'utente affinché inserisca il proprio snippet `gtag.js` con il proprio `GA_MEASUREMENT_ID` nella sezione `<head>` del file.
     *   **Correzione Errore Nidificazione Script:** È stato corretto un errore in cui gli script di `gtag.js` erano erroneamente nidificati all'interno di un altro tag `<script>`, rendendoli invalidi. Gli snippet di `gtag.js` sono stati spostati in blocchi `<script>` separati e validi all'interno della sezione `<head>`.
@@ -90,3 +90,30 @@ Il sito è ora configurato per forzare l'aggiornamento dei file statici critici,
     *   **Obiettivo:** Forzare l'aggiornamento rapido della nuova logica di tracciamento e delle future modifiche dei file CSS/JS.
     *   **Azione:** La versione nel "cache busting" di `scala40V1.css` e `scala40codeV1.js` all'interno di `scala40V1.html` è stata incrementata da `?v=1.1` a `?v=1.2`.
     *   **Risultato:** I browser percepiranno queste risorse come nuove versioni, forzandone il ricaricamento.
+---
+## Sessione del martedì 13 gennaio 2026
+
+### Obiettivo
+Affinare il tracciamento degli eventi banner di Google Analytics e implementare messaggi personalizzati nei banner laterali, con miglioramenti alla gestione dell'overflow del testo e della visibilità.
+
+### Modifiche Apportate
+
+1.  **Differenziazione Eventi Google Analytics per Banner:**
+    *   **Obiettivo:** Distinguere gli eventi di visualizzazione banner attivati dal caricamento iniziale della pagina da quelli attivati dal timer di refresh.
+    *   **Azione:** Modificato il file `scala40V1.html`. Le funzioni `sendAnalyticsEvent` e `trackVisibleBanners` sono state aggiornate per accettare un parametro `triggerType`.
+        *   `'initial_load'` viene passato per la prima impressione del banner al caricamento della pagina.
+        *   `'timer_refresh_N'` viene passato per le impressioni successive attivate dal timer di un minuto, dove `N` è il numero del minuto (es. `timer_refresh_1`, `timer_refresh_2`).
+    *   **Cache Busting:** La versione di cache-busting per `scala40V1.css` e `scala40codeV1.js` è stata aggiornata a `v=1.3`.
+
+2.  **Messaggi Personalizzati nei Banner Laterali con Condizioni:**
+    *   **Obiettivo:** Inserire messaggi specifici nei banner superiori delle sidebar, con condizioni di visualizzazione, allineamento e robustezza all'overflow.
+    *   **Azione:** Modificato il file `scala40V1.html` e `scala40V1.css`.
+        *   **Visibilità Sidebar:** Le sidebar sono ora **visibili di default** tramite modifica in `scala40V1.css` (`opacity: 1; pointer-events: auto;` sulla classe `.sidebar` e rimozione della regola `body.sidebars-visible .sidebar`).
+        *   **Controllo `Ctrl+Alt+S`:** La scorciatoia `Ctrl+Alt+S` ora **alterna il contenuto** dei banner superiori tra il messaggio personalizzato e la visualizzazione delle dimensioni del banner, anziché alternare la visibilità delle sidebar. Questo è gestito da una variabile di stato globale `window.showBannerDimensions` e da un richiamo a `adjustLayout()`.
+        *   La funzione `createBanner` è stata aggiornata per accettare i parametri `side` (lato, 'left' o 'right') e `isFirst` (se è il primo banner della sidebar).
+        *   Un **messaggio personalizzato in italiano** è visualizzato nel *primo banner della sidebar sinistra* se la sua larghezza è `160px` o maggiore.
+        *   Un **messaggio personalizzato in inglese** è visualizzato nel *primo banner della sidebar destra* se la sua larghezza è `160px` o maggiore.
+        *   **Allineamento e Centratura:** Il testo all'interno di questi banner è giustificato a sinistra e **centrato verticalmente** utilizzando flexbox.
+        *   **Gestione Overflow Testo:** Per prevenire lo "sbordamento" del testo, al contenitore del messaggio sono state aggiunte le proprietà CSS `box-sizing: border-box;`, `overflow: auto;` e `overflow-wrap: break-word;`. Questo assicura che il testo si adatti e, se necessario, sia scorrevole all'interno del banner.
+        *   I banner con `width < 160px` o i banner non "primi" nella colonna continuano a mostrare il testo predefinito "Banner WxH".
+    *   **Cache Busting:** La versione di cache-busting per `scala40V1.css` e `scala40codeV1.js` è stata **aggiornata a `v=1.4`**.

@@ -39,15 +39,12 @@ html, body {
     flex-direction: column;
     align-items: center;
     z-index: 1; /* Keep sidebars behind game popups */
-    opacity: 0; /* Nascoste visivamente di default */
-    pointer-events: none; /* Non intercettano il mouse quando invisibili */
+    opacity: 1; /* rese visibili di default */
+    pointer-events: auto; /* intercettano il mouse di default */
     transition: opacity 0.3s ease; /* Transizione per la comparsa */
 }
 
-body.sidebars-visible .sidebar {
-    opacity: 1;
-    pointer-events: auto;
-}
+
 
 #sidebar-left {
     left: 0;
