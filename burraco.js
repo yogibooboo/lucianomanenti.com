@@ -454,16 +454,18 @@ function renderMazzo() {
     const mazzoEl = $('#mazzo');
     if (game.mazzo.length === 0) {
         mazzoEl.style.opacity = '0.3';
-        mazzoEl.style.backgroundPosition = '-1136px 0';  // Retro
+        mazzoEl.style.backgroundPosition = '-1136px 0';  // Retro rosso default
     } else {
         mazzoEl.style.opacity = '1';
+        const cartaCima = game.mazzo[game.mazzo.length - 1];
         // Se scoperte attivo, mostra la carta in cima
-        if (game.mostraTutteCarteScoperte && game.mazzo.length > 0) {
-            const cartaCima = game.mazzo[game.mazzo.length - 1];
+        if (game.mostraTutteCarteScoperte) {
             const pos = getCartaSpritePosition(cartaCima, true);
             mazzoEl.style.backgroundPosition = `${pos.x}px ${pos.y}px`;
         } else {
-            mazzoEl.style.backgroundPosition = '-1136px 0';  // Retro
+            // Mostra il dorso corretto in base al mazzo della carta in cima
+            const pos = getCartaSpritePosition(cartaCima, false);
+            mazzoEl.style.backgroundPosition = `${pos.x}px ${pos.y}px`;
         }
     }
 }
@@ -493,12 +495,17 @@ function renderScarti() {
     const container = $('#scarti-container');
     container.innerHTML = '';
 
-    // Mostra ultime carte scartate (max 5 visibili)
-    const start = Math.max(0, game.scarti.length - 5);
-    for (let i = start; i < game.scarti.length; i++) {
+    // Mostra tutte le carte scartate
+    const overlap = 20;
+
+    for (let i = 0; i < game.scarti.length; i++) {
         const carta = game.scarti[i];
         const el = creaElementoCarta(carta);
         el.classList.add('scarto');
+        el.style.position = 'absolute';
+        el.style.left = (-5 + i * overlap) + 'px';
+        el.style.top = '-7px';
+        el.style.zIndex = i;
         container.appendChild(el);
     }
 }
@@ -511,13 +518,15 @@ function renderPozzetti() {
         poz1.classList.add('nascosto');
     } else {
         poz1.classList.remove('nascosto');
+        const cartaCima = game.pozzetti[0][game.pozzetti[0].length - 1];
         // Se scoperte attivo, mostra la carta in cima
         if (game.mostraTutteCarteScoperte) {
-            const cartaCima = game.pozzetti[0][game.pozzetti[0].length - 1];
             const pos = getCartaSpritePosition(cartaCima, true);
             poz1.style.backgroundPosition = `${pos.x}px ${pos.y}px`;
         } else {
-            poz1.style.backgroundPosition = '-1136px 0';  // Retro
+            // Mostra il dorso corretto in base al mazzo della carta in cima
+            const pos = getCartaSpritePosition(cartaCima, false);
+            poz1.style.backgroundPosition = `${pos.x}px ${pos.y}px`;
         }
     }
 
@@ -525,13 +534,15 @@ function renderPozzetti() {
         poz2.classList.add('nascosto');
     } else {
         poz2.classList.remove('nascosto');
+        const cartaCima = game.pozzetti[1][game.pozzetti[1].length - 1];
         // Se scoperte attivo, mostra la carta in cima
         if (game.mostraTutteCarteScoperte) {
-            const cartaCima = game.pozzetti[1][game.pozzetti[1].length - 1];
             const pos = getCartaSpritePosition(cartaCima, true);
             poz2.style.backgroundPosition = `${pos.x}px ${pos.y}px`;
         } else {
-            poz2.style.backgroundPosition = '-1136px 0';  // Retro
+            // Mostra il dorso corretto in base al mazzo della carta in cima
+            const pos = getCartaSpritePosition(cartaCima, false);
+            poz2.style.backgroundPosition = `${pos.x}px ${pos.y}px`;
         }
     }
 }
@@ -623,7 +634,7 @@ function renderManoAvversario(giocatore, containerSel, contatoreSel) {
         } else {
             // Carta coperta
             el = document.createElement('div');
-            el.className = 'carta coperta';
+            el.className = 'carta coperta mazzo-' + carta.mazzo;
         }
 
         if (isVertical) {
@@ -652,7 +663,7 @@ function renderManoAvversario(giocatore, containerSel, contatoreSel) {
                 el.style.top = '0px';
             }
         }
-        el.style.zIndex = isTopPlayer ? (numCarte - i) : i;
+        el.style.zIndex = i;
 
         container.appendChild(el);
     }
@@ -709,10 +720,89 @@ function creaElementoCarta(carta) {
 }
 
 // ============================================================================
+// ANIMAZIONE CARTE
+// ============================================================================
+
+function animaCarta(carta, daElemento, aElemento, opzioni = {}) {
+    return new Promise((resolve) => {
+        const durata = opzioni.durata || 300;
+        const mostraFronte = opzioni.mostraFronte !== undefined ? opzioni.mostraFronte : carta.faceUp;
+        const rotazioneIniziale = opzioni.rotazioneIniziale || 0;
+        const rotazioneFinale = opzioni.rotazioneFinale || 0;
+
+        // Calcola posizioni assolute nel viewport
+        const daRect = daElemento.getBoundingClientRect();
+        const aRect = aElemento.getBoundingClientRect();
+
+        // Crea elemento carta volante con position fixed per evitare problemi di coordinate
+        const cartaVolante = document.createElement('div');
+        cartaVolante.className = 'carta';
+
+        // Imposta l'aspetto della carta
+        if (mostraFronte) {
+            const pos = carta.getSpritePosition();
+            cartaVolante.style.backgroundPosition = `${pos.x}px ${pos.y}px`;
+        } else {
+            const pos = getCartaSpritePosition(carta, false);
+            cartaVolante.style.backgroundPosition = `${pos.x}px ${pos.y}px`;
+        }
+
+        // Posizione iniziale usando fixed (coordinate viewport)
+        cartaVolante.style.position = 'fixed';
+        cartaVolante.style.left = daRect.left + 'px';
+        cartaVolante.style.top = daRect.top + 'px';
+        cartaVolante.style.width = '71px';
+        cartaVolante.style.height = '96px';
+        cartaVolante.style.zIndex = '10000';
+        cartaVolante.style.pointerEvents = 'none';
+        cartaVolante.style.transform = `scale(0.73) rotate(${rotazioneIniziale}deg)`;
+        cartaVolante.style.transformOrigin = 'top left';
+        cartaVolante.style.boxShadow = '5px 5px 15px rgba(0,0,0,0.5)';
+
+        document.body.appendChild(cartaVolante);
+
+        // Forza reflow
+        cartaVolante.offsetHeight;
+
+        // Applica transizione e muovi
+        cartaVolante.style.transition = `left ${durata}ms ease-out, top ${durata}ms ease-out, transform ${durata}ms ease-out`;
+
+        // Compensa l'offset dovuto alla rotazione (altezza carta scalata = 96 * 0.73 ≈ 70px)
+        let finalLeft = aRect.left;
+        let finalTop = aRect.top;
+        if (rotazioneFinale === 90) {
+            finalLeft += 70;  // Compensa lo spostamento causato dalla rotazione
+        }
+
+        cartaVolante.style.left = finalLeft + 'px';
+        cartaVolante.style.top = finalTop + 'px';
+        cartaVolante.style.transform = `scale(0.73) rotate(${rotazioneFinale}deg)`;
+
+        // Al termine dell'animazione
+        setTimeout(() => {
+            cartaVolante.remove();
+            resolve();
+        }, durata);
+    });
+}
+
+// Versione semplificata per animare da/verso selettori o coordinate
+function animaCartaDa(carta, daSelettore, aSelettore, opzioni = {}) {
+    const daEl = typeof daSelettore === 'string' ? $(daSelettore) : daSelettore;
+    const aEl = typeof aSelettore === 'string' ? $(aSelettore) : aSelettore;
+
+    if (!daEl || !aEl) {
+        return Promise.resolve();
+    }
+
+    return animaCarta(carta, daEl, aEl, opzioni);
+}
+
+// ============================================================================
 // INTERAZIONE GIOCATORE
 // ============================================================================
 
-function pescaDaMazzo() {
+async function pescaDaMazzo() {
     if (game.fase !== 'pesca') return;
     if (game.haPescato) return;
     if (!game.giocatori[game.giocatoreCorrente].isUmano) return;
@@ -733,13 +823,28 @@ function pescaDaMazzo() {
     }
 
     carta.faceUp = true;
-    game.giocatori[0].carte.push(carta);
 
+    // Aggiungi la carta alla mano e renderizza per ottenere la posizione finale
+    game.giocatori[0].carte.push(carta);
     game.haPescato = true;
     game.fase = 'gioco';
-
-    playSound('pesca');
     render();
+
+    // Trova l'elemento della carta appena aggiunta (l'ultima)
+    const cartaEl = carta.elemento;
+    if (cartaEl) {
+        // Nascondi temporaneamente la carta renderizzata
+        cartaEl.style.visibility = 'hidden';
+
+        // Anima la carta dal mazzo alla posizione finale
+        playSound('pesca');
+        await animaCartaDa(carta, '#mazzo', cartaEl, { mostraFronte: true });
+
+        // Mostra la carta renderizzata
+        cartaEl.style.visibility = 'visible';
+    } else {
+        playSound('pesca');
+    }
 }
 
 function pescaDaScarti() {
@@ -766,7 +871,7 @@ function pescaDaScarti() {
     render();
 }
 
-function scartaCarta(carta) {
+async function scartaCarta(carta) {
     if (game.fase !== 'gioco') return;
     if (!game.haPescato) return;
 
@@ -776,15 +881,48 @@ function scartaCarta(carta) {
 
     salvaStato('scarta');
 
+    // Salva la posizione di partenza della carta
+    const cartaElPartenza = carta.elemento;
+    const partenzaRect = cartaElPartenza ? cartaElPartenza.getBoundingClientRect() : null;
+
     game.giocatori[0].carte.splice(idx, 1);
     carta.selezionata = false;
-    game.scarti.push(carta);
 
     // Deseleziona tutto
     game.carteSelezionate = [];
     game.giocatori[0].carte.forEach(c => c.selezionata = false);
 
+    // Aggiungi agli scarti e renderizza per ottenere la posizione finale
+    game.scarti.push(carta);
+    render();
+
     playSound('scarta');
+
+    // Anima la carta dalla posizione originale alla posizione finale negli scarti
+    if (partenzaRect) {
+        // Trova l'ultimo elemento negli scarti (la carta appena aggiunta)
+        const scartiContainer = $('#scarti-container');
+        const cartaElFinale = scartiContainer.lastElementChild;
+
+        if (cartaElFinale) {
+            // Nascondi temporaneamente la carta finale
+            cartaElFinale.style.visibility = 'hidden';
+
+            // Crea un elemento fittizio per la posizione di partenza
+            const fakePartenza = document.createElement('div');
+            fakePartenza.style.position = 'fixed';
+            fakePartenza.style.left = partenzaRect.left + 'px';
+            fakePartenza.style.top = partenzaRect.top + 'px';
+            fakePartenza.style.width = '1px';
+            fakePartenza.style.height = '1px';
+            document.body.appendChild(fakePartenza);
+
+            await animaCarta(carta, fakePartenza, cartaElFinale, { mostraFronte: true });
+
+            fakePartenza.remove();
+            cartaElFinale.style.visibility = 'visible';
+        }
+    }
 
     // Controlla se ha finito le carte
     if (game.giocatori[0].carte.length === 0) {
@@ -801,8 +939,6 @@ function scartaCarta(carta) {
     game.haPescato = false;
     game.fase = 'pesca';
     prossimoTurno();
-
-    render();
 }
 
 function toggleSelezioneCarta(carta) {
@@ -971,15 +1107,8 @@ function verificaScala(carte) {
         return { valida: false, motivo: 'Scala min 3 carte' };
     }
 
-    // Ordina per numero
-    const ordinate = [...carte].sort((a, b) => {
-        const numA = a.isJolly ? 100 : a.numero;
-        const numB = b.isJolly ? 100 : b.numero;
-        return numA - numB;
-    });
-
-    const jolly = ordinate.filter(c => c.isJolly);
-    const normali = ordinate.filter(c => !c.isJolly);
+    const jolly = carte.filter(c => c.isJolly);
+    const normali = carte.filter(c => !c.isJolly);
 
     if (normali.length === 0) {
         return { valida: false, motivo: 'Servono carte normali' };
@@ -991,8 +1120,6 @@ function verificaScala(carte) {
         return { valida: false, motivo: 'Semi diversi in scala' };
     }
 
-    // Verifica sequenza
-    let jollyDisponibili = jolly.length;
     const numeri = normali.map(c => c.numero).sort((a, b) => a - b);
 
     // Controlla duplicati
@@ -1002,19 +1129,38 @@ function verificaScala(carte) {
         }
     }
 
-    // Verifica continuita
+    // Prova scala con Asso basso (A=1)
+    if (verificaSequenza(numeri, jolly.length)) {
+        return { valida: true, tipo: TIPO_SCALA, seme: seme };
+    }
+
+    // Prova scala con Asso alto (A=14, dopo il K)
+    if (numeri.includes(1)) {
+        const numeriAssoAlto = numeri.map(n => n === 1 ? 14 : n).sort((a, b) => a - b);
+        // Verifica che non ci sia il "giro" (es. K-A-2 non valido)
+        const haCarteBasse = numeriAssoAlto.some(n => n >= 2 && n <= 3);
+        const haCarteAlte = numeriAssoAlto.some(n => n >= 12 && n <= 14);
+        if (haCarteBasse && haCarteAlte) {
+            return { valida: false, motivo: 'Giro A-2 non valido' };
+        }
+        if (verificaSequenza(numeriAssoAlto, jolly.length)) {
+            return { valida: true, tipo: TIPO_SCALA, seme: seme, assoAlto: true };
+        }
+    }
+
+    return { valida: false, motivo: 'Sequenza non valida' };
+}
+
+// Verifica se i numeri formano una sequenza continua con i jolly disponibili
+function verificaSequenza(numeri, jollyDisponibili) {
     for (let i = 1; i < numeri.length; i++) {
         const gap = numeri[i] - numeri[i-1] - 1;
         if (gap > jollyDisponibili) {
-            return { valida: false, motivo: 'Buco troppo grande' };
+            return false;
         }
         jollyDisponibili -= gap;
     }
-
-    // Gestione asso (puo' andare prima di 2 o dopo K)
-    // Semplificato per ora
-
-    return { valida: true, tipo: TIPO_SCALA, seme: seme };
+    return true;
 }
 
 // ============================================================================
@@ -1031,8 +1177,29 @@ function prossimoTurno() {
     }
 }
 
-function turnoAI() {
+// Helper per ottenere il selettore delle carte di un giocatore
+function getSelettoreCarteGiocatore(giocatore) {
+    switch (giocatore.posizione) {
+        case 'bottom': return '#carte-giocatore';
+        case 'left': return '#carte-avv-sx';
+        case 'right': return '#carte-avv-dx';
+        case 'top': return '#carte-compagno';
+        default: return null;
+    }
+}
+
+// Helper per ritardo
+function delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function turnoAI() {
     const giocatore = game.giocatori[game.giocatoreCorrente];
+    const selettoreCarte = getSelettoreCarteGiocatore(giocatore);
+    const isLaterale = giocatore.posizione === 'left' || giocatore.posizione === 'right';
+
+    // Ritardo prima della pesca
+    await delay(500);
 
     // Pesca dal mazzo
     const carta = game.mazzo.pop();
@@ -1042,6 +1209,23 @@ function turnoAI() {
             carta.faceUp = true;
         }
         giocatore.carte.push(carta);
+        render();
+
+        // Anima la carta dal mazzo alla mano del giocatore
+        const container = $(selettoreCarte);
+        const ultimaCarta = container ? container.lastElementChild : null;
+        if (ultimaCarta) {
+            ultimaCarta.style.visibility = 'hidden';
+            playSound('pesca');
+            // Ruota di 90 gradi se giocatore laterale
+            const opzioniAnim = {
+                mostraFronte: game.mostraTutteCarteScoperte,
+                rotazioneIniziale: 0,
+                rotazioneFinale: isLaterale ? 90 : 0
+            };
+            await animaCartaDa(carta, '#mazzo', ultimaCarta, opzioniAnim);
+            ultimaCarta.style.visibility = 'visible';
+        }
     }
 
     // AI semplice: scarta la carta con valore piu' alto
@@ -1050,11 +1234,54 @@ function turnoAI() {
     // Cerca combinazioni possibili
     // Per ora AI semplice: non fa combinazioni
 
+    // Ritardo prima dello scarto
+    await delay(500);
+
     // Scarta ultima carta (valore piu' alto)
     if (giocatore.carte.length > 0) {
         const cartaDaScartare = giocatore.carte.pop();
+
+        // Trova la posizione della carta prima di rimuoverla (dopo render precedente)
+        render();
+        const container = $(selettoreCarte);
+        // L'ultima carta è stata rimossa, quindi prendiamo l'ultima rimasta come riferimento
+        // oppure usiamo il container stesso
+        const partenzaEl = container ? container.lastElementChild || container : null;
+        const partenzaRect = partenzaEl ? partenzaEl.getBoundingClientRect() : null;
+
         cartaDaScartare.faceUp = true;
         game.scarti.push(cartaDaScartare);
+        render();
+
+        // Anima lo scarto
+        if (partenzaRect) {
+            const scartiContainer = $('#scarti-container');
+            const cartaElFinale = scartiContainer.lastElementChild;
+
+            if (cartaElFinale) {
+                cartaElFinale.style.visibility = 'hidden';
+
+                const fakePartenza = document.createElement('div');
+                fakePartenza.style.position = 'fixed';
+                fakePartenza.style.left = partenzaRect.left + 'px';
+                fakePartenza.style.top = partenzaRect.top + 'px';
+                fakePartenza.style.width = '1px';
+                fakePartenza.style.height = '1px';
+                document.body.appendChild(fakePartenza);
+
+                playSound('scarta');
+                // Ruota da 90 a 0 gradi se giocatore laterale
+                const opzioniAnim = {
+                    mostraFronte: true,
+                    rotazioneIniziale: isLaterale ? 90 : 0,
+                    rotazioneFinale: 0
+                };
+                await animaCarta(cartaDaScartare, fakePartenza, cartaElFinale, opzioniAnim);
+
+                fakePartenza.remove();
+                cartaElFinale.style.visibility = 'visible';
+            }
+        }
     }
 
     // Controlla se ha finito
@@ -1246,7 +1473,21 @@ function onMouseMove(e) {
     if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
         game.trascinamento.moved = true;
         game.trascinamento.elemento.classList.add('trascinando');
-        game.trascinamento.elemento.style.transform = `translate(${dx}px, ${dy}px)`;
+
+        // Verifica se siamo nell'area combinazioni (sopra il limite inferiore delle aree)
+        const campo = $('#campogioco');
+        const campoRect = campo.getBoundingClientRect();
+        const limiteInferioreAree = campoRect.top + 515; // 115px top + 400px altezza
+
+        let scale = 0.73;
+        if (e.clientY < limiteInferioreAree) {
+            scale = 0.5;
+        }
+
+        // Le carte hanno transform: scale(0.73) e transform-origin: bottom left
+        // Per mantenere il cursore sulla carta, devo compensare la scala nel translate
+        game.trascinamento.elemento.style.transform = `translate(${dx}px, ${dy}px) scale(${scale})`;
+        game.trascinamento.elemento.style.transformOrigin = 'bottom left';
     }
 }
 
@@ -1327,7 +1568,19 @@ function onTouchMove(e) {
     if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
         game.trascinamento.moved = true;
         game.trascinamento.elemento.classList.add('trascinando');
-        game.trascinamento.elemento.style.transform = `translate(${dx}px, ${dy}px)`;
+
+        // Verifica se siamo nell'area combinazioni (sopra il limite inferiore delle aree)
+        const campo = $('#campogioco');
+        const campoRect = campo.getBoundingClientRect();
+        const limiteInferioreAree = campoRect.top + 515; // 115px top + 400px altezza
+
+        let scale = 0.73;
+        if (touch.clientY < limiteInferioreAree) {
+            scale = 0.5;
+        }
+
+        game.trascinamento.elemento.style.transform = `translate(${dx}px, ${dy}px) scale(${scale})`;
+        game.trascinamento.elemento.style.transformOrigin = 'bottom left';
     }
 }
 

@@ -1,0 +1,63 @@
+Struttura del gioco
+Modalità supportate (burraco.js:168-185):
+
+1v1 (2 giocatori)
+2v2 (4 giocatori a squadre)
+Fasi del turno
+Il gioco ha due fasi principali:
+
+Pesca (game.fase = 'pesca')
+Gioco (game.fase = 'gioco')
+Azioni implementate per il giocatore umano
+Pesca dal mazzo (burraco.js:801-840):
+
+Prende la carta in cima al mazzo
+Se il mazzo è vuoto, rimescola gli scarti (tranne l'ultima)
+Pesca dagli scarti (burraco.js:842-860):
+
+Prende TUTTE le carte dagli scarti (regola del Burraco)
+Scarto (burraco.js:863-931):
+
+Click destro su una carta, oppure trascinamento sugli scarti
+Passa il turno al giocatore successivo
+Selezione carte (burraco.js:933-948):
+
+Click sinistro per selezionare/deselezionare carte
+Supporta selezione multipla
+Deposito combinazioni (burraco.js:950-1020):
+
+Click sull'area "NOI" per calare le carte selezionate
+Valida tris (3+ carte stesso valore) e scale (3+ carte stesso seme in sequenza)
+Gestisce i jolly (carte 50-51) e le pinelle (2) come jolly
+Ordinamento mano (burraco.js:1022-1030):
+
+Pulsante "ORDINA" per ordinare le carte per seme e valore
+AI degli avversari
+Logica semplice (burraco.js:1186-1295):
+
+Pesca sempre dal mazzo (mai dagli scarti)
+Ordina le carte
+Scarta la carta con valore più alto
+NON fa combinazioni (da implementare)
+Pozzetti
+(burraco.js:1032-1070):
+
+Quando un giocatore finisce le carte, prende automaticamente il pozzetto della sua squadra
+Ci sono 2 pozzetti (uno per squadra)
+Fine partita
+(burraco.js:1072-1120):
+
+La partita finisce quando un giocatore:
+Finisce le carte E ha già preso il pozzetto
+Calcolo punteggi: somma carte nelle combinazioni - carte in mano + bonus burraco
+Funzionalità aggiuntive
+Undo (burraco.js:1235-1280): può annullare le ultime mosse
+Mostra carte scoperte (burraco.js:1430-1445): debug per vedere le carte degli avversari
+Suoni: pesca, scarto, combinazione, pozzetto
+Cosa manca
+AI più intelligente: fare combinazioni, pescare dagli scarti quando conviene
+Aggiunta carte a combinazioni esistenti
+Spostamento jolly nelle combinazioni
+Burraco pulito vs sporco (distinzione nel calcolo punti)
+Chiusura volontaria (scelta se chiudere o continuare)
+Partite multiple (accumulo punti fino a 2000)

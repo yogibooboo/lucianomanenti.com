@@ -275,14 +275,25 @@ html, body {
     background: rgba(0, 50, 0, 0.4);
     border: 2px solid rgba(100, 150, 100, 0.5);
     border-radius: 10px;
-    overflow-y: auto;
-    overflow-x: hidden;
+    overflow: visible;
     padding-top: 25px;
     box-sizing: border-box;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
 }
 
-#combinazioni-loro { left: 95px; }
-#combinazioni-noi { right: 95px; }
+#combinazioni-loro {
+    left: 95px;
+    flex-direction: row;
+    justify-content: flex-start;
+}
+
+#combinazioni-noi {
+    right: 95px;
+    flex-direction: row-reverse;
+    justify-content: flex-start;
+}
 
 .titolo-area {
     position: absolute;
@@ -296,19 +307,11 @@ html, body {
     letter-spacing: 2px;
 }
 
-/* === ZONA MAZZO E SCARTI === */
-#zona-mazzo {
-    position: absolute;
-    bottom: 120px;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    z-index: 100;
-}
-
+/* === MAZZO === */
 #mazzo {
+    position: absolute;
+    bottom: 110px;
+    left: 100px;
     width: 71px;
     height: 96px;
     background: url(images/scala40/conjollyplus.png) -1136px 0;  /* colonna 16 */
@@ -321,6 +324,7 @@ html, body {
     cursor: pointer;
     box-shadow: 3px 3px 10px rgba(0,0,0,0.4);
     transition: transform 0.2s;
+    z-index: 100;
 }
 
 #mazzo:hover {
@@ -332,15 +336,21 @@ html, body {
     font-size: 10px;
 }
 
+/* === SCARTI === */
 #scarti-container {
+    position: absolute;
+    bottom: 115px;
+    left: 180px;
+    width: 650px;
+    height: 85px;
     display: flex;
     align-items: center;
-    gap: -15px;
-    min-width: 200px;
-    height: 75px;
     padding: 5px 10px;
-    background: rgba(0, 30, 0, 0.3);
-    border-radius: 8px;
+    background: rgba(0, 50, 0, 0.4);
+    border: 2px solid rgba(100, 150, 100, 0.5);
+    border-radius: 10px;
+    box-sizing: border-box;
+    z-index: 100;
 }
 
 /* === POZZETTI === */
@@ -401,7 +411,7 @@ html, body {
 .carta.selezionata {
     transform: translateY(-15px);
     box-shadow: 0 8px 15px rgba(255,215,0,0.5);
-    outline: 2px solid #ffd700;
+    background-image: url(images/scala40/conjollyselplus.png);
 }
 
 .carta.trascinando {
@@ -411,7 +421,15 @@ html, body {
 }
 
 .carta.coperta {
-    background-position: -1136px 0;  /* colonna 16 * 71px */
+    background-position: -1136px 0;  /* dorso rosso default - colonna 16 */
+}
+
+.carta.coperta.mazzo-0 {
+    background-position: -1136px 0;  /* dorso rosso - colonna 16 */
+}
+
+.carta.coperta.mazzo-1 {
+    background-position: -1136px -96px;  /* dorso blu - colonna 16, riga 2 */
 }
 
 /* Carte piccole per avversari laterali - ruotate 90 gradi */
@@ -428,6 +446,13 @@ html, body {
     flex-shrink: 0;
     transform: scale(0.73);
     transform-origin: center center;
+}
+
+/* Carta volante per animazioni */
+.carta.carta-volante {
+    pointer-events: none;
+    transform: scale(0.73);
+    box-shadow: 5px 5px 15px rgba(0,0,0,0.5);
 }
 
 /* === PULSANTI === */
@@ -589,26 +614,29 @@ html, body {
     transform: scale(1.05);
 }
 
-/* === COMBINAZIONE (riga di carte depositate) === */
+/* === COMBINAZIONE (colonna di carte depositate) === */
 .combinazione {
     display: flex;
+    flex-direction: column;
     margin: 5px;
     padding: 3px;
-    background: rgba(0,0,0,0.2);
     border-radius: 5px;
-    min-height: 50px;
+    width: fit-content;
+    display: inline-flex;
 }
 
 .combinazione .carta {
     position: relative;
-    width: 40px;
-    height: 60px;
-    background-size: 560px 360px;
-    margin-left: -20px;
+    width: 71px;
+    height: 96px;
+    transform: scale(0.5);
+    transform-origin: top left;
+    margin-bottom: -72px;
+    margin-right: -35px;
 }
 
-.combinazione .carta:first-child {
-    margin-left: 0;
+.combinazione .carta:last-child {
+    margin-bottom: 0;
 }
 
 /* Burraco indicator */
