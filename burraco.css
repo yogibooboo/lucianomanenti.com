@@ -1,0 +1,674 @@
+/* ============================================
+   BURRACO - Stili CSS
+   Layout 1024x750 con stile naif
+   ============================================ */
+
+/* === BASE === */
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #1a5f2a;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.main-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+/* === SIDEBAR (dal layout.js) === */
+.sidebar {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    background-color: #f0f0f0;
+    overflow-y: auto;
+    box-sizing: border-box;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    z-index: 1;
+    opacity: 1;
+    pointer-events: auto;
+    transition: opacity 0.3s ease;
+}
+
+#sidebar-left { left: 0; }
+#sidebar-right { right: 0; }
+
+.ad-banner {
+    background-color: #ddd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #333;
+    text-align: center;
+    box-sizing: border-box;
+    flex-shrink: 0;
+}
+
+/* === CAMPO DI GIOCO === */
+#campogioco {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 1024px;
+    height: 750px;
+    background: linear-gradient(135deg, #1a6b30 0%, #145524 50%, #0f4a1c 100%);
+    background-image: url(images/scala40/tappetoverde.png);
+    transform-origin: center center;
+    border-radius: 10px;
+    box-shadow: inset 0 0 100px rgba(0,0,0,0.3);
+}
+
+/* === SCHERMO OVERLAY === */
+#schermo {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1024px;
+    height: 750px;
+    background-color: rgba(0, 0, 0, 0.6);
+    z-index: 30000;
+    display: none;
+}
+
+/* === PUNTEGGI === */
+#punteggi {
+    position: absolute;
+    top: 15px;
+    right: 130px;
+    display: flex;
+    align-items: center;
+    font-size: 20px;
+    color: #ffd700;
+    font-weight: bold;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    z-index: 100;
+    background: rgba(0,0,0,0.3);
+    padding: 4px 12px;
+    border-radius: 8px;
+}
+
+.punteggio-label { margin-right: 8px; font-size: 14px; }
+.punteggio-separator { margin: 0 6px; color: #fff; }
+#punti-noi { color: #7fff7f; }
+#punti-loro { color: #ff7f7f; }
+
+/* === AREE GIOCATORI === */
+.area-giocatore {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Sfondo scuro per aree avversari/compagno */
+.area-giocatore.laterale,
+#area-compagno {
+    background: rgba(0, 50, 0, 0.4);
+    border: 2px solid rgba(100, 150, 100, 0.5);
+    border-radius: 10px;
+    padding: 5px;
+    box-sizing: border-box;
+}
+
+.nome-giocatore {
+    position: absolute;
+    font-size: 14px;
+    color: #ccc;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    white-space: nowrap;
+}
+
+.ncarte {
+    position: absolute;
+    font-size: 18px;
+    color: #ffd700;
+    font-weight: bold;
+    background: rgba(0,0,0,0.5);
+    padding: 2px 8px;
+    border-radius: 10px;
+}
+
+.indicatore-turno {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background: #ffd700;
+    border-radius: 50%;
+    box-shadow: 0 0 10px #ffd700;
+    display: none;
+}
+
+.indicatore-turno.attivo {
+    display: block;
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.2); opacity: 0.7; }
+}
+
+/* Compagno (top) */
+#area-compagno {
+    top: 25px;
+    right: 145px;
+    left: auto;
+    transform: none;
+    width: 400px;
+    height: 85px;
+    z-index: 150;
+}
+
+#nome-compagno { top: -16px; left: 50%; transform: translateX(-50%); font-size: 12px; }
+#carte-compagno { flex-direction: row; }
+#ncarte-compagno { top: 50%; right: -35px; transform: translateY(-50%); }
+
+/* Carte del compagno ridotte */
+#carte-compagno .carta {
+    transform: scale(0.73);
+    transform-origin: top left;
+}
+
+/* Avversario Sinistra */
+#area-avversario-sx {
+    top: 115px;
+    left: 8px;
+    width: 85px;
+    height: 400px;
+    flex-direction: column;
+}
+
+#nome-avv-sx { top: -18px; left: 0; font-size: 12px; }
+#carte-avv-sx {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+#ncarte-avv-sx { bottom: -25px; left: 50%; transform: translateX(-50%); }
+#turno-avv-sx { top: 50%; left: -25px; }
+
+/* Avversario Destra */
+#area-avversario-dx {
+    top: 115px;
+    right: 8px;
+    width: 85px;
+    height: 400px;
+    flex-direction: column;
+}
+
+#nome-avv-dx { top: -18px; right: 0; font-size: 12px; }
+#carte-avv-dx {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+#ncarte-avv-dx { bottom: -25px; left: 50%; transform: translateX(-50%); }
+#turno-avv-dx { top: 50%; right: -25px; }
+
+/* Giocatore (bottom) */
+#area-giocatore {
+    bottom: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 650px;
+    height: 85px;
+    background: rgba(0, 50, 0, 0.4);
+    border: 2px solid rgba(100, 150, 100, 0.5);
+    border-radius: 10px;
+    padding: 5px;
+    box-sizing: border-box;
+}
+
+#carte-giocatore {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end;
+    position: relative;
+    height: 60px;
+    width: 100%;
+    margin-top: 10px;
+}
+
+/* Indicatore turno giocatore (pallino giallo) */
+#turno-giocatore { top: 50%; left: -30px; }
+
+/* Carte del giocatore piu' piccole - usa transform scale */
+#carte-giocatore .carta {
+    width: 71px;
+    height: 96px;
+    transform: scale(0.73);
+    transform-origin: bottom left;
+}
+
+/* === CARTE CONTAINER === */
+.carte-container {
+    display: flex;
+    position: relative;
+}
+
+.carte-container.verticale {
+    flex-direction: column;
+}
+
+/* === AREE COMBINAZIONI === */
+.area-combinazioni {
+    position: absolute;
+    top: 115px;
+    width: 410px;
+    height: 400px;
+    background: rgba(0, 50, 0, 0.4);
+    border: 2px solid rgba(100, 150, 100, 0.5);
+    border-radius: 10px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-top: 25px;
+    box-sizing: border-box;
+}
+
+#combinazioni-loro { left: 95px; }
+#combinazioni-noi { right: 95px; }
+
+.titolo-area {
+    position: absolute;
+    top: 5px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 16px;
+    font-weight: bold;
+    color: rgba(255,255,255,0.7);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+/* === ZONA MAZZO E SCARTI === */
+#zona-mazzo {
+    position: absolute;
+    bottom: 120px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    z-index: 100;
+}
+
+#mazzo {
+    width: 71px;
+    height: 96px;
+    background: url(images/scala40/conjollyplus.png) -1136px 0;  /* colonna 16 */
+    transform: scale(0.73);
+    transform-origin: center center;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 3px 3px 10px rgba(0,0,0,0.4);
+    transition: transform 0.2s;
+}
+
+#mazzo:hover {
+    transform: scale(1.05);
+}
+
+#mazzo span {
+    color: rgba(255,255,255,0.3);
+    font-size: 10px;
+}
+
+#scarti-container {
+    display: flex;
+    align-items: center;
+    gap: -15px;
+    min-width: 200px;
+    height: 75px;
+    padding: 5px 10px;
+    background: rgba(0, 30, 0, 0.3);
+    border-radius: 8px;
+}
+
+/* === POZZETTI === */
+#pozzetto {
+    position: absolute;
+    bottom: 120px;
+    right: 100px;
+    width: 80px;
+    height: 80px;
+    z-index: 100;
+}
+
+.carta-pozzetto {
+    position: absolute;
+    width: 71px;
+    height: 96px;
+    background: url(images/scala40/conjollyplus.png) -1136px 0;  /* colonna 16 */
+    transform: scale(0.73);
+    transform-origin: top left;
+    border-radius: 5px;
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+}
+
+#pozzetto1 {
+    top: 5px;
+    left: 15px;
+}
+
+#pozzetto2 {
+    top: 15px;
+    left: 75px;
+    transform: scale(0.73) rotate(90deg);
+    transform-origin: top left;
+}
+
+.carta-pozzetto.nascosto {
+    display: none;
+}
+
+/* === CARTE === */
+.carta {
+    position: absolute;
+    width: 71px;
+    height: 96px;
+    background-image: url(images/scala40/conjollyplus.png);
+    /* NON usare background-size, lo sprite ha gia' le dimensioni giuste */
+    border-radius: 5px;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+}
+
+.carta:hover {
+    transform: translateY(-5px);
+    box-shadow: 3px 5px 10px rgba(0,0,0,0.4);
+}
+
+.carta.selezionata {
+    transform: translateY(-15px);
+    box-shadow: 0 8px 15px rgba(255,215,0,0.5);
+    outline: 2px solid #ffd700;
+}
+
+.carta.trascinando {
+    z-index: 50000;
+    transition: none;
+    box-shadow: 5px 5px 20px rgba(0,0,0,0.5);
+}
+
+.carta.coperta {
+    background-position: -1136px 0;  /* colonna 16 * 71px */
+}
+
+/* Carte piccole per avversari laterali - ruotate 90 gradi */
+.carta.piccola {
+    width: 71px;
+    height: 96px;
+    transform: scale(0.73) rotate(90deg) translateY(-50%);
+    transform-origin: top left;
+}
+
+/* Carta nello scarto - ridotta */
+.carta.scarto {
+    position: relative;
+    flex-shrink: 0;
+    transform: scale(0.73);
+    transform-origin: center center;
+}
+
+/* === PULSANTI === */
+.pulsante2 {
+    position: absolute;
+    width: 100px;
+    height: 32px;
+    background: linear-gradient(180deg, #4a7c59 0%, #2d5a3d 100%);
+    border: 2px solid #6b9b7a;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 14px;
+    font-weight: bold;
+    text-align: center;
+    line-height: 32px;
+    cursor: pointer;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    transition: all 0.2s;
+    z-index: 200;
+}
+
+.pulsante2:hover {
+    background: linear-gradient(180deg, #5a8c69 0%, #3d6a4d 100%);
+    transform: scale(1.05);
+}
+
+.pulsante2:active {
+    transform: scale(0.95);
+}
+
+#btn-istruzioni { top: 10px; left: 10px; }
+#btn-nuova { top: 50px; left: 10px; }
+#btn-undo { top: 10px; right: 10px; width: 110px; }
+#btn-ordina { top: 50px; right: 10px; }
+#btn-scoperte { top: 90px; right: 10px; }
+
+/* === LINK GIOCHI === */
+.link-giochi {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    display: flex;
+    gap: 10px;
+    z-index: 200;
+}
+
+.pulsante-link {
+    width: 80px;
+    height: 30px;
+    border: 2px solid #888;
+    border-radius: 8px;
+    background-size: cover;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.pulsante-link:hover {
+    transform: scale(1.1);
+}
+
+.pulsante-scala40 { background-color: #3a5a3a; }
+.pulsante-machiavelli { background-color: #5a3a3a; }
+.pulsante-home { background-color: #3a3a5a; }
+
+/* === TITOLO GIOCO === */
+.titolo-gioco {
+    position: absolute;
+    top: 470px;
+    transform: translateX(-50%);
+    z-index: 50;
+    pointer-events: none;
+    font-family: 'Georgia', 'Times New Roman', serif;
+    display: flex;
+    align-items: baseline;
+    gap: 5px;
+}
+
+#titolo-gioco-loro { left: 300px; }
+#titolo-gioco-noi { left: 724px; }
+
+.titolo-burraco {
+    font-size: 32px;
+    font-weight: bold;
+    color: #e8c252;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    letter-spacing: 4px;
+}
+
+.titolo-nome {
+    font-size: 24px;
+    font-style: italic;
+    color: #c9a227;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    margin-left: 10px;
+}
+
+/* === MODALI === */
+.modal {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 400px;
+    max-height: 500px;
+    background: linear-gradient(135deg, #2a7a4a 0%, #1a5a3a 100%);
+    border: 3px solid #6b9b7a;
+    border-radius: 15px;
+    padding: 20px;
+    color: #fff;
+    z-index: 40000;
+    display: none;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+.modal h2 {
+    margin: 0 0 15px 0;
+    text-align: center;
+    color: #ffd700;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
+
+.modal-content {
+    max-height: 350px;
+    overflow-y: auto;
+    line-height: 1.6;
+    font-size: 14px;
+}
+
+.modal-content p {
+    margin: 10px 0;
+}
+
+.modal-content label {
+    display: block;
+    margin: 8px 0;
+    cursor: pointer;
+}
+
+.modal-content input[type="radio"] {
+    margin-right: 10px;
+}
+
+.btn-modal {
+    display: block;
+    margin: 20px auto 0;
+    padding: 10px 30px;
+    background: linear-gradient(180deg, #ffd700 0%, #daa520 100%);
+    border: 2px solid #b8860b;
+    border-radius: 8px;
+    color: #333;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-modal:hover {
+    background: linear-gradient(180deg, #ffe44d 0%, #eeb530 100%);
+    transform: scale(1.05);
+}
+
+/* === COMBINAZIONE (riga di carte depositate) === */
+.combinazione {
+    display: flex;
+    margin: 5px;
+    padding: 3px;
+    background: rgba(0,0,0,0.2);
+    border-radius: 5px;
+    min-height: 50px;
+}
+
+.combinazione .carta {
+    position: relative;
+    width: 40px;
+    height: 60px;
+    background-size: 560px 360px;
+    margin-left: -20px;
+}
+
+.combinazione .carta:first-child {
+    margin-left: 0;
+}
+
+/* Burraco indicator */
+.combinazione.burraco-pulito {
+    border: 2px solid #ffd700;
+    box-shadow: 0 0 10px #ffd700;
+}
+
+.combinazione.burraco-sporco {
+    border: 2px solid #c0c0c0;
+    box-shadow: 0 0 10px #c0c0c0;
+}
+
+/* === RESPONSIVE per 1v1 === */
+body.modalita-1v1 #area-compagno,
+body.modalita-1v1 #area-avversario-dx {
+    display: none;
+}
+
+body.modalita-1v1 #area-avversario-sx {
+    left: 50%;
+    top: 5px;
+    transform: translateX(-50%);
+    width: 700px;
+    height: 80px;
+    flex-direction: row;
+}
+
+body.modalita-1v1 #carte-avv-sx {
+    flex-direction: row;
+}
+
+body.modalita-1v1 #combinazioni-loro {
+    left: 50%;
+    transform: translateX(-50%);
+    top: 100px;
+    width: 800px;
+    height: 180px;
+}
+
+body.modalita-1v1 #combinazioni-noi {
+    left: 50%;
+    transform: translateX(-50%);
+    top: 300px;
+    width: 800px;
+    height: 180px;
+}
+
+/* === ANIMAZIONI === */
+@keyframes cardDeal {
+    from {
+        opacity: 0;
+        transform: translate(100px, -100px) rotate(10deg);
+    }
+    to {
+        opacity: 1;
+        transform: translate(0, 0) rotate(0);
+    }
+}
+
+.carta.dealing {
+    animation: cardDeal 0.3s ease-out;
+}

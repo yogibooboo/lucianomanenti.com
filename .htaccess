@@ -1,0 +1,3 @@
+RewriteEngine On
+RewriteCond %{QUERY_STRING} !v=1.6
+RewriteRule ^scala40\.html$ /scala40.html?v=1.6 [R=301,L,QSA]

@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Free Burraco Online</title>
+
+    <meta name="Description" content="Play free Burraco card game online, no registration. Play against the computer in 1v1 or 2v2 mode. Gioca Burraco gratis online senza registrazione">
+    <meta http-Equiv="Cache-Control" Content="no-cache">
+    <meta http-Equiv="Pragma" Content="no-cache">
+    <meta http-Equiv="Expires" Content="0">
+
+    <link rel="stylesheet" href="burraco.css?v=3.6" />
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-WRBDRDQ4L8');
+    </script>
+    <script src="burraco-layout.js?v=3.0"></script>
+</head>
+<body>
+
+<div class="main-container">
+    <div id="sidebar-left" class="sidebar">
+        <!-- Banner verranno inseriti qui da JS -->
+    </div>
+    <div id="sidebar-right" class="sidebar">
+        <!-- Banner verranno inseriti qui da JS -->
+    </div>
+
+    <div id="campogioco">
+        <!-- Schermo overlay per modali -->
+        <div id="schermo"></div>
+
+        <!-- === PUNTEGGI in alto a destra === -->
+        <div id="punteggi">
+            <div class="punteggio-label">Punti:</div>
+            <div id="punti-noi">0</div>
+            <div class="punteggio-separator">|</div>
+            <div id="punti-loro">0</div>
+        </div>
+
+        <!-- === COMPAGNO (top) === -->
+        <div id="area-compagno" class="area-giocatore">
+            <div id="nome-compagno" class="nome-giocatore">Compagno</div>
+            <div id="carte-compagno" class="carte-container"></div>
+            <div id="ncarte-compagno" class="ncarte">0</div>
+        </div>
+
+        <!-- === AVVERSARIO SINISTRA === -->
+        <div id="area-avversario-sx" class="area-giocatore laterale">
+            <div id="nome-avv-sx" class="nome-giocatore">Avversario 1</div>
+            <div id="carte-avv-sx" class="carte-container verticale"></div>
+            <div id="ncarte-avv-sx" class="ncarte">0</div>
+            <div id="turno-avv-sx" class="indicatore-turno"></div>
+        </div>
+
+        <!-- === AVVERSARIO DESTRA === -->
+        <div id="area-avversario-dx" class="area-giocatore laterale">
+            <div id="nome-avv-dx" class="nome-giocatore">Avversario 2</div>
+            <div id="carte-avv-dx" class="carte-container verticale"></div>
+            <div id="ncarte-avv-dx" class="ncarte">0</div>
+            <div id="turno-avv-dx" class="indicatore-turno"></div>
+        </div>
+
+        <!-- === AREA COMBINAZIONI AVVERSARI (sinistra) === -->
+        <div id="combinazioni-loro" class="area-combinazioni">
+            <div class="titolo-area">Loro</div>
+        </div>
+
+        <!-- === AREA COMBINAZIONI NOI (destra) === -->
+        <div id="combinazioni-noi" class="area-combinazioni">
+            <div class="titolo-area">Noi</div>
+        </div>
+
+        <!-- === MAZZO E SCARTI === -->
+        <div id="zona-mazzo">
+            <div id="mazzo"><span>Mazzo</span></div>
+            <div id="scarti-container">
+                <!-- Scarti visibili in linea -->
+            </div>
+        </div>
+
+        <!-- === POZZETTI (separati, in basso a destra) === -->
+        <div id="pozzetto">
+            <div id="pozzetto1" class="carta-pozzetto"></div>
+            <div id="pozzetto2" class="carta-pozzetto"></div>
+        </div>
+
+        <!-- === GIOCATORE (bottom) === -->
+        <div id="area-giocatore" class="area-giocatore">
+            <div id="carte-giocatore" class="carte-container"></div>
+            <div id="turno-giocatore" class="indicatore-turno"></div>
+        </div>
+
+        <!-- === PULSANTI === -->
+        <div id="btn-istruzioni" class="pulsante2">ISTRUZIONI</div>
+        <div id="btn-nuova" class="pulsante2">NUOVA</div>
+        <div id="btn-undo" class="pulsante2">UNDO (0)</div>
+        <div id="btn-ordina" class="pulsante2">ORDINA</div>
+        <div id="btn-scoperte" class="pulsante2">SCOPERTE</div>
+
+        <!-- === LINK ALTRI GIOCHI === -->
+        <div class="link-giochi">
+            <a href="scala40.html"><div class="pulsante-link pulsante-scala40"></div></a>
+            <a href="machiavelli.html"><div class="pulsante-link pulsante-machiavelli"></div></a>
+            <a href="index.html"><div class="pulsante-link pulsante-home"></div></a>
+        </div>
+
+        <!-- === MODALI === -->
+        <div id="modal-istruzioni" class="modal">
+            <h2>Come giocare a Burraco</h2>
+            <div class="modal-content">
+                <p><strong>Obiettivo:</strong> Fare burrachi (combinazioni di 7+ carte) e chiudere.</p>
+                <p><strong>Pescare:</strong> Clicca sul mazzo o sugli scarti.</p>
+                <p><strong>Scartare:</strong> Tasto destro su una carta, o trascinala sugli scarti.</p>
+                <p><strong>Combinazioni:</strong> Seleziona le carte e clicca sull'area combinazioni.</p>
+                <p><strong>Pozzetto:</strong> Quando finisci le carte, prendi il pozzetto.</p>
+                <p><strong>Burraco pulito:</strong> 7+ carte senza jolly (100 punti)</p>
+                <p><strong>Burraco sporco:</strong> 7+ carte con jolly (50 punti)</p>
+            </div>
+            <button class="btn-modal">OK</button>
+        </div>
+
+        <div id="modal-nuova" class="modal">
+            <h2>Nuova Partita</h2>
+            <div class="modal-content">
+                <p>Scegli la modalita:</p>
+                <label><input type="radio" name="modalita" value="1v1"> 1 vs 1</label><br>
+                <label><input type="radio" name="modalita" value="2v2" checked> 2 vs 2 (con compagno)</label>
+            </div>
+            <button class="btn-modal" id="btn-inizia">INIZIA</button>
+        </div>
+
+        <div id="modal-vittoria" class="modal">
+            <h2>HAI VINTO!</h2>
+            <div class="modal-content">
+                <p>Complimenti!</p>
+                <p>Punteggio finale: <span id="punteggio-finale-vinto">0</span></p>
+            </div>
+            <button class="btn-modal btn-nuova-partita">NUOVA PARTITA</button>
+        </div>
+
+        <div id="modal-sconfitta" class="modal">
+            <h2>HAI PERSO</h2>
+            <div class="modal-content">
+                <p>Peccato!</p>
+                <p>Punteggio finale: <span id="punteggio-finale-perso">0</span></p>
+            </div>
+            <button class="btn-modal btn-nuova-partita">NUOVA PARTITA</button>
+        </div>
+
+        <!-- Titoli decorativi -->
+        <div id="titolo-gioco-loro" class="titolo-gioco">
+            <span class="titolo-burraco">BURRACO</span>
+            <span class="titolo-nome">Luciano</span>
+        </div>
+        <div id="titolo-gioco-noi" class="titolo-gioco">
+            <span class="titolo-burraco">BURRACO</span>
+            <span class="titolo-nome">Luciano</span>
+        </div>
+
+    </div>
+</div>
+
+<!-- Audio -->
+<audio id="snd-pesca" src="sounds/scala40/cardplace1.mp3"></audio>
+<audio id="snd-scarta" src="sounds/scala40/cardslide1.mp3"></audio>
+<audio id="snd-combinazione" src="sounds/scala40/cardplace3.mp3"></audio>
+<audio id="snd-ordina" src="sounds/scala40/cardslide5.mp3"></audio>
+<audio id="snd-vittoria" src="sounds/scala40/tada.mp3"></audio>
+<audio id="snd-sconfitta" src="sounds/scala40/haiperso.mp3"></audio>
+<audio id="snd-pozzetto" src="sounds/scala40/magic.mp3"></audio>
+<audio id="snd-burraco" src="sounds/scala40/applause.mp3"></audio>
+
+<script src="burraco.js?v=3.6"></script>
+
+</body>
+</html>
