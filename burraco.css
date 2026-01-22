@@ -140,24 +140,14 @@ html, body {
     border-radius: 10px;
 }
 
-.indicatore-turno {
-    position: absolute;
-    width: 20px;
-    height: 20px;
-    background: #ffd700;
-    border-radius: 50%;
-    box-shadow: 0 0 10px #ffd700;
-    display: none;
+/* Indicatore turno - bordo giallo sul campo del giocatore attivo */
+.turno-attivo {
+    border: 2px solid #ffd700 !important;
 }
 
-.indicatore-turno.attivo {
-    display: block;
-    animation: pulse 1s infinite;
-}
-
-@keyframes pulse {
-    0%, 100% { transform: scale(1); opacity: 1; }
-    50% { transform: scale(1.2); opacity: 0.7; }
+/* Carta target per aggiunta a combinazione */
+.carta-target {
+    background-image: url(images/scala40/conjollyselplus.png) !important;
 }
 
 /* Compagno (top) */
@@ -199,7 +189,6 @@ html, body {
     height: 100%;
 }
 #ncarte-avv-sx { bottom: -25px; left: 50%; transform: translateX(-50%); }
-#turno-avv-sx { top: 50%; left: -25px; }
 
 /* Avversario Destra */
 #area-avversario-dx {
@@ -219,7 +208,6 @@ html, body {
     height: 100%;
 }
 #ncarte-avv-dx { bottom: -25px; left: 50%; transform: translateX(-50%); }
-#turno-avv-dx { top: 50%; right: -25px; }
 
 /* Giocatore (bottom) */
 #area-giocatore {
@@ -244,9 +232,6 @@ html, body {
     width: 100%;
     margin-top: 10px;
 }
-
-/* Indicatore turno giocatore (pallino giallo) */
-#turno-giocatore { top: 50%; left: -30px; }
 
 /* Carte del giocatore piu' piccole - usa transform scale */
 #carte-giocatore .carta {

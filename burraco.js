@@ -689,7 +689,21 @@ function renderAreaCombinazioni(combinazioni, containerSel) {
             combEl.classList.add(comb.isPulito ? 'burraco-pulito' : 'burraco-sporco');
         }
 
-        for (const carta of comb.carte) {
+        // Per le scale, visualizza in ordine discendente (dal valore piu' alto al piu' basso)
+        let carteOrdinare = comb.carte;
+        if (comb.tipo === TIPO_SCALA) {
+            carteOrdinare = [...comb.carte].sort((a, b) => {
+                // Gestisci jolly: mettili in base alla loro posizione logica
+                const numA = a.isJolly ? (a.jollycomeNumero || 0) : a.numero;
+                const numB = b.isJolly ? (b.jollycomeNumero || 0) : b.numero;
+                // Asso alto (dopo il K) vale 14
+                const valA = numA === 1 ? 14 : numA;
+                const valB = numB === 1 ? 14 : numB;
+                return valB - valA; // Discendente
+            });
+        }
+
+        for (const carta of carteOrdinare) {
             const cartaEl = creaElementoCarta(carta);
             cartaEl.style.position = 'relative';
             combEl.appendChild(cartaEl);
@@ -970,11 +984,19 @@ function depositaCombinazione() {
 
     salvaStato('combinazione');
 
+    // Ordina le carte per la combinazione
+    let carteOrdinate = [...game.carteSelezionate];
+
+    if (risultato.tipo === TIPO_SCALA) {
+        // Per le scale, ordina e posiziona il jolly nel buco
+        carteOrdinate = ordinaScalaConJolly(carteOrdinate, risultato.assoAlto);
+    }
+
     // Crea la combinazione
     const comb = new Combinazione(
         game.combinazioniNoi.length,
         risultato.tipo,
-        [...game.carteSelezionate]
+        carteOrdinate
     );
     comb.seme = risultato.seme;
     comb.numero = risultato.numero;
@@ -996,6 +1018,64 @@ function depositaCombinazione() {
 
     // Controlla burraco
     if (comb.isBurraco) {
+        playSound('burraco');
+    } else {
+        playSound('combinazione');
+    }
+
+    // Controlla se ha finito le carte
+    if (game.giocatori[0].carte.length === 0) {
+        if (!game.giocatori[0].haPozzetto && game.pozzetti[0].length > 0) {
+            prendiPozzetto(0);
+        }
+    }
+
+    render();
+}
+
+// Aggiunge una carta a una combinazione esistente
+function aggiungiCartaACombinazione(carta, combinazione) {
+    if (game.fase !== 'gioco') return;
+    if (!game.haPescato) return;
+
+    // Verifica che la carta possa essere aggiunta
+    if (!puoAggiungereACombinazione(carta, combinazione)) {
+        render();
+        return;
+    }
+
+    salvaStato('aggiungi-carta');
+
+    // Rimuovi la carta dalla mano del giocatore
+    const idx = game.giocatori[0].carte.indexOf(carta);
+    if (idx > -1) {
+        game.giocatori[0].carte.splice(idx, 1);
+    }
+
+    // Deseleziona la carta
+    carta.selezionata = false;
+    carta.inCombinazione = true;
+    carta.idCombinazione = combinazione.id;
+
+    // Rimuovi dalla lista delle selezionate se presente
+    const idxSel = game.carteSelezionate.indexOf(carta);
+    if (idxSel > -1) {
+        game.carteSelezionate.splice(idxSel, 1);
+    }
+
+    // Aggiungi la carta alla combinazione
+    combinazione.carte.push(carta);
+
+    // Se e' una scala, riordina le carte
+    if (combinazione.tipo === TIPO_SCALA) {
+        combinazione.carte = ordinaScalaConJolly(combinazione.carte, combinazione.assoAlto);
+    }
+
+    // Aggiorna punteggio
+    calcolaPunteggi();
+
+    // Controlla burraco
+    if (combinazione.isBurraco && combinazione.carte.length === 7) {
         playSound('burraco');
     } else {
         playSound('combinazione');
@@ -1071,9 +1151,8 @@ function verificaCombinazione(carte) {
 }
 
 function verificaTris(carte) {
-    if (carte.length > 4) {
-        return { valida: false, motivo: 'Tris max 4 carte' };
-    }
+    // Burraco: nessun limite massimo di carte per un tris
+    // (si possono avere piu' carte dello stesso valore, anche stesso seme da mazzi diversi)
 
     const jolly = carte.filter(c => c.isJolly || c.isPinella);
     const normali = carte.filter(c => !c.isJolly && !c.isPinella);
@@ -1088,13 +1167,9 @@ function verificaTris(carte) {
         return { valida: false, motivo: 'Numeri diversi' };
     }
 
-    // Controlla semi diversi
-    const semi = new Set(normali.map(c => c.seme));
-    if (semi.size !== normali.length) {
-        return { valida: false, motivo: 'Semi duplicati' };
-    }
+    // Burraco: semi duplicati sono permessi (carte da mazzi diversi)
 
-    // Max 1 jolly/pinella
+    // Max 1 jolly/pinella per combinazione
     if (jolly.length > 1) {
         return { valida: false, motivo: 'Max 1 jolly o pinella' };
     }
@@ -1107,11 +1182,17 @@ function verificaScala(carte) {
         return { valida: false, motivo: 'Scala min 3 carte' };
     }
 
-    const jolly = carte.filter(c => c.isJolly);
-    const normali = carte.filter(c => !c.isJolly);
+    // Jolly e pinelle contano come jolly
+    const jolly = carte.filter(c => c.isJolly || c.isPinella);
+    const normali = carte.filter(c => !c.isJolly && !c.isPinella);
 
     if (normali.length === 0) {
         return { valida: false, motivo: 'Servono carte normali' };
+    }
+
+    // Max 1 jolly/pinella per combinazione
+    if (jolly.length > 1) {
+        return { valida: false, motivo: 'Max 1 jolly o pinella' };
     }
 
     // Tutte le carte normali devono avere lo stesso seme
@@ -1151,6 +1232,73 @@ function verificaScala(carte) {
     return { valida: false, motivo: 'Sequenza non valida' };
 }
 
+// Ordina una scala e posiziona i jolly nei buchi corretti
+function ordinaScalaConJolly(carte, assoAlto = false) {
+    const jolly = carte.filter(c => c.isJolly || c.isPinella);
+    const normali = carte.filter(c => !c.isJolly && !c.isPinella);
+
+    // Ordina le carte normali per numero
+    normali.sort((a, b) => {
+        let numA = a.numero;
+        let numB = b.numero;
+        if (assoAlto) {
+            if (numA === 1) numA = 14;
+            if (numB === 1) numB = 14;
+        }
+        return numA - numB;
+    });
+
+    // Se non ci sono jolly, ritorna le carte ordinate
+    if (jolly.length === 0) {
+        return normali;
+    }
+
+    // Trova i buchi nella sequenza e assegna i numeri ai jolly
+    const numeriNormali = normali.map(c => {
+        let num = c.numero;
+        if (assoAlto && num === 1) num = 14;
+        return num;
+    });
+
+    // Trova dove ci sono i buchi
+    let jollyIdx = 0;
+    for (let i = 1; i < numeriNormali.length && jollyIdx < jolly.length; i++) {
+        const gap = numeriNormali[i] - numeriNormali[i-1] - 1;
+        for (let j = 0; j < gap && jollyIdx < jolly.length; j++) {
+            let numJolly = numeriNormali[i-1] + j + 1;
+            if (assoAlto && numJolly === 14) {
+                numJolly = 1;
+            }
+            jolly[jollyIdx].jollycomeNumero = numJolly;
+            jollyIdx++;
+        }
+    }
+
+    // Se ci sono ancora jolly non assegnati, mettili alla fine della scala
+    while (jollyIdx < jolly.length) {
+        let numJolly = numeriNormali[numeriNormali.length - 1] + (jollyIdx - (jolly.length - 1)) + 1;
+        if (assoAlto && numJolly === 14) {
+            numJolly = 1;
+        }
+        jolly[jollyIdx].jollycomeNumero = numJolly;
+        jollyIdx++;
+    }
+
+    // Ora ordina tutte le carte insieme usando il valore effettivo
+    const tutteCarte = [...normali, ...jolly];
+    tutteCarte.sort((a, b) => {
+        let numA = (a.isJolly || a.isPinella) ? a.jollycomeNumero : a.numero;
+        let numB = (b.isJolly || b.isPinella) ? b.jollycomeNumero : b.numero;
+        if (assoAlto) {
+            if (numA === 1) numA = 14;
+            if (numB === 1) numB = 14;
+        }
+        return numA - numB;
+    });
+
+    return tutteCarte;
+}
+
 // Verifica se i numeri formano una sequenza continua con i jolly disponibili
 function verificaSequenza(numeri, jollyDisponibili) {
     for (let i = 1; i < numeri.length; i++) {
@@ -1161,6 +1309,87 @@ function verificaSequenza(numeri, jollyDisponibili) {
         jollyDisponibili -= gap;
     }
     return true;
+}
+
+// Verifica se una carta puo' essere aggiunta a una combinazione esistente
+function puoAggiungereACombinazione(carta, combinazione) {
+    // Verifica jolly/pinella: max 1 per combinazione
+    if (carta.isJolly || carta.isPinella) {
+        // Controlla se c'e' gia' un jolly o pinella nella combinazione
+        const haGiaJolly = combinazione.carte.some(c => c.isJolly || c.isPinella);
+        if (haGiaJolly) {
+            return false;
+        }
+        // Jolly/pinella puo' essere aggiunto a qualsiasi combinazione
+        return true;
+    }
+
+    if (combinazione.tipo === TIPO_TRIS) {
+        // Burraco: per un tris basta stesso numero, nessun limite di semi
+        // (si possono avere piu' carte dello stesso seme da mazzi diversi)
+        const carteNormali = combinazione.carte.filter(c => !c.isJolly && !c.isPinella);
+        if (carteNormali.length === 0) return false;
+        const numeroTris = carteNormali[0].numero;
+
+        // La carta deve avere lo stesso numero
+        if (carta.numero !== numeroTris) {
+            return false;
+        }
+        return true;
+    }
+
+    if (combinazione.tipo === TIPO_SCALA) {
+        // Per una scala: stesso seme, numero consecutivo alle estremita'
+        const carteNormali = combinazione.carte.filter(c => !c.isJolly && !c.isPinella);
+        if (carteNormali.length === 0) return false;
+        const semeScala = carteNormali[0].seme;
+
+        // La carta deve avere lo stesso seme
+        if (carta.seme !== semeScala) {
+            return false;
+        }
+
+        // Trova tutti i numeri nella scala, inclusi i jolly con jollycomeNumero
+        const numeri = [];
+        for (const c of combinazione.carte) {
+            if (c.isJolly || c.isPinella) {
+                // Usa jollycomeNumero se disponibile
+                if (c.jollycomeNumero) {
+                    numeri.push(c.jollycomeNumero);
+                }
+            } else {
+                numeri.push(c.numero);
+            }
+        }
+
+        // Calcola il numero minimo e massimo della scala
+        const numeriOrdinati = numeri.sort((a, b) => a - b);
+        const min = numeriOrdinati[0];
+        const max = numeriOrdinati[numeriOrdinati.length - 1];
+
+        // Verifica se la carta puo' essere aggiunta in fondo (dopo il max)
+        // Caso speciale: Asso puo' andare dopo il K (come 14)
+        if (carta.numero === max + 1) {
+            return true;
+        }
+        if (max === 13 && carta.numero === 1) {
+            // Asso dopo il Re
+            return true;
+        }
+
+        // Verifica se la carta puo' essere aggiunta in cima (prima del min)
+        if (carta.numero === min - 1) {
+            return true;
+        }
+        if (min === 2 && carta.numero === 1) {
+            // Asso prima del 2
+            return true;
+        }
+
+        return false;
+    }
+
+    return false;
 }
 
 // ============================================================================
@@ -1310,26 +1539,29 @@ async function turnoAI() {
 }
 
 function aggiornaIndicatoreTurno() {
-    // Rimuovi tutti gli indicatori attivi
-    $$('.indicatore-turno').forEach(el => el.classList.remove('attivo'));
+    // Rimuovi la classe turno-attivo da tutte le aree
+    $$('.area-giocatore').forEach(el => el.classList.remove('turno-attivo'));
 
     const giocatore = game.giocatori[game.giocatoreCorrente];
-    let indicatore = null;
+    let area = null;
 
     switch(giocatore.posizione) {
         case 'bottom':
-            indicatore = $('#turno-giocatore');
+            area = $('#area-giocatore');
             break;
         case 'left':
-            indicatore = $('#turno-avv-sx');
+            area = $('#area-avversario-sx');
             break;
         case 'right':
-            indicatore = $('#turno-avv-dx');
+            area = $('#area-avversario-dx');
+            break;
+        case 'top':
+            area = $('#area-compagno');
             break;
     }
 
-    if (indicatore) {
-        indicatore.classList.add('attivo');
+    if (area) {
+        area.classList.add('turno-attivo');
     }
 }
 
@@ -1472,46 +1704,186 @@ function onMouseMove(e) {
 
     if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
         game.trascinamento.moved = true;
-        game.trascinamento.elemento.classList.add('trascinando');
+
+        // Crea il fantasma se non esiste ancora
+        if (!game.trascinamento.fantasma) {
+            const carta = game.trascinamento.carta;
+            const elemento = game.trascinamento.elemento;
+            const rect = elemento.getBoundingClientRect();
+
+            // Calcola l'offset del mouse rispetto all'angolo superiore sinistro della carta renderizzata
+            game.trascinamento.offsetX = e.clientX - rect.left;
+            game.trascinamento.offsetY = e.clientY - rect.top;
+
+            // Salva dimensioni iniziali della carta renderizzata
+            game.trascinamento.widthIniziale = rect.width;
+            game.trascinamento.heightIniziale = rect.height;
+
+            // Crea un elemento fantasma per il trascinamento
+            const fantasma = document.createElement('div');
+            fantasma.style.position = 'fixed';
+            fantasma.style.zIndex = '50000';
+            fantasma.style.pointerEvents = 'none';
+            fantasma.style.boxShadow = '5px 5px 20px rgba(0,0,0,0.5)';
+            fantasma.style.backgroundImage = 'url(images/scala40/conjollyselplus.png)';
+            fantasma.style.borderRadius = '5px';
+
+            // Dimensioni iniziali (stesse della carta renderizzata)
+            fantasma.style.width = rect.width + 'px';
+            fantasma.style.height = rect.height + 'px';
+
+            // Background-size proporzionale - scala separata per larghezza e altezza
+            // Sprite originale: 1233x384 (17 colonne x 4 righe, carte 71x96)
+            const bgScaleX = rect.width / 71;
+            const bgScaleY = rect.height / 96;
+            fantasma.style.backgroundSize = (1233 * bgScaleX) + 'px ' + (384 * bgScaleY) + 'px';
+
+            // Posizione sprite della carta usando getSpritePosition
+            const pos = carta.getSpritePosition();
+            fantasma.style.backgroundPosition = `${pos.x * bgScaleX}px ${pos.y * bgScaleY}px`;
+
+            document.body.appendChild(fantasma);
+            game.trascinamento.fantasma = fantasma;
+
+            // Nascondi l'elemento originale
+            elemento.style.visibility = 'hidden';
+        }
+
+        const fantasma = game.trascinamento.fantasma;
+        const widthIniziale = game.trascinamento.widthIniziale;
+        const heightIniziale = game.trascinamento.heightIniziale;
 
         // Verifica se siamo nell'area combinazioni (sopra il limite inferiore delle aree)
         const campo = $('#campogioco');
         const campoRect = campo.getBoundingClientRect();
         const limiteInferioreAree = campoRect.top + 515; // 115px top + 400px altezza
 
-        let scale = 0.73;
+        // Scala: 1.0 = dimensione originale, ridotta nell'area combinazioni
+        // Le carte nelle combinazioni sono scale 0.5, quelle del giocatore 0.73
+        let scala = 1.0;
         if (e.clientY < limiteInferioreAree) {
-            scale = 0.5;
+            scala = 0.5 / 0.73; // ~0.685
         }
 
-        // Le carte hanno transform: scale(0.73) e transform-origin: bottom left
-        // Per mantenere il cursore sulla carta, devo compensare la scala nel translate
-        game.trascinamento.elemento.style.transform = `translate(${dx}px, ${dy}px) scale(${scale})`;
-        game.trascinamento.elemento.style.transformOrigin = 'bottom left';
+        // Dimensioni carta
+        const width = widthIniziale * scala;
+        const height = heightIniziale * scala;
+
+        // Posiziona il fantasma seguendo il mouse, mantenendo l'offset relativo
+        const offsetXScaled = game.trascinamento.offsetX * scala;
+        const offsetYScaled = game.trascinamento.offsetY * scala;
+
+        fantasma.style.width = width + 'px';
+        fantasma.style.height = height + 'px';
+        fantasma.style.left = (e.clientX - offsetXScaled) + 'px';
+        fantasma.style.top = (e.clientY - offsetYScaled) + 'px';
+
+        // Background-size proporzionale - scala separata per larghezza e altezza
+        // Sprite originale: 1233x384 (17 colonne x 4 righe, carte 71x96)
+        const bgScaleX = width / 71;
+        const bgScaleY = height / 96;
+        fantasma.style.backgroundSize = (1233 * bgScaleX) + 'px ' + (384 * bgScaleY) + 'px';
+
+        // Background-position per mostrare la carta corretta
+        const carta = game.trascinamento.carta;
+        const pos = carta.getSpritePosition();
+        fantasma.style.backgroundPosition = `${pos.x * bgScaleX}px ${pos.y * bgScaleY}px`;
+
+        // Verifica collisione angolo superiore destro con carte delle combinazioni
+        verificaCollisioneCombinazioni(e.clientX - offsetXScaled + width, e.clientY - offsetYScaled, carta);
+    }
+}
+
+// Verifica se il punto (angolo superiore destro del fantasma) tocca una carta in una combinazione
+function verificaCollisioneCombinazioni(puntoX, puntoY, cartaTrascinata) {
+    // Rimuovi evidenziazione precedente
+    if (game.trascinamento.cartaTarget) {
+        game.trascinamento.cartaTarget.classList.remove('carta-target');
+        game.trascinamento.cartaTarget = null;
+        game.trascinamento.combinazioneTarget = null;
+    }
+
+    // Cerca in tutte le combinazioni (noi e loro)
+    const tutteCombi = [
+        ...game.combinazioniNoi.map(c => ({ comb: c, area: 'noi' })),
+        ...game.combinazioniLoro.map(c => ({ comb: c, area: 'loro' }))
+    ];
+
+    for (const { comb, area } of tutteCombi) {
+        // Trova l'elemento DOM della combinazione
+        const containerSel = area === 'noi' ? '#combinazioni-noi' : '#combinazioni-loro';
+        const container = $(containerSel);
+        const combElements = container.querySelectorAll('.combinazione');
+
+        // Trova l'indice della combinazione
+        const combIndex = area === 'noi'
+            ? game.combinazioniNoi.indexOf(comb)
+            : game.combinazioniLoro.indexOf(comb);
+
+        if (combIndex < 0 || combIndex >= combElements.length) continue;
+
+        const combEl = combElements[combIndex];
+        const carteEl = combEl.querySelectorAll('.carta');
+
+        // Controlla ogni carta nella combinazione DALL'ULTIMA ALLA PRIMA
+        // (le carte successive hanno z-index maggiore perche' sono sovrapposte)
+        for (let i = carteEl.length - 1; i >= 0; i--) {
+            const cartaEl = carteEl[i];
+            const rect = cartaEl.getBoundingClientRect();
+
+            // Verifica se il punto e' dentro questa carta
+            if (puntoX >= rect.left && puntoX <= rect.right &&
+                puntoY >= rect.top && puntoY <= rect.bottom) {
+
+                // Verifica se la carta trascinata puo' essere aggiunta a questa combinazione
+                if (puoAggiungereACombinazione(cartaTrascinata, comb)) {
+                    cartaEl.classList.add('carta-target');
+                    game.trascinamento.cartaTarget = cartaEl;
+                    game.trascinamento.combinazioneTarget = comb;
+                    return;
+                }
+            }
+        }
     }
 }
 
 function onMouseUp(e) {
     if (!game.trascinamento) return;
 
-    const { carta, elemento, moved } = game.trascinamento;
+    const { carta, elemento, moved, fantasma, cartaTarget, combinazioneTarget } = game.trascinamento;
 
+    // Rimuovi il fantasma se esiste
+    if (fantasma) {
+        fantasma.remove();
+    }
+
+    // Rimuovi evidenziazione carta target
+    if (cartaTarget) {
+        cartaTarget.classList.remove('carta-target');
+    }
+
+    // Ripristina la visibilita' dell'elemento originale
+    elemento.style.visibility = '';
     elemento.classList.remove('trascinando');
-    elemento.style.transform = '';
 
     if (!moved) {
         // Click semplice - seleziona/deseleziona
         toggleSelezioneCarta(carta);
     } else {
         // Fine trascinamento - controlla dove e' stata rilasciata
-        const rect = $('#scarti-container').getBoundingClientRect();
-        if (e.clientX >= rect.left && e.clientX <= rect.right &&
-            e.clientY >= rect.top && e.clientY <= rect.bottom) {
-            // Rilasciata sugli scarti
-            scartaCarta(carta);
+        if (combinazioneTarget) {
+            // Rilasciata su una combinazione valida - aggiungi la carta
+            aggiungiCartaACombinazione(carta, combinazioneTarget);
         } else {
-            // Rilasciata altrove - rimetti a posto
-            render();
+            const rect = $('#scarti-container').getBoundingClientRect();
+            if (e.clientX >= rect.left && e.clientX <= rect.right &&
+                e.clientY >= rect.top && e.clientY <= rect.bottom) {
+                // Rilasciata sugli scarti
+                scartaCarta(carta);
+            } else {
+                // Rilasciata altrove - rimetti a posto
+                render();
+            }
         }
     }
 
@@ -1567,30 +1939,105 @@ function onTouchMove(e) {
 
     if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
         game.trascinamento.moved = true;
-        game.trascinamento.elemento.classList.add('trascinando');
+
+        // Crea il fantasma se non esiste ancora
+        if (!game.trascinamento.fantasma) {
+            const carta = game.trascinamento.carta;
+            const elemento = game.trascinamento.elemento;
+            const rect = elemento.getBoundingClientRect();
+
+            // Calcola l'offset del touch rispetto all'angolo superiore sinistro della carta renderizzata
+            game.trascinamento.offsetX = touch.clientX - rect.left;
+            game.trascinamento.offsetY = touch.clientY - rect.top;
+
+            // Salva dimensioni iniziali della carta renderizzata
+            game.trascinamento.widthIniziale = rect.width;
+            game.trascinamento.heightIniziale = rect.height;
+
+            // Crea un elemento fantasma per il trascinamento
+            const fantasma = document.createElement('div');
+            fantasma.style.position = 'fixed';
+            fantasma.style.zIndex = '50000';
+            fantasma.style.pointerEvents = 'none';
+            fantasma.style.boxShadow = '5px 5px 20px rgba(0,0,0,0.5)';
+            fantasma.style.backgroundImage = 'url(images/scala40/conjollyselplus.png)';
+            fantasma.style.borderRadius = '5px';
+
+            // Dimensioni iniziali (stesse della carta renderizzata)
+            fantasma.style.width = rect.width + 'px';
+            fantasma.style.height = rect.height + 'px';
+
+            // Background-size proporzionale - scala separata per larghezza e altezza
+            // Sprite originale: 1233x384 (17 colonne x 4 righe, carte 71x96)
+            const bgScaleX = rect.width / 71;
+            const bgScaleY = rect.height / 96;
+            fantasma.style.backgroundSize = (1233 * bgScaleX) + 'px ' + (384 * bgScaleY) + 'px';
+
+            // Posizione sprite della carta usando getSpritePosition
+            const pos = carta.getSpritePosition();
+            fantasma.style.backgroundPosition = `${pos.x * bgScaleX}px ${pos.y * bgScaleY}px`;
+
+            document.body.appendChild(fantasma);
+            game.trascinamento.fantasma = fantasma;
+
+            // Nascondi l'elemento originale
+            elemento.style.visibility = 'hidden';
+        }
+
+        const fantasma = game.trascinamento.fantasma;
+        const widthIniziale = game.trascinamento.widthIniziale;
+        const heightIniziale = game.trascinamento.heightIniziale;
 
         // Verifica se siamo nell'area combinazioni (sopra il limite inferiore delle aree)
         const campo = $('#campogioco');
         const campoRect = campo.getBoundingClientRect();
         const limiteInferioreAree = campoRect.top + 515; // 115px top + 400px altezza
 
-        let scale = 0.73;
+        // Scala: 1.0 = dimensione originale, ridotta nell'area combinazioni
+        let scala = 1.0;
         if (touch.clientY < limiteInferioreAree) {
-            scale = 0.5;
+            scala = 0.5 / 0.73; // ~0.685
         }
 
-        game.trascinamento.elemento.style.transform = `translate(${dx}px, ${dy}px) scale(${scale})`;
-        game.trascinamento.elemento.style.transformOrigin = 'bottom left';
+        // Dimensioni carta
+        const width = widthIniziale * scala;
+        const height = heightIniziale * scala;
+
+        // Posiziona il fantasma seguendo il touch, mantenendo l'offset relativo
+        const offsetXScaled = game.trascinamento.offsetX * scala;
+        const offsetYScaled = game.trascinamento.offsetY * scala;
+
+        fantasma.style.width = width + 'px';
+        fantasma.style.height = height + 'px';
+        fantasma.style.left = (touch.clientX - offsetXScaled) + 'px';
+        fantasma.style.top = (touch.clientY - offsetYScaled) + 'px';
+
+        // Background-size proporzionale - scala separata per larghezza e altezza
+        // Sprite originale: 1233x384 (17 colonne x 4 righe, carte 71x96)
+        const bgScaleX = width / 71;
+        const bgScaleY = height / 96;
+        fantasma.style.backgroundSize = (1233 * bgScaleX) + 'px ' + (384 * bgScaleY) + 'px';
+
+        // Background-position per mostrare la carta corretta
+        const carta = game.trascinamento.carta;
+        const pos = carta.getSpritePosition();
+        fantasma.style.backgroundPosition = `${pos.x * bgScaleX}px ${pos.y * bgScaleY}px`;
     }
 }
 
 function onTouchEnd(e) {
     if (!game.trascinamento) return;
 
-    const { carta, elemento, moved } = game.trascinamento;
+    const { carta, elemento, moved, fantasma } = game.trascinamento;
 
+    // Rimuovi il fantasma se esiste
+    if (fantasma) {
+        fantasma.remove();
+    }
+
+    // Ripristina la visibilita' dell'elemento originale
+    elemento.style.visibility = '';
     elemento.classList.remove('trascinando');
-    elemento.style.transform = '';
 
     if (!moved) {
         toggleSelezioneCarta(carta);
