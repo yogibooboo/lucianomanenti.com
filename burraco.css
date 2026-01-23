@@ -30,7 +30,7 @@ html, body {
     position: absolute;
     top: 0;
     height: 100%;
-    background-color: #f0f0f0;
+    background: linear-gradient(135deg, #1a6b30 0%, #145524 50%, #0f4a1c 100%);
     overflow-y: auto;
     box-sizing: border-box;
     display: none;
@@ -46,11 +46,11 @@ html, body {
 #sidebar-right { right: 0; }
 
 .ad-banner {
-    background-color: #ddd;
+    background-color: transparent;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #333;
+    color: #fff;
     text-align: center;
     box-sizing: border-box;
     flex-shrink: 0;
@@ -86,7 +86,7 @@ html, body {
 #punteggi {
     position: absolute;
     top: 15px;
-    right: 130px;
+    left: 150px;
     display: flex;
     align-items: center;
     font-size: 20px;
@@ -153,7 +153,7 @@ html, body {
 /* Compagno (top) */
 #area-compagno {
     top: 25px;
-    right: 145px;
+    right: 180px;
     left: auto;
     transform: none;
     width: 400px;
@@ -163,7 +163,7 @@ html, body {
 
 #nome-compagno { top: -16px; left: 50%; transform: translateX(-50%); font-size: 12px; }
 #carte-compagno { flex-direction: row; }
-#ncarte-compagno { top: 50%; right: -35px; transform: translateY(-50%); }
+#ncarte-compagno { top: 50%; right: -45px; transform: translateY(-50%); }
 
 /* Carte del compagno ridotte */
 #carte-compagno .carta {
@@ -188,7 +188,7 @@ html, body {
     width: 100%;
     height: 100%;
 }
-#ncarte-avv-sx { bottom: -25px; left: 50%; transform: translateX(-50%); }
+#ncarte-avv-sx { bottom: -40px; left: 50%; transform: translateX(-50%); }
 
 /* Avversario Destra */
 #area-avversario-dx {
@@ -207,7 +207,7 @@ html, body {
     width: 100%;
     height: 100%;
 }
-#ncarte-avv-dx { bottom: -25px; left: 50%; transform: translateX(-50%); }
+#ncarte-avv-dx { bottom: -40px; left: 50%; transform: translateX(-50%); }
 
 /* Giocatore (bottom) */
 #area-giocatore {
@@ -264,7 +264,7 @@ html, body {
     padding-top: 25px;
     box-sizing: border-box;
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     align-content: flex-start;
 }
 
@@ -471,8 +471,35 @@ html, body {
 #btn-istruzioni { top: 10px; left: 10px; }
 #btn-nuova { top: 50px; left: 10px; }
 #btn-undo { top: 10px; right: 10px; width: 110px; }
-#btn-ordina { top: 50px; right: 10px; }
-#btn-scoperte { top: 90px; right: 10px; }
+#btn-scoperte { top: 50px; right: 10px; }
+
+/* Pulsanti ordinamento carte (a sinistra del campo giocatore) */
+.pulsante-ordina {
+    position: absolute;
+    bottom: 25px;
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(180deg, #4a7c59 0%, #2d5a3d 100%);
+    border: 2px solid #6b9b7a;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 16px;
+    font-weight: bold;
+    text-align: center;
+    line-height: 40px;
+    cursor: pointer;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    transition: all 0.2s;
+    z-index: 200;
+}
+
+.pulsante-ordina:hover {
+    background: linear-gradient(180deg, #5a8c69 0%, #3d6a4d 100%);
+    transform: scale(1.1);
+}
+
+#btn-ordina-numero { left: 95px; }
+#btn-ordina-seme { left: 140px; }
 
 /* === LINK GIOCHI === */
 .link-giochi {
@@ -482,6 +509,7 @@ html, body {
     display: flex;
     gap: 10px;
     z-index: 200;
+    flex-direction: column;
 }
 
 .pulsante-link {
@@ -492,14 +520,26 @@ html, body {
     background-size: cover;
     cursor: pointer;
     transition: transform 0.2s;
+    color: #fff;
+    font-size: 11px;
+    font-weight: bold;
+    text-align: center;
+    line-height: 30px;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    text-decoration: none;
 }
 
 .pulsante-link:hover {
     transform: scale(1.1);
 }
 
+.link-giochi a {
+    text-decoration: none;
+}
+
 .pulsante-scala40 { background-color: #3a5a3a; }
 .pulsante-machiavelli { background-color: #5a3a3a; }
+.pulsante-spider { background-color: #5a5a3a; }
 .pulsante-home { background-color: #3a3a5a; }
 
 /* === TITOLO GIOCO === */

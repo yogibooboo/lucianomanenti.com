@@ -1,25 +1,41 @@
 #icoscala{
 	position:absolute;
-		border-style:solid;
+	border-style:solid;
 	border-color:#FFFFFF;
-	border-width:6px;
-	top:170px;
+	border-width:5px;
+	top:165px;
 	left:100px;
-	width:140px;
-	height:90px;
-	background-size: 140px 90px;
+	width:120px;
+	height:75px;
+	background-size: 120px 75px;
 	background-image:url(images/home/scala40.jpg);
-	/*background-color:green; */
-	
+}
+
+#icoburraco{
+	position:absolute;
+	border-style:solid;
+	border-color:#FFFFFF;
+	border-width:5px;
+	top:420px;
+	left:100px;
+	width:120px;
+	height:75px;
+	background-size: 120px 75px;
+	background-image:url(images/home/burraco.svg);
+}
+#icoburraco img{
+	position:absolute;
+	top:5px;
+	left:170px;
+	width:400px;
+	height:70px;
 }
 #icoscala img{
 	position:absolute;
-	top:25px;
-	left:200px;
-	width:350px;
-	height:60px;
-	/*background-color:green; */
-	
+	top:20px;
+	left:170px;
+	width:300px;
+	height:50px;
 }
 
 #underconstruction{
@@ -58,131 +74,107 @@
 
 #aboutme{
 	position:absolute;
-		border-style:solid;
+	border-style:solid;
 	border-color:#FFFFFF;
-	border-width:6px;
-	top:610px;
-	left:500px;
-	width:70px;
-	height:45px;
-	background-size: 70px 45px;
+	border-width:5px;
+	top:595px;
+	left:340px;
+	width:60px;
+	height:40px;
+	background-size: 60px 40px;
 	background-image:url(images/home/yogi.png);
-	/*background-color:green; */
-	
 }
 #icomachia{
 	position:absolute;
-		border-style:solid;
+	border-style:solid;
 	border-color:#FFFFFF;
-	border-width:6px;
-	top:280px;
+	border-width:5px;
+	top:250px;
 	left:100px;
-	width:140px;
-	height:90px;
-	background-size: 140px 90px;
+	width:120px;
+	height:75px;
+	background-size: 120px 75px;
 	background-image:url(images/home/machiavelli.jpg);
-	//background-color:green; */
-	
 }
 
 #icomachia img{
 	position:absolute;
-	top:25px;
-	left:200px;
-	width:350px;
-	height:60px;
-	//background-color:green; 
-	
+	top:20px;
+	left:170px;
+	width:300px;
+	height:50px;
 }
 
 
 #aboutme img{
 	position:absolute;
-	top:12px;
-	left:100px;
-	width:160px;
-	height:30px;
-	//background-color:green; */
-	
+	top:8px;
+	left:85px;
+	width:140px;
+	height:25px;
 }
 #icohanon {
 	position:absolute;
-		border-style:solid;
+	border-style:solid;
 	border-color:#FFFFFF;
-	border-width:6px;
-
-	top:610px;
+	border-width:5px;
+	top:595px;
 	left:100px;
-	width:70px;
-	height:45px;
-	background-size: 70px 45px;
+	width:60px;
+	height:40px;
+	background-size: 60px 40px;
 	background-image:url(images/home/hanon.jpg);
-	//background-color:green;
-	
 }
 #icohanon img{
 	position:absolute;
-	top:12px;
-	left:100px;
-	width:160px;
-	height:30px;
-	//background-color:green; */
-	
+	top:8px;
+	left:85px;
+	width:140px;
+	height:25px;
 }
 
 
 #icometro {
 	position:absolute;
-		border-style:solid;
+	border-style:solid;
 	border-color:#FFFFFF;
-	border-width:6px;
-
-	top:500px;
+	border-width:5px;
+	top:505px;
 	left:100px;
-	width:140px;
-	height:90px;
-	background-size: 140px 90px;
+	width:120px;
+	height:75px;
+	background-size: 120px 75px;
 	background-image:url(images/home/icometronomo.jpg);
-	//background-color:green;
-	
 }
-
 
 #icometro img{
 	position:absolute;
-	top:25px;
-	left:200px;
-	width:350px;
-	height:60px;
-	//background-color:green; */
-	
+	top:20px;
+	left:170px;
+	width:300px;
+	height:50px;
 }
 
 #icospider {
 	position:absolute;
-		border-style:solid;
+	border-style:solid;
 	border-color:#FFFFFF;
-	border-width:6px;
-
-	top:390px;
+	border-width:5px;
+	top:335px;
 	left:100px;
-	width:140px;
-	height:90px;
-	background-size: 140px 90px;
+	width:120px;
+	height:75px;
+	background-size: 120px 75px;
 	background-image:url(images/home/spider.jpg);
-	//background-color:green;
-	
 }
 
 
 #icospider img{
 	position:absolute;
-	top:25px;
-	left:200px;
-	width:550px;
-	height:70px;
-	//background-color:green; */
-	
+	top:15px;
+	left:170px;
+	width:450px;
+	height:55px;
 }
 
 

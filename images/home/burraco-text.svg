@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="50" viewBox="0 0 300 50">
+  <defs>
+    <linearGradient id="textGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffd700"/>
+      <stop offset="50%" style="stop-color:#daa520"/>
+      <stop offset="100%" style="stop-color:#b8860b"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="3" dy="3" stdDeviation="2" flood-color="#000" flood-opacity="0.6"/>
+    </filter>
+  </defs>
+  <text x="5" y="38" font-family="Georgia, 'Times New Roman', serif" font-size="48" font-weight="bold" font-style="italic" fill="url(#textGrad)" filter="url(#shadow)">Burraco</text>
+</svg>

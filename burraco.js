@@ -198,6 +198,9 @@ const game = {
     // UI
     trascinamento: null,
 
+    // Combinazione su cui si puo' ancora spostare la matta (finestra temporale)
+    combinazioneModificabile: null,
+
     // Debug/Cheat
     mostraTutteCarteScoperte: false,
 };
@@ -261,8 +264,9 @@ function setupEventi() {
     $('#btn-istruzioni').addEventListener('click', () => mostraModal('modal-istruzioni'));
     $('#btn-nuova').addEventListener('click', () => mostraModal('modal-nuova'));
     $('#btn-undo').addEventListener('click', undo);
-    $('#btn-ordina').addEventListener('click', ordinaMano);
     $('#btn-scoperte').addEventListener('click', toggleScoperte);
+    $('#btn-ordina-numero').addEventListener('click', ordinaPerNumero);
+    $('#btn-ordina-seme').addEventListener('click', ordinaPerSeme);
 
     // Modal
     $$('.btn-modal').forEach(btn => {
@@ -302,6 +306,26 @@ function setupEventi() {
     document.addEventListener('touchstart', onTouchStart, { passive: false });
     document.addEventListener('touchmove', onTouchMove, { passive: false });
     document.addEventListener('touchend', onTouchEnd);
+
+    // DEBUG: Ctrl+Alt+T per mettere tutte le carte del mazzo nella mano del giocatore
+    document.addEventListener('keydown', (event) => {
+        if (event.ctrlKey && event.altKey && event.key.toLowerCase() === 't') {
+            event.preventDefault();
+            if (game.mazzo && game.mazzo.length > 0) {
+                console.log('DEBUG: Spostamento tutte le carte del mazzo al giocatore');
+                while (game.mazzo.length > 0) {
+                    const carta = game.mazzo.pop();
+                    carta.faceUp = true;
+                    game.giocatori[0].carte.push(carta);
+                }
+                ordinaCarte(game.giocatori[0].carte);
+                render();
+                console.log('DEBUG: Carte nella mano del giocatore:', game.giocatori[0].carte.length);
+            } else {
+                console.log('DEBUG: Mazzo vuoto o partita non iniziata');
+            }
+        }
+    });
 }
 
 // ============================================================================
@@ -822,6 +846,7 @@ async function pescaDaMazzo() {
     if (!game.giocatori[game.giocatoreCorrente].isUmano) return;
 
     salvaStato('pesca');
+    game.combinazioneModificabile = null;
 
     const carta = game.mazzo.pop();
     if (!carta) {
@@ -868,6 +893,7 @@ function pescaDaScarti() {
     if (game.scarti.length === 0) return;
 
     salvaStato('pesca-scarti');
+    game.combinazioneModificabile = null;
 
     // Prendi tutte le carte dagli scarti
     const carteRaccolte = game.scarti.splice(0);
@@ -894,6 +920,9 @@ async function scartaCarta(carta) {
     if (idx === -1) return;
 
     salvaStato('scarta');
+
+    // Chiude la finestra temporale per modificare la matta
+    game.combinazioneModificabile = null;
 
     // Salva la posizione di partenza della carta
     const cartaElPartenza = carta.elemento;
@@ -971,8 +1000,25 @@ function toggleSelezioneCarta(carta) {
     render();
 }
 
-function depositaCombinazione() {
+function depositaCombinazione(e) {
     if (game.fase !== 'gioco') return;
+
+    // Se non ci sono carte selezionate, verifica se il click e' su una combinazione modificabile
+    if (game.carteSelezionate.length === 0) {
+        // Verifica se il click e' su una combinazione per spostare la matta
+        const combEl = e.target.closest('.combinazione');
+        if (combEl && game.combinazioneModificabile) {
+            // Trova quale combinazione e' stata cliccata
+            const combElements = Array.from($('#combinazioni-noi').querySelectorAll('.combinazione'));
+            const combIndex = combElements.indexOf(combEl);
+            if (combIndex >= 0 && game.combinazioniNoi[combIndex] === game.combinazioneModificabile) {
+                spostaMattaCombinazione(game.combinazioneModificabile);
+                return;
+            }
+        }
+        return;
+    }
+
     if (game.carteSelezionate.length < 3) return;
 
     // Verifica che sia una combinazione valida
@@ -1013,6 +1059,14 @@ function depositaCombinazione() {
     game.combinazioniNoi.push(comb);
     game.carteSelezionate = [];
 
+    // Se e' una scala con matta, permetti di spostarla
+    const haMatta = comb.carte.some(c => c.isJolly || c.isPinella);
+    if (comb.tipo === TIPO_SCALA && haMatta) {
+        game.combinazioneModificabile = comb;
+    } else {
+        game.combinazioneModificabile = null;
+    }
+
     // Aggiorna punteggio
     calcolaPunteggi();
 
@@ -1033,6 +1087,75 @@ function depositaCombinazione() {
     render();
 }
 
+// Sposta la matta da un'estremita' all'altra della scala
+function spostaMattaCombinazione(combinazione) {
+    if (combinazione.tipo !== TIPO_SCALA) return;
+
+    // Trova la matta nella combinazione
+    const matta = combinazione.carte.find(c => c.isJolly || c.isPinella);
+    if (!matta) return;
+
+    // Trova i numeri delle carte normali
+    const normali = combinazione.carte.filter(c => !c.isJolly && !c.isPinella);
+    const numeriNormali = normali.map(c => c.numero).sort((a, b) => a - b);
+    const min = numeriNormali[0];
+    const max = numeriNormali[numeriNormali.length - 1];
+
+    // Determina dove e' attualmente la matta
+    const mattaNumero = matta.jollycomeNumero;
+
+    // Sposta la matta all'altra estremita'
+    if (mattaNumero < min) {
+        // Matta all'inizio -> spostala alla fine
+        matta.jollycomeNumero = max + 1;
+    } else if (mattaNumero > max) {
+        // Matta alla fine -> spostala all'inizio
+        matta.jollycomeNumero = min - 1;
+    } else {
+        // Matta in mezzo (buco) -> spostala alla fine
+        matta.jollycomeNumero = max + 1;
+    }
+
+    // Verifica limiti (A=1, K=13)
+    if (matta.jollycomeNumero < 1) {
+        matta.jollycomeNumero = max + 1; // Non puo' andare sotto A, metti alla fine
+    }
+    if (matta.jollycomeNumero > 13) {
+        matta.jollycomeNumero = min - 1; // Non puo' andare sopra K, metti all'inizio
+    }
+
+    // Riordina le carte della combinazione
+    combinazione.carte.sort((a, b) => {
+        const numA = (a.isJolly || a.isPinella) ? a.jollycomeNumero : a.numero;
+        const numB = (b.isJolly || b.isPinella) ? b.jollycomeNumero : b.numero;
+        return numA - numB;
+    });
+
+    playSound('combinazione');
+    render();
+}
+
+// Riordina le carte nella mano: sposta cartaOrigine nella posizione di cartaDest
+function riordinaCartaMano(cartaOrigine, cartaDest) {
+    const mano = game.giocatori[0].carte;
+    const idxOrigine = mano.indexOf(cartaOrigine);
+    const idxDest = mano.indexOf(cartaDest);
+
+    if (idxOrigine === -1 || idxDest === -1) return;
+    if (idxOrigine === idxDest) return;
+
+    // Rimuovi la carta dalla posizione originale
+    mano.splice(idxOrigine, 1);
+
+    // Inserisci nella nuova posizione
+    // Se la carta era prima della destinazione, l'indice dest è già corretto
+    // Se era dopo, l'indice dest è diminuito di 1 dopo la rimozione
+    const nuovoIdx = idxOrigine < idxDest ? idxDest : idxDest;
+    mano.splice(nuovoIdx, 0, cartaOrigine);
+
+    render();
+}
+
 // Aggiunge una carta a una combinazione esistente
 function aggiungiCartaACombinazione(carta, combinazione) {
     if (game.fase !== 'gioco') return;
@@ -1045,6 +1168,9 @@ function aggiungiCartaACombinazione(carta, combinazione) {
     }
 
     salvaStato('aggiungi-carta');
+
+    // Chiude la finestra temporale per modificare la matta
+    game.combinazioneModificabile = null;
 
     // Rimuovi la carta dalla mano del giocatore
     const idx = game.giocatori[0].carte.indexOf(carta);
@@ -1066,9 +1192,18 @@ function aggiungiCartaACombinazione(carta, combinazione) {
     // Aggiungi la carta alla combinazione
     combinazione.carte.push(carta);
 
-    // Se e' una scala, riordina le carte
+    // Se e' una scala, riordina le carte mantenendo la posizione del jolly
     if (combinazione.tipo === TIPO_SCALA) {
-        combinazione.carte = ordinaScalaConJolly(combinazione.carte, combinazione.assoAlto);
+        // Ordina per numero effettivo (jollycomeNumero per jolly/pinella)
+        combinazione.carte.sort((a, b) => {
+            let numA = (a.isJolly || a.isPinella) ? a.jollycomeNumero : a.numero;
+            let numB = (b.isJolly || b.isPinella) ? b.jollycomeNumero : b.numero;
+            if (combinazione.assoAlto) {
+                if (numA === 1) numA = 14;
+                if (numB === 1) numB = 14;
+            }
+            return numA - numB;
+        });
     }
 
     // Aggiorna punteggio
@@ -1115,8 +1250,24 @@ function prendiPozzetto(squadra) {
     render();
 }
 
-function ordinaMano() {
-    ordinaCarte(game.giocatori[0].carte);
+function ordinaPerNumero() {
+    game.giocatori[0].carte.sort((a, b) => {
+        // Prima per numero
+        if (a.numero !== b.numero) return a.numero - b.numero;
+        // Poi per seme
+        return VALORI_SEMI[a.seme] - VALORI_SEMI[b.seme];
+    });
+    playSound('ordina');
+    render();
+}
+
+function ordinaPerSeme() {
+    game.giocatori[0].carte.sort((a, b) => {
+        // Prima per seme
+        if (a.seme !== b.seme) return VALORI_SEMI[a.seme] - VALORI_SEMI[b.seme];
+        // Poi per numero
+        return a.numero - b.numero;
+    });
     playSound('ordina');
     render();
 }
@@ -1233,6 +1384,7 @@ function verificaScala(carte) {
 }
 
 // Ordina una scala e posiziona i jolly nei buchi corretti
+// Rispetta la posizione della matta nell'ordine originale delle carte
 function ordinaScalaConJolly(carte, assoAlto = false) {
     const jolly = carte.filter(c => c.isJolly || c.isPinella);
     const normali = carte.filter(c => !c.isJolly && !c.isPinella);
@@ -1253,35 +1405,93 @@ function ordinaScalaConJolly(carte, assoAlto = false) {
         return normali;
     }
 
-    // Trova i buchi nella sequenza e assegna i numeri ai jolly
+    // Trova i numeri delle carte normali
     const numeriNormali = normali.map(c => {
         let num = c.numero;
         if (assoAlto && num === 1) num = 14;
         return num;
     });
 
-    // Trova dove ci sono i buchi
-    let jollyIdx = 0;
-    for (let i = 1; i < numeriNormali.length && jollyIdx < jolly.length; i++) {
-        const gap = numeriNormali[i] - numeriNormali[i-1] - 1;
-        for (let j = 0; j < gap && jollyIdx < jolly.length; j++) {
-            let numJolly = numeriNormali[i-1] + j + 1;
-            if (assoAlto && numJolly === 14) {
-                numJolly = 1;
-            }
-            jolly[jollyIdx].jollycomeNumero = numJolly;
-            jollyIdx++;
+    const min = numeriNormali[0];
+    const max = numeriNormali[numeriNormali.length - 1];
+
+    // Conta i buchi nella sequenza
+    let bucheTotali = 0;
+    for (let i = 1; i < numeriNormali.length; i++) {
+        bucheTotali += numeriNormali[i] - numeriNormali[i-1] - 1;
+    }
+
+    // Determina dove mettere la matta in base alla posizione originale
+    // Trova l'indice della prima matta e della prima/ultima carta normale nell'array originale
+    let indiceMatta = -1;
+    let indicePrimaNormale = -1;
+    let indiceUltimaNormale = -1;
+
+    for (let i = 0; i < carte.length; i++) {
+        if ((carte[i].isJolly || carte[i].isPinella) && indiceMatta === -1) {
+            indiceMatta = i;
+        }
+        if (!carte[i].isJolly && !carte[i].isPinella) {
+            if (indicePrimaNormale === -1) indicePrimaNormale = i;
+            indiceUltimaNormale = i;
         }
     }
 
-    // Se ci sono ancora jolly non assegnati, mettili alla fine della scala
-    while (jollyIdx < jolly.length) {
-        let numJolly = numeriNormali[numeriNormali.length - 1] + (jollyIdx - (jolly.length - 1)) + 1;
-        if (assoAlto && numJolly === 14) {
-            numJolly = 1;
+    // Decidi dove posizionare la matta
+    let mattaAllaFine = true; // default
+    if (bucheTotali > 0) {
+        // C'e' un buco nella sequenza: matta nel buco
+        mattaAllaFine = null; // segnala di usare i buchi
+    } else if (indiceMatta < indicePrimaNormale) {
+        // Matta posizionata prima delle carte normali: va all'inizio
+        mattaAllaFine = false;
+    } else if (indiceMatta > indiceUltimaNormale) {
+        // Matta posizionata dopo le carte normali: va alla fine
+        mattaAllaFine = true;
+    }
+
+    // Assegna i numeri ai jolly
+    let jollyIdx = 0;
+
+    if (mattaAllaFine === null) {
+        // Metti i jolly nei buchi
+        for (let i = 1; i < numeriNormali.length && jollyIdx < jolly.length; i++) {
+            const gap = numeriNormali[i] - numeriNormali[i-1] - 1;
+            for (let j = 0; j < gap && jollyIdx < jolly.length; j++) {
+                let numJolly = numeriNormali[i-1] + j + 1;
+                if (assoAlto && numJolly === 14) {
+                    numJolly = 1;
+                }
+                jolly[jollyIdx].jollycomeNumero = numJolly;
+                jollyIdx++;
+            }
         }
-        jolly[jollyIdx].jollycomeNumero = numJolly;
-        jollyIdx++;
+        // Eventuali jolly rimanenti vanno alla fine
+        while (jollyIdx < jolly.length) {
+            let numJolly = max + (jollyIdx - bucheTotali) + 1;
+            jolly[jollyIdx].jollycomeNumero = numJolly;
+            jollyIdx++;
+        }
+    } else if (mattaAllaFine) {
+        // Matta alla fine della scala (dopo il max)
+        for (let j = 0; j < jolly.length; j++) {
+            let numJolly = max + j + 1;
+            if (numJolly > 13 && !assoAlto) {
+                // Non puo' andare oltre il K, mettila all'inizio
+                numJolly = min - (jolly.length - j);
+            }
+            jolly[j].jollycomeNumero = numJolly;
+        }
+    } else {
+        // Matta all'inizio della scala (prima del min)
+        for (let j = 0; j < jolly.length; j++) {
+            let numJolly = min - (jolly.length - j);
+            if (numJolly < 1 && !assoAlto) {
+                // Non puo' andare sotto l'A, mettila alla fine
+                numJolly = max + j + 1;
+            }
+            jolly[j].jollycomeNumero = numJolly;
+        }
     }
 
     // Ora ordina tutte le carte insieme usando il valore effettivo
@@ -1881,8 +2091,21 @@ function onMouseUp(e) {
                 // Rilasciata sugli scarti
                 scartaCarta(carta);
             } else {
-                // Rilasciata altrove - rimetti a posto
-                render();
+                // Verifica se rilasciata su un'altra carta nella mano per riordinare
+                const cartaDestEl = document.elementFromPoint(e.clientX, e.clientY)?.closest('.carta');
+                if (cartaDestEl && cartaDestEl !== elemento) {
+                    const cartaDestId = parseInt(cartaDestEl.dataset.cartaId);
+                    const cartaDest = trovaCarta(cartaDestId);
+                    if (cartaDest && game.giocatori[0].carte.includes(cartaDest)) {
+                        // Riordina: sposta la carta trascinata nella posizione della carta destinazione
+                        riordinaCartaMano(carta, cartaDest);
+                    } else {
+                        render();
+                    }
+                } else {
+                    // Rilasciata altrove - rimetti a posto
+                    render();
+                }
             }
         }
     }
