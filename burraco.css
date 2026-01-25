@@ -498,8 +498,32 @@ html, body {
     transform: scale(1.1);
 }
 
-#btn-ordina-numero { left: 95px; }
-#btn-ordina-seme { left: 140px; }
+/* Pulsanti uno sopra l'altro */
+#btn-ordina-numero { left: 135px; bottom: 53px; }
+#btn-ordina-seme { left: 135px; bottom: 8px; }
+
+/* Contatore carte giocatore */
+#ncarte-giocatore {
+    left: 95px;
+    bottom: 43px;
+}
+
+/* Banner Work In Progress (filigrana) */
+#wip-banner {
+    position: absolute;
+    top: 40%;
+    left: 55%;
+    transform: translate(-50%, -50%) rotate(-15deg);
+    background: transparent;
+    color: rgba(255, 255, 255, 0.12);
+    font-size: 52px;
+    font-weight: bold;
+    padding: 10px 30px;
+    border: none;
+    z-index: 50;
+    pointer-events: none;
+    letter-spacing: 6px;
+}
 
 /* === LINK GIOCHI === */
 .link-giochi {

@@ -287,6 +287,14 @@ function setupEventi() {
     // Mazzo
     $('#mazzo').addEventListener('click', pescaDaMazzo);
 
+    // Click su area giocatore (spazio vuoto) = pesca da mazzo
+    $('#area-giocatore').addEventListener('click', (e) => {
+        // Solo se click su area vuota (non su una carta)
+        if (!e.target.classList.contains('carta')) {
+            pescaDaMazzo();
+        }
+    });
+
     // Scarti
     $('#scarti-container').addEventListener('click', pescaDaScarti);
 
@@ -599,6 +607,12 @@ function renderManoGiocatore(giocatore, containerSel) {
     const container = $(containerSel);
     container.innerHTML = '';
 
+    // Aggiorna contatore carte
+    const contatore = $('#ncarte-giocatore');
+    if (contatore) {
+        contatore.textContent = giocatore.carte.length;
+    }
+
     const numCarte = giocatore.carte.length;
     // Carte piccole: 52px di larghezza visiva (71px * 0.73 scale)
     const cartaW = 52;
@@ -794,9 +808,15 @@ function animaCarta(carta, daElemento, aElemento, opzioni = {}) {
         }
 
         // Posizione iniziale usando fixed (coordinate viewport)
+        // Compensa l'offset se la carta di partenza è ruotata di 90 gradi
+        let inizioLeft = daRect.left;
+        let inizioTop = daRect.top;
+        if (rotazioneIniziale === 90) {
+            inizioLeft += 70;  // Compensa lo spostamento causato dalla rotazione (altezza carta scalata)
+        }
         cartaVolante.style.position = 'fixed';
-        cartaVolante.style.left = daRect.left + 'px';
-        cartaVolante.style.top = daRect.top + 'px';
+        cartaVolante.style.left = inizioLeft + 'px';
+        cartaVolante.style.top = inizioTop + 'px';
         cartaVolante.style.width = '71px';
         cartaVolante.style.height = '96px';
         cartaVolante.style.zIndex = '10000';
@@ -1952,15 +1972,12 @@ async function turnoAI() {
 
     // Scarta ultima carta (valore piu' alto)
     if (giocatore.carte.length > 0) {
-        const cartaDaScartare = giocatore.carte.pop();
-
-        // Trova la posizione della carta prima di rimuoverla (dopo render precedente)
-        render();
+        // Salva la posizione dell'ultima carta PRIMA di rimuoverla
         const container = $(selettoreCarte);
-        // L'ultima carta è stata rimossa, quindi prendiamo l'ultima rimasta come riferimento
-        // oppure usiamo il container stesso
-        const partenzaEl = container ? container.lastElementChild || container : null;
-        const partenzaRect = partenzaEl ? partenzaEl.getBoundingClientRect() : null;
+        const ultimaCartaEl = container ? container.lastElementChild : null;
+        const partenzaRect = ultimaCartaEl ? ultimaCartaEl.getBoundingClientRect() : null;
+
+        const cartaDaScartare = giocatore.carte.pop();
 
         cartaDaScartare.faceUp = true;
         game.scarti.push(cartaDaScartare);
