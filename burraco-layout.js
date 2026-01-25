@@ -31,7 +31,7 @@ function sendAnalyticsEvent(bannerElement, triggerType) {
         const width = bannerElement.style.width;
         const height = bannerElement.style.height;
         const dimensions = width && height ? `${width}x${height}` : 'unknown_dimensions';
-        gtag('event', 'simulated_banner_impression', {
+        gtag('event', 'BUR_simulated_banner_impression', {
             'event_category': 'Banner_Simulation',
             'event_label': dimensions,
             'trigger_type': triggerType, // Parametro aggiunto
