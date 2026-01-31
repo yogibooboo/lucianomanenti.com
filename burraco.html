@@ -10,7 +10,7 @@
     <meta http-Equiv="Pragma" Content="no-cache">
     <meta http-Equiv="Expires" Content="0">
 
-    <link rel="stylesheet" href="burraco.css?v=3.4" />
+    <link rel="stylesheet" href="burraco.css?v=3.5" />
 
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
@@ -46,6 +46,7 @@
 
         <!-- === COMPAGNO (top) === -->
         <div id="area-compagno" class="area-giocatore">
+            <img id="avatar-compagno" class="avatar" src="" alt="">
             <div id="nome-compagno" class="nome-giocatore">Compagno</div>
             <div id="carte-compagno" class="carte-container"></div>
             <div id="ncarte-compagno" class="ncarte">0</div>
@@ -53,6 +54,7 @@
 
         <!-- === AVVERSARIO SINISTRA === -->
         <div id="area-avversario-sx" class="area-giocatore laterale">
+            <img id="avatar-avv-sx" class="avatar" src="" alt="">
             <div id="nome-avv-sx" class="nome-giocatore">Avversario 1</div>
             <div id="carte-avv-sx" class="carte-container verticale"></div>
             <div id="ncarte-avv-sx" class="ncarte">0</div>
@@ -60,6 +62,7 @@
 
         <!-- === AVVERSARIO DESTRA === -->
         <div id="area-avversario-dx" class="area-giocatore laterale">
+            <img id="avatar-avv-dx" class="avatar" src="" alt="">
             <div id="nome-avv-dx" class="nome-giocatore">Avversario 2</div>
             <div id="carte-avv-dx" class="carte-container verticale"></div>
             <div id="ncarte-avv-dx" class="ncarte">0</div>
@@ -67,21 +70,47 @@
 
         <!-- === AREA COMBINAZIONI AVVERSARI (sinistra) === -->
         <div id="combinazioni-loro" class="area-combinazioni">
-            <div class="titolo-area">Loro</div>
+            <div class="titolo-area">
+                <span class="titolo-nome">Loro</span>
+                <span class="titolo-punti">
+                    <span class="punti-burraco" title="Punti burraco">Burraco: 0</span>
+                    <span class="punti-carte" title="Punti carte">Carte: 0</span>
+                    <span class="punti-pozzetto" title="Pozzetto (-100 se non preso)">Pozzetto: -100</span>
+                    <span class="punti-totale" title="Totale">= -100</span>
+                </span>
+            </div>
         </div>
 
         <!-- === AREA COMBINAZIONI NOI (destra) === -->
         <div id="combinazioni-noi" class="area-combinazioni">
-            <div class="titolo-area">Noi</div>
+            <div class="titolo-area">
+                <span class="titolo-nome">Noi</span>
+                <span class="titolo-punti">
+                    <span class="punti-burraco" title="Punti burraco">Burraco: 0</span>
+                    <span class="punti-carte" title="Punti carte">Carte: 0</span>
+                    <span class="punti-pozzetto" title="Pozzetto (-100 se non preso)">Pozzetto: -100</span>
+                    <span class="punti-totale" title="Totale">= -100</span>
+                </span>
+            </div>
         </div>
 
         <!-- === WORK IN PROGRESS === -->
         <div id="wip-banner">WORK IN PROGRESS</div>
 
         <!-- === MAZZO === -->
-        <div id="mazzo"><span>Mazzo</span></div>
+        <div id="mazzo-info">
+            <span class="mazzo-count">0</span>
+        </div>
+        <div id="mazzo"></div>
 
         <!-- === SCARTI === -->
+        <div id="scarti-info">
+            <span class="titolo-nome">Scarti</span>
+            <span class="titolo-punti">
+                <span class="punti-numero">Carte: 0</span>
+                <span class="punti-valore">Punti: 0</span>
+            </span>
+        </div>
         <div id="scarti-container">
             <!-- Scarti visibili in linea -->
         </div>
@@ -93,6 +122,13 @@
         </div>
 
         <!-- === GIOCATORE (bottom) === -->
+        <div id="giocatore-info">
+            <span class="titolo-nome">Giocatore</span>
+            <span class="titolo-punti">
+                <span class="punti-numero">Carte: 0</span>
+                <span class="punti-valore">Punti: 0</span>
+            </span>
+        </div>
         <div id="area-giocatore" class="area-giocatore">
             <div id="carte-giocatore" class="carte-container"></div>
         </div>
@@ -103,8 +139,7 @@
         <div id="btn-undo" class="pulsante2">UNDO (0)</div>
         <div id="btn-scoperte" class="pulsante2">SCOPERTE</div>
 
-        <!-- === CONTATORE E PULSANTI ORDINAMENTO (a sinistra del campo giocatore) === -->
-        <div id="ncarte-giocatore" class="ncarte">0</div>
+        <!-- === PULSANTI ORDINAMENTO (a sinistra del campo giocatore) === -->
         <div id="btn-ordina-numero" class="pulsante-ordina">123</div>
         <div id="btn-ordina-seme" class="pulsante-ordina">&hearts;&spades;</div>
 
@@ -182,7 +217,10 @@
 <audio id="snd-pozzetto" src="sounds/scala40/magic.mp3"></audio>
 <audio id="snd-burraco" src="sounds/scala40/applause.mp3"></audio>
 
-<script src="burraco.js?v=5.29"></script>
+<!-- Codice diviso in 3 file per manutenibilità -->
+<script src="burraco-core.js?v=7.8"></script>
+<script src="burraco-game.js?v=7.8"></script>
+<script src="burraco-ui.js?v=7.8"></script>
 
 </body>
 </html>

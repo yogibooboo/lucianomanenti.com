@@ -2006,6 +2006,7 @@ var scala = {
 					}
 
 					if ((scala.totalegiocatore>=scala.totalelimite)&&(salvapunti<scala.totalelimite)){
+						thunder.currentTime = 0;
 						thunder.play();
 						scala.mydialog("haipersotorneo",function(){scala.azzeratotale();scala.nuovo()},scala.nuovo);
 						return;  //esce definitivamente

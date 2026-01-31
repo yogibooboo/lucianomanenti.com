@@ -32,7 +32,7 @@ html, body {
     position: absolute; /* Changed back from fixed */
     top: 0;
     height: 100%;
-    background-color: #f0f0f0;
+    background-color: green;
     overflow-y: auto;
     box-sizing: border-box;
     display: none; /* Nascoste di default, mostrate via JS */
@@ -56,11 +56,11 @@ html, body {
 
 /* Stile per i banner di simulazione */
 .ad-banner {
-    background-color: #ddd;
+    background-color: #2d5a3d;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #333;
+    color: #ccc;
     text-align: center;
     box-sizing: border-box;
     flex-shrink: 0;
@@ -92,8 +92,8 @@ html, body {
 	padding:5px;
 	border-style:solid;
 	border-color:white;
-    background-color: green; /* Ensure it has a background */
-	z-index:50000; 
+    background-color: #1a472a;
+	z-index:50000;
 }
 
 
@@ -107,8 +107,8 @@ html, body {
 	padding:5px;
 	border-style:solid;
 	border-color:white;
-	background-color:green;
-	 z-index:50000; 
+	background-color: #1a472a;
+	z-index:50000;
 }
 
 .pulsantemessaggio{
@@ -196,16 +196,23 @@ h1,h2,h3,h4,h5,h6{
 	background-image:url(images/scala40/tappetoverdescuretto.png);
 }
 
-.card{
-	border-radius:9px;
-	-ms-border-radius:9px;
-	-webkit-border-radius:9px;
-	-o-border-radius:9px;
-	-khtml-border-radius:9px;
-	-moz-border-radius:9px;
-	background-image:url(images/scala40/conjollyplus.png);
-	position:absolute;
-	cursor:pointer;
+.card {
+    border-radius: 9px;
+    -ms-border-radius: 9px;
+    -webkit-border-radius: 9px;
+    -o-border-radius: 9px;
+    -khtml-border-radius: 9px;
+    -moz-border-radius: 9px;
+    background-image: url(images/scala40/conjollyplus.png);
+    position: absolute;
+    cursor: pointer;
+
+    /* --- FIX PER SAFARI / IOS --- */
+    -webkit-transform: translateZ(0); /* Forza la creazione di un layer hardware separato */
+    transform: translateZ(0);
+    /* Versione standard (per Chrome, Firefox, Edge e Safari moderno) */
+    backface-visibility: hidden;
+    transform: translateZ(0);
 }
 
 .cardselected{

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+
+
+<head>
+
+	<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-WRBDRDQ4L8');
+</script>
+
+
+    <title>Spider Solitaire</title>
+
+    <meta charset="utf-8"> 
+
+    <link rel="stylesheet" href="spider.css?v=2.1" />
+    
+    <meta name="Description" content="Play free Spider Solitaire online, no registration,no ads. Gioca Spider Solitario gratis online senza registrazione, senza pubblicit�. Spider Luciano.�"
+       
+</head>
+
+
+<body>
+
+<div class="main-container">
+    <div id="sidebar-left" class="sidebar">
+        <!-- Banner verranno inseriti qui da JS -->
+    </div>
+    <div id="sidebar-right" class="sidebar">
+        <!-- Banner verranno inseriti qui da JS -->
+    </div>
+
+	   <div id="schermo"></div>	
+	   <div id="campogioco">
+	  
+	  <div id="formistruzioni" class="formistruzioni"> 
+		<h2>Istruzioni per giocare a scala Spider Luciano:</h2>
+			Cliccare su una carta per il posizionamento automatico.<br><br>
+			Trascinarla per il posizionamento manuale.<br><br>
+			Si possono sovrappore carte di numero decrescente, anche di colore diverso.<br><br>
+			Si può trascinare più di una carta per volta, purchè in ordine decrescente e dello stesso colore.<br><br>
+			NEW-NUOVO inizia un nuovo gioco.<br><br>
+			UNDO annulla l'ultima mossa<br><br>
+			Tutto il resto dovrebbe essere chiaro : )<br><br>
+
+<button class= "bottone1" type="button" >OK</button>
+	  </div> 
+	   
+	  <div id="formhelp" class="formistruzioni"> 
+		<h2>How to play Spider Luciano:</h2>
+		Click on a card for automatic placement.<br><br>
+		Drag it for manual placement.<br><br>
+		You can overlay cards in descending order, even with different colors. <br><br> 
+		You can drag more than one card at a time, in descending order but only of the same color.<br><br>
+		NEW-NUOVO starts a new game.<br><br>
+		UNDO undoes the last move.<br><br>
+		All the rest should be clear  : )<br><br>
+
+
+<button class= "bottone1" type="button" >OK</button>
+	  </div> 
+
+	   
+	  <div id="haivinto" class="form" style="background-image:url(images/scala40/haivinto.jpg)">  
+	  <!--<button id= "vintoOK" type="button" style="left: 100px;" >OK</button>
+	  <button id= "vintoNEW" type="button" style="left: 200px;" >NUOVA PARTITA</button>-->
+	  <button class= "bottone1" type="button" style="left: 200px;" >NUOVA PARTITA</button>
+	   </div> 
+	   
+	  <div id="steccavuota" class="form" style="background-image:url(images/spider/colonnevuote.jpg)">  
+	  <button class= "bottone2" type="button" style="left: 200px;" >CONTINUE</button>
+	  </div> 
+
+
+	   
+	   
+ 	   
+	   
+	   <div id="nonpertest">
+		<!--<div id="istruzioni" class="pulsante2" style="top: 655px; left: 10px; z-index:1000">ISTRUZIONI</div> -->
+		<div id="nuovo" class="pulsante2" style="top: 5px; left: 10px; z-index:1000">NEW-NUOVO</div>
+	    </div>   <!-- nonpertest-->
+	   <div id="pulsante2" class="pulsante2" style="top: 5px; left: 878px; z-index:1000">UNDO (0)</div> 
+	   <div id="scoperte" class="pulsantes" style="top: 660px; left: 900px; z-index:1000">SCOPERTE</div> 
+	   
+	    
+		<div class="pulsanteaiuto" style="top: 705px; left: 10px; "></div>
+		<div class="pulsantehelp" style="top: 660px; left: 10px; "></div>
+
+		<div class="pulsantecomments" style="top: 705px; left: 655px; "></div>
+	    
+		<a href="scala40.html"><div class="pulsantescala40" style="top: 660px; left: 780px; "></div></a>
+		<a href="machiavelli.html"><div class="pulsantemachiavelli" style="top: 705px; left: 780px; "></div></a>
+		<a href="index.html"><div class="pulsanteback" style="top: 705px; left: 900px; "></div></a>
+	    
+	  
+	
+      
+	  <div style="position:absolute; top: 03px; left: 250px;"><img src="images/spider/dorata-spider.png"   height="45px" width="500px"></div>
+	  <div id = "autocomplete" style="position:absolute; top: 57px; left: 838px;"><img src="images/spider/autocomplete.jpg"   height="110px" width="170px"></div>
+
+		<div id="gioco">
+
+ 		<canvas id="canvasmazzo"  width="180" height="120"></canvas>
+		<canvas id="canvaspile"  width="180" height="480"></canvas> 
+		<canvas id="canvasgioco" width="1000" height="600" ></canvas>
+		<canvas id="canvasdati" width="500" height="80" ></canvas>
+		
+		
+		</div>  <!-- gioco-->
+
+   
+	</div>  <!-- campogioco schermo-->  
+</div>
+	   <!-- <audio id="pesca" src="sounds/scala40/cardplace1.mp3"></audio>
+	   <audio id="scartatris" src="sounds/scala40/cardplace3.mp3"></audio>
+	   <audio id="ordina" src="sounds/scala40/cardslide5.mp3"></audio>
+	   <audio id="scarta" src="sounds/scala40/cardslide1.mp3"></audio>
+	    <audio id="perjolly" src="sounds/scala40/chimes.mp3"></audio>
+	    <audio id="tada" src="sounds/scala40/tada.mp3"></audio>
+	   <audio id="perso" src="sounds/scala40/haiperso.mp3"></audio>
+	 <audio id="dascarti" src="sounds/scala40/magic.mp3"></audio>
+	 <audio id="slitta" src="sounds/scala40/slitta.mp3"></audio>
+	 <audio id="ding" src="sounds/scala40/ding.mp3"></audio>
+	 <audio id="thunder" src="sounds/scala40/thunder.mp3"></audio>
+	 <audio id="applause" src="sounds/scala40/applause.mp3"></audio>
+	 <audio id="distribuisci" src="sounds/scala40/distribuisci.mp3"></audio>-->  
+
+	<script src="jquery-2.1.1.js"></script>
+    <script src="spider-layout.js?v=2.1"></script>
+	<script src="spidercode.js?v=2.1"></script>
+
+
+
+</body>
+
+</html>

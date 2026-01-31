@@ -37,6 +37,150 @@ const PUNTI_BURRACO_PULITO = 100;
 const PUNTI_BURRACO_SPORCO = 50;
 const PUNTI_CHIUSURA = 100;
 
+// Azioni per storia
+const AZIONE_PESCA_MAZZO = 1;
+const AZIONE_PESCA_SCARTI = 2;
+const AZIONE_SCARTO = 3;
+const AZIONE_COMBINAZIONE = 4;
+const AZIONE_ATTACCO = 5;
+const AZIONE_POZZETTO = 6;
+
+// Tipi di bot
+const BOT_AGGRESSIVO = 1;    // Deposita subito, cerca chiusura rapida
+const BOT_DIFENSIVO = 2;     // Aspetta burrachi, evita rischi
+const BOT_BILANCIATO = 3;    // Mix equilibrato
+const BOT_OPPORTUNISTA = 4;  // Adatta strategia in base al gioco
+
+// Tratti speciali bot
+const TRATTO_MEMORIA_LUNGA = 1;      // Ricorda più scarti avversari
+const TRATTO_BURRACO_SPECIALIST = 2; // Preferisce burrachi puliti
+const TRATTO_BLOCCANTE = 3;          // Evita scartare carte utili agli altri
+const TRATTO_CHIUSURA_RAPIDA = 4;    // Cerca di chiudere velocemente
+const TRATTO_PESCATORE = 5;          // Preferisce pescare da scarti
+
+// ============================================================================
+// PERSONAGGI PREDEFINITI
+// ============================================================================
+
+const PERSONAGGI = [
+    // Aggressivi
+    {
+        id: 'giuseppe',
+        nome: 'Giuseppe',
+        avatar: 'giuseppe',
+        botType: BOT_AGGRESSIVO,
+        tratti: [TRATTO_CHIUSURA_RAPIDA],
+        descrizione: 'Veterano impetuoso, vuole sempre chiudere per primo'
+    },
+    {
+        id: 'rocco',
+        nome: 'Rocco',
+        avatar: 'rocco',
+        botType: BOT_AGGRESSIVO,
+        tratti: [TRATTO_MEMORIA_LUNGA],
+        descrizione: 'Giocatore esperto, non dimentica nulla'
+    },
+    {
+        id: 'teresa',
+        nome: 'Teresa',
+        avatar: 'teresa',
+        botType: BOT_AGGRESSIVO,
+        tratti: [TRATTO_PESCATORE],
+        descrizione: 'Aggressiva ma calcolatrice, ama pescare dagli scarti'
+    },
+
+    // Difensivi
+    {
+        id: 'maria',
+        nome: 'Maria',
+        avatar: 'maria',
+        botType: BOT_DIFENSIVO,
+        tratti: [TRATTO_BLOCCANTE],
+        descrizione: 'Prudente e strategica, non regala niente agli avversari'
+    },
+    {
+        id: 'antonio',
+        nome: 'Antonio',
+        avatar: 'antonio',
+        botType: BOT_DIFENSIVO,
+        tratti: [TRATTO_BURRACO_SPECIALIST],
+        descrizione: 'Paziente, aspetta sempre il burraco pulito'
+    },
+    {
+        id: 'lucia',
+        nome: 'Lucia',
+        avatar: 'lucia',
+        botType: BOT_DIFENSIVO,
+        tratti: [TRATTO_MEMORIA_LUNGA, TRATTO_BLOCCANTE],
+        descrizione: 'Nonna astuta, ricorda ogni carta scartata'
+    },
+
+    // Bilanciati
+    {
+        id: 'paolo',
+        nome: 'Paolo',
+        avatar: 'paolo',
+        botType: BOT_BILANCIATO,
+        tratti: [],
+        descrizione: 'Giocatore solido, nessun punto debole'
+    },
+    {
+        id: 'francesca',
+        nome: 'Francesca',
+        avatar: 'francesca',
+        botType: BOT_BILANCIATO,
+        tratti: [TRATTO_BURRACO_SPECIALIST],
+        descrizione: 'Equilibrata ma ama i burrachi puliti'
+    },
+    {
+        id: 'marco',
+        nome: 'Marco',
+        avatar: 'marco',
+        botType: BOT_BILANCIATO,
+        tratti: [TRATTO_MEMORIA_LUNGA],
+        descrizione: 'Tranquillo ma attento, segue il gioco con cura'
+    },
+
+    // Opportunisti
+    {
+        id: 'carla',
+        nome: 'Carla',
+        avatar: 'carla',
+        botType: BOT_OPPORTUNISTA,
+        tratti: [TRATTO_PESCATORE],
+        descrizione: 'Imprevedibile, si adatta a ogni situazione'
+    },
+    {
+        id: 'sergio',
+        nome: 'Sergio',
+        avatar: 'sergio',
+        botType: BOT_OPPORTUNISTA,
+        tratti: [TRATTO_CHIUSURA_RAPIDA],
+        descrizione: 'Furbo, approfitta di ogni occasione per chiudere'
+    },
+    {
+        id: 'anna',
+        nome: 'Anna',
+        avatar: 'anna',
+        botType: BOT_OPPORTUNISTA,
+        tratti: [TRATTO_BLOCCANTE, TRATTO_PESCATORE],
+        descrizione: 'Scaltra, cambia strategia a seconda degli avversari'
+    }
+];
+
+// Funzione per selezionare personaggi casuali non duplicati
+function selezionaPersonaggiCasuali(numero) {
+    const disponibili = [...PERSONAGGI];
+    const selezionati = [];
+
+    for (let i = 0; i < numero && disponibili.length > 0; i++) {
+        const idx = Math.floor(Math.random() * disponibili.length);
+        selezionati.push(disponibili.splice(idx, 1)[0]);
+    }
+
+    return selezionati;
+}
+
 // ============================================================================
 // CLASSE CARTA
 // ============================================================================
@@ -140,22 +284,389 @@ class Combinazione {
 }
 
 // ============================================================================
+// CLASSE TRATTI INNATI (per AI)
+// ============================================================================
+
+class TrattiInnate {
+    constructor(botType, scoreRecord = null, trattiPredefiniti = []) {
+        this.botType = botType;
+
+        // Pesi base (0.0 - 1.0) che influenzano le decisioni
+        this.pesi = {
+            aggressivita: 0.5,      // Tendenza a depositare subito
+            prudenza: 0.5,          // Evita scartare carte "pericolose"
+            memoria: 5,             // Quanti scarti ricorda (numero)
+            preferenzaBurraco: 0.5, // Preferenza per burrachi vs chiusura rapida
+            adattamento: 0.5        // Velocità di adattamento durante partita
+        };
+
+        // Tratti speciali (array di costanti TRATTO_*)
+        this.tratti = [];
+
+        // Configura pesi in base al tipo bot
+        this.configuraPesiDaTipo(botType);
+
+        // Usa tratti predefiniti se forniti, altrimenti genera da tipo
+        if (trattiPredefiniti.length > 0) {
+            this.tratti = [...trattiPredefiniti];
+        } else {
+            this.generaTrattiDaTipo(botType);
+        }
+
+        // Bonus da scoreRecord (se disponibile)
+        if (scoreRecord) {
+            this.applicaBonusRecord(scoreRecord);
+        }
+    }
+
+    configuraPesiDaTipo(botType) {
+        switch (botType) {
+            case BOT_AGGRESSIVO:
+                this.pesi.aggressivita = 0.8;
+                this.pesi.prudenza = 0.3;
+                this.pesi.preferenzaBurraco = 0.3;
+                break;
+
+            case BOT_DIFENSIVO:
+                this.pesi.aggressivita = 0.3;
+                this.pesi.prudenza = 0.8;
+                this.pesi.preferenzaBurraco = 0.8;
+                this.pesi.memoria = 8;
+                break;
+
+            case BOT_BILANCIATO:
+                // Valori default già bilanciati
+                this.pesi.memoria = 6;
+                break;
+
+            case BOT_OPPORTUNISTA:
+                this.pesi.adattamento = 0.8;
+                this.pesi.memoria = 10;
+                break;
+        }
+    }
+
+    generaTrattiDaTipo(botType) {
+        // Tratti di default per tipo (usati solo se non ci sono tratti predefiniti)
+        switch (botType) {
+            case BOT_AGGRESSIVO:
+                this.tratti.push(TRATTO_CHIUSURA_RAPIDA);
+                break;
+            case BOT_DIFENSIVO:
+                this.tratti.push(TRATTO_BURRACO_SPECIALIST);
+                break;
+            case BOT_OPPORTUNISTA:
+                this.tratti.push(TRATTO_MEMORIA_LUNGA);
+                this.tratti.push(TRATTO_PESCATORE);
+                break;
+            // BOT_BILANCIATO: nessun tratto speciale di default
+        }
+    }
+
+    applicaBonusRecord(scoreRecord) {
+        // Bot "veterano" con molte vittorie
+        if (scoreRecord.vittorie > 10) {
+            this.pesi.adattamento += 0.1;
+        }
+        // In forma (streak positiva)
+        if (scoreRecord.streak > 3) {
+            this.pesi.aggressivita += 0.1;
+        }
+        // Specialista burraco
+        if (scoreRecord.burrachiTotali > 20) {
+            if (!this.tratti.includes(TRATTO_BURRACO_SPECIALIST)) {
+                this.tratti.push(TRATTO_BURRACO_SPECIALIST);
+            }
+        }
+    }
+
+    haTratti(tratto) {
+        return this.tratti.includes(tratto);
+    }
+}
+
+// ============================================================================
+// CLASSE STRATEGIA (logica decisionale AI)
+// ============================================================================
+
+class Strategia {
+    constructor(giocatore) {
+        this.giocatore = giocatore;
+        this.tratti = giocatore.trattiInnate;
+
+        // Osservazioni durante la partita
+        this.osservazioni = {
+            carteVerniciateAvversari: new Map(), // Carte che avversari sembrano cercare
+            probabiliScale: [],                   // Scale probabili degli avversari
+            probabiliTris: []                     // Tris probabili degli avversari
+        };
+    }
+
+    // Analizza la storia per capire cosa fanno gli avversari
+    analizzaScartiAvversari() {
+        const squadraBot = this.giocatore.squadra;
+        const memoria = this.tratti.pesi.memoria;
+
+        // Filtra scarti degli avversari (squadra opposta)
+        const scartiAvv = game.storia.filter(m =>
+            m.azione === AZIONE_SCARTO &&
+            game.giocatori[m.giocatore] &&
+            game.giocatori[m.giocatore].squadra !== squadraBot
+        );
+
+        // Ritorna ultimi N in base alla memoria
+        return scartiAvv.slice(-memoria).map(m => ({
+            giocatore: m.giocatore,
+            carta: tutteLeCarte[m.carta]
+        }));
+    }
+
+    // Analizza pesche da scarti per dedurre cosa cercano
+    analizzaPescheScarti() {
+        const squadraBot = this.giocatore.squadra;
+
+        return game.storia.filter(m =>
+            m.azione === AZIONE_PESCA_SCARTI &&
+            game.giocatori[m.giocatore] &&
+            game.giocatori[m.giocatore].squadra !== squadraBot
+        );
+    }
+
+    // Decisione: pescare da scarti o da mazzo?
+    decidiFontePesca() {
+        if (game.scarti.length === 0) return 'mazzo';
+
+        const cartaInCima = game.scarti[game.scarti.length - 1];
+        const mano = this.giocatore.carte;
+
+        // Controlla se la carta forma combinazione immediata
+        const formaCombinazione = this.cartaFormaCombinazione(cartaInCima, mano);
+
+        // Controlla se può attaccare a combinazione esistente
+        const puoAttaccare = this.cartaPuoAttaccare(cartaInCima);
+
+        // Calcola punteggio decisione
+        let punteggio = 0;
+
+        if (formaCombinazione) punteggio += 0.6;
+        if (puoAttaccare) punteggio += 0.3;
+
+        // Aggressivo: più propenso a pescare da scarti
+        punteggio += (this.tratti.pesi.aggressivita - 0.5) * 0.2;
+
+        // Tratto pescatore: bonus
+        if (this.tratti.haTratti(TRATTO_PESCATORE)) {
+            punteggio += 0.15;
+        }
+
+        // Ma attenzione: pescare da scarti prende TUTTE le carte
+        if (game.scarti.length > 5) {
+            punteggio -= 0.1; // Penalità per troppe carte
+        }
+
+        return punteggio > 0.4 ? 'scarti' : 'mazzo';
+    }
+
+    // Verifica se carta forma combinazione con la mano
+    cartaFormaCombinazione(carta, mano) {
+        // Crea mano temporanea con la carta aggiunta
+        const manoTemp = [...mano, carta];
+
+        // Cerca tris
+        const stessoNumero = manoTemp.filter(c => c.numero === carta.numero && !c.isJolly);
+        if (stessoNumero.length >= 3) return true;
+
+        // Cerca scale (semplificato: 3 carte consecutive stesso seme)
+        const stessoSeme = manoTemp.filter(c => c.seme === carta.seme && !c.isJolly)
+            .sort((a, b) => a.numero - b.numero);
+
+        for (let i = 0; i < stessoSeme.length - 2; i++) {
+            if (stessoSeme[i+1].numero === stessoSeme[i].numero + 1 &&
+                stessoSeme[i+2].numero === stessoSeme[i].numero + 2) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    // Verifica se carta può attaccare combinazione esistente
+    cartaPuoAttaccare(carta) {
+        const combinazioni = this.giocatore.squadra === 0 ?
+            game.combinazioniNoi : game.combinazioniLoro;
+
+        for (const comb of combinazioni) {
+            // Usa la funzione esistente se disponibile
+            if (typeof puoAggiungereACombinazione === 'function') {
+                if (puoAggiungereACombinazione(carta, comb)) return true;
+            }
+        }
+        return false;
+    }
+
+    // Decisione: quale carta scartare?
+    scegliCartaDaScartare() {
+        const mano = this.giocatore.carte;
+        if (mano.length === 0) return null;
+
+        // Calcola punteggio per ogni carta (più alto = più scartabile)
+        const punteggi = mano.map(carta => ({
+            carta: carta,
+            punteggio: this.calcolaPunteggioScarto(carta)
+        }));
+
+        // Ordina per punteggio decrescente
+        punteggi.sort((a, b) => b.punteggio - a.punteggio);
+
+        return punteggi[0].carta;
+    }
+
+    calcolaPunteggioScarto(carta) {
+        let punteggio = 0;
+        const mano = this.giocatore.carte;
+
+        // Carte isolate (non formano combinazioni) sono più scartabili
+        const stessoNumero = mano.filter(c => c.numero === carta.numero).length;
+        const stessoSeme = mano.filter(c => c.seme === carta.seme).length;
+
+        if (stessoNumero === 1) punteggio += 0.3;  // Carta isolata per tris
+        if (stessoSeme <= 2) punteggio += 0.2;     // Poche carte stesso seme
+
+        // Carte alte valgono più punti negativi se restano in mano
+        punteggio += (carta.punti / 15) * 0.2;
+
+        // Jolly e pinelle: MAI scartare (punteggio molto basso)
+        if (carta.isJolly) punteggio -= 1.0;
+        if (carta.isPinella) punteggio -= 0.5;
+
+        // Prudenza: evita scartare carte che potrebbero servire agli avversari
+        if (this.tratti.pesi.prudenza > 0.5) {
+            const scartiAvv = this.analizzaScartiAvversari();
+            // Se avversari scartano carte simili, probabilmente non le cercano
+            const avvHaScartato = scartiAvv.some(s =>
+                s.carta && s.carta.numero === carta.numero
+            );
+            if (!avvHaScartato) {
+                punteggio -= this.tratti.pesi.prudenza * 0.2;
+            }
+        }
+
+        // Tratto bloccante: penalizza carte che potrebbero aiutare avversari
+        if (this.tratti.haTratti(TRATTO_BLOCCANTE)) {
+            // Carte medie (5-9) sono più "pericolose"
+            if (carta.numero >= 5 && carta.numero <= 9) {
+                punteggio -= 0.15;
+            }
+        }
+
+        return punteggio;
+    }
+
+    // Decisione: depositare combinazione?
+    dovrebbiDepositare(carte) {
+        // Verifica se è combinazione valida
+        if (typeof verificaCombinazione === 'function') {
+            const risultato = verificaCombinazione(carte);
+            if (!risultato.valida) return false;
+        }
+
+        const numCarte = carte.length;
+
+        // Aggressivo: deposita sempre
+        if (this.tratti.pesi.aggressivita > 0.7) return true;
+
+        // Specialist burraco: aspetta se vicino a 7 carte
+        if (this.tratti.haTratti(TRATTO_BURRACO_SPECIALIST)) {
+            if (numCarte >= 5 && numCarte < 7) {
+                // Controlla se può facilmente arrivare a 7
+                return false;
+            }
+        }
+
+        // Chiusura rapida: deposita se ha poche carte
+        if (this.tratti.haTratti(TRATTO_CHIUSURA_RAPIDA)) {
+            if (this.giocatore.carte.length <= 5) return true;
+        }
+
+        // Default: deposita se >= 4 carte o burraco
+        return numCarte >= 4 || numCarte >= 7;
+    }
+}
+
+// ============================================================================
 // CLASSE GIOCATORE
 // ============================================================================
 
 class Giocatore {
-    constructor(nome, posizione, isUmano = false) {
-        this.nome = nome;
+    // Può ricevere un personaggio predefinito o parametri singoli
+    constructor(nome, posizione, isUmano = false, personaggioOBotType = null) {
         this.posizione = posizione; // 'bottom', 'top', 'left', 'right'
         this.isUmano = isUmano;
         this.carte = [];
         this.haPozzetto = false;
         this.haChiuso = false;
         this.squadra = 0; // 0 = noi, 1 = loro
+
+        // Se è un personaggio predefinito (oggetto con id, avatar, etc.)
+        if (personaggioOBotType && typeof personaggioOBotType === 'object') {
+            this.personaggio = personaggioOBotType;
+            this.nome = personaggioOBotType.nome;
+            this.avatar = personaggioOBotType.avatar;
+            this.botType = personaggioOBotType.botType;
+            this.trattiPredefiniti = personaggioOBotType.tratti || [];
+            this.descrizione = personaggioOBotType.descrizione;
+        } else {
+            // Fallback: parametri singoli (per retrocompatibilità e giocatore umano)
+            this.nome = nome;
+            this.avatar = null;
+            this.botType = personaggioOBotType || BOT_BILANCIATO;
+            this.trattiPredefiniti = [];
+            this.descrizione = '';
+        }
+
+        this.scoreRecord = {
+            vittorie: 0,
+            sconfitte: 0,
+            mediaPunti: 0,
+            streak: 0,
+            burrachiTotali: 0
+        };
+
+        // Tratti e strategia (solo per bot)
+        if (!isUmano) {
+            this.trattiInnate = new TrattiInnate(this.botType, this.scoreRecord, this.trattiPredefiniti);
+            this.strategia = new Strategia(this);
+        }
     }
 
     get numCarte() {
         return this.carte.length;
+    }
+
+    // Placeholder per persistenza
+    caricaRecord() {
+        // TODO: localStorage.getItem(`burraco_bot_${this.nome}`)
+    }
+
+    salvaRecord() {
+        // TODO: localStorage.setItem(`burraco_bot_${this.nome}`, ...)
+    }
+
+    aggiornaRecord(esito, punti, burrachi = 0) {
+        if (esito === 'vittoria') {
+            this.scoreRecord.vittorie++;
+            this.scoreRecord.streak++;
+        } else {
+            this.scoreRecord.sconfitte++;
+            this.scoreRecord.streak = 0;
+        }
+        const totPartite = this.scoreRecord.vittorie + this.scoreRecord.sconfitte;
+        if (totPartite > 0) {
+            this.scoreRecord.mediaPunti =
+                ((this.scoreRecord.mediaPunti * (totPartite - 1)) + punti) / totPartite;
+        }
+        this.scoreRecord.burrachiTotali += burrachi;
+        this.salvaRecord();
     }
 }
 
@@ -192,6 +703,10 @@ const game = {
     // Undo
     stati: [],
 
+    // Storia mosse
+    storia: [],
+    turno: 0,
+
     // Audio
     suoni: {},
 
@@ -204,6 +719,9 @@ const game = {
     // Debug/Cheat
     mostraTutteCarteScoperte: false,
 };
+
+// Esponi game globalmente per debug nei dev tools
+window.game = game;
 
 // ============================================================================
 // FUNZIONI UTILITA
@@ -230,6 +748,164 @@ function playSound(nome) {
     if (audio) {
         audio.currentTime = 0;
         audio.play().catch(() => {});
+    }
+}
+
+// Crea uno snapshot dello stato corrente del gioco
+function creaSnapshot() {
+    // Funzione helper per estrarre stato carte speciali (jolly/pinella usate come matta)
+    const estraiCarteSpeciali = () => {
+        const speciali = {};
+        // Cerca in tutte le combinazioni
+        [...game.combinazioniNoi, ...game.combinazioniLoro].forEach(comb => {
+            comb.carte.forEach(c => {
+                if (c.jollycomeNumero !== null) {
+                    speciali[c.id] = { jollycomeNumero: c.jollycomeNumero };
+                }
+            });
+        });
+        return speciali;
+    };
+
+    // Funzione helper per estrarre stato faceUp di tutte le carte
+    const estraiFaceUp = () => {
+        const faceUpMap = {};
+        Object.values(tutteLeCarte).forEach(c => {
+            faceUpMap[c.id] = c.faceUp;
+        });
+        return faceUpMap;
+    };
+
+    // Funzione helper per serializzare una combinazione
+    const serializzaCombinazione = (comb) => ({
+        id: comb.id,
+        tipo: comb.tipo,
+        carte: comb.carte.map(c => c.id),
+        seme: comb.seme,
+        numero: comb.numero,
+        assoAlto: comb.assoAlto || false
+    });
+
+    return {
+        mazzo: game.mazzo.map(c => c.id),
+        scarti: game.scarti.map(c => c.id),
+        pozzetti: [
+            game.pozzetti[0].map(c => c.id),
+            game.pozzetti[1].map(c => c.id)
+        ],
+        mani: game.giocatori.map(g => g.carte.map(c => c.id)),
+        combinazioniNoi: game.combinazioniNoi.map(serializzaCombinazione),
+        combinazioniLoro: game.combinazioniLoro.map(serializzaCombinazione),
+        carteSpeciali: estraiCarteSpeciali(),
+        faceUp: estraiFaceUp(),
+        puntiNoi: game.puntiNoi,
+        puntiLoro: game.puntiLoro,
+        haPozzetto: game.giocatori.map(g => g.haPozzetto),
+        fase: game.fase,
+        haPescato: game.haPescato
+    };
+}
+
+// Mappa globale di tutte le carte per ID (per restore veloce)
+let tutteLeCarte = {};
+
+// Ripristina lo stato del gioco da uno snapshot
+function ripristinaSnapshot(snapshot) {
+    // Helper per trovare carta per ID
+    const getCarta = (id) => tutteLeCarte[id];
+
+    // Ripristina mazzo
+    game.mazzo = snapshot.mazzo.map(getCarta);
+
+    // Ripristina scarti
+    game.scarti = snapshot.scarti.map(getCarta);
+
+    // Ripristina pozzetti
+    game.pozzetti[0] = snapshot.pozzetti[0].map(getCarta);
+    game.pozzetti[1] = snapshot.pozzetti[1].map(getCarta);
+
+    // Ripristina mani giocatori
+    game.giocatori.forEach((g, i) => {
+        g.carte = snapshot.mani[i].map(getCarta);
+        g.haPozzetto = snapshot.haPozzetto[i];
+    });
+
+    // Reset stato carte (prima di ricostruire combinazioni)
+    Object.values(tutteLeCarte).forEach(c => {
+        c.inCombinazione = false;
+        c.idCombinazione = -1;
+        c.jollycomeNumero = null;
+        c.selezionata = false;
+    });
+
+    // Ripristina combinazioni Noi
+    game.combinazioniNoi = snapshot.combinazioniNoi.map(snapComb => {
+        const comb = new Combinazione(snapComb.id, snapComb.tipo, []);
+        comb.carte = snapComb.carte.map(getCarta);
+        comb.seme = snapComb.seme;
+        comb.numero = snapComb.numero;
+        comb.assoAlto = snapComb.assoAlto;
+        // Marca carte come in combinazione
+        comb.carte.forEach(c => {
+            c.inCombinazione = true;
+            c.idCombinazione = comb.id;
+        });
+        return comb;
+    });
+
+    // Ripristina combinazioni Loro
+    game.combinazioniLoro = snapshot.combinazioniLoro.map(snapComb => {
+        const comb = new Combinazione(snapComb.id, snapComb.tipo, []);
+        comb.carte = snapComb.carte.map(getCarta);
+        comb.seme = snapComb.seme;
+        comb.numero = snapComb.numero;
+        comb.assoAlto = snapComb.assoAlto;
+        comb.carte.forEach(c => {
+            c.inCombinazione = true;
+            c.idCombinazione = comb.id;
+        });
+        return comb;
+    });
+
+    // Ripristina stato carte speciali (jolly/pinella come matta)
+    Object.entries(snapshot.carteSpeciali).forEach(([id, stato]) => {
+        const carta = getCarta(parseInt(id));
+        if (carta) {
+            carta.jollycomeNumero = stato.jollycomeNumero;
+        }
+    });
+
+    // Ripristina stato faceUp di tutte le carte
+    if (snapshot.faceUp) {
+        Object.entries(snapshot.faceUp).forEach(([id, faceUp]) => {
+            const carta = getCarta(parseInt(id));
+            if (carta) {
+                carta.faceUp = faceUp;
+            }
+        });
+    }
+
+    // Ripristina punteggi e stato
+    game.puntiNoi = snapshot.puntiNoi;
+    game.puntiLoro = snapshot.puntiLoro;
+    game.fase = snapshot.fase;
+    game.haPescato = snapshot.haPescato;
+    game.carteSelezionate = [];
+    game.combinazioneModificabile = null;
+}
+
+// Registra una mossa nella storia (con snapshot)
+function registraMossa(azione, dettagli = {}) {
+    const mossa = {
+        turno: game.turno,
+        giocatore: game.giocatoreCorrente,
+        azione: azione,
+        snapshot: creaSnapshot(),
+        ...dettagli
+    };
+    game.storia.push(mossa);
+    if (game.debugMode) {
+        console.log('Storia:', mossa);
     }
 }
 
@@ -334,6 +1010,11 @@ function setupEventi() {
                 console.log('DEBUG: Mazzo vuoto o partita non iniziata');
             }
         }
+        // Ctrl+Alt+D per finestra diagnostica
+        if (event.ctrlKey && event.altKey && event.key.toLowerCase() === 'd') {
+            event.preventDefault();
+            toggleDiagnostica();
+        }
     });
 }
 
@@ -360,6 +1041,8 @@ function iniziaPartita() {
     game.combinazioniLoro = [];
     game.puntiNoi = 0;
     game.puntiLoro = 0;
+    game.storia = [];
+    game.turno = 0;
 
     // Crea giocatori
     creaGiocatori();
@@ -388,27 +1071,60 @@ function iniziaPartita() {
 function creaGiocatori() {
     game.giocatori = [];
 
+    // Seleziona personaggi casuali per i bot
+    const numBot = game.modalita === '2v2' ? 3 : 1;
+    const personaggiSelezionati = selezionaPersonaggiCasuali(numBot);
+
     if (game.modalita === '2v2') {
         // 2 vs 2
+        // Giocatore umano
         game.giocatori.push(new Giocatore('Tu', 'bottom', true));
         game.giocatori[0].squadra = 0;
 
-        game.giocatori.push(new Giocatore('Avversario 1', 'left', false));
+        // Avversario 1 (personaggio casuale)
+        game.giocatori.push(new Giocatore(null, 'left', false, personaggiSelezionati[0]));
         game.giocatori[1].squadra = 1;
 
-        game.giocatori.push(new Giocatore('Compagno', 'top', false));
+        // Compagno (personaggio casuale)
+        game.giocatori.push(new Giocatore(null, 'top', false, personaggiSelezionati[1]));
         game.giocatori[2].squadra = 0;
 
-        game.giocatori.push(new Giocatore('Avversario 2', 'right', false));
+        // Avversario 2 (personaggio casuale)
+        game.giocatori.push(new Giocatore(null, 'right', false, personaggiSelezionati[2]));
         game.giocatori[3].squadra = 1;
     } else {
         // 1 vs 1
         game.giocatori.push(new Giocatore('Tu', 'bottom', true));
         game.giocatori[0].squadra = 0;
 
-        game.giocatori.push(new Giocatore('Avversario', 'left', false));
+        // Avversario (personaggio casuale)
+        game.giocatori.push(new Giocatore(null, 'left', false, personaggiSelezionati[0]));
         game.giocatori[1].squadra = 1;
     }
+
+    // Salva personaggi selezionati nel game per riferimento
+    game.personaggiInGioco = personaggiSelezionati;
+
+    // Log per debug
+    const NOMI_TRATTI = {
+        [TRATTO_MEMORIA_LUNGA]: 'Memoria Lunga',
+        [TRATTO_BURRACO_SPECIALIST]: 'Specialista Burraco',
+        [TRATTO_BLOCCANTE]: 'Bloccante',
+        [TRATTO_CHIUSURA_RAPIDA]: 'Chiusura Rapida',
+        [TRATTO_PESCATORE]: 'Pescatore'
+    };
+    const NOMI_BOT = ['', 'Aggressivo', 'Difensivo', 'Bilanciato', 'Opportunista'];
+
+    game.giocatori.forEach((g) => {
+        if (!g.isUmano) {
+            const tipoBotNome = NOMI_BOT[g.botType] || 'Sconosciuto';
+            const trattiNomi = g.trattiInnate.tratti.map(t => NOMI_TRATTI[t] || t).join(', ') || 'nessuno';
+            console.log(`${g.nome}: ${tipoBotNome} - Tratti: ${trattiNomi}`);
+            if (g.descrizione) {
+                console.log(`  "${g.descrizione}"`);
+            }
+        }
+    });
 }
 
 function creaMazzo() {
@@ -430,6 +1146,10 @@ function creaMazzo() {
         game.mazzo.push(new Carta('J', 50, m, id++));
         game.mazzo.push(new Carta('J', 51, m, id++));
     }
+
+    // Crea mappa globale per lookup veloce
+    tutteLeCarte = {};
+    game.mazzo.forEach(c => tutteLeCarte[c.id] = c);
 
     console.log('Mazzo creato:', game.mazzo.length, 'carte');
 }
@@ -765,7 +1485,12 @@ function renderPunteggi() {
 }
 
 function renderUndoButton() {
-    $('#btn-undo').textContent = `UNDO (${game.stati.length})`;
+    // Conta quanti turni del giocatore umano ci sono nella storia
+    const turniUmano = game.storia.filter(m =>
+        m.giocatore === 0 &&
+        (m.azione === AZIONE_PESCA_MAZZO || m.azione === AZIONE_PESCA_SCARTI)
+    ).length;
+    $('#btn-undo').textContent = `UNDO (${turniUmano})`;
 }
 
 function creaElementoCarta(carta) {
@@ -891,6 +1616,9 @@ async function pescaDaMazzo() {
 
     carta.faceUp = true;
 
+    // Registra nella storia
+    registraMossa(AZIONE_PESCA_MAZZO, { carta: carta.id });
+
     // Aggiungi la carta alla mano e renderizza per ottenere la posizione finale
     game.giocatori[0].carte.push(carta);
     game.haPescato = true;
@@ -930,6 +1658,9 @@ function pescaDaScarti() {
         game.giocatori[0].carte.push(c);
     }
 
+    // Registra nella storia
+    registraMossa(AZIONE_PESCA_SCARTI, { carte: carteRaccolte.map(c => c.id) });
+
     ordinaCarte(game.giocatori[0].carte);
 
     game.haPescato = true;
@@ -948,6 +1679,9 @@ async function scartaCarta(carta) {
     if (idx === -1) return;
 
     salvaStato('scarta');
+
+    // Registra nella storia
+    registraMossa(AZIONE_SCARTO, { carta: carta.id });
 
     // Chiude la finestra temporale per modificare la matta
     game.combinazioneModificabile = null;
@@ -1090,6 +1824,13 @@ function depositaCombinazione(e) {
 
     game.combinazioniNoi.push(comb);
     game.carteSelezionate = [];
+
+    // Registra nella storia
+    registraMossa(AZIONE_COMBINAZIONE, {
+        carte: comb.carte.map(c => c.id),
+        combinazione: comb.id,
+        tipo: comb.tipo
+    });
 
     // Se e' una scala con matta, permetti di spostarla
     // La pinella e' matta solo se jollycomeNumero != 2 (cioe' non e' nella posizione naturale)
@@ -1307,6 +2048,13 @@ function aggiungiCartaACombinazione(carta, combinazione) {
     // Aggiungi la carta alla combinazione
     combinazione.carte.push(carta);
 
+    // Registra nella storia
+    registraMossa(AZIONE_ATTACCO, {
+        carta: carta.id,
+        combinazione: combinazione.id,
+        sostituzione: risultato.sostituzione || false
+    });
+
     // Se e' una scala, gestisci jolly/pinella e riordina
     if (combinazione.tipo === TIPO_SCALA) {
         // Se stiamo aggiungendo un jolly/pinella COME MATTA (non come sostituzione), imposta jollycomeNumero
@@ -1420,6 +2168,9 @@ function prendiPozzetto(squadra) {
 
     giocatore.haPozzetto = true;
     ordinaCarte(giocatore.carte);
+
+    // Registra nella storia
+    registraMossa(AZIONE_POZZETTO, { squadra: squadra });
 
     playSound('pozzetto');
     render();
@@ -1902,6 +2653,7 @@ function puoAggiungereACombinazione(carta, combinazione) {
 
 function prossimoTurno() {
     game.giocatoreCorrente = (game.giocatoreCorrente + 1) % game.giocatori.length;
+    game.turno++;
 
     aggiornaIndicatoreTurno();
 
@@ -1942,6 +2694,10 @@ async function turnoAI() {
             carta.faceUp = true;
         }
         giocatore.carte.push(carta);
+
+        // Registra nella storia
+        registraMossa(AZIONE_PESCA_MAZZO, { carta: carta.id });
+
         render();
 
         // Anima la carta dal mazzo alla mano del giocatore
@@ -1978,6 +2734,9 @@ async function turnoAI() {
         const partenzaRect = ultimaCartaEl ? ultimaCartaEl.getBoundingClientRect() : null;
 
         const cartaDaScartare = giocatore.carte.pop();
+
+        // Registra nella storia
+        registraMossa(AZIONE_SCARTO, { carta: cartaDaScartare.id });
 
         cartaDaScartare.faceUp = true;
         game.scarti.push(cartaDaScartare);
@@ -2113,56 +2872,54 @@ function finePartita(haVintoGiocatore) {
 // UNDO
 // ============================================================================
 
-function salvaStato(azione) {
-    const stato = {
-        azione: azione,
-        mazzo: game.mazzo.map(c => ({ ...c })),
-        scarti: game.scarti.map(c => ({ ...c })),
-        pozzetti: [
-            game.pozzetti[0].map(c => ({ ...c })),
-            game.pozzetti[1].map(c => ({ ...c }))
-        ],
-        giocatori: game.giocatori.map(g => ({
-            ...g,
-            carte: g.carte.map(c => ({ ...c }))
-        })),
-        combinazioniNoi: JSON.parse(JSON.stringify(game.combinazioniNoi)),
-        combinazioniLoro: JSON.parse(JSON.stringify(game.combinazioniLoro)),
-        fase: game.fase,
-        haPescato: game.haPescato,
-        puntiNoi: game.puntiNoi,
-        puntiLoro: game.puntiLoro,
-        giocatoreCorrente: game.giocatoreCorrente
-    };
-
-    game.stati.push(stato);
+// DEPRECATO: lo stato viene salvato negli snapshot della storia
+// Mantenuto per compatibilità con chiamate esistenti
+function salvaStato(_azione) {
+    // No-op: il salvataggio avviene tramite registraMossa() con snapshot
     renderUndoButton();
 }
 
 function undo() {
-    if (game.stati.length === 0) return;
     if (game.fase === 'finito') return;
+    if (game.storia.length === 0) return;
 
-    const stato = game.stati.pop();
+    // Trova l'ultimo inizio turno del giocatore umano (giocatore 0)
+    // Cerchiamo la pesca del giocatore 0, che segna l'inizio del suo turno
+    let indiceTurnoUmano = -1;
+    for (let i = game.storia.length - 1; i >= 0; i--) {
+        const mossa = game.storia[i];
+        if (mossa.giocatore === 0 &&
+            (mossa.azione === AZIONE_PESCA_MAZZO || mossa.azione === AZIONE_PESCA_SCARTI)) {
+            indiceTurnoUmano = i;
+            break;
+        }
+    }
 
-    // Ripristina stato
-    // Nota: questo e' semplificato, in una versione completa
-    // bisognerebbe ricreare gli oggetti Carta correttamente
+    if (indiceTurnoUmano === -1) {
+        console.log('Undo: nessun turno umano da annullare');
+        return;
+    }
 
-    game.fase = stato.fase;
-    game.haPescato = stato.haPescato;
-    game.puntiNoi = stato.puntiNoi;
-    game.puntiLoro = stato.puntiLoro;
-    game.giocatoreCorrente = stato.giocatoreCorrente;
+    // Ripristina lo snapshot PRIMA di quella mossa
+    const mossa = game.storia[indiceTurnoUmano];
+    ripristinaSnapshot(mossa.snapshot);
 
-    // Ricrea mazzo e scarti con riferimenti corretti
-    // Per semplicita', ricarica la pagina se necessario
+    // Ripristina il turno
+    game.turno = mossa.turno;
+    game.giocatoreCorrente = 0;
+    game.fase = 'pesca';
+    game.haPescato = false;
 
-    game.carteSelezionate = [];
+    // Tronca la storia da quel punto
+    game.storia = game.storia.slice(0, indiceTurnoUmano);
+
+    // Ricalcola punteggi
+    calcolaPunteggi();
 
     playSound('ordina');
     render();
-    renderUndoButton();
+    aggiornaIndicatoreTurno();
+    console.log('Undo completato, storia troncata a', game.storia.length, 'mosse');
 }
 
 // ============================================================================
@@ -2646,6 +3403,427 @@ function toggleScoperte() {
 
     render();
 }
+
+// ============================================================================
+// DIAGNOSTICA (finestra separata)
+// ============================================================================
+
+// Mappa nomi azioni per visualizzazione
+const AZIONE_NOMI = {
+    [AZIONE_PESCA_MAZZO]: 'Pesca mazzo',
+    [AZIONE_PESCA_SCARTI]: 'Pesca scarti',
+    [AZIONE_SCARTO]: 'Scarto',
+    [AZIONE_COMBINAZIONE]: 'Combinazione',
+    [AZIONE_ATTACCO]: 'Attacco',
+    [AZIONE_POZZETTO]: 'Pozzetto'
+};
+
+// Riferimento alla finestra diagnostica
+let diagWindow = null;
+
+function toggleDiagnostica() {
+    // Se la finestra esiste ed è aperta, la chiudiamo
+    if (diagWindow && !diagWindow.closed) {
+        diagWindow.close();
+        diagWindow = null;
+        return;
+    }
+
+    // Apri nuova finestra
+    diagWindow = window.open('', 'BurracoDiagnostica',
+        'width=700,height=500,resizable=yes,scrollbars=yes,menubar=no,toolbar=no,location=no,status=no'
+    );
+
+    if (!diagWindow) {
+        console.error('Impossibile aprire la finestra diagnostica (popup bloccato?)');
+        return;
+    }
+
+    // Scrivi il contenuto HTML della finestra
+    diagWindow.document.write(getDiagnosticaHTML());
+    diagWindow.document.close();
+
+    // Aggiorna il contenuto
+    aggiornaDiagnostica();
+}
+
+function getDiagnosticaHTML() {
+    return `<!DOCTYPE html>
+<html>
+<head>
+    <title>Burraco - Diagnostica</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 12px;
+            background: #1a1a2e;
+            color: #ddd;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .header {
+            background: #2a2a4e;
+            color: #aaf;
+            padding: 10px 15px;
+            font-weight: bold;
+            font-size: 14px;
+            border-bottom: 1px solid #4a4a6a;
+        }
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+        .footer {
+            background: #2a2a4e;
+            color: #888;
+            padding: 8px 15px;
+            font-size: 11px;
+            border-top: 1px solid #4a4a6a;
+        }
+        .storia-riga {
+            padding: 4px 8px;
+            margin: 2px 0;
+            border-radius: 3px;
+            display: flex;
+            gap: 10px;
+            cursor: pointer;
+        }
+        .storia-riga:hover { background: #3a3a5e; }
+        .storia-riga.selected { background: #4a4a7e; }
+        .storia-riga.giocatore-0 { border-left: 3px solid #4a4; }
+        .storia-riga.giocatore-1 { border-left: 3px solid #a44; }
+        .storia-riga.giocatore-2 { border-left: 3px solid #44a; }
+        .storia-riga.giocatore-3 { border-left: 3px solid #a4a; }
+        .storia-turno { color: #888; width: 40px; }
+        .storia-giocatore { color: #aaa; width: 100px; }
+        .storia-azione { color: #8cf; width: 100px; }
+        .storia-dettagli { color: #ccc; flex: 1; }
+        .btn-refresh {
+            background: #4a4;
+            color: white;
+            border: none;
+            padding: 5px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: 15px;
+        }
+        .btn-refresh:hover { background: #5b5; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        Diagnostica - Storia Mosse
+        <button class="btn-refresh" onclick="window.opener.aggiornaDiagnostica()">Aggiorna</button>
+    </div>
+    <div id="content" class="content">
+        <!-- Contenuto generato da JS -->
+    </div>
+    <div id="footer" class="footer">
+        Turno: 0 | Mosse: 0
+    </div>
+    <script>
+        let detailWin = null;
+        function apriDettaglio(indice, el) {
+            // Rimuovi selezione precedente
+            document.querySelectorAll('.storia-riga').forEach(r => r.classList.remove('selected'));
+            if (el) el.classList.add('selected');
+            // Chiedi al parent di generare HTML e aprilo qui
+            const html = window.opener.getDettaglioHTML(window.opener.game.storia[indice], indice);
+            if (!detailWin || detailWin.closed) {
+                detailWin = window.open('', 'BurracoDettaglio',
+                    'width=600,height=500,resizable=yes,scrollbars=yes');
+            }
+            if (detailWin) {
+                detailWin.document.open();
+                detailWin.document.write(html);
+                detailWin.document.close();
+                detailWin.focus();
+            }
+        }
+    </script>
+</body>
+</html>`;
+}
+
+function aggiornaDiagnostica() {
+    if (!diagWindow || diagWindow.closed) return;
+
+    const content = diagWindow.document.getElementById('content');
+    const footer = diagWindow.document.getElementById('footer');
+    if (!content || !footer) return;
+
+    if (game.storia.length === 0) {
+        content.innerHTML = '<div style="color:#888; padding:20px; text-align:center;">Nessuna mossa registrata</div>';
+        footer.textContent = 'Turno: 0 | Mosse: 0';
+        return;
+    }
+
+    // Helper per ottenere nome giocatore
+    const nomeGiocatore = (idx) => {
+        if (!game.giocatori || !game.giocatori[idx]) return `Giocatore ${idx}`;
+        return game.giocatori[idx].nome;
+    };
+
+    // Helper per nome breve carta (7C, 8Q, JK per jolly)
+    const nomeBreve = (id) => {
+        const c = tutteLeCarte[id];
+        if (!c) return `#${id}`;
+        if (c.isJolly) return 'JK';
+        const numNomi = ['', 'A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+        return numNomi[c.numero] + c.seme;
+    };
+
+    // Helper per formattare dettagli
+    const formattaDettagli = (mossa) => {
+        const parti = [];
+
+        if (mossa.carta !== undefined) {
+            parti.push(nomeBreve(mossa.carta));
+        }
+
+        if (mossa.carte && mossa.carte.length > 0) {
+            const nomi = mossa.carte.map(nomeBreve);
+            parti.push(`[${nomi.join(' ')}]`);
+        }
+
+        if (mossa.combinazione !== undefined) {
+            parti.push(`comb: #${mossa.combinazione}`);
+        }
+
+        if (mossa.tipo !== undefined) {
+            parti.push(`tipo: ${mossa.tipo === TIPO_TRIS ? 'Tris' : 'Scala'}`);
+        }
+
+        if (mossa.sostituzione) {
+            parti.push('(sostituzione)');
+        }
+
+        if (mossa.squadra !== undefined) {
+            parti.push(`squadra: ${mossa.squadra}`);
+        }
+
+        return parti.join(' | ');
+    };
+
+    // Genera HTML
+    let html = '';
+    for (let i = 0; i < game.storia.length; i++) {
+        const mossa = game.storia[i];
+        const azioneNome = AZIONE_NOMI[mossa.azione] || `Azione ${mossa.azione}`;
+        const dettagli = formattaDettagli(mossa);
+
+        html += `<div class="storia-riga giocatore-${mossa.giocatore}" data-indice="${i}" onclick="apriDettaglio(${i}, this)">
+            <span class="storia-turno">T${mossa.turno}</span>
+            <span class="storia-giocatore">${nomeGiocatore(mossa.giocatore)}</span>
+            <span class="storia-azione">${azioneNome}</span>
+            <span class="storia-dettagli">${dettagli}</span>
+        </div>`;
+    }
+
+    content.innerHTML = html;
+    footer.textContent = `Turno: ${game.turno} | Mosse: ${game.storia.length}`;
+
+    // Scroll to bottom
+    content.scrollTop = content.scrollHeight;
+}
+
+// Finestra dettaglio snapshot
+let detailWindow = null;
+
+function mostraDettaglioMossa(indice, elemento) {
+    if (indice < 0 || indice >= game.storia.length) return;
+
+    const mossa = game.storia[indice];
+
+    // Rimuovi selezione precedente e aggiungi nuova
+    if (diagWindow && !diagWindow.closed) {
+        const righe = diagWindow.document.querySelectorAll('.storia-riga');
+        righe.forEach(r => r.classList.remove('selected'));
+        if (elemento) elemento.classList.add('selected');
+    }
+
+    // Se la finestra non esiste o è chiusa, creala
+    if (!detailWindow || detailWindow.closed) {
+        detailWindow = window.open('', 'BurracoDettaglio',
+            'width=600,height=500,resizable=yes,scrollbars=yes,menubar=no,toolbar=no,location=no,status=no'
+        );
+        if (!detailWindow) {
+            console.error('Impossibile aprire finestra dettaglio');
+            return;
+        }
+    }
+
+    // Genera HTML per lo snapshot
+    const html = getDettaglioHTML(mossa, indice);
+    detailWindow.document.open();
+    detailWindow.document.write(html);
+    detailWindow.document.close();
+    detailWindow.focus();
+}
+
+function getDettaglioHTML(mossa, indice) {
+    const nomeGiocatore = (idx) => {
+        if (!game.giocatori || !game.giocatori[idx]) return `Giocatore ${idx}`;
+        return game.giocatori[idx].nome;
+    };
+
+    const azioneNome = AZIONE_NOMI[mossa.azione] || `Azione ${mossa.azione}`;
+    const snapshot = mossa.snapshot;
+
+    // Helper per nome breve carta (7C, 8Q, JK per jolly)
+    const nomeBreve = (id) => {
+        const c = tutteLeCarte[id];
+        if (!c) return `#${id}`;
+        if (c.isJolly) return 'JK';
+        const numNomi = ['', 'A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+        return numNomi[c.numero] + c.seme;
+    };
+
+    // Helper per formattare array di carte
+    const formattaCarte = (ids) => {
+        if (!ids || ids.length === 0) return '(vuoto)';
+        return ids.map(nomeBreve).join(' ');
+    };
+
+    // Helper per formattare combinazioni
+    const formattaCombinazioni = (combs) => {
+        if (!combs || combs.length === 0) return '(nessuna)';
+        return combs.map(c => {
+            const tipo = c.tipo === TIPO_TRIS ? 'Tris' : 'Scala';
+            const carte = formattaCarte(c.carte);
+            return `<div style="margin-left:15px; margin-bottom:5px;">#${c.id} ${tipo}: ${carte}</div>`;
+        }).join('');
+    };
+
+    return `<!DOCTYPE html>
+<html>
+<head>
+    <title>Dettaglio Mossa #${indice}</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 12px;
+            background: #1a1a2e;
+            color: #ddd;
+            padding: 15px;
+            overflow-y: auto;
+        }
+        .header {
+            background: #2a2a4e;
+            color: #aaf;
+            padding: 10px 15px;
+            margin: -15px -15px 15px -15px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .section {
+            background: #252540;
+            border: 1px solid #3a3a5a;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        .section-title {
+            color: #8cf;
+            font-weight: bold;
+            margin-bottom: 8px;
+            border-bottom: 1px solid #3a3a5a;
+            padding-bottom: 5px;
+        }
+        .field { margin: 4px 0; }
+        .label { color: #888; }
+        .value { color: #cfc; }
+        .carte-list { color: #ffc; margin-left: 15px; word-break: break-all; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        Mossa #${indice} - Turno ${mossa.turno} - ${nomeGiocatore(mossa.giocatore)} - ${azioneNome}
+    </div>
+
+    <div class="section">
+        <div class="section-title">Dettagli Mossa</div>
+        <div class="field"><span class="label">Turno:</span> <span class="value">${mossa.turno}</span></div>
+        <div class="field"><span class="label">Giocatore:</span> <span class="value">${nomeGiocatore(mossa.giocatore)}</span></div>
+        <div class="field"><span class="label">Azione:</span> <span class="value">${azioneNome}</span></div>
+        ${mossa.carta !== undefined ? `<div class="field"><span class="label">Carta:</span> <span class="value">${nomeBreve(mossa.carta)}</span></div>` : ''}
+        ${mossa.carte ? `<div class="field"><span class="label">Carte:</span> <span class="value">${formattaCarte(mossa.carte)}</span></div>` : ''}
+        ${mossa.combinazione !== undefined ? `<div class="field"><span class="label">Combinazione:</span> <span class="value">#${mossa.combinazione}</span></div>` : ''}
+    </div>
+
+    <div class="section">
+        <div class="section-title">Snapshot (stato PRIMA della mossa)</div>
+        <div class="field"><span class="label">Fase:</span> <span class="value">${snapshot.fase}</span></div>
+        <div class="field"><span class="label">Ha pescato:</span> <span class="value">${snapshot.haPescato}</span></div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Mazzo (${snapshot.mazzo.length} carte)</div>
+        <div class="carte-list">${formattaCarte(snapshot.mazzo)}</div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Scarti (${snapshot.scarti.length} carte)</div>
+        <div class="carte-list">${formattaCarte(snapshot.scarti)}</div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Pozzetto Noi (${snapshot.pozzetti[0].length} carte)</div>
+        <div class="carte-list">${formattaCarte(snapshot.pozzetti[0])}</div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Pozzetto Loro (${snapshot.pozzetti[1].length} carte)</div>
+        <div class="carte-list">${formattaCarte(snapshot.pozzetti[1])}</div>
+    </div>
+
+    ${snapshot.mani.map((mano, i) => `
+    <div class="section">
+        <div class="section-title">${nomeGiocatore(i)} (${mano.length} carte)</div>
+        <div class="carte-list">${formattaCarte(mano)}</div>
+    </div>
+    `).join('')}
+
+    <div class="section">
+        <div class="section-title">Combinazioni Noi</div>
+        ${formattaCombinazioni(snapshot.combinazioniNoi)}
+    </div>
+
+    <div class="section">
+        <div class="section-title">Combinazioni Loro</div>
+        ${formattaCombinazioni(snapshot.combinazioniLoro)}
+    </div>
+
+    <div class="section">
+        <div class="section-title">Punteggi</div>
+        <div class="field"><span class="label">Noi:</span> <span class="value">${snapshot.puntiNoi}</span></div>
+        <div class="field"><span class="label">Loro:</span> <span class="value">${snapshot.puntiLoro}</span></div>
+    </div>
+</body>
+</html>`;
+}
+
+// Aggiorna automaticamente la finestra diagnostica ad ogni mossa
+const originalRegistraMossa = registraMossa;
+registraMossa = function(azione, dettagli = {}) {
+    originalRegistraMossa(azione, dettagli);
+    // Aggiorna la finestra diagnostica se aperta
+    setTimeout(aggiornaDiagnostica, 100);
+};
+
+// Chiudi finestre diagnostiche quando si chiude la pagina
+window.addEventListener('beforeunload', () => {
+    if (diagWindow && !diagWindow.closed) {
+        diagWindow.close();
+    }
+    if (detailWindow && !detailWindow.closed) {
+        detailWindow.close();
+    }
+});
 
 // ============================================================================
 // AVVIO

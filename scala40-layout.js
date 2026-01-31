@@ -98,37 +98,42 @@ function adjustLayout() {
 
         const isMessageBanner = isFirst && width >= 160;
 
-        if (isMessageBanner && !window.showBannerDimensions) {
-            // Default state: show message
-            let message = '';
-            const style = `padding: 10px; text-align: left; font-size: 14px; color: #333; background-color: #f9f9f9; border: 1px solid #ddd; border-radius: 5px; height: 100%; display: flex; flex-direction: column; justify-content: center; box-sizing: border-box; overflow: auto; overflow-wrap: break-word;`;
+        if (!window.showBannerDimensions) {
+            // Default state: show only message banners
+            if (isMessageBanner) {
+                let message = '';
+                const style = `padding: 10px; text-align: left; font-size: 14px; color: white; background-color: green; border: 1px solid #2d5a3d; border-radius: 5px; height: 100%; display: flex; flex-direction: column; justify-content: center; box-sizing: border-box; overflow: auto; overflow-wrap: break-word;`;
 
-            if (side === 'left') {
-                // Messaggio in italiano
-                message = `
-                    <div style="${style}">
-                        <div>
-                            <p style="margin-top: 0;">Cari affezionati giocatori che da 15 anni frequentate questo sito che ho sviluppato per puro divertimento, ho pensato, anche per rifarmi delle spese sostenute fin qui, di aggiungere un po' di pubblicità in questi spazi che vedete.</p>
-                            <p>Mi sono detto perché no, la limiterei a questi spazi laterali inutilizzati per non disturbare in nessun modo l'esperienza di gioco. Un po' mi dispiace, perché intacca il feeling artigianale e naif di questo sito, ma a parte le bande laterali tutto il resto rimarrebbe invariato.</p>
-                            <p>Gradirei avere la vostra opinione. Scrivetemi a <a href="mailto:postmaster@lucianomanenti.com">postmaster@lucianomanenti.com</a></p>
+                if (side === 'left') {
+                    // Messaggio in italiano
+                    message = `
+                        <div style="${style}">
+                            <div>
+                                <p style="margin-top: 0;">Cari affezionati giocatori che da 15 anni frequentate questo sito che ho sviluppato per puro divertimento, ho pensato, anche per rifarmi delle spese sostenute fin qui, di aggiungere un po' di pubblicità in questi spazi che vedete.</p>
+                                <p>Mi sono detto perché no, la limiterei a questi spazi laterali inutilizzati per non disturbare in nessun modo l'esperienza di gioco. Un po' mi dispiace, perché intacca il feeling artigianale e naif di questo sito, ma a parte le bande laterali tutto il resto rimarrebbe invariato.</p>
+                                <p>Gradirei avere la vostra opinione. Scrivetemi a <a href="mailto:postmaster@lucianomanenti.com" style="color: #ffd700;">postmaster@lucianomanenti.com</a></p>
+                            </div>
                         </div>
-                    </div>
-                `;
-            } else if (side === 'right') {
-                // Messaggio in inglese
-                message = `
-                    <div style="${style}">
-                        <div>
-                            <p style="margin-top: 0;">Dear loyal players, for 15 years you have been visiting this site that I developed purely for fun. I've been thinking, partly to cover the costs incurred so far, of adding some advertising in these spaces you see.</p>
-                            <p>I told myself, 'why not?'. I would limit it to these unused side spaces so as not to disturb the gaming experience in any way. I'm a little sorry, because it affects the handmade and naive feeling of this site, but apart from the sidebars, everything else would remain unchanged.</p>
-                            <p>I would appreciate your opinion. Write to me at <a href="mailto:postmaster@lucianomanenti.com">postmaster@lucianomanenti.com</a></p>
+                    `;
+                } else if (side === 'right') {
+                    // Messaggio in inglese
+                    message = `
+                        <div style="${style}">
+                            <div>
+                                <p style="margin-top: 0;">Dear loyal players, for 15 years you have been visiting this site that I developed purely for fun. I've been thinking, partly to cover the costs incurred so far, of adding some advertising in these spaces you see.</p>
+                                <p>I told myself, 'why not?'. I would limit it to these unused side spaces so as not to disturb the gaming experience in any way. I'm a little sorry, because it affects the handmade and naive feeling of this site, but apart from the sidebars, everything else would remain unchanged.</p>
+                                <p>I would appreciate your opinion. Write to me at <a href="mailto:postmaster@lucianomanenti.com" style="color: #ffd700;">postmaster@lucianomanenti.com</a></p>
+                            </div>
                         </div>
-                    </div>
-                `;
+                    `;
+                }
+                banner.innerHTML = message;
+            } else {
+                // Non-message banner in message mode: return null to skip
+                return null;
             }
-            banner.innerHTML = message;
         } else {
-            // Toggled state OR not a message banner: show dimensions
+            // Toggled state: show all banners with dimensions
             banner.innerHTML = `Banner<br>${width}x${height}`;
         }
         return banner;
@@ -155,13 +160,17 @@ function adjustLayout() {
                 const requiredGap = isFirst ? 0 : verticalGap;
                 if (currentAvailableHeight >= (format.height + requiredGap)) {
                     const banner = createBanner(format.width, format.height, side, isFirst);
-                    if (!isFirst) banner.style.marginTop = `${verticalGap}px`;
-                    sidebar.appendChild(banner);
-                    currentAvailableHeight -= (format.height + requiredGap);
+                    if (banner) { // Only add if banner was created (not null)
+                        if (!isFirst) banner.style.marginTop = `${verticalGap}px`;
+                        sidebar.appendChild(banner);
+                        currentAvailableHeight -= (format.height + requiredGap);
+                    }
                 } else if (!isFirst && currentAvailableHeight >= format.height) {
                     const banner = createBanner(format.width, format.height, side, isFirst);
-                    sidebar.appendChild(banner);
-                    currentAvailableHeight -= format.height;
+                    if (banner) { // Only add if banner was created (not null)
+                        sidebar.appendChild(banner);
+                        currentAvailableHeight -= format.height;
+                    }
                 }
             });
         }
