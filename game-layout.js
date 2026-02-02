@@ -73,17 +73,29 @@ function adjustLayout() {
 
     window.gameScale = scale;
 
-    campogioco.style.transform = `translate(-50%, -50%) scale(${scale})`;
-    campogioco.style.left = `50%`;
+    const totalExtraWidth = windowWidth - (gameWidth * scale);
+    let layoutMode = 'none';
+    if (totalExtraWidth >= 320) {
+        layoutMode = 'dual';
+    } else if (totalExtraWidth >= 160) {
+        layoutMode = 'single-right';
+    }
+
+    if (layoutMode === 'single-right') {
+        // Shift game to the left
+        campogioco.style.left = `${(gameWidth * scale) / 2}px`;
+    } else {
+        // Center game
+        campogioco.style.left = `50%`;
+    }
     campogioco.style.top = `50%`;
+    campogioco.style.transform = `translate(-50%, -50%) scale(${scale})`;
 
     if (window.scala) {
         const rect = campogioco.getBoundingClientRect();
         scala.offsetxx = rect.left;
         scala.offsetyy = rect.top;
     }
-
-    const sidebarWidth = (windowWidth - (gameWidth * scale)) / 2;
 
     sidebarLeft.innerHTML = '';
     sidebarRight.innerHTML = '';
@@ -161,13 +173,18 @@ function adjustLayout() {
         }
     };
 
-    if (sidebarWidth >= 120) {
-        sidebarLeft.style.width = `${sidebarWidth}px`;
-        sidebarRight.style.width = `${sidebarWidth}px`;
+    if (layoutMode === 'dual') {
+        const sideWidth = totalExtraWidth / 2;
+        sidebarLeft.style.width = `${sideWidth}px`;
+        sidebarRight.style.width = `${sideWidth}px`;
         sidebarLeft.style.display = 'flex';
         sidebarRight.style.display = 'flex';
-        populateSidebar(sidebarLeft, sidebarWidth, 'left');
-        populateSidebar(sidebarRight, sidebarWidth, 'right');
+        populateSidebar(sidebarLeft, sideWidth, 'left');
+        populateSidebar(sidebarRight, sideWidth, 'right');
+    } else if (layoutMode === 'single-right') {
+        sidebarRight.style.width = `${totalExtraWidth}px`;
+        sidebarRight.style.display = 'flex';
+        populateSidebar(sidebarRight, totalExtraWidth, 'left'); // Show Italian message
     }
 }
 
