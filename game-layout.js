@@ -7,9 +7,9 @@ window.showBannerDimensions = false;
 
 // Function to get version from the script tag and store it globally
 function getAndStoreScriptVersion() {
-    const scriptTag = document.currentScript;
+    var scriptTag = document.currentScript;
     if (scriptTag && scriptTag.src) {
-        const match = scriptTag.src.match(/[?&]v=([^&]+)/);
+        var match = scriptTag.src.match(/[?&]v=([^&]+)/);
         if (match) {
             window.scriptVersion = match[1];
             return;
@@ -24,13 +24,13 @@ getAndStoreScriptVersion();
 // Funzione per inviare un evento Google Analytics per un banner
 function sendAnalyticsEvent(bannerElement, triggerType) {
     if (typeof gtag === 'function') {
-        const width = bannerElement.style.width;
-        const height = bannerElement.style.height;
-        const dimensions = width && height ? `${width}x${height}` : 'unknown_dimensions';
+        var width = bannerElement.style.width;
+        var height = bannerElement.style.height;
+        var dimensions = width && height ? width + 'x' + height : 'unknown_dimensions';
 
         // Use prefix from config or default
-        const prefix = (window.gameConfig && window.gameConfig.gaPrefix) || '';
-        const eventName = prefix + 'simulated_banner_impression';
+        var prefix = (window.gameConfig && window.gameConfig.gaPrefix) || '';
+        var eventName = prefix + 'simulated_banner_impression';
 
         gtag('event', eventName, {
             'event_category': 'Banner_Simulation',
@@ -39,7 +39,7 @@ function sendAnalyticsEvent(bannerElement, triggerType) {
             'version': window.scriptVersion || 'unknown',
             'non_interaction': true
         });
-        console.log(`GA Evento Inviato: ${eventName} - ${dimensions} - Trigger: ${triggerType} - Version: ${window.scriptVersion}`);
+        console.log('GA Evento Inviato: ' + eventName + ' - ' + dimensions + ' - Trigger: ' + triggerType + ' - Version: ' + window.scriptVersion);
     } else {
         console.warn('Funzione gtag non trovata. Google Analytics potrebbe non essere inizializzato.');
     }
@@ -47,34 +47,35 @@ function sendAnalyticsEvent(bannerElement, triggerType) {
 
 // Funzione per tracciare tutti i banner visibili
 function trackVisibleBanners(triggerType) {
-    const visibleBanners = document.querySelectorAll('.ad-banner');
-    visibleBanners.forEach(banner => {
+    var visibleBanners = document.querySelectorAll('.ad-banner');
+    for (var i = 0; i < visibleBanners.length; i++) {
+        var banner = visibleBanners[i];
         if (banner.offsetWidth > 0 && banner.offsetHeight > 0) {
             sendAnalyticsEvent(banner, triggerType);
         }
-    });
+    }
 }
 
 function adjustLayout() {
-    const gameWidth = 1024;
-    const gameHeight = 750;
-    const windowWidth = window.innerWidth;
-    const windowHeight = window.innerHeight;
+    var gameWidth = 1024;
+    var gameHeight = 750;
+    var windowWidth = window.innerWidth;
+    var windowHeight = window.innerHeight;
 
-    const campogioco = document.getElementById('campogioco');
-    const sidebarLeft = document.getElementById('sidebar-left');
-    const sidebarRight = document.getElementById('sidebar-right');
+    var campogioco = document.getElementById('campogioco');
+    var sidebarLeft = document.getElementById('sidebar-left');
+    var sidebarRight = document.getElementById('sidebar-right');
 
     if (!campogioco || !sidebarLeft || !sidebarRight) return;
 
-    const scaleX = windowWidth / gameWidth;
-    const scaleY = windowHeight / gameHeight;
-    const scale = Math.min(scaleX, scaleY);
+    var scaleX = windowWidth / gameWidth;
+    var scaleY = windowHeight / gameHeight;
+    var scale = Math.min(scaleX, scaleY);
 
     window.gameScale = scale;
 
-    const totalExtraWidth = windowWidth - (gameWidth * scale);
-    let layoutMode = 'none';
+    var totalExtraWidth = windowWidth - (gameWidth * scale);
+    var layoutMode = 'none';
     if (totalExtraWidth >= 320) {
         layoutMode = 'dual';
     } else if (totalExtraWidth >= 160) {
@@ -83,16 +84,19 @@ function adjustLayout() {
 
     if (layoutMode === 'single-right') {
         // Shift game to the left
-        campogioco.style.left = `${(gameWidth * scale) / 2}px`;
+        campogioco.style.left = ((gameWidth * scale) / 2) + 'px';
     } else {
         // Center game
-        campogioco.style.left = `50%`;
+        campogioco.style.left = '50%';
     }
-    campogioco.style.top = `50%`;
-    campogioco.style.transform = `translate(-50%, -50%) scale(${scale})`;
+    campogioco.style.top = '50%';
+    campogioco.style.transform = 'translate(-50%, -50%) scale(' + scale + ')';
+    // Backwards compatibility for older browsers
+    campogioco.style.msTransform = 'translate(-50%, -50%) scale(' + scale + ')';
+    campogioco.style.webkitTransform = 'translate(-50%, -50%) scale(' + scale + ')';
 
     if (window.scala) {
-        const rect = campogioco.getBoundingClientRect();
+        var rect = campogioco.getBoundingClientRect();
         scala.offsetxx = rect.left;
         scala.offsetyy = rect.top;
     }
@@ -102,103 +106,111 @@ function adjustLayout() {
     sidebarLeft.style.display = 'none';
     sidebarRight.style.display = 'none';
 
-    const createBanner = (width, height, side, isFirst) => {
-        const isMessageBanner = isFirst && width >= 160;
+    var createBanner = function (width, height, side, isFirst) {
+        var isMessageBanner = isFirst && width >= 160;
 
         if (!window.showBannerDimensions && !isMessageBanner) {
             return null;
         }
 
-        const banner = document.createElement('div');
+        var banner = document.createElement('div');
         banner.className = 'ad-banner';
-        banner.style.width = `${width}px`;
-        banner.style.height = `${height}px`;
+        banner.style.width = width + 'px';
+        banner.style.height = height + 'px';
 
         if (isMessageBanner && !window.showBannerDimensions) {
-            let message = '';
+            var message = '';
             // Allow custom style from config
-            const customStyle = (window.gameConfig && window.gameConfig.bannerStyle) || '';
-            const defaultStyle = `padding: 10px; text-align: left; font-size: 14px; color: white; background-color: green; border: 1px solid #2d5a3d; border-radius: 5px; height: 100%; display: flex; flex-direction: column; justify-content: center; box-sizing: border-box; overflow: auto; overflow-wrap: break-word;`;
+            var customStyle = (window.gameConfig && window.gameConfig.bannerStyle) || '';
+            var defaultStyle = 'padding: 10px; text-align: left; font-size: 14px; color: white; background-color: green; border: 1px solid #2d5a3d; border-radius: 5px; height: 100%; display: flex; flex-direction: column; justify-content: center; box-sizing: border-box; overflow: auto; overflow-wrap: break-word;';
 
-            const style = customStyle || defaultStyle;
+            var style = customStyle || defaultStyle;
 
             if (window.gameConfig && window.gameConfig.messages) {
-                const lang = (side === 'left') ? 'it' : 'en';
-                const msgContent = window.gameConfig.messages[lang];
+                var lang = (side === 'left') ? 'it' : 'en';
+                var msgContent = window.gameConfig.messages[lang];
                 if (msgContent) {
-                    message = `<div style="${style}"><div>${msgContent}</div></div>`;
+                    message = '<div style="' + style + '"><div>' + msgContent + '</div></div>';
                 }
             }
             banner.innerHTML = message;
         } else {
-            banner.innerHTML = `Banner<br>${width}x${height}`;
+            banner.innerHTML = 'Banner<br>' + width + 'x' + height;
         }
         return banner;
     };
 
-    const allAdFormats = [
+    var allAdFormats = [
         { width: 300, height: 600 }, { width: 300, height: 250 }, { width: 300, height: 100 },
         { width: 160, height: 600 }, { width: 160, height: 250 }, { width: 160, height: 160 },
         { width: 120, height: 600 }, { width: 120, height: 240 }
     ];
 
-    const populateSidebar = (sidebar, availableWidth, side) => {
-        let currentAvailableHeight = windowHeight;
-        const verticalGap = 15;
-        let bannerWidthFamily = 0;
+    var populateSidebar = function (sidebar, availableWidth, side) {
+        var currentAvailableHeight = windowHeight;
+        var verticalGap = 15;
+        var bannerWidthFamily = 0;
         if (availableWidth >= 300) bannerWidthFamily = 300;
         else if (availableWidth >= 160) bannerWidthFamily = 160;
         else if (availableWidth >= 120) bannerWidthFamily = 120;
 
         if (bannerWidthFamily > 0) {
-            const applicableFormats = allAdFormats.filter(f => f.width === bannerWidthFamily);
-            applicableFormats.forEach(format => {
-                const isFirst = sidebar.childElementCount === 0;
-                const requiredGap = isFirst ? 0 : verticalGap;
+            var applicableFormats = allAdFormats.filter(function (f) { return f.width === bannerWidthFamily; });
+            for (var i = 0; i < applicableFormats.length; i++) {
+                var format = applicableFormats[i];
+                var isFirst = sidebar.childElementCount === 0;
+                var requiredGap = isFirst ? 0 : verticalGap;
                 if (currentAvailableHeight >= (format.height + requiredGap)) {
-                    const banner = createBanner(format.width, format.height, side, isFirst);
+                    var banner = createBanner(format.width, format.height, side, isFirst);
                     if (banner) {
-                        if (!isFirst) banner.style.marginTop = `${verticalGap}px`;
+                        if (!isFirst) banner.style.marginTop = verticalGap + 'px';
                         sidebar.appendChild(banner);
                         currentAvailableHeight -= (format.height + requiredGap);
                     }
                 } else if (!isFirst && currentAvailableHeight >= format.height) {
-                    const banner = createBanner(format.width, format.height, side, isFirst);
+                    var banner = createBanner(format.width, format.height, side, isFirst);
                     if (banner) {
                         sidebar.appendChild(banner);
                         currentAvailableHeight -= format.height;
                     }
                 }
-            });
+            }
         }
     };
 
     if (layoutMode === 'dual') {
-        const sideWidth = totalExtraWidth / 2;
-        sidebarLeft.style.width = `${sideWidth}px`;
-        sidebarRight.style.width = `${sideWidth}px`;
+        var sideWidth = totalExtraWidth / 2;
+        sidebarLeft.style.width = sideWidth + 'px';
+        sidebarRight.style.width = sideWidth + 'px';
         sidebarLeft.style.display = 'flex';
         sidebarRight.style.display = 'flex';
         populateSidebar(sidebarLeft, sideWidth, 'left');
         populateSidebar(sidebarRight, sideWidth, 'right');
     } else if (layoutMode === 'single-right') {
-        sidebarRight.style.width = `${totalExtraWidth}px`;
+        sidebarRight.style.width = totalExtraWidth + 'px';
         sidebarRight.style.display = 'flex';
         populateSidebar(sidebarRight, totalExtraWidth, 'left'); // Show Italian message
     }
 }
 
-window.addEventListener('load', () => {
+// Support both modern and older browsers for early execution
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', adjustLayout);
+} else {
+    adjustLayout();
+}
+
+window.addEventListener('load', function () {
     adjustLayout();
     trackVisibleBanners('initial_load');
 
-    let minuteCounter = 0;
+    var minuteCounter = 0;
     setInterval(function () {
         minuteCounter++;
         trackVisibleBanners('timer_refresh_' + minuteCounter);
     }, 60 * 1000);
 
-    document.addEventListener('keydown', (event) => {
+    document.addEventListener('keydown', function (event) {
         if (event.ctrlKey && event.altKey && event.key.toLowerCase() === 's') {
             event.preventDefault();
             window.showBannerDimensions = !window.showBannerDimensions;
@@ -207,4 +219,5 @@ window.addEventListener('load', () => {
         }
     });
 });
+
 window.addEventListener('resize', adjustLayout);

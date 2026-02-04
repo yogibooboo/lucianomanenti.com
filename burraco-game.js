@@ -959,6 +959,38 @@ function prossimoTurno() {
     }
 }
 
+/**
+ * Pausa debug AI: mostra info e aspetta SPAZIO per continuare.
+ * @param {Giocatore} giocatore - Il giocatore AI corrente
+ * @param {string} fase - Descrizione della fase (es. "Inizio turno", "Dopo pesca")
+ */
+async function pausaDebugAI(giocatore, fase) {
+    if (!game.debugAI) return;
+
+    // L'analisi è già stata fatta da turnoAI() - non duplicare
+
+    // Apri/aggiorna la finestra info del giocatore
+    mostraPannelloGiocatore(game.giocatoreCorrente, `AI Debug - ${fase}`);
+    aggiornaFinestraGiocatore(game.giocatoreCorrente);
+
+    // Mostra ultimo pensiero strategico
+    const ultimoPensiero = giocatore.osservazioni?.logStrategico?.slice(-3) || [];
+    const pensieriTxt = ultimoPensiero.map(p => p.messaggio).join(' | ');
+
+    // Aspetta che l'utente prema SPAZIO per continuare
+    game.debugAIContinua = false;
+    mostraMessaggio(
+        `[${fase}] ${giocatore.nome} | ${pensieriTxt || 'Analisi...'} | SPAZIO per continuare`,
+        'info'
+    );
+
+    while (!game.debugAIContinua) {
+        await delay(100);
+    }
+
+    nascondiMessaggio();
+}
+
 async function turnoAI() {
     const giocatore = game.giocatori[game.giocatoreCorrente];
     const selettoreCarte = getSelettoreCarteGiocatore(giocatore);
@@ -968,63 +1000,82 @@ async function turnoAI() {
     // Analizza la mano e genera opzioni di gioco
     Strategia.analizzaMano(giocatore);
 
-    // ========== DEBUG AI ==========
-    // Se debugAI attivo, mostra finestra giocatore e aspetta input
-    if (game.debugAI) {
-        // Apri la finestra info del giocatore
-        mostraPannelloGiocatore(game.giocatoreCorrente, `AI Debug - Turno ${game.turno}`);
-
-        // Aggiorna la finestra con i nuovi dati
-        aggiornaFinestraGiocatore(game.giocatoreCorrente);
-
-        // Aspetta che l'utente prema un tasto per continuare
-        game.debugAIContinua = false;
-        mostraMessaggio(`Debug AI: ${giocatore.nome} - Premi SPAZIO per continuare`, 'info');
-
-        while (!game.debugAIContinua) {
-            await delay(100);
-        }
-
-        nascondiMessaggio();
-    }
+    // ========== DEBUG: INIZIO TURNO ==========
+    await pausaDebugAI(giocatore, `Turno ${game.turno} - Inizio`);
 
     // Ritardo prima della pesca
     await delay(500);
 
-    // Pesca dal mazzo
-    const carta = game.mazzo.pop();
-    if (carta) {
-        // Se modalita scoperte attiva, mostra la carta
-        if (game.mostraTutteCarteScoperte) {
-            carta.faceUp = true;
+    // ===== DECISIONE: MAZZO O SCARTI? =====
+    const fontePesca = Strategia.decidiFontePesca(giocatore);
+    console.log(`AI ${giocatore.nome}: pesca da ${fontePesca.toUpperCase()}`);
+
+    if (fontePesca === 'scarti' && game.scarti.length > 0) {
+        // ===== PESCA DA SCARTI (prende TUTTE le carte) =====
+        const cartePescate = [...game.scarti];
+        const numCarte = cartePescate.length;
+
+        // Svuota gli scarti
+        game.scarti = [];
+
+        // Aggiungi tutte le carte alla mano
+        for (const carta of cartePescate) {
+            if (game.mostraTutteCarteScoperte) {
+                carta.faceUp = true;
+            }
+            giocatore.carte.push(carta);
         }
-        giocatore.carte.push(carta);
 
         // Registra nella storia
-        registraMossa(AZIONE_PESCA_MAZZO, { carta: carta.id });
+        registraMossa(AZIONE_PESCA_SCARTI, {
+            carte: cartePescate.map(c => c.id)
+        });
 
         render();
 
-        // Anima la carta dal mazzo alla mano del giocatore
-        const container = $(selettoreCarte);
-        const ultimaCarta = container ? container.lastElementChild : null;
-        if (ultimaCarta) {
-            ultimaCarta.style.visibility = 'hidden';
-            playSound('pesca');
-            // Ruota di 90 gradi se giocatore laterale
-            const opzioniAnim = {
-                mostraFronte: game.mostraTutteCarteScoperte,
-                rotazioneIniziale: 0,
-                rotazioneFinale: isLaterale ? 90 : 0
-            };
-            await animaCartaDa(carta, '#mazzo', ultimaCarta, opzioniAnim);
-            ultimaCarta.style.visibility = 'visible';
+        // Animazione (semplificata: mostra solo l'ultima carta pescata)
+        playSound('pesca');
+        console.log(`AI ${giocatore.nome}: pescate ${numCarte} carte dagli scarti`);
+
+    } else {
+        // ===== PESCA DA MAZZO =====
+        const carta = game.mazzo.pop();
+        if (carta) {
+            // Se modalita scoperte attiva, mostra la carta
+            if (game.mostraTutteCarteScoperte) {
+                carta.faceUp = true;
+            }
+            giocatore.carte.push(carta);
+
+            // Registra nella storia
+            registraMossa(AZIONE_PESCA_MAZZO, { carta: carta.id });
+
+            render();
+
+            // Anima la carta dal mazzo alla mano del giocatore
+            const container = $(selettoreCarte);
+            const ultimaCarta = container ? container.lastElementChild : null;
+            if (ultimaCarta) {
+                ultimaCarta.style.visibility = 'hidden';
+                playSound('pesca');
+                // Ruota di 90 gradi se giocatore laterale
+                const opzioniAnim = {
+                    mostraFronte: game.mostraTutteCarteScoperte,
+                    rotazioneIniziale: 0,
+                    rotazioneFinale: isLaterale ? 90 : 0
+                };
+                await animaCartaDa(carta, '#mazzo', ultimaCarta, opzioniAnim);
+                ultimaCarta.style.visibility = 'visible';
+            }
         }
     }
 
     // Rianalizza la mano dopo aver pescato
     Strategia.analizzaMano(giocatore);
     ordinaCarte(giocatore.carte);
+
+    // ========== DEBUG: DOPO PESCA ==========
+    await pausaDebugAI(giocatore, `Turno ${game.turno} - Dopo pesca`);
 
     // Esegui la mossa migliore (la prima opzione dopo l'ordinamento per valutazione)
     const opzioni = giocatore.osservazioni?.opzioniGioco || [];

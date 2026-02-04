@@ -1656,22 +1656,27 @@ function chiudiModals() {
 }
 
 // Finestre info giocatore (popup browser separati)
-let giocatoreWindows = {}; // { indice: window }
+// Finestra debug unica (mantiene posizione riutilizzando la stessa finestra)
+let debugWindow = null;
 
 function mostraPannelloGiocatore(indiceGiocatore, ruolo) {
     const giocatore = game.giocatori[indiceGiocatore];
     if (!giocatore || !giocatore.personaggio) return;
 
-    // Se la finestra esiste ed è aperta, la portiamo in primo piano
-    if (giocatoreWindows[indiceGiocatore] && !giocatoreWindows[indiceGiocatore].closed) {
-        giocatoreWindows[indiceGiocatore].focus();
+    // Se la finestra esiste ed è aperta, RIUTILIZZALA (mantiene posizione!)
+    if (debugWindow && !debugWindow.closed) {
+        // Aggiorna solo il contenuto senza chiudere/riaprire
+        debugWindow.document.open();
+        debugWindow.document.write(getGiocatoreHTML(indiceGiocatore, ruolo));
+        debugWindow.document.close();
+        // Togli il focus dalla finestra debug per restituirlo al gioco
+        debugWindow.blur();
         return;
     }
 
-    // Apri nuova finestra browser (più ampia per debug, due colonne)
-    const win = window.open('', `BurracoGiocatore_${indiceGiocatore}`,
-        'width=820,height=700,resizable=yes,scrollbars=yes,menubar=no,toolbar=no,location=no,status=no'
-    );
+    // Prima apertura: crea la finestra
+    const features = 'width=1100,height=700,resizable=yes,scrollbars=yes,menubar=no,toolbar=no,location=no,status=no';
+    const win = window.open('', 'BurracoDebug', features);
 
     if (!win) {
         console.error('Impossibile aprire la finestra (popup bloccato?)');
@@ -1679,25 +1684,29 @@ function mostraPannelloGiocatore(indiceGiocatore, ruolo) {
         return;
     }
 
-    giocatoreWindows[indiceGiocatore] = win;
+    debugWindow = win;
 
     // Scrivi il contenuto HTML
     win.document.write(getGiocatoreHTML(indiceGiocatore, ruolo));
     win.document.close();
+
+    // Togli il focus dal popup per restituirlo al gioco
+    win.blur();
 }
 
-// Aggiorna il contenuto di una finestra giocatore già aperta
+// Aggiorna il contenuto della finestra debug già aperta
 function aggiornaFinestraGiocatore(indiceGiocatore) {
-    const win = giocatoreWindows[indiceGiocatore];
-    if (!win || win.closed) return;
+    if (!debugWindow || debugWindow.closed) return;
 
-    const giocatore = game.giocatori[indiceGiocatore];
     const ruolo = `AI Debug - Turno ${game.turno}`;
 
     // Riscrivi l'intero documento
-    win.document.open();
-    win.document.write(getGiocatoreHTML(indiceGiocatore, ruolo));
-    win.document.close();
+    debugWindow.document.open();
+    debugWindow.document.write(getGiocatoreHTML(indiceGiocatore, ruolo));
+    debugWindow.document.close();
+
+    // Togli il focus dal popup per restituirlo al gioco
+    debugWindow.blur();
 }
 
 // ============================================================================
@@ -1868,16 +1877,29 @@ function getGiocatoreHTML(indiceGiocatore, ruolo) {
         }
     }
 
-    // Genera HTML log strategico (ultimi 5 pensieri)
+    // Genera HTML log strategico (ultimi 20 pensieri per colonna dedicata)
+    // Le righe con dettagli sono cliccabili
     let logHTML = '<div class="oss-empty">Nessun pensiero registrato</div>';
+    let logDettagli = []; // Array per salvare i dettagli cliccabili
     if (giocatore.osservazioni?.logStrategico?.length > 0) {
-        const ultimi = giocatore.osservazioni.logStrategico.slice(-5).reverse();
-        logHTML = ultimi.map(l => `
-            <div class="log-item">
+        const ultimi = giocatore.osservazioni.logStrategico.slice(-20).reverse();
+        logHTML = ultimi.map((l, idx) => {
+            const hasDettagli = l.dettagli != null;
+            if (hasDettagli) {
+                logDettagli.push({ idx, dettagli: l.dettagli });
+            }
+            const clickClass = hasDettagli ? 'log-clickable' : '';
+            const clickAttr = hasDettagli ? `onclick="mostraDettagliPesca(${idx})"` : '';
+            return `
+            <div class="log-item ${clickClass}" ${clickAttr}>
                 <span class="log-turno">T${l.turno}:</span>
                 <span class="log-msg">${l.messaggio}</span>
-            </div>`).join('');
+                ${hasDettagli ? '<span class="log-icon">🔍</span>' : ''}
+            </div>`;
+        }).join('');
     }
+    // Serializza i dettagli per lo script nella finestra
+    const logDettagliJSON = JSON.stringify(logDettagli);
 
     // Genera HTML stato attuale
     let statoHTML = '';
@@ -1911,9 +1933,10 @@ function getGiocatoreHTML(indiceGiocatore, ruolo) {
             min-height: 100vh;
             padding: 12px;
         }
-        .container { max-width: 800px; }
-        .due-colonne { display: flex; gap: 12px; }
+        .container { max-width: 1080px; }
+        .tre-colonne { display: flex; gap: 12px; }
         .colonna { flex: 1; min-width: 0; }
+        .colonna-log { flex: 1.2; min-width: 0; } /* Colonna log leggermente più larga */
         .header {
             text-align: center;
             margin-bottom: 10px;
@@ -2003,9 +2026,30 @@ function getGiocatoreHTML(indiceGiocatore, ruolo) {
         .obj-pri { width: 28px; text-align: right; font-size: 10px; color: #ffd700; font-weight: bold; flex-shrink: 0; }
 
         /* Log */
-        .log-item { margin: 3px 0; font-size: 10px; line-height: 1.3; }
-        .log-turno { color: #888; margin-right: 4px; }
-        .log-msg { color: #ccc; }
+        .log-scroll { max-height: 450px; overflow-y: auto; }
+        .log-item { margin: 4px 0; font-size: 11px; line-height: 1.4; padding: 2px 4px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; }
+        .log-turno { color: #888; margin-right: 6px; font-weight: bold; flex-shrink: 0; }
+        .log-msg { color: #ddd; flex: 1; }
+        .log-clickable { cursor: pointer; background: rgba(255,215,0,0.1); border-radius: 3px; }
+        .log-clickable:hover { background: rgba(255,215,0,0.25); }
+        .log-icon { margin-left: 6px; font-size: 12px; flex-shrink: 0; }
+
+        /* Modal dettagli */
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background: linear-gradient(135deg, #1a4a2a 0%, #0d2d1a 100%); border: 2px solid #ffd700; border-radius: 10px; padding: 16px; max-width: 600px; max-height: 80vh; overflow-y: auto; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.2); }
+        .modal-title { font-size: 16px; font-weight: bold; color: #ffd700; }
+        .modal-close { cursor: pointer; font-size: 20px; color: #888; }
+        .modal-close:hover { color: #fff; }
+        .modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .modal-col { background: rgba(0,0,0,0.2); border-radius: 6px; padding: 10px; }
+        .modal-col-title { font-size: 14px; font-weight: bold; margin-bottom: 8px; padding-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .modal-col-title.selected { color: #4f4; }
+        .modal-row { display: flex; justify-content: space-between; margin: 4px 0; font-size: 12px; }
+        .modal-label { color: #aaa; }
+        .modal-value { color: #fff; font-weight: bold; }
+        .modal-total { margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.2); font-size: 14px; }
+        .modal-footer { margin-top: 12px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.2); font-size: 11px; color: #888; }
     </style>
 </head>
 <body>
@@ -2028,7 +2072,7 @@ function getGiocatoreHTML(indiceGiocatore, ruolo) {
         </div>
 
         ${!giocatore.isUmano ? `
-        <div class="due-colonne">
+        <div class="tre-colonne">
             <div class="colonna">
                 <div class="sezione">
                     <div class="sezione-titolo">Combinazioni e Attacchi Possibili</div>
@@ -2038,10 +2082,6 @@ function getGiocatoreHTML(indiceGiocatore, ruolo) {
                     <div class="sezione-titolo">Stato</div>
                     ${statoHTML}
                 </div>
-                <div class="sezione">
-                    <div class="sezione-titolo">Log Pensieri</div>
-                    ${logHTML}
-                </div>
             </div>
             <div class="colonna">
                 <div class="sezione">
@@ -2049,9 +2089,86 @@ function getGiocatoreHTML(indiceGiocatore, ruolo) {
                     ${objHTML}
                 </div>
             </div>
+            <div class="colonna-log">
+                <div class="sezione" style="height: calc(100% - 12px);">
+                    <div class="sezione-titolo">Log Pensieri</div>
+                    <div class="log-scroll">${logHTML}</div>
+                </div>
+            </div>
         </div>
         ` : ''}
     </div>
+    <script>
+        // Dati dei dettagli cliccabili
+        const logDettagli = ${logDettagliJSON};
+
+        function mostraDettagliPesca(idx) {
+            const entry = logDettagli.find(e => e.idx === idx);
+            if (!entry || !entry.dettagli) return;
+            const d = entry.dettagli;
+            if (d.tipo !== 'pesca') return;
+
+            const m = d.mazzo;
+            const s = d.scarti;
+
+            const html = \`
+            <div class="modal-overlay" onclick="chiudiModal(event)">
+                <div class="modal-content" onclick="event.stopPropagation()">
+                    <div class="modal-header">
+                        <span class="modal-title">Decisione Pesca: \${d.decisione.toUpperCase()}</span>
+                        <span class="modal-close" onclick="chiudiModal()">&times;</span>
+                    </div>
+                    <div class="modal-grid">
+                        <div class="modal-col">
+                            <div class="modal-col-title \${d.decisione === 'mazzo' ? 'selected' : ''}">
+                                \${d.decisione === 'mazzo' ? '>>> ' : ''}MAZZO
+                            </div>
+                            <div class="modal-row"><span class="modal-label">Valore base:</span><span class="modal-value">\${m.valoreBase.toFixed(0)}</span></div>
+                            <div class="modal-row"><span class="modal-label">├ Punti depositabili:</span><span class="modal-value">\${m.analisi.punti}</span></div>
+                            <div class="modal-row"><span class="modal-label">├ Burraco:</span><span class="modal-value">\${m.analisi.burraco} × \${d.pesi.pesoBurraco}</span></div>
+                            <div class="modal-row"><span class="modal-label">├ Matte:</span><span class="modal-value">\${m.analisi.matte} × \${d.pesi.pesoMatte}</span></div>
+                            <div class="modal-row"><span class="modal-label">└ Cadaveri:</span><span class="modal-value">-\${(m.analisi.cadaveri * d.pesi.pesoCadaveri).toFixed(0)}</span></div>
+                            <div class="modal-row"><span class="modal-label">Bonus atteso:</span><span class="modal-value">+\${m.bonusAtteso}</span></div>
+                            <div class="modal-row"><span class="modal-label">├ Base (carta media):</span><span class="modal-value">+\${m.bonusBase}</span></div>
+                            <div class="modal-row"><span class="modal-label">└ Carte ricercate:</span><span class="modal-value">+\${m.bonusRicercate}</span></div>
+                            \${m.carteRicercate.length > 0 ? '<div class="modal-row"><span class="modal-label" style="font-size:10px;color:#666">   (' + m.carteRicercate.join(', ') + ')</span></div>' : ''}
+                            <div class="modal-row modal-total"><span class="modal-label">TOTALE:</span><span class="modal-value" style="color:#4f4">\${m.totale.toFixed(0)}</span></div>
+                        </div>
+                        <div class="modal-col">
+                            <div class="modal-col-title \${d.decisione === 'scarti' ? 'selected' : ''}">
+                                \${d.decisione === 'scarti' ? '>>> ' : ''}SCARTI (\${s.numCarte} carte)
+                            </div>
+                            <div class="modal-row"><span class="modal-label">Valore base:</span><span class="modal-value">\${s.valoreBase.toFixed(0)}</span></div>
+                            <div class="modal-row"><span class="modal-label">├ Punti depositabili:</span><span class="modal-value">\${s.analisi.punti}</span></div>
+                            <div class="modal-row"><span class="modal-label">├ Burraco:</span><span class="modal-value">\${s.analisi.burraco} × \${d.pesi.pesoBurraco}</span></div>
+                            <div class="modal-row"><span class="modal-label">├ Matte:</span><span class="modal-value">\${s.analisi.matte} × \${d.pesi.pesoMatte}</span></div>
+                            <div class="modal-row"><span class="modal-label">└ Cadaveri:</span><span class="modal-value">-\${(s.analisi.cadaveri * d.pesi.pesoCadaveri).toFixed(0)}</span></div>
+                            \${s.bonusCima > 0 ? '<div class="modal-row"><span class="modal-label">Bonus ' + s.bonusCimaDesc + ':</span><span class="modal-value" style="color:#f80">+' + s.bonusCima + '</span></div>' : ''}
+                            <div class="modal-row modal-total"><span class="modal-label">TOTALE:</span><span class="modal-value" style="color:#4f4">\${s.totale.toFixed(0)}</span></div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <strong>Differenza:</strong> \${d.differenza >= 0 ? '+' : ''}\${d.differenza.toFixed(0)} |
+                        <strong>Soglia:</strong> \${d.soglia} (pescaScarti=\${d.coeff.pescaScarti}) |
+                        <strong>Decisione:</strong> \${d.differenza.toFixed(0)} \${d.differenza > d.soglia ? '>' : '≤'} \${d.soglia} → \${d.decisione.toUpperCase()}
+                    </div>
+                </div>
+            </div>\`;
+
+            document.body.insertAdjacentHTML('beforeend', html);
+        }
+
+        function chiudiModal(event) {
+            if (event && event.target.className !== 'modal-overlay') return;
+            const modal = document.querySelector('.modal-overlay');
+            if (modal) modal.remove();
+        }
+
+        // Chiudi con ESC
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') chiudiModal();
+        });
+    </script>
 </body>
 </html>`;
 }
@@ -2518,11 +2635,9 @@ window.addEventListener('beforeunload', () => {
     if (detailWindow && !detailWindow.closed) {
         detailWindow.close();
     }
-    // Chiudi finestre info giocatore
-    for (const idx in giocatoreWindows) {
-        if (giocatoreWindows[idx] && !giocatoreWindows[idx].closed) {
-            giocatoreWindows[idx].close();
-        }
+    // Chiudi finestra debug AI
+    if (debugWindow && !debugWindow.closed) {
+        debugWindow.close();
     }
 });
 

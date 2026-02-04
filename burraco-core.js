@@ -422,14 +422,24 @@ const Strategia = {
 
     // ========== LOG ==========
 
-    // Logga un "pensiero" del bot (per debug/analisi)
-    logPensiero(giocatore, messaggio) {
+    /**
+     * Logga un "pensiero" del bot (per debug/analisi)
+     * @param {Giocatore} giocatore
+     * @param {string} messaggio - Testo breve da mostrare nel log
+     * @param {Object} dettagli - (opzionale) Dati extra per visualizzazione dettagliata cliccabile
+     */
+    logPensiero(giocatore, messaggio, dettagli = null) {
         if (!giocatore.osservazioni?.logStrategico) return;
-        giocatore.osservazioni.logStrategico.push({
+        const entry = {
             turno: game.turno,
             messaggio: messaggio,
             timestamp: Date.now()
-        });
+        };
+        // Se ci sono dettagli, li aggiungiamo (rende la riga cliccabile nella UI)
+        if (dettagli) {
+            entry.dettagli = dettagli;
+        }
+        giocatore.osservazioni.logStrategico.push(entry);
         // Limita a ultimi 100 pensieri per performance
         if (giocatore.osservazioni.logStrategico.length > 100) {
             giocatore.osservazioni.logStrategico.shift();
@@ -926,35 +936,461 @@ const Strategia = {
         );
     },
 
-    // Decisione: pescare da scarti o da mazzo?
-    decidiFontePesca(giocatore) {
-        if (game.scarti.length === 0) return 'mazzo';
+    // ========== VALUTAZIONE PESCA (MAZZO vs SCARTI) ==========
 
-        const coeff = this.getCoeff(giocatore);
-        const cartaInCima = game.scarti[game.scarti.length - 1];
-        const mano = giocatore.carte;
+    /**
+     * Analizza un set di carte e ritorna le possibili combinazioni.
+     * Funzione PURA: non modifica nessuno stato, lavora solo sui dati passati.
+     *
+     * @param {Carta[]} carte - Array di carte da analizzare
+     * @param {Combinazione[]} combinazioniSquadra - Combinazioni esistenti della squadra
+     * @returns {Object} Oggetto con tris, scale, calate possibili e carte morte
+     */
+    analizzaCarte(carte, combinazioniSquadra) {
+        const risultato = {
+            possibiliTris: [],
+            possibiliScale: [],
+            possibiliCalate: [],
+            carteMorte: [],
+            matte: [],
+            migliorOpzione: null,      // La migliore combinazione di mosse
+            puntiDepositabili: 0,      // Punti totali depositabili
+            numBurraco: 0,             // Numero di burraco possibili
+            puntiCadaveri: 0           // Punti delle carte che restano in mano
+        };
 
-        // Controlla se la carta forma combinazione immediata
-        const formaCombinazione = this.cartaFormaCombinazione(cartaInCima, mano);
+        if (!carte || carte.length === 0) return risultato;
 
-        // Controlla se può attaccare a combinazione esistente
-        const puoAttaccare = this.cartaPuoAttaccare(giocatore, cartaInCima);
+        // ===== 1. TROVA MATTE (Jolly e Pinelle) =====
+        risultato.matte = carte.filter(c => c.isJolly || c.isPinella);
 
-        // Calcola punteggio decisione (0.0 - 1.0)
-        let punteggio = 0;
+        // ===== 2. TROVA POSSIBILI TRIS =====
+        // Raggruppa carte per numero (escluse matte)
+        const perNumero = new Map();
+        carte.forEach(c => {
+            if (!c.isJolly && !c.isPinella) {
+                if (!perNumero.has(c.numero)) perNumero.set(c.numero, []);
+                perNumero.get(c.numero).push(c);
+            }
+        });
 
-        if (formaCombinazione) punteggio += 0.6;
-        if (puoAttaccare) punteggio += 0.3;
+        // Per ogni numero, cerca tris (3+ carte stesso numero)
+        perNumero.forEach((carteDiNumero, numero) => {
+            // Tris pulito (senza matta)
+            if (carteDiNumero.length >= 3) {
+                const trisCarte = carteDiNumero.slice(0, Math.min(4, carteDiNumero.length));
+                risultato.possibiliTris.push({
+                    carte: trisCarte.slice(0, 3),
+                    punti: trisCarte.slice(0, 3).reduce((s, c) => s + c.punti, 0),
+                    usaMatta: false,
+                    numero: numero
+                });
+            }
+            // Tris con matta (2 carte + 1 matta)
+            if (carteDiNumero.length >= 2 && risultato.matte.length > 0) {
+                const matta = risultato.matte[0];
+                risultato.possibiliTris.push({
+                    carte: [...carteDiNumero.slice(0, 2), matta],
+                    punti: carteDiNumero.slice(0, 2).reduce((s, c) => s + c.punti, 0) + matta.punti,
+                    usaMatta: true,
+                    numero: numero
+                });
+            }
+        });
 
-        // pescaScarti: 0=sempre mazzo, 10=preferisce scarti
-        punteggio += (coeff.pescaScarti - 5) * 0.04; // -0.2 a +0.2
+        // ===== 3. TROVA POSSIBILI SCALE =====
+        // Raggruppa carte per seme (escluse matte)
+        const perSeme = new Map();
+        carte.forEach(c => {
+            if (!c.isJolly && !c.isPinella) {
+                if (!perSeme.has(c.seme)) perSeme.set(c.seme, new Map());
+                const semeMap = perSeme.get(c.seme);
+                if (!semeMap.has(c.numero)) semeMap.set(c.numero, []);
+                semeMap.get(c.numero).push(c);
+            }
+        });
 
-        // Ma attenzione: pescare da scarti prende TUTTE le carte
-        if (game.scarti.length > 5) {
-            punteggio -= 0.1; // Penalità per troppe carte
+        // Per ogni seme, cerca scale (3+ carte consecutive)
+        perSeme.forEach((semeMap, seme) => {
+            const numeri = [...semeMap.keys()].sort((a, b) => a - b);
+
+            // Scorri cercando sequenze di almeno 3
+            for (let i = 0; i < numeri.length; i++) {
+                let sequenza = [numeri[i]];
+                let j = i + 1;
+
+                // Estendi la sequenza finché sono consecutivi (o c'è 1 buco per matta)
+                while (j < numeri.length) {
+                    const diff = numeri[j] - sequenza[sequenza.length - 1];
+                    if (diff === 1) {
+                        sequenza.push(numeri[j]);
+                        j++;
+                    } else if (diff === 2 && risultato.matte.length > 0 && sequenza.length >= 2) {
+                        // Buco di 1: può essere riempito con matta
+                        sequenza.push(numeri[j] - 1); // posizione matta
+                        sequenza.push(numeri[j]);
+                        j++;
+                        break; // Solo 1 matta per scala
+                    } else {
+                        break;
+                    }
+                }
+
+                // Se abbiamo almeno 3 numeri, è una scala valida
+                if (sequenza.length >= 3) {
+                    const scalaCarte = [];
+                    let usaMatta = false;
+
+                    for (const num of sequenza) {
+                        if (semeMap.has(num)) {
+                            scalaCarte.push(semeMap.get(num)[0]);
+                        } else if (risultato.matte.length > 0) {
+                            // Posizione per la matta
+                            scalaCarte.push(risultato.matte[0]);
+                            usaMatta = true;
+                        }
+                    }
+
+                    if (scalaCarte.length >= 3) {
+                        risultato.possibiliScale.push({
+                            carte: scalaCarte.slice(0, 7), // Max 7 per burraco
+                            punti: scalaCarte.slice(0, 7).reduce((s, c) => s + c.punti, 0),
+                            usaMatta: usaMatta,
+                            seme: seme,
+                            lunghezza: scalaCarte.length
+                        });
+                    }
+                }
+            }
+        });
+
+        // ===== 4. TROVA POSSIBILI CALATE (su combinazioni esistenti) =====
+        if (combinazioniSquadra && combinazioniSquadra.length > 0) {
+            for (const carta of carte) {
+                for (const combo of combinazioniSquadra) {
+                    if (typeof puoAggiungereACombinazione === 'function') {
+                        const posizione = puoAggiungereACombinazione(carta, combo);
+                        if (posizione) {
+                            risultato.possibiliCalate.push({
+                                carta: carta,
+                                comboId: combo.id,
+                                combo: combo,
+                                punti: carta.punti
+                            });
+                        }
+                    }
+                }
+            }
         }
 
-        return punteggio > 0.4 ? 'scarti' : 'mazzo';
+        // ===== 5. CALCOLA CARTE MORTE (non usate in nessuna combinazione) =====
+        const carteUsate = new Set();
+        risultato.possibiliTris.forEach(t => t.carte.forEach(c => carteUsate.add(c.id)));
+        risultato.possibiliScale.forEach(s => s.carte.forEach(c => carteUsate.add(c.id)));
+        risultato.possibiliCalate.forEach(c => carteUsate.add(c.carta.id));
+
+        risultato.carteMorte = carte.filter(c =>
+            !carteUsate.has(c.id) && !c.isJolly && !c.isPinella
+        );
+        risultato.puntiCadaveri = risultato.carteMorte.reduce((s, c) => s + c.punti, 0);
+
+        // ===== 6. TROVA MIGLIORE OPZIONE DI GIOCO =====
+        // Sceglie la combinazione di mosse che massimizza i punti depositabili
+        let migliorPunti = 0;
+
+        // Valuta tris singoli
+        for (const tris of risultato.possibiliTris) {
+            if (tris.punti > migliorPunti) {
+                migliorPunti = tris.punti;
+                risultato.migliorOpzione = { tipo: 'tris', ...tris };
+            }
+        }
+
+        // Valuta scale (priorità se più lunghe o burraco)
+        for (const scala of risultato.possibiliScale) {
+            const bonus = scala.lunghezza >= 7 ? 200 : 0; // Bonus burraco
+            if (scala.punti + bonus > migliorPunti) {
+                migliorPunti = scala.punti + bonus;
+                risultato.migliorOpzione = { tipo: 'scala', ...scala };
+                if (scala.lunghezza >= 7) risultato.numBurraco++;
+            }
+        }
+
+        // Conta burraco possibili (scale di 7+)
+        risultato.numBurraco = risultato.possibiliScale.filter(s => s.lunghezza >= 7).length;
+
+        // Somma punti depositabili (migliore opzione)
+        risultato.puntiDepositabili = migliorPunti;
+
+        return risultato;
+    },
+
+    /**
+     * Valuta una situazione di gioco e ritorna un punteggio.
+     * Usata per confrontare "prima pesca" vs "dopo pesca scarti".
+     *
+     * @param {Object} analisi - Risultato di analizzaCarte()
+     * @param {Object} coeff - Coefficienti del personaggio
+     * @param {number} numCarteInMano - Numero totale di carte in mano
+     * @param {boolean} puoPozzetto - Se può prendere il pozzetto
+     * @returns {number} Punteggio della situazione
+     */
+    valutaSituazione(analisi, coeff, numCarteInMano, puoPozzetto) {
+        let punteggio = 0;
+
+        // ===== GUADAGNI =====
+
+        // 1. Punti depositabili (base)
+        punteggio += analisi.puntiDepositabili;
+
+        // 2. Bonus burraco (pesato su prefBurracoPulito)
+        //    prefBurracoPulito: 0=sporco va bene, 10=aspetta pulito
+        //    Qui bonus per QUALSIASI burraco, il tipo lo valutiamo dopo
+        const pesoBurraco = 150 + (coeff.prefBurracoPulito * 10); // 150-250
+        punteggio += analisi.numBurraco * pesoBurraco;
+
+        // 3. Bonus pozzetto (pesato su frettaChiusura)
+        //    frettaChiusura: 0=gioca a lungo, 10=chiude appena può
+        if (puoPozzetto) {
+            const pesoPozzetto = 200 + (coeff.frettaChiusura * 20); // 200-400
+            punteggio += pesoPozzetto;
+        }
+
+        // 4. Bonus matte in mano (pesato INVERSAMENTE su tieneJolly)
+        //    tieneJolly: 0=usa subito (bonus alto), 10=li tiene (bonus basso)
+        const pesoMatte = 30 + ((10 - coeff.tieneJolly) * 5); // 30-80
+        punteggio += analisi.matte.length * pesoMatte;
+
+        // ===== COSTI =====
+
+        // 5. Penalità cadaveri (pesato su prudenzaScarto)
+        //    prudenzaScarto: 0=scarta qualsiasi, 10=molto attento
+        const pesoCadaveri = 0.5 + (coeff.prudenzaScarto * 0.1); // 0.5-1.5
+        punteggio -= analisi.puntiCadaveri * pesoCadaveri;
+
+        // 6. Penalità troppe carte in mano (pesato INVERSAMENTE su rischio)
+        //    rischio: 0=conservativo (penalità alta), 10=azzardato (penalità bassa)
+        if (numCarteInMano > 11) {
+            const penalitaPerCarta = 15 - coeff.rischio; // 15-5
+            punteggio -= (numCarteInMano - 11) * penalitaPerCarta;
+        }
+
+        return punteggio;
+    },
+
+    /**
+     * Calcola il "valore atteso" di pescare dal mazzo.
+     * Considera: valore medio carta + bonus per combinazioni quasi complete.
+     *
+     * @param {Carta[]} mano - Carte in mano
+     * @returns {Object} { bonusBase, bonusRicercate, totale, carteRicercate }
+     */
+    calcolaValoreAttesoPescaMazzo(mano) {
+        // Bonus base: valore medio di una carta (~10 punti)
+        const bonusBase = 10;
+
+        // Bonus per carte ricercate (combinazioni a -1 dal completamento)
+        let bonusRicercate = 0;
+        const carteRicercate = [];
+
+        // Raggruppa carte per numero (per trovare tris a -1)
+        const perNumero = new Map();
+        mano.forEach(c => {
+            if (!c.isJolly && !c.isPinella) {
+                if (!perNumero.has(c.numero)) perNumero.set(c.numero, []);
+                perNumero.get(c.numero).push(c);
+            }
+        });
+
+        // Tris a -1: ho 2 carte dello stesso numero
+        perNumero.forEach((carte, numero) => {
+            if (carte.length === 2) {
+                // Ci sono 8 carte di questo numero nel mazzo (4 semi × 2 mazzi)
+                // Meno le 2 che ho = 6 potenziali nel mazzo
+                // Probabilità approssimata: 6/~80 carte ≈ 7.5%
+                // Valore: punti del tris (3 × valore carta)
+                const valoreTris = carte[0].punti * 3;
+                const probabilita = 0.08; // ~8%
+                const valoreAtteso = valoreTris * probabilita;
+                bonusRicercate += valoreAtteso;
+                carteRicercate.push(`${carte[0].punti === 15 ? 'A' : numero}×2`);
+            }
+        });
+
+        // Raggruppa carte per seme (per trovare scale a -1)
+        const perSeme = new Map();
+        mano.forEach(c => {
+            if (!c.isJolly && !c.isPinella) {
+                if (!perSeme.has(c.seme)) perSeme.set(c.seme, []);
+                perSeme.get(c.seme).push(c.numero);
+            }
+        });
+
+        // Scale a -1: ho 2 carte consecutive dello stesso seme
+        perSeme.forEach((numeri, seme) => {
+            numeri.sort((a, b) => a - b);
+            for (let i = 0; i < numeri.length - 1; i++) {
+                if (numeri[i + 1] - numeri[i] === 1) {
+                    // Ho 2 consecutive, cerco la terza (prima o dopo)
+                    // Probabilità: 2 carte utili / ~80 nel mazzo ≈ 2.5%
+                    const valoreScala = 15; // ~5 punti × 3 carte
+                    const probabilita = 0.025;
+                    const valoreAtteso = valoreScala * probabilita;
+                    bonusRicercate += valoreAtteso;
+                    carteRicercate.push(`${numeri[i]}-${numeri[i+1]}${seme}`);
+                }
+            }
+        });
+
+        // Arrotonda e limita il bonus ricercate
+        bonusRicercate = Math.min(Math.round(bonusRicercate), 30);
+
+        return {
+            bonusBase,
+            bonusRicercate,
+            totale: bonusBase + bonusRicercate,
+            carteRicercate
+        };
+    },
+
+    /**
+     * Decisione: pescare da scarti o da mazzo?
+     *
+     * Confronta la situazione ATTUALE + valore atteso mazzo
+     * con la situazione SIMULATA (mano + tutti gli scarti).
+     *
+     * @param {Giocatore} giocatore - Il giocatore che deve pescare
+     * @returns {string} 'scarti' o 'mazzo'
+     */
+    decidiFontePesca(giocatore) {
+        // ===== CASO BASE: nessuno scarto disponibile =====
+        if (game.scarti.length === 0) {
+            this.logPensiero(giocatore, 'Pesca: MAZZO (scarti vuoti)');
+            return 'mazzo';
+        }
+
+        const coeff = this.getCoeff(giocatore);
+        const combinazioniSquadra = giocatore.squadra === 0
+            ? game.combinazioniNoi
+            : game.combinazioniLoro;
+
+        // ===== 1. ANALIZZA SITUAZIONE ATTUALE =====
+        const analisiAttuale = this.analizzaCarte(giocatore.carte, combinazioniSquadra);
+
+        const haGiaCalato = combinazioniSquadra.length > 0;
+        const puoPozzettoAttuale = haGiaCalato &&
+            giocatore.carte.length <= 3 &&
+            !giocatore.haPozzetto;
+
+        const valoreAttuale = this.valutaSituazione(
+            analisiAttuale,
+            coeff,
+            giocatore.carte.length,
+            puoPozzettoAttuale
+        );
+
+        // ===== 2. CALCOLA VALORE ATTESO PESCA MAZZO =====
+        const valoreAtteso = this.calcolaValoreAttesoPescaMazzo(giocatore.carte);
+        const valoreMazzo = valoreAttuale + valoreAtteso.totale;
+
+        // ===== 3. SIMULA PESCA DA SCARTI =====
+        const manoSimulata = [...giocatore.carte, ...game.scarti];
+        const analisiSimulata = this.analizzaCarte(manoSimulata, combinazioniSquadra);
+
+        const carteUsateSimulate = analisiSimulata.migliorOpzione
+            ? analisiSimulata.migliorOpzione.carte?.length || 0
+            : 0;
+        const carteDopoDeposito = manoSimulata.length - carteUsateSimulate;
+
+        const puoPozzettoSimulato = haGiaCalato &&
+            carteDopoDeposito <= 1 &&
+            !giocatore.haPozzetto;
+
+        const valoreScarti = this.valutaSituazione(
+            analisiSimulata,
+            coeff,
+            manoSimulata.length,
+            puoPozzettoSimulato
+        );
+
+        // ===== 4. BONUS SPECIALE: JOLLY O PINELLA IN CIMA =====
+        const cartaInCima = game.scarti[game.scarti.length - 1];
+        let bonusCima = 0;
+        let bonusCimaDesc = '';
+        if (cartaInCima.isJolly) {
+            bonusCima = 100;
+            bonusCimaDesc = '+JOLLY!';
+        } else if (cartaInCima.isPinella) {
+            bonusCima = 60;
+            bonusCimaDesc = '+Pinella';
+        }
+        const valoreScartiTotale = valoreScarti + bonusCima;
+
+        // ===== 5. SOGLIA DECISIONE =====
+        const soglia = 80 - (coeff.pescaScarti * 6);
+
+        // ===== 6. DECISIONE FINALE =====
+        const differenza = valoreScartiTotale - valoreMazzo;
+        const decisione = differenza > soglia ? 'scarti' : 'mazzo';
+
+        // ===== 7. PREPARA DETTAGLI PER UI CLICCABILE =====
+        const pesoBurraco = 150 + (coeff.prefBurracoPulito * 10);
+        const pesoMatte = 30 + ((10 - coeff.tieneJolly) * 5);
+        const pesoCadaveri = 0.5 + (coeff.prudenzaScarto * 0.1);
+
+        const dettagli = {
+            tipo: 'pesca',
+            decisione,
+            mazzo: {
+                valoreBase: valoreAttuale,
+                bonusAtteso: valoreAtteso.totale,
+                bonusBase: valoreAtteso.bonusBase,
+                bonusRicercate: valoreAtteso.bonusRicercate,
+                carteRicercate: valoreAtteso.carteRicercate,
+                totale: valoreMazzo,
+                analisi: {
+                    punti: analisiAttuale.puntiDepositabili,
+                    burraco: analisiAttuale.numBurraco,
+                    matte: analisiAttuale.matte.length,
+                    cadaveri: analisiAttuale.puntiCadaveri
+                }
+            },
+            scarti: {
+                numCarte: game.scarti.length,
+                valoreBase: valoreScarti,
+                bonusCima,
+                bonusCimaDesc,
+                totale: valoreScartiTotale,
+                analisi: {
+                    punti: analisiSimulata.puntiDepositabili,
+                    burraco: analisiSimulata.numBurraco,
+                    matte: analisiSimulata.matte.length,
+                    cadaveri: analisiSimulata.puntiCadaveri
+                }
+            },
+            coeff: {
+                pescaScarti: coeff.pescaScarti,
+                prefBurracoPulito: coeff.prefBurracoPulito,
+                tieneJolly: coeff.tieneJolly,
+                prudenzaScarto: coeff.prudenzaScarto,
+                frettaChiusura: coeff.frettaChiusura
+            },
+            pesi: { pesoBurraco, pesoMatte, pesoCadaveri },
+            soglia,
+            differenza
+        };
+
+        // ===== 8. LOG COMPATTO =====
+        const mark = decisione === 'mazzo' ? '>>> MAZZO' : '>>> SCARTI';
+        const diffStr = differenza >= 0 ? `+${differenza.toFixed(0)}` : differenza.toFixed(0);
+        const cimaStr = bonusCimaDesc ? ` ${bonusCimaDesc}` : '';
+
+        this.logPensiero(giocatore,
+            `${mark} | Mazzo=${valoreMazzo.toFixed(0)} vs Scarti=${valoreScartiTotale.toFixed(0)}${cimaStr} (${diffStr}) | soglia=${soglia}`,
+            dettagli
+        );
+
+        return decisione;
     },
 
     // Verifica se carta forma combinazione con la mano

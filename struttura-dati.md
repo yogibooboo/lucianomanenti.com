@@ -73,7 +73,8 @@ carta = {
 | Numero | Carta | Punti |
 |--------|-------|-------|
 | 1 | Asso | 15 |
-| 2-7 | 2-7 | 5 |
+| 2 | Pinella | 20 |
+| 3-7 | 3-7 | 5 |
 | 8-13 | 8-K | 10 |
 | 50-51 | Jolly | 30 |
 
@@ -97,8 +98,38 @@ giocatore = {
     haPozzetto: false,         // true se ha gia' preso il pozzetto
     haChiuso: false,           // true se ha chiuso la partita
     squadra: 0,                // 0 = noi, 1 = loro
+
+    // Riferimento al personaggio (solo per bot)
+    personaggio: { ... },      // Oggetto Personaggio (vedi sotto)
+
+    // Record storico (persistente tra partite)
+    scoreRecord: {
+        vittorie: 0,
+        sconfitte: 0,
+        mediaPunti: 0,
+        streak: 0,
+        burrachiTotali: 0
+    },
+
+    // Osservazioni durante la partita (solo per bot)
+    osservazioni: {
+        possibiliTris: [],         // Tris formabili dalla mano
+        possibiliScale: [],        // Scale formabili dalla mano
+        possibiliCalate: [],       // Calate su combo esistenti
+        carteMorte: [],            // Carte isolate
+        matte: [],                 // Jolly e pinelle in mano
+        opzioniGioco: [],          // Combinazioni di mosse ordinate per valutazione
+        carteRicercateAvversari: new Map(),
+        scartiAvversari: [],
+        logStrategico: []
+    }
 }
 ```
+
+### Getter
+- `giocatore.coefficienti` → coefficienti del personaggio
+- `giocatore.descrizione` → descrizione del personaggio
+- `giocatore.numCarte` → numero di carte in mano
 
 ### Disposizione giocatori (2v2)
 ```
@@ -112,6 +143,38 @@ left                   right
         [Giocatore - bottom]
            squadra 0 (umano)
 ```
+
+---
+
+## 3b. Oggetto `Personaggio`
+
+I personaggi definiscono lo stile di gioco dei bot tramite coefficienti 0-10:
+
+```javascript
+personaggio = {
+    id: 'giuseppe',
+    nome: 'Giuseppe',
+    descrizione: 'Veterano impetuoso, vuole sempre chiudere per primo',
+    coefficienti: {
+        pescaScarti: 4,        // 0=sempre mazzo, 10=preferisce scarti
+        prudenzaScarto: 3,     // 0=scarta qualsiasi, 10=molto attento
+        prefScale: 5,          // 0=preferisce tris, 10=preferisce scale
+        sogliaDeposito: 2,     // 0=deposita subito, 10=accumula
+        prefBurracoPulito: 3,  // 0=sporco va bene, 10=aspetta pulito
+        tieneJolly: 2,         // 0=usa subito, 10=li tiene in mano
+        frettaChiusura: 9,     // 0=gioca a lungo, 10=chiude appena può
+        memoria: 6,            // 0=smemorato, 10=ricorda tutto
+        rischio: 8,            // 0=conservativo, 10=azzardato
+        adattamento: 4         // 0=rigido, 10=si adatta agli avversari
+    }
+}
+```
+
+### Categorie personaggi predefiniti
+- **Aggressivi**: Giuseppe, Rocco, Teresa (frettaChiusura alta)
+- **Difensivi**: Maria, Antonio, Lucia (prudenzaScarto alta)
+- **Bilanciati**: Paolo, Francesca, Marco (valori medi)
+- **Opportunisti**: Carla, Sergio, Anna (adattamento alto)
 
 ---
 
@@ -130,9 +193,14 @@ combinazione = {
 
 ### Proprieta' calcolate
 - `combinazione.isBurraco` → `true` se carte.length >= 7
-- `combinazione.isPulito` → `true` se burraco senza jolly/pinella
+- `combinazione.matteUsate` → Array di matte usate nella combinazione
+- `combinazione.tipoBurraco` → `'pulito'`, `'semipulito'`, `'sporco'`, o `null`
+- `combinazione.isPulito` → `true` se burraco senza matte
+- `combinazione.isSemipulito` → `true` se burraco con 1 matta all'estremità
+- `combinazione.isSporco` → `true` se burraco con matta all'interno
 - `combinazione.puntiCarte` → Somma punti delle carte
-- `combinazione.puntiBurraco` → 100 se pulito, 50 se sporco, 0 se non burraco
+- `combinazione.puntiBurraco` → 200 (pulito), 150 (semipulito), 100 (sporco), 0 (non burraco)
+- `combinazione.puntiTotali` → puntiCarte + puntiBurraco
 
 ### Regole combinazioni
 - **Tris**: 3+ carte dello stesso numero (semi qualsiasi)
@@ -256,8 +324,11 @@ game.storia[game.storia.length - 1]
 const SEMI = ['C', 'Q', 'F', 'P'];  // Cuori, Quadri, Fiori, Picche
 const TIPO_TRIS = 1;
 const TIPO_SCALA = 2;
-const PUNTI_BURRACO_PULITO = 100;
-const PUNTI_BURRACO_SPORCO = 50;
+
+// Punti burraco (tre livelli)
+const PUNTI_BURRACO_PULITO = 200;      // Nessuna matta
+const PUNTI_BURRACO_SEMIPULITO = 150;  // 1 matta all'estremità
+const PUNTI_BURRACO_SPORCO = 100;      // Matta all'interno
 const PUNTI_CHIUSURA = 100;
 
 // Azioni storia
