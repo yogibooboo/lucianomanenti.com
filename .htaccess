@@ -6,6 +6,9 @@ RewriteEngine On
 RewriteCond %{HTTPS} off
 RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
+# 1b. Permanent Redirection for old Scala40 V1
+Redirect 301 /scala40v1.html /scala40.html
+
 # 2. Optimized Caching Rules
 <IfModule mod_expires.c>
     ExpiresActive On

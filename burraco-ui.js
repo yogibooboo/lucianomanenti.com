@@ -20,7 +20,7 @@ function setupEventi() {
 
     // Modal
     $$('.btn-modal').forEach(btn => {
-        btn.addEventListener('click', function() {
+        btn.addEventListener('click', function () {
             chiudiModals();
         });
     });
@@ -784,13 +784,8 @@ function depositaCombinazione(e) {
         // Per le scale, ordina e posiziona il jolly nel buco
         carteOrdinate = ordinaScalaConJolly(carteOrdinate, risultato.assoAlto);
     } else if (risultato.tipo === TIPO_TRIS) {
-        // Per i tris, imposta jollycomeNumero sulle matte (jolly e pinelle)
-        const numeroTris = risultato.numero;
-        for (const c of carteOrdinate) {
-            if (c.isJolly || c.isPinella) {
-                c.jollycomeNumero = numeroTris;
-            }
-        }
+        // Per i tris, ordina con matte alla fine (in basso visivamente)
+        carteOrdinate = ordinaTrisConJolly(carteOrdinate, risultato.numero);
     }
 
     // Crea la combinazione
@@ -986,38 +981,6 @@ function aggiungiCartaACombinazione(carta, combinazione) {
 
     salvaStato('aggiungi-carta');
 
-    // Gestisci sostituzione matta (la matta si sposta a un'estremita', non torna in mano)
-    let mattaSpostata = null;
-    if (risultato.sostituzione && risultato.matta) {
-        mattaSpostata = risultato.matta;
-
-        if (combinazione.tipo === TIPO_SCALA) {
-            // Per le scale: sposta la matta a un'estremita'
-            // Trova min e max delle carte normali (esclusa la matta che stiamo spostando)
-            // Include pinelle in posizione naturale (jollycomeNumero = null)
-            const carteNormali = combinazione.carte.filter(c => c !== mattaSpostata && !isCartaMatta(c));
-            // Aggiungi anche la nuova carta che stiamo inserendo
-            carteNormali.push(carta);
-            const numeri = carteNormali.map(c => c.numero).sort((a, b) => a - b);
-            const min = numeri[0];
-            const max = numeri[numeri.length - 1];
-
-            // Metti la matta all'inizio (sotto) di default
-            if (min > 1) {
-                mattaSpostata.jollycomeNumero = min - 1;
-            } else {
-                // Se min e' 1 (Asso), metti alla fine
-                mattaSpostata.jollycomeNumero = max + 1;
-            }
-
-            console.log('Matta spostata a posizione:', mattaSpostata.jollycomeNumero);
-        }
-        // Per i tris: la matta resta dov'e' (nessun cambio di posizione necessario)
-    }
-
-    // Chiude la finestra temporale per modificare la matta (verra' riaperta dopo se necessario)
-    game.combinazioneModificabile = null;
-
     // Rimuovi la carta dalla mano del giocatore
     const idx = game.giocatori[0].carte.indexOf(carta);
     if (idx > -1) {
@@ -1045,67 +1008,10 @@ function aggiungiCartaACombinazione(carta, combinazione) {
         sostituzione: risultato.sostituzione || false
     });
 
-    // Se e' una scala, gestisci jolly/pinella e riordina
+    // Riordina la combinazione
     if (combinazione.tipo === TIPO_SCALA) {
-        // Se stiamo aggiungendo un jolly/pinella COME MATTA (non come sostituzione), imposta jollycomeNumero
-        // Se e' una sostituzione, la carta sostituisce la matta e rimane come carta naturale
-        const isAggiuntaComeMatta = (carta.isJolly || carta.isPinella) && !carta.jollycomeNumero && !risultato.sostituzione;
-
-        if (isAggiuntaComeMatta) {
-            // Trova min e max delle carte normali ESCLUDENDO la carta appena aggiunta
-            const carteNormali = combinazione.carte.filter(c => c !== carta && !isCartaMatta(c));
-            const numeri = carteNormali.map(c => c.numero).sort((a, b) => a - b);
-            const min = numeri[0];
-            const max = numeri[numeri.length - 1];
-            const semeScala = carteNormali[0].seme;
-
-            // Per la pinella, controlla se puo' andare nella posizione naturale (2)
-            // Naturale solo se posizione 2 E stesso seme della scala
-            if (carta.isPinella) {
-                // La pinella puo' essere naturale se 2 e' adiacente a min o max E stesso seme
-                if ((min === 3 || max === 1) && carta.seme === semeScala) {
-                    // Posizione 2 e' valida come carta naturale, non serve jollycomeNumero
-                    carta.jollycomeNumero = null;
-                } else {
-                    // Posizione 2 non e' valida, metti come matta a un'estremita'
-                    if (min > 1) {
-                        carta.jollycomeNumero = min - 1;
-                    } else {
-                        carta.jollycomeNumero = max + 1;
-                    }
-                    // Permetti di spostare la matta cliccando
-                    game.combinazioneModificabile = combinazione;
-                }
-            } else {
-                // Jolly: metti a un'estremita'
-                if (min > 1) {
-                    carta.jollycomeNumero = min - 1;
-                } else {
-                    carta.jollycomeNumero = max + 1;
-                }
-                // Permetti di spostare la matta cliccando
-                game.combinazioneModificabile = combinazione;
-            }
-        }
-
-        // Se e' una sostituzione con pinella, puo' essere naturale solo se stesso seme
-        if (risultato.sostituzione && carta.isPinella) {
-            const carteNormaliPerSeme = combinazione.carte.filter(c => c !== carta && !isCartaMatta(c));
-            const semeScala = carteNormaliPerSeme.length > 0 ? carteNormaliPerSeme[0].seme : carta.seme;
-            if (carta.seme === semeScala) {
-                carta.jollycomeNumero = null;
-                console.log('Pinella aggiunta come sostituzione, stesso seme, jollycomeNumero = null');
-            } else {
-                // Pinella di seme diverso: agisce come matta in posizione 2
-                carta.jollycomeNumero = 2;
-                console.log('Pinella aggiunta come sostituzione, seme diverso, jollycomeNumero = 2');
-            }
-        }
-
         // Controlla se stiamo aggiungendo un Asso a una scala che termina con K
-        // In tal caso, l'Asso deve andare in fondo (assoAlto = true)
         if (carta.numero === 1 && !combinazione.assoAlto) {
-            // Trova il max delle carte nella scala (escluso l'Asso appena aggiunto)
             const numeriEsistenti = combinazione.carte
                 .filter(c => c !== carta)
                 .map(c => isCartaMatta(c) ? c.jollycomeNumero : c.numero);
@@ -1115,27 +1021,11 @@ function aggiungiCartaACombinazione(carta, combinazione) {
                 console.log('Scala diventa assoAlto perche Asso aggiunto dopo K');
             }
         }
-
-        // Ordina per numero effettivo (jollycomeNumero per matte)
-        combinazione.carte.sort((a, b) => {
-            let numA = isCartaMatta(a) ? a.jollycomeNumero : a.numero;
-            let numB = isCartaMatta(b) ? b.jollycomeNumero : b.numero;
-            if (combinazione.assoAlto) {
-                if (numA === 1) numA = 14;
-                if (numB === 1) numB = 14;
-            }
-            return numA - numB;
-        });
-
-        // Se c'e' stata una sostituzione, permetti di spostare la matta cliccando
-        if (mattaSpostata) {
-            game.combinazioneModificabile = combinazione;
-        }
+        // Riordina la scala (gestisce automaticamente matte, pinelle, etc.)
+        combinazione.carte = ordinaScalaConJolly(combinazione.carte, combinazione.assoAlto);
     } else if (combinazione.tipo === TIPO_TRIS) {
-        // Per i tris, imposta jollycomeNumero se è una matta
-        if ((carta.isJolly || carta.isPinella) && !risultato.sostituzione) {
-            carta.jollycomeNumero = combinazione.numero;
-        }
+        // Per i tris, riordina con matta alla fine (in basso visivamente)
+        combinazione.carte = ordinaTrisConJolly(combinazione.carte, combinazione.numero);
     }
 
     // Aggiorna punteggio
@@ -1346,12 +1236,12 @@ function onMouseMove(e) {
     }
 }
 
-// Verifica se il punto (angolo superiore destro del fantasma) tocca una carta in una combinazione
+// Verifica se il punto (angolo superiore destro del fantasma) tocca il campo di una combinazione
 function verificaCollisioneCombinazioni(puntoX, puntoY, cartaTrascinata) {
     // Rimuovi evidenziazione precedente
-    if (game.trascinamento.cartaTarget) {
-        game.trascinamento.cartaTarget.classList.remove('carta-target');
-        game.trascinamento.cartaTarget = null;
+    if (game.trascinamento.combinazioneTargetEl) {
+        game.trascinamento.combinazioneTargetEl.classList.remove('combinazione-target');
+        game.trascinamento.combinazioneTargetEl = null;
         game.trascinamento.combinazioneTarget = null;
     }
 
@@ -1375,25 +1265,19 @@ function verificaCollisioneCombinazioni(puntoX, puntoY, cartaTrascinata) {
         if (combIndex < 0 || combIndex >= combElements.length) continue;
 
         const combEl = combElements[combIndex];
-        const carteEl = combEl.querySelectorAll('.carta');
+        const rect = combEl.getBoundingClientRect();
 
-        // Controlla ogni carta nella combinazione DALL'ULTIMA ALLA PRIMA
-        // (le carte successive hanno z-index maggiore perche' sono sovrapposte)
-        for (let i = carteEl.length - 1; i >= 0; i--) {
-            const cartaEl = carteEl[i];
-            const rect = cartaEl.getBoundingClientRect();
+        // Verifica se il punto e' dentro il campo della combinazione
+        if (puntoX >= rect.left && puntoX <= rect.right &&
+            puntoY >= rect.top && puntoY <= rect.bottom) {
 
-            // Verifica se il punto e' dentro questa carta
-            if (puntoX >= rect.left && puntoX <= rect.right &&
-                puntoY >= rect.top && puntoY <= rect.bottom) {
-
-                // Verifica se la carta trascinata puo' essere aggiunta a questa combinazione
-                if (puoAggiungereACombinazione(cartaTrascinata, comb)) {
-                    cartaEl.classList.add('carta-target');
-                    game.trascinamento.cartaTarget = cartaEl;
-                    game.trascinamento.combinazioneTarget = comb;
-                    return;
-                }
+            // Verifica se la carta trascinata puo' essere aggiunta a questa combinazione
+            if (puoAggiungereACombinazione(cartaTrascinata, comb)) {
+                // Evidenzia l'intera combinazione
+                combEl.classList.add('combinazione-target');
+                game.trascinamento.combinazioneTargetEl = combEl;
+                game.trascinamento.combinazioneTarget = comb;
+                return;
             }
         }
     }
@@ -1402,16 +1286,16 @@ function verificaCollisioneCombinazioni(puntoX, puntoY, cartaTrascinata) {
 function onMouseUp(e) {
     if (!game.trascinamento) return;
 
-    const { carta, elemento, moved, fantasma, cartaTarget, combinazioneTarget } = game.trascinamento;
+    const { carta, elemento, moved, fantasma, combinazioneTargetEl, combinazioneTarget } = game.trascinamento;
 
     // Rimuovi il fantasma se esiste
     if (fantasma) {
         fantasma.remove();
     }
 
-    // Rimuovi evidenziazione carta target
-    if (cartaTarget) {
-        cartaTarget.classList.remove('carta-target');
+    // Rimuovi evidenziazione combinazione target
+    if (combinazioneTargetEl) {
+        combinazioneTargetEl.classList.remove('combinazione-target');
     }
 
     // Ripristina la visibilita' dell'elemento originale
@@ -1669,8 +1553,8 @@ function mostraPannelloGiocatore(indiceGiocatore, ruolo) {
         debugWindow.document.open();
         debugWindow.document.write(getGiocatoreHTML(indiceGiocatore, ruolo));
         debugWindow.document.close();
-        // Togli il focus dalla finestra debug per restituirlo al gioco
-        debugWindow.blur();
+        // Sposta il focus solo se esplicitamente richiesto o se era minimizzata
+        // debugWindow.focus(); 
         return;
     }
 
@@ -1864,16 +1748,16 @@ function getGiocatoreHTML(indiceGiocatore, ruolo) {
             const numTotale = combinazioni.length;
             objHTML = `<div class="combo-info"><span>Combinazioni: ${numTotale}</span></div>` +
                 combinazioni.slice(0, 15).map((opt, i) => {
-                const descrizione = opt.descCarte || 'Passa';
-                const valPerc = Math.round((opt.valutazione || 0) * 100);
-                return `
+                    const descrizione = opt.descCarte || 'Passa';
+                    const valPerc = Math.round((opt.valutazione || 0) * 100);
+                    return `
                 <div class="obj-item combo" title="${descrizione}">
                     <span class="obj-rank">#${i + 1}</span>
                     <span class="obj-nome">${descrizione}</span>
                     <div class="obj-bar"><div class="obj-fill" style="width:${valPerc}%"></div></div>
                     <span class="obj-pri">${opt.puntiTotali || 0}pt</span>
                 </div>`;
-            }).join('');
+                }).join('');
         }
     }
 
@@ -2099,73 +1983,74 @@ function getGiocatoreHTML(indiceGiocatore, ruolo) {
         ` : ''}
     </div>
     <script>
-        // Dati dei dettagli cliccabili
-        const logDettagli = ${logDettagliJSON};
+        // Dati dei dettagli cliccabili - Usa var per permettere sovrascrittura senza errori
+        var logDettagli = ${logDettagliJSON};
+        console.log('Debug Window: dati caricati', logDettagli.length);
 
         function mostraDettagliPesca(idx) {
-            const entry = logDettagli.find(e => e.idx === idx);
+            console.log('Click su dettagli', idx);
+            var entry = logDettagli.find(function(e) { return e.idx === idx; });
             if (!entry || !entry.dettagli) return;
-            const d = entry.dettagli;
+            var d = entry.dettagli;
             if (d.tipo !== 'pesca') return;
 
-            const m = d.mazzo;
-            const s = d.scarti;
+            var m = d.mazzo;
+            var s = d.scarti;
 
-            const html = \`
-            <div class="modal-overlay" onclick="chiudiModal(event)">
-                <div class="modal-content" onclick="event.stopPropagation()">
-                    <div class="modal-header">
-                        <span class="modal-title">Decisione Pesca: \${d.decisione.toUpperCase()}</span>
-                        <span class="modal-close" onclick="chiudiModal()">&times;</span>
-                    </div>
-                    <div class="modal-grid">
-                        <div class="modal-col">
-                            <div class="modal-col-title \${d.decisione === 'mazzo' ? 'selected' : ''}">
-                                \${d.decisione === 'mazzo' ? '>>> ' : ''}MAZZO
-                            </div>
-                            <div class="modal-row"><span class="modal-label">Valore base:</span><span class="modal-value">\${m.valoreBase.toFixed(0)}</span></div>
-                            <div class="modal-row"><span class="modal-label">├ Punti depositabili:</span><span class="modal-value">\${m.analisi.punti}</span></div>
-                            <div class="modal-row"><span class="modal-label">├ Burraco:</span><span class="modal-value">\${m.analisi.burraco} × \${d.pesi.pesoBurraco}</span></div>
-                            <div class="modal-row"><span class="modal-label">├ Matte:</span><span class="modal-value">\${m.analisi.matte} × \${d.pesi.pesoMatte}</span></div>
-                            <div class="modal-row"><span class="modal-label">└ Cadaveri:</span><span class="modal-value">-\${(m.analisi.cadaveri * d.pesi.pesoCadaveri).toFixed(0)}</span></div>
-                            <div class="modal-row"><span class="modal-label">Bonus atteso:</span><span class="modal-value">+\${m.bonusAtteso}</span></div>
-                            <div class="modal-row"><span class="modal-label">├ Base (carta media):</span><span class="modal-value">+\${m.bonusBase}</span></div>
-                            <div class="modal-row"><span class="modal-label">└ Carte ricercate:</span><span class="modal-value">+\${m.bonusRicercate}</span></div>
-                            \${m.carteRicercate.length > 0 ? '<div class="modal-row"><span class="modal-label" style="font-size:10px;color:#666">   (' + m.carteRicercate.join(', ') + ')</span></div>' : ''}
-                            <div class="modal-row modal-total"><span class="modal-label">TOTALE:</span><span class="modal-value" style="color:#4f4">\${m.totale.toFixed(0)}</span></div>
-                        </div>
-                        <div class="modal-col">
-                            <div class="modal-col-title \${d.decisione === 'scarti' ? 'selected' : ''}">
-                                \${d.decisione === 'scarti' ? '>>> ' : ''}SCARTI (\${s.numCarte} carte)
-                            </div>
-                            <div class="modal-row"><span class="modal-label">Valore base:</span><span class="modal-value">\${s.valoreBase.toFixed(0)}</span></div>
-                            <div class="modal-row"><span class="modal-label">├ Punti depositabili:</span><span class="modal-value">\${s.analisi.punti}</span></div>
-                            <div class="modal-row"><span class="modal-label">├ Burraco:</span><span class="modal-value">\${s.analisi.burraco} × \${d.pesi.pesoBurraco}</span></div>
-                            <div class="modal-row"><span class="modal-label">├ Matte:</span><span class="modal-value">\${s.analisi.matte} × \${d.pesi.pesoMatte}</span></div>
-                            <div class="modal-row"><span class="modal-label">└ Cadaveri:</span><span class="modal-value">-\${(s.analisi.cadaveri * d.pesi.pesoCadaveri).toFixed(0)}</span></div>
-                            \${s.bonusCima > 0 ? '<div class="modal-row"><span class="modal-label">Bonus ' + s.bonusCimaDesc + ':</span><span class="modal-value" style="color:#f80">+' + s.bonusCima + '</span></div>' : ''}
-                            <div class="modal-row modal-total"><span class="modal-label">TOTALE:</span><span class="modal-value" style="color:#4f4">\${s.totale.toFixed(0)}</span></div>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <strong>Differenza:</strong> \${d.differenza >= 0 ? '+' : ''}\${d.differenza.toFixed(0)} |
-                        <strong>Soglia:</strong> \${d.soglia} (pescaScarti=\${d.coeff.pescaScarti}) |
-                        <strong>Decisione:</strong> \${d.differenza.toFixed(0)} \${d.differenza > d.soglia ? '>' : '≤'} \${d.soglia} → \${d.decisione.toUpperCase()}
-                    </div>
-                </div>
-            </div>\`;
+            var html = '<div class="modal-overlay" onclick="chiudiModal(event)">' +
+                '<div class="modal-content" onclick="event.stopPropagation()">' +
+                    '<div class="modal-header">' +
+                        '<span class="modal-title">Decisione Pesca: ' + d.decisione.toUpperCase() + '</span>' +
+                        '<span class="modal-close" onclick="chiudiModal()">&times;</span>' +
+                    '</div>' +
+                    '<div class="modal-grid">' +
+                        '<div class="modal-col">' +
+                            '<div class="modal-col-title ' + (d.decisione === 'mazzo' ? 'selected' : '') + '">' +
+                                (d.decisione === 'mazzo' ? '>>> ' : '') + 'MAZZO' +
+                            '</div>' +
+                            '<div class="modal-row"><span class="modal-label">Valore base:</span><span class="modal-value">' + m.valoreBase.toFixed(0) + '</span></div>' +
+                            '<div class="modal-row"><span class="modal-label">├ Punti depositabili:</span><span class="modal-value">' + m.analisi.punti + '</span></div>' +
+                            '<div class="modal-row"><span class="modal-label">├ Burraco:</span><span class="modal-value">' + m.analisi.burraco + ' × ' + d.pesi.pesoBurraco + '</span></div>' +
+                            '<div class="modal-row"><span class="modal-label">├ Matte:</span><span class="modal-value">' + m.analisi.matte + ' × ' + d.pesi.pesoMatte + '</span></div>' +
+                            '<div class="modal-row"><span class="modal-label">└ Cadaveri:</span><span class="modal-value">-' + (m.analisi.cadaveri * d.pesi.pesoCadaveri).toFixed(0) + '</span></div>' +
+                            '<div class="modal-row"><span class="modal-label">Bonus atteso:</span><span class="modal-value">+' + m.bonusAtteso + '</span></div>' +
+                            '<div class="modal-row"><span class="modal-label">├ Base (carta media):</span><span class="modal-value">+' + m.bonusBase + '</span></div>' +
+                            '<div class="modal-row"><span class="modal-label">└ Carte ricercate:</span><span class="modal-value">+' + m.bonusRicercate + '</span></div>' +
+                            (m.carteRicercate.length > 0 ? '<div class="modal-row"><span class="modal-label" style="font-size:10px;color:#666">   (' + m.carteRicercate.join(', ') + ')</span></div>' : '') +
+                            '<div class="modal-row modal-total"><span class="modal-label">TOTALE:</span><span class="modal-value" style="color:#4f4">' + m.totale.toFixed(0) + '</span></div>' +
+                        '</div>' +
+                        '<div class="modal-col">' +
+                            '<div class="modal-col-title ' + (d.decisione === 'scarti' ? 'selected' : '') + '">' +
+                                (d.decisione === 'scarti' ? '>>> ' : '') + 'SCARTI (' + s.numCarte + ' carte)' +
+                            '</div>' +
+                            '<div class="modal-row"><span class="modal-label">Valore base:</span><span class="modal-value">' + s.valoreBase.toFixed(0) + '</span></div>' +
+                            '<div class="modal-row"><span class="modal-label">├ Punti depositabili:</span><span class="modal-value">' + s.analisi.punti + '</span></div>' +
+                            '<div class="modal-row"><span class="modal-label">├ Burraco:</span><span class="modal-value">' + s.analisi.burraco + ' × ' + d.pesi.pesoBurraco + '</span></div>' +
+                            '<div class="modal-row"><span class="modal-label">├ Matte:</span><span class="modal-value">' + s.analisi.matte + ' × ' + d.pesi.pesoMatte + '</span></div>' +
+                            '<div class="modal-row"><span class="modal-label">└ Cadaveri:</span><span class="modal-value">-' + (s.analisi.cadaveri * d.pesi.pesoCadaveri).toFixed(0) + '</span></div>' +
+                            (s.bonusCima > 0 ? '<div class="modal-row"><span class="modal-label">Bonus ' + s.bonusCimaDesc + ':</span><span class="modal-value" style="color:#f80">+' + s.bonusCima + '</span></div>' : '') +
+                            '<div class="modal-row modal-total"><span class="modal-label">TOTALE:</span><span class="modal-value" style="color:#4f4">' + s.totale.toFixed(0) + '</span></div>' +
+                        '</div>' +
+                    '</div>' +
+                    '<div class="modal-footer">' +
+                        '<strong>Differenza:</strong> ' + (d.differenza >= 0 ? '+' : '') + d.differenza.toFixed(0) + ' | ' +
+                        '<strong>Soglia:</strong> ' + d.soglia + ' (pescaScarti=' + d.coeff.pescaScarti + ') | ' +
+                        '<strong>Decisione:</strong> ' + d.differenza.toFixed(0) + ' ' + (d.differenza > d.soglia ? '>' : '≤') + ' ' + d.soglia + ' → ' + d.decisione.toUpperCase() +
+                    '</div>' +
+                '</div>' +
+            '</div>';
 
             document.body.insertAdjacentHTML('beforeend', html);
         }
 
         function chiudiModal(event) {
             if (event && event.target.className !== 'modal-overlay') return;
-            const modal = document.querySelector('.modal-overlay');
+            var modal = document.querySelector('.modal-overlay');
             if (modal) modal.remove();
         }
 
         // Chiudi con ESC
-        document.addEventListener('keydown', e => {
+        document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') chiudiModal();
         });
     </script>
@@ -2621,7 +2506,7 @@ function getDettaglioHTML(mossa, indice) {
 
 // Aggiorna automaticamente la finestra diagnostica ad ogni mossa
 const originalRegistraMossa = registraMossa;
-registraMossa = function(azione, dettagli = {}) {
+registraMossa = function (azione, dettagli = {}) {
     originalRegistraMossa(azione, dettagli);
     // Aggiorna la finestra diagnostica se aperta
     setTimeout(aggiornaDiagnostica, 100);

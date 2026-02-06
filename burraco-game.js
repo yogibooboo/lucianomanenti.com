@@ -29,7 +29,7 @@ function playSound(nome) {
     const audio = game.suoni[nome];
     if (audio) {
         audio.currentTime = 0;
-        audio.play().catch(() => {});
+        audio.play().catch(() => { });
     }
 }
 
@@ -419,30 +419,51 @@ function verificaScala(carte) {
         return { valida: false, motivo: 'Scala min 3 carte' };
     }
 
-    // Jolly e pinelle contano come jolly
-    const jolly = carte.filter(c => c.isJolly || c.isPinella);
-    const normali = carte.filter(c => !c.isJolly && !c.isPinella);
+    // Separa jolly veri dalle pinelle e dalle altre carte
+    const jollyVeri = carte.filter(c => c.isJolly);
+    const pinelle = carte.filter(c => c.isPinella);
+    const altreNormali = carte.filter(c => !c.isJolly && !c.isPinella);
+
+    // Determina il seme della scala dalle carte non-jolly
+    // Prima dalle carte normali non-pinella, altrimenti dalla prima pinella
+    let seme;
+    if (altreNormali.length > 0) {
+        seme = altreNormali[0].seme;
+        // Verifica che tutte le carte normali abbiano lo stesso seme
+        if (!altreNormali.every(c => c.seme === seme)) {
+            return { valida: false, motivo: 'Semi diversi in scala' };
+        }
+    } else if (pinelle.length > 0) {
+        // Solo pinelle: usa il seme della prima
+        seme = pinelle[0].seme;
+    } else {
+        return { valida: false, motivo: 'Servono carte normali' };
+    }
+
+    // Pinelle dello stesso seme sono carte normali (nella posizione 2)
+    // Pinelle di seme diverso sono matte potenziali
+    const pinelleNormali = pinelle.filter(c => c.seme === seme);
+    const pinelleMatte = pinelle.filter(c => c.seme !== seme);
+
+    // Carte normali = altre normali + pinelle dello stesso seme
+    const normali = [...altreNormali, ...pinelleNormali];
+    // Jolly = jolly veri + pinelle di seme diverso (usate come matte)
+    const jolly = [...jollyVeri, ...pinelleMatte];
 
     if (normali.length === 0) {
         return { valida: false, motivo: 'Servono carte normali' };
     }
 
-    // Max 1 jolly/pinella per combinazione
+    // Max 1 jolly/pinella-matta per combinazione
     if (jolly.length > 1) {
         return { valida: false, motivo: 'Max 1 jolly o pinella' };
-    }
-
-    // Tutte le carte normali devono avere lo stesso seme
-    const seme = normali[0].seme;
-    if (!normali.every(c => c.seme === seme)) {
-        return { valida: false, motivo: 'Semi diversi in scala' };
     }
 
     const numeri = normali.map(c => c.numero).sort((a, b) => a - b);
 
     // Controlla duplicati
     for (let i = 1; i < numeri.length; i++) {
-        if (numeri[i] === numeri[i-1]) {
+        if (numeri[i] === numeri[i - 1]) {
             return { valida: false, motivo: 'Numeri duplicati' };
         }
     }
@@ -491,10 +512,31 @@ function verificaScala(carte) {
 }
 
 // Ordina una scala e posiziona i jolly nei buchi corretti
-// Rispetta la posizione della matta nell'ordine originale delle carte
 function ordinaScalaConJolly(carte, assoAlto = false) {
-    const jolly = carte.filter(c => c.isJolly || c.isPinella);
-    const normali = carte.filter(c => !c.isJolly && !c.isPinella);
+    // Separa jolly veri dalle pinelle e dalle altre carte
+    const jollyVeri = carte.filter(c => c.isJolly);
+    const pinelle = carte.filter(c => c.isPinella);
+    const altreNormali = carte.filter(c => !c.isJolly && !c.isPinella);
+
+    // Determina il seme della scala
+    let semeScala;
+    if (altreNormali.length > 0) {
+        semeScala = altreNormali[0].seme;
+    } else if (pinelle.length > 0) {
+        semeScala = pinelle[0].seme;
+    } else {
+        return carte; // Solo jolly, non dovrebbe succedere
+    }
+
+    // Pinelle dello stesso seme sono carte normali (nella posizione 2)
+    // Pinelle di seme diverso sono matte
+    const pinelleNormali = pinelle.filter(c => c.seme === semeScala);
+    const pinelleMatte = pinelle.filter(c => c.seme !== semeScala);
+
+    // Carte normali = altre normali + pinelle dello stesso seme
+    const normali = [...altreNormali, ...pinelleNormali];
+    // Jolly = jolly veri + pinelle di seme diverso (usate come matte)
+    const jolly = [...jollyVeri, ...pinelleMatte];
 
     // Ordina le carte normali per numero
     normali.sort((a, b) => {
@@ -507,7 +549,7 @@ function ordinaScalaConJolly(carte, assoAlto = false) {
         return numA - numB;
     });
 
-    // Se non ci sono jolly, ritorna le carte ordinate
+    // Se non ci sono jolly/matte, ritorna le carte ordinate
     if (jolly.length === 0) {
         return normali;
     }
@@ -522,47 +564,27 @@ function ordinaScalaConJolly(carte, assoAlto = false) {
     const min = numeriNormali[0];
     const max = numeriNormali[numeriNormali.length - 1];
 
-    // Determina il seme della scala (per verificare se pinella e' naturale)
-    const semeScala = normali[0].seme;
-
     // Conta i buchi nella sequenza
     let bucheTotali = 0;
     for (let i = 1; i < numeriNormali.length; i++) {
-        bucheTotali += numeriNormali[i] - numeriNormali[i-1] - 1;
+        bucheTotali += numeriNormali[i] - numeriNormali[i - 1] - 1;
     }
 
-    // Determina dove mettere la matta in base alla posizione originale
-    // Trova l'indice della prima matta e della prima/ultima carta normale nell'array originale
-    let indiceMatta = -1;
-    let indicePrimaNormale = -1;
-    let indiceUltimaNormale = -1;
-
-    for (let i = 0; i < carte.length; i++) {
-        if ((carte[i].isJolly || carte[i].isPinella) && indiceMatta === -1) {
-            indiceMatta = i;
-        }
-        if (!carte[i].isJolly && !carte[i].isPinella) {
-            if (indicePrimaNormale === -1) indicePrimaNormale = i;
-            indiceUltimaNormale = i;
-        }
-    }
-
-    // Decidi dove posizionare la matta
-    let mattaAllaFine = true; // default
+    // Regola posizionamento matte:
+    // - Se c'e' un buco nella sequenza: matta nel buco
+    // - Se la scala inizia con Asso (min=1, non assoAlto): matta in alto (alla fine dell'array)
+    // - Altrimenti: matta in basso (all'inizio dell'array, prima del min)
+    let mattaAllaFine = false; // default: matta in basso (all'inizio)
     if (bucheTotali > 0) {
         // C'e' un buco nella sequenza: matta nel buco
         mattaAllaFine = null; // segnala di usare i buchi
-    } else if (indiceMatta < indicePrimaNormale) {
-        // Matta posizionata prima delle carte normali: va all'inizio
-        mattaAllaFine = false;
-    } else if (indiceMatta > indiceUltimaNormale) {
-        // Matta posizionata dopo le carte normali: va alla fine
+    } else if (min === 1 && !assoAlto) {
+        // Scala che inizia con Asso: matta in alto (alla fine)
         mattaAllaFine = true;
     }
+    // Altrimenti mattaAllaFine rimane false (matta in basso)
 
-    console.log('ordinaScalaConJolly: indiceMatta=' + indiceMatta + ', indicePrimaNormale=' + indicePrimaNormale +
-        ', indiceUltimaNormale=' + indiceUltimaNormale + ', mattaAllaFine=' + mattaAllaFine +
-        ', min=' + min + ', max=' + max);
+    console.log('ordinaScalaConJolly: mattaAllaFine=' + mattaAllaFine + ', min=' + min + ', max=' + max);
 
     // Assegna i numeri ai jolly
     let jollyIdx = 0;
@@ -570,9 +592,9 @@ function ordinaScalaConJolly(carte, assoAlto = false) {
     if (mattaAllaFine === null) {
         // Metti i jolly nei buchi
         for (let i = 1; i < numeriNormali.length && jollyIdx < jolly.length; i++) {
-            const gap = numeriNormali[i] - numeriNormali[i-1] - 1;
+            const gap = numeriNormali[i] - numeriNormali[i - 1] - 1;
             for (let j = 0; j < gap && jollyIdx < jolly.length; j++) {
-                let numJolly = numeriNormali[i-1] + j + 1;
+                let numJolly = numeriNormali[i - 1] + j + 1;
                 if (assoAlto && numJolly === 14) {
                     numJolly = 1;
                 }
@@ -650,10 +672,24 @@ function ordinaScalaConJolly(carte, assoAlto = false) {
     return tutteCarte;
 }
 
+// Ordina un tris mettendo le matte (jolly/pinella) in basso (alla fine dell'array)
+function ordinaTrisConJolly(carte, numeroTris) {
+    const normali = carte.filter(c => !c.isJolly && !c.isPinella);
+    const matte = carte.filter(c => c.isJolly || c.isPinella);
+
+    // Imposta jollycomeNumero sulle matte
+    for (const c of matte) {
+        c.jollycomeNumero = numeroTris;
+    }
+
+    // Matte alla fine (in basso visivamente sullo schermo)
+    return [...normali, ...matte];
+}
+
 // Verifica se i numeri formano una sequenza continua con i jolly disponibili
 function verificaSequenza(numeri, jollyDisponibili) {
     for (let i = 1; i < numeri.length; i++) {
-        const gap = numeri[i] - numeri[i-1] - 1;
+        const gap = numeri[i] - numeri[i - 1] - 1;
         if (gap > jollyDisponibili) {
             return false;
         }
@@ -674,100 +710,19 @@ function isCartaMatta(c) {
 // Verifica se una carta puo' essere aggiunta a una combinazione esistente
 // Ritorna: false, true, oppure { sostituzione: true, matta: cartaDaSostituire }
 function puoAggiungereACombinazione(carta, combinazione) {
-    // Verifica jolly: max 1 matta per combinazione
-    if (carta.isJolly) {
-        const haGiaMatta = combinazione.carte.some(c => isCartaMatta(c));
-        if (haGiaMatta) {
-            return false;
-        }
-        return true;
-    }
+    // Approccio semplice: prendi le carte esistenti + la nuova e verifica se formano una combinazione valida
+    const carteTest = [...combinazione.carte, carta];
+    const risultato = verificaCombinazione(carteTest);
 
-    // Per le pinelle: potrebbero essere aggiunte come matta O come carta naturale (in posizione 2)
-    if (carta.isPinella && combinazione.tipo === TIPO_SCALA) {
-        const carteNormali = combinazione.carte.filter(c => !isCartaMatta(c));
-        if (carteNormali.length > 0) {
-            const semeScala = carteNormali[0].seme;
-
-            // Se la pinella ha stesso seme della scala
-            if (carta.seme === semeScala) {
-                // Trova min e max della scala
-                const numeri = combinazione.carte.map(c => {
-                    if (isCartaMatta(c)) return c.jollycomeNumero;
-                    return c.numero;
-                });
-                const min = Math.min(...numeri);
-
-                // Se min == 3, la pinella puo' essere aggiunta come carta naturale (posizione 2)
-                if (min === 3) {
-                    return true;  // Carta naturale, non matta
-                }
-
-                // Se c'e' una matta in posizione 2, puo' sostituirla
-                const mattaInPos2 = combinazione.carte.find(c => isCartaMatta(c) && c.jollycomeNumero === 2);
-                if (mattaInPos2) {
-                    return { sostituzione: true, matta: mattaInPos2 };
-                }
-            }
-        }
-        // Altrimenti, la pinella vuole essere aggiunta come matta
-        const haGiaMatta = combinazione.carte.some(c => isCartaMatta(c));
-        if (haGiaMatta) {
-            return false;
-        }
-        return true;
-    }
-
-    // Pinella in tris: comportamento standard (come matta)
-    if (carta.isPinella) {
-        const haGiaMatta = combinazione.carte.some(c => isCartaMatta(c));
-        if (haGiaMatta) {
-            return false;
-        }
-        return true;
-    }
-
-    // Cerca se c'e' una matta che puo' essere sostituita
-    const matta = combinazione.carte.find(c => isCartaMatta(c));
-
-    if (combinazione.tipo === TIPO_TRIS) {
-        // Burraco: per un tris basta stesso numero, nessun limite di semi
-        // Considera come "normali" anche le pinelle in posizione naturale
-        const carteNormali = combinazione.carte.filter(c => !isCartaMatta(c));
-        if (carteNormali.length === 0) return false;
-        const numeroTris = carteNormali[0].numero;
-
-        // La carta deve avere lo stesso numero
-        if (carta.numero !== numeroTris) {
-            return false;
-        }
-
-        // Se c'e' una matta, questa e' una sostituzione
-        if (matta) {
-            return { sostituzione: true, matta: matta };
-        }
-        return true;
-    }
-
-    if (combinazione.tipo === TIPO_SCALA) {
-        // Per una scala: stesso seme, numero consecutivo alle estremita' OPPURE sostituzione matta
-        // Considera come "normali" anche le pinelle in posizione naturale
-        const carteNormali = combinazione.carte.filter(c => !isCartaMatta(c));
-        if (carteNormali.length === 0) return false;
-        const semeScala = carteNormali[0].seme;
-
-        // La carta deve avere lo stesso seme
-        if (carta.seme !== semeScala) {
-            return false;
-        }
-
-        // Verifica se la carta puo' sostituire la matta
+    if (risultato.valida) {
+        // Verifica se c'e' una sostituzione di matta
+        // (la nuova carta prende il posto di una matta esistente)
+        const matta = combinazione.carte.find(c => isCartaMatta(c));
         if (matta && matta.jollycomeNumero === carta.numero) {
             return { sostituzione: true, matta: matta };
         }
-
-        // Caso speciale: pinella in posizione naturale (2) puo' essere sostituita da un 2 reale
-        if (carta.numero === 2) {
+        // Caso speciale: pinella naturale sostituita da un 2 reale
+        if (carta.numero === 2 && combinazione.tipo === TIPO_SCALA) {
             const pinellaNaturale = combinazione.carte.find(c =>
                 c.isPinella && c.jollycomeNumero === null
             );
@@ -775,46 +730,7 @@ function puoAggiungereACombinazione(carta, combinazione) {
                 return { sostituzione: true, matta: pinellaNaturale };
             }
         }
-
-        // Trova tutti i numeri nella scala
-        const numeri = [];
-        for (const c of combinazione.carte) {
-            if (isCartaMatta(c)) {
-                // Matta: usa jollycomeNumero
-                if (c.jollycomeNumero) {
-                    numeri.push(c.jollycomeNumero);
-                }
-            } else {
-                // Carta normale (inclusa pinella in posizione naturale)
-                numeri.push(c.numero);
-            }
-        }
-
-        // Calcola il numero minimo e massimo della scala
-        const numeriOrdinati = numeri.sort((a, b) => a - b);
-        const min = numeriOrdinati[0];
-        const max = numeriOrdinati[numeriOrdinati.length - 1];
-
-        // Verifica se la carta puo' essere aggiunta in fondo (dopo il max)
-        // Caso speciale: Asso puo' andare dopo il K (come 14)
-        if (carta.numero === max + 1) {
-            return true;
-        }
-        if (max === 13 && carta.numero === 1) {
-            // Asso dopo il Re
-            return true;
-        }
-
-        // Verifica se la carta puo' essere aggiunta in cima (prima del min)
-        if (carta.numero === min - 1) {
-            return true;
-        }
-        if (min === 2 && carta.numero === 1) {
-            // Asso prima del 2
-            return true;
-        }
-
-        return false;
+        return true;
     }
 
     return false;
@@ -841,13 +757,8 @@ async function depositaCombinazioneAI(giocatore, mossa) {
     if (risultato.tipo === TIPO_SCALA) {
         carteOrdinate = ordinaScalaConJolly(carteOrdinate, risultato.assoAlto);
     } else if (risultato.tipo === TIPO_TRIS) {
-        // Per i tris, imposta jollycomeNumero sulle matte (jolly e pinelle)
-        const numeroTris = risultato.numero;
-        for (const c of carteOrdinate) {
-            if (c.isJolly || c.isPinella) {
-                c.jollycomeNumero = numeroTris;
-            }
-        }
+        // Per i tris, ordina con matte alla fine (in basso visivamente)
+        carteOrdinate = ordinaTrisConJolly(carteOrdinate, risultato.numero);
     }
 
     // Crea combinazione
@@ -926,11 +837,9 @@ async function eseguiCalataAI(giocatore, mossa) {
         combo.carte.push(carta);
         combo.carte = ordinaScalaConJolly(combo.carte, combo.assoAlto);
     } else if (combo.tipo === TIPO_TRIS) {
-        // Per i tris, imposta jollycomeNumero se è una matta
-        if (carta.isJolly || carta.isPinella) {
-            carta.jollycomeNumero = combo.numero;
-        }
+        // Per i tris, aggiungi e riordina con matta alla fine (in basso visivamente)
         combo.carte.push(carta);
+        combo.carte = ordinaTrisConJolly(combo.carte, combo.numero);
     } else {
         combo.carte.push(carta);
     }
@@ -971,7 +880,6 @@ async function pausaDebugAI(giocatore, fase) {
 
     // Apri/aggiorna la finestra info del giocatore
     mostraPannelloGiocatore(game.giocatoreCorrente, `AI Debug - ${fase}`);
-    aggiornaFinestraGiocatore(game.giocatoreCorrente);
 
     // Mostra ultimo pensiero strategico
     const ultimoPensiero = giocatore.osservazioni?.logStrategico?.slice(-3) || [];
@@ -1000,15 +908,15 @@ async function turnoAI() {
     // Analizza la mano e genera opzioni di gioco
     Strategia.analizzaMano(giocatore);
 
-    // ========== DEBUG: INIZIO TURNO ==========
-    await pausaDebugAI(giocatore, `Turno ${game.turno} - Inizio`);
-
     // Ritardo prima della pesca
     await delay(500);
 
     // ===== DECISIONE: MAZZO O SCARTI? =====
     const fontePesca = Strategia.decidiFontePesca(giocatore);
     console.log(`AI ${giocatore.nome}: pesca da ${fontePesca.toUpperCase()}`);
+
+    // ========== DEBUG: DOPO DECISIONE PESCA ==========
+    await pausaDebugAI(giocatore, `Turno ${game.turno} - Decisione: ${fontePesca.toUpperCase()}`);
 
     if (fontePesca === 'scarti' && game.scarti.length > 0) {
         // ===== PESCA DA SCARTI (prende TUTTE le carte) =====
@@ -1184,7 +1092,7 @@ function aggiornaIndicatoreTurno() {
     const giocatore = game.giocatori[game.giocatoreCorrente];
     let area = null;
 
-    switch(giocatore.posizione) {
+    switch (giocatore.posizione) {
         case 'bottom':
             area = $('#area-giocatore');
             break;

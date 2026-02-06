@@ -218,6 +218,14 @@ html, body {
     background-image: url(images/scala40/conjollyselplus.png) !important;
 }
 
+/* Combinazione target (evidenziata quando si può aggiungere una carta) */
+.combinazione-target {
+    outline: 3px solid #ffd700;
+    outline-offset: 2px;
+    border-radius: 5px;
+    background-color: rgba(255, 215, 0, 0.15);
+}
+
 /* Compagno (top) */
 #area-compagno {
     top: 25px;
