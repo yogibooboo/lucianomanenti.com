@@ -1245,10 +1245,10 @@ function verificaCollisioneCombinazioni(puntoX, puntoY, cartaTrascinata) {
         game.trascinamento.combinazioneTarget = null;
     }
 
-    // Cerca in tutte le combinazioni (noi e loro)
+    // Cerca solo nelle combinazioni del giocatore umano (noi)
+    // Un giocatore può attaccare carte solo alle proprie combinazioni
     const tutteCombi = [
-        ...game.combinazioniNoi.map(c => ({ comb: c, area: 'noi' })),
-        ...game.combinazioniLoro.map(c => ({ comb: c, area: 'loro' }))
+        ...game.combinazioniNoi.map(c => ({ comb: c, area: 'noi' }))
     ];
 
     for (const { comb, area } of tutteCombi) {
@@ -1471,17 +1471,25 @@ function onTouchMove(e) {
         const carta = game.trascinamento.carta;
         const pos = carta.getSpritePosition();
         fantasma.style.backgroundPosition = `${pos.x * bgScaleX}px ${pos.y * bgScaleY}px`;
+
+        // Verifica collisione angolo superiore destro con carte delle combinazioni
+        verificaCollisioneCombinazioni(touch.clientX - offsetXScaled + width, touch.clientY - offsetYScaled, carta);
     }
 }
 
 function onTouchEnd(e) {
     if (!game.trascinamento) return;
 
-    const { carta, elemento, moved, fantasma } = game.trascinamento;
+    const { carta, elemento, moved, fantasma, combinazioneTargetEl, combinazioneTarget } = game.trascinamento;
 
     // Rimuovi il fantasma se esiste
     if (fantasma) {
         fantasma.remove();
+    }
+
+    // Rimuovi evidenziazione combinazione target
+    if (combinazioneTargetEl) {
+        combinazioneTargetEl.classList.remove('combinazione-target');
     }
 
     // Ripristina la visibilita' dell'elemento originale
@@ -1491,13 +1499,19 @@ function onTouchEnd(e) {
     if (!moved) {
         toggleSelezioneCarta(carta);
     } else {
-        const touch = e.changedTouches[0];
-        const rect = $('#scarti-container').getBoundingClientRect();
-        if (touch.clientX >= rect.left && touch.clientX <= rect.right &&
-            touch.clientY >= rect.top && touch.clientY <= rect.bottom) {
-            scartaCarta(carta);
+        // Fine trascinamento - controlla dove e' stata rilasciata
+        if (combinazioneTarget) {
+            // Rilasciata su una combinazione valida - aggiungi la carta
+            aggiungiCartaACombinazione(carta, combinazioneTarget);
         } else {
-            render();
+            const touch = e.changedTouches[0];
+            const rect = $('#scarti-container').getBoundingClientRect();
+            if (touch.clientX >= rect.left && touch.clientX <= rect.right &&
+                touch.clientY >= rect.top && touch.clientY <= rect.bottom) {
+                scartaCarta(carta);
+            } else {
+                render();
+            }
         }
     }
 
