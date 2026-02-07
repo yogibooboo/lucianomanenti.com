@@ -56,7 +56,26 @@ function trackVisibleBanners(triggerType) {
     }
 }
 
+function injectLegalLinks() {
+    if (window.gameConfig && window.gameConfig.hideLegalFooter) return;
+    var footer = document.getElementById('game-legal-links');
+    if (!footer) {
+        footer = document.createElement('div');
+        footer.id = 'game-legal-links';
+        footer.style.cssText = 'position: fixed; bottom: 10px; right: 10px; font-size: 12px; font-family: sans-serif; z-index: 10000; color: rgba(255,255,255,0.6); pointer-events: auto;';
+        footer.innerHTML = '<a href="index.html" style="color: inherit; text-decoration: none; margin-left: 15px;">Home</a>' +
+            '<a href="aboutme.html" style="color: inherit; text-decoration: none; margin-left: 15px;">Chi Sono</a>' +
+            '<a href="privacy.html" style="color: inherit; text-decoration: none; margin-left: 15px;">Privacy</a>';
+        document.body.appendChild(footer);
+
+        // Add hover effect
+        footer.onmouseover = function () { this.style.color = 'rgba(255,255,255,0.9)'; };
+        footer.onmouseout = function () { this.style.color = 'rgba(255,255,255,0.6)'; };
+    }
+}
+
 function adjustLayout() {
+    injectLegalLinks();
     var gameWidth = 1024;
     var gameHeight = 750;
     var windowWidth = window.innerWidth;
