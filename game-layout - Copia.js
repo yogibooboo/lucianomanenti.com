@@ -2,8 +2,8 @@
 
 // Make the scale factor global so the game's mouse logic can use it
 window.gameScale = 1;
-// Global state to toggle banner content
-window.showBannerDimensions = false;
+// Global state to toggle banner content - set to true by default for simulation
+window.showBannerDimensions = true;
 
 // Function to get version from the script tag and store it globally
 function getAndStoreScriptVersion() {
@@ -101,26 +101,18 @@ function adjustLayout() {
         layoutMode = 'single-right';
     }
 
-    // Calculate desired visual center
-    var cx = windowWidth / 2;
-    var cy = windowHeight / 2;
     if (layoutMode === 'single-right') {
-        cx = (gameWidth * scale) / 2;
+        // Shift game to the left
+        campogioco.style.left = ((gameWidth * scale) / 2) + 'px';
+    } else {
+        // Center game
+        campogioco.style.left = '50%';
     }
-
-    // Position the layout box so its center aligns with the desired visual center.
-    // Since transform scales from the center, this will perfectly position the game.
-    campogioco.style.top = Math.round(cy - (gameHeight / 2)) + 'px';
-    campogioco.style.left = Math.round(cx - (gameWidth / 2)) + 'px';
-
-    // Explicitly reset margins to avoid interference from previous versions
-    campogioco.style.marginTop = '0px';
-    campogioco.style.marginLeft = '0px';
-
-    campogioco.style.transform = 'scale(' + scale + ')';
+    campogioco.style.top = '50%';
+    campogioco.style.transform = 'translate(-50%, -50%) scale(' + scale + ')';
     // Backwards compatibility for older browsers
-    campogioco.style.msTransform = 'scale(' + scale + ')';
-    campogioco.style.webkitTransform = 'scale(' + scale + ')';
+    campogioco.style.msTransform = 'translate(-50%, -50%) scale(' + scale + ')';
+    campogioco.style.webkitTransform = 'translate(-50%, -50%) scale(' + scale + ')';
 
     if (window.scala) {
         var rect = campogioco.getBoundingClientRect();
@@ -134,36 +126,41 @@ function adjustLayout() {
     sidebarRight.style.display = 'none';
 
     var createBanner = function (width, height, side, isFirst) {
-        var isMessageBanner = isFirst && width >= 160;
-
-        if (!window.showBannerDimensions && !isMessageBanner) {
-            return null;
-        }
-
         var banner = document.createElement('div');
         banner.className = 'ad-banner';
         banner.style.width = width + 'px';
         banner.style.height = height + 'px';
+        banner.style.position = 'relative';
 
-        if (isMessageBanner && !window.showBannerDimensions) {
-            var message = '';
-            // Allow custom style from config
-            var customStyle = (window.gameConfig && window.gameConfig.bannerStyle) || '';
-            var defaultStyle = 'padding: 10px; text-align: left; font-size: 14px; color: white; background-color: green; border: 1px solid #2d5a3d; border-radius: 5px; height: 100%; display: flex; flex-direction: column; justify-content: center; box-sizing: border-box; overflow: auto; overflow-wrap: break-word;';
+        if (isFirst) {
+            // Simulated AdSense Code for the top banner - Dynamic dimensions
+            var adClient = 'ca-pub-1234567890123456';
+            var adSlot = (side === 'left') ? '1112223334' : '5556667778';
 
-            var style = customStyle || defaultStyle;
-
-            if (window.gameConfig && window.gameConfig.messages) {
-                var lang = (side === 'left') ? 'it' : 'en';
-                var msgContent = window.gameConfig.messages[lang];
-                if (msgContent) {
-                    message = '<div style="' + style + '"><div>' + msgContent + '</div></div>';
-                }
-            }
-            banner.innerHTML = message;
+            banner.innerHTML =
+                '<!-- Simulated AdSense Unit -->\n' +
+                '<ins class="adsbygoogle"\n' +
+                '     style="display:inline-block;width:' + width + 'px;height:' + height + 'px;background:#f8f9fa;border:1px solid #ddd;"\n' +
+                '     data-ad-client="' + adClient + '"\n' +
+                '     data-ad-slot="' + adSlot + '"></ins>\n' +
+                '<script>\n' +
+                '     (adsbygoogle = window.adsbygoogle || []).push({});\n' +
+                '</script>\n' +
+                '<div style="font-size:10px; color:#555; position:absolute; top:2px; left:2px; pointer-events:none;">' +
+                'ADSENSE SLOT (' + width + 'x' + height + ')</div>';
         } else {
+            // Other banners show as grey placeholders (simulating all formats visualization)
+            banner.style.backgroundColor = 'rgba(255,255,255,0.05)';
+            banner.style.border = '1px dashed rgba(255,255,255,0.2)';
+            banner.style.color = 'rgba(255,255,255,0.3)';
+            banner.style.fontSize = '12px';
+            banner.style.display = 'flex';
+            banner.style.alignItems = 'center';
+            banner.style.justifyContent = 'center';
+            banner.style.textAlign = 'center';
             banner.innerHTML = 'Banner<br>' + width + 'x' + height;
         }
+
         return banner;
     };
 

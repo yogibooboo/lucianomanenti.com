@@ -1,9 +1,7 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 
 <head>
-
 	<!-- Google tag (gtag.js) -->
 	<script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
 	<script>
@@ -14,28 +12,30 @@
 		gtag('config', 'G-WRBDRDQ4L8');
 	</script>
 
-
-	<title>Free online metronome</title>
+	<title>Free online metronome - lucianomanenti.com</title>
+	<link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
+	<link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
+	<link rel="shortcut icon" href="favicon/favicon.ico">
+	<link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+	<link rel="manifest" href="favicon/site.webmanifest">
 
 	<meta charset="utf-8">
-
-	<link rel="stylesheet" href="metro.css" />
-
-	<!--<meta http-equiv="X-UA-Compatible" content="requiresActiveX=true"/>-->
-
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="metro.css?v=1.1" />
 
 	<meta name="Description"
 		content="Free online metronome that looks like a real one...but with a lot of additional functions">
 	<script>
 		window.gameConfig = {
 			gaPrefix: 'METRO_',
+			hideLegalFooter: true,
 			messages: {
 				it: '',
 				en: ''
 			}
 		};
 	</script>
-	<script src="game-layout.js"></script>
+	<script src="game-layout.js?v=3.4"></script>
 </head>
 
 
@@ -59,6 +59,13 @@
 				<div class="pulsanteback" style="top: 710px; left: 860px; "></div>
 			</a>
 
+			<div
+				style="position: absolute; top: 742px; left: 560px; color: white; font-family: sans-serif; font-size: 14px; z-index: 10000;">
+				<a href="aboutme.html" target="_blank"
+					style="color: inherit; text-decoration: none; margin-right: 20px;">About Me</a>
+				<a href="privacy.html" target="_blank" style="color: inherit; text-decoration: none;">Privacy Policy</a>
+			</div>
+
 		</div> <!--metronomo-->
 
 
@@ -71,28 +78,12 @@
 	</canvas>
 
 
-	<!--	<object id="Jazz1" classid="CLSID:1ACE1618-1C7D-4561-AEE1-34842AA85E90" class="hidden">
-			<object id="Jazz2" type="audio/x-jazz" class="hidden">
-				<p style="visibility:visible;">This page requires <a href=http://jazz-soft.net>Jazz-Plugin</a> ...</p>
-			</object>
-		</object>
-		<p>&nbsp;&nbsp;&nbsp;MIDI Input:
-
-			<select id=midiIn onchange='changeMidi();'>
-				<option value="">Not connected</option>
-			</select>
-
-			<div id=msg></div>
-
-		 </p>  -->
 
 
 
 
 	<script src="jquery-2.1.1.js"></script>
 	<script src="metrocode.js"></script>
-	<script src="JZZ.Midi.js"></script>
-	<script src="JZZ.MidiFile.js"></script>
 </body>
 
 </html>

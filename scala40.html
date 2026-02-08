@@ -18,7 +18,7 @@
 	<meta http-Equiv="Pragma" Content="no-cache">
 	<meta http-Equiv="Expires" Content="0">
 
-	<link rel="stylesheet" href="scala40V1.css?v=1.7" />
+	<link rel="stylesheet" href="scala40V1.css?v=1.8" />
 
 	<!-- Google tag (gtag.js) -->
 	<script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
@@ -42,7 +42,7 @@
 			hideLegalFooter: true
 		};
 	</script>
-	<script src="game-layout.js?v=3.3"></script>
+	<script src="game-layout.js?v=3.4"></script>
 </head>
 
 <body>
@@ -56,6 +56,8 @@
 		</div>
 
 		<div id="campogioco">
+			<!-- Schermo overlay per modali -->
+			<div id="schermo"></div>
 			<!-- CONTENT FROM scala40V1.html's #campogioco DIV -->
 			<div id="formistruzioni" class="formistruzioni">
 				<h2>Istruzioni per giocare a scala 40 Luciano:</h2>
@@ -151,11 +153,12 @@
 			<div id="scarti"><span>scarti</span></div>
 
 			<div class="pulsantehelp" style="top: 705px; left:10px; "></div>
-			<a href="aboutme.html">
+			<a href="aboutme.html" target="_blank">
 				<div class="pulsantecomments" style="top: 702px; left: 150px; "></div>
 			</a>
-			<a href="privacy.html"
-				style="position: absolute; top: 730px; left: 300px; color: white; text-decoration: none; font-size: 14px; font-family: sans-serif; z-index: 1000;">Privacy</a>
+			<a href="privacy.html" target="_blank"
+				style="position: absolute; top: 730px; left: 320px; color: white; text-decoration: none; font-size: 14px; font-family: sans-serif; z-index: 1000;">Privacy
+				Policy</a>
 			<a href="burraco.html">
 				<div class="pulsanteburraco" style="top: 702px; left: 460px; "></div>
 			</a>
@@ -191,7 +194,7 @@
 
 	<!-- Scripts for game logic -->
 	<script src="jquery-2.1.1.js"></script>
-	<script src="scala40codeV1.js?v=1.8"></script>
+	<script src="scala40codeV1.js?v=1.9"></script>
 
 </body>
 

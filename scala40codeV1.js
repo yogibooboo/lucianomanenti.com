@@ -664,9 +664,6 @@ var scala = {
 		});
 
 
-		$('.pulsantecomments').click(function () {
-			window.location.href = "mailto:postmaster@lucianomanenti.com";
-		});
 
 
 
@@ -689,7 +686,7 @@ var scala = {
 		$("#ulterioriinfo").show();
 	},
 	clickmessaggio2: function () {
-		window.location.href = "mailto:postmaster@lucianomanenti.com";
+		// window.location.href = "mailto:postmaster@lucianomanenti.com";
 	},
 	clickchiudiinfo: function () {
 		$("#ulterioriinfo").hide();

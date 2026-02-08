@@ -554,13 +554,13 @@ h6 {
 	border-radius: 9px;
 	border-color: #888888;
 
-	//z-index:40000;
+
 	position: absolute;
 	width: 240px;
 	height: 600px;
 	left: -250px;
 	top: 0px;
-	//background-color:green;
+
 }
 
 #metronomo {
@@ -577,7 +577,7 @@ h6 {
 	height: 700px;
 	left: 0px;
 	top: 0px;
-	//background-color:green;
+
 }
 
 
@@ -589,23 +589,23 @@ h6 {
 	border-radius: 9px;
 	border-color: #888888;
 
-	//z-index:40000;
+
 	position: absolute;
 	width: 396px;
 	height: 400px;
 	left: 304px;
 	top: 200px;
-	//background-color:green;
+
 }
 
 #canvasdati {
 
 
-	//z-index:40000;
+
 	position: absolute;
 	left: 0px;
 	top: 0px;
-	//background-color:green;
+
 }
 
 #canvasimposta {
@@ -614,7 +614,7 @@ h6 {
 	position: absolute;
 	left: 400px;
 	top: 0px;
-	//background-color:red;
+
 
 }
 
@@ -624,7 +624,7 @@ h6 {
 	position: absolute;
 	left: 0px;
 	top: 0px;
-	//background-color:red;
+
 
 
 }
@@ -633,16 +633,16 @@ h6 {
 #canvasmetronomo {
 
 
-	//z-index:40000;
+
 	position: absolute;
 	left: 0px;
 	top: 0px;
-	//background-color:green;
+
 }
 
 .form {
 
-	//z-index:40000;
+
 	position: absolute;
 	width: 500px;
 	height: 280px;
@@ -655,7 +655,7 @@ h6 {
 
 .formistruzioni {
 
-	//z-index:40000;
+
 	line-height: 140%;
 	border-style: solid;
 
@@ -701,7 +701,7 @@ h6 {
 	left: 300px;
 	width: 100px;
 	height: 36px;
-	//z-index:50000;
+
 
 
 
@@ -717,7 +717,7 @@ h6 {
 	width: 100px;
 	height: 36px;
 	top: 240px;
-	//z-index:50000;
+
 
 
 }

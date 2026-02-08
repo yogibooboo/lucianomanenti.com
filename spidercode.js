@@ -104,9 +104,6 @@ $('#autocomplete').click(function (ev) {
 	scala.dirty = true;
 });
 
-$('.pulsantecomments').click(function () {
-	window.location.href = "mailto:postmaster@lucianomanenti.com";
-});
 
 
 var scala = {
