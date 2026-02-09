@@ -6,7 +6,12 @@ body {
 	-ms-user-select: none;
 	user-select: none;
 
-	font-size: .75em;
+	/* Prevent font inflation on mobile browsers */
+	-webkit-text-size-adjust: none;
+	-moz-text-size-adjust: none;
+	text-size-adjust: none;
+
+	font-size: 1em;
 	font-family: 'Open Sans', "Lucida Grande", "Lucida Sans Unicode", Tahoma, Geneva, Arial, Verdana, sans-serif;
 	color: #fff;
 	width: 1600px;
@@ -150,7 +155,22 @@ h6 {
 	border-width: 3px;
 	color: #888888;
 	position: absolute;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
 
+.bg-text {
+	color: rgba(128, 128, 128);
+	font-size: 20px !important;
+	line-height: 1.2;
+	pointer-events: none;
+	padding: 0 20px;
+	font-family: sans-serif;
+	font-weight: normal;
+	text-shadow: none;
+	max-width: 90%;
+	white-space: normal;
 }
 
 

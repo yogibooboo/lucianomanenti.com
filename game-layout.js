@@ -1,4 +1,4 @@
-'use strict';
+// Non-functional change to trigger recognition
 
 // Make the scale factor global so the game's mouse logic can use it
 window.gameScale = 1;
@@ -128,41 +128,69 @@ function adjustLayout() {
         scala.offsetyy = rect.top;
     }
 
-    sidebarLeft.innerHTML = '';
-    sidebarRight.innerHTML = '';
     sidebarLeft.style.display = 'none';
     sidebarRight.style.display = 'none';
 
     var createBanner = function (width, height, side, isFirst) {
         var isMessageBanner = isFirst && width >= 160;
+        var adsenseActive = window.gameConfig && window.gameConfig.adsenseActive;
+        var slotId = null;
 
-        if (!window.showBannerDimensions && !isMessageBanner) {
+        // Map fixed sizes to provided AdSense Slot IDs
+        if (adsenseActive && window.gameConfig.adsenseSlots) {
+            var key = width + 'x' + height;
+            slotId = window.gameConfig.adsenseSlots[key];
+        }
+
+        // If AdSense is active for this game, we skip the message banner in the top slot
+        // to give full priority to the ad units.
+        if (!window.showBannerDimensions && !isMessageBanner && !slotId) {
             return null;
         }
 
+        var bannerId = 'ad-' + side + '-' + width + 'x' + height + '-' + (isFirst ? 'top' : 'bottom');
+        var existingBanner = document.getElementById(bannerId);
+
+        if (existingBanner) {
+            return existingBanner;
+        }
+
         var banner = document.createElement('div');
+        banner.id = bannerId;
         banner.className = 'ad-banner';
         banner.style.width = width + 'px';
         banner.style.height = height + 'px';
 
-        if (isMessageBanner && !window.showBannerDimensions) {
-            var message = '';
-            // Allow custom style from config
+        if (slotId && !window.showBannerDimensions) {
+            // Real AdSense Injection
+            var caPub = window.gameConfig.adsenseClient || 'ca-pub-9335537153013492';
+            banner.innerHTML = '<ins class="adsbygoogle" ' +
+                'style="display:inline-block;width:' + width + 'px;height:' + height + 'px" ' +
+                'data-ad-client="' + caPub + '" ' +
+                'data-ad-slot="' + slotId + '" ' +
+                'data-adsbygoogle-status="pending"></ins>';
+        } else if (isMessageBanner && !window.showBannerDimensions && !adsenseActive) {
+            // Legacy Message Banner (only for games without AdSense like Burraco)
             var customStyle = (window.gameConfig && window.gameConfig.bannerStyle) || '';
             var defaultStyle = 'padding: 10px; text-align: left; font-size: 14px; color: white; background-color: green; border: 1px solid #2d5a3d; border-radius: 5px; height: 100%; display: flex; flex-direction: column; justify-content: center; box-sizing: border-box; overflow: auto; overflow-wrap: break-word;';
-
             var style = customStyle || defaultStyle;
 
             if (window.gameConfig && window.gameConfig.messages) {
                 var lang = (side === 'left') ? 'it' : 'en';
                 var msgContent = window.gameConfig.messages[lang];
                 if (msgContent) {
-                    message = '<div style="' + style + '"><div>' + msgContent + '</div></div>';
+                    banner.innerHTML = '<div style="' + style + '"><div>' + msgContent + '</div></div>';
                 }
             }
-            banner.innerHTML = message;
         } else {
-            banner.innerHTML = 'Banner<br>' + width + 'x' + height;
+            // Simulation/Debug Mode
+            banner.innerHTML = (slotId ? 'AD SLOT: ' + slotId + '<br>' : 'Bannner<br>') + width + 'x' + height;
+            banner.style.backgroundColor = 'rgba(128,128,128,0.2)';
+            banner.style.border = '1px dashed grey';
+            banner.style.display = 'flex';
+            banner.style.alignItems = 'center';
+            banner.style.justifyContent = 'center';
+            banner.style.textAlign = 'center';
         }
         return banner;
     };
@@ -173,7 +201,7 @@ function adjustLayout() {
         { width: 120, height: 600 }, { width: 120, height: 240 }
     ];
 
-    var populateSidebar = function (sidebar, availableWidth, side) {
+    var populateSidebar = function (sidebar, availableWidth, sideConfig) {
         var currentAvailableHeight = windowHeight;
         var verticalGap = 15;
         var bannerWidthFamily = 0;
@@ -181,24 +209,49 @@ function adjustLayout() {
         else if (availableWidth >= 160) bannerWidthFamily = 160;
         else if (availableWidth >= 120) bannerWidthFamily = 120;
 
+        var sidebarId = sidebar.id; // 'sidebar-left' or 'sidebar-right'
+
+        // Hide all existing banners in this sidebar first
+        var existingInSide = sidebar.querySelectorAll('.ad-banner');
+        for (var k = 0; k < existingInSide.length; k++) {
+            existingInSide[k].style.display = 'none';
+        }
+
         if (bannerWidthFamily > 0) {
             var applicableFormats = allAdFormats.filter(function (f) { return f.width === bannerWidthFamily; });
+            var visibleCount = 0;
             for (var i = 0; i < applicableFormats.length; i++) {
                 var format = applicableFormats[i];
-                var isFirst = sidebar.childElementCount === 0;
+                var isFirst = visibleCount === 0;
                 var requiredGap = isFirst ? 0 : verticalGap;
+
+                // Using the mathematical exact height check
                 if (currentAvailableHeight >= (format.height + requiredGap)) {
-                    var banner = createBanner(format.width, format.height, side, isFirst);
+                    var banner = createBanner(format.width, format.height, sideConfig, isFirst);
                     if (banner) {
                         if (!isFirst) banner.style.marginTop = verticalGap + 'px';
-                        sidebar.appendChild(banner);
+                        else banner.style.marginTop = '0px';
+
+                        banner.style.display = 'flex';
+                        if (!sidebar.contains(banner)) {
+                            sidebar.appendChild(banner);
+                        }
+
+                        // TRIGGER ADSENSE ONLY AFTER APPENDACHILD
+                        var ins = banner.querySelector('ins[data-adsbygoogle-status="pending"]');
+                        if (ins) {
+                            ins.removeAttribute('data-adsbygoogle-status');
+                            var currentSlot = ins.getAttribute('data-ad-slot');
+                            try {
+                                console.log('AdSense Push: Slot ' + currentSlot + ' in ' + sidebarId + ' (' + format.width + 'x' + format.height + ')');
+                                (window.adsbygoogle = window.adsbygoogle || []).push({});
+                            } catch (e) {
+                                console.error('AdSense push error for ' + sidebarId + ':', e);
+                            }
+                        }
+
                         currentAvailableHeight -= (format.height + requiredGap);
-                    }
-                } else if (!isFirst && currentAvailableHeight >= format.height) {
-                    var banner = createBanner(format.width, format.height, side, isFirst);
-                    if (banner) {
-                        sidebar.appendChild(banner);
-                        currentAvailableHeight -= format.height;
+                        visibleCount++;
                     }
                 }
             }
@@ -216,7 +269,7 @@ function adjustLayout() {
     } else if (layoutMode === 'single-right') {
         sidebarRight.style.width = totalExtraWidth + 'px';
         sidebarRight.style.display = 'flex';
-        populateSidebar(sidebarRight, totalExtraWidth, 'left'); // Show Italian message
+        populateSidebar(sidebarRight, totalExtraWidth, 'left'); // Show Italian message (or ads)
     }
 }
 

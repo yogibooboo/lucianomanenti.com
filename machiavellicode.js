@@ -792,7 +792,7 @@ var scala = {
 		this.cartadown = divCard;
 
 
-		if (!this.pointerinelement(ev, "#giocatore")) {
+		if (!this.pointerinelement(ev, "#giocatore") && !this.pointerinelement(ev, "#campotris")) {
 
 			if (!divCard.card.split) return;
 		}
@@ -845,7 +845,16 @@ var scala = {
 		var carta = divCard.card;
 
 
-		if ((!scala.scalamove) && (!this.pescato)) { this.selezionacartagiocatore(divCard); return; }
+		if ((!scala.scalamove) && (!this.pescato)) {
+			// If clicking on a card in the table (not dragging), trigger split
+			if (divCard.card.gruppo == scala.campotris) {
+				scala.splittatris(divCard.card);
+				scala.render();
+				return;
+			}
+			this.selezionacartagiocatore(divCard);
+			return;
+		}
 
 
 
