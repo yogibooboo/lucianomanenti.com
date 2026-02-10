@@ -97,11 +97,6 @@ function adjustLayout() {
     campogioco.style.msTransform = 'scale(' + scale + ')';
     campogioco.style.webkitTransform = 'scale(' + scale + ')';
 
-    // [FIX TOUCH/GESTURES WINDOWS 11/EDGE]
-    // Impedisce che il tocco trascini la pagina o faccia zoom, migliorando la precisione
-    // su dispositivi touch/ibridi (come laptop Windows 11 con touch).
-    campogioco.style.touchAction = 'none';
-
     if (window.scala) {
         var rect = campogioco.getBoundingClientRect();
         scala.offsetxx = rect.left;
