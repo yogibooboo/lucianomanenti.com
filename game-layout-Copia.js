@@ -256,3 +256,73 @@ window.addEventListener('orientationchange', function () {
     setTimeout(adjustLayout, 200);
 });
 // [FINE FIX RESIZE]
+
+// [INIZIO OPTIMIZATION MODULE]
+// Questa sezione migliora drasticamente le prestazioni del gioco, specialmente con molte carte negli scarti.
+// Intercetta la funzione di disegno originale (scala.rendicontenitore) e la rende "intelligente":
+// aggiorna il DOM solo se la posizione o lo z-index sono effettivamente cambiati.
+(function () {
+    var initOptimization = function () {
+        if (!window.scala || !window.scala.rendicontenitore) return;
+
+        // Salva la funzione originale (opzionale, per debug)
+        window.scala.originalRendicontenitore = window.scala.rendicontenitore;
+
+        // Sovrascrive con la versione ottimizzata
+        window.scala.rendicontenitore = function (cont, speed) {
+            var velocita = speed || 400;
+            var newtop, newleft, carta, divCard;
+
+            for (var i = 0; i < cont.carte.length; i++) {
+                carta = cont.carte[i];
+                divCard = carta.gui; // Cache del riferimento DOM
+
+                // Calcola le nuove coordinate target
+                newtop = cont.top + cont.offsety + Math.floor(i * cont.deltay);
+                newleft = cont.left + cont.offsetx + Math.floor(i * cont.deltax) + cont.xtris * carta.ntris;
+
+                // Aggiorna i dati nel modello logico
+                carta.top = newtop;
+                carta.left = newleft;
+                carta.zindex = i;
+
+                // --- LOGICA DI OTTIMIZZAZIONE ---
+                // Verifica se i valori attuali nel DOM sono già corretti.
+                // Usiamo una tolleranza di 1px per le coordinate.
+                var currentLeft = parseInt(divCard.style.left) || 0;
+                var currentTop = parseInt(divCard.style.top) || 0;
+                var currentZ = parseInt(divCard.style.zIndex) || 0;
+
+                var isPositionsSame = Math.abs(currentLeft - newleft) < 1 && Math.abs(currentTop - newtop) < 1;
+                var isZIndexSame = currentZ === i;
+
+                // Se tutto è identico, SALTA L'UPDATE DEL DOM! (Risparmia CPU/GPU)
+                if (isPositionsSame && isZIndexSame) {
+                    // Assicuriamoci solo che la carta sia visibile se necessario (showcard è leggera)
+                    this.showcard(carta);
+                    continue;
+                }
+                // -------------------------------
+
+                if (window.scala.immediato) {
+                    $(divCard).css({ "top": newtop, "left": newleft, "z-index": i }, velocita);
+                } else {
+                    $(divCard).animate({ "top": newtop, "left": newleft, "z-index": i }, velocita);
+                }
+                this.showcard(carta);
+            }
+        };
+        console.log("Scala40 Render Optimization: ACTIVE");
+    };
+
+    // Tenta l'iniezione quando il documento è pronto o quando window.scala diventa disponibile
+    if (document.readyState === 'complete') {
+        setTimeout(initOptimization, 500); // Piccolo ritardo per sicurezza
+    } else {
+        window.addEventListener('load', function () {
+            setTimeout(initOptimization, 500);
+        });
+    }
+})();
+// [FINE OPTIMIZATION MODULE]
+

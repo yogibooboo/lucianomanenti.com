@@ -127,6 +127,11 @@ function adjustLayout() {
         scala.offsetxx = rect.left;
         scala.offsetyy = rect.top;
     }
+    if (window.tmidi) {
+        var rect = campogioco.getBoundingClientRect();
+        tmidi.offsetxx = rect.left;
+        tmidi.offsetyy = rect.top;
+    }
 
     sidebarLeft.style.display = 'none';
     sidebarRight.style.display = 'none';
