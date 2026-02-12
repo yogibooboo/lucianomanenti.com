@@ -20,6 +20,7 @@ const tmidi = {
 	fcancellasuona: false,
 	fesamina: false,
 	fegrafico: false,
+	Bintro: [0, 1, 2, 3], // Intro beats for drums/click
 
 	bpm: 80,
 	latenza: 100,
@@ -29,8 +30,13 @@ const tmidi = {
 	velocitaout: 120,
 	metroVolume: 100,
 	baseInstrument: 0,
+	baseChannel: 0,
+	metroChannel: 9,
 	audioMetronome: true,
 	audioContext: null,
+	internalSynth: null, // WebAudioTinySynth instance
+	useInternalSynth: false,
+	latencyCorrection: 0, // ms
 	gmInstruments: [
 		"Acoustic Grand Piano", "Bright Acoustic Piano", "Electric Grand Piano", "Honky-tonk Piano", "Electric Piano 1", "Electric Piano 2", "Harpsichord", "Clavi",
 		"Celesta", "Glockenspiel", "Music Box", "Vibraphone", "Marimba", "Xylophone", "Tubular Bells", "Dulcimer",
@@ -95,6 +101,18 @@ const tmidi = {
 		requestAnimationFrame(() => this.refresh());
 	},
 
+	populateInstruments() {
+		const select = document.getElementById('baseInstrument');
+		select.innerHTML = '';
+		this.gmInstruments.forEach((name, index) => {
+			const opt = document.createElement('option');
+			opt.value = index;
+			opt.textContent = `${index + 1}: ${name}`;
+			select.appendChild(opt);
+		});
+		select.value = this.baseInstrument;
+	},
+
 	async initMIDI() {
 		if (!navigator.requestMIDIAccess) {
 			alert("Web MIDI API non supportata in questo browser.");
@@ -116,7 +134,7 @@ const tmidi = {
 		const selectOut = document.getElementById('midiOut');
 
 		selectIn.innerHTML = '<option value="">Seleziona Input...</option>';
-		selectOut.innerHTML = '<option value="">Seleziona Output...</option>';
+		selectOut.innerHTML = '<option value="">Seleziona Output...</option><option value="-1">Internal Synth (WebAudio)</option>';
 
 		// Populate Inputs
 		let inputs = this.midiAccess.inputs.values();
@@ -136,6 +154,9 @@ const tmidi = {
 			selectOut.appendChild(opt);
 		}
 
+		selectIn.onchange = (e) => this.setMIDIInput(e.target.value);
+		selectOut.onchange = (e) => this.setMIDIOutput(e.target.value);
+
 		// Auto-select first available Input
 		if (!this.midiIn && this.midiAccess.inputs.size > 0) {
 			const firstInput = this.midiAccess.inputs.values().next().value;
@@ -143,11 +164,15 @@ const tmidi = {
 			selectIn.value = firstInput.id;
 		}
 
-		// Auto-select first available Output
+		// Auto-select Output
+		// Prefer hardware if available, else Synth
 		if (!this.midiOut && this.midiAccess.outputs.size > 0) {
 			const firstOutput = this.midiAccess.outputs.values().next().value;
 			this.setMIDIOutput(firstOutput.id);
 			selectOut.value = firstOutput.id;
+		} else if (!this.midiOut) {
+			this.setMIDIOutput("-1");
+			selectOut.value = "-1";
 		}
 	},
 
@@ -163,12 +188,28 @@ const tmidi = {
 	},
 
 	setMIDIOutput(id) {
-		this.midiOut = this.midiAccess.outputs.get(id);
-		if (this.midiOut) {
-			log("MIDI Output set to: " + this.midiOut.name);
+		if (id === "-1") {
+			this.useInternalSynth = true;
+			this.midiOut = null;
+			this.initAudio();
+			if (this.audioContext && this.audioContext.state === 'suspended') this.audioContext.resume();
+			log("MIDI Output set to: Internal Synth (WebAudio)");
 			this.applySettings();
+			return;
+		}
+
+		this.useInternalSynth = false;
+		if (this.midiAccess) {
+			this.midiOut = this.midiAccess.outputs.get(id);
+			if (this.midiOut) {
+				log("MIDI Output set to: " + this.midiOut.name);
+				this.applySettings();
+			}
 		}
 	},
+
+	// Duplicate methods removed to avoid confusion. 
+	// The canonical versions are defined later in the file.
 
 	midiProc(event) {
 		const [a, b, c] = event.data;
@@ -409,7 +450,9 @@ const tmidi = {
 		document.getElementById('canvasmetronomo').addEventListener('mouseup', (e) => this.metronomoup(e));
 
 		document.getElementById('canvasoptions').addEventListener('click', (e) => this.optionsclick(e));
+
 	},
+
 
 	async loadImages() {
 		const assets = {
@@ -551,12 +594,12 @@ const tmidi = {
 		this.notestart = [];
 		this.BufferNote = [];
 
-		this.creacontatore("contabpm", 90, 40, "metronomo", 62, 450, "4pulsanti");
+		this.creacontatore("contabpm", 90, 40, "metronomo", 30, 400, "4pulsanti");
 		this.displaypuntifast(this.bpm, "contabpm");
 		document.getElementById('contabpm').onclick = (e) => this.setbpmx(e);
 
 		this.oldtotale = 0;
-		this.creacontatore("totale", 300, 120, "dati", 50, 270);
+		this.creacontatore("totale", 300, 120, "dati", 37, 270);
 		this.numeroopzioni = 5;
 		this.opzioni = new Array(this.numeroopzioni).fill(false);
 		this.opzioni[0] = true;
@@ -584,8 +627,15 @@ const tmidi = {
 	},
 
 	startstop(opzione) {
+		// Ensure Audio Context is initialized
+		this.initAudio();
+		if (this.audioContext && this.audioContext.state === 'suspended') {
+			this.audioContext.resume();
+		}
+
 		this.drumsintro = [70, 77, 76];
 		if (opzione === "specialintro") this.drumsintro[2] = 78;
+
 		if (this.fsuona) { this.stopsuona(); return; }
 
 		this.fsuona = true;
@@ -594,8 +644,10 @@ const tmidi = {
 		this.fcancellasuona = false;
 
 		const bstart = document.getElementById("bstart");
-		bstart.style.borderColor = "red";
-		bstart.textContent = "STOP";
+		if (bstart) {
+			bstart.style.borderColor = "red";
+			bstart.textContent = "STOP";
+		}
 
 		this.applySettings();
 
@@ -614,10 +666,12 @@ const tmidi = {
 
 		['barrad', 'barras'].forEach(id => {
 			const el = document.getElementById(id);
-			el.style.left = "300px";
-			el.style.width = "400px";
-			el.style.backgroundColor = "black";
-			el.textContent = id === 'barrad' ? "RIGHT" : "LEFT";
+			if (el) {
+				el.style.left = "300px";
+				el.style.width = "400px";
+				el.style.backgroundColor = "black";
+				el.textContent = id === 'barrad' ? "RIGHT" : "LEFT";
+			}
 		});
 
 		setTimeout(() => this.startnota(), this.inizio - performance.now());
@@ -629,6 +683,16 @@ const tmidi = {
 		bstart.style.borderColor = "#888888";
 		bstart.textContent = "START";
 		this.aggiornaerrori();
+	},
+
+
+	toggleSettings() {
+		const modal = document.getElementById('modal-settings');
+		if (modal.style.display === 'block') {
+			modal.style.display = 'none';
+		} else {
+			modal.style.display = 'block';
+		}
 	},
 
 	startnota() {
@@ -682,11 +746,11 @@ const tmidi = {
 		const nota = this.cbuffer[this.notacorrente];
 		if (this.notacorrente % 4 === 0) {
 			this.sendMIDI(0x99, 75, this.metroVolume);
+			// log(`Metro Tick. AudioMetronome: ${this.audioMetronome}`);
 			if (this.audioMetronome) {
-				// Alternating click: High for the first 16th of a group, etc.
-				// Based on notacorrente which is in 16ths.
-				const isBeat = (this.notacorrente % 16 === 0); // Start of measure?
-				this.playAudioClick(isBeat ? 880 : 440, 0.05);
+				// Alternating click
+				const isBeat = (this.notacorrente % 16 === 0);
+				this.playAudioClick(isBeat ? 880 : 440, 0.1);
 			}
 			setTimeout(() => this.sendMIDI(0x89, 75, 0), this.next + duratanota - performance.now());
 		}
@@ -738,18 +802,47 @@ const tmidi = {
 	},
 
 	sendMIDI(status, data1, data2) {
+		// Determine message length based on status
+		// 0xC0 (Program Change) and 0xD0 (Channel Pressure) are 2 bytes
+		const type = status & 0xF0;
+		let msg = [status, data1, data2];
+		if (type === 0xC0 || type === 0xD0) {
+			msg = [status, data1];
+		}
+
+		if (this.useInternalSynth && this.internalSynth) {
+			// Routing to Internal Synth
+			// TinySynth expects status byte + data. 
+			// We can pass a timestamp (2nd arg) for scheduling.
+			// latencyCorrection is in ms, convert to seconds.
+			// Only apply if > 0 (can't go back in time for realtime events)
+			const delay = Math.max(0, this.latencyCorrection / 1000);
+			const when = this.audioContext.currentTime + delay;
+			this.internalSynth.send(msg, when);
+			return;
+		}
+
 		if (this.midiOut) {
 			let finalStatus = status;
-			if ((status & 0xF0) === 0x90 || (status & 0xF0) === 0x80) {
-				const isMetro = (status === 0x99 || status === 0x89);
+			// Simple logic: if status is NoteOn/Off (0x90/0x80), we might want to enforce channel
+
+			if ((type === 0x90 || type === 0x80)) {
+				const isMetro = (status === 0x99 || status === 0x89); // specific flags used in legacy
 
 				// Optional: Deactivate MIDI metronome if Web Audio is active
 				if (isMetro && this.audioMetronome) return;
 
 				const channel = isMetro ? this.metroChannel : this.baseChannel;
+
+				// Fix: use baseChannel for musical notes, metroChannel for metronome
 				finalStatus = (status & 0xF0) | channel;
+
+				// Update message with new status
+				msg[0] = finalStatus;
 			}
-			this.midiOut.send([finalStatus, data1, data2]);
+			try {
+				this.midiOut.send(msg);
+			} catch (e) { /* ignore */ }
 		}
 	},
 
@@ -801,45 +894,76 @@ const tmidi = {
 			select.appendChild(opt);
 		});
 		select.value = this.baseInstrument;
+
+		// Add Latency Correction Input Logic here (since it's in settings)
+		const latencyInput = document.getElementById('latencyCorrect');
+		if (latencyInput) {
+			latencyInput.value = this.latencyCorrection;
+			latencyInput.onchange = (e) => {
+				this.latencyCorrection = parseInt(e.target.value);
+				log("Latency correction set to: " + this.latencyCorrection);
+			};
+		}
 	},
 
 	initAudio() {
 		if (this.audioContext) return;
-		this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-		log("AudioContext initialized.");
+		try {
+			this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+			log(`AudioContext initialized. State: ${this.audioContext.state}`);
+
+			// Initialize Internal Synth
+			if (typeof WebAudioTinySynth !== 'undefined') {
+				this.internalSynth = new WebAudioTinySynth({
+					useReverb: 0,
+					quality: 0,
+					voices: 32
+				});
+				this.internalSynth.setAudioContext(this.audioContext, this.audioContext.destination);
+				log("Internal Synth initialized.");
+			} else {
+				log("WebAudioTinySynth library not found.");
+			}
+
+		} catch (e) {
+			log("Error initializing AudioContext: " + e);
+		}
 	},
 
 	playAudioClick(freq, duration) {
 		if (!this.audioContext) return;
 		if (this.audioContext.state === 'suspended') this.audioContext.resume();
 
+		const t = this.audioContext.currentTime;
 		const osc = this.audioContext.createOscillator();
 		const envelope = this.audioContext.createGain();
 
 		osc.type = 'sine';
-		osc.frequency.setValueAtTime(freq, this.audioContext.currentTime);
+		osc.frequency.setValueAtTime(freq, t);
 
-		envelope.gain.setValueAtTime(this.metroVolume / 127 * 0.5, this.audioContext.currentTime);
-		envelope.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + duration);
+		const gain = this.metroVolume / 127 * 0.5;
+
+		envelope.gain.setValueAtTime(gain, t);
+		envelope.gain.exponentialRampToValueAtTime(0.01, t + duration);
 
 		osc.connect(envelope);
 		envelope.connect(this.audioContext.destination);
 
-		osc.start();
-		osc.stop(this.audioContext.currentTime + duration);
+		osc.start(t);
+		osc.stop(t + duration);
 	},
 
 	// --- Drawing & UI Logic (Ported) ---
 
 	resetgrafici() {
-		this.initgrafico(this.ctxs, 200, 500);
-		this.initgrafico(this.ctxd, 200, 500);
+		this.initgrafico(this.ctxs, 150, 500);
+		this.initgrafico(this.ctxd, 150, 500);
 		this.initgraficov(this.ctxvs, 100, 500);
 		this.initgraficov(this.ctxvd, 100, 500);
-		this.initgraficodati(this.ctxdati, 396, 400);
+		this.initdati(this.ctxdati, 374, 400);
 		setTimeout(() => {
-			this.initgraficosp(this.ctxsp, 1004, 130);
-			this.initmetronomo(this.ctxmt, 240, 470);
+			this.initgraficosp(this.ctxsp, 1024, 150);
+			this.initmetronomo(this.ctxmt, 150, 440);
 			this.initoptions(this.ctxop, 500, 150);
 		}, 100);
 	},
@@ -921,6 +1045,17 @@ const tmidi = {
 			angolo = 20 * (2 - this.bpm / 80) * Math.PI / 180 * Math.sin(periodi * Math.PI * 2);
 		}
 
+		// Proportional scaling to fit 250x500 into w x h
+		// We use the limiting dimension to avoid squashing
+		const ratio = Math.min(w / 250, h / 500);
+
+		// Center horizontally
+		const offsetX = (w - 250 * ratio) / 2;
+		const offsetY = (h - 500 * ratio) / 2;
+
+		b.translate(offsetX, offsetY);
+		b.scale(ratio, ratio);
+
 		if (this.images.tmmetronomo) b.drawImage(this.images.tmmetronomo, 0, 0, 250, 500);
 		b.translate(125, 380);
 		b.rotate(angolo);
@@ -928,8 +1063,36 @@ const tmidi = {
 		if (this.images.tmmetroasta) b.drawImage(this.images.tmmetroasta, -5, -330, 10, 330);
 		if (this.images.tmmetroindex) b.drawImage(this.images.tmmetroindex, -24, cursore - 40, 50, 40);
 
-		b.setTransform(1, 0, 0, 1, 0, 0);
+		b.setTransform(ratio, 0, 0, ratio, offsetX, offsetY);
 		if (this.images.tmmetrosotto) b.drawImage(this.images.tmmetrosotto, 0, 300, 250, 200);
+
+		// Scale and position HTML overlays (BPM counter and Start button)
+		const contabpm = document.getElementById("contabpm");
+		if (contabpm) {
+			// Original pos: left 30, top 400 (relative to 250x500)
+			// Center of base creates a nice spot for the counter
+			const bpmX = offsetX + 30 * ratio;
+			const bpmY = offsetY + 400 * ratio;
+			contabpm.style.left = `${bpmX}px`;
+			contabpm.style.top = `${bpmY}px`;
+			contabpm.style.transform = `scale(${ratio})`;
+			contabpm.style.transformOrigin = "top left";
+			contabpm.style.zIndex = "10";
+			contabpm.style.display = "block";
+		}
+
+		const bstart = document.getElementById("bstart");
+		if (bstart) {
+			// Position start button BELOW the counter (approx Y=450 orig)
+			// This avoids overlapping the moving stick (pivot at 380)
+			const startX = offsetX + 85 * ratio;
+			const startY = offsetY + 450 * ratio; // Moved down from 340
+			bstart.style.left = `${startX}px`;
+			bstart.style.top = `${startY}px`;
+			bstart.style.transform = `scale(${ratio})`;
+			bstart.style.transformOrigin = "top left";
+			bstart.style.zIndex = "20";
+		}
 	},
 
 	initbuffernote() {
@@ -950,7 +1113,7 @@ const tmidi = {
 	},
 
 	drawdestra() {
-		this.initgrafico(this.ctxd, 200, 500);
+		this.initgrafico(this.ctxd, 150, 500);
 		this.initgraficov(this.ctxvd, 100, 500);
 		const b = this.barradestra;
 		const l = b.length;
@@ -963,7 +1126,7 @@ const tmidi = {
 	},
 
 	drawsinistra() {
-		this.initgrafico(this.ctxs, 200, 500);
+		this.initgrafico(this.ctxs, 150, 500);
 		this.initgraficov(this.ctxvs, 100, 500);
 		const b = this.barrasinistra;
 		const l = b.length;
@@ -984,7 +1147,7 @@ const tmidi = {
 		const largopzione = opzione === "4pulsanti" ? Math.round(larghezza * 0.5) : 0;
 
 		const html = `
-            <div id="${nome}" style="position:absolute; top:${posy}px; left:${posx}px;" class="contatore">
+            <div id="${nome}" style="position:absolute; display:none;" class="contatore">
                 <img src="${immagine}" height="${altezza}px" width="${larghezza + largopzione}px">
                 <div id="digit3" class="digitx" style="position:absolute; top:${offsety}px; left:${offsetx}px; width:${wdigit}px; height:${hdigit}px; background-size:${wdigit}px ${hdigit * 10}px; background-position:0 0;"></div>
                 <div id="digit2" class="digitx" style="position:absolute; top:${offsety}px; left:${Math.floor(offsetx + larghezza / 3.2)}px; width:${wdigit}px; height:${hdigit}px; background-size:${wdigit}px ${hdigit * 10}px; background-position:0 0;"></div>
@@ -1032,15 +1195,15 @@ const tmidi = {
 	// would be ported here similar to the above pattern.
 	// For brevity, these are common canvas drawing operations.
 
-	initgraficodati(b, w, h) {
+	initdati(b, w, h) {
 		b.clearRect(0, 0, w, h);
 		const hrow = 20;
-		const pleft = 230, pright = 315, plefttext = 10;
+		const pleft = 220, pright = 305, plefttext = 10;
 
 		b.font = "16px Verdana";
 		b.fillStyle = "#FFFFFF";
 		b.fillRect(0, 30, w, 2);
-		[220, 280, 307, 365].forEach(x => b.fillRect(x, 0, 2, 260));
+		[210, 270, 297, 355].forEach(x => b.fillRect(x, 0, 2, 260));
 		b.fillText("LEFT", 230, 20);
 		b.fillText("RIGHT", 312, 20);
 
@@ -1082,7 +1245,7 @@ const tmidi = {
 	initgraficosp(b, w, h) {
 		// Implementation of spartito drawing
 		const esamina = (b === this.ectxsp);
-		const limite = esamina ? 1300 : 1000;
+		const limite = esamina ? 1300 : w;
 		b.clearRect(0, 0, w, h);
 		b.fillStyle = "#D2691E";
 		if (esamina) {
@@ -1147,6 +1310,10 @@ const tmidi = {
 	},
 
 	refresh() {
+		this.initmetronomo(this.ctxmt, 150, 440);
+		this.initgraficosp(this.ctxsp, 1024, 150);
+		this.initdati(this.ctxdati, 374, 400);
+
 		if (this.fesamina) {
 			if (this.fsuona) this.eoffset = -(performance.now() - this.inizio) / this.intervallo * 16 + this.Bintro.length * 64;
 			if (this.fegrafico) {
@@ -1155,9 +1322,8 @@ const tmidi = {
 				this.initgraficosp(this.ectxsp, 1270, 130);
 			}
 		} else {
-			if (this.fsuona && !this.fintro) this.initgraficosp(this.ctxsp, 1004, 130);
+			if (this.fsuona && !this.fintro) this.initgraficosp(this.ctxsp, 1024, 150);
 		}
-		this.initmetronomo(this.ctxmt, 240, 470);
 		requestAnimationFrame(() => this.refresh());
 	},
 
@@ -1166,6 +1332,51 @@ const tmidi = {
 	Bintro: [2, 0, 2, 0, 2, 2, 2, 2],
 
 	// Interaction handlers
+	// Note: We need to match the scaling logic in initmetronomo
+	getMetronomeTransform(rect) {
+		const w = rect.width;
+		const h = rect.height;
+		const ratio = Math.min(w / 250, h / 500);
+		const offsetX = (w - 250 * ratio) / 2;
+		const offsetY = (h - 500 * ratio) / 2;
+		return { ratio, offsetX, offsetY };
+	},
+
+	metronomodown(ev) {
+		if (this.fsuona) return;
+		const rect = ev.currentTarget.getBoundingClientRect();
+		const scale = window.gameScale || 1;
+		const { ratio, offsetX, offsetY } = this.getMetronomeTransform(rect);
+
+		// Transform click coordinates to original 250x500 space
+		// x_orig = (x_click - offsetX) / ratio
+		const clickX = (ev.clientX - rect.left) / scale;
+		const clickY = (ev.clientY - rect.top) / scale;
+
+		const x = (clickX - offsetX) / ratio;
+		const y = (clickY - offsetY) / ratio;
+
+		if (x < 100 || x > 150) return;
+		let mbpm = Math.floor(40 + (y - 100) * 80 / 200);
+		let mdeltabpm = mbpm - this.bpm;
+		if (Math.abs(mdeltabpm) < 15) {
+			this.fmdown = true;
+			this.offsetbpm = mdeltabpm;
+		}
+	},
+
+	metronomomove(ev) {
+		if (!this.fmdown) return;
+		const rect = ev.currentTarget.getBoundingClientRect();
+		const scale = window.gameScale || 1;
+		const { ratio, offsetX, offsetY } = this.getMetronomeTransform(rect);
+
+		const clickY = (ev.clientY - rect.top) / scale;
+		const y = (clickY - offsetY) / ratio;
+
+		let mbpm = Math.floor(40 + (y - 100) * 80 / 200);
+		this.setbpm(mbpm - this.offsetbpm);
+	},
 	esaminadown(ev) {
 		this.fedown = true;
 		this.feinavanti = true;
@@ -1200,8 +1411,13 @@ const tmidi = {
 		if (this.fsuona) return;
 		const rect = ev.currentTarget.getBoundingClientRect();
 		const scale = window.gameScale || 1;
-		const x = (ev.clientX - rect.left) / scale;
-		const y = (ev.clientY - rect.top) / scale;
+
+		// Canvas is 150x440, original logic assumes 250x500
+		const ratioX = rect.width / 250;
+		const ratioY = rect.height / 500;
+
+		const x = (ev.clientX - rect.left) / (scale * ratioX);
+		const y = (ev.clientY - rect.top) / (scale * ratioY);
 		if (x < 100 || x > 150) return;
 		let mbpm = Math.floor(40 + (y - 100) * 80 / 200);
 		let mdeltabpm = mbpm - this.bpm;
@@ -1214,7 +1430,9 @@ const tmidi = {
 		if (!this.fmdown) return;
 		const rect = ev.currentTarget.getBoundingClientRect();
 		const scale = window.gameScale || 1;
-		const y = (ev.clientY - rect.top) / scale;
+
+		const ratioY = rect.height / 500;
+		const y = (ev.clientY - rect.top) / (scale * ratioY);
 		let mbpm = Math.floor(40 + (y - 100) * 80 / 200); // simplistic logic
 		this.setbpm(mbpm);
 	},

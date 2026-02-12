@@ -300,7 +300,7 @@ function creaGiocatori() {
         if (!g.isUmano && g.personaggio) {
             const coeff = g.coefficienti;
             console.log(`${g.nome}: ${g.descrizione}`);
-            console.log(`  Coefficienti: fretta=${coeff.frettaChiusura}, rischio=${coeff.rischio}, memoria=${coeff.memoria}`);
+            console.log(`  Coefficienti: fretta=${coeff.frettaChiusura}, attacco=${coeff.propensioAttacco}, memoria=${coeff.memoria}`);
         }
     });
 }
@@ -780,6 +780,14 @@ async function depositaCombinazioneAI(giocatore, mossa) {
 
     combinazioni.push(comb);
 
+    // Rimuovi carte depositate da carteConosciute
+    if (giocatore.carteConosciute) {
+        const idDepositate = new Set(carte.map(c => c.id));
+        giocatore.carteConosciute = giocatore.carteConosciute.filter(
+            cc => !idDepositate.has(cc.cartaId)
+        );
+    }
+
     // Registra nella storia
     registraMossa(AZIONE_COMBINAZIONE, {
         carte: comb.carte.map(c => c.id),
@@ -842,6 +850,13 @@ async function eseguiCalataAI(giocatore, mossa) {
         combo.carte = ordinaTrisConJolly(combo.carte, combo.numero);
     } else {
         combo.carte.push(carta);
+    }
+
+    // Rimuovi carta da carteConosciute
+    if (giocatore.carteConosciute) {
+        giocatore.carteConosciute = giocatore.carteConosciute.filter(
+            cc => cc.cartaId !== carta.id
+        );
     }
 
     // Registra nella storia
@@ -934,6 +949,16 @@ async function turnoAI() {
             giocatore.carte.push(carta);
         }
 
+        // Aggiorna carteConosciute: tutti vedono cosa c'era negli scarti
+        if (giocatore.carteConosciute) {
+            for (const carta of cartePescate) {
+                giocatore.carteConosciute.push({
+                    cartaId: carta.id,
+                    turnoScoperta: game.turno
+                });
+            }
+        }
+
         // Registra nella storia
         registraMossa(AZIONE_PESCA_SCARTI, {
             carte: cartePescate.map(c => c.id)
@@ -990,7 +1015,21 @@ async function turnoAI() {
     // Cerca la prima opzione con mosse (salta "passa")
     const mossaMigliore = opzioni.find(opt => opt.mosse && opt.mosse.length > 0);
 
+    // Log decisione giocata per debug
+    const top5Opzioni = opzioni.slice(0, 5);
     if (mossaMigliore) {
+        Strategia.logPensiero(giocatore,
+            `Giocata: ${mossaMigliore.descCarte} (val: ${mossaMigliore.valutazione?.toFixed(2)})`,
+            {
+                tipo: 'giocata',
+                mossaScelta: mossaMigliore.descCarte,
+                valutazione: mossaMigliore.valutazione,
+                alternative: top5Opzioni.map(o => ({
+                    desc: o.descCarte,
+                    valutazione: o.valutazione
+                }))
+            }
+        );
         console.log(`AI ${giocatore.nome}: eseguo ${mossaMigliore.descCarte} (val: ${mossaMigliore.valutazione?.toFixed(2)})`);
 
         // Esegui tutte le mosse dell'opzione
@@ -1008,19 +1047,45 @@ async function turnoAI() {
 
         // Riordina le carte dopo le mosse
         ordinaCarte(giocatore.carte);
+    } else {
+        Strategia.logPensiero(giocatore, 'Giocata: passa (nessuna mossa conveniente)', {
+            tipo: 'giocata',
+            mossaScelta: '(passa)',
+            valutazione: 0,
+            alternative: top5Opzioni.map(o => ({
+                desc: o.descCarte,
+                valutazione: o.valutazione
+            }))
+        });
     }
+
+    // ========== DEBUG: DOPO GIOCATA ==========
+    await pausaDebugAI(giocatore, `Turno ${game.turno} - Dopo giocata`);
 
     // Ritardo prima dello scarto
     await delay(500);
 
-    // Scarta ultima carta (valore piu' alto)
+    // Scarta la carta scelta dalla strategia
     if (giocatore.carte.length > 0) {
-        // Salva la posizione dell'ultima carta PRIMA di rimuoverla
+        const cartaDaScartare = Strategia.scegliCartaDaScartare(giocatore);
+        // Rimuovi la carta dalla mano (splice, non pop)
+        const idxScarto = giocatore.carte.indexOf(cartaDaScartare);
+        if (idxScarto >= 0) {
+            giocatore.carte.splice(idxScarto, 1);
+        }
+        console.log(`AI ${giocatore.nome}: scarta ${Strategia.nomeCarta(cartaDaScartare)}`);
+
+        // Salva la posizione per l'animazione
         const container = $(selettoreCarte);
         const ultimaCartaEl = container ? container.lastElementChild : null;
         const partenzaRect = ultimaCartaEl ? ultimaCartaEl.getBoundingClientRect() : null;
 
-        const cartaDaScartare = giocatore.carte.pop();
+        // Rimuovi da carteConosciute (non e' piu' in mano)
+        if (giocatore.carteConosciute) {
+            giocatore.carteConosciute = giocatore.carteConosciute.filter(
+                cc => cc.cartaId !== cartaDaScartare.id
+            );
+        }
 
         // Registra nella storia
         registraMossa(AZIONE_SCARTO, { carta: cartaDaScartare.id });
@@ -1074,7 +1139,7 @@ async function turnoAI() {
             game.pozzetti[pozzIdx] = [];
             giocatore.haPozzetto = true;
         } else {
-            finePartita(false);
+            finePartita(giocatore.squadra === 0);
             return;
         }
     }
@@ -1124,35 +1189,156 @@ function calcolaPunteggi() {
     renderPunteggi();
 }
 
-function finePartita(haVintoGiocatore) {
+function finePartita(haVintoNoi) {
     game.fase = 'finito';
 
-    calcolaPunteggi();
+    // ===== CALCOLO DETTAGLIATO PUNTEGGI =====
+    const risultato = { noi: {}, loro: {} };
 
-    // Sottrai punti carte in mano
-    for (const g of game.giocatori) {
-        const puntiMano = g.carte.reduce((sum, c) => sum + c.punti, 0);
-        if (g.squadra === 0) {
-            game.puntiNoi -= puntiMano;
-        } else {
-            game.puntiLoro -= puntiMano;
+    for (const chiave of ['noi', 'loro']) {
+        const squadra = chiave === 'noi' ? 0 : 1;
+        const combinazioni = chiave === 'noi' ? game.combinazioniNoi : game.combinazioniLoro;
+        const giocatoriSquadra = game.giocatori.filter(g => g.squadra === squadra);
+        const r = risultato[chiave];
+
+        // 1. Punti carte nelle combinazioni
+        r.puntiCarte = combinazioni.reduce((sum, c) => sum + c.puntiCarte, 0);
+
+        // 2. Bonus burraco (dettaglio per ogni burraco)
+        r.burracos = [];
+        for (const c of combinazioni) {
+            if (c.isBurraco) {
+                r.burracos.push({
+                    desc: `${c.carte.length} carte (${c.tipo === TIPO_SCALA ? 'scala' : 'tris'})`,
+                    tipo: c.tipoBurraco,
+                    punti: c.puntiBurraco
+                });
+            }
         }
+        r.puntiBurraco = r.burracos.reduce((sum, b) => sum + b.punti, 0);
+
+        // 3. Bonus chiusura
+        r.chiusura = (chiave === 'noi' && haVintoNoi) || (chiave === 'loro' && !haVintoNoi);
+        r.puntiChiusura = r.chiusura ? PUNTI_CHIUSURA : 0;
+
+        // 4. Penalita' carte in mano
+        r.carteMano = [];
+        for (const g of giocatoriSquadra) {
+            const punti = g.carte.reduce((sum, c) => sum + c.punti, 0);
+            r.carteMano.push({ nome: g.nome, numCarte: g.carte.length, punti: punti });
+        }
+        r.penalitaMano = r.carteMano.reduce((sum, cm) => sum + cm.punti, 0);
+
+        // 5. Penalita' pozzetto non preso
+        const haPozzetto = giocatoriSquadra.some(g => g.haPozzetto);
+        r.pozzettoNonPreso = !haPozzetto;
+        r.penalitaPozzetto = r.pozzettoNonPreso ? 100 : 0;
+
+        // TOTALE
+        r.totale = r.puntiCarte + r.puntiBurraco + r.puntiChiusura
+                 - r.penalitaMano - r.penalitaPozzetto;
     }
 
-    // Bonus chiusura
-    if (haVintoGiocatore) {
-        game.puntiNoi += PUNTI_CHIUSURA;
-        playSound('vittoria');
-        $('#punteggio-finale-vinto').textContent = game.puntiNoi;
-        mostraModal('modal-vittoria');
-    } else {
-        game.puntiLoro += PUNTI_CHIUSURA;
-        playSound('sconfitta');
-        $('#punteggio-finale-perso').textContent = game.puntiNoi;
-        mostraModal('modal-sconfitta');
-    }
+    // Aggiorna punteggi globali
+    game.puntiNoi = risultato.noi.totale;
+    game.puntiLoro = risultato.loro.totale;
 
+    // Determina vincitore dal punteggio (non da chi ha chiuso)
+    const vinceNoi = game.puntiNoi >= game.puntiLoro;
+
+    // ===== MOSTRA SCHERMATA RISULTATI =====
+    mostraRisultatoFinale(risultato, vinceNoi);
+
+    playSound(vinceNoi ? 'vittoria' : 'sconfitta');
     renderPunteggi();
+}
+
+function mostraRisultatoFinale(risultato, vinceNoi) {
+    // Genera tabella per una squadra
+    function tabellaSquadra(r, nome) {
+        let html = '<table style="width:100%;border-collapse:collapse;font-size:13px">';
+
+        // Punti carte
+        html += riga('Punti carte in campo', r.puntiCarte, '#8f8');
+
+        // Burracos
+        for (const b of r.burracos) {
+            const etichetta = b.tipo === 'pulito' ? 'Burraco pulito' :
+                              b.tipo === 'semipulito' ? 'Burraco semipulito' : 'Burraco sporco';
+            const colore = b.tipo === 'pulito' ? '#4f4' :
+                           b.tipo === 'semipulito' ? '#ff0' : '#f80';
+            html += riga(`${etichetta} (${b.desc})`, b.punti, colore);
+        }
+        if (r.burracos.length === 0) {
+            html += riga('Nessun burraco', 0, '#888');
+        }
+
+        // Chiusura
+        if (r.chiusura) {
+            html += riga('Bonus chiusura', r.puntiChiusura, '#4f4');
+        }
+
+        // Penalita' mano
+        for (const cm of r.carteMano) {
+            if (cm.punti > 0) {
+                html += riga(`Carte in mano ${cm.nome} (${cm.numCarte})`, -cm.punti, '#f44');
+            }
+        }
+
+        // Penalita' pozzetto
+        if (r.pozzettoNonPreso) {
+            html += riga('Pozzetto non preso', -r.penalitaPozzetto, '#f44');
+        }
+
+        // Totale
+        html += '<tr style="border-top:2px solid #888;font-weight:bold;font-size:15px">' +
+            '<td style="padding:8px 4px 4px;color:#fff">' + nome + '</td>' +
+            '<td style="padding:8px 4px 4px;text-align:right;color:' +
+                (r.totale >= 0 ? '#4f4' : '#f44') + '">' + r.totale + '</td></tr>';
+
+        html += '</table>';
+        return html;
+    }
+
+    function riga(label, valore, colore) {
+        const segno = valore > 0 ? '+' : '';
+        return '<tr>' +
+            '<td style="padding:3px 4px;color:#ccc">' + label + '</td>' +
+            '<td style="padding:3px 4px;text-align:right;font-family:monospace;color:' +
+                colore + '">' + segno + valore + '</td></tr>';
+    }
+
+    const titoloColore = vinceNoi ? '#4f4' : '#f44';
+    const titolo = vinceNoi ? 'HAI VINTO!' : 'HAI PERSO';
+
+    const html = '<div style="padding:16px 20px">' +
+        '<h2 style="text-align:center;color:' + titoloColore + ';margin:0 0 16px;font-size:22px">' +
+            titolo + '</h2>' +
+        '<div style="display:flex;gap:20px">' +
+            '<div style="flex:1">' +
+                '<h3 style="color:#8cf;margin:0 0 8px;font-size:14px;text-transform:uppercase">NOI</h3>' +
+                tabellaSquadra(risultato.noi, 'TOTALE NOI') +
+            '</div>' +
+            '<div style="width:1px;background:#555"></div>' +
+            '<div style="flex:1">' +
+                '<h3 style="color:#fc8;margin:0 0 8px;font-size:14px;text-transform:uppercase">LORO</h3>' +
+                tabellaSquadra(risultato.loro, 'TOTALE LORO') +
+            '</div>' +
+        '</div>' +
+    '</div>';
+
+    // Usa il modal vittoria/sconfitta esistente
+    const modalEl = vinceNoi ? $('#modal-vittoria') : $('#modal-sconfitta');
+    modalEl.innerHTML = html +
+        '<button class="btn-modal btn-nuova-partita" style="margin:12px auto;display:block">NUOVA PARTITA</button>';
+
+    // Riattacca evento al nuovo bottone
+    modalEl.querySelector('.btn-nuova-partita').addEventListener('click', () => {
+        chiudiModals();
+        mostraModal('modal-nuova');
+    });
+
+    mostraModal(modalEl.id);
 }
 
 // ============================================================================

@@ -640,6 +640,17 @@ function pescaDaScarti() {
         game.giocatori[0].carte.push(c);
     }
 
+    // Aggiorna carteConosciute: tutti vedono cosa c'era negli scarti
+    const giocatoreUmano = game.giocatori[0];
+    if (giocatoreUmano.carteConosciute) {
+        for (const c of carteRaccolte) {
+            giocatoreUmano.carteConosciute.push({
+                cartaId: c.id,
+                turnoScoperta: game.turno
+            });
+        }
+    }
+
     // Registra nella storia
     registraMossa(AZIONE_PESCA_SCARTI, { carte: carteRaccolte.map(c => c.id) });
 
@@ -661,6 +672,13 @@ async function scartaCarta(carta) {
     if (idx === -1) return;
 
     salvaStato('scarta');
+
+    // Rimuovi da carteConosciute (non e' piu' in mano)
+    if (game.giocatori[0].carteConosciute) {
+        game.giocatori[0].carteConosciute = game.giocatori[0].carteConosciute.filter(
+            cc => cc.cartaId !== carta.id
+        );
+    }
 
     // Registra nella storia
     registraMossa(AZIONE_SCARTO, { carta: carta.id });
@@ -809,6 +827,14 @@ function depositaCombinazione(e) {
 
     game.combinazioniNoi.push(comb);
     game.carteSelezionate = [];
+
+    // Rimuovi carte depositate da carteConosciute
+    if (game.giocatori[0].carteConosciute) {
+        const idDepositate = new Set(comb.carte.map(c => c.id));
+        game.giocatori[0].carteConosciute = game.giocatori[0].carteConosciute.filter(
+            cc => !idDepositate.has(cc.cartaId)
+        );
+    }
 
     // Registra nella storia
     registraMossa(AZIONE_COMBINAZIONE, {
@@ -985,6 +1011,13 @@ function aggiungiCartaACombinazione(carta, combinazione) {
     const idx = game.giocatori[0].carte.indexOf(carta);
     if (idx > -1) {
         game.giocatori[0].carte.splice(idx, 1);
+    }
+
+    // Rimuovi da carteConosciute
+    if (game.giocatori[0].carteConosciute) {
+        game.giocatori[0].carteConosciute = game.giocatori[0].carteConosciute.filter(
+            cc => cc.cartaId !== carta.id
+        );
     }
 
     // Deseleziona la carta
@@ -1674,18 +1707,29 @@ function getGiocatoreHTML(indiceGiocatore, ruolo) {
     const p = giocatore.personaggio;
     const c = p?.coefficienti || Strategia.defaultCoeff;
 
-    // Labels per i coefficienti (compatti)
+    // Labels per i coefficienti (compatti, raggruppati per area)
     const coeffLabels = {
-        pescaScarti: 'Pesca scarti',
-        prudenzaScarto: 'Prudenza',
+        // Pesca
+        sogliaPescaScarti: 'Soglia scarti',
+        compressione: 'Compressione',
+        // Calata
+        valoreCentralita: 'Centralita',
         prefScale: 'Pref. scale',
         sogliaDeposito: 'Deposito',
         prefBurracoPulito: 'Burr. pulito',
-        tieneJolly: 'Tiene jolly',
+        parsimoniaMatte: 'Parsim. matte',
+        // Scarto
+        prudenzaScarto: 'Prudenza',
+        cooperazione: 'Cooperazione',
+        // Ruolo e chiusura
+        propensioAttacco: 'Attacco',
         frettaChiusura: 'Fretta',
+        // Strategia
+        tendenzaControgioco: 'Controgioco',
+        // Osservazione e tattica
         memoria: 'Memoria',
-        rischio: 'Rischio',
-        adattamento: 'Adattam.'
+        letturaAvversario: 'Lettura avv.',
+        audacia: 'Audacia'
     };
 
     // Genera HTML coefficienti (compatto, 2 colonne)
@@ -1799,6 +1843,39 @@ function getGiocatoreHTML(indiceGiocatore, ruolo) {
     // Serializza i dettagli per lo script nella finestra
     const logDettagliJSON = JSON.stringify(logDettagli);
 
+    // Determina fase e ruolo per la visualizzazione debug
+    let faseDisplay = '?';
+    if (!giocatore.isUmano) {
+        const haPozzettoSquadra = game.giocatori
+            .filter(g => g.squadra === giocatore.squadra)
+            .some(g => g.haPozzetto);
+        const haBurraco = (giocatore.squadra === 0 ? game.combinazioniNoi : game.combinazioniLoro)
+            .some(cb => cb.isBurraco);
+        if (!haPozzettoSquadra) faseDisplay = 'PRE-POZZETTO';
+        else if (!haBurraco) faseDisplay = 'CERCA BURRACO';
+        else faseDisplay = 'CHIUSURA';
+    }
+
+    // Genera HTML carte conosciute (che gli altri sanno di questo giocatore)
+    let carteConosciuteHTML = '';
+    if (!giocatore.isUmano && giocatore.carteConosciute?.length > 0) {
+        const turniMemoria = 2 + (c.memoria || 5);
+        const recenti = giocatore.carteConosciute.filter(
+            cc => game.turno - cc.turnoScoperta <= turniMemoria
+        );
+        if (recenti.length > 0) {
+            const nomi = recenti.map(cc => {
+                const carta = typeof tutteLeCarte !== 'undefined' ? tutteLeCarte[cc.cartaId] : null;
+                return carta ? Strategia.nomeCarta(carta) : '?';
+            }).join(' ');
+            carteConosciuteHTML = `
+            <div class="strat-item">
+                <span class="strat-label">Carte note (${recenti.length}):</span>
+                <span class="strat-value" style="font-size:10px">${nomi}</span>
+            </div>`;
+        }
+    }
+
     // Genera HTML stato attuale
     let statoHTML = '';
     if (!giocatore.isUmano) {
@@ -1810,7 +1887,12 @@ function getGiocatoreHTML(indiceGiocatore, ruolo) {
             <div class="strat-item">
                 <span class="strat-label">Ha pozzetto:</span>
                 <span class="strat-value">${giocatore.haPozzetto ? 'Sì' : 'No'}</span>
-            </div>`;
+            </div>
+            <div class="strat-item">
+                <span class="strat-label">Fase:</span>
+                <span class="strat-value">${faseDisplay}</span>
+            </div>
+            ${carteConosciuteHTML}`;
     }
 
     const avatarSrc = p ? `images/avatar/${p.nome}.jpg` : 'images/avatar/default.jpg';
@@ -1879,11 +1961,11 @@ function getGiocatoreHTML(indiceGiocatore, ruolo) {
             letter-spacing: 0.5px;
         }
 
-        /* Coefficienti griglia compatta */
+        /* Coefficienti griglia compatta (3 colonne per 15 coefficienti) */
         .coeff-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 4px 12px;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 4px 10px;
         }
         .coeff-item { display: flex; align-items: center; gap: 4px; }
         .coeff-label { width: 70px; text-align: right; color: #bbb; font-size: 10px; }
@@ -2006,54 +2088,182 @@ function getGiocatoreHTML(indiceGiocatore, ruolo) {
             var entry = logDettagli.find(function(e) { return e.idx === idx; });
             if (!entry || !entry.dettagli) return;
             var d = entry.dettagli;
-            if (d.tipo !== 'pesca') return;
 
-            var m = d.mazzo;
-            var s = d.scarti;
+            if (d.tipo === 'pesca') {
+                mostraModalPesca(d);
+            } else if (d.tipo === 'scarto') {
+                mostraModalScarto(d);
+            } else if (d.tipo === 'giocata') {
+                mostraModalGiocata(d);
+            }
+        }
 
-            var html = '<div class="modal-overlay" onclick="chiudiModal(event)">' +
-                '<div class="modal-content" onclick="event.stopPropagation()">' +
-                    '<div class="modal-header">' +
-                        '<span class="modal-title">Decisione Pesca: ' + d.decisione.toUpperCase() + '</span>' +
-                        '<span class="modal-close" onclick="chiudiModal()">&times;</span>' +
-                    '</div>' +
-                    '<div class="modal-grid">' +
-                        '<div class="modal-col">' +
-                            '<div class="modal-col-title ' + (d.decisione === 'mazzo' ? 'selected' : '') + '">' +
-                                (d.decisione === 'mazzo' ? '>>> ' : '') + 'MAZZO' +
-                            '</div>' +
-                            '<div class="modal-row"><span class="modal-label">Valore base:</span><span class="modal-value">' + m.valoreBase.toFixed(0) + '</span></div>' +
-                            '<div class="modal-row"><span class="modal-label">├ Punti depositabili:</span><span class="modal-value">' + m.analisi.punti + '</span></div>' +
-                            '<div class="modal-row"><span class="modal-label">├ Burraco:</span><span class="modal-value">' + m.analisi.burraco + ' × ' + d.pesi.pesoBurraco + '</span></div>' +
-                            '<div class="modal-row"><span class="modal-label">├ Matte:</span><span class="modal-value">' + m.analisi.matte + ' × ' + d.pesi.pesoMatte + '</span></div>' +
-                            '<div class="modal-row"><span class="modal-label">└ Cadaveri:</span><span class="modal-value">-' + (m.analisi.cadaveri * d.pesi.pesoCadaveri).toFixed(0) + '</span></div>' +
-                            '<div class="modal-row"><span class="modal-label">Bonus atteso:</span><span class="modal-value">+' + m.bonusAtteso + '</span></div>' +
-                            '<div class="modal-row"><span class="modal-label">├ Base (carta media):</span><span class="modal-value">+' + m.bonusBase + '</span></div>' +
-                            '<div class="modal-row"><span class="modal-label">└ Carte ricercate:</span><span class="modal-value">+' + m.bonusRicercate + '</span></div>' +
-                            (m.carteRicercate.length > 0 ? '<div class="modal-row"><span class="modal-label" style="font-size:10px;color:#666">   (' + m.carteRicercate.join(', ') + ')</span></div>' : '') +
-                            '<div class="modal-row modal-total"><span class="modal-label">TOTALE:</span><span class="modal-value" style="color:#4f4">' + m.totale.toFixed(0) + '</span></div>' +
-                        '</div>' +
-                        '<div class="modal-col">' +
-                            '<div class="modal-col-title ' + (d.decisione === 'scarti' ? 'selected' : '') + '">' +
-                                (d.decisione === 'scarti' ? '>>> ' : '') + 'SCARTI (' + s.numCarte + ' carte)' +
-                            '</div>' +
-                            '<div class="modal-row"><span class="modal-label">Valore base:</span><span class="modal-value">' + s.valoreBase.toFixed(0) + '</span></div>' +
-                            '<div class="modal-row"><span class="modal-label">├ Punti depositabili:</span><span class="modal-value">' + s.analisi.punti + '</span></div>' +
-                            '<div class="modal-row"><span class="modal-label">├ Burraco:</span><span class="modal-value">' + s.analisi.burraco + ' × ' + d.pesi.pesoBurraco + '</span></div>' +
-                            '<div class="modal-row"><span class="modal-label">├ Matte:</span><span class="modal-value">' + s.analisi.matte + ' × ' + d.pesi.pesoMatte + '</span></div>' +
-                            '<div class="modal-row"><span class="modal-label">└ Cadaveri:</span><span class="modal-value">-' + (s.analisi.cadaveri * d.pesi.pesoCadaveri).toFixed(0) + '</span></div>' +
-                            (s.bonusCima > 0 ? '<div class="modal-row"><span class="modal-label">Bonus ' + s.bonusCimaDesc + ':</span><span class="modal-value" style="color:#f80">+' + s.bonusCima + '</span></div>' : '') +
-                            '<div class="modal-row modal-total"><span class="modal-label">TOTALE:</span><span class="modal-value" style="color:#4f4">' + s.totale.toFixed(0) + '</span></div>' +
-                        '</div>' +
-                    '</div>' +
-                    '<div class="modal-footer">' +
-                        '<strong>Differenza:</strong> ' + (d.differenza >= 0 ? '+' : '') + d.differenza.toFixed(0) + ' | ' +
-                        '<strong>Soglia:</strong> ' + d.soglia + ' (pescaScarti=' + d.coeff.pescaScarti + ') | ' +
-                        '<strong>Decisione:</strong> ' + d.differenza.toFixed(0) + ' ' + (d.differenza > d.soglia ? '>' : '≤') + ' ' + d.soglia + ' → ' + d.decisione.toUpperCase() +
+        function mostraModalPesca(d) {
+            var s = d.scarti || {};
+            var c = d.coeff || {};
+
+            // Genera HTML per le regole valutate
+            var regoleHTML = '';
+            if (d.regole && d.regole.length > 0) {
+                for (var i = 0; i < d.regole.length; i++) {
+                    var r = d.regole[i];
+                    var colore = r.esito === 'mazzo' ? '#f44' :
+                                 r.esito === 'scarti' ? '#4f4' :
+                                 r.esito === 'eccezione' ? '#f80' : '#888';
+                    var icona = r.esito === 'mazzo' ? 'MAZZO' :
+                                r.esito === 'scarti' ? 'SCARTI' :
+                                r.esito === 'eccezione' ? 'ECCEZ.' : 'skip';
+                    regoleHTML += '<div class="modal-row" style="margin-bottom:4px">' +
+                        '<span class="modal-label" style="font-weight:bold">' + r.regola + '</span>' +
+                        '<span class="modal-value" style="color:' + colore + '">' + icona + '</span>' +
+                    '</div>';
+
+                    // Se c'e' il dettaglio utilita', mostra tabella allineata
+                    if (r.utilita) {
+                        var u = r.utilita;
+                        regoleHTML += '<table style="margin:2px 0 8px 12px;font-size:11px;border-collapse:collapse;width:calc(100% - 24px)">';
+                        for (var v = 0; v < u.voci.length; v++) {
+                            var voce = u.voci[v];
+                            var stile = voce.subtotale ?
+                                'border-top:1px solid #555;font-weight:bold;padding-top:3px' : '';
+                            var valStr = voce.valore !== null && voce.valore !== undefined ?
+                                (voce.valore > 0 ? '+' : '') + voce.valore.toFixed(1) : '';
+                            var valColore = voce.valore > 0 ? '#8f8' : (voce.valore === 0 ? '#888' : '#f88');
+                            regoleHTML += '<tr style="' + stile + '">' +
+                                '<td style="color:#bbb;padding:1px 8px 1px 0">' + voce.label + '</td>' +
+                                '<td style="color:' + valColore + ';text-align:right;font-family:monospace;min-width:40px">' + valStr + '</td>' +
+                            '</tr>';
+                        }
+                        var totColore = u.totale >= u.sogliaEffettiva ? '#4f4' : '#f44';
+                        regoleHTML += '<tr style="border-top:1px solid #888;font-weight:bold;padding-top:3px">' +
+                            '<td style="color:#fff;padding:4px 8px 1px 0">TOTALE</td>' +
+                            '<td style="color:' + totColore + ';text-align:right;font-family:monospace;padding-top:4px">' + u.totale.toFixed(1) + '</td>' +
+                        '</tr>';
+                        var sogliaDesc = u.numScarti === 1 ? 'base' :
+                                         u.numScarti === 2 ? 'base x0.8' : 'base x0.4';
+                        regoleHTML += '<tr>' +
+                            '<td style="color:#999;padding:1px 8px 1px 0;font-size:10px">Soglia (' + sogliaDesc + ')</td>' +
+                            '<td style="color:#999;text-align:right;font-family:monospace;font-size:10px">' + u.sogliaEffettiva.toFixed(1) + '</td>' +
+                        '</tr>';
+                        regoleHTML += '</table>';
+                    } else {
+                        regoleHTML += '<div class="modal-row" style="padding-left:12px;font-size:11px;color:#aaa;margin-bottom:8px">' +
+                            r.desc + '</div>';
+                    }
+                }
+            }
+
+            var coeffHTML = '';
+            var coeffLabels = {
+                sogliaPescaScarti: 'Soglia scarti',
+                compressione: 'Compressione',
+                cooperazione: 'Cooperazione',
+                propensioAttacco: 'Attacco',
+                letturaAvversario: 'Lettura avv.',
+                memoria: 'Memoria'
+            };
+            var coeffKeys = Object.keys(coeffLabels);
+            for (var k = 0; k < coeffKeys.length; k++) {
+                var key = coeffKeys[k];
+                if (c[key] !== undefined) {
+                    coeffHTML += '<span style="margin-right:8px;font-size:11px">' +
+                        coeffLabels[key] + ':' + c[key] + '</span>';
+                }
+            }
+
+            apriModal(
+                'Decisione Pesca: <span style="color:' + (d.decisione === 'mazzo' ? '#4f4' : '#ff0') + '">' +
+                    d.decisione.toUpperCase() + '</span>',
+                '<div style="padding:8px 12px;border-bottom:1px solid #444">' +
+                    '<div style="font-size:12px;color:#ccc">' +
+                        'Scarti: <strong>' + s.numCarte + '</strong> carte' +
+                        (s.cartaInCima ? ' | Cima: <strong>' + s.cartaInCima + '</strong>' : '') +
+                        (s.isJolly ? ' <span style="color:#f80">JOLLY!</span>' : '') +
+                        (s.isPinella ? ' <span style="color:#f80">PINELLA</span>' : '') +
                     '</div>' +
                 '</div>' +
-            '</div>';
+                '<div style="padding:8px 12px">' +
+                    '<div style="font-size:13px;font-weight:bold;margin-bottom:8px;color:#ddd">Albero decisionale:</div>' +
+                    regoleHTML +
+                '</div>',
+                coeffHTML
+            );
+        }
 
+        function mostraModalGiocata(d) {
+            var bodyHTML = '';
+            // Mossa scelta
+            bodyHTML += '<div style="padding:8px 12px;border-bottom:1px solid #444">' +
+                '<div style="font-size:12px;color:#ccc">Mossa: <strong style="color:#4f4">' +
+                    d.mossaScelta + '</strong>' +
+                    (d.valutazione != null ? ' (val: ' + d.valutazione.toFixed(2) + ')' : '') +
+                '</div></div>';
+            // Alternative
+            if (d.alternative && d.alternative.length > 0) {
+                bodyHTML += '<div style="padding:8px 12px">' +
+                    '<div style="font-size:13px;font-weight:bold;margin-bottom:8px;color:#ddd">Alternative valutate:</div>' +
+                    '<table style="font-size:11px;border-collapse:collapse;width:100%">';
+                for (var i = 0; i < d.alternative.length; i++) {
+                    var alt = d.alternative[i];
+                    var isMigliore = i === 0 && alt.desc === d.mossaScelta;
+                    var rowStyle = isMigliore ? 'color:#4f4;font-weight:bold' : 'color:#bbb';
+                    bodyHTML += '<tr style="' + rowStyle + '">' +
+                        '<td style="padding:2px 8px 2px 0">' + alt.desc + '</td>' +
+                        '<td style="text-align:right;font-family:monospace;min-width:40px">' +
+                            (alt.valutazione != null ? alt.valutazione.toFixed(2) : '-') + '</td>' +
+                    '</tr>';
+                }
+                bodyHTML += '</table></div>';
+            }
+            apriModal('Decisione Giocata', bodyHTML, '');
+        }
+
+        function mostraModalScarto(d) {
+            var bodyHTML = '';
+            // Carta scelta
+            bodyHTML += '<div style="padding:8px 12px;border-bottom:1px solid #444">' +
+                '<div style="font-size:12px;color:#ccc">Scarta: <strong style="color:#f80">' +
+                    d.cartaScelta + '</strong>' +
+                    (d.punteggioScelto != null ? ' (punt: ' + d.punteggioScelto.toFixed(2) + ')' : '') +
+                '</div></div>';
+            // Classifica
+            if (d.classifica && d.classifica.length > 0) {
+                bodyHTML += '<div style="padding:8px 12px">' +
+                    '<div style="font-size:13px;font-weight:bold;margin-bottom:8px;color:#ddd">Classifica scartabilita\':</div>' +
+                    '<table style="font-size:11px;border-collapse:collapse;width:100%">';
+                for (var i = 0; i < d.classifica.length; i++) {
+                    var c = d.classifica[i];
+                    var isScelta = i === 0;
+                    var rowStyle = isScelta ? 'color:#f80;font-weight:bold' : 'color:#bbb';
+                    var barWidth = Math.max(0, Math.min(100, (c.punteggio + 1) * 50));
+                    bodyHTML += '<tr style="' + rowStyle + '">' +
+                        '<td style="padding:2px 8px 2px 0;white-space:nowrap">' + c.carta + '</td>' +
+                        '<td style="text-align:right;font-family:monospace;min-width:40px">' +
+                            (c.punteggio > 0 ? '+' : '') + c.punteggio.toFixed(2) + '</td>' +
+                        '<td style="padding-left:6px;width:60px">' +
+                            '<div style="background:#555;height:6px;border-radius:3px">' +
+                                '<div style="background:' + (isScelta ? '#f80' : '#888') +
+                                    ';height:6px;border-radius:3px;width:' + barWidth + '%"></div>' +
+                            '</div></td>' +
+                    '</tr>';
+                }
+                bodyHTML += '</table></div>';
+            }
+            apriModal('Decisione Scarto', bodyHTML, '');
+        }
+
+        // Helper: apre un modal generico
+        function apriModal(titolo, body, footer) {
+            var html = '<div class="modal-overlay" onclick="chiudiModal(event)">' +
+                '<div class="modal-content" onclick="event.stopPropagation()" style="max-width:500px">' +
+                    '<div class="modal-header">' +
+                        '<span class="modal-title">' + titolo + '</span>' +
+                        '<span class="modal-close" onclick="chiudiModal()">&times;</span>' +
+                    '</div>' +
+                    body +
+                    (footer ? '<div class="modal-footer" style="font-size:11px;color:#999;border-top:1px solid #444;padding:6px 12px">' +
+                        footer + '</div>' : '') +
+                '</div></div>';
             document.body.insertAdjacentHTML('beforeend', html);
         }
 

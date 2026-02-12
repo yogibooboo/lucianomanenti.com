@@ -43,3 +43,4 @@ yarn.lock
 dist/
 # AdSense internal files
 banners.txt
+doc/

@@ -14,7 +14,7 @@
 	<title>Hanon Piano Technique Analyzer</title>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<link rel="stylesheet" href="midi.css" />
+	<link rel="stylesheet" href="midi.css?v=1.2" />
 	<meta name="Description"
 		content="Connect your MIDI keyboard to perform Hanon exercises, improve your piano technique and measure your progress.">
 </head>
@@ -24,7 +24,62 @@
 		style="display:none; position: fixed; left: 0; top: 0; height: 100vh; flex-direction: column; justify-content: center; align-items: center; z-index: 1000;">
 	</div>
 
-	<div id="campogioco" style="transform-origin: center center;">
+	<div id="campogioco">
+		<!-- Main Game Layout (3 Bands) -->
+		<div class="game-bands">
+			<!-- Band 1: Spartito (Top, 150px) -->
+			<div class="band band1">
+				<canvas id="spartito" width="1024" height="150"></canvas>
+			</div>
+
+			<!-- Band 2: Charts & Data (Middle, 500px) -->
+			<div class="band band2">
+				<canvas id="grafs" width="150" height="500"></canvas>
+				<canvas id="grafvs" width="100" height="500"></canvas>
+
+				<div id="dati-container">
+					<div id="titolo-band">
+						<img src="images/hanontest.png" alt="Hanon Piano Analyzer">
+					</div>
+					<div id="dati">
+						<canvas id="canvasdati" width="374" height="400"></canvas>
+					</div>
+				</div>
+
+				<canvas id="grafvd" width="100" height="500"></canvas>
+				<canvas id="grafd" width="150" height="500"></canvas>
+
+				<div id="metronomo"
+					style="position: relative; overflow: hidden; display: flex; flex-direction: column; align-items: center;">
+					<h2 style="margin: 0; padding: 5px 0;">METRONOME</h2>
+					<canvas id="canvasmetronomo" width="150" height="440"></canvas>
+					<div id="bstart" class="pulsante2" style="position: absolute; z-index: 20;">START</div>
+				</div>
+			</div>
+
+			<!-- Band 3: Controls & Bars (Bottom, 100px) -->
+			<div class="band band3">
+				<div id="bottom-controls">
+					<div id="b-settings" class="pulsante2">SETTINGS</div>
+					<div id="grafico" class="pulsante2">SCROLL</div>
+					<div id="esamina" class="pulsante2">DETAILS</div>
+					<a href="index.html" class="pulsanteback-link">
+						<div class="pulsanteback"></div>
+					</a>
+					<div class="pulsantehelp"></div>
+					<div class="pulsanteaiuto"></div>
+				</div>
+
+				<div id="bottom-bars">
+					<div id="barras" class="barra">LEFT</div>
+					<div id="barrav1" class="barretta-v"></div>
+					<div id="barrav2" class="barretta-v"></div>
+					<div id="barrad" class="barra">RIGHT</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Overlays (Absolute/Fixed) -->
 		<div id="formistruzioni" class="formistruzioni">
 			<h2>BENVENUTO</h2>
 			Questa applicazione ti permette di analizzare la tua tecnica pianistica collegando una tastiera
@@ -32,29 +87,6 @@
 			Assicurati di aver collegato il tuo strumento e concesso i permessi MIDI al browser quando
 			richiesto.<br><br>
 			<button class="bottonex" type="button">OK</button>
-		</div>
-
-		<div id="dati">
-			<canvas id="canvasdati" width="396" height="400"></canvas>
-		</div>
-
-		<div id="barrav1" class="barretta"
-			style="top: 600px; left: 200px; width:100px; height:100px;  background-color:#A0522D"></div>
-		<div id="barrav2" class="barretta"
-			style="top: 600px; left: 704px; width:100px; height:100px;  background-color:#A0522D"></div>
-
-		<canvas id="grafs" class="barretta" width="200" height="500" style="left:0px"></canvas>
-		<canvas id="grafd" class="barretta" width="200" height="500" style="left:804px"></canvas>
-		<canvas id="grafvs" class="barretta" width="100" height="500" style="left:200px"></canvas>
-		<canvas id="grafvd" class="barretta" width="100" height="500" style="left:704px"></canvas>
-		<canvas id="spartito" class="barretta" width="1004" height="130" style="left:0px;top:0px;"></canvas>
-
-		<div id="titolo" style="position:absolute; top: 130px; left: 300px;"><img src="images/hanontest.png"
-				height="80px" width="400px"></div>
-
-		<div id="ui-controls"
-			style="position:absolute; top: 140px; left: 10px; display: flex; flex-direction: column; gap: 10px; z-index: 300;">
-			<div id="b-settings" class="pulsante2" style="position: static; width: 120px;">SETTINGS</div>
 		</div>
 
 		<div id="modal-settings" class="modal">
@@ -103,66 +135,58 @@
 					</div>
 					<div class="setting-item"
 						style="flex-direction: row; align-items: center; gap: 10px; margin-top: 10px;">
-						<input type="checkbox" id="audioMetronome" checked
-							style="width: 20px; height: 20px; cursor: pointer;">
-						<label for="audioMetronome" style="cursor: pointer;">Audio Click (Web Audio)</label>
+						<div style="margin-bottom: 10px;">
+							<input type="checkbox" id="audioMetronome" checked>
+							<label for="audioMetronome" style="cursor: pointer;">Audio Click (Web Audio)</label>
+						</div>
+						<div style="margin-bottom: 15px;">
+							<label for="latencyCorrect">Latency Correction (ms):</label>
+							<input type="number" id="latencyCorrect" value="0"
+								style="width: 60px; background: rgba(0,0,0,0.5); border: 1px solid #8d6e63; color: white; padding: 2px;">
+						</div>
+					</div>
+
+					<h2 style="border-bottom: 2px solid #5d4037; margin-bottom: 15px; padding-bottom: 5px;">HANON
+						EXERCISES
+						&
+						OPTIONS</h2>
+					<div id="hanon-options-ui"
+						style="display: flex; justify-content: center; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px;">
+						<canvas id="canvasoptions" width="500" height="150"></canvas>
+					</div>
+
+					<div class="modal-footer" style="padding-top: 15px;">
+						<button id="close-settings" class="pulsante2"
+							style="position: static; margin: 0 auto; width: 150px;">DONE</button>
 					</div>
 				</div>
+			</div>
+			<a href="index.html" style="display:none"></a>
+			<!-- Hidden legacy anchor if needed, but the new one is in band3 -->
 
-				<h2 style="border-bottom: 2px solid #5d4037; margin-bottom: 15px; padding-bottom: 5px;">HANON EXERCISES
-					&
-					OPTIONS</h2>
-				<div id="hanon-options-ui"
-					style="display: flex; justify-content: center; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px;">
-					<canvas id="canvasoptions" width="500" height="150"></canvas>
-				</div>
+			<!-- Overlays 2 (Details/Graphs) -->
+			<div id="campoesamina">
+				<canvas id="egrafd" class="barretta" width="1270" height="200" style="left:0px;top:000px"></canvas>
+				<canvas id="egrafs" class="barretta" width="1270" height="200" style="left:0px;top:530px"></canvas>
+				<canvas id="egrafvd" class="barretta" width="1270" height="100" style="left:0px;top:200px"></canvas>
+				<canvas id="egrafvs" class="barretta" width="1270" height="100" style="left:0px;top:430px"></canvas>
+				<canvas id="espartito" class="spartito" width="1270" height="130" style="left:0px;top:300px;"></canvas>
+				<div id="esaminao" class="pulsante2" style="top: 660px; left: 450px; ">EXIT</div>
+				<div id="noteoff" class="pulsante2" style="top: 660px; left: 300px; ">NOTE ON</div>
+			</div>
 
-				<div class="modal-footer" style="padding-top: 15px;">
-					<button id="close-settings" class="pulsante2"
-						style="position: static; margin: 0 auto; width: 150px;">DONE</button>
-				</div>
+			<div id="campografico">
+				<canvas id="egrafico" class="barretta" width="1270" height="700" style="left:0px;top:000px"></canvas>
+				<div id="egraficoo" class="pulsante2" style="top: 660px; left: 450px; ">EXIT</div>
 			</div>
 		</div>
-		<a href="index.html">
-			<div class="pulsanteback" style="top: 650px; left: 5px; "></div>
-		</a>
-		<div class="pulsantehelp" style="top: 555px; left: 0px; "></div>
-		<div class="pulsanteaiuto" style="top: 555px; left: 120px; "></div>
+	</div> <!-- End campogioco -->
 
-		<div id="metronomo">
-			<h1>METRONOME</h1>
-			<div id="bstart" class="pulsante2" style="top: 530px; left: 50px;">START</div>
-			<canvas id="canvasmetronomo" width="240" height="470"></canvas>
-		</div>
-
-		<div id="barrad" class="barra" style="top: 605px; left: 300px; width:400px; background-color:black">RIGHT</div>
-		<div id="barras" class="barra" style="top: 655px; left: 300px; width:400px; background-color:black">LEFT</div>
-
-		<div id="grafico" class="pulsante2" style="top: 560px; left: 300px; ">SCROLL</div>
-		<div id="esamina" class="pulsante2" style="top: 560px; left: 540px; ">DETAILS</div>
-
-		<div id="campoesamina">
-			<canvas id="egrafd" class="barretta" width="1270" height="200" style="left:0px;top:000px"></canvas>
-			<canvas id="egrafs" class="barretta" width="1270" height="200" style="left:0px;top:530px"></canvas>
-			<canvas id="egrafvd" class="barretta" width="1270" height="100" style="left:0px;top:200px"></canvas>
-			<canvas id="egrafvs" class="barretta" width="1270" height="100" style="left:0px;top:430px"></canvas>
-			<canvas id="espartito" class="spartito" width="1270" height="130" style="left:0px;top:300px;"></canvas>
-			<div id="esaminao" class="pulsante2" style="top: 660px; left: 450px; ">EXIT</div>
-			<div id="noteoff" class="pulsante2" style="top: 660px; left: 300px; ">NOTE ON</div>
-		</div>
-
-		<div id="campografico">
-			<canvas id="egrafico" class="barretta" width="1270" height="700" style="left:0px;top:000px"></canvas>
-			<div id="egraficoo" class="pulsante2" style="top: 660px; left: 450px; ">EXIT</div>
-		</div>
-	</div>
-
-	<div id="sidebar-right"
-		style="display:none; position: fixed; right: 0; top: 0; height: 100vh; flex-direction: column; justify-content: center; align-items: center; z-index: 1000;">
-	</div>
+	<div id="sidebar-right" style="display:none;"></div>
 
 	<script src="game-layout.js"></script>
-	<script src="midicode.js" type="module"></script>
+	<script src="js/webaudio-tinysynth.js"></script>
+	<script src="midicode.js?v=1.2"></script>
 </body>
 
 </html>
