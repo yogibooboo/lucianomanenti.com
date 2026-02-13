@@ -635,10 +635,10 @@ var scala = {
 
 
 		$('.pulsantehelp').click(function () {
-			scala.help();
+			window.open('regole-machiavelli.html', '_blank');
 		});
 		$('.pulsanteaiuto').click(function () {
-			scala.istruzioni();
+			window.open('regole-machiavelli.html', '_blank');
 		});
 
 
@@ -1132,14 +1132,7 @@ var scala = {
 		this.fmodale = true;
 	},
 
-	istruzioni: function () {
-		scala.mydialog("formistruzioni");
-	},
 
-
-	help: function () {
-		scala.mydialog("formhelp");
-	},
 
 
 	totalelim: function () {

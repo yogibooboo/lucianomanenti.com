@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
+	<script>
+		window.dataLayer = window.dataLayer || [];
+		function gtag() { dataLayer.push(arguments); }
+		gtag('js', new Date());
+		gtag('config', 'G-WRBDRDQ4L8');
+	</script>
+	<title>Regole Burraco - Come giocare / Burraco Rules - How to play</title>
+	<meta name="Description"
+		content="Regole, punteggi e strategia per giocare a Burraco online. Guida dettagliata al gioco di carte piu' amato in Italia.">
+	<link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
+	<link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
+	<link rel="shortcut icon" href="favicon/favicon.ico">
+	<link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+	<style>
+		body {
+			font-family: sans-serif;
+			line-height: 1.7;
+			max-width: 800px;
+			margin: 40px auto;
+			padding: 20px;
+			color: #333;
+			background-color: #f9f9f9;
+		}
+
+		h1 {
+			color: #2c3e50;
+			border-bottom: 2px solid #ffd700;
+			padding-bottom: 10px;
+		}
+
+		h2 {
+			color: #2c3e50;
+			margin-top: 30px;
+		}
+
+		h3 {
+			color: #2c3e50;
+			font-size: 1.1em;
+			margin-top: 20px;
+		}
+
+		.lang-switch {
+			text-align: right;
+			margin-bottom: 20px;
+		}
+
+		.lang-switch a {
+			display: inline-block;
+			padding: 6px 16px;
+			margin-left: 5px;
+			text-decoration: none;
+			border-radius: 5px;
+			font-weight: bold;
+			font-size: 14px;
+		}
+
+		.lang-switch a.active {
+			background: #2c3e50;
+			color: white;
+		}
+
+		.lang-switch a:not(.active) {
+			background: #ddd;
+			color: #333;
+			cursor: pointer;
+		}
+
+		.content-box {
+			background: white;
+			padding: 30px;
+			border-radius: 8px;
+			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+		}
+
+		.play-btn {
+			display: inline-block;
+			margin-top: 25px;
+			padding: 12px 30px;
+			background: #27ae60;
+			color: white;
+			text-decoration: none;
+			border-radius: 8px;
+			font-size: 18px;
+			font-weight: bold;
+		}
+
+		.nav-links {
+			text-align: center;
+			margin-top: 30px;
+			font-size: 14px;
+		}
+
+		.nav-links a {
+			color: #3498db;
+			text-decoration: none;
+			margin: 0 10px;
+		}
+
+		/* Minimal CSS for scoring table to match simple style */
+		.score-table {
+			width: 100%;
+			border-collapse: collapse;
+			margin-top: 10px;
+			margin-bottom: 20px;
+		}
+
+		.score-table th,
+		.score-table td {
+			border: 1px solid #ddd;
+			padding: 8px;
+			text-align: left;
+		}
+
+		.score-table th {
+			background-color: #f2f2f2;
+			font-weight: bold;
+		}
+
+		.highlight {
+			background-color: #fff9c4;
+			padding: 0 4px;
+		}
+	</style>
+</head>
+
+<body>
+	<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+		<a href="#" id="btn-back" onclick="goBack(); return false;"
+			style="display: inline-block; padding: 6px 16px; background: #e74c3c; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 14px;">&#x2190;
+			Indietro</a>
+		<div class="lang-switch" style="margin-bottom: 0;">
+			<a href="#" id="btn-it" class="active" onclick="showLang('it'); return false;">Italiano</a>
+			<a href="#" id="btn-en" onclick="showLang('en'); return false;">English</a>
+		</div>
+	</div>
+
+	<div class="content-box">
+		<div id="lang-it">
+			<h1>Regole del Burraco</h1>
+
+			<p>Il <strong>Burraco</strong> e' un gioco di carte della famiglia della Pinnacola, nato in Sud America e
+				diventato estremamente popolare in Italia dagli anni '40. Si gioca con due mazzi di carte francesi da
+				52 carte piu' 4 jolly, per un totale di <strong>108 carte</strong>.</p>
+
+			<p>Puo' essere giocato in 2 giocatori (testa a testa) o in 4 giocatori (coppie fisse). In questa versione
+				online puoi sfidare l'intelligenza artificiale sia in modalita' 1 contro 1 che 2 contro 2.</p>
+
+			<p style="background: #fff9c4; padding: 12px 16px; border-radius: 6px; border-left: 4px solid #ffd700;">
+				Questo gioco e' in continua evoluzione: nuove funzionalita' e miglioramenti vengono aggiunti
+				regolarmente. Se riscontri qualcosa che non funziona come previsto o hai suggerimenti, scrivici a
+				<a href="mailto:postmaster@lucianomanenti.com" style="color: #3498db;">postmaster@lucianomanenti.com</a>
+				— il tuo feedback e' prezioso!
+			</p>
+
+			<h2>1. Scopo del Gioco</h2>
+			<p>L'obiettivo finale e' raggiungere il punteggio prestabilito (solitamente 1005 o 2005 punti) prima degli
+				avversari. Per farlo, i giocatori devono:</p>
+			<ul>
+				<li>Formare combinazioni valide (tris e scale).</li>
+				<li>Realizzare <strong>Burrachi</strong> (combinazioni di almeno 7 carte).</li>
+				<li>Prendere il <strong>Pozzetto</strong>.</li>
+				<li>Chiudere la mano scartando l'ultima carta.</li>
+			</ul>
+
+			<h2>2. Preparazione</h2>
+			<ul>
+				<li>Vengono mescolati i due mazzi.</li>
+				<li>Ogni giocatore riceve <strong>11 carte</strong>.</li>
+				<li>Vengono preparati due mazzetti di riserva chiamati <strong>Pozzetti</strong>, ciascuno composto da
+					11 carte, posti a lato del tavolo coperti.</li>
+				<li>Le carte rimanenti formano il <strong>Tallone</strong> (mazzo di pesca), posto coperto al centro.
+				</li>
+				<li>La prima carta del tallone viene scoperta per formare il <strong>Monte Scarti</strong>.</li>
+			</ul>
+
+			<h2>3. Svolgimento del Gioco</h2>
+			<p>Il gioco procede in senso orario. Ogni turno e' composto da tre fasi obbligatorie:</p>
+
+			<h3>Fase 1: La Pesca</h3>
+			<p>Il giocatore di turno deve scegliere una di queste due azioni:</p>
+			<ul>
+				<li><strong>Pescare dal Tallone:</strong> prende una carta coperta dal mazzo.</li>
+				<li><strong>Raccogliere dal Monte Scarti:</strong> prende <em>tutte</em> le carte presenti nel monte
+					scarti.</li>
+			</ul>
+
+			<h3>Fase 2: L'Apertura dei Giochi (Calata)</h3>
+			<p>Dopo aver pescato, il giocatore puo' (ma non e' obbligato) calare nuove combinazioni o attaccare carte
+				alle combinazioni gia' a terra della propria squadra. Le combinazioni valide sono:</p>
+			<ul>
+				<li><strong>Tris/Quaterne:</strong> 3 o piu' carte dello stesso valore (es. 7&hearts; 7&diams;
+					7&clubs;).
+					In un tris non possono esserci due carte identiche dello stesso seme (es. non puoi mettere due 5 di
+					cuori).</li>
+				<li><strong>Scale:</strong> 3 o piu' carte consecutive dello stesso seme (es. 4&hearts; 5&hearts;
+					6&hearts;). L'Asso puo' essere messo prima del 2 o dopo il K.</li>
+			</ul>
+			<p>Ogni combinazione puo' contenere al massimo un <strong>Jolly</strong> o una <strong>Pinella</strong>
+				(i 2), che fungono da "matta". Se la Pinella e' del seme della scala e nella posizione corretta (es. 2
+				di cuori in una scala di cuori al posto del 2), non viene contata come matta e si puo' aggiungere un
+				altro jolly/pinella.</p>
+
+			<h3>Fase 3: Lo Scarto</h3>
+			<p>Il turno termina obbligatoriamente scartando una carta, che viene posta scoperta sul Monte Scarti. Non si
+				puo' scartare l'intera mano per chiudere senza aver preso il pozzetto.</p>
+
+			<h2>4. Il Burraco</h2>
+			<p>Una combinazione di 7 o piu' carte viene chiamata <strong>Burraco</strong>. E' fondamentale per poter
+				chiudere la partita. Esistono tre tipi di Burraco:</p>
+			<ul>
+				<li><span class="highlight">Burraco Puro (o Pulito):</span> 7 o piu' carte senza Jolly ne' Pinelle (o
+					con una Pinella nella sua posizione naturale). Vale <strong>200 punti</strong>.</li>
+				<li><span class="highlight">Burraco Semipulito:</span> 7 o piu' carte formate da una sequenza pura di
+					almeno 7 carte piu' una matta. Vale <strong>150 punti</strong>.</li>
+				<li><span class="highlight">Burraco Sporco:</span> 7 o piu' carte che contengono un Jolly o una Pinella
+					non nella posizione naturale. Vale <strong>100 punti</strong>.</li>
+			</ul>
+
+			<h2>5. Il Pozzetto e la Chiusura</h2>
+			<p>Quando un giocatore finisce le carte in mano:</p>
+			<ol>
+				<li>Se e' la prima volta per la sua squadra, raccoglie il <strong>Pozzetto</strong> (le 11 carte extra)
+					e continua a giocare (se ha scartato l'ultima carta, aspetta il turno successivo; se le ha terminate
+					calandole tutte "al volo", continua subito senza scartare).</li>
+				<li>Se la squadra ha gia' preso il pozzetto ed ha realizzato almeno un Burraco, il giocatore puo'
+					<strong>Chiudere</strong> scartando l'ultima carta.
+				</li>
+			</ol>
+
+			<h2>6. Calcolo del Punteggio</h2>
+			<p>Alla fine della smazzata (quando uno chiude o finiscono le carte del mazzo), si calcolano i punti:</p>
+
+			<table class="score-table">
+				<tr>
+					<th>Elemento</th>
+					<th>Punti</th>
+				</tr>
+				<tr>
+					<td>Burraco Puro</td>
+					<td>+200</td>
+				</tr>
+				<tr>
+					<td>Burraco Semipulito</td>
+					<td>+150</td>
+				</tr>
+				<tr>
+					<td>Burraco Sporco</td>
+					<td>+100</td>
+				</tr>
+				<tr>
+					<td>Chiusura</td>
+					<td>+100</td>
+				</tr>
+				<tr>
+					<td>Jolly</td>
+					<td>+30</td>
+				</tr>
+				<tr>
+					<td>Pinella (tutti i 2)</td>
+					<td>+20</td>
+				</tr>
+				<tr>
+					<td>Asso</td>
+					<td>+15</td>
+				</tr>
+				<tr>
+					<td>Re, Donna, Fante, 10, 9, 8</td>
+					<td>+10</td>
+				</tr>
+				<tr>
+					<td>7, 6, 5, 4, 3</td>
+					<td>+5</td>
+				</tr>
+				<tr>
+					<td><strong>Penalita':</strong> Non aver preso il pozzetto</td>
+					<td>-100</td>
+				</tr>
+			</table>
+			<p>I punti delle carte rimaste in mano ai giocatori vengono sottratti dal totale della squadra.</p>
+
+			<hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;">
+
+			<h2>Come giocare a "Burraco Luciano"</h2>
+			<ul>
+				<li><strong>Pescare:</strong> clicca sul mazzo o sugli scarti.</li>
+				<li><strong>Scartare:</strong> clicca con il tasto destro su una carta, oppure trascinala sugli scarti.
+				</li>
+				<li><strong>Formare combinazioni:</strong> seleziona le carte e clicca sull'area combinazioni.</li>
+				<li><strong>Attaccare a una combinazione:</strong> trascina una carta dalla tua mano su una
+					combinazione gia' presente in campo per aggiungerla.</li>
+				<li><strong>Ordinare le carte:</strong> usa i pulsanti 123 (per valore) o il simbolo dei semi (per
+					seme).</li>
+			</ul>
+
+			<h2>Pulsanti</h2>
+			<ul>
+				<li><strong>ISTRUZIONI:</strong> mostra le istruzioni di gioco.</li>
+				<li><strong>NUOVA:</strong> inizia una nuova partita (1v1 o 2v2).</li>
+				<li><strong>UNDO:</strong> annulla le mosse piu' recenti.</li>
+				<li><strong>SCOPERTE:</strong> gioca a carte scoperte (per esercitarsi).</li>
+			</ul>
+
+			<p style="text-align: center;"><a href="burraco.html" class="play-btn">Gioca a Burraco</a></p>
+		</div>
+
+		<div id="lang-en" style="display: none;">
+			<h1>Burraco Rules</h1>
+
+			<p><strong>Burraco</strong> is a Rummy-style card game using two decks of cards, extremely popular in
+				Italy. It involves strategy and teamwork. The game uses two standard 52-card decks plus 4 Jokers, for a
+				total of <strong>108 cards</strong>.</p>
+
+			<p>It can be played with 2 players (head-to-head) or 4 players (fixed pairs). In this online version
+				you can challenge the AI in both 1 vs 1 and 2 vs 2 mode.</p>
+
+			<p style="background: #fff9c4; padding: 12px 16px; border-radius: 6px; border-left: 4px solid #ffd700;">
+				This game is constantly evolving: new features and improvements are added regularly. If you notice
+				anything not working as expected or have suggestions, write to us at
+				<a href="mailto:postmaster@lucianomanenti.com" style="color: #3498db;">postmaster@lucianomanenti.com</a>
+				— your feedback is valuable!
+			</p>
+
+			<h2>1. Objective</h2>
+			<p>The goal is to score more points than your opponents by melding cards into valid combinations and runs.
+				To win a round, you must:</p>
+			<ul>
+				<li>Form sets and runs.</li>
+				<li>Create at least one <strong>Burraco</strong> (a combination of 7+ cards).</li>
+				<li>Collect the <strong>Pozzetto</strong> (an extra pile of 11 cards).</li>
+				<li>Empty your hand by discarding the last card.</li>
+			</ul>
+
+			<h2>2. The Deal and Setup</h2>
+			<ul>
+				<li>Each player is dealt <strong>11 cards</strong>.</li>
+				<li>Two stacks of 11 cards each (called <strong>Pozzetti</strong>) are set aside face-down.</li>
+				<li>The remaining cards form the <strong>Draw Pile</strong>.</li>
+				<li>One card is turned face-up to start the <strong>Discard Pile</strong>.</li>
+			</ul>
+
+			<h2>3. Gameplay</h2>
+			<p>Turn order is clockwise. Each turn consists of three phases:</p>
+
+			<h3>Phase 1: Draw</h3>
+			<p>You must either:</p>
+			<ul>
+				<li>Draw the top card from the Draw Pile.</li>
+				<li>Pick up the <strong>entire</strong> Discard Pile (all cards).</li>
+			</ul>
+
+			<h3>Phase 2: Meld (Optional)</h3>
+			<p>You may place valid combinations face-up on the table:</p>
+			<ul>
+				<li><strong>Sets:</strong> 3 or more cards of the same rank (e.g., three 7s).</li>
+				<li><strong>Runs:</strong> 3 or more consecutive cards of the same suit.</li>
+			</ul>
+			<p>You can use <strong>Jokers</strong> or <strong>2s (Pinelle)</strong> as wild cards. A run can contain
+				only one wild card (unless the 2 is in its natural position in a run, e.g., 2&hearts; in a Hearts run).
+			</p>
+
+			<h3>Phase 3: Discard</h3>
+			<p>You must end your turn by discarding one card face-up.</p>
+
+			<h2>4. Burraco Types</h2>
+			<p>A combination of 7 or more cards is a Burraco. It is essential for closing the game.</p>
+			<ul>
+				<li><span class="highlight">Clean Burraco (Puro):</span> 7+ cards with NO wild cards (or a 2 in natural
+					position). Worth <strong>200 points</strong>.</li>
+				<li><span class="highlight">Semi-Clean Burraco:</span> 7+ cards consisting of a clean run of at least 7
+					cards plus a wild card. Worth <strong>150 points</strong>.</li>
+				<li><span class="highlight">Dirty Burraco (Sporco):</span> 7+ cards containing a wild card. Worth
+					<strong>100 points</strong>.
+				</li>
+			</ul>
+
+			<h2>5. Going Out (Closing)</h2>
+			<p>To end the round, a player or team must:</p>
+			<ol>
+				<li>Have already picked up their <strong>Pozzetto</strong>.</li>
+				<li>Have completed at least one valid Burraco.</li>
+				<li>Discard their last final card.</li>
+			</ol>
+
+			<h2>6. Scoring</h2>
+			<table class="score-table">
+				<tr>
+					<th>Item</th>
+					<th>Points</th>
+				</tr>
+				<tr>
+					<td>Clean Burraco</td>
+					<td>+200</td>
+				</tr>
+				<tr>
+					<td>Semi-Clean Burraco</td>
+					<td>+150</td>
+				</tr>
+				<tr>
+					<td>Dirty Burraco</td>
+					<td>+100</td>
+				</tr>
+				<tr>
+					<td>Closing Bonus</td>
+					<td>+100</td>
+				</tr>
+				<tr>
+					<td>Joker</td>
+					<td>+30</td>
+				</tr>
+				<tr>
+					<td>Pinella (all 2s)</td>
+					<td>+20</td>
+				</tr>
+				<tr>
+					<td>Ace</td>
+					<td>+15</td>
+				</tr>
+				<tr>
+					<td>K, Q, J, 10, 9, 8</td>
+					<td>+10</td>
+				</tr>
+				<tr>
+					<td>7, 6, 5, 4, 3</td>
+					<td>+5</td>
+				</tr>
+				<tr>
+					<td><strong>Penalty:</strong> Failing to take Pozzetto</td>
+					<td>-100</td>
+				</tr>
+			</table>
+			<p>Points of cards remaining in hand are subtracted from the team's total score.</p>
+
+			<hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;">
+
+			<h2>How to play "Burraco Luciano"</h2>
+			<ul>
+				<li><strong>Draw:</strong> click on the deck or the discard pile.</li>
+				<li><strong>Discard:</strong> right-click a card, or drag it to the discard pile.</li>
+				<li><strong>Form combinations:</strong> select the cards and click on the combinations area.</li>
+				<li><strong>Add to a combination:</strong> drag a card from your hand onto an existing combination
+					on the field to add it.</li>
+				<li><strong>Sort cards:</strong> use the 123 button (by value) or the suit symbol button (by suit).
+				</li>
+			</ul>
+
+			<h2>Buttons</h2>
+			<ul>
+				<li><strong>ISTRUZIONI:</strong> show game instructions.</li>
+				<li><strong>NUOVA:</strong> start a new game (1v1 or 2v2).</li>
+				<li><strong>UNDO:</strong> undo the most recent moves.</li>
+				<li><strong>SCOPERTE (UNCOVERED):</strong> play with open cards (for practice).</li>
+			</ul>
+
+			<p style="text-align: center;"><a href="burraco.html" class="play-btn">Play Burraco</a></p>
+		</div>
+	</div>
+
+	<div class="nav-links">
+		<a href="index.html">Home</a> |
+		<a href="regole-scala40.html">Scala 40</a> |
+		<a href="regole-machiavelli.html">Machiavelli</a> |
+		<a href="regole-spider.html">Spider</a> |
+		<a href="guida-metronomo.html">Metronomo</a> |
+		<a href="privacy.html">Privacy</a>
+	</div>
+
+	<p style="text-align: center; font-size: 0.8em; color: #999; margin-top: 15px;">
+		© 2026 Luciano Manenti
+	</p>
+
+	<script>
+		function showLang(lang) {
+			document.getElementById('lang-it').style.display = lang === 'it' ? 'block' : 'none';
+			document.getElementById('lang-en').style.display = lang === 'en' ? 'block' : 'none';
+			document.getElementById('btn-it').className = lang === 'it' ? 'active' : '';
+			document.getElementById('btn-en').className = lang === 'en' ? 'active' : '';
+		}
+		function goBack() {
+			if (window.opener) {
+				window.close();
+			} else {
+				history.back();
+			}
+		}
+
+		window.onload = function () {
+			const urlParams = new URLSearchParams(window.location.search);
+			const lang = urlParams.get('lang');
+			if (lang === 'en' || lang === 'it') {
+				showLang(lang);
+			}
+		};
+	</script>
+</body>
+
+</html>

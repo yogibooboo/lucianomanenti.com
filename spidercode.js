@@ -950,12 +950,12 @@ var scala = {
 
 
 		$('.pulsantehelp').click(function () {
-			scala.help();
+			window.location.assign("regole-spider.html?lang=en");
 		});
 
 
 		$('.pulsanteaiuto').click(function () {
-			scala.aiuto();
+			window.location.assign("regole-spider.html?lang=it");
 		});
 
 		$('#nuovo').click(function () {
@@ -1096,14 +1096,6 @@ var scala = {
 		$("#schermo").show();
 		this.fmodale = true;
 		scala.dirty = true;
-	},
-
-	aiuto: function () {
-		scala.mydialog("formistruzioni");
-	},
-
-	help: function () {
-		scala.mydialog("formhelp");
 	},
 
 

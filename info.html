@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
+	<script>
+		window.dataLayer = window.dataLayer || [];
+		function gtag() { dataLayer.push(arguments); }
+		gtag('js', new Date());
+		gtag('config', 'G-WRBDRDQ4L8');
+	</script>
+	<title>Giochi di Carte Gratuiti Online / Free Online Card Games - lucianomanenti.com</title>
+	<meta name="Description"
+		content="Gioca gratis online a Scala 40, Machiavelli, Spider Solitaire e usa il metronomo. Nessuna registrazione. Play free online Italian card games and metronome.">
+	<link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
+	<link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
+	<link rel="shortcut icon" href="favicon/favicon.ico">
+	<link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+	<style>
+		body {
+			font-family: sans-serif;
+			line-height: 1.7;
+			max-width: 800px;
+			margin: 40px auto;
+			padding: 20px;
+			color: #333;
+			background-color: #f9f9f9;
+		}
+
+		h1 {
+			color: #2c3e50;
+			border-bottom: 2px solid #ffd700;
+			padding-bottom: 10px;
+		}
+
+		h2 {
+			color: #2c3e50;
+			margin-top: 30px;
+		}
+
+		.lang-switch {
+			text-align: right;
+			margin-bottom: 20px;
+		}
+
+		.lang-switch a {
+			display: inline-block;
+			padding: 6px 16px;
+			margin-left: 5px;
+			text-decoration: none;
+			border-radius: 5px;
+			font-weight: bold;
+			font-size: 14px;
+		}
+
+		.lang-switch a.active {
+			background: #2c3e50;
+			color: white;
+		}
+
+		.lang-switch a:not(.active) {
+			background: #ddd;
+			color: #333;
+			cursor: pointer;
+		}
+
+		.content-box {
+			background: white;
+			padding: 30px;
+			border-radius: 8px;
+			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+		}
+
+		.game-card {
+			border-left: 4px solid #ffd700;
+			padding: 15px 20px;
+			margin-bottom: 20px;
+			background: #fafafa;
+			border-radius: 0 8px 8px 0;
+		}
+
+		.game-card h3 {
+			margin: 0 0 8px 0;
+			color: #2c3e50;
+		}
+
+		.game-card h3 a {
+			color: #2c3e50;
+			text-decoration: none;
+		}
+
+		.game-card .links a {
+			display: inline-block;
+			margin-top: 8px;
+			margin-right: 15px;
+			padding: 6px 16px;
+			border-radius: 5px;
+			text-decoration: none;
+			font-size: 14px;
+			font-weight: bold;
+		}
+
+		.btn-play {
+			background: #27ae60;
+			color: white;
+		}
+
+		.btn-rules {
+			background: #3498db;
+			color: white;
+		}
+
+		.nav-links {
+			text-align: center;
+			margin-top: 30px;
+			font-size: 14px;
+		}
+
+		.nav-links a {
+			color: #3498db;
+			text-decoration: none;
+			margin: 0 10px;
+		}
+	</style>
+</head>
+
+<body>
+	<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+		<a href="#" id="btn-back" onclick="goBack(); return false;"
+			style="display: inline-block; padding: 6px 16px; background: #e74c3c; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 14px;">&#x2190;
+			Indietro</a>
+		<div class="lang-switch" style="margin-bottom: 0;">
+			<a href="#" id="btn-it" class="active" onclick="showLang('it'); return false;">Italiano</a>
+			<a href="#" id="btn-en" onclick="showLang('en'); return false;">English</a>
+		</div>
+	</div>
+
+	<div class="content-box">
+		<div id="lang-it">
+			<h1>Giochi di Carte Gratuiti Online (... e non solo)</h1>
+
+			<p>Benvenuti su <strong>lucianomanenti.com</strong>, il sito dove puoi giocare gratuitamente ai grandi
+				classici dei giochi di carte italiani direttamente dal tuo browser, senza registrazione e senza
+				scaricare nulla.</p>
+
+			<p>Ogni giorno migliaia di appassionati giocano le loro partite qui. Il sito e' nato dalla passione per
+				la programmazione e dall'amore per i giochi di carte tradizionali italiani.</p>
+
+			<h2>I Miei Giochi</h2>
+
+			<div class="game-card">
+				<h3><a href="scala40.html">Scala 40</a></h3>
+				<p>Il classico gioco di carte italiano con combinazioni e scale. Forma tris e scale per liberarti di
+					tutte le carte. Gioca contro 1, 2 o 3 avversari controllati dal computer. Per aprire servono almeno
+					40 punti di combinazioni.</p>
+				<div class="links">
+					<a href="scala40.html" class="btn-play">Gioca</a>
+					<a href="regole-scala40.html" class="btn-rules">Regole</a>
+				</div>
+			</div>
+
+			<div class="game-card">
+				<h3><a href="machiavelli.html">Machiavelli</a></h3>
+				<p>La variante piu' strategica della Scala 40: puoi manipolare le combinazioni gia' presenti sul
+					tavolo, spezzarle e ricombinarle a tuo vantaggio. Disponibile anche su tablet. Un gioco che
+					richiede astuzia e visione d'insieme.</p>
+				<div class="links">
+					<a href="machiavelli.html" class="btn-play">Gioca</a>
+					<a href="regole-machiavelli.html" class="btn-rules">Regole</a>
+				</div>
+			</div>
+
+			<div class="game-card">
+				<h3><a href="spider.html">Spider Solitaire</a></h3>
+				<p>Il celebre solitario con le carte: ordina tutte le colonne dal Re all'Asso. Richiede pazienza e
+					strategia. Cerca di liberare colonne intere per avere piu' spazio di manovra.</p>
+				<div class="links">
+					<a href="spider.html" class="btn-play">Gioca</a>
+					<a href="regole-spider.html" class="btn-rules">Regole</a>
+				</div>
+			</div>
+
+			<div class="game-card">
+				<h3><a href="burraco.html">Burraco</a></h3>
+				<p>Il popolarissimo gioco di carte italiano, realizzato a grande richiesta dei nostri giocatori. Si
+					gioca in coppia (2 vs 2) o in sfida diretta (1 vs 1). Forma burrachi puliti e sporchi per
+					accumulare punti. Il gioco e' in costante miglioramento: consigli e osservazioni sono benvenuti.</p>
+				<div class="links">
+					<a href="burraco.html" class="btn-play">Gioca</a>
+					<a href="regole-burraco.html" class="btn-rules">Regole</a>
+				</div>
+			</div>
+
+			<div class="game-card">
+				<h3><a href="metronome.html">(e non solo giochi...) Metronomo</a></h3>
+				<p>Un metronomo dall'aspetto realistico, con pendolo oscillante e design a piramide, ma con funzioni
+					elettroniche avanzate: selezione del tempo (2/4, 3/4, 4/4, ecc.) e toni differenziati per inizio
+					battuta, battito e suddivisione. Ideale per musicisti di ogni livello: pianisti, chitarristi,
+					batteristi.
+				</p>
+				<div class="links">
+					<a href="metronome.html" class="btn-play">Apri</a>
+					<a href="guida-metronomo.html" class="btn-rules">Guida</a>
+				</div>
+			</div>
+
+			<h2>Contatti</h2>
+			<p>Per segnalazioni, suggerimenti o anche solo per un saluto:
+				<a href="mailto:postmaster@lucianomanenti.com" style="color: #3498db;">postmaster@lucianomanenti.com</a>
+			</p>
+		</div>
+
+		<div id="lang-en" style="display: none;">
+			<h1>Free Online Card Games (... and more)</h1>
+
+			<p>Welcome to <strong>lucianomanenti.com</strong>, where you can play the great classics of Italian card
+				games for free, directly in your browser, with no registration and no downloads.</p>
+
+			<p>Every day thousands of players enjoy their games here. The site was born from a passion for programming
+				and the love of traditional Italian card games.</p>
+
+			<h2>My Games</h2>
+
+			<div class="game-card">
+				<h3><a href="scala40.html">Scala 40 (Italian Rummy)</a></h3>
+				<p>The classic Italian card game with sets and runs. Form combinations to get rid of all your cards.
+					Play against 1, 2, or 3 computer opponents. You need at least 40 points to open.</p>
+				<div class="links">
+					<a href="scala40.html" class="btn-play">Play</a>
+					<a href="regole-scala40.html?lang=en" class="btn-rules">Rules</a>
+				</div>
+			</div>
+
+			<div class="game-card">
+				<h3><a href="machiavelli.html">Machiavelli</a></h3>
+				<p>The most strategic variant of Scala 40: you can manipulate combinations already on the table,
+					split them and recombine them to your advantage. Also available on tablet. A game that requires
+					cunning and big-picture thinking.</p>
+				<div class="links">
+					<a href="machiavelli.html" class="btn-play">Play</a>
+					<a href="regole-machiavelli.html?lang=en" class="btn-rules">Rules</a>
+				</div>
+			</div>
+
+			<div class="game-card">
+				<h3><a href="spider.html">Spider Solitaire</a></h3>
+				<p>The famous card solitaire: arrange all columns from King to Ace. Requires patience and strategy.
+					Try to free entire columns for more room to maneuver.</p>
+				<div class="links">
+					<a href="spider.html" class="btn-play">Play</a>
+					<a href="regole-spider.html?lang=en" class="btn-rules">Rules</a>
+				</div>
+			</div>
+
+			<div class="game-card">
+				<h3><a href="burraco.html">Burraco</a></h3>
+				<p>The hugely popular Italian card game, created by popular demand from our players. Play in pairs
+					(2 vs 2) or head-to-head (1 vs 1). Form clean and dirty burracos to score points. The game is
+					constantly being improved: suggestions and feedback are welcome.</p>
+				<div class="links">
+					<a href="burraco.html" class="btn-play">Play</a>
+					<a href="regole-burraco.html?lang=en" class="btn-rules">Rules</a>
+				</div>
+			</div>
+
+			<div class="game-card">
+				<h3><a href="metronome.html">(and not only games...) Metronome</a></h3>
+				<p>A realistic-looking metronome with oscillating pendulum and classic pyramid design, but with
+					electronic metronome features: selectable time signatures (2/4, 3/4, 4/4, etc.) and different tones
+					for downbeat, beat, and subdivision. Ideal for musicians of all levels: pianists, guitarists,
+					drummers.</p>
+				<div class="links">
+					<a href="metronome.html" class="btn-play">Open</a>
+					<a href="guida-metronomo.html?lang=en" class="btn-rules">Guide</a>
+				</div>
+			</div>
+
+			<h2>Contact</h2>
+			<p>For feedback, suggestions, or just to say hello:
+				<a href="mailto:postmaster@lucianomanenti.com" style="color: #3498db;">postmaster@lucianomanenti.com</a>
+			</p>
+		</div>
+	</div>
+
+	<div class="nav-links">
+		<a href="index.html">Home</a> |
+		<a href="aboutme.html">Chi Sono / About Me</a> |
+		<a href="privacy.html">Privacy Policy</a>
+	</div>
+
+	<p style="text-align: center; font-size: 0.8em; color: #999; margin-top: 15px;">
+		© 2026 Luciano Manenti
+	</p>
+
+	<script>
+		function showLang(lang) {
+			document.getElementById('lang-it').style.display = lang === 'it' ? 'block' : 'none';
+			document.getElementById('lang-en').style.display = lang === 'en' ? 'block' : 'none';
+			document.getElementById('btn-it').className = lang === 'it' ? 'active' : '';
+			document.getElementById('btn-en').className = lang === 'en' ? 'active' : '';
+		}
+
+		function goBack() {
+			if (window.opener) {
+				window.close();
+			} else {
+				history.back();
+			}
+		}
+	</script>
+</body>
+
+</html>

@@ -503,3 +503,29 @@ h6 {
 	left: 12px;
 	display: none;
 }
+
+.pulsantehelp {
+	border-style: solid;
+	border-color: #888888;
+	padding: 2px;
+	border-radius: 9px;
+	width: 110px;
+	height: 31px;
+	position: absolute;
+	cursor: pointer;
+	background-size: 115px 36px;
+	background-image: url(images/help.png);
+}
+
+.pulsanteaiuto {
+	border-style: solid;
+	border-color: #888888;
+	padding: 2px;
+	border-radius: 9px;
+	width: 110px;
+	height: 31px;
+	position: absolute;
+	cursor: pointer;
+	background-size: 115px 36px;
+	background-image: url(images/aiuto.png);
+}

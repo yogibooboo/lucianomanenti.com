@@ -11,7 +11,7 @@
 
 function setupEventi() {
     // Pulsanti
-    $('#btn-istruzioni').addEventListener('click', () => mostraModal('modal-istruzioni'));
+    $('#btn-istruzioni').addEventListener('click', () => window.open('regole-burraco.html', '_blank'));
     $('#btn-nuova').addEventListener('click', () => mostraModal('modal-nuova'));
     $('#btn-undo').addEventListener('click', undo);
     $('#btn-scoperte').addEventListener('click', toggleScoperte);
@@ -385,6 +385,16 @@ function renderAreaCombinazioni(combinazioni, containerSel) {
     container.innerHTML = '';
     if (titolo) container.appendChild(titolo);
 
+    // Compattazione dinamica basata sul numero di combinazioni
+    container.classList.remove('compact-2', 'compact-3', 'compact-4');
+    if (combinazioni.length >= 6) {
+        container.classList.add('compact-4');
+    } else if (combinazioni.length >= 5) {
+        container.classList.add('compact-3');
+    } else if (combinazioni.length >= 4) {
+        container.classList.add('compact-2');
+    }
+
     // Calcola punti
     let puntiBurraco = 0;
     let puntiCarte = 0;
@@ -664,8 +674,16 @@ function pescaDaScarti() {
 }
 
 async function scartaCarta(carta) {
-    if (game.fase !== 'gioco') return;
-    if (!game.haPescato) return;
+    if (game.fase !== 'gioco') {
+        mostraMessaggio('Pescare prima di scartare', 'error');
+        setTimeout(nascondiMessaggio, 2000);
+        return;
+    }
+    if (!game.haPescato) {
+        mostraMessaggio('Pescare prima di scartare', 'error');
+        setTimeout(nascondiMessaggio, 2000);
+        return;
+    }
 
     // Rimuovi carta dalla mano
     const idx = game.giocatori[0].carte.indexOf(carta);
@@ -747,8 +765,16 @@ async function scartaCarta(carta) {
 }
 
 function toggleSelezioneCarta(carta) {
-    if (game.fase !== 'gioco') return;
-    if (!game.haPescato) return;
+    if (game.fase !== 'gioco') {
+        mostraMessaggio('Pescare prima di attaccare', 'error');
+        setTimeout(nascondiMessaggio, 2000);
+        return;
+    }
+    if (!game.haPescato) {
+        mostraMessaggio('Pescare prima di attaccare', 'error');
+        setTimeout(nascondiMessaggio, 2000);
+        return;
+    }
 
     carta.selezionata = !carta.selezionata;
 
@@ -995,8 +1021,16 @@ function riordinaCartaMano(cartaOrigine, cartaDest) {
 
 // Aggiunge una carta a una combinazione esistente
 function aggiungiCartaACombinazione(carta, combinazione) {
-    if (game.fase !== 'gioco') return;
-    if (!game.haPescato) return;
+    if (game.fase !== 'gioco') {
+        mostraMessaggio('Pescare prima di attaccare', 'error');
+        setTimeout(nascondiMessaggio, 2000);
+        return;
+    }
+    if (!game.haPescato) {
+        mostraMessaggio('Pescare prima di attaccare', 'error');
+        setTimeout(nascondiMessaggio, 2000);
+        return;
+    }
 
     // Verifica che la carta possa essere aggiunta (o sostituire una matta)
     const risultato = puoAggiungereACombinazione(carta, combinazione);
@@ -1088,7 +1122,8 @@ function prendiPozzetto(squadra) {
     const giocatore = game.giocatori[squadra === 0 ? 0 : 1];
 
     for (const carta of pozzetto) {
-        if (giocatore.isUmano) carta.faceUp = true;
+        // Carte visibili solo per il giocatore umano
+        carta.faceUp = giocatore.isUmano;
         giocatore.carte.push(carta);
     }
 
@@ -1264,12 +1299,12 @@ function onMouseMove(e) {
         const pos = carta.getSpritePosition();
         fantasma.style.backgroundPosition = `${pos.x * bgScaleX}px ${pos.y * bgScaleY}px`;
 
-        // Verifica collisione angolo superiore destro con carte delle combinazioni
-        verificaCollisioneCombinazioni(e.clientX - offsetXScaled + width, e.clientY - offsetYScaled, carta);
+        // Verifica collisione angolo superiore sinistro con carte delle combinazioni
+        verificaCollisioneCombinazioni(e.clientX - offsetXScaled, e.clientY - offsetYScaled, carta);
     }
 }
 
-// Verifica se il punto (angolo superiore destro del fantasma) tocca il campo di una combinazione
+// Verifica se il punto (angolo superiore sinistro del fantasma) tocca il campo di una combinazione
 function verificaCollisioneCombinazioni(puntoX, puntoY, cartaTrascinata) {
     // Rimuovi evidenziazione precedente
     if (game.trascinamento.combinazioneTargetEl) {
@@ -1505,8 +1540,8 @@ function onTouchMove(e) {
         const pos = carta.getSpritePosition();
         fantasma.style.backgroundPosition = `${pos.x * bgScaleX}px ${pos.y * bgScaleY}px`;
 
-        // Verifica collisione angolo superiore destro con carte delle combinazioni
-        verificaCollisioneCombinazioni(touch.clientX - offsetXScaled + width, touch.clientY - offsetYScaled, carta);
+        // Verifica collisione angolo superiore sinistro con carte delle combinazioni
+        verificaCollisioneCombinazioni(touch.clientX - offsetXScaled, touch.clientY - offsetYScaled, carta);
     }
 }
 
@@ -1647,8 +1682,10 @@ function aggiornaFinestraGiocatore(indiceGiocatore) {
 let messaggioOverlay = null;
 
 function mostraMessaggio(testo, tipo = 'info') {
+    console.log('📢 mostraMessaggio() chiamata:', testo, tipo);
     // Crea l'overlay se non esiste
     if (!messaggioOverlay) {
+        console.log('📢 Creando nuovo overlay...');
         messaggioOverlay = document.createElement('div');
         messaggioOverlay.id = 'debug-messaggio-overlay';
         messaggioOverlay.style.cssText = `
@@ -1666,11 +1703,14 @@ function mostraMessaggio(testo, tipo = 'info') {
             box-shadow: 0 2px 10px rgba(0,0,0,0.3);
         `;
         document.body.appendChild(messaggioOverlay);
+        console.log('📢 Overlay creato e aggiunto al body');
     }
 
     messaggioOverlay.textContent = testo;
     messaggioOverlay.style.display = 'block';
     messaggioOverlay.style.background = tipo === 'info' ? '#2196F3' : '#f44336';
+    console.log('📢 Overlay aggiornato. Display:', messaggioOverlay.style.display);
+    console.log('📢 Overlay elemento:', messaggioOverlay);
 }
 
 function nascondiMessaggio() {

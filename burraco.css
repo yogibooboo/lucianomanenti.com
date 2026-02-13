@@ -425,15 +425,18 @@ body {
     display: flex;
     flex-wrap: nowrap;
     align-content: flex-start;
+    z-index: 100;
 }
 
-#combinazioni-loro {
+/* Area noi a sinistra: aggiunge da sinistra */
+#combinazioni-noi {
     left: 95px;
     flex-direction: row;
     justify-content: flex-start;
 }
 
-#combinazioni-noi {
+/* Area loro a destra: aggiunge da destra */
+#combinazioni-loro {
     right: 95px;
     flex-direction: row-reverse;
     justify-content: flex-start;
@@ -789,17 +792,16 @@ body {
 #wip-banner {
     position: absolute;
     top: 40%;
-    left: 55%;
+    left: 50%;
     transform: translate(-50%, -50%) rotate(-15deg);
-    background: transparent;
-    color: rgba(255, 255, 255, 0.12);
-    font-size: 52px;
-    font-weight: bold;
-    padding: 10px 30px;
-    border: none;
-    z-index: 50;
+    z-index: 5;
     pointer-events: none;
-    letter-spacing: 6px;
+    opacity: 0.25;
+}
+
+#wip-banner img {
+    width: 420px;
+    height: auto;
 }
 
 /* === LINK GIOCHI === */
@@ -880,7 +882,7 @@ body {
     position: absolute;
     top: 470px;
     transform: translateX(-50%);
-    z-index: 50;
+    z-index: 5;
     pointer-events: none;
     font-family: 'Georgia', 'Times New Roman', serif;
     display: flex;
@@ -888,11 +890,11 @@ body {
     gap: 5px;
 }
 
-#titolo-gioco-loro {
+#titolo-gioco-noi {
     left: 300px;
 }
 
-#titolo-gioco-noi {
+#titolo-gioco-loro {
     left: 724px;
 }
 
@@ -1143,8 +1145,8 @@ body {
 .combinazione {
     display: flex;
     flex-direction: column;
-    margin: 5px;
-    padding: 3px;
+    margin: 2px;
+    padding: 2px;
     border-radius: 5px;
     width: fit-content;
     display: inline-flex;
@@ -1154,10 +1156,10 @@ body {
     position: relative;
     width: 71px;
     height: 96px;
-    transform: scale(0.5);
+    transform: scale(0.4);
     transform-origin: top left;
-    margin-bottom: -72px;
-    margin-right: -35px;
+    margin-bottom: -77px;
+    margin-right: -42px;
 }
 
 .combinazione .carta:last-child {
@@ -1181,6 +1183,37 @@ body {
     border: 2px solid #c0c0c0;
     /* Argento - 100 punti */
     box-shadow: 0 0 10px #c0c0c0;
+}
+
+/* Compattazione dinamica per molte combinazioni */
+.area-combinazioni.compact-2 .combinazione {
+    margin: 1px;
+    padding: 1px;
+}
+
+.area-combinazioni.compact-2 .combinazione .carta {
+    transform: scale(0.35);
+    margin-bottom: -80px;
+}
+
+.area-combinazioni.compact-3 .combinazione {
+    margin: 1px;
+    padding: 1px;
+}
+
+.area-combinazioni.compact-3 .combinazione .carta {
+    transform: scale(0.32);
+    margin-bottom: -82px;
+}
+
+.area-combinazioni.compact-4 .combinazione {
+    margin: 0px;
+    padding: 1px;
+}
+
+.area-combinazioni.compact-4 .combinazione .carta {
+    transform: scale(0.28);
+    margin-bottom: -85px;
 }
 
 /* === RESPONSIVE per 1v1 === */

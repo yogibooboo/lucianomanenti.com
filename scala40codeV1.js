@@ -643,10 +643,10 @@ var scala = {
 		});
 
 		$('#istruzioni').click(function () {
-			scala.istruzioni();
+			window.open('regole-scala40.html?lang=it', '_blank');
 		});
 		$('.pulsantehelp').click(function () {
-			scala.help();
+			window.open('regole-scala40.html?lang=en', '_blank');
 		});
 
 		$('#nuovo').click(function () {
@@ -1207,13 +1207,7 @@ var scala = {
 		this.fmodale = true;
 	},
 
-	istruzioni: function () {
-		scala.mydialog("formistruzioni");
-	},
 
-	help: function () {
-		scala.mydialog("formhelp");
-	},
 
 	totalelim: function () {
 		$("#testoallerta").html("nuovo limite: <input type='number' id='limiteinput' value=" + scala.totalelimite + "><br>");

@@ -875,6 +875,7 @@ async function eseguiCalataAI(giocatore, mossa) {
 function prossimoTurno() {
     game.giocatoreCorrente = (game.giocatoreCorrente + 1) % game.giocatori.length;
     game.turno++;
+    game.haPescato = false;  // Reset per ogni turno
 
     aggiornaIndicatoreTurno();
 
@@ -943,9 +944,8 @@ async function turnoAI() {
 
         // Aggiungi tutte le carte alla mano
         for (const carta of cartePescate) {
-            if (game.mostraTutteCarteScoperte) {
-                carta.faceUp = true;
-            }
+            // Carte visibili solo se debug mode o giocatore umano
+            carta.faceUp = game.mostraTutteCarteScoperte || giocatore.isUmano;
             giocatore.carte.push(carta);
         }
 
@@ -974,10 +974,8 @@ async function turnoAI() {
         // ===== PESCA DA MAZZO =====
         const carta = game.mazzo.pop();
         if (carta) {
-            // Se modalita scoperte attiva, mostra la carta
-            if (game.mostraTutteCarteScoperte) {
-                carta.faceUp = true;
-            }
+            // Carta visibile solo se debug mode o giocatore umano
+            carta.faceUp = game.mostraTutteCarteScoperte || giocatore.isUmano;
             giocatore.carte.push(carta);
 
             // Registra nella storia
@@ -1130,10 +1128,8 @@ async function turnoAI() {
         const pozzIdx = giocatore.squadra;
         if (game.pozzetti[pozzIdx].length > 0) {
             for (const c of game.pozzetti[pozzIdx]) {
-                // Se modalita scoperte attiva, mostra la carta
-                if (game.mostraTutteCarteScoperte) {
-                    c.faceUp = true;
-                }
+                // Carte visibili solo se debug mode o giocatore umano
+                c.faceUp = game.mostraTutteCarteScoperte || giocatore.isUmano;
                 giocatore.carte.push(c);
             }
             game.pozzetti[pozzIdx] = [];
@@ -1191,6 +1187,13 @@ function calcolaPunteggi() {
 
 function finePartita(haVintoNoi) {
     game.fase = 'finito';
+
+    // Scopri tutte le carte
+    for (const giocatore of game.giocatori) {
+        for (const carta of giocatore.carte) {
+            carta.faceUp = true;
+        }
+    }
 
     // ===== CALCOLO DETTAGLIATO PUNTEGGI =====
     const risultato = { noi: {}, loro: {} };
