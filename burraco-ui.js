@@ -385,16 +385,6 @@ function renderAreaCombinazioni(combinazioni, containerSel) {
     container.innerHTML = '';
     if (titolo) container.appendChild(titolo);
 
-    // Compattazione dinamica basata sul numero di combinazioni
-    container.classList.remove('compact-2', 'compact-3', 'compact-4');
-    if (combinazioni.length >= 6) {
-        container.classList.add('compact-4');
-    } else if (combinazioni.length >= 5) {
-        container.classList.add('compact-3');
-    } else if (combinazioni.length >= 4) {
-        container.classList.add('compact-2');
-    }
-
     // Calcola punti
     let puntiBurraco = 0;
     let puntiCarte = 0;
@@ -791,6 +781,21 @@ function toggleSelezioneCarta(carta) {
 function depositaCombinazione(e) {
     if (game.fase !== 'gioco') return;
 
+    // Se ci sono carte selezionate e si clicca su una combinazione, attaccale
+    if (game.carteSelezionate.length > 0) {
+        const combEl = e.target.closest('.combinazione');
+        if (combEl) {
+            // Trova quale combinazione e' stata cliccata
+            const combElements = Array.from($('#combinazioni-noi').querySelectorAll('.combinazione'));
+            const combIndex = combElements.indexOf(combEl);
+            if (combIndex >= 0) {
+                const combinazione = game.combinazioniNoi[combIndex];
+                attaccaCarteSelezionateACombinazione(combinazione);
+                return;
+            }
+        }
+    }
+
     // Se non ci sono carte selezionate, verifica se il click e' su una combinazione modificabile
     if (game.carteSelezionate.length === 0) {
         // Verifica se il click e' su una combinazione per spostare la matta
@@ -890,7 +895,7 @@ function depositaCombinazione(e) {
 
     // Controlla burraco
     if (comb.isBurraco) {
-        playSound('burraco');
+        playSound('tada');
     } else {
         playSound('combinazione');
     }
@@ -1100,7 +1105,7 @@ function aggiungiCartaACombinazione(carta, combinazione) {
 
     // Controlla burraco
     if (combinazione.isBurraco && combinazione.carte.length === 7) {
-        playSound('burraco');
+        playSound('tada');
     } else {
         playSound('combinazione');
     }
@@ -1113,6 +1118,126 @@ function aggiungiCartaACombinazione(carta, combinazione) {
     }
 
     render();
+}
+
+// Attacca tutte le carte selezionate a una combinazione esistente
+async function attaccaCarteSelezionateACombinazione(combinazione) {
+    if (game.carteSelezionate.length === 0) return;
+
+    // Verifica che tutte le carte possano essere aggiunte
+    const carteValide = [];
+    for (const carta of game.carteSelezionate) {
+        if (puoAggiungereACombinazione(carta, combinazione)) {
+            carteValide.push(carta);
+        }
+    }
+
+    if (carteValide.length === 0) {
+        mostraMessaggio('Nessuna carta può essere attaccata a questa combinazione', 'error');
+        setTimeout(nascondiMessaggio, 2000);
+        return;
+    }
+
+    salvaStato('attacca-multiple');
+
+    // Salva le posizioni di partenza delle carte
+    const posizioniPartenza = [];
+    for (const carta of carteValide) {
+        const cartaEl = carta.elemento;
+        if (cartaEl) {
+            posizioniPartenza.push({
+                carta: carta,
+                rect: cartaEl.getBoundingClientRect()
+            });
+        }
+    }
+
+    // Aggiungi tutte le carte valide
+    for (const carta of carteValide) {
+        // Rimuovi la carta dalla mano
+        const idx = game.giocatori[0].carte.indexOf(carta);
+        if (idx > -1) {
+            game.giocatori[0].carte.splice(idx, 1);
+        }
+
+        // Rimuovi da carteConosciute
+        if (game.giocatori[0].carteConosciute) {
+            game.giocatori[0].carteConosciute = game.giocatori[0].carteConosciute.filter(
+                cc => cc.cartaId !== carta.id
+            );
+        }
+
+        // Deseleziona
+        carta.selezionata = false;
+        carta.inCombinazione = true;
+        carta.idCombinazione = combinazione.id;
+
+        // Aggiungi alla combinazione
+        combinazione.carte.push(carta);
+
+        // Registra nella storia
+        registraMossa(AZIONE_ATTACCO, {
+            carta: carta.id,
+            combinazione: combinazione.id
+        });
+    }
+
+    // Svuota le carte selezionate
+    game.carteSelezionate = [];
+
+    // Riordina la combinazione (gestisce automaticamente matte, pinelle, etc.)
+    if (combinazione.tipo === TIPO_SCALA) {
+        combinazione.carte = ordinaScalaConJolly(combinazione.carte, combinazione.assoAlto);
+    } else if (combinazione.tipo === TIPO_TRIS) {
+        combinazione.carte = ordinaTrisConJolly(combinazione.carte, combinazione.numero);
+    }
+
+    // Aggiorna punteggi
+    calcolaPunteggi();
+
+    // Renderizza per ottenere le nuove posizioni
+    render();
+
+    // Controlla burraco e riproduci suono appropriato
+    if (combinazione.isBurraco && combinazione.carte.length === 7) {
+        playSound('tada');
+    } else {
+        playSound('combinazione');
+    }
+
+    // Anima le carte dalle posizioni di partenza alle posizioni finali
+    for (const pos of posizioniPartenza) {
+        const carta = pos.carta;
+
+        // Trova l'elemento finale della carta nella combinazione usando il data-carta-id
+        const cartaElFinale = document.querySelector(`#combinazioni-noi .carta[data-carta-id="${carta.id}"]`);
+
+        if (cartaElFinale && pos.rect) {
+            // Nascondi temporaneamente la carta finale
+            cartaElFinale.style.visibility = 'hidden';
+
+            // Crea un elemento fittizio per la posizione di partenza
+            const fakePartenza = document.createElement('div');
+            fakePartenza.style.position = 'fixed';
+            fakePartenza.style.left = pos.rect.left + 'px';
+            fakePartenza.style.top = pos.rect.top + 'px';
+            fakePartenza.style.width = '1px';
+            fakePartenza.style.height = '1px';
+            document.body.appendChild(fakePartenza);
+
+            await animaCarta(carta, fakePartenza, cartaElFinale, { mostraFronte: true, durata: 400 });
+
+            fakePartenza.remove();
+            cartaElFinale.style.visibility = 'visible';
+        }
+    }
+
+    // Controlla se ha finito le carte
+    if (game.giocatori[0].carte.length === 0) {
+        if (!game.giocatori[0].haPozzetto && game.pozzetti[0].length > 0) {
+            prendiPozzetto(0);
+        }
+    }
 }
 
 function prendiPozzetto(squadra) {

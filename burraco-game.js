@@ -797,7 +797,7 @@ async function depositaCombinazioneAI(giocatore, mossa) {
 
     // Suono e render
     if (comb.isBurraco) {
-        playSound('burraco');
+        playSound('tada');
     } else {
         playSound('combinazione');
     }
@@ -1195,6 +1195,9 @@ function finePartita(haVintoNoi) {
         }
     }
 
+    // Renderizza per mostrare le carte scoperte
+    render();
+
     // ===== CALCOLO DETTAGLIATO PUNTEGGI =====
     const risultato = { noi: {}, loro: {} };
 
@@ -1252,7 +1255,7 @@ function finePartita(haVintoNoi) {
     // ===== MOSTRA SCHERMATA RISULTATI =====
     mostraRisultatoFinale(risultato, vinceNoi);
 
-    playSound(vinceNoi ? 'vittoria' : 'sconfitta');
+    playSound(vinceNoi ? 'applauso' : 'sconfitta');
     renderPunteggi();
 }
 
