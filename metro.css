@@ -73,7 +73,7 @@ body {
 }
 
 .ad-banner {
-	background-color: rgba(45, 90, 61, 0.8);
+	background-color: rgba(80, 20, 20, 0.4);
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -117,7 +117,6 @@ h5,
 h6 {
 	text-align: center
 }
-
 
 
 
@@ -206,7 +205,7 @@ h6 {
 	text-align: center;
 	border-radius: 9px;
 	width: 126px;
-	height: 36px;
+	height: 30px;
 	position: absolute;
 	cursor: pointer;
 	background-size: 130px 40px;
@@ -394,8 +393,8 @@ h6 {
 
 
 	position: absolute;
-	width: 1000px;
-	height: 700px;
+	width: 1024px;
+	height: 744px;
 	left: 0px;
 	top: 0px;
 
@@ -571,4 +570,68 @@ h6 {
 	cursor: pointer;
 	background-size: 115px 36px;
 	background-image: url(images/aiuto.png);
+}
+
+/* Volume Slider Styles */
+.volume-container {
+	position: absolute;
+	top: 250px;
+	left: 930px;
+	width: 30px;
+	height: 200px;
+	z-index: 2000;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+#volume-control {
+	-webkit-appearance: none;
+	appearance: none;
+	/* Lint fix */
+	width: 300px;
+	height: 10px;
+	background: #d3d3d3;
+	outline: none;
+	opacity: 0.7;
+	-webkit-transition: .2s;
+	transition: opacity .2s;
+	border-radius: 5px;
+	transform: rotate(-90deg);
+	/* Rotate to make vertical */
+}
+
+/* Volume Label Style */
+.volume-label {
+	position: absolute;
+	bottom: -25px;
+	/* Position below the slider container */
+	color: white;
+	font-family: sans-serif;
+	font-size: 14px;
+	pointer-events: none;
+	/* Avoid interfering with slider interaction */
+}
+
+#volume-control:hover {
+	opacity: 1;
+}
+
+#volume-control::-webkit-slider-thumb {
+	-webkit-appearance: none;
+	appearance: none;
+	width: 25px;
+	height: 25px;
+	background: #FF8C00;
+	/* Orange consistent with theme */
+	cursor: pointer;
+	border-radius: 50%;
+}
+
+#volume-control::-moz-range-thumb {
+	width: 25px;
+	height: 25px;
+	background: #FF8C00;
+	cursor: pointer;
+	border-radius: 50%;
 }

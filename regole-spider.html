@@ -219,6 +219,11 @@
 			document.getElementById('lang-en').style.display = lang === 'en' ? 'block' : 'none';
 			document.getElementById('btn-it').className = lang === 'it' ? 'active' : '';
 			document.getElementById('btn-en').className = lang === 'en' ? 'active' : '';
+
+			var btnBack = document.getElementById('btn-back');
+			if (btnBack) {
+				btnBack.innerHTML = lang === 'it' ? '&#x2190; Indietro' : '&#x2190; Back';
+			}
 		}
 		function goBack() {
 			if (window.opener) {

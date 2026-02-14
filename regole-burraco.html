@@ -154,7 +154,9 @@
 
 			<p style="background: #fff9c4; padding: 12px 16px; border-radius: 6px; border-left: 4px solid #ffd700;">
 				Questo gioco e' in continua evoluzione: nuove funzionalita' e miglioramenti vengono aggiunti
-				regolarmente. Se riscontri qualcosa che non funziona come previsto o hai suggerimenti, scrivici a
+				regolarmente. Presto sar&agrave; anche possibile selezionare il compagno e gli avversari tra vari
+				personaggi con diverse caratteristiche di gioco. Se riscontri qualcosa che non funziona come previsto o
+				hai suggerimenti, scrivici a
 				<a href="mailto:postmaster@lucianomanenti.com" style="color: #3498db;">postmaster@lucianomanenti.com</a>
 				— il tuo feedback e' prezioso!
 			</p>
@@ -294,7 +296,8 @@
 				</li>
 				<li><strong>Formare combinazioni:</strong> seleziona le carte e clicca sull'area combinazioni.</li>
 				<li><strong>Attaccare a una combinazione:</strong> trascina una carta dalla tua mano su una
-					combinazione gia' presente in campo per aggiungerla.</li>
+					combinazione gia' presente in campo per aggiungerla. Oppure seleziona le carte da attaccare e clicca
+					sulla combinazione.</li>
 				<li><strong>Ordinare le carte:</strong> usa i pulsanti 123 (per valore) o il simbolo dei semi (per
 					seme).</li>
 			</ul>
@@ -321,7 +324,9 @@
 				you can challenge the AI in both 1 vs 1 and 2 vs 2 mode.</p>
 
 			<p style="background: #fff9c4; padding: 12px 16px; border-radius: 6px; border-left: 4px solid #ffd700;">
-				This game is constantly evolving: new features and improvements are added regularly. If you notice
+				This game is constantly evolving: new features and improvements are added regularly. Soon it will also
+				be possible to select your partner and opponents from various characters with different playing
+				characteristics. If you notice
 				anything not working as expected or have suggestions, write to us at
 				<a href="mailto:postmaster@lucianomanenti.com" style="color: #3498db;">postmaster@lucianomanenti.com</a>
 				— your feedback is valuable!
@@ -445,7 +450,7 @@
 				<li><strong>Discard:</strong> right-click a card, or drag it to the discard pile.</li>
 				<li><strong>Form combinations:</strong> select the cards and click on the combinations area.</li>
 				<li><strong>Add to a combination:</strong> drag a card from your hand onto an existing combination
-					on the field to add it.</li>
+					on the field to add it. Or select the cards to add and click on the combination.</li>
 				<li><strong>Sort cards:</strong> use the 123 button (by value) or the suit symbol button (by suit).
 				</li>
 			</ul>
@@ -481,6 +486,11 @@
 			document.getElementById('lang-en').style.display = lang === 'en' ? 'block' : 'none';
 			document.getElementById('btn-it').className = lang === 'it' ? 'active' : '';
 			document.getElementById('btn-en').className = lang === 'en' ? 'active' : '';
+
+			var btnBack = document.getElementById('btn-back');
+			if (btnBack) {
+				btnBack.innerHTML = lang === 'it' ? '&#x2190; Indietro' : '&#x2190; Back';
+			}
 		}
 		function goBack() {
 			if (window.opener) {

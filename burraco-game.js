@@ -440,14 +440,18 @@ function verificaScala(carte) {
         return { valida: false, motivo: 'Servono carte normali' };
     }
 
-    // Pinelle dello stesso seme sono carte normali (nella posizione 2)
-    // Pinelle di seme diverso sono matte potenziali
-    const pinelleNormali = pinelle.filter(c => c.seme === seme);
-    const pinelleMatte = pinelle.filter(c => c.seme !== seme);
+    // Pinelle dello stesso seme sono carte normali solo se nella posizione naturale (2)
+    // Verifica se le altre carte formano una sequenza che include il 2
+    const altriNumeri = altreNormali.map(c => c.numero).sort((a, b) => a - b);
+    const includeIl2Naturale = altriNumeri.length === 0 ||
+                                (altriNumeri[0] <= 3 && altriNumeri[altriNumeri.length - 1] >= 2);
 
-    // Carte normali = altre normali + pinelle dello stesso seme
+    const pinelleNormali = pinelle.filter(c => c.seme === seme && includeIl2Naturale);
+    const pinelleMatte = pinelle.filter(c => c.seme !== seme || !includeIl2Naturale);
+
+    // Carte normali = altre normali + pinelle dello stesso seme in posizione naturale
     const normali = [...altreNormali, ...pinelleNormali];
-    // Jolly = jolly veri + pinelle di seme diverso (usate come matte)
+    // Jolly = jolly veri + pinelle usate come matte
     const jolly = [...jollyVeri, ...pinelleMatte];
 
     if (normali.length === 0) {
@@ -528,14 +532,18 @@ function ordinaScalaConJolly(carte, assoAlto = false) {
         return carte; // Solo jolly, non dovrebbe succedere
     }
 
-    // Pinelle dello stesso seme sono carte normali (nella posizione 2)
-    // Pinelle di seme diverso sono matte
-    const pinelleNormali = pinelle.filter(c => c.seme === semeScala);
-    const pinelleMatte = pinelle.filter(c => c.seme !== semeScala);
+    // Pinelle dello stesso seme sono carte normali solo se nella posizione naturale (2)
+    // Verifica se le altre carte formano una sequenza che include il 2
+    const altriNumeri = altreNormali.map(c => c.numero).sort((a, b) => a - b);
+    const includeIl2Naturale = altriNumeri.length === 0 ||
+                                (altriNumeri[0] <= 3 && altriNumeri[altriNumeri.length - 1] >= 2);
 
-    // Carte normali = altre normali + pinelle dello stesso seme
+    const pinelleNormali = pinelle.filter(c => c.seme === semeScala && includeIl2Naturale);
+    const pinelleMatte = pinelle.filter(c => c.seme !== semeScala || !includeIl2Naturale);
+
+    // Carte normali = altre normali + pinelle dello stesso seme in posizione naturale
     const normali = [...altreNormali, ...pinelleNormali];
-    // Jolly = jolly veri + pinelle di seme diverso (usate come matte)
+    // Jolly = jolly veri + pinelle usate come matte
     const jolly = [...jollyVeri, ...pinelleMatte];
 
     // Ordina le carte normali per numero

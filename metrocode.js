@@ -75,8 +75,8 @@ document.addEventListener("keydown", keyDownTextField, false);
 function keyDownTextField(ev) {
 	log(ev.keyCode == 32)
 	if (ev.keyCode == 32) return tmidi.startstop();
-	if (ev.keyCode == 38) return tmidi.setbpm(tmidi.bpm - 1)
-	if (ev.keyCode == 40) return tmidi.setbpm(tmidi.bpm + 1)
+	if (ev.keyCode == 40) return tmidi.setbpm(tmidi.bpm - 1)
+	if (ev.keyCode == 38) return tmidi.setbpm(tmidi.bpm + 1)
 }
 
 
@@ -120,14 +120,19 @@ var context;
 
 window.AudioContext = window.AudioContext || window.webkitAudioContext;
 context = new AudioContext();
+var masterGain = context.createGain();
+masterGain.gain.value = 0.8;
+masterGain.connect(context.destination);
 
-
+$('#volume-control').on('input', function () {
+	masterGain.gain.value = this.value;
+});
 
 
 function playSound(buffer, time) {
 	var source = context.createBufferSource(); // creates a sound source
 	source.buffer = buffer;                    // tell the source which sound to play
-	source.connect(context.destination);       // connect the source to the context's destination (the speakers)
+	source.connect(masterGain);       // connect the source to the masterGain
 	source.start(time);                           // play the source now
 	// note: on older systems, may have to use deprecated noteOn(time);
 }
@@ -247,14 +252,14 @@ var tmidi = {
 	metrica: [],
 	metrica2: [],
 
-	metricaleft:00,
+	metricaleft: 0,
 	metricatop: 230,
-	indexleft:00,
+	indexleft: 0,
 	indextop: 10,
 	opzionileft: 180,
 	opzionitop: 530,
 	opzioniwidth: 300,
-	shuffle: 50,
+	shuffle: 33,
 	moreoptions: 0,
 
 
@@ -768,44 +773,29 @@ var tmidi = {
 
 	},
 
+	// Modernized setmicrofono
 	setmicrofono: function () {
-
 		tmidi.fmicrofono = true;
-		if (typeof analyser != "undefined") return
+		if (typeof analyser != "undefined") return;
 		if (!tmidi.opzioni[5]) return;
-		navigator.getUserMedia = (navigator.getUserMedia ||
-			navigator.webkitGetUserMedia ||
-			navigator.mozGetUserMedia ||
-			navigator.msGetUserMedia);
 
-		if (navigator.getUserMedia) {
-			navigator.getUserMedia(
-
-				// constraints
-				{ video: false, audio: true },
-
-				// successCallback
-				function (stream) {
+		if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+			navigator.mediaDevices.getUserMedia({ audio: true })
+				.then(function (stream) {
 					mediaStreamSource = context.createMediaStreamSource(stream);
-					//Do something with the audio here,
-
 					if (typeof analyser == "undefined") {
 						analyser = context.createAnalyser();
 						analyser.fftSize = 2048;
 					}
 					mediaStreamSource.connect(analyser);
-					tmidi.updatepitch()
-
-				},
-
-				// errorCallback
-				function (err) {
+					tmidi.updatepitch();
+				})
+				.catch(function (err) {
 					log("The following error occured: " + err);
-				})  //if (navigator.getUserMedia)
-
-		} else { log("getUserMedia not supported") }
-
-
+				});
+		} else {
+			log("getUserMedia not supported");
+		}
 	},
 
 
@@ -832,7 +822,14 @@ var tmidi = {
 			}
 			//average+=Math.abs(buf[i]);
 		}
-		if (average > 30000) tmidi.startstop();
+		if (average > 30000) {
+			tmidi.startstop();
+			// One-shot logic: disable mic and update UI
+			tmidi.opzioni[5] = false;
+			tmidi.fmicrofono = false;
+			// Force UI redraw to uncheck the box
+			tmidi.initimposta(ctxim, canvasimposta.width, canvasimposta.height);
+		}
 
 		if (!vediwc) return;
 
@@ -1032,8 +1029,8 @@ var tmidi = {
 		tmidi.fmicrofono = false;
 
 		tmidi.fnosound0 = false;  //disabilita i suoni principali
-		tmidi.fnoaccent2 = false;	//disabilita gli accenti sui suoni secondari	
-		tmidi.fnosound2 = false;	//disabilita suoni secondari
+		tmidi.fnoaccent2 = true;	//disabilita gli accenti sui suoni secondari	
+		tmidi.fnosound2 = true;	//disabilita suoni secondari
 		tmidi.fnoaccent0 = false;  //disabilita accento suoni principali
 
 		tmidi.bpm = 80;

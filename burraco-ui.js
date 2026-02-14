@@ -1025,7 +1025,7 @@ function riordinaCartaMano(cartaOrigine, cartaDest) {
 }
 
 // Aggiunge una carta a una combinazione esistente
-function aggiungiCartaACombinazione(carta, combinazione) {
+function aggiungiCartaACombinazione(carta, combinazione, skipRenderAndSound = false) {
     if (game.fase !== 'gioco') {
         mostraMessaggio('Pescare prima di attaccare', 'error');
         setTimeout(nascondiMessaggio, 2000);
@@ -1103,47 +1103,43 @@ function aggiungiCartaACombinazione(carta, combinazione) {
     // Aggiorna punteggio
     calcolaPunteggi();
 
-    // Controlla burraco
-    if (combinazione.isBurraco && combinazione.carte.length === 7) {
-        playSound('tada');
-    } else {
-        playSound('combinazione');
-    }
-
-    // Controlla se ha finito le carte
-    if (game.giocatori[0].carte.length === 0) {
-        if (!game.giocatori[0].haPozzetto && game.pozzetti[0].length > 0) {
-            prendiPozzetto(0);
+    if (!skipRenderAndSound) {
+        // Controlla burraco
+        if (combinazione.isBurraco && combinazione.carte.length === 7) {
+            playSound('tada');
+        } else {
+            playSound('combinazione');
         }
-    }
 
-    render();
+        // Controlla se ha finito le carte
+        if (game.giocatori[0].carte.length === 0) {
+            if (!game.giocatori[0].haPozzetto && game.pozzetti[0].length > 0) {
+                prendiPozzetto(0);
+            }
+        }
+
+        render();
+    }
 }
 
 // Attacca tutte le carte selezionate a una combinazione esistente
 async function attaccaCarteSelezionateACombinazione(combinazione) {
     if (game.carteSelezionate.length === 0) return;
 
-    // Verifica che tutte le carte possano essere aggiunte
-    const carteValide = [];
-    for (const carta of game.carteSelezionate) {
-        if (puoAggiungereACombinazione(carta, combinazione)) {
-            carteValide.push(carta);
-        }
-    }
+    // Test: combinazione esistente + carte selezionate formano una combinazione valida?
+    const carteDaTestare = [...combinazione.carte, ...game.carteSelezionate];
+    const risultatoTest = verificaCombinazione(carteDaTestare);
 
-    if (carteValide.length === 0) {
-        mostraMessaggio('Nessuna carta può essere attaccata a questa combinazione', 'error');
+    if (!risultatoTest.valida) {
+        mostraMessaggio('Combinazione non valida: ' + risultatoTest.motivo, 'error');
         setTimeout(nascondiMessaggio, 2000);
         return;
     }
 
-    salvaStato('attacca-multiple');
-
-    // Salva le posizioni di partenza delle carte
+    // Salva le posizioni di partenza di tutte le carte selezionate
     const posizioniPartenza = [];
-    for (const carta of carteValide) {
-        const cartaEl = carta.elemento;
+    for (const carta of game.carteSelezionate) {
+        const cartaEl = document.querySelector(`#carte-giocatore .carta[data-carta-id="${carta.id}"]`);
         if (cartaEl) {
             posizioniPartenza.push({
                 carta: carta,
@@ -1152,65 +1148,33 @@ async function attaccaCarteSelezionateACombinazione(combinazione) {
         }
     }
 
-    // Aggiungi tutte le carte valide
-    for (const carta of carteValide) {
-        // Rimuovi la carta dalla mano
-        const idx = game.giocatori[0].carte.indexOf(carta);
-        if (idx > -1) {
-            game.giocatori[0].carte.splice(idx, 1);
-        }
+    // Ordina le carte selezionate per numero per aggiungerle in ordine logico
+    const carteOrdinate = [...game.carteSelezionate].sort((a, b) => a.numero - b.numero);
 
-        // Rimuovi da carteConosciute
-        if (game.giocatori[0].carteConosciute) {
-            game.giocatori[0].carteConosciute = game.giocatori[0].carteConosciute.filter(
-                cc => cc.cartaId !== carta.id
-            );
-        }
-
-        // Deseleziona
-        carta.selezionata = false;
-        carta.inCombinazione = true;
-        carta.idCombinazione = combinazione.id;
-
-        // Aggiungi alla combinazione
-        combinazione.carte.push(carta);
-
-        // Registra nella storia
-        registraMossa(AZIONE_ATTACCO, {
-            carta: carta.id,
-            combinazione: combinazione.id
-        });
-    }
-
-    // Svuota le carte selezionate
+    // Deseleziona tutte le carte prima di aggiungerle
     game.carteSelezionate = [];
 
-    // Riordina la combinazione (gestisce automaticamente matte, pinelle, etc.)
-    if (combinazione.tipo === TIPO_SCALA) {
-        combinazione.carte = ordinaScalaConJolly(combinazione.carte, combinazione.assoAlto);
-    } else if (combinazione.tipo === TIPO_TRIS) {
-        combinazione.carte = ordinaTrisConJolly(combinazione.carte, combinazione.numero);
+    // Usa la funzione già esistente per ogni carta, senza render/sound
+    for (const carta of carteOrdinate) {
+        aggiungiCartaACombinazione(carta, combinazione, true);
     }
 
-    // Aggiorna punteggi
-    calcolaPunteggi();
-
-    // Renderizza per ottenere le nuove posizioni
+    // Render unico dopo tutte le aggiunte
     render();
 
-    // Controlla burraco e riproduci suono appropriato
+    // Suono appropriato
     if (combinazione.isBurraco && combinazione.carte.length === 7) {
         playSound('tada');
     } else {
         playSound('combinazione');
     }
 
-    // Anima le carte dalle posizioni di partenza alle posizioni finali
-    for (const pos of posizioniPartenza) {
+    // Anima tutte le carte in parallelo
+    console.log('Carte da animare:', posizioniPartenza.length);
+    const animazioni = posizioniPartenza.map(pos => {
         const carta = pos.carta;
-
-        // Trova l'elemento finale della carta nella combinazione usando il data-carta-id
         const cartaElFinale = document.querySelector(`#combinazioni-noi .carta[data-carta-id="${carta.id}"]`);
+        console.log('Carta', carta.id, 'trovata:', !!cartaElFinale, 'rect:', !!pos.rect);
 
         if (cartaElFinale && pos.rect) {
             // Nascondi temporaneamente la carta finale
@@ -1225,12 +1189,18 @@ async function attaccaCarteSelezionateACombinazione(combinazione) {
             fakePartenza.style.height = '1px';
             document.body.appendChild(fakePartenza);
 
-            await animaCarta(carta, fakePartenza, cartaElFinale, { mostraFronte: true, durata: 400 });
-
-            fakePartenza.remove();
-            cartaElFinale.style.visibility = 'visible';
+            // Anima e poi pulisci
+            return animaCarta(carta, fakePartenza, cartaElFinale, { mostraFronte: true, durata: 400 })
+                .then(() => {
+                    fakePartenza.remove();
+                    cartaElFinale.style.visibility = 'visible';
+                });
         }
-    }
+        return Promise.resolve();
+    });
+
+    // Aspetta che tutte le animazioni finiscano
+    await Promise.all(animazioni);
 
     // Controlla se ha finito le carte
     if (game.giocatori[0].carte.length === 0) {
