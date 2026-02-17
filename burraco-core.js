@@ -2170,6 +2170,7 @@ const game = {
     fase: 'attesa',  // 'attesa', 'pesca', 'gioco', 'scarta', 'finito'
     haPescato: false,
     carteSelezionate: [],
+    ultimoTurno: false,  // true quando restano <= 2 carte nel mazzo
 
     // Punteggi
     puntiNoi: 0,

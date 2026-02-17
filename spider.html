@@ -25,7 +25,7 @@
 
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<link rel="stylesheet" href="spider.css?v=2.2" />
+	<link rel="stylesheet" href="spider.css?v=2.3" />
 
 	<meta name="Description"
 		content="Play free Spider Solitaire online, no registration,no ads. Gioca Spider Solitario gratis online senza registrazione, senza pubblicit�. Spider Luciano.�">
@@ -80,6 +80,8 @@
 			<a href="privacy.html" target="_blank"
 				style="position: absolute; top: 730px; left: 670px; color: white; text-decoration: none; font-size: 14px; font-family: sans-serif; z-index: 1000;">Privacy
 				Policy</a>
+			<a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)"
+				style="position: absolute; top: 710px; left: 670px; color: white; text-decoration: none; font-size: 14px; font-family: sans-serif; z-index: 1000;">Gestisci Cookie</a>
 
 			<a href="scala40.html">
 				<div class="pulsantescala40" style="top: 660px; left: 780px; "></div>
@@ -150,10 +152,26 @@
 			hideLegalFooter: true
 		};
 	</script>
-	<script src="game-layout.js?v=4.0"></script>
-	<script src="spidercode.js?v=2.4"></script>
-
-
+	<script src="game-layout.js?v=4.2"></script>
+	<script src="spidercode.js?v=2.6"></script>
+	<script>
+	(function() {
+		var nascosto = false;
+		var observer = new MutationObserver(function() {
+			if (nascosto) return;
+			var divs = document.querySelectorAll('body > div');
+			for (var i = 0; i < divs.length; i++) {
+				if (divs[i].shadowRoot && !divs[i].className && (divs[i].getAttribute('style')||'').length > 5000) {
+					divs[i].style.setProperty('display', 'none', 'important');
+					nascosto = true;
+					observer.disconnect();
+					return;
+				}
+			}
+		});
+		observer.observe(document.body, { childList: true });
+	})();
+	</script>
 
 </body>
 

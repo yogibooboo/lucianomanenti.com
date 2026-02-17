@@ -16,6 +16,7 @@ body {
 	color: #fff;
 	width: 1600px;
 	height: 700px;
+	overflow: hidden;
 	background-color: green;
 	-ms-transform-origin: left top;
 	-moz-transform-origin: left top;

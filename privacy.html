@@ -31,11 +31,25 @@
             text-decoration: none;
             color: #3498db;
         }
+
+        .banner {
+            width: 100%;
+            height: 150px;
+            background-image: url('images/home/castagne.jpg');
+            background-size: cover;
+            background-position: center;
+            border-radius: 8px;
+            margin: 20px 0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
     </style>
 </head>
 
 <body>
-    <a href="javascript:window.close();" class="back-link">← Chiudi questa pagina / Close this page</a>
+    <a href="javascript:if(!window.close()){window.location.href='index.html';}" class="back-link">← Chiudi questa pagina / Close this page</a>
+
+    <div class="banner"></div>
+
     <h1>Informativa sulla Privacy</h1>
     <p>Questa pagina descrive come vengono gestiti i dati personali degli utenti che consultano il sito
         <strong>lucianomanenti.com</strong>.
@@ -108,10 +122,14 @@
 
     <p><em>Ultimo aggiornamento / Last updated: Febbraio/February 2026</em></p>
 
+    <div class="banner"></div>
+
     <hr style="border: 0; border-top: 1px solid #eee; margin: 40px 0;">
     <a href="javascript:if(!window.close()){window.location.href='index.html';}"
         style="color: #3498db; text-decoration: none; margin: 0 10px;">Chiudi questa
-        pagina / Close this page</a>
+        pagina / Close this page</a> |
+    <a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)"
+        style="color: #3498db; text-decoration: none; margin: 0 10px;">Gestisci Cookie</a>
 </body>
 
 </html>

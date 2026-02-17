@@ -19,7 +19,7 @@
     <meta http-Equiv="Pragma" Content="no-cache">
     <meta http-Equiv="Expires" Content="0">
 
-    <link rel="stylesheet" href="burraco.css?v=3.6" />
+    <link rel="stylesheet" href="burraco.css?v=4.0" />
 
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
@@ -33,6 +33,13 @@
         window.gameConfig = {
             gaPrefix: 'BUR_',
             hideLegalFooter: true,
+            adsenseActive: true,
+            adsenseSlots: {
+                '300x600': '5266697442',
+                '160x600': '1167670336',
+                '300x250': '8471445288',
+                '160x250': '8663016975'
+            },
             messages: {
                 it: '<p style="margin-top: 0; font-size: 22px; font-weight: bold; text-align: center; color: #fff;">BURRACO</p>' +
                     '<p style="margin-top: 20px;">Il Burraco online di lucianomanenti.com, realizzato a grande richiesta dei nostri giocatori.</p>' +
@@ -47,7 +54,7 @@
             }
         };
     </script>
-    <script src="game-layout.js?v=3.5"></script>
+    <script src="game-layout.js?v=4.2"></script>
 </head>
 
 <body>
@@ -71,6 +78,7 @@
                 <div class="punteggio-separator">|</div>
                 <div id="punti-loro">0</div>
             </div>
+            <a href="aboutme.html" target="_blank" id="btn-scrivetemi" class="pulsante-link">Scrivetemi  Write to me</a>
 
             <!-- === COMPAGNO (top) === -->
             <div id="area-compagno" class="area-giocatore">
@@ -101,9 +109,9 @@
                 <div class="titolo-area">
                     <span class="titolo-nome">Noi</span>
                     <span class="titolo-punti">
+                        <span class="punti-pozzetto" title="Pozzetto (-100 se non preso)">Pozzetto: -100</span>
                         <span class="punti-burraco" title="Punti burraco">Burraco: 0</span>
                         <span class="punti-carte" title="Punti carte">Carte: 0</span>
-                        <span class="punti-pozzetto" title="Pozzetto (-100 se non preso)">Pozzetto: -100</span>
                         <span class="punti-totale" title="Totale">= -100</span>
                     </span>
                 </div>
@@ -114,9 +122,9 @@
                 <div class="titolo-area">
                     <span class="titolo-nome">Loro</span>
                     <span class="titolo-punti">
+                        <span class="punti-pozzetto" title="Pozzetto (-100 se non preso)">Pozzetto: -100</span>
                         <span class="punti-burraco" title="Punti burraco">Burraco: 0</span>
                         <span class="punti-carte" title="Punti carte">Carte: 0</span>
-                        <span class="punti-pozzetto" title="Pozzetto (-100 se non preso)">Pozzetto: -100</span>
                         <span class="punti-totale" title="Totale">= -100</span>
                     </span>
                 </div>
@@ -188,8 +196,8 @@
             </div>
 
             <div class="legal-links-text">
-                <a href="aboutme.html" target="_blank">About Me</a>
                 <a href="privacy.html" target="_blank">Privacy Policy</a>
+                <a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)">Gestisci Cookie</a>
             </div>
 
             <!-- === MODALI === -->
@@ -246,11 +254,30 @@
     <audio id="snd-sconfitta" src="sounds/scala40/haiperso.mp3"></audio>
     <audio id="snd-pozzetto" src="sounds/scala40/magic.mp3"></audio>
     <audio id="snd-burraco" src="sounds/scala40/applause.mp3"></audio>
+    <audio id="snd-dindon" src="sounds/scala40/ding.mp3"></audio>
 
     <!-- Codice diviso in 3 file per manutenibilità -->
-    <script src="burraco-core.js?v=7.8"></script>
-    <script src="burraco-game.js?v=7.8"></script>
-    <script src="burraco-ui.js?v=7.8"></script>
+    <script src="burraco-core.js?v=8.5"></script>
+    <script src="burraco-game.js?v=8.6"></script>
+    <script src="burraco-ui.js?v=8.6"></script>
+    <script>
+    (function() {
+        var nascosto = false;
+        var observer = new MutationObserver(function() {
+            if (nascosto) return;
+            var divs = document.querySelectorAll('body > div');
+            for (var i = 0; i < divs.length; i++) {
+                if (divs[i].shadowRoot && !divs[i].className && (divs[i].getAttribute('style')||'').length > 5000) {
+                    divs[i].style.setProperty('display', 'none', 'important');
+                    nascosto = true;
+                    observer.disconnect();
+                    return;
+                }
+            }
+        });
+        observer.observe(document.body, { childList: true });
+    })();
+    </script>
 
 </body>
 

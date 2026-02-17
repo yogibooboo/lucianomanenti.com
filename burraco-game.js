@@ -233,6 +233,7 @@ function iniziaPartita() {
     game.puntiLoro = 0;
     game.storia = [];
     game.turno = 0;
+    game.ultimoTurno = false;
 
     // Crea giocatori
     creaGiocatori();
@@ -425,40 +426,56 @@ function verificaScala(carte) {
     const altreNormali = carte.filter(c => !c.isJolly && !c.isPinella);
 
     // Determina il seme della scala dalle carte non-jolly
-    // Prima dalle carte normali non-pinella, altrimenti dalla prima pinella
     let seme;
     if (altreNormali.length > 0) {
         seme = altreNormali[0].seme;
-        // Verifica che tutte le carte normali abbiano lo stesso seme
         if (!altreNormali.every(c => c.seme === seme)) {
             return { valida: false, motivo: 'Semi diversi in scala' };
         }
     } else if (pinelle.length > 0) {
-        // Solo pinelle: usa il seme della prima
         seme = pinelle[0].seme;
     } else {
         return { valida: false, motivo: 'Servono carte normali' };
     }
 
-    // Pinelle dello stesso seme sono carte normali solo se nella posizione naturale (2)
-    // Verifica se le altre carte formano una sequenza che include il 2
-    const altriNumeri = altreNormali.map(c => c.numero).sort((a, b) => a - b);
-    const includeIl2Naturale = altriNumeri.length === 0 ||
-                                (altriNumeri[0] <= 3 && altriNumeri[altriNumeri.length - 1] >= 2);
+    // Per le pinelle dello stesso seme, proviamo due opzioni:
+    // A) pinella come carta naturale (posizione 2)
+    // B) pinella come matta
+    const pinelleStesoSeme = pinelle.filter(c => c.seme === seme);
+    const pinelleAltroSeme = pinelle.filter(c => c.seme !== seme);
 
-    const pinelleNormali = pinelle.filter(c => c.seme === seme && includeIl2Naturale);
-    const pinelleMatte = pinelle.filter(c => c.seme !== seme || !includeIl2Naturale);
+    const opzioni = [];
+    if (pinelleStesoSeme.length > 0) {
+        // Opzione A: pinella come naturale
+        opzioni.push({
+            normali: [...altreNormali, ...pinelleStesoSeme],
+            jolly: [...jollyVeri, ...pinelleAltroSeme]
+        });
+        // Opzione B: pinella come matta
+        opzioni.push({
+            normali: [...altreNormali],
+            jolly: [...jollyVeri, ...pinelleStesoSeme, ...pinelleAltroSeme]
+        });
+    } else {
+        opzioni.push({
+            normali: [...altreNormali],
+            jolly: [...jollyVeri, ...pinelleAltroSeme]
+        });
+    }
 
-    // Carte normali = altre normali + pinelle dello stesso seme in posizione naturale
-    const normali = [...altreNormali, ...pinelleNormali];
-    // Jolly = jolly veri + pinelle usate come matte
-    const jolly = [...jollyVeri, ...pinelleMatte];
+    for (const opz of opzioni) {
+        const ris = _verificaScalaOpzione(opz.normali, opz.jolly, carte, seme);
+        if (ris.valida) return ris;
+    }
 
+    return { valida: false, motivo: 'Sequenza non valida' };
+}
+
+// Helper: verifica una scala con una specifica assegnazione di normali/jolly
+function _verificaScalaOpzione(normali, jolly, carteOriginali, seme) {
     if (normali.length === 0) {
         return { valida: false, motivo: 'Servono carte normali' };
     }
-
-    // Max 1 jolly/pinella-matta per combinazione
     if (jolly.length > 1) {
         return { valida: false, motivo: 'Max 1 jolly o pinella' };
     }
@@ -474,23 +491,18 @@ function verificaScala(carte) {
 
     // Prova scala con Asso basso (A=1)
     if (verificaSequenza(numeri, jolly.length)) {
-        // Se c'e' un jolly e max e' Q o K, potrebbe essere anche asso alto
-        // Determiniamo in base alla posizione del jolly nell'ordine originale
         const max = Math.max(...numeri);
         if (jolly.length > 0 && max >= 12) {
-            // Trova la posizione del jolly rispetto alle carte normali
             let indiceMatta = -1;
             let indiceUltimaNormale = -1;
-            for (let i = 0; i < carte.length; i++) {
-                if ((carte[i].isJolly || carte[i].isPinella) && indiceMatta === -1) {
+            for (let i = 0; i < carteOriginali.length; i++) {
+                if ((carteOriginali[i].isJolly || carteOriginali[i].isPinella) && indiceMatta === -1) {
                     indiceMatta = i;
                 }
-                if (!carte[i].isJolly && !carte[i].isPinella) {
+                if (!carteOriginali[i].isJolly && !carteOriginali[i].isPinella) {
                     indiceUltimaNormale = i;
                 }
             }
-            // Se il jolly e' posizionato dopo l'ultima carta normale e max e' 13 (K),
-            // l'utente vuole probabilmente Q-K-A (asso alto)
             if (indiceMatta > indiceUltimaNormale && max === 13) {
                 return { valida: true, tipo: TIPO_SCALA, seme: seme, assoAlto: true };
             }
@@ -498,10 +510,9 @@ function verificaScala(carte) {
         return { valida: true, tipo: TIPO_SCALA, seme: seme };
     }
 
-    // Prova scala con Asso alto (A=14, dopo il K)
+    // Prova scala con Asso alto (A=14)
     if (numeri.includes(1)) {
         const numeriAssoAlto = numeri.map(n => n === 1 ? 14 : n).sort((a, b) => a - b);
-        // Verifica che non ci sia il "giro" (es. K-A-2 non valido)
         const haCarteBasse = numeriAssoAlto.some(n => n >= 2 && n <= 3);
         const haCarteAlte = numeriAssoAlto.some(n => n >= 12 && n <= 14);
         if (haCarteBasse && haCarteAlte) {
@@ -532,19 +543,35 @@ function ordinaScalaConJolly(carte, assoAlto = false) {
         return carte; // Solo jolly, non dovrebbe succedere
     }
 
-    // Pinelle dello stesso seme sono carte normali solo se nella posizione naturale (2)
-    // Verifica se le altre carte formano una sequenza che include il 2
-    const altriNumeri = altreNormali.map(c => c.numero).sort((a, b) => a - b);
-    const includeIl2Naturale = altriNumeri.length === 0 ||
-                                (altriNumeri[0] <= 3 && altriNumeri[altriNumeri.length - 1] >= 2);
+    // Determina se le pinelle dello stesso seme vanno come naturali o come matte
+    // provando entrambe le opzioni
+    const pinelleStesoSeme = pinelle.filter(c => c.seme === semeScala);
+    const pinelleAltroSeme = pinelle.filter(c => c.seme !== semeScala);
 
-    const pinelleNormali = pinelle.filter(c => c.seme === semeScala && includeIl2Naturale);
-    const pinelleMatte = pinelle.filter(c => c.seme !== semeScala || !includeIl2Naturale);
+    let normali, jolly;
+    if (pinelleStesoSeme.length > 0) {
+        // Prova come naturale: verifica se la sequenza e' valida
+        const normaliTest = [...altreNormali, ...pinelleStesoSeme];
+        const jollyTest = [...jollyVeri, ...pinelleAltroSeme];
+        const numeriTest = normaliTest.map(c => {
+            let num = c.numero;
+            if (assoAlto && num === 1) num = 14;
+            return num;
+        }).sort((a, b) => a - b);
 
-    // Carte normali = altre normali + pinelle dello stesso seme in posizione naturale
-    const normali = [...altreNormali, ...pinelleNormali];
-    // Jolly = jolly veri + pinelle usate come matte
-    const jolly = [...jollyVeri, ...pinelleMatte];
+        if (jollyTest.length <= 1 && verificaSequenza(numeriTest, jollyTest.length)) {
+            // Pinella come naturale funziona
+            normali = normaliTest;
+            jolly = jollyTest;
+        } else {
+            // Pinella come matta
+            normali = [...altreNormali];
+            jolly = [...jollyVeri, ...pinelleStesoSeme, ...pinelleAltroSeme];
+        }
+    } else {
+        normali = [...altreNormali];
+        jolly = [...jollyVeri, ...pinelleAltroSeme];
+    }
 
     // Ordina le carte normali per numero
     normali.sort((a, b) => {
@@ -760,6 +787,18 @@ async function depositaCombinazioneAI(giocatore, mossa) {
         return;
     }
 
+    // Se resterebbe 0 o 1 carta, serve un burraco per chiudere
+    const carteRimanenti = giocatore.carte.length - carte.length;
+    if (carteRimanenti <= 1 && game.pozzetti[giocatore.squadra].length === 0) {
+        const combinazioniSquadra = giocatore.squadra === 0 ? game.combinazioniNoi : game.combinazioniLoro;
+        const haBurraco = combinazioniSquadra.some(c => c.isBurraco);
+        const diventeraBurraco = carte.length >= 7;
+        if (!haBurraco && !diventeraBurraco) {
+            console.log(`AI ${giocatore.nome}: blocco deposito, resterebbe ${carteRimanenti} carte senza burraco`);
+            return;
+        }
+    }
+
     // Ordina le carte e imposta jollycomeNumero per le matte
     let carteOrdinate = [...carte];
     if (risultato.tipo === TIPO_SCALA) {
@@ -829,6 +868,17 @@ async function eseguiCalataAI(giocatore, mossa) {
         return;
     }
 
+    // Se resterebbe 0 o 1 carta, serve un burraco per chiudere
+    if (giocatore.carte.length <= 2 && game.pozzetti[giocatore.squadra].length === 0) {
+        const combinazioniSquadra = giocatore.squadra === 0 ? game.combinazioniNoi : game.combinazioniLoro;
+        const haBurraco = combinazioniSquadra.some(c => c.isBurraco);
+        const diventeraBurraco = combo.carte.length + 1 >= 7;
+        if (!haBurraco && !diventeraBurraco) {
+            console.log(`AI ${giocatore.nome}: blocco calata, resterebbe ${giocatore.carte.length - 1} carte senza burraco`);
+            return;
+        }
+    }
+
     // Rimuovi dalla mano
     const idx = giocatore.carte.indexOf(carta);
     if (idx > -1) giocatore.carte.splice(idx, 1);
@@ -873,11 +923,25 @@ async function eseguiCalataAI(giocatore, mossa) {
         combinazione: combo.id
     });
 
-    playSound('ordina');
+    // Controlla se la calata ha formato un burraco
+    const cartePrima = combo.carte.length - 1; // -1 perche' la carta e' gia' stata aggiunta
+    if (combo.isBurraco && cartePrima < 7) {
+        playSound('tada');
+    } else {
+        playSound('ordina');
+    }
     calcolaPunteggi();
     render();
 
     console.log(`AI ${giocatore.nome}: calata ${Strategia.nomeCarta(carta)} su combinazione ${combo.id}`);
+}
+
+function controlloMazzoEsaurito() {
+    if (!game.ultimoTurno && game.mazzo.length <= 2) {
+        game.ultimoTurno = true;
+        mostraMessaggio('Mazzo quasi esaurito! Ultimo turno!', 'info');
+        setTimeout(nascondiMessaggio, 3000);
+    }
 }
 
 function prossimoTurno() {
@@ -975,7 +1039,7 @@ async function turnoAI() {
         render();
 
         // Animazione (semplificata: mostra solo l'ultima carta pescata)
-        playSound('pesca');
+        playSound('dindon');
         console.log(`AI ${giocatore.nome}: pescate ${numCarte} carte dagli scarti`);
 
     } else {
@@ -1006,6 +1070,9 @@ async function turnoAI() {
                 await animaCartaDa(carta, '#mazzo', ultimaCarta, opzioniAnim);
                 ultimaCarta.style.visibility = 'visible';
             }
+
+            // Controlla se il mazzo e' quasi esaurito
+            controlloMazzoEsaurito();
         }
     }
 
@@ -1072,7 +1139,18 @@ async function turnoAI() {
     await delay(500);
 
     // Scarta la carta scelta dalla strategia
+    // Ma non scartare l'ultima carta se la squadra non ha un burraco
     if (giocatore.carte.length > 0) {
+        if (giocatore.carte.length === 1 && game.pozzetti[giocatore.squadra].length === 0) {
+            const combinazioniSquadra = giocatore.squadra === 0 ? game.combinazioniNoi : game.combinazioniLoro;
+            const haBurraco = combinazioniSquadra.some(c => c.isBurraco);
+            if (!haBurraco) {
+                // Non puo' chiudere senza burraco: tiene l'ultima carta
+                render();
+                prossimoTurno();
+                return;
+            }
+        }
         const cartaDaScartare = Strategia.scegliCartaDaScartare(giocatore);
         // Rimuovi la carta dalla mano (splice, non pop)
         const idxScarto = giocatore.carte.indexOf(cartaDaScartare);
@@ -1142,6 +1220,7 @@ async function turnoAI() {
             }
             game.pozzetti[pozzIdx] = [];
             giocatore.haPozzetto = true;
+            playSound('magic');
         } else {
             finePartita(giocatore.squadra === 0);
             return;
@@ -1150,13 +1229,22 @@ async function turnoAI() {
 
     render();
 
+    // Se ultimo turno (mazzo esaurito), fine partita senza chiusura
+    if (game.ultimoTurno) {
+        finePartita(null);
+        return;
+    }
+
     // Passa al prossimo
     prossimoTurno();
 }
 
 function aggiornaIndicatoreTurno() {
-    // Rimuovi la classe turno-attivo da tutte le aree
-    $$('.area-giocatore').forEach(el => el.classList.remove('turno-attivo'));
+    // Rimuovi la classe turno-attivo e deve-pescare da tutte le aree
+    $$('.area-giocatore').forEach(el => {
+        el.classList.remove('turno-attivo');
+        el.classList.remove('deve-pescare');
+    });
 
     const giocatore = game.giocatori[game.giocatoreCorrente];
     let area = null;
@@ -1178,6 +1266,10 @@ function aggiornaIndicatoreTurno() {
 
     if (area) {
         area.classList.add('turno-attivo');
+        // Bordo rosso per il giocatore umano se non ha ancora pescato
+        if (giocatore.isUmano && !game.haPescato) {
+            area.classList.add('deve-pescare');
+        }
     }
 }
 
@@ -1231,8 +1323,12 @@ function finePartita(haVintoNoi) {
         }
         r.puntiBurraco = r.burracos.reduce((sum, b) => sum + b.punti, 0);
 
-        // 3. Bonus chiusura
-        r.chiusura = (chiave === 'noi' && haVintoNoi) || (chiave === 'loro' && !haVintoNoi);
+        // 3. Bonus chiusura (null = mazzo esaurito, nessuno chiude)
+        if (haVintoNoi === null) {
+            r.chiusura = false;
+        } else {
+            r.chiusura = (chiave === 'noi' && haVintoNoi) || (chiave === 'loro' && !haVintoNoi);
+        }
         r.puntiChiusura = r.chiusura ? PUNTI_CHIUSURA : 0;
 
         // 4. Penalita' carte in mano
@@ -1324,10 +1420,13 @@ function mostraRisultatoFinale(risultato, vinceNoi) {
 
     const titoloColore = vinceNoi ? '#4f4' : '#f44';
     const titolo = vinceNoi ? 'HAI VINTO!' : 'HAI PERSO';
+    const sottotitolo = game.ultimoTurno
+        ? '<p style="text-align:center;color:#fc8;margin:0 0 12px;font-size:13px">Mazzo esaurito - nessun bonus chiusura</p>'
+        : '';
 
     const html = '<div style="padding:16px 20px">' +
-        '<h2 style="text-align:center;color:' + titoloColore + ';margin:0 0 16px;font-size:22px">' +
-            titolo + '</h2>' +
+        '<h2 style="text-align:center;color:' + titoloColore + ';margin:0 0 ' + (game.ultimoTurno ? '4' : '16') + 'px;font-size:22px">' +
+            titolo + '</h2>' + sottotitolo +
         '<div style="display:flex;gap:20px">' +
             '<div style="flex:1">' +
                 '<h3 style="color:#8cf;margin:0 0 8px;font-size:14px;text-transform:uppercase">NOI</h3>' +
@@ -1344,12 +1443,18 @@ function mostraRisultatoFinale(risultato, vinceNoi) {
     // Usa il modal vittoria/sconfitta esistente
     const modalEl = vinceNoi ? $('#modal-vittoria') : $('#modal-sconfitta');
     modalEl.innerHTML = html +
-        '<button class="btn-modal btn-nuova-partita" style="margin:12px auto;display:block">NUOVA PARTITA</button>';
+        '<div style="display:flex;gap:10px;justify-content:center;margin:12px auto">' +
+        '<button class="btn-modal btn-trasparenza" title="Mostra/nascondi carte sotto">VEDI CARTE</button>' +
+        '<button class="btn-modal btn-nuova-partita">NUOVA PARTITA</button>' +
+        '</div>';
 
-    // Riattacca evento al nuovo bottone
+    // Riattacca eventi ai bottoni
     modalEl.querySelector('.btn-nuova-partita').addEventListener('click', () => {
         chiudiModals();
         mostraModal('modal-nuova');
+    });
+    modalEl.querySelector('.btn-trasparenza').addEventListener('click', () => {
+        modalEl.classList.toggle('trasparente');
     });
 
     mostraModal(modalEl.id);

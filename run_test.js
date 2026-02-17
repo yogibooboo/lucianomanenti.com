@@ -1,3 +1,51 @@
+var window = {
+    gameScale: 1,
+    console: console,
+    location: { search: "" },
+    setTimeout: function (fn) { try { fn() } catch (e) { } }
+};
+var document = {
+    getElementById: function () { return { play: function () { }, currentTime: 0 }; },
+    querySelector: function () { return { style: {} }; },
+    addEventListener: function () { },
+    body: {},
+    createElement: function () { return { style: {} }; } // Added createElement
+};
+var location = window.location;
+
+var readyCallback = null;
+var $ = function (selector) {
+    // Return a fresh object structure every time to avoid shared state issues
+    // and ensure [0] is a valid object we can attach properties to
+    var mockElement = { style: {} };
+
+    var mockObj = {
+        0: mockElement,
+        length: 1,
+        offset: function () { return { left: 0, top: 0 }; },
+        css: function () { return 0; },
+        append: function () { },
+        width: function () { return 1000; },
+        height: function () { return 1000; },
+        hide: function () { },
+        show: function () { },
+        text: function () { },
+        html: function () { },
+        val: function () { return 0; },
+        click: function () { },
+        bind: function () { },
+        removeClass: function () { },
+        addClass: function () { return this; },
+        animate: function () { },
+        ready: function (cb) { readyCallback = cb; },
+        filter: function () { return { click: function () { } }; }
+    };
+    return mockObj;
+};
+$.extend = function () { };
+
+var log = function (msg) { console.log(msg); };
+log.enabled = true;
 
 function log(msg) {
 	if (window.console && log.enabled) {
@@ -2585,7 +2633,7 @@ var scala = {
 			this.cercacoppie(avv);
 			this.ottimizzacoppie();
 
-			if (!this.f40avversario[avv]) { if (this.verifica40(avv)) this.f40avversario[avv] = true; }
+			if (!this.f40avversario[avv]) this.verifica40(avv);
 			while ((this.f40avversario[avv]) && (this.trispossibili.length > 0)) {
 				if (this.trispossibili[0].length == this.campiavversario[avv].carte.length) this.trispossibili[0].splice(0, 1);
 				this.scartatris(this.trispossibili[0]);
@@ -2765,7 +2813,7 @@ var scala = {
 		for (var i = 0; i < this.trispossibili.length; i++) {
 			totaletris += this.calcolapuntitris(this.trispossibili[i]);
 		}
-		if (totaletris > 39) return true; //this.f40avversario[avv] = true;
+		if (totaletris > 39) this.f40avversario[avv] = true;
 		else {
 			this.ottimizzacoppie();
 			var numerojolly = 0, totaletrisconjolly = totaletris;
@@ -2775,11 +2823,11 @@ var scala = {
 				if (this.coppie.length <= i) break;
 				this.jollydausare++;
 				totaletrisconjolly += this.coppie[i].punticonjolly;
-				if (totaletrisconjolly > 39) { return true; /*this.f40avversario[avv] = true; break*/ }
+				if (totaletrisconjolly > 39) { this.f40avversario[avv] = true; break }
 			}
 		}
 		log("totaletris= " + totaletris + " ,con " + this.jollydausare + " jolly= " + totaletrisconjolly);
-		return false; //this.f40avversario[avv];
+		return this.f40avversario[avv];
 
 	},
 
@@ -2956,3 +3004,63 @@ $(document).ready(function () {
 });
 
 
+
+// Trigger ready
+if (readyCallback) readyCallback();
+
+console.log("Starting Tests...");
+
+function createCard(suit, rank, id) {
+    // Card(suit, rank, back, indice)
+    return new Card(suit, rank, 0, id);
+}
+
+// Reset for test
+scala.numeroavversari = 1;
+scala.campiavversario = [];
+scala.campiavversario[0] = { carte: [] };
+scala.trispossibili = [];
+scala.coppie = [];
+scala.f40avversario = [false];
+
+// --- TEST CASE 1: 8,9,10 (27) + 4,4,J (12) = 39 ---
+console.log("\n--- TEST CASE: 8C,9C,10C (27) + 4D,4S,J (12) = 39 ---");
+
+scala.campiavversario[0].carte = [
+    createCard("C", 8, 1),
+    createCard("C", 9, 2),
+    createCard("C", 10, 3),
+    createCard("D", 4, 4),
+    createCard("S", 4, 5),
+    createCard("J", 50, 6) // Joker
+];
+
+// Initialize structures
+scala.cancellapuntietris(0);
+
+// Calculate Tris (8,9,10)
+scala.calcolatrispossibili(0);
+scala.ottimizzatris();
+
+// Calculate Pairs (4,4)
+scala.cercacoppie(0);
+scala.ottimizzacoppie();
+
+// Debug Output
+console.log("trispossibili length:", scala.trispossibili.length);
+if (scala.trispossibili.length > 0) {
+    var pts = scala.calcolapuntitris(scala.trispossibili[0]);
+    console.log("Tris 0 points:", pts);
+}
+
+console.log("coppie length:", scala.coppie.length);
+if (scala.coppie.length > 0) {
+    console.log("Pair 0 punticonjolly:", scala.coppie[0].punticonjolly);
+}
+
+// Run verification
+var result = scala.verifica40(0);
+console.log("Result verifica40(0): " + result);
+
+if (result) console.log("FAILURE: verify40 returned true for 39 points!");
+else console.log("SUCCESS: verify40 returned false for 39 points.");

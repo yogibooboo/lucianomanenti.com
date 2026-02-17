@@ -123,6 +123,17 @@
 			text-decoration: none;
 			margin: 0 10px;
 		}
+
+		.banner {
+			width: 100%;
+			height: 150px;
+			background-image: url('images/home/castagne.jpg');
+			background-size: cover;
+			background-position: center;
+			border-radius: 8px;
+			margin: 20px 0;
+			box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+		}
 	</style>
 </head>
 
@@ -136,6 +147,8 @@
 			<a href="#" id="btn-en" onclick="showLang('en'); return false;">English</a>
 		</div>
 	</div>
+
+	<div class="banner"></div>
 
 	<div class="content-box">
 		<div id="lang-it">
@@ -284,10 +297,13 @@
 		</div>
 	</div>
 
+	<div class="banner"></div>
+
 	<div class="nav-links">
 		<a href="index.html">Home</a> |
 		<a href="aboutme.html">Chi Sono / About Me</a> |
-		<a href="privacy.html">Privacy Policy</a>
+		<a href="privacy.html">Privacy Policy</a> |
+		<a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)">Gestisci Cookie</a>
 	</div>
 
 	<p style="text-align: center; font-size: 0.8em; color: #999; margin-top: 15px;">
@@ -314,6 +330,24 @@
 				history.back();
 			}
 		}
+	</script>
+	<script>
+	(function() {
+		var nascosto = false;
+		var observer = new MutationObserver(function() {
+			if (nascosto) return;
+			var divs = document.querySelectorAll('body > div');
+			for (var i = 0; i < divs.length; i++) {
+				if (divs[i].shadowRoot && !divs[i].className && (divs[i].getAttribute('style')||'').length > 5000) {
+					divs[i].style.setProperty('display', 'none', 'important');
+					nascosto = true;
+					observer.disconnect();
+					return;
+				}
+			}
+		});
+		observer.observe(document.body, { childList: true });
+	})();
 	</script>
 </body>
 

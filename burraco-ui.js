@@ -25,7 +25,14 @@ function setupEventi() {
         });
     });
 
-    $('#btn-inizia').addEventListener('click', iniziaPartita);
+    $('#btn-inizia').addEventListener('click', function () {
+        // Salva modalita scelta e ricarica pagina per rinfrescare AdSense
+        var modalita = '2v2';
+        var radio = document.querySelector('input[name="modalita"]:checked');
+        if (radio) modalita = radio.value;
+        try { localStorage.setItem('burraco_nuova', modalita); } catch (e) {}
+        location.reload();
+    });
 
     $$('.btn-nuova-partita').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -410,13 +417,23 @@ function renderAreaCombinazioni(combinazioni, containerSel) {
         const puntiPozzettoEl = titolo.querySelector('.punti-pozzetto');
         const puntiTotaleEl = titolo.querySelector('.punti-totale');
 
-        if (puntiBurracoEl) puntiBurracoEl.textContent = `Burraco: ${puntiBurraco}`;
-        if (puntiCarteEl) puntiCarteEl.textContent = `Carte: ${puntiCarte}`;
+        const haBurraco = combinazioni.some(c => c.isBurraco);
+        if (puntiBurracoEl) {
+            puntiBurracoEl.textContent = `Burraco: ${puntiBurraco}`;
+            puntiBurracoEl.classList.toggle('raggiunto', haBurraco);
+        }
+        if (puntiCarteEl) {
+            puntiCarteEl.textContent = `Carte: ${puntiCarte}`;
+            puntiCarteEl.classList.toggle('negativo', puntiCarte < 0);
+        }
         if (puntiPozzettoEl) {
             puntiPozzettoEl.textContent = `Pozzetto: ${puntiPozzetto}`;
-            puntiPozzettoEl.classList.toggle('non-preso', !haPozzetto);
+            puntiPozzettoEl.classList.toggle('raggiunto', haPozzetto);
         }
-        if (puntiTotaleEl) puntiTotaleEl.textContent = `= ${totale}`;
+        if (puntiTotaleEl) {
+            puntiTotaleEl.textContent = `= ${totale}`;
+            puntiTotaleEl.classList.toggle('negativo', totale < 0);
+        }
     }
 
     for (const comb of combinazioni) {
@@ -605,6 +622,7 @@ async function pescaDaMazzo() {
     game.giocatori[0].carte.push(carta);
     game.haPescato = true;
     game.fase = 'gioco';
+    aggiornaIndicatoreTurno();
     render();
 
     // Trova l'elemento della carta appena aggiunta (l'ultima)
@@ -622,6 +640,9 @@ async function pescaDaMazzo() {
     } else {
         playSound('pesca');
     }
+
+    // Controlla se il mazzo e' quasi esaurito
+    controlloMazzoEsaurito();
 }
 
 function pescaDaScarti() {
@@ -658,8 +679,9 @@ function pescaDaScarti() {
 
     game.haPescato = true;
     game.fase = 'gioco';
+    aggiornaIndicatoreTurno();
 
-    playSound('pesca');
+    playSound('dindon');
     render();
 }
 
@@ -678,6 +700,16 @@ async function scartaCarta(carta) {
     // Rimuovi carta dalla mano
     const idx = game.giocatori[0].carte.indexOf(carta);
     if (idx === -1) return;
+
+    // Se e' l'ultima carta e il pozzetto della squadra e' gia' stato preso, serve almeno un burraco per chiudere
+    if (game.giocatori[0].carte.length === 1 && game.pozzetti[0].length === 0) {
+        const haBurraco = game.combinazioniNoi.some(c => c.isBurraco);
+        if (!haBurraco) {
+            mostraMessaggio('Serve almeno un burraco per chiudere', 'error');
+            setTimeout(nascondiMessaggio, 2000);
+            return;
+        }
+    }
 
     salvaStato('scarta');
 
@@ -748,6 +780,12 @@ async function scartaCarta(carta) {
         }
     }
 
+    // Se ultimo turno (mazzo esaurito), fine partita senza chiusura
+    if (game.ultimoTurno) {
+        finePartita(null);
+        return;
+    }
+
     // Passa al prossimo giocatore
     game.haPescato = false;
     game.fase = 'pesca';
@@ -778,20 +816,20 @@ function toggleSelezioneCarta(carta) {
     render();
 }
 
-function depositaCombinazione(e) {
+async function depositaCombinazione(e) {
     if (game.fase !== 'gioco') return;
 
-    // Se ci sono carte selezionate e si clicca su una combinazione, attaccale
+    // Se ci sono carte selezionate e si clicca su una combinazione, prova ad attaccarle
     if (game.carteSelezionate.length > 0) {
         const combEl = e.target.closest('.combinazione');
         if (combEl) {
-            // Trova quale combinazione e' stata cliccata
             const combElements = Array.from($('#combinazioni-noi').querySelectorAll('.combinazione'));
             const combIndex = combElements.indexOf(combEl);
             if (combIndex >= 0) {
                 const combinazione = game.combinazioniNoi[combIndex];
-                attaccaCarteSelezionateACombinazione(combinazione);
-                return;
+                const riuscito = await attaccaCarteSelezionateACombinazione(combinazione);
+                if (riuscito !== false) return;
+                // Se non si attaccano, prosegui per provare a depositare come nuova combinazione
             }
         }
     }
@@ -822,6 +860,18 @@ function depositaCombinazione(e) {
     if (!risultato.valida) {
         console.log('Combinazione non valida:', risultato.motivo);
         return;
+    }
+
+    // Se depositare lascerebbe 0 o 1 carte (obbligato a scartare), serve un burraco
+    const carteRimanenti = game.giocatori[0].carte.length - game.carteSelezionate.length;
+    if (carteRimanenti <= 1 && game.pozzetti[0].length === 0) {
+        const haBurracoEsistente = game.combinazioniNoi.some(c => c.isBurraco);
+        const diventeraBurraco = game.carteSelezionate.length >= 7;
+        if (!haBurracoEsistente && !diventeraBurraco) {
+            mostraMessaggio('Serve almeno un burraco per chiudere', 'error');
+            setTimeout(nascondiMessaggio, 2000);
+            return;
+        }
     }
 
     salvaStato('combinazione');
@@ -902,8 +952,11 @@ function depositaCombinazione(e) {
 
     // Controlla se ha finito le carte
     if (game.giocatori[0].carte.length === 0) {
-        if (!game.giocatori[0].haPozzetto && game.pozzetti[0].length > 0) {
+        if (game.pozzetti[0].length > 0) {
             prendiPozzetto(0);
+        } else {
+            finePartita(true);
+            return;
         }
     }
 
@@ -1025,23 +1078,36 @@ function riordinaCartaMano(cartaOrigine, cartaDest) {
 }
 
 // Aggiunge una carta a una combinazione esistente
-function aggiungiCartaACombinazione(carta, combinazione, skipRenderAndSound = false) {
-    if (game.fase !== 'gioco') {
-        mostraMessaggio('Pescare prima di attaccare', 'error');
-        setTimeout(nascondiMessaggio, 2000);
-        return;
-    }
-    if (!game.haPescato) {
-        mostraMessaggio('Pescare prima di attaccare', 'error');
-        setTimeout(nascondiMessaggio, 2000);
-        return;
+function aggiungiCartaACombinazione(carta, combinazione, skipRenderAndSound = false, skipValidazione = false) {
+    if (!skipValidazione) {
+        if (game.fase !== 'gioco') {
+            mostraMessaggio('Pescare prima di attaccare', 'error');
+            setTimeout(nascondiMessaggio, 2000);
+            return;
+        }
+        if (!game.haPescato) {
+            mostraMessaggio('Pescare prima di attaccare', 'error');
+            setTimeout(nascondiMessaggio, 2000);
+            return;
+        }
+
+        // Verifica che la carta possa essere aggiunta (o sostituire una matta)
+        const risultato = puoAggiungereACombinazione(carta, combinazione);
+        if (!risultato) {
+            render();
+            return;
+        }
     }
 
-    // Verifica che la carta possa essere aggiunta (o sostituire una matta)
-    const risultato = puoAggiungereACombinazione(carta, combinazione);
-    if (!risultato) {
-        render();
-        return;
+    // Se resterebbe 0 o 1 carta (obbligato a scartare), serve un burraco
+    if (game.giocatori[0].carte.length <= 2 && game.pozzetti[0].length === 0) {
+        const haBurracoEsistente = game.combinazioniNoi.some(c => c.isBurraco);
+        const diventeraBurraco = combinazione.carte.length + 1 >= 7;
+        if (!haBurracoEsistente && !diventeraBurraco) {
+            mostraMessaggio('Serve almeno un burraco per chiudere', 'error');
+            setTimeout(nascondiMessaggio, 2000);
+            return;
+        }
     }
 
     salvaStato('aggiungi-carta');
@@ -1077,7 +1143,7 @@ function aggiungiCartaACombinazione(carta, combinazione, skipRenderAndSound = fa
     registraMossa(AZIONE_ATTACCO, {
         carta: carta.id,
         combinazione: combinazione.id,
-        sostituzione: risultato.sostituzione || false
+        sostituzione: (typeof risultato !== 'undefined' && risultato.sostituzione) || false
     });
 
     // Riordina la combinazione
@@ -1113,8 +1179,11 @@ function aggiungiCartaACombinazione(carta, combinazione, skipRenderAndSound = fa
 
         // Controlla se ha finito le carte
         if (game.giocatori[0].carte.length === 0) {
-            if (!game.giocatori[0].haPozzetto && game.pozzetti[0].length > 0) {
+            if (game.pozzetti[0].length > 0) {
                 prendiPozzetto(0);
+            } else {
+                finePartita(true);
+                return;
             }
         }
 
@@ -1124,16 +1193,29 @@ function aggiungiCartaACombinazione(carta, combinazione, skipRenderAndSound = fa
 
 // Attacca tutte le carte selezionate a una combinazione esistente
 async function attaccaCarteSelezionateACombinazione(combinazione) {
-    if (game.carteSelezionate.length === 0) return;
+    if (game.carteSelezionate.length === 0) return false;
+
+    // Salva il numero di carte prima dell'aggiunta per il check burraco
+    const cartePrima = combinazione.carte.length;
 
     // Test: combinazione esistente + carte selezionate formano una combinazione valida?
     const carteDaTestare = [...combinazione.carte, ...game.carteSelezionate];
     const risultatoTest = verificaCombinazione(carteDaTestare);
 
     if (!risultatoTest.valida) {
-        mostraMessaggio('Combinazione non valida: ' + risultatoTest.motivo, 'error');
-        setTimeout(nascondiMessaggio, 2000);
-        return;
+        return false;
+    }
+
+    // Se attaccare lascerebbe 0 o 1 carte (obbligato a scartare), serve un burraco
+    const carteRimanenti = game.giocatori[0].carte.length - game.carteSelezionate.length;
+    if (carteRimanenti <= 1 && game.pozzetti[0].length === 0) {
+        const haBurracoEsistente = game.combinazioniNoi.some(c => c.isBurraco);
+        const diventeraBurraco = carteDaTestare.length >= 7;
+        if (!haBurracoEsistente && !diventeraBurraco) {
+            mostraMessaggio('Serve almeno un burraco per chiudere', 'error');
+            setTimeout(nascondiMessaggio, 2000);
+            return false;
+        }
     }
 
     // Salva le posizioni di partenza di tutte le carte selezionate
@@ -1156,14 +1238,27 @@ async function attaccaCarteSelezionateACombinazione(combinazione) {
 
     // Usa la funzione già esistente per ogni carta, senza render/sound
     for (const carta of carteOrdinate) {
-        aggiungiCartaACombinazione(carta, combinazione, true);
+        aggiungiCartaACombinazione(carta, combinazione, true, true);
+    }
+
+    // Controlla assoAlto dopo aver aggiunto tutte le carte
+    if (combinazione.tipo === TIPO_SCALA && !combinazione.assoAlto) {
+        const haAsso = combinazione.carte.some(c => c.numero === 1);
+        const haK = combinazione.carte.some(c => {
+            if (isCartaMatta(c)) return c.jollycomeNumero === 13;
+            return c.numero === 13;
+        });
+        if (haAsso && haK) {
+            combinazione.assoAlto = true;
+            combinazione.carte = ordinaScalaConJolly(combinazione.carte, true);
+        }
     }
 
     // Render unico dopo tutte le aggiunte
     render();
 
-    // Suono appropriato
-    if (combinazione.isBurraco && combinazione.carte.length === 7) {
+    // Suono appropriato: tada se si è appena formato il burraco (da <7 a >=7)
+    if (combinazione.isBurraco && cartePrima < 7) {
         playSound('tada');
     } else {
         playSound('combinazione');
@@ -1204,10 +1299,14 @@ async function attaccaCarteSelezionateACombinazione(combinazione) {
 
     // Controlla se ha finito le carte
     if (game.giocatori[0].carte.length === 0) {
-        if (!game.giocatori[0].haPozzetto && game.pozzetti[0].length > 0) {
+        if (game.pozzetti[0].length > 0) {
             prendiPozzetto(0);
+        } else {
+            finePartita(true);
+            return true;
         }
     }
+    return true;
 }
 
 function prendiPozzetto(squadra) {
@@ -1713,6 +1812,7 @@ function mostraModal(id) {
 
 function chiudiModals() {
     $('#schermo').style.display = 'none';
+    $$('.modal').forEach(m => m.classList.remove('trasparente'));
     $$('.modal').forEach(m => m.style.display = 'none');
 }
 
@@ -2886,6 +2986,10 @@ window.addEventListener('beforeunload', () => {
 });
 
 // ============================================================================
+// MODAL TRASPARENZA
+// ============================================================================
+
+// ============================================================================
 // AVVIO
 // ============================================================================
 
@@ -2898,17 +3002,33 @@ function init() {
         scarta: $('#snd-scarta'),
         combinazione: $('#snd-combinazione'),
         ordina: $('#snd-ordina'),
-        vittoria: $('#snd-vittoria'),
+        tada: $('#snd-vittoria'),
+        applauso: $('#snd-burraco'),
         sconfitta: $('#snd-sconfitta'),
         pozzetto: $('#snd-pozzetto'),
-        burraco: $('#snd-burraco')
+        magic: $('#snd-pozzetto'),
+        dindon: $('#snd-dindon')
     };
 
     // Setup eventi UI
     setupEventi();
 
-    // Avvia partita direttamente in modalita 2v2
-    iniziaPartita();
+    // Se c'e' un flag localStorage da reload, leggi modalita e avvia
+    var autoModalita = null;
+    try {
+        autoModalita = localStorage.getItem('burraco_nuova');
+        if (autoModalita) localStorage.removeItem('burraco_nuova');
+    } catch (e) {}
+
+    if (autoModalita) {
+        // Imposta il radio button corrispondente
+        var radio = document.querySelector('input[name="modalita"][value="' + autoModalita + '"]');
+        if (radio) radio.checked = true;
+        iniziaPartita();
+    } else {
+        // Prima visita: avvia partita direttamente in modalita 2v2
+        iniziaPartita();
+    }
 }
 
 document.addEventListener('DOMContentLoaded', init);

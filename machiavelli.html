@@ -26,7 +26,7 @@
 
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<link rel="stylesheet" href="machiavelli.css?v=1.2" />
+	<link rel="stylesheet" href="machiavelli.css?v=1.4" />
 
 	<meta name="Description"
 		content="Play free Machiavelli card game online no registration. Choose between one, two or three opponents. Gioca Machiavelli gratis online senza registrazione">
@@ -59,21 +59,23 @@
 				</div>
 
 				<div id="passopasso" class="pulsante5" style="top: 350px; left: 10px; ">STEPBYSTEP<br>passopasso</div>
-				<div id="group" class="pulsante5" style="top: 410px; left: 10px; ">GROUP<br>raggruppa</div>
-				<div id="autosort" class="pulsante5" style="top: 470px; left: 10px; ">AUTO SORT<br>ordina auto</div>
-				<div id="sort" class="pulsante5" style="top: 530px; left: 10px; z-index:1000">SORT<br>ordina</div>
+				<div id="group" class="pulsante5" style="top: 400px; left: 10px; ">GROUP<br>raggruppa</div>
+				<div id="autosort" class="pulsante5" style="top: 450px; left: 10px; ">AUTO SORT<br>ordina auto</div>
+				<div id="sort" class="pulsante5" style="top: 500px; left: 10px; z-index:1000">SORT<br>ordina</div>
 				<a href="scala40.html">
-					<div class="pulsantescala40" style="top: 590px; left: 10px; "></div>
+					<div class="pulsantescala40" style="top: 550px; left: 10px; "></div>
 				</a>
 				<a href="spider.html">
-					<div class="pulsantespider" style="top: 640px; left: 10px; "></div>
+					<div class="pulsantespider" style="top: 5950px; left: 10px; "></div>
 				</a>
 				<a href="aboutme.html" target="_blank">
-					<div class="pulsantecomments" style="top: 690px; left: 10px; "></div>
+					<div class="pulsantecomments" style="top: 650px; left: 10px; "></div>
 				</a>
 				<a href="privacy.html" target="_blank"
 					style="position: absolute; top: 740px; left: 30px; color: white; text-decoration: none; font-size: 14px; font-family: sans-serif; z-index: 1000;">Privacy
 					Policy</a>
+				<a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)"
+					style="position: absolute; top: 710px; left: 25px; color: white; text-decoration: none; font-size: 14px; font-family: sans-serif; z-index: 1000;">Gestisci Cookie</a>
 
 
 
@@ -198,11 +200,29 @@
 		<audio id="split" src="sounds/scala40/split.mp3"></audio>
 
 		<script src="jquery-2.1.1.js"></script>
-		<script src="machiavellicode.js?v=1.2"></script>
-		<script src="machiavellic2.js"></script>
+		<script src="machiavellicode.js?v=1.4"></script>
+		<script src="machiavellic2.js?v=1.4"></script>
 
 
 	</div> <!-- sfondo-->
+	<script>
+	(function() {
+		var nascosto = false;
+		var observer = new MutationObserver(function() {
+			if (nascosto) return;
+			var divs = document.querySelectorAll('body > div');
+			for (var i = 0; i < divs.length; i++) {
+				if (divs[i].shadowRoot && !divs[i].className && (divs[i].getAttribute('style')||'').length > 5000) {
+					divs[i].style.setProperty('display', 'none', 'important');
+					nascosto = true;
+					observer.disconnect();
+					return;
+				}
+			}
+		});
+		observer.observe(document.body, { childList: true });
+	})();
+	</script>
 </body>
 
 </html>
