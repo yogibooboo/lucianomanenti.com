@@ -232,6 +232,7 @@ function iniziaPartita() {
     game.puntiNoi = 0;
     game.puntiLoro = 0;
     game.storia = [];
+    game.undoStack = [];
     game.turno = 0;
     game.ultimoTurno = false;
 
@@ -257,14 +258,28 @@ function iniziaPartita() {
     game.haPescato = false;
 
     aggiornaIndicatoreTurno();
+
+    // Snapshot iniziale (permette di annullare anche la prima pesca)
+    salvaStato('inizio-partita');
 }
 
 function creaGiocatori() {
     game.giocatori = [];
 
-    // Seleziona personaggi casuali per i bot
+    // Seleziona personaggi per i bot
     const numBot = game.modalita === '2v2' ? 3 : 1;
-    const personaggiSelezionati = selezionaPersonaggiCasuali(numBot);
+    let personaggiSelezionati;
+
+    // In un torneo i personaggi rimangono fissi tra una mano e l'altra
+    if (game.torneo && game.torneo.personaggiIndici) {
+        personaggiSelezionati = game.torneo.personaggiIndici.map(i => PERSONAGGI[i]);
+    } else {
+        personaggiSelezionati = selezionaPersonaggiCasuali(numBot);
+        if (game.torneo) {
+            game.torneo.personaggiIndici = personaggiSelezionati.map(p => PERSONAGGI.indexOf(p));
+            try { localStorage.setItem('burraco_torneo', JSON.stringify(game.torneo)); } catch (e) {}
+        }
+    }
 
     if (game.modalita === '2v2') {
         // 2 vs 2
@@ -571,6 +586,11 @@ function ordinaScalaConJolly(carte, assoAlto = false) {
     } else {
         normali = [...altreNormali];
         jolly = [...jollyVeri, ...pinelleAltroSeme];
+    }
+
+    // Reset jollycomeNumero per pinelle trattate come carte naturali
+    for (const c of normali) {
+        if (c.isPinella) c.jollycomeNumero = null;
     }
 
     // Ordina le carte normali per numero
@@ -953,6 +973,9 @@ function prossimoTurno() {
 
     if (!game.giocatori[game.giocatoreCorrente].isUmano) {
         setTimeout(turnoAI, 1000);
+    } else {
+        // Turno dell'umano: salva stato post-AI come punto di ripristino
+        salvaStato('inizio-turno');
     }
 }
 
@@ -988,6 +1011,7 @@ async function pausaDebugAI(giocatore, fase) {
 }
 
 async function turnoAI() {
+
     const giocatore = game.giocatori[game.giocatoreCorrente];
     const selettoreCarte = getSelettoreCarteGiocatore(giocatore);
     const isLaterale = giocatore.posizione === 'left' || giocatore.posizione === 'right';
@@ -1181,7 +1205,8 @@ async function turnoAI() {
         // Anima lo scarto
         if (partenzaRect) {
             const scartiContainer = $('#scarti-container');
-            const cartaElFinale = scartiContainer.lastElementChild;
+            const cards = scartiContainer.querySelectorAll('.scarto');
+            const cartaElFinale = cards[cards.length - 1];
 
             if (cartaElFinale) {
                 cartaElFinale.style.visibility = 'hidden';
@@ -1349,12 +1374,20 @@ function finePartita(haVintoNoi) {
                  - r.penalitaMano - r.penalitaPozzetto;
     }
 
-    // Aggiorna punteggi globali
+    // Aggiorna punteggi globali della mano
     game.puntiNoi = risultato.noi.totale;
     game.puntiLoro = risultato.loro.totale;
 
-    // Determina vincitore dal punteggio (non da chi ha chiuso)
+    // Determina vincitore della mano dal punteggio
     const vinceNoi = game.puntiNoi >= game.puntiLoro;
+
+    // ===== AGGIORNA TORNEO =====
+    if (game.torneo) {
+        game.torneo.totNoi += game.puntiNoi;
+        game.torneo.totLoro += game.puntiLoro;
+        // Persisti su localStorage
+        try { localStorage.setItem('burraco_torneo', JSON.stringify(game.torneo)); } catch (e) {}
+    }
 
     // ===== MOSTRA SCHERMATA RISULTATI =====
     mostraRisultatoFinale(risultato, vinceNoi);
@@ -1418,15 +1451,60 @@ function mostraRisultatoFinale(risultato, vinceNoi) {
                 colore + '">' + segno + valore + '</td></tr>';
     }
 
-    const titoloColore = vinceNoi ? '#4f4' : '#f44';
-    const titolo = vinceNoi ? 'HAI VINTO!' : 'HAI PERSO';
+    // ===== Titolo e sottotitolo =====
+    const torneo = game.torneo;
+    let titoloColore, titolo;
+    let torneoConcluso = false;
+
+    if (torneo) {
+        const vinceTorneoNoi = torneo.totNoi >= torneo.limite;
+        const vinceTorneoLoro = torneo.totLoro >= torneo.limite;
+        torneoConcluso = vinceTorneoNoi || vinceTorneoLoro;
+        if (torneoConcluso) {
+            titoloColore = vinceTorneoNoi ? '#4f4' : '#f44';
+            titolo = vinceTorneoNoi ? 'HAI VINTO LA PARTITA!' : 'HAI PERSO LA PARTITA';
+        } else {
+            titoloColore = vinceNoi ? '#4f4' : '#f44';
+            titolo = (vinceNoi ? 'Mano vinta' : 'Mano persa') + ' - Mano ' + torneo.mano;
+        }
+    } else {
+        titoloColore = vinceNoi ? '#4f4' : '#f44';
+        titolo = vinceNoi ? 'HAI VINTO!' : 'HAI PERSO';
+    }
+
     const sottotitolo = game.ultimoTurno
-        ? '<p style="text-align:center;color:#fc8;margin:0 0 12px;font-size:13px">Mazzo esaurito - nessun bonus chiusura</p>'
+        ? '<p style="text-align:center;color:#fc8;margin:0 0 8px;font-size:13px">Mazzo esaurito - nessun bonus chiusura</p>'
         : '';
 
+    // ===== Riepilogo torneo: questa mano / totale precedente / totale generale =====
+    const rigaTorneo = torneo ? (function () {
+        const prevNoi  = torneo.totNoi  - risultato.noi.totale;
+        const prevLoro = torneo.totLoro - risultato.loro.totale;
+        function cellVal(v, big) {
+            const col = v > 0 ? '#4f4' : v < 0 ? '#f88' : '#aaa';
+            const pre = v > 0 ? '+' : '';
+            const sz  = big ? 'font-size:15px;font-weight:bold' : '';
+            return '<td style="text-align:right;font-family:monospace;padding:4px 8px;color:' + col + ';' + sz + '">' + pre + v + '</td>';
+        }
+        return '<div style="margin:8px 0;background:rgba(0,0,0,0.25);border-radius:6px;padding:6px 8px">' +
+            '<table style="width:100%;border-collapse:collapse;font-size:13px">' +
+            '<tr><th></th>' +
+                '<th style="text-align:right;color:#8cf;padding:4px 8px">NOI</th>' +
+                '<th style="text-align:right;color:#fc8;padding:4px 8px">LORO</th></tr>' +
+            '<tr style="border-bottom:1px solid #444"><td style="padding:4px 4px;color:#ccc">Questa mano</td>' +
+                cellVal(risultato.noi.totale, false) + cellVal(risultato.loro.totale, false) + '</tr>' +
+            '<tr><td style="padding:4px 4px;color:#999">Totale precedente</td>' +
+                cellVal(prevNoi, false) + cellVal(prevLoro, false) + '</tr>' +
+            '<tr style="border-top:2px solid #666;background:rgba(0,0,0,0.2)">' +
+                '<td style="padding:6px 4px;color:#fff;font-weight:bold;font-size:14px">Totale</td>' +
+                cellVal(torneo.totNoi, true) + cellVal(torneo.totLoro, true) + '</tr>' +
+            '<tr><td colspan="3" style="text-align:right;color:#888;font-size:11px;padding:2px 4px">Limite: ' + torneo.limite + '</td></tr>' +
+            '</table></div>';
+    })() : '';
+
     const html = '<div style="padding:16px 20px">' +
-        '<h2 style="text-align:center;color:' + titoloColore + ';margin:0 0 ' + (game.ultimoTurno ? '4' : '16') + 'px;font-size:22px">' +
-            titolo + '</h2>' + sottotitolo +
+        '<h2 style="text-align:center;color:' + titoloColore + ';margin:0 0 4px;font-size:22px">' + titolo + '</h2>' +
+        sottotitolo + rigaTorneo +
         '<div style="display:flex;gap:20px">' +
             '<div style="flex:1">' +
                 '<h3 style="color:#8cf;margin:0 0 8px;font-size:14px;text-transform:uppercase">NOI</h3>' +
@@ -1440,22 +1518,63 @@ function mostraRisultatoFinale(risultato, vinceNoi) {
         '</div>' +
     '</div>';
 
-    // Usa il modal vittoria/sconfitta esistente
-    const modalEl = vinceNoi ? $('#modal-vittoria') : $('#modal-sconfitta');
-    modalEl.innerHTML = html +
-        '<div style="display:flex;gap:10px;justify-content:center;margin:12px auto">' +
-        '<button class="btn-modal btn-trasparenza" title="Mostra/nascondi carte sotto">VEDI CARTE</button>' +
-        '<button class="btn-modal btn-nuova-partita">NUOVA PARTITA</button>' +
-        '</div>';
+    // ===== Bottoni =====
+    let bottoni;
+    if (torneo && !torneoConcluso) {
+        // Torneo in corso: pulsante "PROSSIMA MANO" + abbandona
+        bottoni = '<div style="display:flex;gap:10px;justify-content:center;margin:12px auto">' +
+            '<button class="btn-modal btn-trasparenza" title="Mostra/nascondi carte sotto">VEDI CARTE</button>' +
+            '<button class="btn-modal btn-abbandona-torneo">ABBANDONA</button>' +
+            '<button class="btn-modal btn-prossima-mano">PROSSIMA MANO</button>' +
+            '</div>';
+    } else {
+        bottoni = '<div style="display:flex;gap:10px;justify-content:center;margin:12px auto">' +
+            '<button class="btn-modal btn-trasparenza" title="Mostra/nascondi carte sotto">VEDI CARTE</button>' +
+            '<button class="btn-modal btn-nuova-partita">NUOVA PARTITA</button>' +
+            '</div>';
+    }
 
-    // Riattacca eventi ai bottoni
-    modalEl.querySelector('.btn-nuova-partita').addEventListener('click', () => {
-        chiudiModals();
-        mostraModal('modal-nuova');
-    });
+    // Usa il modal vittoria/sconfitta esistente
+    const modalEl = (torneo && !torneoConcluso)
+        ? (vinceNoi ? $('#modal-vittoria') : $('#modal-sconfitta'))
+        : (torneo ? (torneo.totNoi >= torneo.limite ? $('#modal-vittoria') : $('#modal-sconfitta'))
+                  : (vinceNoi ? $('#modal-vittoria') : $('#modal-sconfitta')));
+
+    modalEl.innerHTML = html + bottoni;
+    modalEl.style.width = '480px';
+    modalEl.style.maxHeight = '600px';
+
+    // Riattacca eventi
     modalEl.querySelector('.btn-trasparenza').addEventListener('click', () => {
         modalEl.classList.toggle('trasparente');
     });
+
+    if (torneo && !torneoConcluso) {
+        // Prossima mano: ricarica la pagina mantenendo il torneo
+        modalEl.querySelector('.btn-prossima-mano').addEventListener('click', () => {
+            if (torneo) torneo.mano++;
+            try {
+                localStorage.setItem('burraco_torneo', JSON.stringify(torneo));
+                localStorage.setItem('burraco_nuova', game.modalita);
+            } catch (e) {}
+            location.reload();
+        });
+        // Abbandona torneo
+        modalEl.querySelector('.btn-abbandona-torneo').addEventListener('click', () => {
+            try { localStorage.removeItem('burraco_torneo'); } catch (e) {}
+            game.torneo = null;
+            chiudiModals();
+            mostraModal('modal-nuova');
+        });
+    } else {
+        // Fine: nuova partita (azzera torneo)
+        modalEl.querySelector('.btn-nuova-partita').addEventListener('click', () => {
+            try { localStorage.removeItem('burraco_torneo'); } catch (e) {}
+            game.torneo = null;
+            chiudiModals();
+            mostraModal('modal-nuova');
+        });
+    }
 
     mostraModal(modalEl.id);
 }
@@ -1464,46 +1583,34 @@ function mostraRisultatoFinale(risultato, vinceNoi) {
 // UNDO
 // ============================================================================
 
-// DEPRECATO: lo stato viene salvato negli snapshot della storia
-// Mantenuto per compatibilità con chiamate esistenti
-function salvaStato(_azione) {
-    // No-op: il salvataggio avviene tramite registraMossa() con snapshot
+// Salva uno snapshot PRIMA di ogni azione del giocatore umano
+function salvaStato(azione) {
+    if (!game.undoStack) game.undoStack = [];
+    game.undoStack.push({
+        azione: azione,
+        turno: game.turno,
+        snapshot: creaSnapshot()
+    });
     renderUndoButton();
 }
 
 function undo() {
     if (game.fase === 'finito') return;
-    if (game.storia.length === 0) return;
+    // Inibito durante il turno AI
+    if (!game.giocatori[game.giocatoreCorrente]?.isUmano) return;
+    // Serve almeno 2 elementi: lo stato base + almeno un'azione
+    if (!game.undoStack || game.undoStack.length <= 1) return;
 
-    // Trova l'ultimo inizio turno del giocatore umano (giocatore 0)
-    // Cerchiamo la pesca del giocatore 0, che segna l'inizio del suo turno
-    let indiceTurnoUmano = -1;
-    for (let i = game.storia.length - 1; i >= 0; i--) {
-        const mossa = game.storia[i];
-        if (mossa.giocatore === 0 &&
-            (mossa.azione === AZIONE_PESCA_MAZZO || mossa.azione === AZIONE_PESCA_SCARTI)) {
-            indiceTurnoUmano = i;
-            break;
-        }
-    }
-
-    if (indiceTurnoUmano === -1) {
-        console.log('Undo: nessun turno umano da annullare');
-        return;
-    }
-
-    // Ripristina lo snapshot PRIMA di quella mossa
-    const mossa = game.storia[indiceTurnoUmano];
-    ripristinaSnapshot(mossa.snapshot);
+    // Se siamo a inizio turno (prima della pesca), il top e' 'inizio-turno'
+    // che e' lo stesso stato attuale: saltarlo e tornare allo scarto precedente
+    const quanti = (!game.haPescato && game.undoStack.length > 2) ? 2 : 1;
+    for (let i = 0; i < quanti - 1; i++) game.undoStack.pop();
+    const stato = game.undoStack.pop();
+    ripristinaSnapshot(stato.snapshot);
 
     // Ripristina il turno
-    game.turno = mossa.turno;
+    game.turno = stato.turno;
     game.giocatoreCorrente = 0;
-    game.fase = 'pesca';
-    game.haPescato = false;
-
-    // Tronca la storia da quel punto
-    game.storia = game.storia.slice(0, indiceTurnoUmano);
 
     // Ricalcola punteggi
     calcolaPunteggi();
@@ -1511,5 +1618,6 @@ function undo() {
     playSound('ordina');
     render();
     aggiornaIndicatoreTurno();
-    console.log('Undo completato, storia troncata a', game.storia.length, 'mosse');
+    renderUndoButton();
+    console.log('Undo:', stato.azione, '- stack rimasto:', game.undoStack.length);
 }

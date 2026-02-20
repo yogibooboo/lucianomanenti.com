@@ -30,7 +30,46 @@ function setupEventi() {
         var modalita = '2v2';
         var radio = document.querySelector('input[name="modalita"]:checked');
         if (radio) modalita = radio.value;
-        try { localStorage.setItem('burraco_nuova', modalita); } catch (e) {}
+
+        // Tipo partita: singola o torneo
+        var tipoPartita = 'singola';
+        var radioTipo = document.querySelector('input[name="tipo-partita"]:checked');
+        if (radioTipo) tipoPartita = radioTipo.value;
+
+        var limiteTorneo = null;
+        var limiteSelVal = null;
+        if (tipoPartita === 'torneo') {
+            var sel = document.getElementById('sel-limite-torneo');
+            limiteSelVal = sel.value;
+            if (limiteSelVal === 'custom') {
+                limiteTorneo = parseInt(document.getElementById('inp-limite-custom').value) || 1505;
+            } else {
+                limiteTorneo = parseInt(limiteSelVal);
+            }
+        }
+
+        // Salva preferenze per la prossima apertura del modale
+        try {
+            localStorage.setItem('burraco_prefs', JSON.stringify({
+                tipoPartita: tipoPartita,
+                limiteSelVal: limiteSelVal,
+                limiteCustom: tipoPartita === 'torneo' && limiteSelVal === 'custom'
+                    ? parseInt(document.getElementById('inp-limite-custom').value) || 1505
+                    : null
+            }));
+        } catch (e) {}
+
+        try {
+            localStorage.setItem('burraco_nuova', modalita);
+            if (tipoPartita === 'torneo') {
+                // Nuova partita: sempre torneo fresco da zero
+                localStorage.setItem('burraco_torneo', JSON.stringify({
+                    limite: limiteTorneo, totNoi: 0, totLoro: 0, mano: 1
+                }));
+            } else {
+                localStorage.removeItem('burraco_torneo');
+            }
+        } catch (e) {}
         location.reload();
     });
 
@@ -52,8 +91,14 @@ function setupEventi() {
         }
     });
 
-    // Scarti
-    $('#scarti-container').addEventListener('click', pescaDaScarti);
+    // Scarti: scarta la carta selezionata (se una sola), altrimenti pesca dagli scarti
+    $('#scarti-container').addEventListener('click', function () {
+        if (game.carteSelezionate.length === 1 && game.fase === 'gioco' && game.haPescato) {
+            scartaCarta(game.carteSelezionate[0]);
+        } else {
+            pescaDaScarti();
+        }
+    });
 
     // Aree combinazioni (entrambe funzionano per depositare, in caso di overflow)
     $('#combinazioni-noi').addEventListener('click', depositaCombinazione);
@@ -169,6 +214,7 @@ function getCartaSpritePosition(carta, faceUp) {
 
 function renderScarti() {
     const container = $('#scarti-container');
+    const nota = container.querySelector('#scarti-nota');
     container.innerHTML = '';
 
     // Aggiorna indicatore scarti (stesso stile di Noi/Loro)
@@ -195,6 +241,7 @@ function renderScarti() {
         el.style.zIndex = i;
         container.appendChild(el);
     }
+    if (nota) container.appendChild(nota);
 }
 
 function renderPozzetti() {
@@ -476,20 +523,91 @@ function renderAreaCombinazioni(combinazioni, containerSel) {
 
         container.appendChild(combEl);
     }
+
+    // Comprimi combinazioni se debordano orizzontalmente
+    comprimiCombinazioni(container, containerSel);
+}
+
+function comprimiCombinazioni(container, containerSel) {
+    const combElements = container.querySelectorAll('.combinazione');
+    if (combElements.length === 0) return;
+
+    var isLoro = containerSel.includes('loro');
+    var marginProp = isLoro ? 'marginLeft' : 'marginRight';
+
+    // Reset margini e z-index precedenti
+    for (var i = 0; i < combElements.length; i++) {
+        combElements[i].style[marginProp] = '';
+        combElements[i].style.zIndex = '';
+    }
+
+    // Per "loro" (row-reverse): le prime nel DOM sono a destra,
+    // devono stare sopra (z-index decrescente)
+    if (isLoro) {
+        for (var i = 0; i < combElements.length; i++) {
+            combElements[i].style.zIndex = combElements.length - i;
+        }
+    }
+
+    if (combElements.length <= 1) return;
+
+    // Larghezza disponibile (meno padding)
+    var containerWidth = container.clientWidth - 10;
+
+    // Larghezza visuale di ogni combinazione: carta scalata a 0.73
+    var cartaWidth = Math.round(71 * 0.73); // 52px
+    var sommaLarghezze = 0;
+    for (var i = 0; i < combElements.length; i++) {
+        sommaLarghezze += cartaWidth + 2; // +2 per padding combinazione
+    }
+
+    if (sommaLarghezze > containerWidth) {
+        // Calcola il margine negativo necessario distribuito su n-1 gap
+        var eccesso = sommaLarghezze - containerWidth;
+        var margineNeg = -Math.ceil(eccesso / (combElements.length - 1));
+        for (var i = 0; i < combElements.length - 1; i++) {
+            combElements[i].style[marginProp] = margineNeg + 'px';
+        }
+    }
 }
 
 function renderPunteggi() {
-    $('#punti-noi').textContent = game.puntiNoi;
-    $('#punti-loro').textContent = game.puntiLoro;
+    // Pannello torneo: visibile solo in modalita torneo
+    const pannello = $('#pannello-torneo');
+    if (pannello) pannello.style.display = game.torneo ? '' : 'none';
+
+    const pNoi  = game.torneo ? game.torneo.totNoi  : 0;
+    const pLoro = game.torneo ? game.torneo.totLoro : 0;
+    const verde = 'rgb(58,255,88)', rosso = 'rgb(255,52,52)';
+    $('#punti-noi').textContent  = pNoi;
+    $('#punti-loro').textContent = pLoro;
+    $('#punti-noi').style.color  = pNoi >= pLoro ? verde : rosso;
+    $('#punti-loro').style.color = pLoro >= pNoi ? verde : rosso;
+
+    // Scritta limite torneo
+    const torneoInfo = $('#torneo-info');
+    if (torneoInfo && game.torneo) {
+        torneoInfo.textContent = 'partita a ' + game.torneo.limite + ' - mano ' + game.torneo.mano;
+    }
+
+    // Barra punteggi: usa il punteggio corrente della mano (come punti-totale)
+    const _calcTot = (combs, squadra) => {
+        let pb = 0, pc = 0;
+        for (const c of combs) { pb += c.puntiBurraco || 0; pc += c.puntiCarte || 0; }
+        const haPoz = game.giocatori.filter(g => g.squadra === squadra).some(g => g.haPozzetto);
+        return pb + pc + (haPoz ? 0 : -100);
+    };
+    const scoreNoi  = _calcTot(game.combinazioniNoi,  0);
+    const scoreLoro = _calcTot(game.combinazioniLoro, 1);
+    const diff = scoreNoi - scoreLoro;
+    const pctNoi = Math.max(5, Math.min(95, 50 + diff / 500 * 50));
+    const pctLoro = 100 - pctNoi;
+    const bNoi = $('#barra-noi'), bLoro = $('#barra-loro');
+    if (bNoi) { bNoi.style.width = pctNoi + '%'; bNoi.style.backgroundColor = diff >= 0 ? verde : rosso; }
+    if (bLoro) { bLoro.style.width = pctLoro + '%'; bLoro.style.backgroundColor = diff <= 0 ? verde : rosso; }
 }
 
 function renderUndoButton() {
-    // Conta quanti turni del giocatore umano ci sono nella storia
-    const turniUmano = game.storia.filter(m =>
-        m.giocatore === 0 &&
-        (m.azione === AZIONE_PESCA_MAZZO || m.azione === AZIONE_PESCA_SCARTI)
-    ).length;
-    $('#btn-undo').textContent = `UNDO (${turniUmano})`;
 }
 
 function creaElementoCarta(carta) {
@@ -745,9 +863,10 @@ async function scartaCarta(carta) {
 
     // Anima la carta dalla posizione originale alla posizione finale negli scarti
     if (partenzaRect) {
-        // Trova l'ultimo elemento negli scarti (la carta appena aggiunta)
+        // Trova l'ultima carta negli scarti (escludendo la nota testuale)
         const scartiContainer = $('#scarti-container');
-        const cartaElFinale = scartiContainer.lastElementChild;
+        const cards = scartiContainer.querySelectorAll('.scarto');
+        const cartaElFinale = cards[cards.length - 1];
 
         if (cartaElFinale) {
             // Nascondi temporaneamente la carta finale
@@ -1097,16 +1216,16 @@ function aggiungiCartaACombinazione(carta, combinazione, skipRenderAndSound = fa
             render();
             return;
         }
-    }
 
-    // Se resterebbe 0 o 1 carta (obbligato a scartare), serve un burraco
-    if (game.giocatori[0].carte.length <= 2 && game.pozzetti[0].length === 0) {
-        const haBurracoEsistente = game.combinazioniNoi.some(c => c.isBurraco);
-        const diventeraBurraco = combinazione.carte.length + 1 >= 7;
-        if (!haBurracoEsistente && !diventeraBurraco) {
-            mostraMessaggio('Serve almeno un burraco per chiudere', 'error');
-            setTimeout(nascondiMessaggio, 2000);
-            return;
+        // Se resterebbe 0 o 1 carta (obbligato a scartare), serve un burraco
+        if (game.giocatori[0].carte.length <= 2 && game.pozzetti[0].length === 0) {
+            const haBurracoEsistente = game.combinazioniNoi.some(c => c.isBurraco);
+            const diventeraBurraco = combinazione.carte.length + 1 >= 7;
+            if (!haBurracoEsistente && !diventeraBurraco) {
+                mostraMessaggio('Serve almeno un burraco per chiudere', 'error');
+                setTimeout(nascondiMessaggio, 2000);
+                return;
+            }
         }
     }
 
@@ -1148,18 +1267,9 @@ function aggiungiCartaACombinazione(carta, combinazione, skipRenderAndSound = fa
 
     // Riordina la combinazione
     if (combinazione.tipo === TIPO_SCALA) {
-        // Controlla se stiamo aggiungendo un Asso a una scala che termina con K
-        if (carta.numero === 1 && !combinazione.assoAlto) {
-            const numeriEsistenti = combinazione.carte
-                .filter(c => c !== carta)
-                .map(c => isCartaMatta(c) ? c.jollycomeNumero : c.numero);
-            const maxEsistente = Math.max(...numeriEsistenti);
-            if (maxEsistente === 13) {
-                combinazione.assoAlto = true;
-                console.log('Scala diventa assoAlto perche Asso aggiunto dopo K');
-            }
-        }
-        // Riordina la scala (gestisce automaticamente matte, pinelle, etc.)
+        // Riverifica la scala completa per ottenere assoAlto aggiornato
+        const riVer = verificaScala(combinazione.carte);
+        if (riVer.valida) combinazione.assoAlto = riVer.assoAlto || false;
         combinazione.carte = ordinaScalaConJolly(combinazione.carte, combinazione.assoAlto);
     } else if (combinazione.tipo === TIPO_TRIS) {
         // Per i tris, riordina con matta alla fine (in basso visivamente)
@@ -1239,19 +1349,6 @@ async function attaccaCarteSelezionateACombinazione(combinazione) {
     // Usa la funzione già esistente per ogni carta, senza render/sound
     for (const carta of carteOrdinate) {
         aggiungiCartaACombinazione(carta, combinazione, true, true);
-    }
-
-    // Controlla assoAlto dopo aver aggiunto tutte le carte
-    if (combinazione.tipo === TIPO_SCALA && !combinazione.assoAlto) {
-        const haAsso = combinazione.carte.some(c => c.numero === 1);
-        const haK = combinazione.carte.some(c => {
-            if (isCartaMatta(c)) return c.jollycomeNumero === 13;
-            return c.numero === 13;
-        });
-        if (haAsso && haK) {
-            combinazione.assoAlto = true;
-            combinazione.carte = ordinaScalaConJolly(combinazione.carte, true);
-        }
     }
 
     // Render unico dopo tutte le aggiunte
@@ -1457,17 +1554,9 @@ function onMouseMove(e) {
         const widthIniziale = game.trascinamento.widthIniziale;
         const heightIniziale = game.trascinamento.heightIniziale;
 
-        // Verifica se siamo nell'area combinazioni (sopra il limite inferiore delle aree)
-        const campo = $('#campogioco');
-        const campoRect = campo.getBoundingClientRect();
-        const limiteInferioreAree = campoRect.top + 515; // 115px top + 400px altezza
-
-        // Scala: 1.0 = dimensione originale, ridotta nell'area combinazioni
-        // Le carte nelle combinazioni sono scale 0.5, quelle del giocatore 0.73
+        // Scala: 1.0 = dimensione originale
+        // Le carte nelle combinazioni sono scale 0.73, come quelle del giocatore
         let scala = 1.0;
-        if (e.clientY < limiteInferioreAree) {
-            scala = 0.5 / 0.73; // ~0.685
-        }
 
         // Dimensioni carta
         const width = widthIniziale * scala;
@@ -1699,16 +1788,9 @@ function onTouchMove(e) {
         const widthIniziale = game.trascinamento.widthIniziale;
         const heightIniziale = game.trascinamento.heightIniziale;
 
-        // Verifica se siamo nell'area combinazioni (sopra il limite inferiore delle aree)
-        const campo = $('#campogioco');
-        const campoRect = campo.getBoundingClientRect();
-        const limiteInferioreAree = campoRect.top + 515; // 115px top + 400px altezza
-
-        // Scala: 1.0 = dimensione originale, ridotta nell'area combinazioni
+        // Scala: 1.0 = dimensione originale
+        // Le carte nelle combinazioni sono scale 0.73, come quelle del giocatore
         let scala = 1.0;
-        if (touch.clientY < limiteInferioreAree) {
-            scala = 0.5 / 0.73; // ~0.685
-        }
 
         // Dimensioni carta
         const width = widthIniziale * scala;
@@ -1848,6 +1930,7 @@ function mostraPannelloGiocatore(indiceGiocatore, ruolo) {
     debugWindow = win;
 
     // Scrivi il contenuto HTML
+    win.document.open();
     win.document.write(getGiocatoreHTML(indiceGiocatore, ruolo));
     win.document.close();
 
@@ -2054,6 +2137,9 @@ function getGiocatoreHTML(indiceGiocatore, ruolo) {
         }
     }
 
+    // Helper: escape HTML per prevenire injection da testo libero
+    const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
     // Genera HTML log strategico (ultimi 20 pensieri per colonna dedicata)
     // Le righe con dettagli sono cliccabili
     let logHTML = '<div class="oss-empty">Nessun pensiero registrato</div>';
@@ -2070,13 +2156,14 @@ function getGiocatoreHTML(indiceGiocatore, ruolo) {
             return `
             <div class="log-item ${clickClass}" ${clickAttr}>
                 <span class="log-turno">T${l.turno}:</span>
-                <span class="log-msg">${l.messaggio}</span>
+                <span class="log-msg">${esc(l.messaggio)}</span>
                 ${hasDettagli ? '<span class="log-icon">🔍</span>' : ''}
             </div>`;
         }).join('');
     }
-    // Serializza i dettagli per lo script nella finestra
-    const logDettagliJSON = JSON.stringify(logDettagli);
+    // Espone i dettagli come variabile globale sul padre (evita di iniettare JSON
+    // dentro un tag <script> dove </script> nei dati romperebbe il parsing).
+    window._debugLogDettagli = logDettagli;
 
     // Determina fase e ruolo per la visualizzazione debug
     let faseDisplay = '?';
@@ -2314,22 +2401,29 @@ function getGiocatoreHTML(indiceGiocatore, ruolo) {
         ` : ''}
     </div>
     <script>
-        // Dati dei dettagli cliccabili - Usa var per permettere sovrascrittura senza errori
-        var logDettagli = ${logDettagliJSON};
+        // Dati dei dettagli cliccabili - letti dal parent (evita problemi injection HTML)
+        var logDettagli = (window.opener && window.opener._debugLogDettagli) || [];
         console.log('Debug Window: dati caricati', logDettagli.length);
 
         function mostraDettagliPesca(idx) {
-            console.log('Click su dettagli', idx);
-            var entry = logDettagli.find(function(e) { return e.idx === idx; });
-            if (!entry || !entry.dettagli) return;
-            var d = entry.dettagli;
-
-            if (d.tipo === 'pesca') {
-                mostraModalPesca(d);
-            } else if (d.tipo === 'scarto') {
-                mostraModalScarto(d);
-            } else if (d.tipo === 'giocata') {
-                mostraModalGiocata(d);
+            try {
+                var entry = logDettagli.find(function(e) { return e.idx === idx; });
+                if (!entry || !entry.dettagli) {
+                    alert('Dettagli non trovati per idx=' + idx + ' (logDettagli.length=' + logDettagli.length + ')');
+                    return;
+                }
+                var d = entry.dettagli;
+                if (d.tipo === 'pesca') {
+                    mostraModalPesca(d);
+                } else if (d.tipo === 'scarto') {
+                    mostraModalScarto(d);
+                } else if (d.tipo === 'giocata') {
+                    mostraModalGiocata(d);
+                } else {
+                    alert('Tipo sconosciuto: ' + d.tipo);
+                }
+            } catch(err) {
+                alert('Errore apertura dettagli: ' + err.message + '\\n' + err.stack);
             }
         }
 
@@ -2369,16 +2463,18 @@ function getGiocatoreHTML(indiceGiocatore, ruolo) {
                                 '<td style="color:' + valColore + ';text-align:right;font-family:monospace;min-width:40px">' + valStr + '</td>' +
                             '</tr>';
                         }
-                        var totColore = u.totale >= u.sogliaEffettiva ? '#4f4' : '#f44';
+                        var totNum = (u.totale != null && isFinite(u.totale)) ? u.totale : 0;
+                        var sogliaNum = (u.sogliaEffettiva != null && isFinite(u.sogliaEffettiva)) ? u.sogliaEffettiva : 0;
+                        var totColore = totNum >= sogliaNum ? '#4f4' : '#f44';
                         regoleHTML += '<tr style="border-top:1px solid #888;font-weight:bold;padding-top:3px">' +
                             '<td style="color:#fff;padding:4px 8px 1px 0">TOTALE</td>' +
-                            '<td style="color:' + totColore + ';text-align:right;font-family:monospace;padding-top:4px">' + u.totale.toFixed(1) + '</td>' +
+                            '<td style="color:' + totColore + ';text-align:right;font-family:monospace;padding-top:4px">' + totNum.toFixed(1) + '</td>' +
                         '</tr>';
                         var sogliaDesc = u.numScarti === 1 ? 'base' :
                                          u.numScarti === 2 ? 'base x0.8' : 'base x0.4';
                         regoleHTML += '<tr>' +
                             '<td style="color:#999;padding:1px 8px 1px 0;font-size:10px">Soglia (' + sogliaDesc + ')</td>' +
-                            '<td style="color:#999;text-align:right;font-family:monospace;font-size:10px">' + u.sogliaEffettiva.toFixed(1) + '</td>' +
+                            '<td style="color:#999;text-align:right;font-family:monospace;font-size:10px">' + sogliaNum.toFixed(1) + '</td>' +
                         '</tr>';
                         regoleHTML += '</table>';
                     } else {
@@ -2464,7 +2560,7 @@ function getGiocatoreHTML(indiceGiocatore, ruolo) {
             // Classifica
             if (d.classifica && d.classifica.length > 0) {
                 bodyHTML += '<div style="padding:8px 12px">' +
-                    '<div style="font-size:13px;font-weight:bold;margin-bottom:8px;color:#ddd">Classifica scartabilita\':</div>' +
+                    '<div style="font-size:13px;font-weight:bold;margin-bottom:8px;color:#ddd">Classifica scartabilit\u00e0:</div>' +
                     '<table style="font-size:11px;border-collapse:collapse;width:100%">';
                 for (var i = 0; i < d.classifica.length; i++) {
                     var c = d.classifica[i];
@@ -3020,15 +3116,50 @@ function init() {
         if (autoModalita) localStorage.removeItem('burraco_nuova');
     } catch (e) {}
 
+    // Leggi stato torneo da localStorage (persiste tra reload)
+    try {
+        var torneoSalvato = JSON.parse(localStorage.getItem('burraco_torneo') || 'null');
+        if (torneoSalvato) game.torneo = torneoSalvato;
+    } catch (e) {}
+
     if (autoModalita) {
         // Imposta il radio button corrispondente
         var radio = document.querySelector('input[name="modalita"][value="' + autoModalita + '"]');
         if (radio) radio.checked = true;
         iniziaPartita();
     } else {
-        // Prima visita: avvia partita direttamente in modalita 2v2
-        iniziaPartita();
+        // Mostra il modal di scelta partita, ripristinando le preferenze salvate
+        _ripristinaPrefsModal();
+        mostraModal('modal-nuova');
     }
+}
+
+function _ripristinaPrefsModal() {
+    // Listener per mostrare/nascondere input personalizzato
+    var selLimite = document.getElementById('sel-limite-torneo');
+    var divCustom = document.getElementById('div-limite-custom');
+    if (selLimite && divCustom) {
+        selLimite.addEventListener('change', function () {
+            divCustom.style.display = this.value === 'custom' ? '' : 'none';
+        });
+    }
+
+    // Ripristina preferenze salvate (o imposta default: torneo 1005)
+    try {
+        var prefs = JSON.parse(localStorage.getItem('burraco_prefs') || 'null');
+        if (prefs) {
+            var radioTipo = document.querySelector('input[name="tipo-partita"][value="' + prefs.tipoPartita + '"]');
+            if (radioTipo) radioTipo.checked = true;
+            if (prefs.tipoPartita === 'torneo' && selLimite) {
+                selLimite.value = prefs.limiteSelVal || '1005';
+                if (prefs.limiteSelVal === 'custom' && prefs.limiteCustom) {
+                    document.getElementById('inp-limite-custom').value = prefs.limiteCustom;
+                    if (divCustom) divCustom.style.display = '';
+                }
+            }
+        }
+        // Se non ci sono prefs, il default HTML (torneo + 1005) è già corretto
+    } catch (e) {}
 }
 
 document.addEventListener('DOMContentLoaded', init);

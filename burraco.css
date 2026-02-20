@@ -88,21 +88,36 @@ body {
     display: none;
 }
 
-/* === PUNTEGGI === */
-#punteggi {
+/* === PANNELLO TORNEO === */
+#pannello-torneo {
     position: absolute;
-    bottom: 50px;
-    left: 0px;
+    bottom: 238px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 16px 6px;
+    background-image: url(images/scala40/tappetoverde.png);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+    z-index: 200;
+}
+
+#punteggi {
     display: flex;
     align-items: center;
     font-size: 20px;
     color: #ffd700;
     font-weight: bold;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-    z-index: 100;
-    background: rgba(0, 0, 0, 0.1);
-    padding: 4px 12px;
-    border-radius: 8px;
+}
+
+#torneo-info {
+    font-size: 11px;
+    color: white;
+    text-align: center;
+    white-space: nowrap;
 }
 
 #btn-scrivetemi {
@@ -117,10 +132,6 @@ body {
     z-index: 100;
 }
 
-.punteggio-label {
-    margin-right: 8px;
-    font-size: 14px;
-}
 
 .punteggio-separator {
     margin: 0 6px;
@@ -211,33 +222,19 @@ body {
 /* Avatar avversario sinistra - in basso sotto le carte */
 #avatar-avv-sx {
     bottom: -70px;
-    left: 50%;
-    transform: translateX(-50%);
+    left: 30px;
 }
 
-/* Nome avversario sinistra - sotto l'avatar */
-#nome-avv-sx {
-    top: auto !important;
-    bottom: -95px;
-    left: 50% !important;
-    transform: translateX(-50%);
-}
+
 
 /* Avatar avversario destra - in basso sotto le carte */
 #avatar-avv-dx {
     bottom: -70px;
-    left: 50%;
-    transform: translateX(-50%);
+    right: 30px;
+    
 }
 
-/* Nome avversario destra - sotto l'avatar */
-#nome-avv-dx {
-    top: auto !important;
-    bottom: -95px;
-    left: 50% !important;
-    right: auto !important;
-    transform: translateX(-50%);
-}
+
 
 /* Indicatore turno - bordo giallo sul campo del giocatore attivo */
 .turno-attivo {
@@ -299,16 +296,17 @@ body {
 /* Avversario Sinistra */
 #area-avversario-sx {
     top: 115px;
-    left: 8px;
+    left: -30px;
     width: 85px;
     height: 400px;
     flex-direction: column;
 }
 
 #nome-avv-sx {
-    top: -18px;
-    left: 0;
+    top: 470px;
+    left: 63px;
     font-size: 12px;
+    transform: translateX(-50%);
 }
 
 #carte-avv-sx {
@@ -328,16 +326,17 @@ body {
 /* Avversario Destra */
 #area-avversario-dx {
     top: 115px;
-    right: 8px;
+    right: -30px;
     width: 85px;
     height: 400px;
     flex-direction: column;
 }
 
 #nome-avv-dx {
-    top: -18px;
-    right: 0;
+    top: 470px;
+    right: 68px;
     font-size: 12px;
+    transform: translateX(50%);
 }
 
 #carte-avv-dx {
@@ -430,7 +429,7 @@ body {
 .area-combinazioni {
     position: absolute;
     top: 115px;
-    width: 410px;
+    width: 460px;
     height: 400px;
     background: rgba(0, 50, 0, 0.4);
     border: 2px solid rgba(100, 150, 100, 0.5);
@@ -446,14 +445,14 @@ body {
 
 /* Area noi a sinistra: aggiunge da sinistra */
 #combinazioni-noi {
-    left: 95px;
+    left: 50px;
     flex-direction: row;
     justify-content: flex-start;
 }
 
 /* Area loro a destra: aggiunge da destra */
 #combinazioni-loro {
-    right: 95px;
+    right: 50px;
     flex-direction: row-reverse;
     justify-content: flex-start;
 }
@@ -525,6 +524,32 @@ body {
 .punti-carte.negativo,
 .punti-totale.negativo {
     background: rgba(200, 50, 50, 0.7) !important;
+}
+
+/* Titolo LORO e punteggi a destra, lasciando spazio a sinistra per la barra */
+#combinazioni-loro .titolo-area {
+    justify-content: flex-end;
+}
+
+/* === BARRA PUNTEGGI ===
+   Posizione assoluta rispetto a #campogioco (1024x750).
+   Modifica top/left/width/height a piacere. */
+#barra-punteggi {
+    position: absolute;
+    top: 120px;   /* stesso livello del titolo-area (115+3+1) */
+    left: 432px;  /* centro campo (512) - meta' larghezza (80) */
+    width: 160px;
+    height: 5px;
+    display: flex;
+    border-radius: 3px;
+    overflow: hidden;
+    z-index: 101;
+}
+
+#barra-noi,
+#barra-loro {
+    height: 100%;
+    transition: width 0.5s ease, background-color 0.5s ease;
 }
 
 /* === MAZZO === */
@@ -622,6 +647,20 @@ body {
     border-radius: 10px;
     box-sizing: border-box;
     z-index: 100;
+}
+
+/* Nota descrittiva nella metà destra degli scarti */
+#scarti-nota {
+    position: absolute;
+    right: 12px;
+    bottom: 20px;
+    text-align: right;
+    color: rgba(180, 180, 180, 0.45);
+    font-size: 15px;
+    font-style: italic;
+    line-height: 1.5;
+    pointer-events: none;
+    max-width: 500px;
 }
 
 /* === POZZETTI === */
@@ -771,7 +810,7 @@ body {
 #btn-undo {
     top: 10px;
     right: 10px;
-    width: 110px;
+    font-size: 18px;
 }
 
 #btn-scoperte {
@@ -920,11 +959,11 @@ body {
 }
 
 #titolo-gioco-noi {
-    left: 300px;
+    left: 240px;
 }
 
 #titolo-gioco-loro {
-    left: 724px;
+    left: 780px;
 }
 
 .titolo-burraco {
@@ -1181,7 +1220,7 @@ body {
 .combinazione {
     display: flex;
     flex-direction: column;
-    margin: 0px;
+    margin-right : 0px;
     padding: 1px;
     border-radius: 3px;
     width: fit-content;
@@ -1192,10 +1231,10 @@ body {
     position: relative;
     width: 71px;
     height: 96px;
-    transform: scale(0.5);
+    transform: scale(0.73);
     transform-origin: top left;
     margin-bottom: -72px;
-    margin-right: -35px;
+    margin-right: -19px;
 }
 
 .combinazione .carta:last-child {

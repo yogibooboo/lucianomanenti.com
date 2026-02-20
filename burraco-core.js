@@ -2192,6 +2192,10 @@ const game = {
     // Combinazione su cui si puo' ancora spostare la matta (finestra temporale)
     combinazioneModificabile: null,
 
+    // Torneo (partita a punti su più mani)
+    // null = partita singola, oppure { limite, totNoi, totLoro, mano }
+    torneo: null,
+
     // Debug/Cheat
     mostraTutteCarteScoperte: false,
     debugAI: false,           // Pausa l'AI per vedere le osservazioni (D per toggle)
