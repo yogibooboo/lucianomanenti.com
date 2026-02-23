@@ -249,6 +249,16 @@ function iniziaPartita() {
     // Distribuisci carte
     distribuisciCarte();
 
+    // Salva Snapshot Iniziale in memoria (per Ripristino di Debug su File Fisico)
+    if (typeof creaSnapshot === 'function') {
+        try {
+            window.burraco_seed_snapshot = creaSnapshot();
+            console.log("Deck Seeded in memoria. Premi CTRL+ALT+F per salvarlo come File.");
+        } catch (err) {
+            console.warn("Impossibile generare il backup iniziale:", err);
+        }
+    }
+
     // Render iniziale
     render();
 
@@ -277,7 +287,7 @@ function creaGiocatori() {
         personaggiSelezionati = selezionaPersonaggiCasuali(numBot);
         if (game.torneo) {
             game.torneo.personaggiIndici = personaggiSelezionati.map(p => PERSONAGGI.indexOf(p));
-            try { localStorage.setItem('burraco_torneo', JSON.stringify(game.torneo)); } catch (e) {}
+            try { localStorage.setItem('burraco_torneo', JSON.stringify(game.torneo)); } catch (e) { }
         }
     }
 
@@ -1260,6 +1270,9 @@ async function turnoAI() {
         return;
     }
 
+    // Ordina le carte residue del bot prima di passare la mano (utile per debug visivo HUD = true)
+    ordinaCarte(giocatore.carte);
+
     // Passa al prossimo
     prossimoTurno();
 }
@@ -1371,7 +1384,7 @@ function finePartita(haVintoNoi) {
 
         // TOTALE
         r.totale = r.puntiCarte + r.puntiBurraco + r.puntiChiusura
-                 - r.penalitaMano - r.penalitaPozzetto;
+            - r.penalitaMano - r.penalitaPozzetto;
     }
 
     // Aggiorna punteggi globali della mano
@@ -1386,7 +1399,7 @@ function finePartita(haVintoNoi) {
         game.torneo.totNoi += game.puntiNoi;
         game.torneo.totLoro += game.puntiLoro;
         // Persisti su localStorage
-        try { localStorage.setItem('burraco_torneo', JSON.stringify(game.torneo)); } catch (e) {}
+        try { localStorage.setItem('burraco_torneo', JSON.stringify(game.torneo)); } catch (e) { }
     }
 
     // ===== MOSTRA SCHERMATA RISULTATI =====
@@ -1407,9 +1420,9 @@ function mostraRisultatoFinale(risultato, vinceNoi) {
         // Burracos
         for (const b of r.burracos) {
             const etichetta = b.tipo === 'pulito' ? 'Burraco pulito' :
-                              b.tipo === 'semipulito' ? 'Burraco semipulito' : 'Burraco sporco';
+                b.tipo === 'semipulito' ? 'Burraco semipulito' : 'Burraco sporco';
             const colore = b.tipo === 'pulito' ? '#4f4' :
-                           b.tipo === 'semipulito' ? '#ff0' : '#f80';
+                b.tipo === 'semipulito' ? '#ff0' : '#f80';
             html += riga(`${etichetta} (${b.desc})`, b.punti, colore);
         }
         if (r.burracos.length === 0) {
@@ -1437,7 +1450,7 @@ function mostraRisultatoFinale(risultato, vinceNoi) {
         html += '<tr style="border-top:2px solid #888;font-weight:bold;font-size:15px">' +
             '<td style="padding:8px 4px 4px;color:#fff">' + nome + '</td>' +
             '<td style="padding:8px 4px 4px;text-align:right;color:' +
-                (r.totale >= 0 ? '#4f4' : '#f44') + '">' + r.totale + '</td></tr>';
+            (r.totale >= 0 ? '#4f4' : '#f44') + '">' + r.totale + '</td></tr>';
 
         html += '</table>';
         return html;
@@ -1448,7 +1461,7 @@ function mostraRisultatoFinale(risultato, vinceNoi) {
         return '<tr>' +
             '<td style="padding:3px 4px;color:#ccc">' + label + '</td>' +
             '<td style="padding:3px 4px;text-align:right;font-family:monospace;color:' +
-                colore + '">' + segno + valore + '</td></tr>';
+            colore + '">' + segno + valore + '</td></tr>';
     }
 
     // ===== Titolo e sottotitolo =====
@@ -1478,26 +1491,26 @@ function mostraRisultatoFinale(risultato, vinceNoi) {
 
     // ===== Riepilogo torneo: questa mano / totale precedente / totale generale =====
     const rigaTorneo = torneo ? (function () {
-        const prevNoi  = torneo.totNoi  - risultato.noi.totale;
+        const prevNoi = torneo.totNoi - risultato.noi.totale;
         const prevLoro = torneo.totLoro - risultato.loro.totale;
         function cellVal(v, big) {
             const col = v > 0 ? '#4f4' : v < 0 ? '#f88' : '#aaa';
             const pre = v > 0 ? '+' : '';
-            const sz  = big ? 'font-size:15px;font-weight:bold' : '';
+            const sz = big ? 'font-size:15px;font-weight:bold' : '';
             return '<td style="text-align:right;font-family:monospace;padding:4px 8px;color:' + col + ';' + sz + '">' + pre + v + '</td>';
         }
         return '<div style="margin:8px 0;background:rgba(0,0,0,0.25);border-radius:6px;padding:6px 8px">' +
             '<table style="width:100%;border-collapse:collapse;font-size:13px">' +
             '<tr><th></th>' +
-                '<th style="text-align:right;color:#8cf;padding:4px 8px">NOI</th>' +
-                '<th style="text-align:right;color:#fc8;padding:4px 8px">LORO</th></tr>' +
+            '<th style="text-align:right;color:#8cf;padding:4px 8px">NOI</th>' +
+            '<th style="text-align:right;color:#fc8;padding:4px 8px">LORO</th></tr>' +
             '<tr style="border-bottom:1px solid #444"><td style="padding:4px 4px;color:#ccc">Questa mano</td>' +
-                cellVal(risultato.noi.totale, false) + cellVal(risultato.loro.totale, false) + '</tr>' +
+            cellVal(risultato.noi.totale, false) + cellVal(risultato.loro.totale, false) + '</tr>' +
             '<tr><td style="padding:4px 4px;color:#999">Totale precedente</td>' +
-                cellVal(prevNoi, false) + cellVal(prevLoro, false) + '</tr>' +
+            cellVal(prevNoi, false) + cellVal(prevLoro, false) + '</tr>' +
             '<tr style="border-top:2px solid #666;background:rgba(0,0,0,0.2)">' +
-                '<td style="padding:6px 4px;color:#fff;font-weight:bold;font-size:14px">Totale</td>' +
-                cellVal(torneo.totNoi, true) + cellVal(torneo.totLoro, true) + '</tr>' +
+            '<td style="padding:6px 4px;color:#fff;font-weight:bold;font-size:14px">Totale</td>' +
+            cellVal(torneo.totNoi, true) + cellVal(torneo.totLoro, true) + '</tr>' +
             '<tr><td colspan="3" style="text-align:right;color:#888;font-size:11px;padding:2px 4px">Limite: ' + torneo.limite + '</td></tr>' +
             '</table></div>';
     })() : '';
@@ -1506,17 +1519,17 @@ function mostraRisultatoFinale(risultato, vinceNoi) {
         '<h2 style="text-align:center;color:' + titoloColore + ';margin:0 0 4px;font-size:22px">' + titolo + '</h2>' +
         sottotitolo + rigaTorneo +
         '<div style="display:flex;gap:20px">' +
-            '<div style="flex:1">' +
-                '<h3 style="color:#8cf;margin:0 0 8px;font-size:14px;text-transform:uppercase">NOI</h3>' +
-                tabellaSquadra(risultato.noi, 'TOTALE NOI') +
-            '</div>' +
-            '<div style="width:1px;background:#555"></div>' +
-            '<div style="flex:1">' +
-                '<h3 style="color:#fc8;margin:0 0 8px;font-size:14px;text-transform:uppercase">LORO</h3>' +
-                tabellaSquadra(risultato.loro, 'TOTALE LORO') +
-            '</div>' +
+        '<div style="flex:1">' +
+        '<h3 style="color:#8cf;margin:0 0 8px;font-size:14px;text-transform:uppercase">NOI</h3>' +
+        tabellaSquadra(risultato.noi, 'TOTALE NOI') +
         '</div>' +
-    '</div>';
+        '<div style="width:1px;background:#555"></div>' +
+        '<div style="flex:1">' +
+        '<h3 style="color:#fc8;margin:0 0 8px;font-size:14px;text-transform:uppercase">LORO</h3>' +
+        tabellaSquadra(risultato.loro, 'TOTALE LORO') +
+        '</div>' +
+        '</div>' +
+        '</div>';
 
     // ===== Bottoni =====
     let bottoni;
@@ -1538,7 +1551,7 @@ function mostraRisultatoFinale(risultato, vinceNoi) {
     const modalEl = (torneo && !torneoConcluso)
         ? (vinceNoi ? $('#modal-vittoria') : $('#modal-sconfitta'))
         : (torneo ? (torneo.totNoi >= torneo.limite ? $('#modal-vittoria') : $('#modal-sconfitta'))
-                  : (vinceNoi ? $('#modal-vittoria') : $('#modal-sconfitta')));
+            : (vinceNoi ? $('#modal-vittoria') : $('#modal-sconfitta')));
 
     modalEl.innerHTML = html + bottoni;
     modalEl.style.width = '480px';
@@ -1556,12 +1569,12 @@ function mostraRisultatoFinale(risultato, vinceNoi) {
             try {
                 localStorage.setItem('burraco_torneo', JSON.stringify(torneo));
                 localStorage.setItem('burraco_nuova', game.modalita);
-            } catch (e) {}
+            } catch (e) { }
             location.reload();
         });
         // Abbandona torneo
         modalEl.querySelector('.btn-abbandona-torneo').addEventListener('click', () => {
-            try { localStorage.removeItem('burraco_torneo'); } catch (e) {}
+            try { localStorage.removeItem('burraco_torneo'); } catch (e) { }
             game.torneo = null;
             chiudiModals();
             mostraModal('modal-nuova');
@@ -1569,7 +1582,7 @@ function mostraRisultatoFinale(risultato, vinceNoi) {
     } else {
         // Fine: nuova partita (azzera torneo)
         modalEl.querySelector('.btn-nuova-partita').addEventListener('click', () => {
-            try { localStorage.removeItem('burraco_torneo'); } catch (e) {}
+            try { localStorage.removeItem('burraco_torneo'); } catch (e) { }
             game.torneo = null;
             chiudiModals();
             mostraModal('modal-nuova');

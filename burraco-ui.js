@@ -18,6 +18,51 @@ function setupEventi() {
     $('#btn-ordina-numero').addEventListener('click', ordinaPerNumero);
     $('#btn-ordina-seme').addEventListener('click', ordinaPerSeme);
 
+    // Scorciatoie di Debug per Import/Export Stato (Seed) della Partita su disco fisico
+    document.addEventListener('keydown', (e) => {
+        // CTRL+ALT+F: Scarica lo snapshot iniziale corrente in un file .json sul computer (F = File Export)
+        if (e.ctrlKey && e.altKey && e.key.toLowerCase() === 'f') {
+            e.preventDefault();
+            if (window.burraco_seed_snapshot) {
+                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(window.burraco_seed_snapshot, null, 2));
+                const nomeData = new Date().toISOString().replace(/T/, '_').replace(/:/g, '-').slice(0, 19);
+                const dlAnchorElem = document.createElement('a');
+                dlAnchorElem.setAttribute("href", dataStr);
+                dlAnchorElem.setAttribute("download", "burraco_seed_" + nomeData + ".json");
+                dlAnchorElem.click();
+                console.log("Salvataggio su disco fisso avviato per il seed corrente.");
+            } else {
+                console.warn("Nessun seed immagazzinato da scaricare. Inizia una partita prima.");
+            }
+        }
+
+        // CTRL+ALT+B: Carica (Scegli) un file .json dal computer e ripristina quel seed!
+        if (e.ctrlKey && e.altKey && e.key.toLowerCase() === 'b') {
+            e.preventDefault();
+            const inputElement = document.createElement("input");
+            inputElement.type = "file";
+            inputElement.accept = ".json";
+            inputElement.addEventListener("change", (event) => {
+                const file = event.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (onloadEvent) => {
+                    try {
+                        const parsedJson = JSON.parse(onloadEvent.target.result);
+                        ripristinaSnapshot(parsedJson);
+                        render();
+                        console.log("🛠️ Partita caricata e ripristinata dal file: " + file.name);
+                    } catch (err) {
+                        console.error("Errore nel parser o nel ripristino di quel Log / Seed Burraco:", err);
+                        alert("File non valido o corrotto!");
+                    }
+                };
+                reader.readAsText(file);
+            });
+            inputElement.click(); // apre la modale di Windows per selezionare il json
+        }
+    });
+
     // Modal
     $$('.btn-modal').forEach(btn => {
         btn.addEventListener('click', function () {
@@ -57,7 +102,7 @@ function setupEventi() {
                     ? parseInt(document.getElementById('inp-limite-custom').value) || 1505
                     : null
             }));
-        } catch (e) {}
+        } catch (e) { }
 
         try {
             localStorage.setItem('burraco_nuova', modalita);
@@ -69,7 +114,7 @@ function setupEventi() {
             } else {
                 localStorage.removeItem('burraco_torneo');
             }
-        } catch (e) {}
+        } catch (e) { }
         location.reload();
     });
 
@@ -576,12 +621,12 @@ function renderPunteggi() {
     const pannello = $('#pannello-torneo');
     if (pannello) pannello.style.display = game.torneo ? '' : 'none';
 
-    const pNoi  = game.torneo ? game.torneo.totNoi  : 0;
+    const pNoi = game.torneo ? game.torneo.totNoi : 0;
     const pLoro = game.torneo ? game.torneo.totLoro : 0;
     const verde = 'rgb(58,255,88)', rosso = 'rgb(255,52,52)';
-    $('#punti-noi').textContent  = pNoi;
+    $('#punti-noi').textContent = pNoi;
     $('#punti-loro').textContent = pLoro;
-    $('#punti-noi').style.color  = pNoi >= pLoro ? verde : rosso;
+    $('#punti-noi').style.color = pNoi >= pLoro ? verde : rosso;
     $('#punti-loro').style.color = pLoro >= pNoi ? verde : rosso;
 
     // Scritta limite torneo
@@ -597,7 +642,7 @@ function renderPunteggi() {
         const haPoz = game.giocatori.filter(g => g.squadra === squadra).some(g => g.haPozzetto);
         return pb + pc + (haPoz ? 0 : -100);
     };
-    const scoreNoi  = _calcTot(game.combinazioniNoi,  0);
+    const scoreNoi = _calcTot(game.combinazioniNoi, 0);
     const scoreLoro = _calcTot(game.combinazioniLoro, 1);
     const diff = scoreNoi - scoreLoro;
     const pctNoi = Math.max(5, Math.min(95, 50 + diff / 500 * 50));
@@ -2028,7 +2073,7 @@ function getGiocatoreHTML(indiceGiocatore, ruolo) {
     // Labels per i coefficienti (compatti, raggruppati per area)
     const coeffLabels = {
         // Pesca
-        sogliaPescaScarti: 'Soglia scarti',
+        premioScarti: 'Premio scarti',
         compressione: 'Compressione',
         // Calata
         valoreCentralita: 'Centralita',
@@ -2066,9 +2111,8 @@ function getGiocatoreHTML(indiceGiocatore, ruolo) {
     coeffHTML += '</div>';
 
     // Genera HTML "Combinazioni e attacchi possibili" (singole mosse)
-    let comboHTML = '<div class="oss-empty">Nessuna combinazione trovata</div>';
-    if (giocatore.osservazioni) {
-        const oss = giocatore.osservazioni;
+    function generaHTMLCombinazioni(oss, titolo) {
+        if (!oss) return `<div class="oss-empty">Nessuna combinazione (${titolo})</div>`;
         const items = [];
 
         // Elenca tutti i tris
@@ -2102,7 +2146,8 @@ function getGiocatoreHTML(indiceGiocatore, ruolo) {
             const numMorte = oss.carteMorte?.length || 0;
             const numMatte = oss.matte?.length || 0;
             const matteDesc = oss.matte?.length > 0 ? Strategia.descrizioneCarte(oss.matte) : '';
-            comboHTML = `
+            return `
+                <div class="combo-info" style="margin-top:8px; border-top:1px solid rgba(255,255,255,0.1); padding-top:4px;"><span>${titolo} (${items.length}):</span></div>
                 <div class="combo-info">
                     <span>Matte: ${numMatte > 0 ? matteDesc : 'nessuna'}</span>
                     <span>Morte: ${numMorte}</span>
@@ -2110,35 +2155,76 @@ function getGiocatoreHTML(indiceGiocatore, ruolo) {
                 <div class="combo-list">${items.join('')}</div>
                 <div class="combo-legenda">T=Tris S=Scala C=Calata *=usa matta</div>`;
         }
+        return `<div class="oss-empty">Nessuna mossa singola valida (${titolo})</div>`;
     }
 
-    // Genera HTML "Opzioni di gioco" (solo combinazioni di più mosse)
-    let objHTML = '<div class="oss-empty">Nessuna combinazione multipla</div>';
-    if (giocatore.osservazioni?.opzioniGioco?.length > 0) {
-        // Filtra solo le combinazioni (più di una mossa)
-        const combinazioni = giocatore.osservazioni.opzioniGioco.filter(opt =>
-            opt.isCombinazione
-        );
+    let comboHTML = '';
+    if (giocatore.osservazioni?.analisiVirtuale) {
+        // Mostra Pre e Post se ha pescato o sta valutando di pescare
+        const ossBase = giocatore.osservazioni.analisiBase || giocatore.osservazioni;
+        comboHTML += generaHTMLCombinazioni(ossBase, 'In Mano (Pre-Scarti)');
+        comboHTML += generaHTMLCombinazioni(giocatore.osservazioni.analisiVirtuale, 'Con Scarti in pancia (Simulata)');
+    } else if (giocatore.osservazioni) {
+        comboHTML += generaHTMLCombinazioni(giocatore.osservazioni, 'Combinazioni Correnti');
+    } else {
+        comboHTML = '<div class="oss-empty">Nessuna combinazione valida</div>';
+    }
 
-        if (combinazioni.length > 0) {
-            const numTotale = combinazioni.length;
-            objHTML = `<div class="combo-info"><span>Combinazioni: ${numTotale}</span></div>` +
-                combinazioni.slice(0, 15).map((opt, i) => {
-                    const descrizione = opt.descCarte || 'Passa';
-                    const valPerc = Math.round((opt.valutazione || 0) * 100);
-                    return `
-                <div class="obj-item combo" title="${descrizione}">
-                    <span class="obj-rank">#${i + 1}</span>
-                    <span class="obj-nome">${descrizione}</span>
-                    <div class="obj-bar"><div class="obj-fill" style="width:${valPerc}%"></div></div>
-                    <span class="obj-pri">${opt.puntiTotali || 0}pt</span>
-                </div>`;
-                }).join('');
-        }
+    // Genera HTML "Opzioni di gioco"
+    function generaHTMLOpzioni(listaOpzioni, titolo) {
+        if (!listaOpzioni || listaOpzioni.length === 0) return `<div class="oss-empty">Nessuna opzione (${titolo})</div>`;
+        const numTotale = listaOpzioni.length;
+        return `<div class="combo-info" style="margin-top:8px; border-top:1px solid rgba(255,255,255,0.1); padding-top:4px;"><span>${titolo} (${numTotale}):</span></div>` +
+            listaOpzioni.slice(0, 8).map((opt, i) => {
+                const descrizione = opt.descCarte || 'Passa';
+                const scoreNetto = opt.valoreGlobaleNetto !== undefined ? opt.valoreGlobaleNetto : (opt.puntiTotali || 0);
+
+                let bdHTML = '';
+                if (opt.breakdownGlobale && opt.breakdownGlobale.length > 0) {
+                    bdHTML = '<div class="opt-breakdown" style="display:none; padding:4px 8px; margin:2px 0 6px 16px; background:rgba(0,0,0,0.2); border-left:2px solid #555; font-size:10px; line-height:1.4;">';
+                    opt.breakdownGlobale.forEach(b => {
+                        const isSub = b.subtotale ? 'font-weight:bold; color:#fff; border-top:1px dashed #555; margin-top:2px; padding-top:2px;' : 'color:#bbb;';
+                        let valStr = typeof b.valore === 'number' ? (b.valore > 0 ? '+' + b.valore.toFixed(1) : b.valore.toFixed(1)) : b.valore;
+                        const colorVal = b.valore > 0 ? '#6a6' : (b.valore < 0 ? '#a66' : '#888');
+                        if (b.subtotale) valStr = `<span style="color:${scoreNetto >= 0 ? '#4f4' : '#f44'}">${valStr}</span>`;
+                        bdHTML += `<div style="display:flex; justify-content:space-between; ${isSub}"><span>${b.label}</span><span style="color:${b.subtotale ? 'inherit' : colorVal}">${valStr}</span></div>`;
+                    });
+                    bdHTML += '</div>';
+                }
+
+                const clickAction = bdHTML ? `onclick="var el=this.nextElementSibling; el.style.display=el.style.display==='none'?'block':'none';"` : '';
+                const cursorStyle = bdHTML ? 'cursor:pointer;' : '';
+
+                return `
+            <div class="obj-item combo" title="${descrizione}" style="justify-content:space-between; ${cursorStyle}" ${clickAction}>
+                <div style="display:flex; align-items:center; overflow:hidden;">
+                    <span class="obj-rank" style="margin-right:6px;">#${i + 1}</span>
+                    <span class="obj-nome" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${descrizione}</span>
+                </div>
+                <div style="display:flex; align-items:center;">
+                    ${bdHTML ? '<span style="color:#666; font-size:9px; margin-right:6px;">▼</span>' : ''}
+                    <span class="obj-pri" style="text-align:right; font-weight:normal; font-size:11px; color:#aaa; margin-right:6px;">[${opt.puntiTotali || 0}pt]</span>
+                    <span class="obj-pri" style="text-align:right; font-weight:bold; font-size:12px; color:${scoreNetto >= 0 ? '#4f4' : '#f44'};">${scoreNetto > 0 ? '+' : ''}${typeof scoreNetto === 'number' ? scoreNetto.toFixed(1) : scoreNetto}</span>
+                </div>
+            </div>
+            ${bdHTML}`;
+            }).join('');
+    }
+
+    let objHTML = '';
+    if (giocatore.osservazioni?.analisiVirtuale) {
+        // Mostra Pre e Post se ha pescato o sta valutando di pescare
+        const opzBase = giocatore.osservazioni.analisiBase?.opzioniGioco || giocatore.osservazioni.opzioniGioco;
+        objHTML += generaHTMLOpzioni(opzBase, 'In Mano (Pre-Scarti)');
+        objHTML += generaHTMLOpzioni(giocatore.osservazioni.analisiVirtuale.opzioniGioco, 'Con Scarti in pancia (Simulata)');
+    } else if (giocatore.osservazioni?.opzioniGioco) {
+        objHTML += generaHTMLOpzioni(giocatore.osservazioni.opzioniGioco, 'Opzioni Correnti');
+    } else {
+        objHTML = '<div class="oss-empty">Nessuna opzione valida</div>';
     }
 
     // Helper: escape HTML per prevenire injection da testo libero
-    const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
     // Genera HTML log strategico (ultimi 20 pensieri per colonna dedicata)
     // Le righe con dettagli sono cliccabili
@@ -2213,6 +2299,10 @@ function getGiocatoreHTML(indiceGiocatore, ruolo) {
             <div class="strat-item">
                 <span class="strat-label">Fase:</span>
                 <span class="strat-value">${faseDisplay}</span>
+            </div>
+            <div class="strat-item">
+                <span class="strat-label">Ruolo:</span>
+                <span class="strat-value" style="color:#ffd700">${giocatore.osservazioni && giocatore.osservazioni.ruoloDinamico ? giocatore.osservazioni.ruoloDinamico : 'Neutro'}</span>
             </div>
             ${carteConosciuteHTML}`;
     }
@@ -2356,8 +2446,10 @@ function getGiocatoreHTML(indiceGiocatore, ruolo) {
 </head>
 <body>
     <div class="container">
-        <div class="header">
+        <div class="header" style="display:flex; justify-content:space-between; align-items:center;">
+            <div style="width: 100px;"></div> <!-- Spacer -->
             <div class="ruolo">${ruolo}</div>
+            <button onclick="scaricaStatoJSON()" style="background:#4a9; border:none; border-radius:4px; color:white; padding:4px 8px; cursor:pointer; font-size:11px;">⬇️ Esporta Stato (JSON)</button>
         </div>
 
         <div class="personaggio">
@@ -2447,8 +2539,117 @@ function getGiocatoreHTML(indiceGiocatore, ruolo) {
                         '<span class="modal-value" style="color:' + colore + '">' + icona + '</span>' +
                     '</div>';
 
-                    // Se c'e' il dettaglio utilita', mostra tabella allineata
-                    if (r.utilita) {
+                    // Se c'e' il dettaglio simulazione, mostra tabella di comparazione
+                    if (r.simulazione) {
+                        var sim = r.simulazione;
+                        regoleHTML += '<div style="margin:6px 0 12px 12px; background:rgba(0,0,0,0.3); padding:8px; border-radius:6px; border-left:3px solid #4a9;">';
+                        regoleHTML += '<div style="font-size:11px; color:#aaa; margin-bottom:6px; display:flex; justify-content:space-between;">' +
+                                      '<span>SNAPSHOT SIMULAZIONE SCARTI</span>' +
+                                      (sim.avvPericoloso ? '<span style="color:#f44">AVV. PERICOLOSO!</span>' : '') +
+                                      '</div>';
+                        regoleHTML += '<table style="font-size:11px;border-collapse:collapse;width:100%; text-align:right;">';
+                        regoleHTML += '<tr style="color:#888; border-bottom:1px solid #555;">' +
+                                      '<th style="text-align:left; padding-bottom:4px;">Metrica</th>' +
+                                      '<th style="padding-bottom:4px;color:#88a;text-align:center;">[C]</th>' +
+                                      '<th style="padding-bottom:4px;">In Mano</th>' +
+                                      '<th style="padding-bottom:4px;">Con Scarti</th>' +
+                                      '</tr>';
+                        regoleHTML += '<tr><td style="text-align:left;color:#bbb;font-weight:bold;">\u2B50 Punti Calabili (da Miglior Opz)</td><td style="color:#88a;text-align:center;">-</td><td style="color:#fff;font-weight:bold;">' + sim.dettagliBase.base.val + '</td><td style="color:#4f4;font-weight:bold;">' + sim.dettagliVirtuale.base.val + '</td></tr>';
+                        
+                        // INIEZIONE MICRO-BREAKDOWN OPZIONI ALLINEATA
+                        var bdBase = sim.dettagliBase.breakdownBase || [];
+                        var bdVirt = sim.dettagliVirtuale.breakdownBase || [];
+                        
+                        // Raccogli label uniche escludendo base e subtotali
+                        var labelUniche = [];
+                        var bdInsieme = bdBase.concat(bdVirt);
+                        for(var k = 0; k < bdInsieme.length; k++) {
+                            var lbl = bdInsieme[k].label;
+                            if (lbl && lbl !== 'Punti Tavolo Base' && !bdInsieme[k].subtotale) {
+                                if (labelUniche.indexOf(lbl) === -1) {
+                                    labelUniche.push(lbl);
+                                }
+                            }
+                        }
+
+                        // Stampa righe allineate per label
+                        for(var j = 0; j < labelUniche.length; j++) {
+                            var curLabel = labelUniche[j];
+                            
+                            // Cerca valore nel Base
+                            var valBase = '';
+                            var coeffBase = '-';
+                            for (var b = 0; b < bdBase.length; b++) { 
+                                if (bdBase[b].label === curLabel) {
+                                    valBase = bdBase[b].valore;
+                                    if (bdBase[b].coeff !== undefined) coeffBase = bdBase[b].coeff;
+                                }
+                            }
+                            
+                            // Cerca valore nel Virtuale
+                            var valVirt = '';
+                            var coeffVirt = '-';
+                            for (var v = 0; v < bdVirt.length; v++) { 
+                                if (bdVirt[v].label === curLabel) {
+                                    valVirt = bdVirt[v].valore;
+                                    if (bdVirt[v].coeff !== undefined) coeffVirt = bdVirt[v].coeff;
+                                }
+                            }
+
+                            var valCoeff = coeffBase !== '-' ? coeffBase : (coeffVirt !== '-' ? coeffVirt : '-');
+                            
+                            regoleHTML += '<tr>' +
+                                '<td style="text-align:left;color:#888;padding-left:12px;font-size:10px;">&bull; ' + curLabel + '</td>' +
+                                '<td style="color:#88a;text-align:center;font-size:10px;">' + valCoeff + '</td>' +
+                                '<td style="color:#aaa;font-size:10px;">' + (valBase !== '' ? (valBase > 0 ? '+':'') + valBase : '-') + '</td>' +
+                                '<td style="color:#6a6;font-size:10px;">' + (valVirt !== '' ? (valVirt > 0 ? '+':'') + valVirt : '-') + '</td>' +
+                                '</tr>';
+                        }
+
+                        regoleHTML += '<tr><td style="text-align:left;color:#bbb;margin-top:4px;">Bonus Burrachi (>7)</td><td style="color:#88a;text-align:center;">' + sim.dettagliBase.burraco.coeff + '</td><td style="color:#fff">' + sim.dettagliBase.burraco.val + '</td><td style="color:#4f4">' + sim.dettagliVirtuale.burraco.val + '</td></tr>';
+                        regoleHTML += '<tr><td style="text-align:left;color:#bbb">Bonus Pozzetto</td><td style="color:#88a;text-align:center;">' + sim.dettagliBase.pozzetto.coeff + '</td><td style="color:#fff">' + Number(sim.dettagliBase.pozzetto.val).toFixed(1) + '</td><td style="color:#4f4">' + Number(sim.dettagliVirtuale.pozzetto.val).toFixed(1) + '</td></tr>';
+                        regoleHTML += '<tr><td style="text-align:left;color:#bbb">Bonus Matte non usate</td><td style="color:#88a;text-align:center;">' + sim.dettagliBase.matte.coeff + '</td><td style="color:#fff">' + Number(sim.dettagliBase.matte.val).toFixed(1) + '</td><td style="color:#4f4">' + Number(sim.dettagliVirtuale.matte.val).toFixed(1) + '</td></tr>';
+                        regoleHTML += '<tr><td style="text-align:left;color:#bbb">Malus Zavorra (Morte)</td><td style="color:#88a;text-align:center;">' + sim.dettagliBase.cadaveri.coeff + '</td><td style="color:#f44">' + sim.dettagliBase.cadaveri.val.toFixed(1) + '</td><td style="color:#f44">' + sim.dettagliVirtuale.cadaveri.val.toFixed(1) + '</td></tr>';
+                        if (sim.dettagliBase.troppeCarte.val < 0 || sim.dettagliVirtuale.troppeCarte.val < 0) {
+                            regoleHTML += '<tr><td style="text-align:left;color:#bbb">Malus Troppe Carte (>11)</td><td style="color:#88a;text-align:center;">' + sim.dettagliBase.troppeCarte.coeff + '</td><td style="color:#f44">' + sim.dettagliBase.troppeCarte.val.toFixed(1) + '</td><td style="color:#f44">' + sim.dettagliVirtuale.troppeCarte.val.toFixed(1) + '</td></tr>';
+                        }
+                        regoleHTML += '<tr style="border-top:1px solid #555"><td style="text-align:left;color:#ddd; padding-top:4px" colspan="2">Score Teorico Totale</td><td style="color:#fff; font-weight:bold; padding-top:4px">' + sim.scoreBase + '</td><td style="color:#fff; font-weight:bold; padding-top:4px">' + sim.scoreVirtuale + '</td></tr>';
+                        
+                        if (sim.dettagliPremio) {
+                            var dp = sim.dettagliPremio;
+                            regoleHTML += '<tr><td colspan="4" style="height:4px;"></td></tr>';
+                            regoleHTML += '<tr style="border-top:1px dashed #555"><td style="text-align:left;color:#a9f; padding-top:4px">↳ Premio Scarti Base</td><td style="color:#a9f;text-align:center;padding-top:4px;">' + dp.coeffBase + '</td><td style="color:#a9f; padding-top:4px" colspan="2">' + dp.base + '</td></tr>';
+                            if (dp.modRuolo !== 0) {
+                                regoleHTML += '<tr><td style="text-align:left;color:#a9f; padding-top:0px" colspan="2">↳ Modif. Ruolo (' + dp.ruolo + ')</td><td style="color:' + (dp.modRuolo<0?'#f88':'#8f8') + '; padding-top:0px" colspan="2">' + (dp.modRuolo>0?'+':'') + dp.modRuolo + '</td></tr>';
+                            }
+                            
+                            var premioVal = parseFloat(sim.premio);
+                            var deltaVal = parseFloat(sim.delta);
+                            var totVal = deltaVal + premioVal;
+                            var deltaColor = totVal >= 0 ? '#4f4' : '#f44';
+                            
+                            regoleHTML += '<tr style="border-top:1px solid #555; font-weight:bold;">' +
+                                          '<td style="text-align:left;color:#ddd;padding-top:4px;">DELTA + PREMIO</td>' +
+                                          '<td colspan="3" style="color:' + deltaColor + '; font-size:12px; padding-top:4px;">' + (totVal > 0 ? '+' : '') + totVal.toFixed(1) + '  (&ge; 0)</td>' +
+                                          '</tr>';
+
+                        } else if (sim.dettagliSoglia) {
+                            // FALLBACK per retrocompatibilita coi Log JSON appena scritti
+                            var ds = sim.dettagliSoglia;
+                            regoleHTML += '<tr><td colspan="4" style="height:4px;"></td></tr>';
+                            regoleHTML += '<tr style="border-top:1px dashed #555"><td style="text-align:left;color:#99a; padding-top:4px" colspan="2">↳ Calcolo Soglia Base [C:' + ds.coeffBase + ']</td><td style="color:#99a; padding-top:4px" colspan="2">' + ds.base + '</td></tr>';
+                            if (ds.modRuolo !== 0) {
+                                regoleHTML += '<tr><td style="text-align:left;color:#99a; padding-top:0px" colspan="2">↳ Modif. Ruolo (' + ds.ruolo + ')</td><td style="color:' + (ds.modRuolo>0?'#f88':'#8f8') + '; padding-top:0px" colspan="2">' + (ds.modRuolo>0?'+':'') + ds.modRuolo + '</td></tr>';
+                            }
+                            
+                            var deltaColor = parseFloat(sim.delta) >= parseFloat(sim.soglia) ? '#4f4' : '#f44';
+                            regoleHTML += '<tr style="border-top:1px solid #555; font-weight:bold;">' +
+                                          '<td style="text-align:left;color:#ddd;padding-top:4px;">DELTA</td>' +
+                                          '<td colspan="3" style="color:' + deltaColor + '; font-size:12px; padding-top:4px;">' + (parseFloat(sim.delta) > 0 ? '+' : '') + sim.delta + '  (Soglia Finale: ' + sim.soglia + ')</td>' +
+                                          '</tr>';
+                        }
+                        regoleHTML += '</table></div>';
+                    } else if (r.utilita) {
                         var u = r.utilita;
                         regoleHTML += '<table style="margin:2px 0 8px 12px;font-size:11px;border-collapse:collapse;width:calc(100% - 24px)">';
                         for (var v = 0; v < u.voci.length; v++) {
@@ -2486,7 +2687,7 @@ function getGiocatoreHTML(indiceGiocatore, ruolo) {
 
             var coeffHTML = '';
             var coeffLabels = {
-                sogliaPescaScarti: 'Soglia scarti',
+                premioScarti: 'Premio scarti',
                 compressione: 'Compressione',
                 cooperazione: 'Cooperazione',
                 propensioAttacco: 'Attacco',
@@ -2507,10 +2708,9 @@ function getGiocatoreHTML(indiceGiocatore, ruolo) {
                     d.decisione.toUpperCase() + '</span>',
                 '<div style="padding:8px 12px;border-bottom:1px solid #444">' +
                     '<div style="font-size:12px;color:#ccc">' +
-                        'Scarti: <strong>' + s.numCarte + '</strong> carte' +
-                        (s.cartaInCima ? ' | Cima: <strong>' + s.cartaInCima + '</strong>' : '') +
-                        (s.isJolly ? ' <span style="color:#f80">JOLLY!</span>' : '') +
-                        (s.isPinella ? ' <span style="color:#f80">PINELLA</span>' : '') +
+                        'Scarti: <strong>' + s.numCarte + '</strong> carte in totale' +
+                        (s.isJolly ? ' <span style="color:#f80">(Include JOLLY!)</span>' : '') +
+                        (s.isPinella ? ' <span style="color:#f80">(Include PINELLA)</span>' : '') +
                     '</div>' +
                 '</div>' +
                 '<div style="padding:8px 12px">' +
@@ -2586,7 +2786,7 @@ function getGiocatoreHTML(indiceGiocatore, ruolo) {
         // Helper: apre un modal generico
         function apriModal(titolo, body, footer) {
             var html = '<div class="modal-overlay" onclick="chiudiModal(event)">' +
-                '<div class="modal-content" onclick="event.stopPropagation()" style="max-width:500px">' +
+                '<div class="modal-content" onclick="event.stopPropagation()" style="width:500px; position:absolute; right:20px; top:20px; margin:0;">' +
                     '<div class="modal-header">' +
                         '<span class="modal-title">' + titolo + '</span>' +
                         '<span class="modal-close" onclick="chiudiModal()">&times;</span>' +
@@ -2602,6 +2802,44 @@ function getGiocatoreHTML(indiceGiocatore, ruolo) {
             if (event && event.target.className !== 'modal-overlay') return;
             var modal = document.querySelector('.modal-overlay');
             if (modal) modal.remove();
+        }
+
+        function scaricaStatoJSON() {
+            try {
+                if (!window.opener || !window.opener.game) {
+                    alert('Impossibile accedere allo stato del gioco principale.');
+                    return;
+                }
+                var g = window.opener.game;
+                
+                // Creiamo un clone filtrato per evitare riferimenti circolari
+                var cloneSafe = {
+                    turno: g.turno,
+                    fase: g.fase,
+                    giocatoreCorrente: g.giocatoreCorrente,
+                    mazzoCopertoSize: g.mazzo.length,
+                    scarti: g.scarti.map(c => ({id: c.id, num: c.numero, seme: c.seme, punti: c.punti})),
+                    giocatori: g.giocatori.map(p => ({
+                        nome: p.nome, squadra: p.squadra, carteSize: p.carte.length, haPozzetto: p.haPozzetto,
+                        personaggio: p.personaggio ? p.personaggio.nome : 'umano',
+                        coeff: p.coefficienti || {},
+                        carteScoperte: p.carte.map(c => ({id: c.id, num: c.numero, seme: c.seme, punti: c.punti})), // baro un po' e salvo le carte
+                        osservazioni: p.osservazioni // salva l'intero storico limitato delle analisi
+                    })),
+                    combinazioniNoi: g.combinazioniNoi.map(cb => ({carte: cb.carte.map(c=>c.id), isBurraco: cb.isBurraco, punti: cb.punti})),
+                    combinazioniLoro: g.combinazioniLoro.map(cb => ({carte: cb.carte.map(c=>c.id), isBurraco: cb.isBurraco, punti: cb.punti}))
+                };
+
+                var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(cloneSafe, null, 2));
+                var dlAnchorElem = document.createElement('a');
+                dlAnchorElem.setAttribute("href", dataStr);
+                dlAnchorElem.setAttribute("download", "burraco_debug_turno_" + g.turno + ".json");
+                document.body.appendChild(dlAnchorElem); // richiesto da firefox
+                dlAnchorElem.click();
+                dlAnchorElem.remove();
+            } catch (err) {
+                alert('Errore durante esportazione JSON: ' + err.message);
+            }
         }
 
         // Chiudi con ESC
@@ -3114,13 +3352,13 @@ function init() {
     try {
         autoModalita = localStorage.getItem('burraco_nuova');
         if (autoModalita) localStorage.removeItem('burraco_nuova');
-    } catch (e) {}
+    } catch (e) { }
 
     // Leggi stato torneo da localStorage (persiste tra reload)
     try {
         var torneoSalvato = JSON.parse(localStorage.getItem('burraco_torneo') || 'null');
         if (torneoSalvato) game.torneo = torneoSalvato;
-    } catch (e) {}
+    } catch (e) { }
 
     if (autoModalita) {
         // Imposta il radio button corrispondente
@@ -3159,7 +3397,7 @@ function _ripristinaPrefsModal() {
             }
         }
         // Se non ci sono prefs, il default HTML (torneo + 1005) è già corretto
-    } catch (e) {}
+    } catch (e) { }
 }
 
 document.addEventListener('DOMContentLoaded', init);

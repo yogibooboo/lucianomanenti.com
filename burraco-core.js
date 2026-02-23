@@ -71,7 +71,7 @@ const OBJ_SETUP_MATTA = 8;        // Gestisci/conserva matta per futuro
  * COEFFICIENTI (tutti 0-10):
  *
  * PESCA:
- * - sogliaPescaScarti: 0=raccoglie tutto, 10=solo pile grosse e utili
+ * - premioScarti: 0=raccoglie tutto, 10=solo pile grosse e utili
  * - compressione:      0=mai, 10=raccoglie sempre per togliere agli altri
  *
  * CALATA:
@@ -105,7 +105,7 @@ const PERSONAGGI = [
         nome: 'Giuseppe',
         descrizione: 'Veterano impetuoso, vuole sempre chiudere per primo',
         coefficienti: {
-            sogliaPescaScarti: 6, compressione: 2,
+            premioScarti: 6, compressione: 2,
             valoreCentralita: 3, prefScale: 4, sogliaDeposito: 2,
             prefBurracoPulito: 2, parsimoniaMatte: 2,
             prudenzaScarto: 3, cooperazione: 4,
@@ -119,7 +119,7 @@ const PERSONAGGI = [
         nome: 'Rocco',
         descrizione: 'Esperto spietato, non dimentica nulla e chiude senza pieta',
         coefficienti: {
-            sogliaPescaScarti: 5, compressione: 3,
+            premioScarti: 5, compressione: 3,
             valoreCentralita: 6, prefScale: 7, sogliaDeposito: 4,
             prefBurracoPulito: 4, parsimoniaMatte: 5,
             prudenzaScarto: 6, cooperazione: 5,
@@ -133,7 +133,7 @@ const PERSONAGGI = [
         nome: 'Teresa',
         descrizione: 'Aggressiva ma calcolatrice, ama pescare dagli scarti',
         coefficienti: {
-            sogliaPescaScarti: 2, compressione: 7,
+            premioScarti: 2, compressione: 7,
             valoreCentralita: 5, prefScale: 5, sogliaDeposito: 3,
             prefBurracoPulito: 3, parsimoniaMatte: 3,
             prudenzaScarto: 5, cooperazione: 5,
@@ -149,7 +149,7 @@ const PERSONAGGI = [
         nome: 'Maria',
         descrizione: 'Prudente e strategica, non regala niente agli avversari',
         coefficienti: {
-            sogliaPescaScarti: 5, compressione: 4,
+            premioScarti: 5, compressione: 4,
             valoreCentralita: 7, prefScale: 6, sogliaDeposito: 6,
             prefBurracoPulito: 6, parsimoniaMatte: 7,
             prudenzaScarto: 9, cooperazione: 6,
@@ -163,7 +163,7 @@ const PERSONAGGI = [
         nome: 'Antonio',
         descrizione: 'Paziente, aspetta sempre il burraco pulito',
         coefficienti: {
-            sogliaPescaScarti: 6, compressione: 3,
+            premioScarti: 6, compressione: 3,
             valoreCentralita: 8, prefScale: 8, sogliaDeposito: 8,
             prefBurracoPulito: 10, parsimoniaMatte: 8,
             prudenzaScarto: 7, cooperazione: 5,
@@ -177,7 +177,7 @@ const PERSONAGGI = [
         nome: 'Lucia',
         descrizione: 'Nonna astuta, ricorda ogni carta e legge il gioco altrui',
         coefficienti: {
-            sogliaPescaScarti: 4, compressione: 5,
+            premioScarti: 4, compressione: 5,
             valoreCentralita: 6, prefScale: 5, sogliaDeposito: 6,
             prefBurracoPulito: 7, parsimoniaMatte: 6,
             prudenzaScarto: 8, cooperazione: 7,
@@ -193,7 +193,7 @@ const PERSONAGGI = [
         nome: 'Paolo',
         descrizione: 'Giocatore solido, nessun punto debole',
         coefficienti: {
-            sogliaPescaScarti: 5, compressione: 3,
+            premioScarti: 5, compressione: 3,
             valoreCentralita: 5, prefScale: 5, sogliaDeposito: 5,
             prefBurracoPulito: 5, parsimoniaMatte: 5,
             prudenzaScarto: 5, cooperazione: 5,
@@ -207,7 +207,7 @@ const PERSONAGGI = [
         nome: 'Francesca',
         descrizione: 'Equilibrata, ama le scale pulite e gioca in squadra',
         coefficienti: {
-            sogliaPescaScarti: 5, compressione: 3,
+            premioScarti: 5, compressione: 3,
             valoreCentralita: 7, prefScale: 7, sogliaDeposito: 5,
             prefBurracoPulito: 8, parsimoniaMatte: 6,
             prudenzaScarto: 6, cooperazione: 8,
@@ -221,7 +221,7 @@ const PERSONAGGI = [
         nome: 'Marco',
         descrizione: 'Tranquillo ma attento, segue il gioco con cura',
         coefficienti: {
-            sogliaPescaScarti: 5, compressione: 2,
+            premioScarti: 5, compressione: 2,
             valoreCentralita: 5, prefScale: 5, sogliaDeposito: 4,
             prefBurracoPulito: 5, parsimoniaMatte: 5,
             prudenzaScarto: 6, cooperazione: 6,
@@ -237,7 +237,7 @@ const PERSONAGGI = [
         nome: 'Carla',
         descrizione: 'Imprevedibile, cambia tattica ogni turno',
         coefficienti: {
-            sogliaPescaScarti: 3, compressione: 5,
+            premioScarti: 3, compressione: 5,
             valoreCentralita: 4, prefScale: 5, sogliaDeposito: 3,
             prefBurracoPulito: 4, parsimoniaMatte: 4,
             prudenzaScarto: 5, cooperazione: 5,
@@ -251,7 +251,7 @@ const PERSONAGGI = [
         nome: 'Sergio',
         descrizione: 'Furbo, approfitta di ogni occasione e tende trappole',
         coefficienti: {
-            sogliaPescaScarti: 4, compressione: 4,
+            premioScarti: 4, compressione: 4,
             valoreCentralita: 5, prefScale: 5, sogliaDeposito: 3,
             prefBurracoPulito: 3, parsimoniaMatte: 3,
             prudenzaScarto: 5, cooperazione: 4,
@@ -265,7 +265,7 @@ const PERSONAGGI = [
         nome: 'Anna',
         descrizione: 'Scaltra, legge gli avversari e adatta la strategia',
         coefficienti: {
-            sogliaPescaScarti: 4, compressione: 5,
+            premioScarti: 4, compressione: 5,
             valoreCentralita: 6, prefScale: 6, sogliaDeposito: 4,
             prefBurracoPulito: 5, parsimoniaMatte: 5,
             prudenzaScarto: 7, cooperazione: 7,
@@ -461,7 +461,7 @@ class Combinazione {
 const Strategia = {
     // Coefficienti di default (usati se mancano nel personaggio)
     defaultCoeff: {
-        sogliaPescaScarti: 5, compressione: 3,
+        premioScarti: 5, compressione: 3,
         valoreCentralita: 5, prefScale: 5, sogliaDeposito: 5,
         prefBurracoPulito: 5, parsimoniaMatte: 5,
         prudenzaScarto: 5, cooperazione: 5,
@@ -470,18 +470,25 @@ const Strategia = {
         memoria: 5, letturaAvversario: 5, audacia: 5
     },
 
-    // Helper: nome sintetico di una carta (es. "7C", "KP", "Jo")
-    nomeCarta(carta) {
-        if (!carta) return '?';
-        if (carta.isJolly) return 'Jo';
-        const numeri = ['', 'A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
-        return (numeri[carta.numero] || carta.numero) + (carta.seme || '');
+    // Helper formattazione per UI Debug
+    nomeCarta(c) {
+        if (!c) return 'N/A';
+        if (c.isVirtuale) return c.cartaVisualizzata || 'M';
+        if (c.isJolly) return 'Jolly';
+        const num = c.numero === 1 ? 'A' :
+            c.numero === 11 ? 'J' :
+                c.numero === 12 ? 'Q' :
+                    c.numero === 13 ? 'K' : c.numero;
+        return `${num}${c.seme}`;
     },
 
-    // Helper: descrizione sintetica di un array di carte
-    descrizioneCarte(carte) {
-        if (!carte || carte.length === 0) return '';
-        return carte.map(c => this.nomeCarta(c)).join(' ');
+    descrizioneCarte(carte, mattaUsata = null) {
+        if (!carte || carte.length === 0) return 'Vuoto';
+        return carte.map(c => {
+            if (mattaUsata && c.id === mattaUsata.id) return 'M';
+            if (c.isJolly || c.isPinella) return 'M';
+            return this.nomeCarta(c);
+        }).join(' ');
     },
 
     // Helper per ottenere i coefficienti
@@ -520,27 +527,17 @@ const Strategia = {
     // Analizza la mano e popola le osservazioni
     analizzaMano(giocatore) {
         if (!giocatore.osservazioni) return;
+
+        const combinazioniSquadra = giocatore.squadra === 0 ? game.combinazioniNoi : game.combinazioniLoro;
+
+        // Sfruttiamo il nuovo motore puro e onnicomprensivo
+        const analisi = this.analizzaCarte(giocatore.carte, combinazioniSquadra);
+
         const oss = giocatore.osservazioni;
-        const mano = giocatore.carte;
-
-        // Reset analisi
-        oss.possibiliTris = [];
-        oss.possibiliScale = [];
-        oss.possibiliCalate = [];
-        oss.carteMorte = [];
-        oss.matte = [];
-
-        // Trova matte (jolly e pinelle)
-        oss.matte = mano.filter(c => c.isJolly || c.isPinella);
-
-        // Trova possibili tris
-        oss.possibiliTris = this.trovaTris(mano);
-
-        // Trova possibili scale
-        oss.possibiliScale = this.trovaScale(mano);
-
-        // Trova possibili calate su combo esistenti
-        oss.possibiliCalate = this.trovaCalate(giocatore);
+        oss.possibiliTris = analisi.possibiliTris;
+        oss.possibiliScale = analisi.possibiliScale;
+        oss.possibiliCalate = analisi.possibiliCalate;
+        oss.matte = analisi.matte;
 
         // Trova carte morte (non usate in nessuna combinazione possibile)
         const carteUsate = new Set();
@@ -548,245 +545,12 @@ const Strategia = {
         oss.possibiliScale.forEach(s => s.carte.forEach(c => carteUsate.add(c.id)));
         oss.possibiliCalate.forEach(c => carteUsate.add(c.carta.id));
 
-        oss.carteMorte = mano.filter(c => !carteUsate.has(c.id) && !c.isJolly && !c.isPinella);
+        oss.carteMorte = giocatore.carte.filter(c => !carteUsate.has(c.id) && !c.isJolly && !c.isPinella);
 
         // Genera opzioni di gioco
         this.generaOpzioniGioco(giocatore);
 
         this.logPensiero(giocatore, `Analisi: ${oss.possibiliTris.length} tris, ${oss.possibiliScale.length} scale, ${oss.possibiliCalate.length} calate, ${oss.carteMorte.length} morte`);
-    },
-
-    // Trova tutti i possibili tris nella mano
-    // Regole burraco: max 2 carte stesso seme (2 mazzi), max 1 matta
-    trovaTris(mano) {
-        const tris = [];
-        const perNumero = new Map(); // numero -> [carte]
-
-        // Raggruppa per numero (escluse matte)
-        mano.forEach(c => {
-            if (!c.isJolly && !c.isPinella) {
-                if (!perNumero.has(c.numero)) perNumero.set(c.numero, []);
-                perNumero.get(c.numero).push(c);
-            }
-        });
-
-        // Trova jolly e pinelle disponibili
-        const matte = mano.filter(c => c.isJolly || c.isPinella);
-
-        // Helper: seleziona fino a N carte rispettando max 2 per seme
-        const selezionaCarteValide = (carte, maxCarte) => {
-            const semeCount = new Map(); // seme -> count
-            const selezionate = [];
-            for (const c of carte) {
-                const count = semeCount.get(c.seme) || 0;
-                if (count < 2 && selezionate.length < maxCarte) { // Max 2 per seme (2 mazzi)
-                    selezionate.push(c);
-                    semeCount.set(c.seme, count + 1);
-                }
-            }
-            return selezionate;
-        };
-
-        // Per ogni numero
-        perNumero.forEach((carte, numero) => {
-            // Tris pulito (3+ carte senza matta)
-            if (carte.length >= 3) {
-                const trisCarte = selezionaCarteValide(carte, 4); // Max 4 carte (un poker)
-                if (trisCarte.length >= 3) {
-                    // Genera tris con esattamente 3 carte
-                    tris.push({
-                        carte: trisCarte.slice(0, 3),
-                        punti: trisCarte.slice(0, 3).reduce((s, c) => s + c.punti, 0),
-                        usaMatta: false,
-                        numero: numero
-                    });
-                    // Se 4 carte, genera anche il poker
-                    if (trisCarte.length >= 4) {
-                        tris.push({
-                            carte: trisCarte.slice(0, 4),
-                            punti: trisCarte.slice(0, 4).reduce((s, c) => s + c.punti, 0),
-                            usaMatta: false,
-                            numero: numero
-                        });
-                    }
-                }
-            }
-
-            // Tris con matta (2+ carte + 1 matta)
-            if (carte.length >= 2 && matte.length > 0) {
-                const trisCarte = selezionaCarteValide(carte, 2);
-                if (trisCarte.length >= 2) {
-                    // Genera un tris per ogni matta disponibile
-                    for (const matta of matte) {
-                        tris.push({
-                            carte: [...trisCarte, matta],
-                            punti: trisCarte.reduce((s, c) => s + c.punti, 0) + matta.punti,
-                            usaMatta: true,
-                            mattaUsata: matta,
-                            numero: numero
-                        });
-                    }
-                }
-            }
-        });
-
-        return tris;
-    },
-
-    // Trova tutte le possibili scale nella mano
-    // Gestisce: scale pulite, matta all'inizio/fine, matta nel mezzo (buco)
-    trovaScale(mano) {
-        const scale = [];
-        const perSeme = new Map(); // seme -> Map(numero -> carta)
-
-        // Raggruppa per seme (escluse matte)
-        mano.forEach(c => {
-            if (!c.isJolly && !c.isPinella) {
-                if (!perSeme.has(c.seme)) perSeme.set(c.seme, new Map());
-                // Se già esiste una carta con lo stesso numero (2 mazzi), tieni entrambe
-                const semeMap = perSeme.get(c.seme);
-                if (!semeMap.has(c.numero)) {
-                    semeMap.set(c.numero, []);
-                }
-                semeMap.get(c.numero).push(c);
-            }
-        });
-
-        // Trova matte disponibili
-        const matte = mano.filter(c => c.isJolly || c.isPinella);
-
-        // Helper: prova a costruire una scala da 'start' a 'end' con max 1 buco
-        const provaScala = (semeMap, seme, start, end) => {
-            const risultati = [];
-            const carteScala = [];
-            let buchi = 0;
-            let posizioneBuco = -1;
-
-            for (let n = start; n <= end; n++) {
-                if (semeMap.has(n)) {
-                    carteScala.push({ numero: n, carta: semeMap.get(n)[0] });
-                } else {
-                    buchi++;
-                    posizioneBuco = n;
-                    carteScala.push({ numero: n, carta: null }); // Buco
-                }
-            }
-
-            const lunghezza = end - start + 1;
-            if (lunghezza < 3) return risultati;
-
-            // Scala pulita (nessun buco)
-            if (buchi === 0) {
-                const carte = carteScala.map(x => x.carta);
-                risultati.push({
-                    carte: carte,
-                    punti: carte.reduce((s, c) => s + c.punti, 0),
-                    usaMatta: false,
-                    seme: seme,
-                    daNumero: start,
-                    aNumero: end
-                });
-            }
-            // Scala con 1 buco (riempito da matta)
-            else if (buchi === 1 && matte.length > 0) {
-                for (const matta of matte) {
-                    const carte = carteScala.map(x => x.carta || matta);
-                    risultati.push({
-                        carte: carte,
-                        punti: carte.reduce((s, c) => s.punti ? s + c.punti : c.punti, 0),
-                        usaMatta: true,
-                        mattaUsata: matta,
-                        seme: seme,
-                        daNumero: start,
-                        aNumero: end,
-                        posizioneMatta: posizioneBuco
-                    });
-                }
-            }
-
-            return risultati;
-        };
-
-        // Per ogni seme
-        perSeme.forEach((semeMap, seme) => {
-            const numeri = [...semeMap.keys()].sort((a, b) => a - b);
-            if (numeri.length < 2) return; // Serve almeno 2 carte + eventuale matta
-
-            // Prova tutte le scale possibili di lunghezza 3-7
-            for (let len = 3; len <= 7; len++) {
-                for (let start = 1; start <= 14 - len; start++) {
-                    const end = start + len - 1;
-                    if (end > 13) continue; // K è 13
-
-                    // Conta quante carte ho in questo range
-                    let carteNelRange = 0;
-                    for (let n = start; n <= end; n++) {
-                        if (semeMap.has(n)) carteNelRange++;
-                    }
-
-                    // Serve almeno (len-1) carte per scala con matta, o len per pulita
-                    if (carteNelRange >= len) {
-                        // Scala pulita possibile
-                        scale.push(...provaScala(semeMap, seme, start, end));
-                    } else if (carteNelRange === len - 1 && matte.length > 0) {
-                        // Scala con 1 buco possibile
-                        scale.push(...provaScala(semeMap, seme, start, end));
-                    }
-                }
-            }
-
-            // Aggiungi anche scale con matta all'inizio o alla fine
-            // (estensione di 2 carte consecutive)
-            for (let i = 0; i < numeri.length - 1; i++) {
-                const n1 = numeri[i];
-                const n2 = numeri[i + 1];
-                if (n2 === n1 + 1 && matte.length > 0) {
-                    // Due carte consecutive: posso estendere con matta
-                    const c1 = semeMap.get(n1)[0];
-                    const c2 = semeMap.get(n2)[0];
-
-                    for (const matta of matte) {
-                        // Matta prima (se n1 > 1)
-                        if (n1 > 1) {
-                            scale.push({
-                                carte: [matta, c1, c2],
-                                punti: c1.punti + c2.punti + matta.punti,
-                                usaMatta: true,
-                                mattaUsata: matta,
-                                seme: seme,
-                                daNumero: n1 - 1,
-                                aNumero: n2
-                            });
-                        }
-                        // Matta dopo (se n2 < 13)
-                        if (n2 < 13) {
-                            scale.push({
-                                carte: [c1, c2, matta],
-                                punti: c1.punti + c2.punti + matta.punti,
-                                usaMatta: true,
-                                mattaUsata: matta,
-                                seme: seme,
-                                daNumero: n1,
-                                aNumero: n2 + 1
-                            });
-                        }
-                    }
-                }
-            }
-        });
-
-        // Rimuovi duplicati (stesse carte)
-        const uniche = [];
-        const viste = new Set();
-        for (const s of scale) {
-            const key = s.carte.map(c => c.id).sort().join(',');
-            if (!viste.has(key)) {
-                viste.add(key);
-                uniche.push(s);
-            }
-        }
-
-        return uniche;
     },
 
     // Trova tutte le possibili calate su combinazioni esistenti
@@ -817,9 +581,10 @@ const Strategia = {
     // Genera le opzioni di gioco combinando possibilità non conflittuali
     // Algoritmo: per ogni opzione singola, genera TUTTE le combinazioni
     // possibili guardando solo le opzioni successive (no duplicati)
-    generaOpzioniGioco(giocatore) {
-        if (!giocatore.osservazioni) return;
-        const oss = giocatore.osservazioni;
+    generaOpzioniGioco(giocatore, analisiCustom = null, numCarteVirtuale = null, isPostPesca = true) {
+        const oss = analisiCustom || giocatore.osservazioni;
+        if (!oss) return [];
+        const numCarteMano = numCarteVirtuale !== null ? numCarteVirtuale : giocatore.carte.length;
 
         // Array di opzioni singole (base)
         const opzioniSingole = [];
@@ -831,7 +596,7 @@ const Strategia = {
                 mosse: [{ tipo: 'tris', ...tris }],
                 carteUsate: carteIds,
                 puntiTotali: tris.punti,
-                descCarte: `T: ${this.descrizioneCarte(tris.carte)}`
+                descCarte: `T: ${this.descrizioneCarte(tris.carte, tris.mattaUsata)}`
             });
         }
 
@@ -842,7 +607,7 @@ const Strategia = {
                 mosse: [{ tipo: 'scala', ...scala }],
                 carteUsate: carteIds,
                 puntiTotali: scala.punti,
-                descCarte: `S${scala.seme}: ${this.descrizioneCarte(scala.carte)}`
+                descCarte: `S${scala.seme}: ${this.descrizioneCarte(scala.carte, scala.mattaUsata)}`
             });
         }
 
@@ -898,32 +663,136 @@ const Strategia = {
         const MAX_COMBINAZIONI = 200;
         let numCombinazioni = 0;
 
+        const poolCarte = oss.carteOriginali || giocatore.carte;
+
+        // Rescue Routine (ID Swap): Tenta di curare un conflitto di firme fisiche con carte identiche libere (doppioni o matte libere)
+        const tentaSwapID = (optDaAggiungere, carteGiaUsate) => {
+            let conflitti = [];
+            for (const id of optDaAggiungere.carteUsate) {
+                if (carteGiaUsate.has(id)) conflitti.push(id);
+            }
+            if (conflitti.length === 0) return optDaAggiungere; // Nessun conflitto, giocabile
+
+            // Clona shallow dell'opzione per prepararla allo swap
+            const cloneOpt = {
+                ...optDaAggiungere,
+                mosse: optDaAggiungere.mosse.map(m => {
+                    const mossaClone = { ...m };
+                    if (m.carte) mossaClone.carte = [...m.carte];
+                    return mossaClone;
+                }),
+                carteUsate: new Set(optDaAggiungere.carteUsate)
+            };
+
+            const carteLibere = poolCarte.filter(c => !carteGiaUsate.has(c.id) && !cloneOpt.carteUsate.has(c.id));
+
+            for (const idConflitto of conflitti) {
+                const cartaConflitto = poolCarte.find(c => c.id === idConflitto);
+                if (!cartaConflitto) return null; // Safe fallback
+
+                let idxSost = -1;
+                if (cartaConflitto.isJolly || cartaConflitto.isPinella) {
+                    idxSost = carteLibere.findIndex(c => c.isJolly || c.isPinella); // Tappiamo con altra Matta
+                } else {
+                    idxSost = carteLibere.findIndex(c => c.numero === cartaConflitto.numero && c.seme === cartaConflitto.seme); // Cerchiamo una Faccia Gemella (es. altro 10 cuori)
+                }
+
+                if (idxSost !== -1) {
+                    const cartaSostitutiva = carteLibere[idxSost];
+                    carteLibere.splice(idxSost, 1); // Rimuoviamo la carta dalle libere
+
+                    cloneOpt.carteUsate.delete(idConflitto);
+                    cloneOpt.carteUsate.add(cartaSostitutiva.id);
+
+                    // Riversiamo il clone fisico aggiornato nei rami delle mosse
+                    for (let mossa of cloneOpt.mosse) {
+                        if (mossa.carte) {
+                            const idxC = mossa.carte.findIndex(c => c.id === idConflitto);
+                            if (idxC !== -1) mossa.carte[idxC] = cartaSostitutiva;
+                        } else if (mossa.carta && mossa.carta.id === idConflitto) {
+                            mossa.carta = cartaSostitutiva;
+                        }
+                        if (mossa.mattaUsata && mossa.mattaUsata.id === idConflitto) {
+                            mossa.mattaUsata = cartaSostitutiva;
+                        }
+                    }
+                } else {
+                    // ==========================================
+                    // PIANO B: DYNAMIC SHRINKING TRIS
+                    // Se lo swap fallisce, controlla se la carta contesa
+                    // può essere semplicemente Dimenticata (accorciando il Tris)
+                    // ==========================================
+                    let mossaSalvabile = false;
+
+                    for (let m = 0; m < cloneOpt.mosse.length; m++) {
+                        let mossa = cloneOpt.mosse[m];
+                        // Lo Shrinking Logico si applica solo ai TRIS estesi che subiscono una potatura
+                        if (mossa.tipo === 'tris' && mossa.carte) {
+                            const idxC = mossa.carte.findIndex(c => c.id === idConflitto);
+                            if (idxC !== -1) {
+                                const cartaMorta = mossa.carte[idxC];
+                                // Simuliamo la potatura della carta contesa
+                                const carteFuture = [...mossa.carte];
+                                carteFuture.splice(idxC, 1);
+
+                                // Se dopo lo spoglio il Tris si regge autonomo (>= 3 carte), si SALVA!
+                                if (carteFuture.length >= 3) {
+                                    mossaSalvabile = true;
+                                    mossa.carte = carteFuture;
+
+                                    // Sistemo l'eventuale decurtazione Matta
+                                    if (mossa.mattaUsata && mossa.mattaUsata.id === idConflitto) {
+                                        mossa.usaMatta = false;
+                                        mossa.mattaUsata = null;
+                                    }
+
+                                    // Aggiorno i punti di pertinenza
+                                    mossa.punti -= cartaMorta.punti;
+                                    cloneOpt.puntiTotali -= cartaMorta.punti;
+                                    cloneOpt.carteUsate.delete(idConflitto);
+
+                                    break; // Esce dalla scansione mosse, avendo curato il conflitto ID
+                                }
+                            }
+                        }
+                    }
+
+                    if (!mossaSalvabile) {
+                        return null; // Impossibile sanare e impossibile rimpicciolire: opzione disidratata, cestiniamola.
+                    }
+                }
+            }
+            return cloneOpt;
+        };
+
         // Genera TUTTE le combinazioni non conflittuali
         // Per ogni indice di partenza, genera tutti i subset validi guardando solo avanti
         const generaCombinazioni = (startIdx, opzioniCorrenti) => {
-            // Limite raggiunto?
             if (numCombinazioni >= MAX_COMBINAZIONI) return;
 
-            // Se abbiamo almeno un'opzione, aggiungi la combinazione
             if (opzioniCorrenti.length > 0) {
                 const combo = combinaOpzioni(opzioniCorrenti);
-                combo.valutazione = this.valutaOpzione(giocatore, combo.mosse, combo.carteUsate);
+                const evalObj = this.valutaOpzione(giocatore, combo.mosse, combo.carteUsate, numCarteMano);
+                combo.valutazione = evalObj.punteggio;
+                combo.breakdown = evalObj.breakdown;
+                combo.puntiTavoloCalcolati = evalObj.puntiTotali;
                 oss.opzioniGioco.push(combo);
                 numCombinazioni++;
             }
 
-            // Prova ad aggiungere ogni opzione successiva (da startIdx in poi)
+            const carteGiaUsate = new Set();
+            opzioniCorrenti.forEach(o => o.carteUsate.forEach(id => carteGiaUsate.add(id)));
+
             for (let i = startIdx; i < opzioniSingole.length; i++) {
                 if (numCombinazioni >= MAX_COMBINAZIONI) break;
 
                 const nuovaOpt = opzioniSingole[i];
+                // Tentiamo il match o lo Swap (Rescue Routine)
+                const optRisolta = tentaSwapID(nuovaOpt, carteGiaUsate);
 
-                // Verifica compatibilità con tutte le opzioni correnti
-                const isCompatibile = opzioniCorrenti.every(opt => sonoCompatibili(opt, nuovaOpt));
-
-                if (isCompatibile) {
-                    // Ricorsione: aggiungi questa opzione e continua a guardare avanti
-                    generaCombinazioni(i + 1, [...opzioniCorrenti, nuovaOpt]);
+                if (optRisolta) {
+                    // Ricorsione: aggiungi la versione compatibile e continua in profondità
+                    generaCombinazioni(i + 1, [...opzioniCorrenti, optRisolta]);
                 }
             }
         };
@@ -934,62 +803,165 @@ const Strategia = {
             generaCombinazioni(i + 1, [opzioniSingole[i]]);
         }
 
-        // Ordina per valutazione decrescente
-        oss.opzioniGioco.sort((a, b) => b.valutazione - a.valutazione);
+        // =========================================================
+        // NUOVO FILTRO MASSIMIZZANTE (Rimozione Sottoinsiemi Logici)
+        // Se un'opzione A utilizza un set di carte che è interamente
+        // contenuto nel set di carte di un'opzione B (più grande), 
+        // l'opzione A viene scartata per snellire l'albero.
+        // =========================================================
+        const isSubset = (subsetSet, supersetSet) => {
+            if (subsetSet.size >= supersetSet.size) return false;
+            for (let item of subsetSet) {
+                if (!supersetSet.has(item)) return false;
+            }
+            return true;
+        };
+
+        oss.opzioniGioco = oss.opzioniGioco.filter((optCandidata, idx) => {
+            if (optCandidata.carteUsate.size === 0) return true; // Salvaguardiamo il "Passo base" nudo
+            const isSottomessa = oss.opzioniGioco.some((altOpt, altIdx) => {
+                if (idx === altIdx) return false;
+                return isSubset(optCandidata.carteUsate, altOpt.carteUsate);
+            });
+            return !isSottomessa;
+        });
+
+        // =========================================================
+        // VALUTAZIONE OLISTICA STRATEGICA SU TUTTE LE OPZIONI (FILTRATE)
+        // =========================================================
+        const coeff = this.getCoeff(giocatore);
+        const ruolo = this.determinaRuoloDinamico(giocatore);
+        // Calcolo inline perché puoPrenderePozzetto() non era un metodo globale
+        const combinazioniSquadra = giocatore.squadra === 0 ? game.combinazioniNoi : game.combinazioniLoro;
+        const puoPozzetto = !giocatore.haPozzetto && combinazioniSquadra.length > 0;
+
+        for (let opz of oss.opzioniGioco) {
+            // Clona shallow dell'osservazione pre-esistente per non sporcare il genitore
+            const testAnalisi = { ...oss };
+            testAnalisi.puntiDepositabili = opz.puntiTotali;
+
+            // Conta quanti Burrachi (Scale >= 7) genera DAVVERO QUESTA operazione
+            testAnalisi.numBurraco = opz.mosse.filter(m => m.tipo === 'scala' && m.isBurraco).length;
+
+            if (oss.carteOriginali) {
+                // Calcolo vitale dei cadaveri restanti se scegliamo questa specifica mossa
+                testAnalisi.carteMorte = oss.carteOriginali.filter(c => !opz.carteUsate.has(c.id) && !c.isJolly && !c.isPinella);
+                testAnalisi.puntiCadaveri = testAnalisi.carteMorte.reduce((s, c) => s + c.punti, 0);
+                testAnalisi.carteResidue = oss.carteOriginali.length - opz.carteUsate.size;
+
+                // Quali e Quante Matte restano fuori dalle calate in QUESTA mossa?
+                testAnalisi.matteResidue = oss.carteOriginali.filter(c => !opz.carteUsate.has(c.id) && (c.isJolly || c.isPinella));
+            } else {
+                // Fallback di sicurezza (non dovrebbe mai innescarsi col nuovo core)
+                testAnalisi.carteMorte = [];
+                testAnalisi.puntiCadaveri = 0;
+                testAnalisi.carteResidue = numCarteMano - opz.carteUsate.size;
+                testAnalisi.matteResidue = [];
+            }
+
+            // Applica la Scienza (Malus Cadaveri, Bonus Pozzetto Dinamico, Matte Residue calate sul Ruolo)
+            const scoreGlobale = this.valutaSituazione(testAnalisi, coeff, numCarteMano, puoPozzetto, ruolo, isPostPesca);
+
+            // Salviamo i risultati iniettandoli nell'opzione prima di passarla alla cronologia/log
+            opz.valutazioneAttuale = opz.valutazione; // Conserviamo il vecchio Punteggio Tavola + Helper per UI Legacy
+            opz.valoreGlobaleNetto = scoreGlobale;
+            opz.breakdownGlobale = testAnalisi.scoreDettagli; // La matematica esatta che compone il Globale
+        }
+
+        // ORDINAMENTO VERO: Ordina per valore globale netto decrescente
+        oss.opzioniGioco.sort((a, b) => {
+            // Spareggio: a parità perfetta di punti, si mettono in cima le opzioni con più Scale (maggior potenziale)
+            if (b.valoreGlobaleNetto === a.valoreGlobaleNetto) {
+                const numScaleA = (a.mosse || []).filter(m => m.tipo === 'scala').length;
+                const numScaleB = (b.mosse || []).filter(m => m.tipo === 'scala').length;
+                return numScaleB - numScaleA;
+            }
+            return b.valoreGlobaleNetto - a.valoreGlobaleNetto;
+        });
+
+        return oss.opzioniGioco;
     },
 
-    // Valuta un'opzione di gioco basandosi sui coefficienti
-    valutaOpzione(giocatore, mosse, _carteUsate) {
+    // Valuta un'opzione di gioco (set di mosse simultanee)
+    // Ritorna un punteggio assoluto in cui i "Punti Tavola" sono preponderanti,
+    // e i tratti caratteriali agiscono come bonus/malus percentuali secondari.
+    valutaOpzione(giocatore, mosse, _carteUsate, numCarteVirtuale = null) {
         const coeff = this.getCoeff(giocatore);
-        let valutazione = 0;
+        const carteInMano = numCarteVirtuale !== null ? numCarteVirtuale : giocatore.carte.length;
+        const breakdown = [];
 
-        // Punti base
-        const puntiTotali = mosse.reduce((s, m) => s + (m.punti || m.carta?.punti || 0), 0);
-        valutazione += puntiTotali / 100; // Max ~1.0 per 100 punti
+        // Base: somma nuda e cruda dei punti delle combinazioni formabili
+        let puntiTotali = mosse.reduce((s, m) => s + (m.punti || m.carta?.punti || 0), 0);
+        let valutazione = puntiTotali;
+        breakdown.push({ label: 'Punti Tavolo Base', valore: puntiTotali });
 
-        // Bonus per scale se prefScale alto
+        // Bonus Scala: +10% ai punti per ogni scala se il giocatore la adora
         const numScale = mosse.filter(m => m.tipo === 'scala').length;
-        valutazione += numScale * (coeff.prefScale / 20); // 0 a 0.5
-
-        // Bonus per non usare matte se parsimoniaMatte alto
-        const usaMatta = mosse.some(m => m.usaMatta);
-        if (!usaMatta) {
-            valutazione += (coeff.parsimoniaMatte || 5) / 20; // 0 a 0.5
+        if (numScale > 0) {
+            const bonusScale = (puntiTotali * 0.02 * coeff.prefScale * numScale);
+            valutazione += bonusScale;
+            breakdown.push({ label: `Bonus Scale (${numScale})`, valore: bonusScale, coeff: coeff.prefScale });
         }
 
-        // Calate su combo esistenti: quasi sempre buone
+
+        // Bonus Calate pre-esistenti (ottime per svuotarsi e fare burrachi)
+        let bonusCalate = 0;
         for (const m of mosse) {
             if (m.tipo === 'calata') {
-                valutazione += 0.3;
-                // Bonus extra se la calata porta verso burraco
+                bonusCalate += 10; // Forzatura positiva
                 if (m.combo) {
                     const len = m.combo.carte.length;
-                    if (len === 6) valutazione += 0.5;      // FA burraco!
-                    else if (len >= 5) valutazione += 0.2;   // Vicino
+                    if (len === 6) bonusCalate += 50;      // Diventa Burraco! PRIORITY
+                    else if (len >= 5) bonusCalate += 15;  // Si avvicina
                 }
             }
         }
+        if (bonusCalate > 0) {
+            valutazione += bonusCalate;
+            breakdown.push({ label: 'Bonus Legature Carte', valore: bonusCalate });
+        }
 
-        // dovrebbiDepositare: penalizza depositi nuovi non strategici
+        // Malus Deposito: Rimosso per la fase di Valutazione Preventiva Pesca.
+        // L'utente ha giustamente osservato che avere combinazioni in mano è
+        // sempre positivo indipendentemente dalla loro idoneità al calo immediato.
+        /*
+        let malusScelte = 0;
         for (const m of mosse) {
             if ((m.tipo === 'tris' || m.tipo === 'scala') && m.carte) {
-                if (!this.dovrebbiDepositare(giocatore, m.carte)) {
-                    valutazione -= 0.5; // Deposito prematuro
+                if (!this.dovrebbiDepositare(giocatore, m.carte, carteInMano)) {
+                    malusScelte -= 12; // Scoraggia le aperture tristi
                 }
             }
         }
+        if (malusScelte < 0) {
+            valutazione += malusScelte;
+            breakdown.push({ label: `Malus Apertura Inopportuna`, valore: malusScelte });
+        }
+        */
 
-        // Penalita' se sogliaDeposito alto e pochi punti
-        if (puntiTotali < 30 && coeff.sogliaDeposito > 5) {
-            valutazione -= (coeff.sogliaDeposito - 5) * 0.05;
+        // Fretta Chiusura: superbonus se le mosse ci sfoltiscono brutalmente la mano
+        if (coeff.frettaChiusura > 5 && carteInMano <= 6) {
+            const carteUsate = new Set();
+            mosse.forEach(m => m.carte?.forEach(c => carteUsate.add(c.id)));
+            // Se posiamo tanta roba e restiamo con <= 2 carte, bonus gigantesco
+            if ((carteInMano - carteUsate.size) <= 2) {
+                const bonusFretta = (coeff.frettaChiusura * 5);
+                valutazione += bonusFretta;
+                breakdown.push({ label: `Bonus Rush Pozzetto/Chiusura [C:${coeff.frettaChiusura}]`, valore: bonusFretta });
+            }
         }
 
-        // Bonus per frettaChiusura se ha poche carte
-        if (coeff.frettaChiusura > 5 && giocatore.carte.length <= 6) {
-            valutazione += (coeff.frettaChiusura - 5) * 0.1;
+        // Se l'operazione fa punteggio miserabile e siamo accumulatori seriali:
+        if (puntiTotali < 25 && coeff.sogliaDeposito > 6) {
+            const malusSoglia = -((coeff.sogliaDeposito - 6) * 5);
+            valutazione += malusSoglia;
+            breakdown.push({ label: `Malus Deposito Magro [C:${coeff.sogliaDeposito}]`, valore: malusSoglia });
         }
 
-        return Math.max(0, Math.min(1, valutazione));
+        valutazione = Math.max(0, valutazione);
+        breakdown.push({ label: 'MIGLIOR OPZIONE PREVENTIVATA', subtotale: true, valore: valutazione });
+
+        return { punteggio: valutazione, breakdown: breakdown, puntiTotali: puntiTotali };
     },
 
     // ========== ANALISI AVVERSARI ==========
@@ -1051,109 +1023,167 @@ const Strategia = {
         // ===== 1. TROVA MATTE (Jolly e Pinelle) =====
         risultato.matte = carte.filter(c => c.isJolly || c.isPinella);
 
-        // ===== 2. TROVA POSSIBILI TRIS =====
-        // Raggruppa carte per numero (escluse matte)
+        // ===== 2 E 3. ESTRAZIONE ASTRATTA E MASSIMIZZATA (TRIS E SCALE) =====
+        const tuttiI_Tris = [];
+        const tutteLe_Scale = [];
+
+        // Raggruppa fisicamente le carte
         const perNumero = new Map();
+        const perSeme = new Map();
+
         carte.forEach(c => {
             if (!c.isJolly && !c.isPinella) {
                 if (!perNumero.has(c.numero)) perNumero.set(c.numero, []);
                 perNumero.get(c.numero).push(c);
+
+                if (!perSeme.has(c.seme)) perSeme.set(c.seme, new Map());
+                if (!perSeme.get(c.seme).has(c.numero)) perSeme.get(c.seme).set(c.numero, []);
+                perSeme.get(c.seme).get(c.numero).push(c);
             }
         });
 
-        // Per ogni numero, cerca tris (3+ carte stesso numero)
-        perNumero.forEach((carteDiNumero, numero) => {
-            // Tris pulito (senza matta)
-            if (carteDiNumero.length >= 3) {
-                const trisCarte = carteDiNumero.slice(0, Math.min(4, carteDiNumero.length));
-                risultato.possibiliTris.push({
-                    carte: trisCarte.slice(0, 3),
-                    punti: trisCarte.slice(0, 3).reduce((s, c) => s + c.punti, 0),
+        const matte = risultato.matte;
+
+        // Generazione Tris Estesi (Poker, 5+, ecc.)
+        perNumero.forEach((carteFisiche, numero) => {
+            // Tris massimale pulito (3 o più carte)
+            if (carteFisiche.length >= 3) {
+                tuttiI_Tris.push({
+                    carte: [...carteFisiche],
+                    punti: carteFisiche.reduce((s, c) => s + c.punti, 0),
                     usaMatta: false,
                     numero: numero
                 });
             }
-            // Tris con matta (2 carte + 1 matta)
-            if (carteDiNumero.length >= 2 && risultato.matte.length > 0) {
-                const matta = risultato.matte[0];
-                risultato.possibiliTris.push({
-                    carte: [...carteDiNumero.slice(0, 2), matta],
-                    punti: carteDiNumero.slice(0, 2).reduce((s, c) => s + c.punti, 0) + matta.punti,
+            // Tris massimale con matta (RIGOROSAMENTE solo se ho esattamente 2 carte fisiche)
+            if (carteFisiche.length === 2 && matte.length > 0) {
+                const matta = matte[0];
+                tuttiI_Tris.push({
+                    carte: [...carteFisiche, matta],
+                    punti: carteFisiche.reduce((s, c) => s + c.punti, 0) + matta.punti,
                     usaMatta: true,
+                    mattaUsata: matta,
                     numero: numero
                 });
             }
         });
 
-        // ===== 3. TROVA POSSIBILI SCALE =====
-        // Raggruppa carte per seme (escluse matte)
-        const perSeme = new Map();
-        carte.forEach(c => {
-            if (!c.isJolly && !c.isPinella) {
-                if (!perSeme.has(c.seme)) perSeme.set(c.seme, new Map());
-                const semeMap = perSeme.get(c.seme);
-                if (!semeMap.has(c.numero)) semeMap.set(c.numero, []);
-                semeMap.get(c.numero).push(c);
-            }
-        });
+        // Generazione Scale Logiche Assemblando Tutte le Carte Fisiche Multiple
+        const generaRami = (semeMap, start, end) => {
+            let rami = [[]];
+            for (let n = start; n <= end; n++) {
+                let carteHoc = [];
+                if (semeMap.has(n)) carteHoc = semeMap.get(n);
+                else if (n === 14 && semeMap.has(1)) carteHoc = semeMap.get(1); // Asso Alto
 
-        // Per ogni seme, cerca scale (3+ carte consecutive)
-        perSeme.forEach((semeMap, seme) => {
-            const numeri = [...semeMap.keys()].sort((a, b) => a - b);
-
-            // Scorri cercando sequenze di almeno 3
-            for (let i = 0; i < numeri.length; i++) {
-                let sequenza = [numeri[i]];
-                let j = i + 1;
-
-                // Estendi la sequenza finché sono consecutivi (o c'è 1 buco per matta)
-                while (j < numeri.length) {
-                    const diff = numeri[j] - sequenza[sequenza.length - 1];
-                    if (diff === 1) {
-                        sequenza.push(numeri[j]);
-                        j++;
-                    } else if (diff === 2 && risultato.matte.length > 0 && sequenza.length >= 2) {
-                        // Buco di 1: può essere riempito con matta
-                        sequenza.push(numeri[j] - 1); // posizione matta
-                        sequenza.push(numeri[j]);
-                        j++;
-                        break; // Solo 1 matta per scala
-                    } else {
-                        break;
+                if (carteHoc.length === 0) {
+                    rami.forEach(r => r.push(null));
+                } else {
+                    const nuoviRami = [];
+                    for (const r of rami) {
+                        for (const c of carteHoc) nuoviRami.push([...r, c]);
                     }
+                    rami = nuoviRami;
                 }
+            }
+            return rami;
+        };
 
-                // Se abbiamo almeno 3 numeri, è una scala valida
-                if (sequenza.length >= 3) {
-                    const scalaCarte = [];
-                    let usaMatta = false;
+        perSeme.forEach((semeMap, seme) => {
+            for (let start = 1; start <= 12; start++) {
+                // Lunghezze accettabili: da 3 a 14 carte continue
+                for (let end = start + 2; end <= 14; end++) {
+                    const ramiFisici = generaRami(semeMap, start, end);
+                    for (const ramo of ramiFisici) {
+                        const numBuchi = ramo.filter(c => c === null).length;
 
-                    for (const num of sequenza) {
-                        if (semeMap.has(num)) {
-                            scalaCarte.push(semeMap.get(num)[0]);
-                        } else if (risultato.matte.length > 0) {
-                            // Posizione per la matta
-                            scalaCarte.push(risultato.matte[0]);
-                            usaMatta = true;
+                        // Scala Puramente Vera
+                        if (numBuchi === 0) {
+                            tutteLe_Scale.push({
+                                carte: [...ramo],
+                                punti: ramo.reduce((s, c) => s + c.punti, 0),
+                                usaMatta: false,
+                                seme: seme,
+                                lunghezza: ramo.length
+                            });
+                        }
+                        // Scala Tappata da 1 Matta
+                        else if (numBuchi === 1 && matte.length > 0) {
+                            const idx = ramo.findIndex(c => c === null);
+                            const numCarteFisiche = ramo.length - numBuchi;
+
+                            // Permessa matta appesa (in cima o in coda) SOLO se le carte fisiche sono esattamente 2
+                            // (es. 4F-5F-Matta è vitale, ma 4F-5F-6F-Matta è inutile). Se è un buco interno, sempre permesso.
+                            if ((idx > 0 && idx < ramo.length - 1) || numCarteFisiche === 2) {
+                                const valBuco = start + idx;
+                                const matta = matte[0];
+                                const colmata = [...ramo];
+                                colmata[idx] = matta;
+                                tutteLe_Scale.push({
+                                    carte: colmata,
+                                    punti: colmata.reduce((s, c) => s + c.punti, 0),
+                                    usaMatta: true,
+                                    mattaUsata: matta,
+                                    seme: seme,
+                                    lunghezza: ramo.length,
+                                    posizioneMatta: valBuco
+                                });
+                            }
                         }
                     }
-
-                    if (scalaCarte.length >= 3) {
-                        risultato.possibiliScale.push({
-                            carte: scalaCarte.slice(0, 7), // Max 7 per burraco
-                            punti: scalaCarte.slice(0, 7).reduce((s, c) => s + c.punti, 0),
-                            usaMatta: usaMatta,
-                            seme: seme,
-                            lunghezza: scalaCarte.length
-                        });
-                    }
                 }
             }
         });
+
+        // ===== 3a. RIMOZIONE TRASVERSALE DEI SOTTOINSIEMI FISICI =====
+        // Spazziamo via "6-7-Matta" se quegli STESSI ID Formano "4-5-6-7-Matta".
+        const tutteComb = [...tuttiI_Tris, ...tutteLe_Scale];
+        const viste = new Set();
+        const combMap = [];
+
+        for (const c of tutteComb) {
+            const ids = c.carte.map(x => x.id).sort((a, b) => a - b);
+            const key = ids.join(',');
+            // La dedoppiazione è fisiologica se c'è "scorrimento" della matta lungo il vagone 
+            if (!viste.has(key)) {
+                viste.add(key);
+                combMap.push({ comb: c, ids: ids });
+            }
+        }
+
+        const massimizzate = combMap.filter((cA, i, arr) => {
+            return !arr.some(cB => {
+                if (cB === cA) return false;
+                if (cB.ids.length <= cA.ids.length) return false; // Deve divorarla
+                // È A un esatto e rigido sottoinsieme ID di B? Morte.
+                return cA.ids.every(id => cB.ids.includes(id));
+            });
+        }).map(item => item.comb);
+
+        // ===== 3b. DEDUPLICA VISIVA DEI CLONI FISICI =====
+        // Rimuoviamo i doppioni estetici causati da carte gemelle (es. due "10C" distinti generano varianti del medesimo tris astratto).
+        // Sara' "generaOpzioniGioco" a preoccuparsi di scambiare dinamicamente gli ID equivalenti in caso di collisione.
+        const firmeVisive = new Set();
+        const massimizzateAstratte = massimizzate.filter(c => {
+            // Estraiamo i tratti visivi (Numero + Seme), li ordiniamo per avere una firma stabile
+            const facce = c.carte.map(carta => {
+                if (c.usaMatta && carta.id === c.mattaUsata.id) return 'M';
+                if (carta.isJolly) return 'M';
+                return `${carta.numero}${carta.seme || 'J'}`;
+            }).sort().join('|');
+            const signature = `${c.seme ? 'scala' : 'tris'}_${facce}`;
+            if (firmeVisive.has(signature)) return false; // clone visivo già censito
+            firmeVisive.add(signature);
+            return true;
+        });
+
+        risultato.possibiliTris = massimizzateAstratte.filter(c => !c.seme);
+        risultato.possibiliScale = massimizzateAstratte.filter(c => !!c.seme);
 
         // ===== 4. TROVA POSSIBILI CALATE (su combinazioni esistenti) =====
         if (combinazioniSquadra && combinazioniSquadra.length > 0) {
             for (const carta of carte) {
+                if (carta.isJolly || carta.isPinella) continue;
                 for (const combo of combinazioniSquadra) {
                     if (typeof puoAggiungereACombinazione === 'function') {
                         const posizione = puoAggiungereACombinazione(carta, combo);
@@ -1170,44 +1200,43 @@ const Strategia = {
             }
         }
 
-        // ===== 5. CALCOLA CARTE MORTE (non usate in nessuna combinazione) =====
-        const carteUsate = new Set();
-        risultato.possibiliTris.forEach(t => t.carte.forEach(c => carteUsate.add(c.id)));
-        risultato.possibiliScale.forEach(s => s.carte.forEach(c => carteUsate.add(c.id)));
-        risultato.possibiliCalate.forEach(c => carteUsate.add(c.carta.id));
+        // ===== 5 e 6. TROVA MIGLIORE OPZIONE DI GIOCO (GREEDY PACKING) E CARTE MORTE =====
+        // Combina tris, scale e calate per massimizzare i punti depositabili
+        let tutteOpzioni = [];
+        risultato.possibiliTris.forEach(t => tutteOpzioni.push({ tipo: 'tris', punti: t.punti, carte: t.carte, isBurraco: false }));
+        risultato.possibiliScale.forEach(s => tutteOpzioni.push({ tipo: 'scala', punti: s.punti + (s.lunghezza >= 7 ? 200 : 0), carte: s.carte, isBurraco: s.lunghezza >= 7 }));
+        risultato.possibiliCalate.forEach(c => tutteOpzioni.push({ tipo: 'calata', punti: c.punti, carte: [c.carta], isBurraco: false })); // Approssimazione
 
-        risultato.carteMorte = carte.filter(c =>
-            !carteUsate.has(c.id) && !c.isJolly && !c.isPinella
-        );
+        // Ordina per punti decrescenti
+        tutteOpzioni.sort((a, b) => b.punti - a.punti);
+
+        let carteUsate = new Set();
+        let puntiTotali = 0;
+        let numBurraco = 0;
+
+        for (const opz of tutteOpzioni) {
+            let conflitto = false;
+            for (const c of opz.carte) {
+                if (carteUsate.has(c.id)) { conflitto = true; break; }
+            }
+            if (!conflitto) {
+                // Aggiungiamo l'opzione
+                for (const c of opz.carte) { carteUsate.add(c.id); }
+                puntiTotali += opz.tipo === 'scala' && opz.isBurraco ? (opz.punti - 200) : opz.punti;
+                if (opz.isBurraco) numBurraco++;
+                if (!risultato.migliorOpzione) risultato.migliorOpzione = opz;
+            }
+        }
+
+        // Calcola carte morte (scarti puri) dopo aver ottimizzato la calata
+        risultato.carteMorte = carte.filter(c => !carteUsate.has(c.id) && !c.isJolly && !c.isPinella);
         risultato.puntiCadaveri = risultato.carteMorte.reduce((s, c) => s + c.punti, 0);
 
-        // ===== 6. TROVA MIGLIORE OPZIONE DI GIOCO =====
-        // Sceglie la combinazione di mosse che massimizza i punti depositabili
-        let migliorPunti = 0;
+        risultato.numBurraco = numBurraco;
+        risultato.puntiDepositabili = puntiTotali;
 
-        // Valuta tris singoli
-        for (const tris of risultato.possibiliTris) {
-            if (tris.punti > migliorPunti) {
-                migliorPunti = tris.punti;
-                risultato.migliorOpzione = { tipo: 'tris', ...tris };
-            }
-        }
-
-        // Valuta scale (priorità se più lunghe o burraco)
-        for (const scala of risultato.possibiliScale) {
-            const bonus = scala.lunghezza >= 7 ? 200 : 0; // Bonus burraco
-            if (scala.punti + bonus > migliorPunti) {
-                migliorPunti = scala.punti + bonus;
-                risultato.migliorOpzione = { tipo: 'scala', ...scala };
-                if (scala.lunghezza >= 7) risultato.numBurraco++;
-            }
-        }
-
-        // Conta burraco possibili (scale di 7+)
-        risultato.numBurraco = risultato.possibiliScale.filter(s => s.lunghezza >= 7).length;
-
-        // Somma punti depositabili (migliore opzione)
-        risultato.puntiDepositabili = migliorPunti;
+        // Salvataggio per calcoli Olistici successivi in generaOpzioniGioco
+        risultato.carteOriginali = carte;
 
         return risultato;
     },
@@ -1220,9 +1249,11 @@ const Strategia = {
      * @param {Object} coeff - Coefficienti del personaggio
      * @param {number} numCarteInMano - Numero totale di carte in mano
      * @param {boolean} puoPozzetto - Se può prendere il pozzetto
+     * @param {string} ruolo - Ruolo dinamico dell'IA (Attaccante, Difensore, Neutro)
+     * @param {boolean} isPostPesca - Se la mano ha lo scarto assicurato (-1 zavorra)
      * @returns {number} Punteggio della situazione
      */
-    valutaSituazione(analisi, coeff, numCarteInMano, puoPozzetto) {
+    valutaSituazione(analisi, coeff, numCarteInMano, puoPozzetto, ruolo = 'neutro', isPostPesca = true) {
         let punteggio = 0;
 
         // ===== GUADAGNI =====
@@ -1231,37 +1262,76 @@ const Strategia = {
         punteggio += analisi.puntiDepositabili;
 
         // 2. Bonus burraco (pesato su prefBurracoPulito)
-        //    prefBurracoPulito: 0=sporco va bene, 10=aspetta pulito
-        //    Qui bonus per QUALSIASI burraco, il tipo lo valutiamo dopo
-        const pesoBurraco = 150 + (coeff.prefBurracoPulito * 10); // 150-250
+        const pesoBurraco = 150 + (coeff.prefBurracoPulito * 10);
         punteggio += analisi.numBurraco * pesoBurraco;
 
-        // 3. Bonus pozzetto (pesato su frettaChiusura)
-        //    frettaChiusura: 0=gioca a lungo, 10=chiude appena può
+        // 3. Bonus pozzetto Dinamico a gradoni
+        let bonusPozzettoApplicato = 0;
+        let coeffPozzettoUsato = '-';
         if (puoPozzetto) {
-            const pesoPozzetto = 200 + (coeff.frettaChiusura * 20); // 200-400
-            punteggio += pesoPozzetto;
+            const carteResidue = analisi.carteResidue !== undefined ? analisi.carteResidue : numCarteInMano;
+            let scalare = 0;
+            if (carteResidue <= 0) scalare = 450;
+            else if (carteResidue <= 2) scalare = 250;
+
+            if (scalare > 0) {
+                // Modulazione su propensioAttacco (5 = base)
+                const prop = coeff.propensioAttacco || 5;
+                const modAttacco = 1 + (prop - 5) * 0.05; // +/- 5% per tick
+                scalare = scalare * modAttacco;
+
+                if (ruolo === 'DIFENSORE') {
+                    scalare = scalare / 2; // Dimezzato se difensore
+                    coeffPozzettoUsato = `DIF/Att:${prop}`;
+                } else {
+                    coeffPozzettoUsato = `Att:${prop}`;
+                }
+            }
+            bonusPozzettoApplicato = scalare;
+            punteggio += bonusPozzettoApplicato;
         }
 
-        // 4. Bonus matte in mano (pesato INVERSAMENTE su parsimoniaMatte)
-        //    parsimoniaMatte: 0=usa subito (bonus alto), 10=conserva (bonus basso)
-        const pesoMatte = 30 + ((10 - (coeff.parsimoniaMatte || 5)) * 5); // 30-80
-        punteggio += analisi.matte.length * pesoMatte;
+        // 4. Bonus matte LIBERE in mano (pesato su parsimoniaMatte)
+        //    parsimoniaMatte: 0=usa subito (bonus basso di tenuta = 30), 10=conserva (bonus alto di tenuta = 80)
+        //    L'utente ha acutamente notato che il bonus andava scomputato se la matta veniva calata!
+        const pesoMatte = 30 + ((coeff.parsimoniaMatte || 5) * 5); // 30-80
+        const quantitaMatteValutate = (analisi.matteResidue !== undefined) ? analisi.matteResidue.length : analisi.matte.length;
+        punteggio += quantitaMatteValutate * pesoMatte;
 
         // ===== COSTI =====
 
-        // 5. Penalità cadaveri (pesato su prudenzaScarto)
-        //    prudenzaScarto: 0=scarta qualsiasi, 10=molto attento
-        const pesoCadaveri = 0.5 + ((coeff.prudenzaScarto || 5) * 0.1); // 0.5-1.5
-        punteggio -= analisi.puntiCadaveri * pesoCadaveri;
+        // 5. Penalità cadaveri (Zavorra) dipendente dal Ruolo
+        //    L'utente ha stabilito che la penalità temporaneamente non si baserà 
+        //    sulla somma dei punti della carta morta, ma sul numero di carte fisiche da sfoltire,
+        //    tolta una (quella che inevitabilmente verrà scartata a fine turno).
+        let pesoCadaveri = 2 + ((coeff.prudenzaScarto || 5) * 0.5); // Da 2 a 7 punti di penalità per ogni carta morta
+        let descRuoloZavorra = (coeff.prudenzaScarto || 5);
 
-        // 6. Penalità troppe carte in mano (pesato su propensioAttacco)
-        //    Attaccante (10) vuole mano snella → penalità alta (15)
-        //    Difensore (0) tollera mani grosse → penalità bassa (5)
-        if (numCarteInMano > 11) {
-            const penalitaPerCarta = 5 + (coeff.propensioAttacco || 5); // 5-15
-            punteggio -= (numCarteInMano - 11) * penalitaPerCarta;
+        if (ruolo === 'ATTACCANTE') {
+            pesoCadaveri *= 1.5; // L'attaccante odia bloccarsi con carte morte
+            descRuoloZavorra = `Att: ${pesoCadaveri.toFixed(1)}`;
+        } else if (ruolo === 'DIFENSORE') {
+            pesoCadaveri *= 0.5; // Il difensore tollera la zavorra per fare muro
+            descRuoloZavorra = `Dif: ${pesoCadaveri.toFixed(1)}`;
         }
+
+        const scontoScarto = isPostPesca ? 1 : 0;
+        const numCarteMorteReali = Math.max(0, (analisi.carteMorte ? analisi.carteMorte.length : 0) - scontoScarto);
+        const malusCadaveri = -(numCarteMorteReali * pesoCadaveri);
+        punteggio += malusCadaveri;
+
+        // 6. Rimosso Malus Troppe Carte.
+
+        analisi.scoreDettagli = {
+            base: { val: analisi.puntiDepositabili, coeff: '-' },
+            breakdownBase: analisi.breakdownMigliorOpzione || [],
+            burraco: { val: analisi.numBurraco * pesoBurraco, coeff: coeff.prefBurracoPulito },
+            pozzetto: { val: bonusPozzettoApplicato, coeff: coeffPozzettoUsato },
+            matte: { val: quantitaMatteValutate * pesoMatte, coeff: coeff.parsimoniaMatte || 5 },
+            cadaveri: { val: malusCadaveri, coeff: descRuoloZavorra },
+            troppeCarte: { val: 0, coeff: '-' },
+            totale: punteggio
+        };
 
         return punteggio;
     },
@@ -1325,7 +1395,7 @@ const Strategia = {
                     const probabilita = 0.025;
                     const valoreAtteso = valoreScala * probabilita;
                     bonusRicercate += valoreAtteso;
-                    carteRicercate.push(`${numeri[i]}-${numeri[i+1]}${seme}`);
+                    carteRicercate.push(`${numeri[i]}-${numeri[i + 1]}${seme}`);
                 }
             }
         });
@@ -1352,8 +1422,10 @@ const Strategia = {
     getCentralita(numero) {
         // Scala delle centralita' (quante scale di 7+ includono questo numero)
         // 7,8 → 7/8, 6,9 → 6/8, 5,10 → 5/8, 4,11 → 4/8, 3,12 → 3/8, 2,13(K) → 2/8, 1(A) → 2/8
-        const mappa = { 1: 0.25, 2: 0.25, 3: 0.38, 4: 0.50, 5: 0.63, 6: 0.75,
-                        7: 0.88, 8: 0.88, 9: 0.75, 10: 0.63, 11: 0.50, 12: 0.38, 13: 0.25 };
+        const mappa = {
+            1: 0.25, 2: 0.25, 3: 0.38, 4: 0.50, 5: 0.63, 6: 0.75,
+            7: 0.88, 8: 0.88, 9: 0.75, 10: 0.63, 11: 0.50, 12: 0.38, 13: 0.25
+        };
         return mappa[numero] || 0;
     },
 
@@ -1406,7 +1478,7 @@ const Strategia = {
                     // Ho 2 consecutive: la carta completa prima o dopo?
                     if (carta.numero === stessoSeme[i] - 1 || carta.numero === stessoSeme[i + 1] + 1) {
                         utilita += 3;
-                        motivi.push({ label: `Completa scala ${stessoSeme[i]}-${stessoSeme[i+1]}${carta.seme}`, valore: 3 });
+                        motivi.push({ label: `Completa scala ${stessoSeme[i]}-${stessoSeme[i + 1]}${carta.seme}`, valore: 3 });
                         completaScala = true;
                         break;
                     }
@@ -1418,7 +1490,7 @@ const Strategia = {
                     if (stessoSeme[i + 1] - stessoSeme[i] === 2 &&
                         carta.numero === stessoSeme[i] + 1) {
                         utilita += 2;
-                        motivi.push({ label: `Riempie buco ${stessoSeme[i]}-?-${stessoSeme[i+1]}${carta.seme}`, valore: 2 });
+                        motivi.push({ label: `Riempie buco ${stessoSeme[i]}-?-${stessoSeme[i + 1]}${carta.seme}`, valore: 2 });
                         break;
                     }
                 }
@@ -1540,19 +1612,33 @@ const Strategia = {
     },
 
     /**
+     * Determina il ruolo dinamico del giocatore in base allo scarto carte col compagno
+     */
+    determinaRuoloDinamico(giocatore) {
+        let ruolo = 'neutro';
+        const idx = game.giocatori.findIndex(g => g.nome === giocatore.nome);
+        if (idx === -1) return ruolo; // failsafe
+
+        let compagno = null;
+        for (let i = 1; i < game.giocatori.length; i++) {
+            const g = game.giocatori[(idx + i) % game.giocatori.length];
+            if (g.squadra === giocatore.squadra) { compagno = g; break; }
+        }
+        if (compagno) {
+            // Se ho palesemente meno carte corro al pozzetto, se ho molte carte difendo/comprimo.
+            if (giocatore.carte.length < compagno.carte.length - 2) ruolo = 'ATTACCANTE';
+            if (giocatore.carte.length > compagno.carte.length + 2) ruolo = 'DIFENSORE';
+        }
+
+        if (!giocatore.osservazioni) giocatore.osservazioni = {};
+        giocatore.osservazioni.ruoloDinamico = ruolo;
+
+        return ruolo;
+    },
+
+    /**
      * Decisione: pescare da scarti o da mazzo?
-     *
-     * Albero decisionale:
-     * 0. Scarti vuoti → mazzo
-     * 1. Vicino obiettivo → mazzo (eccezione: carta completa obiettivo)
-     * 2. Avversari con 2/5 carte → mazzo (eccezione: scarto sicuro)
-     * 3. Valutazione utilita' per dimensione pila (1, 2, 3+)
-     * 4. OVERRIDE: Jolly/Pinella in cima → scarti (sovrascrive regole 1-3)
-     * 5. Compagno vicino a chiudere → mazzo (non appesantirsi)
-     * 6. Primo giro con cooperazione alta → scarti
-     *
-     * @param {Giocatore} giocatore - Il giocatore che deve pescare
-     * @returns {string} 'scarti' o 'mazzo'
+     * Nuova Logica: SIMULAZIONE COMBINATORIA GEMINI
      */
     decidiFontePesca(giocatore) {
         const coeff = this.getCoeff(giocatore);
@@ -1575,278 +1661,124 @@ const Strategia = {
         const cartaInCima = game.scarti[numScarti - 1];
         const nomeCima = this.nomeCarta(cartaInCima);
 
-        // ===== REGOLA 1: Vicino all'obiettivo? =====
-        // Se a 1 pescata da pozzetto/chiusura → mazzo (non appesantirsi)
-        const obiettivo = this.aDistanzaDaObiettivo(giocatore, combinazioniSquadra);
-
-        if (obiettivo.vicino) {
-            // ECCEZIONE: carta in cima completa l'obiettivo (e pochi scarti)
-            const cimaUtile = this.valutaUtilitaCarta(cartaInCima, giocatore, combinazioniSquadra);
-            const cartaCompletaObiettivo = cimaUtile.utilita >= 3 && numScarti <= 2;
-
-            if (cartaCompletaObiettivo) {
-                regole.push({
-                    regola: 'Obiettivo',
-                    esito: 'eccezione',
-                    desc: `Vicino ${obiettivo.tipo} MA ${nomeCima} completa (util=${cimaUtile.utilita.toFixed(1)}, ${numScarti} carte)`
-                });
-                // Non forza mazzo, continua valutazione
+        // ===== REGOLA 1: Matta in cima -> SEMPRE scarti tranne chiusura con troppe carte =====
+        if (cartaInCima.isJolly || cartaInCima.isPinella) {
+            const obiettivo = this.aDistanzaDaObiettivo(giocatore, combinazioniSquadra);
+            if (obiettivo.vicino && obiettivo.tipo === 'chiusura' && numScarti > 3) {
+                regole.push({ regola: 'Matta in cima', esito: 'eccezione', desc: 'Troppi scarti per chiudere' });
             } else {
-                regole.push({
-                    regola: 'Obiettivo',
-                    esito: 'mazzo',
-                    desc: `Vicino ${obiettivo.tipo} (${obiettivo.carteInMano} carte) → non appesantirsi`
-                });
+                decisione = 'scarti';
+                motivo = `${cartaInCima.isJolly ? 'JOLLY' : 'PINELLA'} in cima!`;
+                regole.push({ regola: 'Matta in cima', esito: 'scarti', desc: 'Raccoglie sempre' });
+            }
+        }
+
+        if (!decisione) {
+            // Modulazione Ruolo (Attaccante vs Difensore) leggendo mosse del socio
+            const ruolo = this.determinaRuoloDinamico(giocatore);
+
+            // === SIMULAZIONE COMBINATORIA AI GEMINI ===
+            const manoAttuale = giocatore.carte;
+            const manoVirtuale = [...manoAttuale, ...game.scarti];
+            const puoPozzetto = !giocatore.haPozzetto && combinazioniSquadra.length > 0;
+
+            const analisiBase = this.analizzaCarte(manoAttuale, combinazioniSquadra);
+            const opzioniBase = this.generaOpzioniGioco(giocatore, analisiBase, manoAttuale.length, false);
+            if (opzioniBase.length > 0) {
+                const best = opzioniBase[0];
+                analisiBase.puntiDepositabili = best.puntiTotali;
+                analisiBase.breakdownMigliorOpzione = best.breakdown;
+                analisiBase.numBurraco = best.mosse.filter(m => m.tipo === 'scala' && m.carte.length >= 7).length;
+                analisiBase.carteMorte = manoAttuale.filter(c => !best.carteUsate.has(c.id) && !c.isJolly && !c.isPinella);
+                analisiBase.puntiCadaveri = analisiBase.carteMorte.reduce((s, c) => s + c.punti, 0);
+                analisiBase.carteResidue = manoAttuale.length - best.carteUsate.size;
+                analisiBase.matteResidue = manoAttuale.filter(c => !best.carteUsate.has(c.id) && (c.isJolly || c.isPinella));
+            } else {
+                analisiBase.carteResidue = manoAttuale.length;
+                analisiBase.matteResidue = manoAttuale.filter(c => c.isJolly || c.isPinella);
+            }
+            const scoreBase = this.valutaSituazione(analisiBase, coeff, manoAttuale.length, puoPozzetto, ruolo, false);
+
+            const analisiVirtuale = this.analizzaCarte(manoVirtuale, combinazioniSquadra);
+            const opzioniVirtuale = this.generaOpzioniGioco(giocatore, analisiVirtuale, manoVirtuale.length, true);
+            if (opzioniVirtuale.length > 0) {
+                const best = opzioniVirtuale[0];
+                analisiVirtuale.puntiDepositabili = best.puntiTotali;
+                analisiVirtuale.breakdownMigliorOpzione = best.breakdown;
+                analisiVirtuale.numBurraco = best.mosse.filter(m => m.tipo === 'scala' && m.carte.length >= 7).length;
+                analisiVirtuale.carteMorte = manoVirtuale.filter(c => !best.carteUsate.has(c.id) && !c.isJolly && !c.isPinella);
+                analisiVirtuale.puntiCadaveri = analisiVirtuale.carteMorte.reduce((s, c) => s + c.punti, 0);
+                analisiVirtuale.carteResidue = manoVirtuale.length - best.carteUsate.size;
+                analisiVirtuale.matteResidue = manoVirtuale.filter(c => !best.carteUsate.has(c.id) && (c.isJolly || c.isPinella));
+            } else {
+                analisiVirtuale.carteResidue = manoVirtuale.length;
+                analisiVirtuale.matteResidue = manoVirtuale.filter(c => c.isJolly || c.isPinella);
+            }
+            const scoreVirtuale = this.valutaSituazione(analisiVirtuale, coeff, manoVirtuale.length, puoPozzetto, ruolo, true);
+
+            // Salviamo per la UI nel log del giocatore
+            if (giocatore.osservazioni) {
+                giocatore.osservazioni.analisiBase = analisiBase;
+                giocatore.osservazioni.analisiVirtuale = analisiVirtuale;
+            }
+
+            const delta = scoreVirtuale - scoreBase;
+
+            // Premio Scarti (sostituisce la vecchia Soglia)
+            // L'utente ha notato che avere la "certezza" della carta sul tavolo 
+            // merita un PREMIO extra e non una soglia punitiva da scavalcare.
+            // Il coefficiente 'premioScarti' (rinominabile in seguito) fornisce il bonus base.
+            let basePremio = -1; // FORZATURA TEST: originariamente era coeff.premioScarti;
+            let modRuolo = 0;
+
+            if (ruolo === 'ATTACCANTE') modRuolo = -(coeff.frettaChiusura * 3); // L'attaccante riduce il premio extra
+            if (ruolo === 'DIFENSORE') modRuolo = 15; // Il difensore riceve spinta extra a raccogliere
+
+            let premioScarti = basePremio + modRuolo;
+
+            // Creazione Dettagli Premio per UI
+            const dettagliPremio = {
+                base: basePremio,
+                coeffBase: coeff.premioScarti,
+                ruolo: ruolo,
+                modRuolo: modRuolo,
+                totale: premioScarti
+            };
+
+            const deltaTotale = delta + premioScarti;
+
+            if (deltaTotale >= 0) {
+                decisione = 'scarti';
+                motivo = `Simulaz: Delta(+${delta.toFixed(1)}) + Premio(${premioScarti.toFixed(1)}) >= 0`;
+            } else {
                 decisione = 'mazzo';
-                motivo = `Vicino ${obiettivo.tipo} (${obiettivo.carteInMano} carte)`;
-            }
-        } else {
-            regole.push({ regola: 'Obiettivo', esito: 'skip', desc: 'Non vicino' });
-        }
-
-        // ===== REGOLA 2: Avversari con 2 o 5 carte? =====
-        // Controlla ENTRAMBI gli avversari, non solo il prossimo.
-        // In 2v2 l'ordine e': io → avv1 → compagno → avv2
-        // Se raccolgo dagli scarti, devo scartare: avv1 potrebbe raccogliere.
-        // Ma anche avv2 (dopo il compagno) potrebbe essere pericoloso.
-        if (!decisione) {
-            const n = game.giocatori.length;
-            const idx = game.giocatoreCorrente;
-            let avvPericolosoTrovato = false;
-            let descAvversari = [];
-
-            for (let i = 1; i < n; i++) {
-                const g = game.giocatori[(idx + i) % n];
-                const carteG = g.carte.length;
-
-                if (g.squadra === giocatore.squadra) {
-                    // Compagno: mostra info ma non e' un pericolo
-                    descAvversari.push(`${g.nome} (compagno): ${carteG} carte`);
-                    continue;
-                }
-
-                const pericoloso = (carteG === 2 || carteG === 5);
-
-                if (pericoloso) {
-                    // ECCEZIONE: con alta letturaAvversario, valuta se ha scarto sicuro
-                    let scartoSicuro = false;
-                    if ((coeff.letturaAvversario || 5) >= 7) {
-                        const analisiMano = this.analizzaCarte(giocatore.carte, combinazioniSquadra);
-                        scartoSicuro = analisiMano.carteMorte.length > 0;
-                    }
-
-                    if (scartoSicuro) {
-                        descAvversari.push(`${g.nome}: ${carteG} carte MA ho scarto sicuro`);
-                    } else {
-                        descAvversari.push(`${g.nome}: ${carteG} carte → PERICOLO`);
-                        if (!avvPericolosoTrovato) {
-                            avvPericolosoTrovato = true;
-                            decisione = 'mazzo';
-                            motivo = `${g.nome} ha ${carteG} carte (rischio)`;
-                        }
-                    }
-                } else {
-                    descAvversari.push(`${g.nome}: ${carteG} carte (ok)`);
-                }
-            }
-
-            if (avvPericolosoTrovato) {
-                regole.push({
-                    regola: 'Avversari',
-                    esito: 'mazzo',
-                    desc: descAvversari.join(' | ')
-                });
-            } else if (descAvversari.some(d => d.includes('scarto sicuro'))) {
-                regole.push({
-                    regola: 'Avversari',
-                    esito: 'eccezione',
-                    desc: descAvversari.join(' | ') + ` (letturaAvv=${coeff.letturaAvversario})`
-                });
-            } else {
-                regole.push({
-                    regola: 'Avversari',
-                    esito: 'skip',
-                    desc: descAvversari.join(' | ')
-                });
-            }
-        }
-
-        // ===== REGOLA 3: Valutazione utilita' per dimensione pila =====
-        // Valuta TUTTE le carte negli scarti (non solo la cima)
-        if (!decisione) {
-            // Valuta ogni carta negli scarti (dalla cima verso il fondo)
-            const vociUtilita = [];
-            let utilitaTutteCarte = 0;
-
-            for (let i = game.scarti.length - 1; i >= 0; i--) {
-                const cartaScarto = game.scarti[i];
-                const valCarta = this.valutaUtilitaCarta(cartaScarto, giocatore, combinazioniSquadra);
-                utilitaTutteCarte += valCarta.utilita;
-                const nomeCarta = this.nomeCarta(cartaScarto);
-
-                if (i === game.scarti.length - 1) {
-                    // Carta in cima: mostra dettagli completi
-                    if (valCarta.motivi.length === 0) {
-                        vociUtilita.push({ label: `${nomeCarta}: nessuna utilita\'`, valore: 0 });
-                    } else {
-                        for (const m of valCarta.motivi) {
-                            vociUtilita.push(m);
-                        }
-                    }
-                    if (numScarti > 1) {
-                        vociUtilita.push({ label: `Cima (${nomeCarta})`, valore: valCarta.utilita, subtotale: true });
-                    }
-                } else {
-                    // Carte sotto la cima: riga riassuntiva
-                    if (valCarta.motivi.length > 0) {
-                        const desc = valCarta.motivi.map(m => m.label).join(', ');
-                        vociUtilita.push({ label: `${nomeCarta}: ${desc}`, valore: valCarta.utilita });
-                    } else {
-                        vociUtilita.push({ label: `${nomeCarta}: nessuna utilita\'`, valore: 0 });
-                    }
-                }
-            }
-
-            // Subtotale tutte le carte
-            if (numScarti > 1) {
-                vociUtilita.push({ label: 'Tutte le carte', valore: utilitaTutteCarte, subtotale: true });
-            } else {
-                vociUtilita.push({ label: 'Utilita\' carta', valore: utilitaTutteCarte, subtotale: true });
-            }
-
-            // Soglia base (modulata da sogliaPescaScarti)
-            // 0 → soglia 1.0 (raccoglie facile), 10 → soglia 4.0 (molto selettivo)
-            const sogliaBase = 1.0 + (coeff.sogliaPescaScarti || 5) * 0.3;
-
-            // Bonus compressione (raccoglie per togliere opzioni)
-            // 0 → bonus 0, 10 → bonus 3.0
-            const bonusCompressione = (coeff.compressione || 3) * 0.3;
-
-            // Bonus difensore: chi ha bassa propensioAttacco raccoglie piu' facilmente
-            const bonusDifensore = Math.max(0, (5 - (coeff.propensioAttacco || 5)) * 0.15);
-
-            // Bonus aggiuntivi nel dettaglio
-            if (bonusCompressione > 0) {
-                vociUtilita.push({ label: `Compressione (coeff ${(coeff.compressione || 3)})`, valore: bonusCompressione });
-            }
-            if (bonusDifensore > 0) {
-                vociUtilita.push({ label: `Difensore (attacco ${(coeff.propensioAttacco || 5)})`, valore: bonusDifensore });
-            }
-
-            const utilitaTotale = utilitaTutteCarte + bonusCompressione + bonusDifensore;
-            let sogliaEffettiva;
-
-            if (numScarti === 1) {
-                sogliaEffettiva = sogliaBase;
-                decisione = utilitaTotale >= sogliaEffettiva ? 'scarti' : 'mazzo';
-                motivo = `1 carta (${nomeCima}): util=${utilitaTotale.toFixed(1)} ${decisione === 'scarti' ? '>=' : '<'} soglia=${sogliaEffettiva.toFixed(1)}`;
-            } else if (numScarti === 2) {
-                sogliaEffettiva = sogliaBase * 0.8;
-                decisione = utilitaTotale >= sogliaEffettiva ? 'scarti' : 'mazzo';
-                motivo = `${numScarti} carte (cima: ${nomeCima}): util=${utilitaTotale.toFixed(1)} ${decisione === 'scarti' ? '>=' : '<'} soglia=${sogliaEffettiva.toFixed(1)}`;
-            } else {
-                sogliaEffettiva = Math.max(0.5, sogliaBase * 0.4);
-                decisione = utilitaTotale >= sogliaEffettiva ? 'scarti' : 'mazzo';
-                motivo = `${numScarti} carte (cima: ${nomeCima}): util=${utilitaTotale.toFixed(1)} ${decisione === 'scarti' ? '>=' : '<'} soglia=${sogliaEffettiva.toFixed(1)}`;
+                motivo = `Simulaz: Delta(${delta.toFixed(1)}) + Premio(${premioScarti.toFixed(1)}) < 0`;
             }
 
             regole.push({
-                regola: `Utilita' (${numScarti} carte)`,
+                regola: 'Simulazione Combinatoria',
                 esito: decisione,
-                desc: `${numScarti} carte: ${utilitaTotale.toFixed(1)} vs soglia ${sogliaEffettiva.toFixed(1)}`,
-                utilita: {
-                    carta: nomeCima,
-                    voci: vociUtilita,
-                    totale: utilitaTotale,
-                    sogliaBase: sogliaBase,
-                    sogliaEffettiva: sogliaEffettiva,
-                    numScarti: numScarti,
-                    risultato: decisione
+                desc: `${numScarti} carte. Ruolo: ${ruolo}, Delta+Premio: ${deltaTotale.toFixed(1)} >= 0`,
+                simulazione: {
+                    scoreBase: scoreBase.toFixed(1),
+                    scoreVirtuale: scoreVirtuale.toFixed(1),
+                    delta: delta.toFixed(1),
+                    premio: premioScarti.toFixed(1),
+                    dettagliPremio: dettagliPremio,
+                    soglia: 0, // Fallback legacy per non rompere l'UI temporaneamente
+                    dettagliSoglia: dettagliPremio, // Fallback legacy
+
+                    puntiBase: analisiBase.puntiDepositabili,
+                    puntiVirtuale: analisiVirtuale.puntiDepositabili,
+                    cadaveriBase: analisiBase.puntiCadaveri,
+                    cadaveriVirtuale: analisiVirtuale.puntiCadaveri,
+                    dettagliBase: analisiBase.scoreDettagli,
+                    dettagliVirtuale: analisiVirtuale.scoreDettagli
                 }
             });
         }
 
-        // ===== OVERRIDE: Jolly o Pinella in cima → raccogli SEMPRE =====
-        // Fuori dal blocco if(!decisione): sovrascrive QUALSIASI decisione precedente.
-        // Un Jolly (30pt) o Pinella (20pt) e' troppo prezioso per lasciarlo.
-        // Unica eccezione: se sono a 1 carta dalla chiusura E tanti scarti (>3)
-        if (cartaInCima.isJolly || cartaInCima.isPinella) {
-            const obiettivoMatta = this.aDistanzaDaObiettivo(giocatore, combinazioniSquadra);
-            const troppiScartiPerChiudere = obiettivoMatta.vicino && obiettivoMatta.tipo === 'chiusura' && numScarti > 3;
-
-            if (troppiScartiPerChiudere) {
-                // Eccezionalmente NON raccoglie: sta per chiudere e gli scarti sono troppi
-                regole.push({
-                    regola: 'Matta in cima',
-                    esito: 'eccezione',
-                    desc: `${cartaInCima.isJolly ? 'Jolly' : 'Pinella'} in cima MA chiusura imminente con ${numScarti} carte → troppo rischioso`
-                });
-            } else {
-                decisione = 'scarti';
-                motivo += ` | ${cartaInCima.isJolly ? 'JOLLY' : 'PINELLA'} in cima!`;
-                regole.push({
-                    regola: 'Matta in cima',
-                    esito: 'scarti',
-                    desc: `${cartaInCima.isJolly ? 'Jolly' : 'Pinella'} in cima → raccogli sempre`
-                });
-            }
-        }
-
-        // ===== REGOLA 5: Compagno vicino a chiudere? =====
-        // Se il compagno ha poche carte (vicino a pozzetto/chiusura),
-        // preferiamo non appesantirci raccogliendo tanti scarti.
-        // Modulato da cooperazione: alta coop → piu' attento al compagno.
-        if (decisione === 'scarti' && game.modalita === '2v2' && numScarti >= 3) {
-            const n = game.giocatori.length;
-            const idx = game.giocatoreCorrente;
-            let compagno = null;
-            for (let i = 1; i < n; i++) {
-                const g = game.giocatori[(idx + i) % n];
-                if (g.squadra === giocatore.squadra) { compagno = g; break; }
-            }
-            if (compagno) {
-                const carteCompagno = compagno.carte.length;
-                const compagnoVicino = carteCompagno <= 3;
-                const cooperazioneAlta = (coeff.cooperazione || 5) >= 5;
-
-                if (compagnoVicino && cooperazioneAlta) {
-                    // Compagno sta per finire: non appesantiamoci
-                    decisione = 'mazzo';
-                    motivo += ` | Compagno ${compagno.nome} ha ${carteCompagno} carte (non rallentare)`;
-                    regole.push({
-                        regola: 'Compagno',
-                        esito: 'mazzo',
-                        desc: `${compagno.nome} ha ${carteCompagno} carte, coop=${coeff.cooperazione} → non appesantirsi con ${numScarti} scarti`
-                    });
-                } else {
-                    regole.push({
-                        regola: 'Compagno',
-                        esito: 'skip',
-                        desc: `${compagno.nome} ha ${carteCompagno} carte` +
-                            (!cooperazioneAlta ? ` (coop=${coeff.cooperazione}, poco attento)` : ' (ok)')
-                    });
-                }
-            }
-        }
-
-        // ===== REGOLA 6: Primo giro - regola del secondo di mano =====
-        if (decisione === 'mazzo' && game.turno <= 3 && numScarti <= 2) {
-            // Cooperazione alta → segue la regola (raccoglie nel primo giro)
-            if ((coeff.cooperazione || 5) >= 6) {
-                const valCima = this.valutaUtilitaCarta(cartaInCima, giocatore, combinazioniSquadra);
-                if (valCima.utilita >= 0.5) {
-                    decisione = 'scarti';
-                    motivo += ' | Primo giro (cooperazione)';
-                    regole.push({
-                        regola: 'Primo giro',
-                        esito: 'scarti',
-                        desc: `Cooperazione ${coeff.cooperazione} → raccoglie primo giro`
-                    });
-                }
-            }
-        }
-
-        // ===== PREPARA DETTAGLI PER UI DEBUG =====
+        // PREPARA DETTAGLI PER UI DEBUG
         const dettagli = {
             tipo: 'pesca',
             decisione,
@@ -1855,25 +1787,18 @@ const Strategia = {
             scarti: {
                 numCarte: numScarti,
                 cartaInCima: nomeCima,
-                isJolly: cartaInCima.isJolly,
-                isPinella: cartaInCima.isPinella
+                isJolly: cartaInCima?.isJolly,
+                isPinella: cartaInCima?.isPinella
             },
             coeff: {
-                sogliaPescaScarti: coeff.sogliaPescaScarti,
-                compressione: coeff.compressione,
-                cooperazione: coeff.cooperazione,
-                propensioAttacco: coeff.propensioAttacco,
-                letturaAvversario: coeff.letturaAvversario,
-                memoria: coeff.memoria
+                premioScarti: coeff.premioScarti,
+                frettaChiusura: coeff.frettaChiusura,
+                compressione: coeff.compressione
             }
         };
 
-        // ===== LOG COMPATTO =====
         const mark = decisione === 'mazzo' ? '>>> MAZZO' : '>>> SCARTI';
-        this.logPensiero(giocatore,
-            `${mark} | ${motivo}`,
-            dettagli
-        );
+        this.logPensiero(giocatore, `${mark} | ${motivo}`, dettagli);
 
         return decisione;
     },
@@ -1892,8 +1817,8 @@ const Strategia = {
             .sort((a, b) => a.numero - b.numero);
 
         for (let i = 0; i < stessoSeme.length - 2; i++) {
-            if (stessoSeme[i+1].numero === stessoSeme[i].numero + 1 &&
-                stessoSeme[i+2].numero === stessoSeme[i].numero + 2) {
+            if (stessoSeme[i + 1].numero === stessoSeme[i].numero + 1 &&
+                stessoSeme[i + 2].numero === stessoSeme[i].numero + 2) {
                 return true;
             }
         }
@@ -2006,7 +1931,7 @@ const Strategia = {
     },
 
     // Decisione: depositare combinazione?
-    dovrebbiDepositare(giocatore, carte) {
+    dovrebbiDepositare(giocatore, carte, numCarteVirtuale = null) {
         // Verifica se è combinazione valida
         if (typeof verificaCombinazione === 'function') {
             const risultato = verificaCombinazione(carte);
@@ -2015,6 +1940,7 @@ const Strategia = {
 
         const coeff = this.getCoeff(giocatore);
         const numCarte = carte.length;
+        const carteInMano = numCarteVirtuale !== null ? numCarteVirtuale : giocatore.carte.length;
 
         // sogliaDeposito: 0=deposita subito, 10=accumula
         // Con sogliaDeposito basso, deposita con 3+ carte
@@ -2030,7 +1956,7 @@ const Strategia = {
         }
 
         // frettaChiusura: se alto, deposita se ha poche carte in mano
-        if (coeff.frettaChiusura >= 7 && giocatore.carte.length <= 5) {
+        if (coeff.frettaChiusura >= 7 && carteInMano <= 5) {
             return true;
         }
 

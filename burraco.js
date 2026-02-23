@@ -481,8 +481,8 @@ class Strategia {
             .sort((a, b) => a.numero - b.numero);
 
         for (let i = 0; i < stessoSeme.length - 2; i++) {
-            if (stessoSeme[i+1].numero === stessoSeme[i].numero + 1 &&
-                stessoSeme[i+2].numero === stessoSeme[i].numero + 2) {
+            if (stessoSeme[i + 1].numero === stessoSeme[i].numero + 1 &&
+                stessoSeme[i + 2].numero === stessoSeme[i].numero + 2) {
                 return true;
             }
         }
@@ -747,7 +747,7 @@ function playSound(nome) {
     const audio = game.suoni[nome];
     if (audio) {
         audio.currentTime = 0;
-        audio.play().catch(() => {});
+        audio.play().catch(() => { });
     }
 }
 
@@ -946,7 +946,7 @@ function setupEventi() {
 
     // Modal
     $$('.btn-modal').forEach(btn => {
-        btn.addEventListener('click', function() {
+        btn.addEventListener('click', function () {
             chiudiModals();
         });
     });
@@ -1056,6 +1056,17 @@ function iniziaPartita() {
 
     // Distribuisci carte
     distribuisciCarte();
+
+    // Salva Snapshot Iniziale in memoria e in LocalStorage (per Ripristino di Debug)
+    if (typeof creaSnapshot === 'function') {
+        try {
+            window.burraco_seed_snapshot = creaSnapshot();
+            localStorage.setItem('burraco_backup_iniziale', JSON.stringify(window.burraco_seed_snapshot));
+            console.log("Deck Seeded salvato. Premi CTRL+ALT+B per ricaricarlo nelle medesime condizioni.");
+        } catch (err) {
+            console.warn("Impossibile salvare il backup iniziale:", err);
+        }
+    }
 
     // Render iniziale
     render();
@@ -2282,7 +2293,7 @@ function verificaScala(carte) {
 
     // Controlla duplicati
     for (let i = 1; i < numeri.length; i++) {
-        if (numeri[i] === numeri[i-1]) {
+        if (numeri[i] === numeri[i - 1]) {
             return { valida: false, motivo: 'Numeri duplicati' };
         }
     }
@@ -2368,7 +2379,7 @@ function ordinaScalaConJolly(carte, assoAlto = false) {
     // Conta i buchi nella sequenza
     let bucheTotali = 0;
     for (let i = 1; i < numeriNormali.length; i++) {
-        bucheTotali += numeriNormali[i] - numeriNormali[i-1] - 1;
+        bucheTotali += numeriNormali[i] - numeriNormali[i - 1] - 1;
     }
 
     // Determina dove mettere la matta in base alla posizione originale
@@ -2410,9 +2421,9 @@ function ordinaScalaConJolly(carte, assoAlto = false) {
     if (mattaAllaFine === null) {
         // Metti i jolly nei buchi
         for (let i = 1; i < numeriNormali.length && jollyIdx < jolly.length; i++) {
-            const gap = numeriNormali[i] - numeriNormali[i-1] - 1;
+            const gap = numeriNormali[i] - numeriNormali[i - 1] - 1;
             for (let j = 0; j < gap && jollyIdx < jolly.length; j++) {
-                let numJolly = numeriNormali[i-1] + j + 1;
+                let numJolly = numeriNormali[i - 1] + j + 1;
                 if (assoAlto && numJolly === 14) {
                     numJolly = 1;
                 }
@@ -2493,7 +2504,7 @@ function ordinaScalaConJolly(carte, assoAlto = false) {
 // Verifica se i numeri formano una sequenza continua con i jolly disponibili
 function verificaSequenza(numeri, jollyDisponibili) {
     for (let i = 1; i < numeri.length; i++) {
-        const gap = numeri[i] - numeri[i-1] - 1;
+        const gap = numeri[i] - numeri[i - 1] - 1;
         if (gap > jollyDisponibili) {
             return false;
         }
@@ -2805,7 +2816,7 @@ function aggiornaIndicatoreTurno() {
     const giocatore = game.giocatori[game.giocatoreCorrente];
     let area = null;
 
-    switch(giocatore.posizione) {
+    switch (giocatore.posizione) {
         case 'bottom':
             area = $('#area-giocatore');
             break;
@@ -3809,7 +3820,7 @@ function getDettaglioHTML(mossa, indice) {
 
 // Aggiorna automaticamente la finestra diagnostica ad ogni mossa
 const originalRegistraMossa = registraMossa;
-registraMossa = function(azione, dettagli = {}) {
+registraMossa = function (azione, dettagli = {}) {
     originalRegistraMossa(azione, dettagli);
     // Aggiorna la finestra diagnostica se aperta
     setTimeout(aggiornaDiagnostica, 100);
