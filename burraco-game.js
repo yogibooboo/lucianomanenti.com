@@ -1114,9 +1114,6 @@ async function turnoAI() {
     Strategia.analizzaMano(giocatore);
     ordinaCarte(giocatore.carte);
 
-    // ========== DEBUG: DOPO PESCA ==========
-    await pausaDebugAI(giocatore, `Turno ${game.turno} - Dopo pesca`);
-
     // Esegui la mossa migliore (la prima opzione dopo l'ordinamento per valutazione)
     const opzioni = giocatore.osservazioni?.opzioniGioco || [];
     // Cerca la prima opzione con mosse (salta "passa")
@@ -1125,19 +1122,27 @@ async function turnoAI() {
     // Log decisione giocata per debug
     const top5Opzioni = opzioni.slice(0, 5);
     if (mossaMigliore) {
+        const valGlobaleMigliore = mossaMigliore.valoreGlobaleNetto != null ? mossaMigliore.valoreGlobaleNetto : mossaMigliore.valutazione;
+
         Strategia.logPensiero(giocatore,
-            `Giocata: ${mossaMigliore.descCarte} (val: ${mossaMigliore.valutazione?.toFixed(2)})`,
+            `Giocata: ${mossaMigliore.descCarte} (Score: ${valGlobaleMigliore?.toFixed(1)})`,
             {
                 tipo: 'giocata',
                 mossaScelta: mossaMigliore.descCarte,
-                valutazione: mossaMigliore.valutazione,
+                valutazione: valGlobaleMigliore,
+                breakdownScelta: mossaMigliore.breakdownGlobale || mossaMigliore.breakdown, // Dati per l'HUD UI Fase 7
                 alternative: top5Opzioni.map(o => ({
                     desc: o.descCarte,
-                    valutazione: o.valutazione
+                    valutazione: o.valoreGlobaleNetto != null ? o.valoreGlobaleNetto : o.valutazione,
+                    breakdown: o.breakdownGlobale || o.breakdown // Dati per l'HUD UI
                 }))
             }
         );
-        console.log(`AI ${giocatore.nome}: eseguo ${mossaMigliore.descCarte} (val: ${mossaMigliore.valutazione?.toFixed(2)})`);
+        console.log(`AI ${giocatore.nome}: eseguo ${mossaMigliore.descCarte} (Score: ${valGlobaleMigliore?.toFixed(1)})`);
+
+        // ========== DEBUG: DOPO PESCA ==========
+        // (Spostato qui per permettere ispezione del log della Decisione Giocata prima dell'esecuzione fisica)
+        await pausaDebugAI(giocatore, `Turno ${game.turno} - Dopo pesca (Giocata Decisa)`);
 
         // Esegui tutte le mosse dell'opzione
         for (const mossa of mossaMigliore.mosse) {
@@ -1164,10 +1169,10 @@ async function turnoAI() {
                 valutazione: o.valutazione
             }))
         });
-    }
 
-    // ========== DEBUG: DOPO GIOCATA ==========
-    await pausaDebugAI(giocatore, `Turno ${game.turno} - Dopo giocata`);
+        // ========== DEBUG: DOPO PESCA ==========
+        await pausaDebugAI(giocatore, `Turno ${game.turno} - Dopo pesca (Giocata Decisa)`);
+    }
 
     // Ritardo prima dello scarto
     await delay(500);
@@ -1192,6 +1197,10 @@ async function turnoAI() {
             giocatore.carte.splice(idxScarto, 1);
         }
         console.log(`AI ${giocatore.nome}: scarta ${Strategia.nomeCarta(cartaDaScartare)}`);
+
+        // ========== DEBUG: DOPO GIOCATA ==========
+        // (Spostato qui per permettere ispezione del log della Decisione Scarto prima dell'animazione)
+        await pausaDebugAI(giocatore, `Turno ${game.turno} - Dopo giocata (Scarto Deciso)`);
 
         // Salva la posizione per l'animazione
         const container = $(selettoreCarte);

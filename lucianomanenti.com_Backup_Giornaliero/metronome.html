@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+	<!-- Google tag (gtag.js) -->
+	<script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
+	<script>
+		window.dataLayer = window.dataLayer || [];
+		function gtag() { dataLayer.push(arguments); }
+		gtag('js', new Date());
+
+		gtag('config', 'G-WRBDRDQ4L8');
+	</script>
+
+	<title>Free online metronome - lucianomanenti.com</title>
+	<link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
+	<link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
+	<link rel="shortcut icon" href="favicon/favicon.ico">
+	<link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+	<link rel="manifest" href="favicon/site.webmanifest">
+
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="metro.css?v=1.2" />
+
+	<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9335537153013492"
+		crossorigin="anonymous"></script>
+
+	<meta name="Description"
+		content="Free online metronome that looks like a real one...but with a lot of additional functions">
+	<script>
+		window.gameConfig = {
+			gaPrefix: 'METRO_',
+			hideLegalFooter: true,
+			messages: {
+				it: '',
+				en: ''
+			},
+			adsenseActive: true,
+			adsenseSlots: {
+				'300x600': '5266697442',
+				'160x600': '1167670336',
+				'300x250': '8471445288',
+				'160x250': '8663016975'
+			}
+		};
+	</script>
+	<script src="game-layout.js?v=4.2"></script>
+</head>
+
+
+<body>
+
+
+
+	<div class="main-container">
+		<div id="sidebar-left" class="sidebar"></div>
+		<div id="sidebar-right" class="sidebar"></div>
+
+		<div id="campogioco">
+
+
+
+			<div id="metronomo">
+				<canvas id="canvasmetronomo" width="400" height="700">
+				</canvas>
+				<canvas id="canvasimposta" width="600" height="700">
+				</canvas>
+
+				<!-- Volume Slider -->
+				<div class="volume-container">
+					<input type="range" id="volume-control" min="0" max="1" step="0.01" value="0.8">
+					<div class="volume-label">Volume</div>
+				</div>
+
+				<div id="bstart" class="pulsante2" style="top: 640px; left: 400px;">START</div>
+
+				<a href="index.html">
+					<div class="pulsanteback" style="bottom: 8px; left: 860px; "></div>
+				</a>
+
+				<div class="pulsanteaiuto" style="bottom: 8px; left: 740px;"></div>
+				<div class="pulsantehelp" style="bottom: 8px; left: 620px;"></div>
+
+				<div
+					style="position: absolute; bottom: 15px; left: 50px; color: white; font-family: sans-serif; font-size: 14px; z-index: 10000;">
+					<a href="aboutme.html" target="_blank"
+						style="color: inherit; text-decoration: none; margin-right: 20px;">About Me</a>
+					<a href="privacy.html" target="_blank" style="color: inherit; text-decoration: none;">Privacy
+						Policy</a>
+					<a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)"
+						style="color: inherit; text-decoration: none; margin-left: 20px;">Gestisci Cookie</a>
+				</div>
+
+			</div> <!--metronomo-->
+
+
+
+
+
+		</div> <!-- campogioco-->
+	</div> <!-- main-container -->
+
+	<canvas id="wc" width="512" height="256">
+	</canvas>
+
+
+
+
+
+
+	<script src="jquery-2.1.1.js"></script>
+	<script src="metrocode.js?v=1.3"></script>
+	<script>
+	// Nasconde lo scudo di revoca consenso Google FC
+	(function() {
+		var nascosto = false;
+		var observer = new MutationObserver(function() {
+			if (nascosto) return;
+			var divs = document.querySelectorAll('body > div');
+			for (var i = 0; i < divs.length; i++) {
+				if (divs[i].shadowRoot && !divs[i].className && (divs[i].getAttribute('style')||'').length > 5000) {
+					divs[i].style.setProperty('display', 'none', 'important');
+					nascosto = true;
+					observer.disconnect();
+					return;
+				}
+			}
+		});
+		observer.observe(document.body, { childList: true });
+	})();
+	</script>
+</body>
+
+</html>

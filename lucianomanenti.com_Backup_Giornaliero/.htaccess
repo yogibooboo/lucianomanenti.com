@@ -1,0 +1,24 @@
+# .htaccess for Aruba Linux Hosting
+
+RewriteEngine On
+
+# 1. Force HTTPS (Safe for Aruba)
+RewriteCond %{HTTPS} off
+RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# 1b. Permanent Redirection for old Scala40 V1 (Case native and V1)
+RedirectMatch 301 ^/scala40[vV]1\.html$ /scala40.html
+
+# 2. Optimized Caching Rules
+<IfModule mod_expires.c>
+    ExpiresActive On
+    # HTML shouldn't be cached too long to allow for updates
+    ExpiresByType text/html "access plus 0 seconds"
+    # Static assets can be cached longer
+    ExpiresByType application/javascript "access plus 1 month"
+    ExpiresByType text/css "access plus 1 month"
+    ExpiresByType image/x-icon "access plus 1 year"
+    ExpiresByType image/jpeg "access plus 1 year"
+    ExpiresByType image/png "access plus 1 year"
+    ExpiresByType image/svg+xml "access plus 1 year"
+</IfModule>

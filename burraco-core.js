@@ -378,24 +378,31 @@ class Combinazione {
             if (c.isJolly) return true;
             if (c.isPinella) {
                 // Pinella al posto naturale (posizione 2 in una scala) non conta come matta
-                if (this.tipo === TIPO_SCALA) {
-                    // La pinella è al posto naturale se rappresenta il 2 del seme della scala
-                    // Assumiamo che le carte siano ordinate per numero
-                    const numeriScala = this.carte.map(carta => {
-                        if (carta.isJolly || (carta.isPinella && carta.seme !== this.seme)) {
-                            return null; // matta, posizione sconosciuta
-                        }
-                        return carta.numero;
-                    });
-                    // Trova il primo numero valido e calcola la posizione attesa del 2
-                    for (let i = 0; i < numeriScala.length; i++) {
-                        if (numeriScala[i] !== null) {
-                            const startNum = numeriScala[i] - i;
-                            const expectedNum = startNum + idx;
-                            // Se la pinella è in posizione dove dovrebbe esserci il 2, è naturale
-                            if (expectedNum === 2 && c.numero === 2) return false;
+                if (this.tipo === TIPO_SCALA || this.tipo === 'scala') {
+                    // Troviamo la prima carta "ancora" sicura (non jolly, non pinella)
+                    let anchorIdx = -1;
+                    let anchorNum = -1;
+                    for (let i = 0; i < this.carte.length; i++) {
+                        const carta = this.carte[i];
+                        if (!carta.isJolly && !carta.isPinella) {
+                            anchorIdx = i;
+                            anchorNum = carta.numero;
+                            // Se è un Asso (1), determina se in questa scala vale 1 o 14
+                            if (anchorNum === 1) {
+                                if (i > 0 && this.carte[i - 1] && this.carte[i - 1].numero === 13) anchorNum = 14;
+                                else if (i === this.carte.length - 1 && this.carte.length > 1) anchorNum = 14;
+                            }
                             break;
                         }
+                    }
+
+                    if (anchorIdx !== -1) {
+                        const startNum = anchorNum - anchorIdx;
+                        const expectedNum = startNum + idx;
+                        // Se la pinella è in posizione logica dove dovrebbe esserci il 2 fisico, è naturale
+                        if (expectedNum === 2 && c.seme === this.seme) return false;
+
+                        // Edge case Burrachi cortissimi (praticamente folli o da check progressivo) superato
                     }
                 }
                 return true; // Pinella usata come matta
@@ -543,7 +550,10 @@ const Strategia = {
         const carteUsate = new Set();
         oss.possibiliTris.forEach(t => t.carte.forEach(c => carteUsate.add(c.id)));
         oss.possibiliScale.forEach(s => s.carte.forEach(c => carteUsate.add(c.id)));
-        oss.possibiliCalate.forEach(c => carteUsate.add(c.carta.id));
+        oss.possibiliCalate.forEach(seq => {
+            const arr = Array.isArray(seq) ? seq : [seq];
+            arr.forEach(c => carteUsate.add(c.carta.id));
+        });
 
         oss.carteMorte = giocatore.carte.filter(c => !carteUsate.has(c.id) && !c.isJolly && !c.isPinella);
 
@@ -611,14 +621,23 @@ const Strategia = {
             });
         }
 
-        // Genera opzioni da singole calate
-        for (const calata of oss.possibiliCalate) {
-            const carteIds = new Set([calata.carta.id]);
+        // Genera opzioni da calate (singole o multiple a cascata)
+        for (const seqCalata of oss.possibiliCalate) {
+            // Supporto retro-compatibile: garantiamo un array iterabile (che la calata sia una o n-catena)
+            const seq = Array.isArray(seqCalata) ? seqCalata : [seqCalata];
+
+            const carteIds = new Set(seq.map(c => c.carta.id));
+            const puntiTotali = seq.reduce((acc, c) => acc + c.carta.punti, 0);
+
+            // Rimappiamo l'oggetto semplice annotando l'intent "tipo: calata" per l'esecutore UI
+            const mosse = seq.map(c => ({ tipo: 'calata', ...c }));
+            const descCarte = seq.map(c => `C: ${this.nomeCarta(c.carta)}`).join(' + ');
+
             opzioniSingole.push({
-                mosse: [{ tipo: 'calata', ...calata }],
+                mosse: mosse,
                 carteUsate: carteIds,
-                puntiTotali: calata.carta.punti,
-                descCarte: `C: ${this.nomeCarta(calata.carta)}`
+                puntiTotali: puntiTotali,
+                descCarte: descCarte
             });
         }
 
@@ -839,6 +858,9 @@ const Strategia = {
             // Clona shallow dell'osservazione pre-esistente per non sporcare il genitore
             const testAnalisi = { ...oss };
             testAnalisi.puntiDepositabili = opz.puntiTotali;
+            testAnalisi.punteggioOpzioneNetto = opz.valutazione;
+            testAnalisi.bonusOpzioneInterni = opz.valutazione - opz.puntiTotali;
+            testAnalisi.breakdownMigliorOpzione = opz.breakdown || [];
 
             // Conta quanti Burrachi (Scale >= 7) genera DAVVERO QUESTA operazione
             testAnalisi.numBurraco = opz.mosse.filter(m => m.tipo === 'scala' && m.isBurraco).length;
@@ -895,10 +917,11 @@ const Strategia = {
         let valutazione = puntiTotali;
         breakdown.push({ label: 'Punti Tavolo Base', valore: puntiTotali });
 
-        // Bonus Scala: +10% ai punti per ogni scala se il giocatore la adora
+        // Bonus Scala: Flat point bonus per ogni scala
         const numScale = mosse.filter(m => m.tipo === 'scala').length;
         if (numScale > 0) {
-            const bonusScale = (puntiTotali * 0.02 * coeff.prefScale * numScale);
+            // Esempio: coeff.prefScale=5 -> 10 punti per scala. prefScale=10 -> 20 punti per scala.
+            const bonusScale = numScale * ((coeff.prefScale || 5) * 2);
             valutazione += bonusScale;
             breakdown.push({ label: `Bonus Scale (${numScale})`, valore: bonusScale, coeff: coeff.prefScale });
         }
@@ -1182,21 +1205,44 @@ const Strategia = {
 
         // ===== 4. TROVA POSSIBILI CALATE (su combinazioni esistenti) =====
         if (combinazioniSquadra && combinazioniSquadra.length > 0) {
-            for (const carta of carte) {
-                if (carta.isJolly || carta.isPinella) continue;
-                for (const combo of combinazioniSquadra) {
+
+            // Esploratore Ricorsivo: concatena attacchi successivi sbloccati da attacchi precedenti
+            const esploraCalate = (comboOrigine, comboSimulata, carteDisponibili, calateCorrenti) => {
+                for (let i = 0; i < carteDisponibili.length; i++) {
+                    const carta = carteDisponibili[i];
+                    if (carta.isJolly || carta.isPinella) continue; // Temporaneamente disabilitate le matte a cascata
+
                     if (typeof puoAggiungereACombinazione === 'function') {
-                        const posizione = puoAggiungereACombinazione(carta, combo);
+                        const posizione = puoAggiungereACombinazione(carta, comboSimulata);
                         if (posizione) {
-                            risultato.possibiliCalate.push({
+                            const nuovaCalata = {
                                 carta: carta,
-                                comboId: combo.id,
-                                combo: combo,
+                                comboId: comboOrigine.id,
+                                combo: comboOrigine,
                                 punti: carta.punti
-                            });
+                            };
+
+                            const nuovaSequenza = [...calateCorrenti, nuovaCalata];
+                            risultato.possibiliCalate.push(nuovaSequenza);
+
+                            // Prepariamo la combo virtuale allungata per testare un eventuale attacco di livello 2
+                            const nuovaComboSimulata = {
+                                id: comboSimulata.id,
+                                tipo: comboSimulata.tipo,
+                                carte: [...comboSimulata.carte, carta]
+                                // Non importa se la matta scivola, verificaCombinazione() usata da puoAggiungere ordina e ricalcola tutto autonomamente.
+                            };
+
+                            // Togliamo la carta spesa e affondiamo nel Livello successivo
+                            const rimanenti = carteDisponibili.filter(c => c.id !== carta.id);
+                            esploraCalate(comboOrigine, nuovaComboSimulata, rimanenti, nuovaSequenza);
                         }
                     }
                 }
+            };
+
+            for (const combo of combinazioniSquadra) {
+                esploraCalate(combo, combo, carte, []);
             }
         }
 
@@ -1205,7 +1251,13 @@ const Strategia = {
         let tutteOpzioni = [];
         risultato.possibiliTris.forEach(t => tutteOpzioni.push({ tipo: 'tris', punti: t.punti, carte: t.carte, isBurraco: false }));
         risultato.possibiliScale.forEach(s => tutteOpzioni.push({ tipo: 'scala', punti: s.punti + (s.lunghezza >= 7 ? 200 : 0), carte: s.carte, isBurraco: s.lunghezza >= 7 }));
-        risultato.possibiliCalate.forEach(c => tutteOpzioni.push({ tipo: 'calata', punti: c.punti, carte: [c.carta], isBurraco: false })); // Approssimazione
+
+        risultato.possibiliCalate.forEach(seq => {
+            const sequenceArray = Array.isArray(seq) ? seq : [seq];
+            const sumPunti = sequenceArray.reduce((acc, c) => acc + c.carta.punti, 0);
+            const carteCoinvolte = sequenceArray.map(c => c.carta);
+            tutteOpzioni.push({ tipo: 'calata', punti: sumPunti, carte: carteCoinvolte, isBurraco: false });
+        });
 
         // Ordina per punti decrescenti
         tutteOpzioni.sort((a, b) => b.punti - a.punti);
@@ -1258,8 +1310,8 @@ const Strategia = {
 
         // ===== GUADAGNI =====
 
-        // 1. Punti depositabili (base)
-        punteggio += analisi.puntiDepositabili;
+        // 1. Punti depositabili (base fisica carte)
+        punteggio += analisi.punteggioOpzioneNetto !== undefined ? analisi.punteggioOpzioneNetto : analisi.puntiDepositabili;
 
         // 2. Bonus burraco (pesato su prefBurracoPulito)
         const pesoBurraco = 150 + (coeff.prefBurracoPulito * 10);
@@ -1845,23 +1897,29 @@ const Strategia = {
         if (mano.length === 0) return null;
 
         // Calcola punteggio per ogni carta (piu' alto = piu' scartabile)
-        const punteggi = mano.map(carta => ({
-            carta: carta,
-            punteggio: this.calcolaPunteggioScarto(giocatore, carta)
-        }));
+        const punteggi = mano.map(carta => {
+            const risultato = this.calcolaPunteggioScarto(giocatore, carta);
+            return {
+                carta: carta,
+                punteggio: risultato.totale,
+                breakdown: risultato.breakdown
+            };
+        });
 
         // Ordina per punteggio decrescente
         punteggi.sort((a, b) => b.punteggio - a.punteggio);
 
         // Log dettagli per debug UI
-        const top = punteggi.slice(0, Math.min(8, punteggi.length));
+        const top = punteggi.slice(0, Math.min(10, punteggi.length));
         const dettagli = {
             tipo: 'scarto',
             cartaScelta: this.nomeCarta(punteggi[0].carta),
             punteggioScelto: punteggi[0].punteggio,
+            breakdownScarto: punteggi[0].breakdown,
             classifica: top.map(p => ({
                 carta: this.nomeCarta(p.carta),
-                punteggio: p.punteggio
+                punteggio: p.punteggio,
+                breakdown: p.breakdown
             }))
         };
         this.logPensiero(giocatore,
@@ -1878,16 +1936,24 @@ const Strategia = {
         const combinazioniSquadra = giocatore.squadra === 0
             ? game.combinazioniNoi : game.combinazioniLoro;
         let punteggio = 0;
+        const breakdown = [];
+
+        // Helper locale per aggiungere score
+        const addScore = (label, val, coeffStr) => {
+            if (val === 0) return;
+            punteggio += val;
+            breakdown.push({ label, valore: val, coeffStr });
+        };
 
         // 1. Utilita' invertita: carta utile = NON scartarla
         const valCarta = this.valutaUtilitaCarta(carta, giocatore, combinazioniSquadra);
-        punteggio -= valCarta.utilita * 0.15;
+        addScore('Utilità Invertita', -(valCarta.utilita * 0.15), 'Peso Fisso: x0.15');
 
         // 2. Carte isolate per tris (nessun'altra carta uguale)
         const stessoNumero = mano.filter(c =>
             c.numero === carta.numero && !c.isJolly && !c.isPinella && c !== carta
         ).length;
-        if (stessoNumero === 0) punteggio += 0.3;
+        if (stessoNumero === 0) addScore('Isolamento Tris (+ scartabile)', 0.3, 'Bonus Isolamento: +0.3');
 
         // 3. Carte isolate per scala (nessun vicino dello stesso seme)
         if (carta.seme) {
@@ -1895,22 +1961,22 @@ const Strategia = {
                 c.seme === carta.seme && !c.isJolly && !c.isPinella &&
                 c !== carta && Math.abs(c.numero - carta.numero) <= 2
             ).length;
-            if (vicini === 0) punteggio += 0.2;
+            if (vicini === 0) addScore('Isolamento Scala (+ scartabile)', 0.2, 'Bonus Isolamento: +0.2');
         }
 
         // 4. Carte alte pesano di piu' se non chiudi
-        punteggio += (carta.punti / 15) * 0.2;
+        addScore('Peso Punti Base', (carta.punti / 15) * 0.2, 'Formula: Punti/15 x0.2');
 
         // 5. Centralita' bassa = piu' sicuro da scartare (A,K: +0.15; 7,8: +0.02)
         const centralita = this.getCentralita(carta.numero);
-        punteggio += (1 - centralita) * 0.2;
+        addScore('Decentralizzazione Estr.', (1 - centralita) * 0.2, 'Formula: (1 - Centr.) x0.2');
 
         // 6. Jolly e pinelle: MAI scartare
         if (carta.isJolly) {
-            punteggio -= 0.5 + ((coeff.parsimoniaMatte || 5) * 0.1);
+            addScore('Jolly (Protezione Max)', -(0.5 + ((coeff.parsimoniaMatte || 5) * 0.1)), 'parsimoniaMatte: ' + (coeff.parsimoniaMatte || 5));
         }
         if (carta.isPinella) {
-            punteggio -= 0.5 + ((coeff.parsimoniaMatte || 5) * 0.05);
+            addScore('Pinella (Protezione Max)', -(0.5 + ((coeff.parsimoniaMatte || 5) * 0.05)), 'parsimoniaMatte: ' + (coeff.parsimoniaMatte || 5));
         }
 
         // 7. Sicurezza: analisi avversari
@@ -1921,13 +1987,13 @@ const Strategia = {
                 s.carta && s.carta.numero === carta.numero
             );
             if (avvHaScartato) {
-                punteggio += 0.15; // Loro non cercano questo numero
+                addScore('Ignorata Avv. (+ sicura)', 0.15, 'prudenzaScarto: ' + coeff.prudenzaScarto); // Loro non cercano questo numero
             } else if (coeff.prudenzaScarto > 5) {
-                punteggio -= (coeff.prudenzaScarto - 5) * 0.04; // Cautela: 0 a -0.2
+                addScore('Sconosciuta Avv. (Cautela)', -((coeff.prudenzaScarto - 5) * 0.04), 'prudenzaScarto: ' + coeff.prudenzaScarto); // Cautela: 0 a -0.2
             }
         }
 
-        return punteggio;
+        return { totale: punteggio, breakdown: breakdown };
     },
 
     // Decisione: depositare combinazione?

@@ -1,0 +1,1432 @@
+/* ============================================
+   BURRACO - Stili CSS
+   Layout 1024x750 con stile naif
+   ============================================ */
+
+/* === BASE === */
+html,
+body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #1a5f2a;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.main-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+/* === SIDEBAR (dal layout.js) === */
+.sidebar {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    background: linear-gradient(135deg, #1a6b30 0%, #145524 50%, #0f4a1c 100%);
+    overflow-y: auto;
+    box-sizing: border-box;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    z-index: 1;
+    opacity: 1;
+    pointer-events: auto;
+    transition: opacity 0.3s ease;
+}
+
+#sidebar-left {
+    left: 0;
+}
+
+#sidebar-right {
+    right: 0;
+}
+
+.ad-banner {
+    background-color: #2d5a3d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    text-align: center;
+    box-sizing: border-box;
+    flex-shrink: 0;
+}
+
+/* === CAMPO DI GIOCO === */
+#campogioco {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 1024px;
+    height: 750px;
+    background: linear-gradient(135deg, #1a6b30 0%, #145524 50%, #0f4a1c 100%);
+    background-image: url(images/scala40/tappetoverde.png);
+    transform-origin: center center;
+    border-radius: 10px;
+    box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.3);
+}
+
+/* === SCHERMO OVERLAY === */
+#schermo {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1024px;
+    height: 750px;
+    background-color: rgba(0, 0, 0, 0.6);
+    z-index: 30000;
+    display: none;
+}
+
+/* === PANNELLO TORNEO === */
+#pannello-torneo {
+    position: absolute;
+    bottom: 238px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 16px 6px;
+    background-image: url(images/scala40/tappetoverde.png);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+    z-index: 200;
+}
+
+#punteggi {
+    display: flex;
+    align-items: center;
+    font-size: 20px;
+    color: #ffd700;
+    font-weight: bold;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+#torneo-info {
+    font-size: 11px;
+    color: white;
+    text-align: center;
+    white-space: nowrap;
+}
+
+#btn-scrivetemi {
+    position: absolute;
+    bottom: 0px;
+    left: 4px;
+    width: 80px;
+    height: auto;
+    line-height: 14px;
+    padding: 3px 5px;
+    background-color: #3a3a5a;
+    z-index: 100;
+}
+
+
+.punteggio-separator {
+    margin: 0 6px;
+    color: #fff;
+}
+
+#punti-noi {
+    color: #7fff7f;
+}
+
+#punti-loro {
+    color: #ff7f7f;
+}
+
+/* === AREE GIOCATORI === */
+.area-giocatore {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Sfondo scuro per aree avversari/compagno */
+.area-giocatore.laterale,
+#area-compagno {
+    background: rgba(0, 50, 0, 0.4);
+    border: 2px solid rgba(100, 150, 100, 0.5);
+    border-radius: 10px;
+    padding: 5px;
+    box-sizing: border-box;
+}
+
+.nome-giocatore {
+    position: absolute;
+    font-size: 14px;
+    color: #ccc;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+    white-space: nowrap;
+}
+
+.ncarte {
+    position: absolute;
+    font-size: 14px;
+    color: #ffd700;
+    font-weight: bold;
+    background: rgba(0, 0, 0, 0.5);
+    padding: 3px 8px;
+    border-radius: 10px;
+    white-space: nowrap;
+}
+
+/* === AVATAR GIOCATORI === */
+.avatar {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 215, 0, 0.6);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+    object-fit: cover;
+    z-index: 10;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.avatar:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(255, 215, 0, 0.5);
+}
+
+/* Avatar compagno (top) - a sinistra delle carte */
+#avatar-compagno {
+    left: -80px;
+    top: 40%;
+    transform: translateY(-50%);
+}
+
+/* Nome compagno - sotto l'avatar */
+#nome-compagno {
+    top: auto !important;
+    bottom: -2px;
+    left: -80px !important;
+    transform: none !important;
+    width: 64px;
+    text-align: center;
+}
+
+/* Avatar avversario sinistra - in basso sotto le carte */
+#avatar-avv-sx {
+    bottom: -70px;
+    left: 30px;
+}
+
+
+
+/* Avatar avversario destra - in basso sotto le carte */
+#avatar-avv-dx {
+    bottom: -70px;
+    right: 30px;
+    
+}
+
+
+
+/* Indicatore turno - bordo giallo sul campo del giocatore attivo */
+.turno-attivo {
+    border: 2px solid #ffd700 !important;
+}
+
+.turno-attivo.deve-pescare {
+    border: 2px solid #ff4444 !important;
+}
+
+/* Carta target per aggiunta a combinazione */
+.carta-target {
+    background-image: url(images/scala40/conjollyselplus.png) !important;
+}
+
+/* Combinazione target (evidenziata quando si può aggiungere una carta) */
+.combinazione-target {
+    outline: 3px solid #ffd700;
+    outline-offset: 2px;
+    border-radius: 5px;
+    background-color: rgba(255, 215, 0, 0.15);
+}
+
+/* Compagno (top) */
+#area-compagno {
+    top: 25px;
+    right: 180px;
+    left: auto;
+    transform: none;
+    width: 600px;
+    height: 85px;
+    z-index: 150;
+}
+
+#nome-compagno {
+    top: -16px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 12px;
+}
+
+#carte-compagno {
+    flex-direction: row;
+    margin-left: 210px;
+}
+
+#ncarte-compagno {
+    top: 50%;
+    right: -45px;
+    transform: translateY(-50%);
+}
+
+/* Carte del compagno ridotte */
+#carte-compagno .carta {
+    transform: scale(0.73);
+    transform-origin: top left;
+}
+
+/* Avversario Sinistra */
+#area-avversario-sx {
+    top: 115px;
+    left: -30px;
+    width: 85px;
+    height: 400px;
+    flex-direction: column;
+}
+
+#nome-avv-sx {
+    top: 470px;
+    left: 63px;
+    font-size: 12px;
+    transform: translateX(-50%);
+}
+
+#carte-avv-sx {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+#ncarte-avv-sx {
+    top: -28px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+/* Avversario Destra */
+#area-avversario-dx {
+    top: 115px;
+    right: -30px;
+    width: 85px;
+    height: 400px;
+    flex-direction: column;
+}
+
+#nome-avv-dx {
+    top: 470px;
+    right: 68px;
+    font-size: 12px;
+    transform: translateX(50%);
+}
+
+#carte-avv-dx {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+#ncarte-avv-dx {
+    top: -28px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+/* Giocatore (bottom) */
+#giocatore-info {
+    position: absolute;
+    bottom: 94px;
+    left: 180px;
+
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.8);
+    background: rgba(0, 0, 0, 0.5);
+    padding: 4px 12px;
+    border-radius: 6px;
+    z-index: 101;
+}
+
+#giocatore-info .titolo-nome {
+    font-weight: bold;
+    font-size: 13px;
+    color: #ffd700;
+}
+
+#giocatore-info .punti-numero {
+    color: #9ff;
+}
+
+#giocatore-info .punti-valore {
+    color: #ff9;
+}
+
+#area-giocatore {
+    bottom: 8px;
+    left: 180px;
+
+    width: 650px;
+    height: 85px;
+    background: rgba(0, 50, 0, 0.4);
+    border: 2px solid rgba(100, 150, 100, 0.5);
+    border-radius: 10px;
+    padding: 5px;
+    box-sizing: border-box;
+}
+
+#carte-giocatore {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end;
+    position: relative;
+    height: 60px;
+    width: 100%;
+    margin-top: 10px;
+}
+
+/* Carte del giocatore piu' piccole - usa transform scale */
+#carte-giocatore .carta {
+    width: 71px;
+    height: 96px;
+    transform: scale(0.73);
+    transform-origin: bottom left;
+}
+
+/* === CARTE CONTAINER === */
+.carte-container {
+    display: flex;
+    position: relative;
+}
+
+.carte-container.verticale {
+    flex-direction: column;
+}
+
+/* === AREE COMBINAZIONI === */
+.area-combinazioni {
+    position: absolute;
+    top: 115px;
+    width: 460px;
+    height: 400px;
+    background: rgba(0, 50, 0, 0.4);
+    border: 2px solid rgba(100, 150, 100, 0.5);
+    border-radius: 10px;
+    overflow: visible;
+    padding-top: 40px;
+    box-sizing: border-box;
+    display: flex;
+    flex-wrap: nowrap;
+    align-content: flex-start;
+    z-index: 100;
+}
+
+/* Area noi a sinistra: aggiunge da sinistra */
+#combinazioni-noi {
+    left: 50px;
+    flex-direction: row;
+    justify-content: flex-start;
+}
+
+/* Area loro a destra: aggiunge da destra */
+#combinazioni-loro {
+    right: 50px;
+    flex-direction: row-reverse;
+    justify-content: flex-start;
+}
+
+.titolo-area {
+    position: absolute;
+    top: 3px;
+    left: 5px;
+    right: 5px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.titolo-nome {
+    font-weight: bold;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #ffd700;
+}
+
+.titolo-punti {
+    display: flex;
+    gap: 6px;
+    font-family: Arial, sans-serif;
+    font-size: 10px;
+}
+
+.titolo-punti span {
+    padding: 3px 6px;
+    border-radius: 3px;
+    background: rgba(0, 0, 0, 0.3);
+    white-space: nowrap;
+    font-size: 12px;
+}
+
+.punti-pozzetto {
+    color: #fff;
+    background: rgba(200, 50, 50, 0.7) !important;
+}
+
+.punti-pozzetto.raggiunto {
+    background: rgba(50, 160, 50, 0.7) !important;
+}
+
+.punti-burraco {
+    color: #fff;
+    background: rgba(200, 50, 50, 0.7) !important;
+}
+
+.punti-burraco.raggiunto {
+    background: rgba(50, 160, 50, 0.7) !important;
+}
+
+.punti-carte {
+    color: #fff;
+    background: rgba(50, 160, 50, 0.7) !important;
+}
+
+.punti-totale {
+    color: #fff;
+    font-weight: bold;
+    background: rgba(50, 160, 50, 0.7) !important;
+}
+
+.punti-carte.negativo,
+.punti-totale.negativo {
+    background: rgba(200, 50, 50, 0.7) !important;
+}
+
+/* Titolo LORO e punteggi a destra, lasciando spazio a sinistra per la barra */
+#combinazioni-loro .titolo-area {
+    justify-content: flex-end;
+}
+
+/* === BARRA PUNTEGGI ===
+   Posizione assoluta rispetto a #campogioco (1024x750).
+   Modifica top/left/width/height a piacere. */
+#barra-punteggi {
+    position: absolute;
+    top: 120px;   /* stesso livello del titolo-area (115+3+1) */
+    left: 432px;  /* centro campo (512) - meta' larghezza (80) */
+    width: 160px;
+    height: 5px;
+    display: flex;
+    border-radius: 3px;
+    overflow: hidden;
+    z-index: 101;
+}
+
+#barra-noi,
+#barra-loro {
+    height: 100%;
+    transition: width 0.5s ease, background-color 0.5s ease;
+}
+
+/* === MAZZO === */
+#mazzo-info {
+    position: absolute;
+    bottom: 205px;
+    left: 120px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.8);
+    background: rgba(0, 0, 0, 0.5);
+    padding: 4px 10px;
+    border-radius: 6px;
+    z-index: 101;
+}
+
+#mazzo-info .titolo-nome {
+    font-weight: bold;
+    font-size: 12px;
+    color: #ffd700;
+}
+
+#mazzo-info .mazzo-count {
+    color: #9ff;
+    font-weight: bold;
+}
+
+#mazzo {
+    position: absolute;
+    bottom: 114px;
+    left: 100px;
+    width: 71px;
+    height: 96px;
+    background: url(images/scala40/conjollyplus.png) -1136px 0;
+    /* colonna 16 */
+    transform: scale(0.73);
+    transform-origin: center center;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.4);
+    transition: transform 0.2s;
+    z-index: 100;
+}
+
+#mazzo:hover {
+    transform: scale(1.05);
+}
+
+/* === SCARTI === */
+#scarti-info {
+    position: absolute;
+    bottom: 205px;
+    left: 180px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.8);
+    background: rgba(0, 0, 0, 0.5);
+    padding: 4px 12px;
+    border-radius: 6px;
+    z-index: 101;
+}
+
+#scarti-info .titolo-nome {
+    font-weight: bold;
+    font-size: 13px;
+    color: #ffd700;
+}
+
+#scarti-info .punti-numero {
+    color: #9ff;
+}
+
+#scarti-info .punti-valore {
+    color: #ff9;
+}
+
+#scarti-container {
+    position: absolute;
+    bottom: 120px;
+    left: 180px;
+    width: 650px;
+    height: 85px;
+    display: flex;
+    align-items: center;
+    padding: 5px 10px;
+    background: rgba(0, 50, 0, 0.4);
+    border: 2px solid rgba(100, 150, 100, 0.5);
+    border-radius: 10px;
+    box-sizing: border-box;
+    z-index: 100;
+}
+
+/* Nota descrittiva nella metà destra degli scarti */
+#scarti-nota {
+    position: absolute;
+    right: 12px;
+    bottom: 20px;
+    text-align: right;
+    color: rgba(180, 180, 180, 0.45);
+    font-size: 15px;
+    font-style: italic;
+    line-height: 1.5;
+    pointer-events: none;
+    max-width: 500px;
+}
+
+/* === POZZETTI === */
+#pozzetto {
+    position: absolute;
+    bottom: 124px;
+    right: 100px;
+    width: 80px;
+    height: 80px;
+    z-index: 100;
+}
+
+.carta-pozzetto {
+    position: absolute;
+    width: 71px;
+    height: 96px;
+    background: url(images/scala40/conjollyplus.png) -1136px 0;
+    /* colonna 16 */
+    transform: scale(0.73);
+    transform-origin: top left;
+    border-radius: 5px;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+#pozzetto1 {
+    top: 5px;
+    left: 15px;
+}
+
+#pozzetto2 {
+    top: 15px;
+    left: 75px;
+    transform: scale(0.73) rotate(90deg);
+    transform-origin: top left;
+}
+
+.carta-pozzetto.nascosto {
+    display: none;
+}
+
+/* === CARTE === */
+.carta {
+    position: absolute;
+    width: 71px;
+    height: 96px;
+    background-image: url(images/scala40/conjollyplus.png);
+    /* NON usare background-size, lo sprite ha gia' le dimensioni giuste */
+    border-radius: 5px;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+.carta:hover {
+    transform: translateY(-5px);
+    box-shadow: 3px 5px 10px rgba(0, 0, 0, 0.4);
+}
+
+.carta.selezionata {
+    transform: translateY(-15px);
+    box-shadow: 0 8px 15px rgba(255, 215, 0, 0.5);
+    background-image: url(images/scala40/conjollyselplus.png);
+}
+
+.carta.trascinando {
+    z-index: 50000;
+    transition: none;
+    box-shadow: 5px 5px 20px rgba(0, 0, 0, 0.5);
+}
+
+.carta.coperta {
+    background-position: -1136px 0;
+    /* dorso rosso default - colonna 16 */
+}
+
+.carta.coperta.mazzo-0 {
+    background-position: -1136px 0;
+    /* dorso rosso - colonna 16 */
+}
+
+.carta.coperta.mazzo-1 {
+    background-position: -1136px -96px;
+    /* dorso blu - colonna 16, riga 2 */
+}
+
+/* Carte piccole per avversari laterali - ruotate 90 gradi */
+.carta.piccola {
+    width: 71px;
+    height: 96px;
+    transform: scale(0.73) rotate(90deg) translateY(-50%);
+    transform-origin: top left;
+}
+
+/* Carta nello scarto - ridotta */
+.carta.scarto {
+    position: relative;
+    flex-shrink: 0;
+    transform: scale(0.73);
+    transform-origin: center center;
+}
+
+/* Carta volante per animazioni */
+.carta.carta-volante {
+    pointer-events: none;
+    transform: scale(0.73);
+    box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.5);
+}
+
+/* === PULSANTI === */
+.pulsante2 {
+    position: absolute;
+    width: 100px;
+    height: 32px;
+    background: linear-gradient(180deg, #4a7c59 0%, #2d5a3d 100%);
+    border: 2px solid #6b9b7a;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 14px;
+    font-weight: bold;
+    text-align: center;
+    line-height: 32px;
+    cursor: pointer;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+    transition: all 0.2s;
+    z-index: 200;
+}
+
+.pulsante2:hover {
+    background: linear-gradient(180deg, #5a8c69 0%, #3d6a4d 100%);
+    transform: scale(1.05);
+}
+
+.pulsante2:active {
+    transform: scale(0.95);
+}
+
+#btn-istruzioni {
+    top: 10px;
+    left: 10px;
+}
+
+#btn-nuova {
+    top: 50px;
+    left: 10px;
+}
+
+#btn-undo {
+    top: 10px;
+    right: 10px;
+    font-size: 18px;
+}
+
+#btn-scoperte {
+    top: 50px;
+    right: 10px;
+}
+
+/* Pulsanti ordinamento carte (a sinistra del campo giocatore) */
+.pulsante-ordina {
+    position: absolute;
+    bottom: 25px;
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(180deg, #4a7c59 0%, #2d5a3d 100%);
+    border: 2px solid #6b9b7a;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 16px;
+    font-weight: bold;
+    text-align: center;
+    line-height: 40px;
+    cursor: pointer;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+    transition: all 0.2s;
+    z-index: 200;
+}
+
+.pulsante-ordina:hover {
+    background: linear-gradient(180deg, #5a8c69 0%, #3d6a4d 100%);
+    transform: scale(1.1);
+}
+
+/* Pulsanti uno sopra l'altro */
+#btn-ordina-numero {
+    left: 130px;
+    bottom: 53px;
+}
+
+#btn-ordina-seme {
+    left: 130px;
+    bottom: 8px;
+}
+
+/* Contatore carte giocatore - rimosso, ora usa #giocatore-info */
+
+/* Banner Work In Progress (filigrana) */
+#wip-banner {
+    position: absolute;
+    top: 40%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-15deg);
+    z-index: 5;
+    pointer-events: none;
+    opacity: 0.25;
+}
+
+#wip-banner img {
+    width: 420px;
+    height: auto;
+}
+
+/* === LINK GIOCHI === */
+.link-giochi {
+    position: absolute;
+    bottom: 25px;
+    right: 10px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    z-index: 200;
+}
+
+.legal-links-text {
+    position: absolute;
+    bottom: 5px;
+    right: 20px;
+    display: flex;
+    gap: 30px;
+    z-index: 200;
+}
+
+.legal-links-text a {
+    color: rgba(255, 255, 255, 0.6);
+    text-decoration: none;
+    font-size: 11px;
+    font-family: sans-serif;
+    transition: color 0.2s;
+}
+
+.legal-links-text a:hover {
+    color: #ffd700;
+}
+
+.pulsante-link {
+    width: 80px;
+    height: 30px;
+    border: 2px solid #888;
+    border-radius: 8px;
+    background-size: cover;
+    cursor: pointer;
+    transition: transform 0.2s;
+    color: #fff;
+    font-size: 11px;
+    font-weight: bold;
+    text-align: center;
+    line-height: 30px;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+    text-decoration: none;
+}
+
+.pulsante-link:hover {
+    transform: scale(1.1);
+}
+
+.link-giochi a {
+    text-decoration: none;
+}
+
+.pulsante-scala40 {
+    background-color: #3a5a3a;
+}
+
+.pulsante-machiavelli {
+    background-color: #5a3a3a;
+}
+
+.pulsante-spider {
+    background-color: #5a5a3a;
+}
+
+.pulsante-home {
+    background-color: #3a3a5a;
+}
+
+/* === TITOLO GIOCO === */
+.titolo-gioco {
+    position: absolute;
+    top: 470px;
+    transform: translateX(-50%);
+    z-index: 5;
+    pointer-events: none;
+    font-family: 'Georgia', 'Times New Roman', serif;
+    display: flex;
+    align-items: baseline;
+    gap: 5px;
+}
+
+#titolo-gioco-noi {
+    left: 240px;
+}
+
+#titolo-gioco-loro {
+    left: 780px;
+}
+
+.titolo-burraco {
+    font-size: 32px;
+    font-weight: bold;
+    color: #e8c252;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    letter-spacing: 4px;
+}
+
+.titolo-nome {
+    font-size: 24px;
+    font-style: italic;
+    color: #c9a227;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    margin-left: 10px;
+}
+
+/* === MODALI === */
+.modal {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 400px;
+    max-height: 500px;
+    background: linear-gradient(135deg, #2a7a4a 0%, #1a5a3a 100%);
+    border: 3px solid #6b9b7a;
+    border-radius: 15px;
+    padding: 20px;
+    color: #fff;
+    z-index: 40000;
+    display: none;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.modal.trasparente {
+    background: transparent;
+    opacity: 0.5;
+    border-color: transparent;
+    box-shadow: none;
+}
+
+.modal h2 {
+    margin: 0 0 15px 0;
+    text-align: center;
+    color: #ffd700;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+    max-height: 350px;
+    overflow-y: auto;
+    line-height: 1.6;
+    font-size: 14px;
+}
+
+.modal-content p {
+    margin: 10px 0;
+}
+
+.modal-content label {
+    display: block;
+    margin: 8px 0;
+    cursor: pointer;
+}
+
+.modal-content input[type="radio"] {
+    margin-right: 10px;
+}
+
+.btn-modal {
+    display: block;
+    margin: 20px auto 0;
+    padding: 10px 30px;
+    background: linear-gradient(180deg, #ffd700 0%, #daa520 100%);
+    border: 2px solid #b8860b;
+    border-radius: 8px;
+    color: #333;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-modal:hover {
+    background: linear-gradient(180deg, #ffe44d 0%, #eeb530 100%);
+    transform: scale(1.05);
+}
+
+/* === PANNELLO FLOTTANTE GIOCATORE === */
+.pannello-flottante {
+    position: fixed;
+    top: 100px;
+    right: 20px;
+    width: 280px;
+    min-width: 220px;
+    max-width: 500px;
+    background: linear-gradient(135deg, #2a5a3a 0%, #1a4a2a 100%);
+    border: 2px solid #4a8a5a;
+    border-radius: 10px;
+    color: #fff;
+    z-index: 50000;
+    display: none;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.4);
+    font-size: 12px;
+    resize: both;
+    overflow: hidden;
+}
+
+.pannello-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background: linear-gradient(180deg, #3a6a4a 0%, #2a5a3a 100%);
+    border-radius: 8px 8px 0 0;
+    cursor: move;
+    border-bottom: 1px solid #4a8a5a;
+}
+
+.pannello-header span {
+    font-weight: bold;
+    color: #ffd700;
+    font-size: 14px;
+}
+
+.pannello-chiudi {
+    background: none;
+    border: none;
+    color: #ccc;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 0 5px;
+    line-height: 1;
+}
+
+.pannello-chiudi:hover {
+    color: #ff6666;
+}
+
+.pannello-content {
+    padding: 10px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.pannello-personaggio {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.pannello-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: 2px solid #ffd700;
+    object-fit: cover;
+}
+
+.pannello-info-base {
+    flex: 1;
+}
+
+.pannello-nome {
+    font-weight: bold;
+    font-size: 14px;
+    color: #fff;
+    margin-bottom: 3px;
+}
+
+.pannello-desc {
+    font-style: italic;
+    color: #aaa;
+    font-size: 11px;
+    line-height: 1.3;
+}
+
+.pannello-sezione {
+    margin-bottom: 10px;
+}
+
+.pannello-sezione-titolo {
+    font-size: 11px;
+    color: #ffd700;
+    font-weight: bold;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.pannello-tipo {
+    padding: 4px 8px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+    display: inline-block;
+}
+
+.pannello-sezione ul {
+    margin: 0;
+    padding-left: 18px;
+}
+
+.pannello-sezione li {
+    margin: 2px 0;
+    font-size: 11px;
+    line-height: 1.4;
+}
+
+.pesi-container {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.peso-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+}
+
+.peso-label {
+    width: 80px;
+    text-align: right;
+    color: #ccc;
+}
+
+.peso-bar {
+    flex: 1;
+    height: 10px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.peso-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #4a9 0%, #ffd700 100%);
+    border-radius: 5px;
+    transition: width 0.3s ease;
+}
+
+.peso-value {
+    width: 30px;
+    text-align: left;
+    color: #ccc;
+}
+
+/* === COMBINAZIONE (colonna di carte depositate) === */
+.combinazione {
+    display: flex;
+    flex-direction: column;
+    margin-right : 0px;
+    padding: 1px;
+    border-radius: 3px;
+    width: fit-content;
+    display: inline-flex;
+}
+
+.combinazione .carta {
+    position: relative;
+    width: 71px;
+    height: 96px;
+    transform: scale(0.73);
+    transform-origin: top left;
+    margin-bottom: -72px;
+    margin-right: -19px;
+}
+
+.combinazione .carta:last-child {
+    margin-bottom: 0;
+}
+
+/* Burraco indicator */
+.combinazione.burraco-pulito {
+    border: 2px solid #ffd700;
+    /* Oro - 200 punti */
+    box-shadow: 0 0 10px #ffd700;
+}
+
+.combinazione.burraco-semipulito {
+    border: 2px solid #90ee90;
+    /* Verde chiaro - 150 punti */
+    box-shadow: 0 0 10px #90ee90;
+}
+
+.combinazione.burraco-sporco {
+    border: 2px solid #c0c0c0;
+    /* Argento - 100 punti */
+    box-shadow: 0 0 10px #c0c0c0;
+}
+
+/* === RESPONSIVE per 1v1 === */
+body.modalita-1v1 #area-compagno,
+body.modalita-1v1 #area-avversario-dx {
+    display: none;
+}
+
+body.modalita-1v1 #area-avversario-sx {
+    left: 50%;
+    top: 5px;
+    transform: translateX(-50%);
+    width: 700px;
+    height: 80px;
+    flex-direction: row;
+}
+
+body.modalita-1v1 #carte-avv-sx {
+    flex-direction: row;
+}
+
+body.modalita-1v1 #combinazioni-loro {
+    left: 50%;
+    transform: translateX(-50%);
+    top: 100px;
+    width: 800px;
+    height: 180px;
+}
+
+body.modalita-1v1 #combinazioni-noi {
+    left: 50%;
+    transform: translateX(-50%);
+    top: 300px;
+    width: 800px;
+    height: 180px;
+}
+
+/* === ANIMAZIONI === */
+@keyframes cardDeal {
+    from {
+        opacity: 0;
+        transform: translate(100px, -100px) rotate(10deg);
+    }
+
+    to {
+        opacity: 1;
+        transform: translate(0, 0) rotate(0);
+    }
+}
+
+.carta.dealing {
+    animation: cardDeal 0.3s ease-out;
+}
+
+/* === FINESTRA DIAGNOSTICA === */
+.diagnostica-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.diagnostica-window {
+    background: #1a1a2e;
+    border: 2px solid #4a4a6a;
+    border-radius: 8px;
+    width: 80%;
+    max-width: 900px;
+    max-height: 80%;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.diagnostica-header {
+    background: #2a2a4e;
+    color: #aaf;
+    padding: 10px 15px;
+    font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 6px 6px 0 0;
+}
+
+.diagnostica-close {
+    background: #c33;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    width: 28px;
+    height: 28px;
+    font-size: 18px;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.diagnostica-close:hover {
+    background: #e55;
+}
+
+.diagnostica-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px;
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 12px;
+    color: #ddd;
+}
+
+.diagnostica-footer {
+    background: #2a2a4e;
+    color: #888;
+    padding: 8px 15px;
+    font-size: 11px;
+    border-radius: 0 0 6px 6px;
+}
+
+.storia-riga {
+    padding: 4px 8px;
+    margin: 2px 0;
+    border-radius: 3px;
+    cursor: pointer;
+    display: flex;
+    gap: 10px;
+}
+
+.storia-riga:hover {
+    background: #3a3a5e;
+}
+
+.storia-riga.giocatore-0 {
+    border-left: 3px solid #4a4;
+}
+
+.storia-riga.giocatore-1 {
+    border-left: 3px solid #a44;
+}
+
+.storia-riga.giocatore-2 {
+    border-left: 3px solid #44a;
+}
+
+.storia-riga.giocatore-3 {
+    border-left: 3px solid #a4a;
+}
+
+.storia-turno {
+    color: #888;
+    width: 40px;
+}
+
+.storia-giocatore {
+    color: #aaa;
+    width: 100px;
+}
+
+.storia-azione {
+    color: #8cf;
+    width: 120px;
+}
+
+.storia-dettagli {
+    color: #ccc;
+    flex: 1;
+}

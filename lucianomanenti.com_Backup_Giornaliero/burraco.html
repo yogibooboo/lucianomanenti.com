@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9335537153013492"
+        crossorigin="anonymous"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Free Burraco Online</title>
+    <link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
+    <link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
+    <link rel="shortcut icon" href="favicon/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+    <link rel="manifest" href="favicon/site.webmanifest">
+
+    <meta name="Description"
+        content="Play free Burraco card game online, no registration. Play against the computer in 1v1 or 2v2 mode. Gioca Burraco gratis online senza registrazione">
+    <meta http-Equiv="Cache-Control" Content="no-cache">
+    <meta http-Equiv="Pragma" Content="no-cache">
+    <meta http-Equiv="Expires" Content="0">
+
+    <link rel="stylesheet" href="burraco.css?v=4.2" />
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-WRBDRDQ4L8');
+    </script>
+    <script>
+        window.gameConfig = {
+            gaPrefix: 'BUR_',
+            hideLegalFooter: true,
+            adsenseActive: true,
+            adsenseSlots: {
+                '300x600': '5266697442',
+                '160x600': '1167670336',
+                '300x250': '8471445288',
+                '160x250': '8663016975'
+            },
+            messages: {
+                it: '<p style="margin-top: 0; font-size: 22px; font-weight: bold; text-align: center; color: #fff;">BURRACO</p>' +
+                    '<p style="margin-top: 20px;">Il Burraco online di lucianomanenti.com, realizzato a grande richiesta dei nostri giocatori.</p>' +
+                    '<p>Il gioco è in <strong>costante miglioramento</strong>: nuove funzionalità e correzioni vengono aggiunte regolarmente.</p>' +
+                    '<p>Sono molto graditi consigli, osservazioni e segnalazioni di eventuali problemi.</p>' +
+                    '<p style="margin-top: 20px;">Scrivete a <a href="mailto:postmaster@lucianomanenti.com" style="color: #ffd700;">postmaster@lucianomanenti.com</a></p>',
+                en: '<p style="margin-top: 0; font-size: 22px; font-weight: bold; text-align: center; color: #fff;">BURRACO</p>' +
+                    '<p style="margin-top: 20px;">The online Burraco on lucianomanenti.com, created by popular demand from our players.</p>' +
+                    '<p>The game is <strong>constantly being improved</strong>: new features and fixes are added regularly.</p>' +
+                    '<p>Suggestions, feedback and bug reports are very welcome.</p>' +
+                    '<p style="margin-top: 20px;">Write to <a href="mailto:postmaster@lucianomanenti.com" style="color: #ffd700;">postmaster@lucianomanenti.com</a></p>'
+            }
+        };
+    </script>
+    <script src="game-layout.js?v=4.2"></script>
+</head>
+
+<body>
+
+    <div class="main-container">
+        <div id="sidebar-left" class="sidebar">
+            <!-- Banner verranno inseriti qui da JS -->
+        </div>
+        <div id="sidebar-right" class="sidebar">
+            <!-- Banner verranno inseriti qui da JS -->
+        </div>
+
+        <div id="campogioco">
+            <!-- Schermo overlay per modali -->
+            <div id="schermo"></div>
+
+            <!-- === PANNELLO TORNEO (punteggi + info) === -->
+            <div id="pannello-torneo">
+                <div id="punteggi">
+                    <div class="punteggio-label"></div>
+                    <div id="punti-noi">0</div>
+                    <div class="punteggio-separator">|</div>
+                    <div id="punti-loro">0</div>
+                </div>
+                <div id="torneo-info"></div>
+            </div>
+<a href="aboutme.html" target="_blank" id="btn-scrivetemi" class="pulsante-link">Scrivetemi  Write to me</a>
+
+            <!-- === COMPAGNO (top) === -->
+            <div id="area-compagno" class="area-giocatore">
+                <img id="avatar-compagno" class="avatar" src="" alt="">
+                <div id="nome-compagno" class="nome-giocatore">Compagno</div>
+                <div id="carte-compagno" class="carte-container"></div>
+                <div id="ncarte-compagno" class="ncarte">0</div>
+            </div>
+
+            <!-- === AVVERSARIO SINISTRA === -->
+            <div id="area-avversario-sx" class="area-giocatore laterale">
+                <img id="avatar-avv-sx" class="avatar" src="" alt="">
+                <div id="nome-avv-sx" class="nome-giocatore">Avversario 1</div>
+                <div id="carte-avv-sx" class="carte-container verticale"></div>
+                <div id="ncarte-avv-sx" class="ncarte">0</div>
+            </div>
+
+            <!-- === AVVERSARIO DESTRA === -->
+            <div id="area-avversario-dx" class="area-giocatore laterale">
+                <img id="avatar-avv-dx" class="avatar" src="" alt="">
+                <div id="nome-avv-dx" class="nome-giocatore">Avversario 2</div>
+                <div id="carte-avv-dx" class="carte-container verticale"></div>
+                <div id="ncarte-avv-dx" class="ncarte">0</div>
+            </div>
+
+            <!-- === AREA COMBINAZIONI NOI (sinistra) === -->
+            <div id="combinazioni-noi" class="area-combinazioni">
+                <div class="titolo-area">
+                    <span class="titolo-nome">Noi</span>
+                    <span class="titolo-punti">
+                        <span class="punti-pozzetto" title="Pozzetto (-100 se non preso)">Pozzetto: -100</span>
+                        <span class="punti-burraco" title="Punti burraco">Burraco: 0</span>
+                        <span class="punti-carte" title="Punti carte">Carte: 0</span>
+                        <span class="punti-totale" title="Totale">= -100</span>
+                    </span>
+                </div>
+            </div>
+
+            <!-- === AREA COMBINAZIONI AVVERSARI (destra) === -->
+            <div id="combinazioni-loro" class="area-combinazioni">
+                <div class="titolo-area">
+                    <span class="titolo-nome">Loro</span>
+                    <span class="titolo-punti">
+                        <span class="punti-pozzetto" title="Pozzetto (-100 se non preso)">Pozzetto: -100</span>
+                        <span class="punti-burraco" title="Punti burraco">Burraco: 0</span>
+                        <span class="punti-carte" title="Punti carte">Carte: 0</span>
+                        <span class="punti-totale" title="Totale">= -100</span>
+                    </span>
+                </div>
+            </div>
+
+            <!-- === BARRA PUNTEGGI (posizionata via JS tra = -100 di noi e scritta Loro) === -->
+            <div id="barra-punteggi">
+                <div id="barra-noi"></div>
+                <div id="barra-loro"></div>
+            </div>
+
+            <!-- === BANNER INFO === -->
+            <div id="wip-banner"><img src="images/home/burraco.svg" alt=""></div>
+
+            <!-- === MAZZO === -->
+            <div id="mazzo-info">
+                <span class="mazzo-count">0</span>
+            </div>
+            <div id="mazzo"></div>
+
+            <!-- === SCARTI === -->
+            <div id="scarti-info">
+                <span class="titolo-nome">Scarti</span>
+                <span class="titolo-punti">
+                    <span class="punti-numero">Carte: 0</span>
+                    <span class="punti-valore">Punti: 0</span>
+                </span>
+            </div>
+            <div id="scarti-container">
+                <!-- Scarti visibili in linea -->
+                <div id="scarti-nota">
+                    I giocatori in questo momento giocano in modo un pò balordo<br>
+                    li vedrete migliorare giorno per giorno
+                </div>
+            </div>
+
+            <!-- === POZZETTI (separati, in basso a destra) === -->
+            <div id="pozzetto">
+                <div id="pozzetto1" class="carta-pozzetto"></div>
+                <div id="pozzetto2" class="carta-pozzetto"></div>
+            </div>
+
+            <!-- === GIOCATORE (bottom) === -->
+            <div id="giocatore-info">
+                <span class="titolo-nome">Giocatore</span>
+                <span class="titolo-punti">
+                    <span class="punti-numero">Carte: 0</span>
+                    <span class="punti-valore">Punti: 0</span>
+                </span>
+            </div>
+            <div id="area-giocatore" class="area-giocatore">
+                <div id="carte-giocatore" class="carte-container"></div>
+            </div>
+
+            <!-- === PULSANTI === -->
+            <div id="btn-istruzioni" class="pulsante2">ISTRUZIONI</div>
+            <div id="btn-nuova" class="pulsante2">NUOVA</div>
+            <div id="btn-undo" class="pulsante2">&#x21A9;</div>
+            <div id="btn-scoperte" class="pulsante2">SCOPERTE</div>
+
+            <!-- === PULSANTI ORDINAMENTO (a sinistra del campo giocatore) === -->
+            <div id="btn-ordina-numero" class="pulsante-ordina">123</div>
+            <div id="btn-ordina-seme" class="pulsante-ordina">&hearts;&spades;</div>
+
+            <!-- === LINK ALTRI GIOCHI === -->
+            <div class="link-giochi">
+                <a href="scala40.html">
+                    <div class="pulsante-link pulsante-scala40">Scala 40</div>
+                </a>
+                <a href="machiavelli.html">
+                    <div class="pulsante-link pulsante-machiavelli">Machiavelli</div>
+                </a>
+                <a href="spider.html">
+                    <div class="pulsante-link pulsante-spider">Spider</div>
+                </a>
+                <a href="index.html">
+                    <div class="pulsante-link pulsante-home">Home</div>
+                </a>
+            </div>
+
+            <div class="legal-links-text">
+                <a href="privacy.html" target="_blank">Privacy Policy</a>
+                <a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)">Gestisci Cookie</a>
+            </div>
+
+            <!-- === MODALI === -->
+
+
+            <div id="modal-nuova" class="modal">
+                <h2>Nuova Partita</h2>
+                <div class="modal-content">
+                    <p>Modalita':</p>
+                    <label style="color: #999;"><input type="radio" name="modalita" value="1v1" disabled> 1 vs 1 (in
+                        arrivo)</label><br>
+                    <label><input type="radio" name="modalita" value="2v2" checked> 2 vs 2 (con compagno)</label>
+                    <hr style="border:0;border-top:1px solid #555;margin:14px 0">
+                    <p>Tipo partita:</p>
+                    <label><input type="radio" name="tipo-partita" value="singola"> Mano singola</label><br>
+                    <label><input type="radio" name="tipo-partita" value="torneo" checked> Partita a punti fino a:
+                        <select id="sel-limite-torneo" style="margin-left:6px;background:#2d5a3d;color:#fff;border:1px solid #6b9b7a;border-radius:4px;padding:2px 6px">
+                            <option value="1005">1005</option>
+                            <option value="2005">2005</option>
+                            <option value="505">505</option>
+                            <option value="custom">Personalizzata...</option>
+                        </select>
+                    </label>
+                    <div id="div-limite-custom" style="display:none;margin-top:6px;margin-left:20px">
+                        Limite personalizzato: <input type="number" id="inp-limite-custom" min="100" max="9999" step="5" value="1505"
+                            style="width:70px;background:#2d5a3d;color:#fff;border:1px solid #6b9b7a;border-radius:4px;padding:2px 6px;margin-left:6px">
+                    </div>
+                </div>
+                <button class="btn-modal" id="btn-inizia">INIZIA</button>
+            </div>
+
+            <div id="modal-vittoria" class="modal">
+                <h2>HAI VINTO!</h2>
+                <div class="modal-content">
+                    <p>Complimenti!</p>
+                    <p>Punteggio finale: <span id="punteggio-finale-vinto">0</span></p>
+                </div>
+                <button class="btn-modal btn-nuova-partita">NUOVA PARTITA</button>
+            </div>
+
+            <div id="modal-sconfitta" class="modal">
+                <h2>HAI PERSO</h2>
+                <div class="modal-content">
+                    <p>Peccato!</p>
+                    <p>Punteggio finale: <span id="punteggio-finale-perso">0</span></p>
+                </div>
+                <button class="btn-modal btn-nuova-partita">NUOVA PARTITA</button>
+            </div>
+
+            <!-- Titoli decorativi -->
+            <div id="titolo-gioco-loro" class="titolo-gioco">
+                <span class="titolo-burraco">BURRACO</span>
+                <span class="titolo-nome">Luciano</span>
+            </div>
+            <div id="titolo-gioco-noi" class="titolo-gioco">
+                <span class="titolo-burraco">BURRACO</span>
+                <span class="titolo-nome">Luciano</span>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Audio -->
+    <audio id="snd-pesca" src="sounds/scala40/cardplace1.mp3"></audio>
+    <audio id="snd-scarta" src="sounds/scala40/cardslide1.mp3"></audio>
+    <audio id="snd-combinazione" src="sounds/scala40/cardplace3.mp3"></audio>
+    <audio id="snd-ordina" src="sounds/scala40/cardslide5.mp3"></audio>
+    <audio id="snd-vittoria" src="sounds/scala40/tada.mp3"></audio>
+    <audio id="snd-sconfitta" src="sounds/scala40/haiperso.mp3"></audio>
+    <audio id="snd-pozzetto" src="sounds/scala40/magic.mp3"></audio>
+    <audio id="snd-burraco" src="sounds/scala40/applause.mp3"></audio>
+    <audio id="snd-dindon" src="sounds/scala40/ding.mp3"></audio>
+
+    <!-- Codice diviso in 3 file per manutenibilità -->
+    <script src="burraco-core.js?v=8.6"></script>
+    <script src="burraco-game.js?v=8.11"></script>
+    <script src="burraco-ui.js?v=10.9"></script>
+    <script>
+    (function() {
+        var nascosto = false;
+        var observer = new MutationObserver(function() {
+            if (nascosto) return;
+            var divs = document.querySelectorAll('body > div');
+            for (var i = 0; i < divs.length; i++) {
+                if (divs[i].shadowRoot && !divs[i].className && (divs[i].getAttribute('style')||'').length > 5000) {
+                    divs[i].style.setProperty('display', 'none', 'important');
+                    nascosto = true;
+                    observer.disconnect();
+                    return;
+                }
+            }
+        });
+        observer.observe(document.body, { childList: true });
+    })();
+    </script>
+
+</body>
+
+</html>

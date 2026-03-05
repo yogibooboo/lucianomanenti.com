@@ -2135,9 +2135,11 @@ function getGiocatoreHTML(indiceGiocatore, ruolo) {
 
         // Elenca tutte le calate
         if (oss.possibiliCalate?.length > 0) {
-            for (const calata of oss.possibiliCalate) {
-                const desc = Strategia.nomeCarta(calata.carta);
-                items.push(`<div class="combo-item calata" title="Calata su combo"><span class="combo-tipo">C</span><span class="combo-desc">${desc}</span><span class="combo-punti">${calata.carta.punti}pt</span></div>`);
+            for (const seq of oss.possibiliCalate) {
+                const arr = Array.isArray(seq) ? seq : [seq];
+                const desc = arr.map(c => Strategia.nomeCarta(c.carta)).join(' + ');
+                const punti = arr.reduce((s, c) => s + c.carta.punti, 0);
+                items.push(`<div class="combo-item calata" title="Calata su combo"><span class="combo-tipo">C</span><span class="combo-desc">${desc}</span><span class="combo-punti">${punti}pt</span></div>`);
             }
         }
 
@@ -2729,6 +2731,59 @@ function getGiocatoreHTML(indiceGiocatore, ruolo) {
                     d.mossaScelta + '</strong>' +
                     (d.valutazione != null ? ' (val: ' + d.valutazione.toFixed(2) + ')' : '') +
                 '</div></div>';
+            
+            // Helper locale per renderizzare una tabellina breakdown Olistico
+            var renderBreakdownTable = function(bdArray) {
+                if (!bdArray) return '';
+
+                // Uniformiamo se ci viene passato quello di valutaSituazione (Dictionary Dictionary):
+                if (!Array.isArray(bdArray)) {
+                    var mockArray = [
+                        {label: 'Punti Calabili', valore: bdArray.base ? bdArray.base.val : 0, coeff: bdArray.base ? bdArray.base.coeff : '-'},
+                        {label: 'Bonus Scale/Posizionali', valore: (bdArray.breakdownBase || []).reduce(function(s,x){ return (x.label !== 'Punti Tavolo Base' && !x.subtotale) ? s+x.valore : s; }, 0), coeff: '-'},
+                        {label: 'Bonus Burrachi', valore: bdArray.burraco ? bdArray.burraco.val : 0, coeff: bdArray.burraco ? bdArray.burraco.coeff : '-'},
+                        {label: 'Bonus Pozzetto', valore: bdArray.pozzetto ? bdArray.pozzetto.val : 0, coeff: bdArray.pozzetto ? bdArray.pozzetto.coeff : '-'},
+                        {label: 'Bonus Matte libere', valore: bdArray.matte ? bdArray.matte.val : 0, coeff: bdArray.matte ? bdArray.matte.coeff : '-'},
+                        {label: 'Malus Zavorra (Morte)', valore: bdArray.cadaveri ? bdArray.cadaveri.val : 0, coeff: bdArray.cadaveri ? bdArray.cadaveri.coeff : '-'}
+                    ];
+                    return renderBreakdownTable(mockArray.filter(function(x) { return x.valore !== 0; })); 
+                }
+
+                if (bdArray.length === 0) return '';
+                var table = '<table style="margin-top:6px; font-size:10px; border-collapse:collapse; width:100%; border-left:2px solid #555; padding-left:4px;">';
+                var totale = 0;
+                for (var b = 0; b < bdArray.length; b++) {
+                    var k = bdArray[b];
+                    
+                    if (k.valore === 0) continue;
+                    totale += k.valore;
+
+                    var color = k.valore > 0 ? '#4f4' : (k.valore < 0 ? '#f44' : '#888');
+                    var prefix = k.valore > 0 ? '+' : '';
+                    var coeffStr = (k.coeff && k.coeff !== '-') ? ' [C:' + k.coeff + ']' : '';
+                    
+                    table += '<tr style="border-bottom: 1px dotted #333">' +
+                                '<td style="padding: 2px 0; color:#aaa;">' + k.label + coeffStr + '</td>' +
+                                '<td style="text-align:right; font-family:monospace; color:' + color + ';">' + prefix + Number(k.valore).toFixed(1) + '</td>' +
+                              '</tr>';
+                }
+                var totColor = totale >= 0 ? '#4f4' : '#f44';
+                var totPrefix = totale > 0 ? '+' : '';
+                table += '<tr style="border-top: 1px solid #777; font-weight:bold;">' +
+                            '<td style="padding: 4px 0 2px 0; color:#fff;">Score Globale Netto</td>' +
+                            '<td style="text-align:right; font-family:monospace; color:' + totColor + '; padding: 4px 0 2px 0;">' + totPrefix + Number(totale).toFixed(1) + '</td>' +
+                         '</tr>';
+                table += '</table>';
+                return table;
+            };
+
+            // Breakdown Mossa Principale
+            if (d.breakdownScelta) {
+                 bodyHTML += '<div style="padding:4px 12px; border-bottom:1px solid #444; background:rgba(0,0,0,0.2)">';
+                 bodyHTML += renderBreakdownTable(d.breakdownScelta);
+                 bodyHTML += '</div>';
+            }
+
             // Alternative
             if (d.alternative && d.alternative.length > 0) {
                 bodyHTML += '<div style="padding:8px 12px">' +
@@ -2739,8 +2794,10 @@ function getGiocatoreHTML(indiceGiocatore, ruolo) {
                     var isMigliore = i === 0 && alt.desc === d.mossaScelta;
                     var rowStyle = isMigliore ? 'color:#4f4;font-weight:bold' : 'color:#bbb';
                     bodyHTML += '<tr style="' + rowStyle + '">' +
-                        '<td style="padding:2px 8px 2px 0">' + alt.desc + '</td>' +
-                        '<td style="text-align:right;font-family:monospace;min-width:40px">' +
+                        '<td style="padding:4px 8px 4px 0">' + alt.desc + 
+                            (alt.breakdown && !isMigliore ? renderBreakdownTable(alt.breakdown) : '') + 
+                        '</td>' +
+                        '<td style="text-align:right;font-family:monospace;min-width:40px; vertical-align:top; padding-top:4px;">' +
                             (alt.valutazione != null ? alt.valutazione.toFixed(2) : '-') + '</td>' +
                     '</tr>';
                 }
@@ -2751,32 +2808,111 @@ function getGiocatoreHTML(indiceGiocatore, ruolo) {
 
         function mostraModalScarto(d) {
             var bodyHTML = '';
-            // Carta scelta
+            
+            // Carta scelta (header)
             bodyHTML += '<div style="padding:8px 12px;border-bottom:1px solid #444">' +
                 '<div style="font-size:12px;color:#ccc">Scarta: <strong style="color:#f80">' +
                     d.cartaScelta + '</strong>' +
                     (d.punteggioScelto != null ? ' (punt: ' + d.punteggioScelto.toFixed(2) + ')' : '') +
                 '</div></div>';
-            // Classifica
-            if (d.classifica && d.classifica.length > 0) {
-                bodyHTML += '<div style="padding:8px 12px">' +
-                    '<div style="font-size:13px;font-weight:bold;margin-bottom:8px;color:#ddd">Classifica scartabilit\u00e0:</div>' +
+
+            // Costruisci Matrice delle Motivazioni se presenti in classifica
+            if (d.classifica && d.classifica.length > 0 && d.classifica[0].breakdown) {
+                // 1. Estrai tutte le etichette uniche
+                var labelsMap = {};
+                for (var r = 0; r < d.classifica.length; r++) {
+                    var cb = d.classifica[r].breakdown;
+                    if (cb) {
+                        for (var b = 0; b < cb.length; b++) {
+                            labelsMap[cb[b].label] = true;
+                        }
+                    }
+                }
+                var uniqueLabels = Object.keys(labelsMap).sort();
+                
+                // 2. Assegna Lettere A, B, C...
+                var alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+                var labelToLetter = {};
+                for (var l = 0; l < uniqueLabels.length; l++) {
+                    // Cerca di non sforare l'alfabeto
+                    var letterId = (l < alphabet.length) ? alphabet.charAt(l) : l;
+                    labelToLetter[uniqueLabels[l]] = letterId;
+                }
+
+                // 3. Renderizza Legenda
+                bodyHTML += '<div style="padding:8px 12px; border-bottom:1px solid #444">' +
+                    '<div style="font-size:13px;font-weight:bold;margin-bottom:8px;color:#ddd">Legenda Motivazioni:</div>' +
                     '<table style="font-size:11px;border-collapse:collapse;width:100%">';
+                for (var l2 = 0; l2 < uniqueLabels.length; l2++) {
+                    var key = uniqueLabels[l2];
+                    
+                    // Cerca l'eventuale stringa del coefficiente esplorando d.classifica
+                    var coeffStr = '';
+                    for (var rr = 0; rr < d.classifica.length; rr++) {
+                        var cbb = d.classifica[rr].breakdown;
+                        if (cbb) {
+                            for (var bb = 0; bb < cbb.length; bb++) {
+                                if (cbb[bb].label === key && cbb[bb].coeffStr) {
+                                    coeffStr = ' <span style="color:#888; font-size:9px;">[' + cbb[bb].coeffStr + ']</span>';
+                                    break;
+                                }
+                            }
+                        }
+                        if (coeffStr !== '') break;
+                    }
+
+                    bodyHTML += '<tr style="border-bottom:1px solid #333">' +
+                        '<td style="padding:2px 4px; color:#f80; font-weight:bold; width:20px;">' + labelToLetter[key] + '</td>' +
+                        '<td style="padding:2px 4px; color:#bbb">' + key + coeffStr + '</td>' +
+                    '</tr>';
+                }
+                bodyHTML += '</table></div>';
+
+                // 4. Renderizza Tabella a Matrice
+                bodyHTML += '<div style="padding:8px 12px; overflow-x:auto;">' +
+                    '<table style="font-size:11px;border-collapse:collapse;width:100%">';
+                
+                // Intestazione Tabella
+                bodyHTML += '<tr style="border-bottom:1px solid #777; color:#fff;">' +
+                    '<th style="text-align:left; padding:4px;">CARTA</th>' +
+                    '<th style="text-align:right; padding:4px;">TOT</th>';
+                for (var l3 = 0; l3 < uniqueLabels.length; l3++) {
+                    bodyHTML += '<th style="text-align:center; padding:4px; color:#f80; border-left:1px dotted #555;">' + labelToLetter[uniqueLabels[l3]] + '</th>';
+                }
+                bodyHTML += '</tr>';
+
+                // Righe Carte
                 for (var i = 0; i < d.classifica.length; i++) {
                     var c = d.classifica[i];
                     var isScelta = i === 0;
-                    var rowStyle = isScelta ? 'color:#f80;font-weight:bold' : 'color:#bbb';
-                    var barWidth = Math.max(0, Math.min(100, (c.punteggio + 1) * 50));
-                    bodyHTML += '<tr style="' + rowStyle + '">' +
-                        '<td style="padding:2px 8px 2px 0;white-space:nowrap">' + c.carta + '</td>' +
-                        '<td style="text-align:right;font-family:monospace;min-width:40px">' +
-                            (c.punteggio > 0 ? '+' : '') + c.punteggio.toFixed(2) + '</td>' +
-                        '<td style="padding-left:6px;width:60px">' +
-                            '<div style="background:#555;height:6px;border-radius:3px">' +
-                                '<div style="background:' + (isScelta ? '#f80' : '#888') +
-                                    ';height:6px;border-radius:3px;width:' + barWidth + '%"></div>' +
-                            '</div></td>' +
-                    '</tr>';
+                    var rowStyle = isScelta ? 'background:rgba(255,136,0,0.15); font-weight:bold;' : '';
+                    var nameColor = isScelta ? '#f80' : '#bbb';
+                    
+                    bodyHTML += '<tr style="border-bottom:1px dotted #444; ' + rowStyle + '">' +
+                        '<td style="padding:4px; color:' + nameColor + '; white-space:nowrap;">' + c.carta + '</td>' +
+                        '<td style="padding:4px; text-align:right; font-family:monospace; color:' + (c.punteggio > 0 ? '#4f4' : (c.punteggio < 0 ? '#f44' : '#888')) + ';">' + (c.punteggio > 0 ? '+' : '') + c.punteggio.toFixed(1) + '</td>';
+                    
+                    // Crea dizionario per accesso rapido ai valori del breakdown di questa carta
+                    var valMap = {};
+                    if (c.breakdown) {
+                        for (var k = 0; k < c.breakdown.length; k++) {
+                            valMap[c.breakdown[k].label] = c.breakdown[k].valore;
+                        }
+                    }
+
+                    // Celle per ogni Modificatore
+                    for (var l4 = 0; l4 < uniqueLabels.length; l4++) {
+                        var valRow = valMap[uniqueLabels[l4]];
+                        var cellStr = '-';
+                        var cellCol = '#555';
+                        if (valRow !== undefined && valRow !== 0) {
+                            var vPos = (valRow > 0);
+                            cellCol = vPos ? '#4f4' : '#f44';
+                            cellStr = (vPos ? '+' : '') + Number(valRow).toFixed(1);
+                        }
+                        bodyHTML += '<td style="padding:4px; text-align:center; font-family:monospace; color:' + cellCol + '; border-left:1px dotted #555;">' + cellStr + '</td>';
+                    }
+                    bodyHTML += '</tr>';
                 }
                 bodyHTML += '</table></div>';
             }
