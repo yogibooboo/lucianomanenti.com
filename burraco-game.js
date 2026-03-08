@@ -104,7 +104,9 @@ function creaSnapshot() {
         puntiLoro: game.puntiLoro,
         haPozzetto: game.giocatori.map(g => g.haPozzetto),
         fase: game.fase,
-        haPescato: game.haPescato
+        haPescato: game.haPescato,
+        turno: game.turno,
+        giocatoreCorrente: game.giocatoreCorrente
     };
 }
 
@@ -191,6 +193,14 @@ function ripristinaSnapshot(snapshot) {
     game.haPescato = snapshot.haPescato;
     game.carteSelezionate = [];
     game.combinazioneModificabile = null;
+
+    if (snapshot.turno !== undefined) game.turno = snapshot.turno;
+    if (snapshot.giocatoreCorrente !== undefined) game.giocatoreCorrente = snapshot.giocatoreCorrente;
+
+    // Ri-calcola il max delle combinazioni per evitare ID collidenti
+    const maxNoi = game.combinazioniNoi.length ? Math.max(...game.combinazioniNoi.map(c => c.id)) : -1;
+    const maxLoro = game.combinazioniLoro.length ? Math.max(...game.combinazioniLoro.map(c => c.id)) : -1;
+    nextCombinazioneId = Math.max(maxNoi, maxLoro) + 1;
 }
 
 // Registra una mossa nella storia (con snapshot)

@@ -51,6 +51,7 @@ function setupEventi() {
                         const parsedJson = JSON.parse(onloadEvent.target.result);
                         ripristinaSnapshot(parsedJson);
                         render();
+                        if (typeof aggiornaIndicatoreTurno === 'function') aggiornaIndicatoreTurno();
                         console.log("🛠️ Partita caricata e ripristinata dal file: " + file.name);
                     } catch (err) {
                         console.error("Errore nel parser o nel ripristino di quel Log / Seed Burraco:", err);
@@ -2451,7 +2452,10 @@ function getGiocatoreHTML(indiceGiocatore, ruolo) {
         <div class="header" style="display:flex; justify-content:space-between; align-items:center;">
             <div style="width: 100px;"></div> <!-- Spacer -->
             <div class="ruolo">${ruolo}</div>
-            <button onclick="scaricaStatoJSON()" style="background:#4a9; border:none; border-radius:4px; color:white; padding:4px 8px; cursor:pointer; font-size:11px;">⬇️ Esporta Stato (JSON)</button>
+            <div>
+                <button onclick="mostraAnalisiParallela(${game.giocatoreCorrente})" style="background:#a49; border:none; border-radius:4px; color:white; padding:4px 8px; margin-right:8px; cursor:pointer; font-size:11px;">🔍 Analisi Parallela</button>
+                <button onclick="scaricaStatoJSON()" style="background:#4a9; border:none; border-radius:4px; color:white; padding:4px 8px; cursor:pointer; font-size:11px;">⬇️ Esporta Stato (JSON)</button>
+            </div>
         </div>
 
         <div class="personaggio">
@@ -2813,7 +2817,7 @@ function getGiocatoreHTML(indiceGiocatore, ruolo) {
             bodyHTML += '<div style="padding:8px 12px;border-bottom:1px solid #444">' +
                 '<div style="font-size:12px;color:#ccc">Scarta: <strong style="color:#f80">' +
                     d.cartaScelta + '</strong>' +
-                    (d.punteggioScelto != null ? ' (punt: ' + d.punteggioScelto.toFixed(2) + ')' : '') +
+                    (d.punteggioScelto != null ? ' (punt: ' + (d.punteggioScelto * 10).toFixed(1) + ')' : '') +
                 '</div></div>';
 
             // Costruisci Matrice delle Motivazioni se presenti in classifica
@@ -2890,7 +2894,7 @@ function getGiocatoreHTML(indiceGiocatore, ruolo) {
                     
                     bodyHTML += '<tr style="border-bottom:1px dotted #444; ' + rowStyle + '">' +
                         '<td style="padding:4px; color:' + nameColor + '; white-space:nowrap;">' + c.carta + '</td>' +
-                        '<td style="padding:4px; text-align:right; font-family:monospace; color:' + (c.punteggio > 0 ? '#4f4' : (c.punteggio < 0 ? '#f44' : '#888')) + ';">' + (c.punteggio > 0 ? '+' : '') + c.punteggio.toFixed(1) + '</td>';
+                        '<td style="padding:4px; text-align:right; font-family:monospace; color:' + (c.punteggio > 0 ? '#4f4' : (c.punteggio < 0 ? '#f44' : '#888')) + ';">' + (c.punteggio > 0 ? '+' : '') + (c.punteggio * 10).toFixed(1) + '</td>';
                     
                     // Crea dizionario per accesso rapido ai valori del breakdown di questa carta
                     var valMap = {};
@@ -2908,7 +2912,7 @@ function getGiocatoreHTML(indiceGiocatore, ruolo) {
                         if (valRow !== undefined && valRow !== 0) {
                             var vPos = (valRow > 0);
                             cellCol = vPos ? '#4f4' : '#f44';
-                            cellStr = (vPos ? '+' : '') + Number(valRow).toFixed(1);
+                            cellStr = (vPos ? '+' : '') + Number(valRow * 10).toFixed(1);
                         }
                         bodyHTML += '<td style="padding:4px; text-align:center; font-family:monospace; color:' + cellCol + '; border-left:1px dotted #555;">' + cellStr + '</td>';
                     }
@@ -2919,10 +2923,363 @@ function getGiocatoreHTML(indiceGiocatore, ruolo) {
             apriModal('Decisione Scarto', bodyHTML, '');
         }
 
+        window.mostraAnalisiParallela = function(giocatoreIdx, scenario) {
+            try {
+                if (!window.opener || !window.opener.game || !window.opener.Strategia) {
+                    alert('Impossibile agganciarsi al gioco base!');
+                    return;
+                }
+                
+                // Imposta scenario di default se non passato
+                scenario = scenario || 'scarti';
+                
+                var g = window.opener.game.giocatori[giocatoreIdx];
+                var d = window.opener.Strategia.generaAnalisiParallela(g, scenario);
+                
+                var bodyHTML = '';
+                
+                // Ordinamento GLOBALE (default = punteggio)
+                if (!window.analisiSortPath) window.analisiSortPath = 'punteggio';
+
+                // Menu Header con Scenari
+                var btnStyle = 'padding:6px 12px; margin-right:8px; border:none; border-radius:4px; cursor:pointer; font-weight:bold; font-size:11px;';
+                var btnMano = scenario === 'mano' ? 'background:#4a9; color:#fff;' : 'background:#244; color:#8aa;';
+                var btnScarti = scenario === 'scarti' ? 'background:#f80; color:#fff;' : 'background:#430; color:#aa6;';
+                var btnMazzo = scenario === 'mazzo' ? 'background:#a49; color:#fff;' : 'background:#424; color:#a6a;';
+                var btnAttivo = 'border:2px solid #fff;';
+
+                bodyHTML += '<div style="padding:12px; border-bottom:1px solid #444; background:rgba(0,0,0,0.3); display:flex; flex-wrap:wrap; align-items:center; gap:8px;">' +
+                    '<div style="font-size:12px; color:#ccc; margin-right:12px;">Sandbox: <strong style="color:#fff;">' + d.giocatore + '</strong></div>' +
+                    '<button onclick="mostraAnalisiParallela(' + giocatoreIdx + ', &apos;mano&apos;)" style="' + btnStyle + btnMano + '">Solo Mano</button>' +
+                    '<button onclick="mostraAnalisiParallela(' + giocatoreIdx + ', &apos;scarti&apos;)" style="' + btnStyle + btnScarti + '">+ Predizione Scarti</button>' +
+                    '<button onclick="mostraAnalisiParallela(' + giocatoreIdx + ', &apos;mazzo&apos;)" style="' + btnStyle + btnMazzo + '">+ Prima carta Mazzo</button>' +
+                    '<div style="width:1px; height:24px; background:#555; margin:0 4px;"></div>' +
+                    '<button onclick="window.analisiSortPath=&apos;punteggio&apos;; mostraAnalisiParallela(' + giocatoreIdx + ', &apos;' + scenario + '&apos;)" style="' + btnStyle + 'background:#334;color:#aaa;' + (window.analisiSortPath==='punteggio'?btnAttivo:'') + '">Ord. Score</button>' +
+                    '<button onclick="window.analisiSortPath=&apos;numero&apos;; mostraAnalisiParallela(' + giocatoreIdx + ', &apos;' + scenario + '&apos;)" style="' + btnStyle + 'background:#334;color:#aaa;' + (window.analisiSortPath==='numero'?btnAttivo:'') + '">Ord. Numero</button>' +
+                    '<button onclick="window.analisiSortPath=&apos;seme&apos;; mostraAnalisiParallela(' + giocatoreIdx + ', &apos;' + scenario + '&apos;)" style="' + btnStyle + 'background:#334;color:#aaa;' + (window.analisiSortPath==='seme'?btnAttivo:'') + '">Ord. Seme</button>' +
+                '</div>';
+                
+                if (d.classifica && d.classifica.length > 0 && d.classifica[0].breakdown) {
+                    // 1. Etichette Uniche
+                    var labelsMap = {};
+                    for (var r = 0; r < d.classifica.length; r++) {
+                        var cb = d.classifica[r].breakdown;
+                        if (cb) {
+                            for (var b = 0; b < cb.length; b++) {
+                                labelsMap[cb[b].label] = true;
+                            }
+                        }
+                    }
+                    var uniqueLabels = [];
+                    var uniqueOpzLabels = [];
+                    var labelsKeys = Object.keys(labelsMap).sort();
+                    for(var k=0; k<labelsKeys.length; k++) {
+                        if (labelsKeys[k].startsWith('OPZ')) {
+                            // Ordinamento numerico OPZ1, OPZ10...
+                            if (!uniqueOpzLabels.includes(labelsKeys[k])) uniqueOpzLabels.push(labelsKeys[k]);
+                        } else {
+                            uniqueLabels.push(labelsKeys[k]);
+                        }
+                    }
+                    uniqueOpzLabels.sort((a,b) => parseInt(a.replace('OPZ','')) - parseInt(b.replace('OPZ','')));
+
+                    var alphabet = 'ABDEFGHIKLMNOPQRUVWXYZ'; 
+                    var accLettera = 0;
+                    var labelToLetter = {};
+                    var labelUsaMatta = {}; // Traccia se la combo usa matta
+                    for (var l = 0; l < uniqueLabels.length; l++) {
+                        var lbl = uniqueLabels[l];
+                        
+                        // Cerco nei breakdown se questa etichetta ha usaMatta = true
+                        var usaMatta = false;
+                        for (var r1 = 0; r1 < d.classifica.length; r1++) {
+                            var cb1 = d.classifica[r1].breakdown;
+                            if (cb1) {
+                                var found = cb1.find(b => b.label === lbl);
+                                if (found && found.usaMatta) usaMatta = true;
+                            }
+                        }
+                        labelUsaMatta[lbl] = usaMatta;
+
+                        var charCode = '';
+                        if (lbl.startsWith('T') && !isNaN(lbl.charAt(1))) {
+                            charCode = lbl.split(' ')[0]; // Es: T1
+                        } else if (lbl.startsWith('S') && !isNaN(lbl.charAt(1))) {
+                            charCode = lbl.split(' ')[0]; // Es: S1
+                        } else if (lbl.startsWith('C (Attacco')) {
+                            charCode = 'C';
+                        } else {
+                            charCode = (accLettera < alphabet.length) ? alphabet.charAt(accLettera++) : accLettera;
+                        }
+                        labelToLetter[lbl] = charCode;
+                    }
+
+                    // 2. Legende in layout Flex
+                    bodyHTML += '<div style="display:flex; flex-wrap:wrap; gap:20px; padding:8px 12px; border-bottom:1px solid #444">' +
+                        // -- LEGENDA METRICHE PURE
+                        '<div style="flex:1; min-width:300px;">' +
+                        '<div style="font-size:13px;font-weight:bold;margin-bottom:8px;color:#ddd">Legenda Metriche Pure:</div>' +
+                        '<table style="font-size:11px;border-collapse:collapse;width:100%">';
+                    for (var l2 = 0; l2 < uniqueLabels.length; l2++) {
+                        var key = uniqueLabels[l2];
+                        var coeffStr = '';
+                        for (var rr = 0; rr < d.classifica.length; rr++) {
+                            var cbb = d.classifica[rr].breakdown;
+                            if (cbb) {
+                                for (var bb = 0; bb < cbb.length; bb++) {
+                                    if (cbb[bb].label === key && cbb[bb].coeffStr) {
+                                        coeffStr = ' <span style="color:#858; font-size:9px;">[' + cbb[bb].coeffStr + ']</span>';
+                                        break;
+                                    }
+                                }
+                            }
+                            if (coeffStr !== '') break;
+                        }
+                        bodyHTML += '<tr style="border-bottom:1px solid #333">' +
+                            '<td style="padding:2px 4px; color:#4a9; font-weight:bold; width:20px;">' + labelToLetter[key] + '</td>' +
+                            '<td style="padding:2px 4px; color:#bbb">' + key + coeffStr + '</td>' +
+                        '</tr>';
+                    }
+                    bodyHTML += '</table></div>';
+                    
+                    // -- LEGENDA OPZIONI DI GIOCO API
+                    if (uniqueOpzLabels.length > 0) {
+                        bodyHTML += '<div style="flex:1; min-width:300px; border-left:1px dashed #555; padding-left:12px;">' +
+                        '<div style="font-size:13px;font-weight:bold;margin-bottom:8px;color:#ddd">Opzioni di Gioco Globali:</div>' +
+                        '<table style="font-size:11px;border-collapse:collapse;width:100%">';
+                        
+                        var opzioniTopInfo = [];
+                        if (giocatoreIdx !== undefined && window.opener && window.opener.game) {
+                            var pOss = window.opener.game.giocatori[giocatoreIdx].osservazioni;
+                            opzioniTopInfo = (pOss && pOss.analisiVirtuale && scenario !== 'mano') 
+                                ? pOss.analisiVirtuale.opzioniGioco 
+                                : (pOss ? pOss.opzioniGioco : []);
+                        }
+
+                        for (var lOpz = 0; lOpz < uniqueOpzLabels.length; lOpz++) {
+                            var opzKey = uniqueOpzLabels[lOpz];
+                            var idxOpz = parseInt(opzKey.replace('OPZ','')) - 1;
+                            var descOpz = 'Opzione Generica';
+                            var puntiOpz = '';
+                            if (opzioniTopInfo && idxOpz >= 0 && idxOpz < opzioniTopInfo.length) {
+                                descOpz = opzioniTopInfo[idxOpz].descCarte || descOpz;
+                                var val = opzioniTopInfo[idxOpz].valoreGlobaleNetto !== undefined ? opzioniTopInfo[idxOpz].valoreGlobaleNetto : opzioniTopInfo[idxOpz].puntiTotali;
+                                if (val !== undefined) {
+                                    puntiOpz = ' <span style="color:' + (val>0?'#4f4':'#f44') + '; font-size:9px;">[' + (val>0?'+':'') + val.toFixed(1) + 'pt]</span>';
+                                }
+                            }
+                            
+                            bodyHTML += '<tr style="border-bottom:1px solid #333">' +
+                                '<td style="padding:2px 4px; color:#dd6; font-weight:bold; width:30px;">' + opzKey + '</td>' +
+                                '<td style="padding:2px 4px; color:#bbb">' + descOpz + puntiOpz + '</td>' +
+                            '</tr>';
+                        }
+                        bodyHTML += '</table></div>';
+                    }
+                    bodyHTML += '</div>'; // Chiude contenitore Flex Legende
+
+                    // 3. Tabella a Matrice (Header unito)
+                    var tutteLeColonneAVisualizzare = uniqueLabels.concat(uniqueOpzLabels);
+
+                    bodyHTML += '<div style="padding:8px 12px; overflow-x:auto;">' +
+                        '<table style="font-size:11px;border-collapse:collapse;width:100%">';
+                    
+                    bodyHTML += '<tr style="border-bottom:1px solid #777; color:#fff;">' +
+                        '<th style="text-align:left; padding:4px;">CARTA</th>' +
+                        '<th style="text-align:right; padding:4px;">SCORE</th>';
+                    for (var l3 = 0; l3 < tutteLeColonneAVisualizzare.length; l3++) {
+                        var isCST = tutteLeColonneAVisualizzare[l3].startsWith('T') || tutteLeColonneAVisualizzare[l3].startsWith('S') || tutteLeColonneAVisualizzare[l3].startsWith('C');
+                        var headerBg = '';
+                        var testataId = tutteLeColonneAVisualizzare[l3];
+                        var labelVisuale = testataId;
+
+                        if (testataId.startsWith('OPZ')) {
+                            headerBg = 'background-color:rgba(100, 100, 100, 0.2); border-left:2px solid #555;'; // demarcazione visiva opzioni
+                        } else {
+                            labelVisuale = labelToLetter[testataId];
+                            if (isCST && !testataId.startsWith('C')) {
+                                // T/S: Arancio forte se Pura, Arancio/Giallo tenue se usa Matta
+                                headerBg = labelUsaMatta[testataId] ? 'background-color:rgba(255, 165, 0, 0.2);' : 'background-color:rgba(255, 120, 0, 0.5);';
+                            }
+                        }
+                        bodyHTML += '<th style="text-align:center; padding:4px; color:#4a9; border-left:1px dotted #555; ' + headerBg + '" title="' + testataId + '">' + labelVisuale + '</th>';
+                    }
+                    bodyHTML += '</tr>';
+
+                    // Ordinamento GLOBALE (default = punteggio)
+                    // Ordina dal più alto (più scartabile) al più basso. L'ui js è indipendente.
+                    d.classifica.sort((a, b) => {
+                        if (window.analisiSortPath === 'punteggio') {
+                            return b.punteggio - a.punteggio;
+                        } else if (window.analisiSortPath === 'numero') {
+                            var vA = a.cartaRef ? a.cartaRef.numero : 0;
+                            var vB = b.cartaRef ? b.cartaRef.numero : 0;
+                            if (vA === vB) {
+                                var sA = a.cartaRef ? a.cartaRef.seme : '';
+                                var sB = b.cartaRef ? b.cartaRef.seme : '';
+                                return sA.localeCompare(sB);
+                            }
+                            return vA - vB;
+                        } else if (window.analisiSortPath === 'seme') {
+                            var sA = a.cartaRef ? a.cartaRef.seme : '';
+                            var sB = b.cartaRef ? b.cartaRef.seme : '';
+                            if (sA === sB) {
+                                var vA = a.cartaRef ? a.cartaRef.numero : 0;
+                                var vB = b.cartaRef ? b.cartaRef.numero : 0;
+                                return vA - vB;
+                            }
+                            return sA.localeCompare(sB);
+                        }
+                    });
+
+                    // Inizializzazione Palette Colori Autogenerati per OPZ
+                    var currentOpzColorIdx = 0;
+                    var assignedOpzColors = {}; // Mappa comboSegreta -> bgColor
+                    // Array di 9 colori vivaci ma con opacità media (0.65) per leggibilità. Azzurro escluso (riservato matte).
+                    var opzPalette = [
+                        'rgba(255, 0, 0, 0.65)',      // Rosso Primario
+                        'rgba(218, 165, 32, 0.65)',   // Oro / Ocra (Al posto dell'azzurro)
+                        'rgba(255, 230, 0, 0.65)',    // Giallo Sole
+                        'rgba(0, 210, 0, 0.65)',      // Verde Brillante
+                        'rgba(255, 140, 0, 0.65)',    // Arancione Forte
+                        'rgba(0, 128, 128, 0.65)',    // Teal / Verdeacqua scuro (al posto del blu scuro)
+                        'rgba(180, 255, 0, 0.65)',    // Verde Lime (Acido)
+                        'rgba(255, 105, 180, 0.65)',  // Hot Pink
+                        'rgba(180, 100, 50, 0.65)'    // Marrone Rame
+                    ];
+                    var opzColorCalata = 'rgba(160, 100, 240, 0.4)'; // Colore pervasivo fisso (Violetto) per Attacchi (tutti) - Rimane semi-trasparente per supportare l'alpha scalabile? Utente ha detto "Non usare il viola/fucsia già usato per i doppioni". Aspetta, l'utente ha detto: "Non metterei il viola/fucsia già usato per i doppioni".
+                    // Sostituiamo il Violetto (Calate) con un grigio o un blu scuro se richiesto, oppure lasciamo l'Alpha del targetBadge.
+                    // "falli totalmente opachi" -> Tolgo del tutto il violetto scalabile? O lo tengo scalabile ma con tonalità diversa? L'utente dice "Non usare viola/fucsia".
+                    // Cambio base calata in opaco grigio piombo, scalando la luminosità anziché alpha.
+                    // Aspetta, manteniamo opzPalette intatta per le combo, e cambiamo rendering.
+
+                    for (var i = 0; i < d.classifica.length; i++) {
+                        var c = d.classifica[i];
+                        
+                        var colorCarta = '#ddd';
+                        if (c.origine === 'scarto') colorCarta = '#f80';
+                        if (c.origine === 'mazzo') colorCarta = '#a49';
+                        if (c.isMatta) colorCarta = '#0cf'; // Azzurro prevale sugli altri
+
+                        bodyHTML += '<tr style="border-bottom:1px dotted #444;">' +
+                            '<td style="padding:4px; color:' + colorCarta + '; font-weight:bold; white-space:nowrap;">' + c.carta + '</td>' +
+                            '<td style="padding:4px; text-align:right; font-family:monospace; color:' + (c.punteggio > 0 ? '#4f4' : (c.punteggio < 0 ? '#f44' : '#888')) + ';">' + (c.punteggio > 0 ? '+' : '') + c.punteggio.toFixed(1) + '</td>';
+                        
+                        var valMap = {};
+                        var comboMapInfo = {};
+                        if (c.breakdown) {
+                            for (var k = 0; k < c.breakdown.length; k++) {
+                                valMap[c.breakdown[k].label] = c.breakdown[k].valore;
+                                comboMapInfo[c.breakdown[k].label] = {
+                                    comboSegreta: c.breakdown[k].comboSegreta,
+                                    isCalata: c.breakdown[k].isCalata,
+                                    badgeTesto: c.breakdown[k].badgeTesto,
+                                    targetLength: c.breakdown[k].targetLength,
+                                    mossaIdx: c.breakdown[k].mossaIdx,
+                                    mossaUsaMatta: c.breakdown[k].mossaUsaMatta // Nuovo flag
+                                };
+                            }
+                        }
+
+                        for (var l4 = 0; l4 < tutteLeColonneAVisualizzare.length; l4++) {
+                            var colName = tutteLeColonneAVisualizzare[l4];
+                            var valRow = valMap[colName];
+                            var comboInfo = comboMapInfo[colName] || {};
+
+                            var cellStr = '-';
+                            var cellCol = '#555';
+                            var bgCol = '';
+                            var borderMod = '';
+
+                            if (colName.startsWith('OPZ')) {
+                                borderMod = 'border-left:2px solid #555;'; // demarcazione selettiva
+                            }
+
+                            if (valRow !== undefined && valRow !== 0) {
+                                var vPos = (valRow > 0);
+                                cellCol = vPos ? '#4f4' : '#f44';
+                                cellStr = (vPos ? '+' : '') + Number(valRow).toFixed(1);
+
+                                // Gestione Sfondo Colori Combinazioni per OPZ e Target Badge
+                                if (colName.startsWith('OPZ')) {
+                                    // Matta in OPZ -> testo azzurro per il punteggio
+                                    if (c.isMatta) {
+                                        cellCol = '#0cf'; // Azzurro
+                                        // per avere contrasto, i background opachi non devono coprire l'azzurro
+                                        // ma ok, ha chiesto testo punteggio azzurro
+                                    }
+
+                                    if (comboInfo.isCalata) {
+                                        // Attacco in OPZ: niente viola, uso gradazione scala di grigio (scuro per combo corte, chiaro per combo lunghe).
+                                        // targetLen ora include già la singola carta che si sta attaccando. Partiamo da minimo 4 carte (tris originale di 3 + 1 carta stendibile).
+                                        var targetLen = comboInfo.targetLength || 4;
+                                        // Gradazione di grigio da 60 (Dark, si maschera bene nei temi scuri) a salire di 25 per ogni target in più (diventa sempre più chiaro)
+                                        var luminanza = Math.min(220, 60 + ((targetLen - 4) * 25));
+                                        bgCol = 'background-color:rgb(' + luminanza + ', ' + luminanza + ', ' + luminanza + ');';
+                                        
+                                        // Aggiungo il piedino testo [es. 5SP] sotto il punteggio
+                                        if (comboInfo.badgeTesto) {
+                                            cellStr += '<br><span style="font-size:10px; color:#fff;">' + comboInfo.badgeTesto + '</span>';
+                                        }
+                                        
+                                    } else if (comboInfo.comboSegreta) {
+                                        // Usa l'indice mossa (0, 1, 2...) dal core, così OPZ1.mossa0 e OPZ2.mossa0 avranno = colore
+                                        var idx = comboInfo.mossaIdx;
+                                        if (idx === undefined || isNaN(idx)) {
+                                            if (!assignedOpzColors[comboInfo.comboSegreta]) {
+                                                assignedOpzColors[comboInfo.comboSegreta] = currentOpzColorIdx++;
+                                            }
+                                            idx = assignedOpzColors[comboInfo.comboSegreta];
+                                        }
+                                        var coloreCombo = opzPalette[idx % opzPalette.length];
+                                        
+                                        // Se la combinazione è sporca (usa matta), taglia lo sfondo a triangolo 
+                                        // usando un linear gradient
+                                        if (comboInfo.mossaUsaMatta) {
+                                            bgCol = 'background: linear-gradient(135deg, transparent 50%, ' + coloreCombo + ' 50%);';
+                                        } else {
+                                            bgCol = 'background-color:' + coloreCombo + ';';
+                                        }
+                                        
+                                        // Assicuriamo leggibilità del testo su sfondo opaco intenso (testo nero / ombra per #4f4 o azzurro)
+                                        if (cellCol === '#0cf') {
+                                            // Il testo è azzurro (matta testuale), lascialo cosi (#0cf).
+                                        } else if (!comboInfo.mossaUsaMatta) {
+                                            // Se non usa matta lo sfondo copre tutta la cella (alfa ~0.65) -> testo nero 
+                                            cellCol = '#111';
+                                        } else {
+                                            // Se usa matta lo sfondo copre solo mezza cella. La leggibilità potrebbe essere
+                                            // compromessa dal contrasto col grigio scuro globale o col colore. Lascio originale (#4f4/#f44)
+                                        }
+                                    }
+                                } else {
+                                    // Logica originale per i Conflitti sulle Metriche T/S/C
+                                    var isCombinazioneMetrica = colName.startsWith('T') || colName.startsWith('S') || colName.startsWith('C');
+                                    if (c.isConflitto && isCombinazioneMetrica) {
+                                        bgCol = 'background-color:rgba(255, 0, 255, 0.2);'; 
+                                    }
+                                }
+                            }
+
+                            bodyHTML += '<td style="padding:4px; text-align:center; font-family:monospace; color:' + cellCol + '; border-left:1px dotted #555; ' + borderMod + bgCol + '">' + cellStr + '</td>';
+                        }
+                        bodyHTML += '</tr>';
+                    }
+                    bodyHTML += '</table></div>';
+                }
+                
+                // Rimuovi eventuali pop-up vecchi dello stesso tipo prima di stamparne di nuovi
+                chiudiModal();
+                apriModal('🔍 Sandbox Analisi Parallela (WIP)', bodyHTML, 'Valori esplorativi della nuova Strategia Indipendente.');
+            } catch(e) {
+                alert("Errore Analisi Parallela: " + e.message + "\\n" + e.stack);
+            }
+        }
+
         // Helper: apre un modal generico
         function apriModal(titolo, body, footer) {
             var html = '<div class="modal-overlay" onclick="chiudiModal(event)">' +
-                '<div class="modal-content" onclick="event.stopPropagation()" style="width:500px; position:absolute; right:20px; top:20px; margin:0;">' +
+                '<div class="modal-content" onclick="event.stopPropagation()" style="width:1080px; max-width:95vw; min-height:80vh; max-height:95vh; overflow-y:auto; position:absolute; right:20px; top:20px; margin:0;">' +
                     '<div class="modal-header">' +
                         '<span class="modal-title">' + titolo + '</span>' +
                         '<span class="modal-close" onclick="chiudiModal()">&times;</span>' +

@@ -330,6 +330,12 @@ class Carta {
         return nomi[this.numero] + NOMI_SEMI[this.seme];
     }
 
+    get nomeBreve() {
+        if (this.isJolly) return 'Jolly';
+        const nomi = ['', 'A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+        return nomi[this.numero] + this.seme;
+    }
+
     // Calcola posizione nello sprite (come scala40)
     // Le coordinate sono per lo sprite originale 1233x384
     // Il CSS ridimensionera' automaticamente
@@ -1947,7 +1953,11 @@ const Strategia = {
 
         // 1. Utilita' invertita: carta utile = NON scartarla
         const valCarta = this.valutaUtilitaCarta(carta, giocatore, combinazioniSquadra);
-        addScore('Utilità Invertita', -(valCarta.utilita * 0.15), 'Peso Fisso: x0.15');
+        if (valCarta.motivi && valCarta.motivi.length > 0) {
+            valCarta.motivi.forEach(m => {
+                addScore('Utilità: ' + m.label, -(m.valore * 0.15), 'Peso Fisso: x0.15');
+            });
+        }
 
         // 2. Carte isolate per tris (nessun'altra carta uguale)
         const stessoNumero = mano.filter(c =>
@@ -2027,6 +2037,318 @@ const Strategia = {
         }
 
         return numCarte >= sogliaMinima;
+    },
+
+    // ============================================================================
+    // ANALISI PARALLELA UNIFICATA (Sandbox)
+    // ============================================================================
+
+    valutaCartaAnalisiParallela(carta, mano, contesto) {
+        let punteggio = 0;
+        const breakdown = [];
+
+        // contesto: { tris: [...], scale: [...], attacchi: [...] }
+        const { tris = [], scale = [], attacchi = [] } = contesto || {};
+
+        const addScore = (label, val, coeffStr) => {
+            if (val === 0) return;
+            punteggio += val;
+            breakdown.push({ label, valore: val, coeffStr });
+        };
+
+        if (carta.isJolly || carta.isPinella) {
+            addScore('Matta', -50.0, 'Valore Fisso');
+            return { punteggio, breakdown };
+        }
+
+        // 1. Decentralizzazione (0 = asse, 1.0 = 7/8) -> (1 - centralita)
+        const centralita = this.getCentralita(carta.numero);
+        // Diamo un po' più peso alla decentralizzazione per spingere gli scarti ignobili (x 5.0)
+        addScore('Decentralizzazione', (1 - centralita) * 5.0, 'Base: (1-c) * 5.0');
+
+        // 2. Coppia per Tris
+        const uguali = mano.filter(c => c.numero === carta.numero && !c.isJolly && !c.isPinella && c !== carta).length;
+        if (uguali > 0) {
+            addScore('Coppia per Tris', -15.0 * uguali, 'Fisso: -15.0 x N');
+        }
+
+        // 3. Coppia per Scala e Scala con Buco
+        if (carta.seme) {
+            const stessoSeme = mano.filter(c => c.seme === carta.seme && !c.isJolly && !c.isPinella && c !== carta);
+
+            // Attigui (distanza 1)
+            const attigui = stessoSeme.filter(c => Math.abs(c.numero - carta.numero) === 1).length;
+            if (attigui > 0) {
+                addScore('Coppia per Scala', -12.0 * attigui, 'Fisso: -12.0 x N');
+            }
+
+            // Buchi (distanza 2)
+            const buchi = stessoSeme.filter(c => Math.abs(c.numero - carta.numero) === 2).length;
+            if (buchi > 0) {
+                addScore('Coppia per Scala (Buco)', -6.0 * buchi, 'Fisso: -6.0 x N');
+            }
+        }
+
+        let numUsiPositivi = 0;
+
+        const addScoreEnhanced = (label, val, coeffStr, usaMatta) => {
+            if (val === 0) return;
+            punteggio += val;
+            breakdown.push({ label, valore: val, coeffStr, usaMatta });
+            if (val < 0) numUsiPositivi++; // Numeri negativi sono "premi" per la conservazione in questa logica
+        };
+
+        // 4. In Tris completi (T1, T2, ecc.)
+        tris.forEach((t, index) => {
+            if (t.carte.some(c => c.id === carta.id)) {
+                const desc = t.carte.map(c => c.nomeBreve).join(' ');
+                addScoreEnhanced(`T${index + 1} (${desc})`, -30.0, 'Fisso: -30.0', t.usaMatta);
+            }
+        });
+
+        // 5. In Scale complete (S1, S2, ecc.)
+        scale.forEach((s, index) => {
+            if (s.carte.some(c => c.id === carta.id)) {
+                const desc = s.carte.map(c => c.nomeBreve).join(' ');
+                addScoreEnhanced(`S${index + 1} (${desc})`, -30.0, 'Fisso: -30.0', s.usaMatta);
+            }
+        });
+
+        // 6. Attacco a combinazioni a terra (C)
+        const attacchiDellaCarta = attacchi.filter(a => a.carta && a.carta.id === carta.id);
+        if (attacchiDellaCarta.length > 0) {
+            // Per brevità mostriamo la descrizione del primo, ma incrementiamo comunque gli usi
+            const primoAttacco = attacchiDellaCarta[0];
+            const desc = primoAttacco.combo.carte.map(c => c.nomeBreve).join(' ');
+            addScoreEnhanced(`C (Attacco su: ${desc})`, -40.0, 'Fisso: -40.0', false); // C non ha "usaMatta" come le combo virtuali
+            // numUsiPositivi += (attacchiDellaCarta.length - 1); // Se vogliamo contare gli attacchi multipli come overlap ulteriori
+        }
+
+        const isConflitto = numUsiPositivi > 1;
+
+        return { punteggio, breakdown, isConflitto };
+    },
+
+    generaAnalisiParallela(giocatore, scenario = 'scarti') {
+        const classifica = [];
+        let mano = [];
+
+        // Funzione di utility per clonare in sandbox senza perdere il prototipo di "Carta" (isJolly, isPinella ec)
+        const clonaInSandbox = (cartaOrig, origine) => {
+            const clone = Object.assign(Object.create(Object.getPrototypeOf(cartaOrig)), cartaOrig);
+            clone._origineRef = cartaOrig;
+            clone._origine = origine;
+            return clone;
+        };
+
+        // Mappiamo le carte con l'origine per l'UI
+        giocatore.carte.forEach(c => mano.push(clonaInSandbox(c, 'mano')));
+
+        // Aggiunta carte extra in base allo scenario richiesto dall'esterno
+        if (scenario === 'scarti' && game.scarti.length > 0) {
+            game.scarti.forEach(c => mano.push(clonaInSandbox(c, 'scarto')));
+        } else if (scenario === 'mazzo' && game.mazzo.length > 0) {
+            // Prende l'effettiva carta in cima al mazzo (l'ultima dell'array mazzo)
+            const cartaMazzo = game.mazzo[game.mazzo.length - 1];
+            mano.push(clonaInSandbox(cartaMazzo, 'mazzo'));
+        }
+
+        // Calcoliamo i set completi sulla mano virtuale (come AnalizzaMano ma sandbox)
+        // Usiamo un clone per non sporcare la vera analisi
+        const cloneGiocatore = { carte: mano, isUmano: false, nome: 'Sandbox', squadra: giocatore.squadra };
+
+        // Attacchi possibili sulle combinazioni a terra (della squadra)
+        const squadraCombo = giocatore.squadra === 0 ? game.combinazioniNoi : game.combinazioniLoro;
+
+        // Tris e Scale in mano
+        const analisiVirtuale = this.analizzaCarte(mano, squadraCombo);
+        const trisVirtuali = analisiVirtuale.possibiliTris || [];
+        const scaleVirtuali = analisiVirtuale.possibiliScale || [];
+        const attacchiPossibili = [];
+
+        const isAttaccabile = (carta, combo) => {
+            const fisiche = combo.carte.filter(c => !c.isJolly && !c.isPinella);
+            const numMatte = combo.carte.length - fisiche.length;
+            if (fisiche.length === 0) return false;
+
+            const isTris = fisiche.every(c => c.numero === fisiche[0].numero);
+            if (carta.isJolly || carta.isPinella) {
+                // Posso attaccare matta se la combo non ne ha già una
+                return numMatte === 0;
+            }
+
+            if (isTris) {
+                // Se è tris, deve avere lo stesso numero. (E non posso fare tris di matte)
+                return carta.numero === fisiche[0].numero;
+            } else {
+                // Se è scala, deve avere lo stesso seme
+                if (carta.seme !== fisiche[0].seme) return false;
+
+                // Mettiamo in ordine per capire i buchi
+                const nums = fisiche.map(c => c.numero).sort((a, b) => a - b);
+
+                // Controllo se estende regolarmente sopra o sotto
+                if (carta.numero === nums[0] - 1) return true;
+                if (carta.numero === nums[nums.length - 1] + 1) return true;
+
+                // Controllo se tappa un buco coperto da una matta
+                if (numMatte > 0) {
+                    for (let i = 0; i < nums.length - 1; i++) {
+                        if (nums[i + 1] - nums[i] > 1 && carta.numero > nums[i] && carta.numero < nums[i + 1]) return true;
+                    }
+                }
+
+                // Gestione Asso (numero 1 o 14) -- in base al motore del burraco l'asso sopra al re vale 14
+                if (carta.numero === 1 && nums[nums.length - 1] === 13) return true;
+                return false;
+            }
+        };
+
+        mano.forEach(c => {
+            for (let i = 0; i < squadraCombo.length; i++) {
+                if (isAttaccabile(c, squadraCombo[i])) {
+                    attacchiPossibili.push({ carta: c, combo: squadraCombo[i] });
+                    break;
+                }
+            }
+        });
+
+        const contestoLocale = { tris: trisVirtuali, scale: scaleVirtuali, attacchi: attacchiPossibili };
+
+        // Calcoliamo lo score usando la mano virtuale su TUTTE le carte valutate
+        for (let i = 0; i < mano.length; i++) {
+            const cartaVirtuale = mano[i];
+            const result = this.valutaCartaAnalisiParallela(cartaVirtuale._origineRef, mano.map(m => m._origineRef), contestoLocale);
+
+            // --- INIEZIONE OPZIONI DI GIOCO ---
+            // Recupero l'array opzioniGioco generato per lo scenario corrente
+            const opzioni = (giocatore.osservazioni && giocatore.osservazioni.analisiVirtuale && scenario !== 'mano')
+                ? giocatore.osservazioni.analisiVirtuale.opzioniGioco
+                : (giocatore.osservazioni ? giocatore.osservazioni.opzioniGioco : []);
+
+            if (opzioni && opzioni.length > 0) {
+                // Limitiamo la visualizzazione in tabella alle prime 8 migliori varianti
+                const maxOpz = Math.min(opzioni.length, 8);
+                for (let o = 0; o < maxOpz; o++) {
+                    const opt = opzioni[o];
+                    const labelOpz = 'OPZ' + (o + 1);
+
+                    // Verifico se questa carta (Ref originale) partecipa a una delle mosse di questa opzione
+                    let partecipa = false;
+                    let comboId = '';
+                    let isCalata = false;
+                    let descBreve = '';
+                    let puntiGiocata = 0;
+                    let targetBadge = '';
+                    let targetLength = 0;
+                    let mossaIdxForColor = 0;
+                    let mossaUsaMatta = false;
+
+                    if (opt.mosse) {
+                        for (let m = 0; m < opt.mosse.length; m++) {
+                            const mossa = opt.mosse[m];
+                            let carteMossa = [];
+                            let currentTargetBadge = '';
+                            let currentTargetLength = 0;
+                            let currentMossaUsaMatta = false;
+
+                            if (mossa.tipo === 'tris' || mossa.tipo === 'scala') {
+                                carteMossa = mossa.carte || [];
+                                isCalata = false;
+                                descBreve = (mossa.tipo === 'tris' ? 'T' : 'S') + (mossa.numero || mossa.seme || '');
+                                currentMossaUsaMatta = carteMossa.some(cM => {
+                                    if (!cM) return false;
+                                    let hasMatta = (cM.isJolly || cM.isPinella || cM.valore === 15);
+                                    if (!hasMatta && cM._origineRef) {
+                                        hasMatta = (cM._origineRef.isJolly || cM._origineRef.isPinella || cM._origineRef.valore === 15);
+                                    }
+                                    return hasMatta;
+                                });
+                            } else if (mossa.tipo === 'calata') {
+                                carteMossa = [mossa.carta]; // La calata ha la proprietà 'carta' (singola)
+                                isCalata = true;
+                                descBreve = 'C';
+
+                                // Verifica se il target a cui attacchiamo (o l'attacco stesso) usa una matta
+                                currentMossaUsaMatta = false;
+                                if (mossa.combo && mossa.combo.carte) {
+                                    currentMossaUsaMatta = mossa.combo.carte.some(cM => {
+                                        if (!cM) return false;
+                                        let hasMatta = (cM.isJolly || cM.isPinella || cM.valore === 15);
+                                        if (!hasMatta && cM._origineRef) {
+                                            hasMatta = (cM._origineRef.isJolly || cM._origineRef.isPinella || cM._origineRef.valore === 15);
+                                        }
+                                        return hasMatta;
+                                    });
+                                }
+                                if (!currentMossaUsaMatta && mossa.carta) {
+                                    let cM = mossa.carta;
+                                    currentMossaUsaMatta = (cM.isJolly || cM.isPinella || cM.valore === 15);
+                                    if (!currentMossaUsaMatta && cM._origineRef) {
+                                        currentMossaUsaMatta = (cM._origineRef.isJolly || cM._origineRef.isPinella || cM._origineRef.valore === 15);
+                                    }
+                                }
+
+                                // Composizione Badge Testuale per Interfaccia
+                                if (mossa.combo && mossa.combo.carte) {
+                                    currentTargetLength = mossa.combo.carte.length + 1; // La lunghezza dopo l'attacco
+                                    const tipoDesc = mossa.combo.tipo === 1 ? 'T' : 'S'; // 1 Tris, 2 Scala
+                                    const siglaTarget = mossa.combo.tipo === 1 ? mossa.combo.numero : mossa.combo.seme;
+                                    currentTargetBadge = `[${currentTargetLength}${tipoDesc}${siglaTarget || ''}]`;
+                                }
+                            }
+
+                            // La carta virtuale fa parte in sostanza di carteMossa? Controllo ID dell'original ref
+                            const trovata = carteMossa.find(cM => cM && cM.id === cartaVirtuale._origineRef.id);
+                            if (trovata) {
+                                partecipa = true;
+                                // comboId univoco: Differenziamo la chiave target per colorazioni avanzate
+                                comboId = isCalata ? labelOpz + '-ATTACCO-' + (mossa.combo ? mossa.combo.id : '') : labelOpz + '-' + m + '-' + descBreve;
+                                puntiGiocata = cartaVirtuale._origineRef.punti;
+                                // Aggiorno le variabili per il breakdown prima del break:
+                                targetBadge = currentTargetBadge;
+                                targetLength = currentTargetLength;
+                                mossaUsaMatta = currentMossaUsaMatta;
+
+                                // Memorizzo l'indice della mossa per sincronizzare i colori
+                                mossaIdxForColor = m;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (partecipa) {
+                        result.breakdown.push({
+                            label: labelOpz,
+                            valore: puntiGiocata, // Il valore puro della singola carta giocata
+                            comboSegreta: comboId,
+                            isCalata: isCalata,
+                            badgeTesto: targetBadge,     // Es Stringa: "[4SP]"
+                            targetLength: targetLength,  // Es Int: 4
+                            mossaIdx: mossaIdxForColor,  // Es: 0, 1, 2...
+                            mossaUsaMatta: mossaUsaMatta // True se la combo usa matta (per triangolo visivo)
+                        });
+                    }
+                }
+            }
+            // --- FINE OPZIONI ---
+
+            classifica.push({
+                carta: this.nomeCarta(cartaVirtuale._origineRef) + (cartaVirtuale._origine !== 'mano' ? '*' : ''),
+                cartaRef: cartaVirtuale._origineRef, // Aggiunto per ordinamento dinamico UI (Numero/Seme)
+                origine: cartaVirtuale._origine,
+                isMatta: cartaVirtuale._origineRef.isJolly || cartaVirtuale._origineRef.isPinella,
+                punteggio: result.punteggio,
+                breakdown: result.breakdown,
+                isConflitto: result.isConflitto
+            });
+        }
+
+        return {
+            giocatore: giocatore.nome,
+            scenario: scenario,
+            classifica: classifica
+        };
     }
 };
 
@@ -2196,6 +2518,7 @@ const game = {
 
 // Esponi game globalmente per debug nei dev tools
 window.game = game;
+window.Strategia = Strategia;
 
 // Mappa globale di tutte le carte per ID (per restore veloce)
 let tutteLeCarte = {};
