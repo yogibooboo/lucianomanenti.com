@@ -259,16 +259,6 @@ function iniziaPartita() {
     // Distribuisci carte
     distribuisciCarte();
 
-    // Salva Snapshot Iniziale in memoria (per Ripristino di Debug su File Fisico)
-    if (typeof creaSnapshot === 'function') {
-        try {
-            window.burraco_seed_snapshot = creaSnapshot();
-            console.log("Deck Seeded in memoria. Premi CTRL+ALT+F per salvarlo come File.");
-        } catch (err) {
-            console.warn("Impossibile generare il backup iniziale:", err);
-        }
-    }
-
     // Render iniziale
     render();
 
@@ -278,6 +268,16 @@ function iniziaPartita() {
     game.haPescato = false;
 
     aggiornaIndicatoreTurno();
+
+    // Salva Snapshot Iniziale in memoria (dopo aver impostato fase/turno corretti)
+    if (typeof creaSnapshot === 'function') {
+        try {
+            window.burraco_seed_snapshot = creaSnapshot();
+            console.log("Snapshot iniziale salvato. CTRL+ALT+I = stato iniziale, CTRL+ALT+A = stato attuale.");
+        } catch (err) {
+            console.warn("Impossibile generare il backup iniziale:", err);
+        }
+    }
 
     // Snapshot iniziale (permette di annullare anche la prima pesca)
     salvaStato('inizio-partita');

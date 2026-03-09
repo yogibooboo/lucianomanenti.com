@@ -20,19 +20,36 @@ function setupEventi() {
 
     // Scorciatoie di Debug per Import/Export Stato (Seed) della Partita su disco fisico
     document.addEventListener('keydown', (e) => {
-        // CTRL+ALT+F: Scarica lo snapshot iniziale corrente in un file .json sul computer (F = File Export)
-        if (e.ctrlKey && e.altKey && e.key.toLowerCase() === 'f') {
+        // CTRL+ALT+I: Scarica lo snapshot INIZIALE (come erano le carte a inizio partita)
+        if (e.ctrlKey && e.altKey && e.key.toLowerCase() === 'i') {
             e.preventDefault();
             if (window.burraco_seed_snapshot) {
                 const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(window.burraco_seed_snapshot, null, 2));
                 const nomeData = new Date().toISOString().replace(/T/, '_').replace(/:/g, '-').slice(0, 19);
                 const dlAnchorElem = document.createElement('a');
                 dlAnchorElem.setAttribute("href", dataStr);
-                dlAnchorElem.setAttribute("download", "burraco_seed_" + nomeData + ".json");
+                dlAnchorElem.setAttribute("download", "burraco_inizio_" + nomeData + ".json");
                 dlAnchorElem.click();
-                console.log("Salvataggio su disco fisso avviato per il seed corrente.");
+                console.log("Salvataggio snapshot INIZIALE avviato.");
             } else {
-                console.warn("Nessun seed immagazzinato da scaricare. Inizia una partita prima.");
+                console.warn("Nessun snapshot iniziale disponibile. Inizia una partita prima.");
+            }
+        }
+
+        // CTRL+ALT+A: Scarica lo snapshot ATTUALE (stato corrente del gioco)
+        if (e.ctrlKey && e.altKey && e.key.toLowerCase() === 'a') {
+            e.preventDefault();
+            if (typeof creaSnapshot === 'function' && game.fase !== 'attesa') {
+                const snapAttuale = creaSnapshot();
+                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(snapAttuale, null, 2));
+                const nomeData = new Date().toISOString().replace(/T/, '_').replace(/:/g, '-').slice(0, 19);
+                const dlAnchorElem = document.createElement('a');
+                dlAnchorElem.setAttribute("href", dataStr);
+                dlAnchorElem.setAttribute("download", "burraco_attuale_" + nomeData + ".json");
+                dlAnchorElem.click();
+                console.log("Salvataggio snapshot ATTUALE avviato (turno " + game.turno + ", fase " + game.fase + ").");
+            } else {
+                console.warn("Nessuna partita in corso da salvare.");
             }
         }
 
