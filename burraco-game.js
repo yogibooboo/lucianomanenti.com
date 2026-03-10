@@ -103,6 +103,8 @@ function creaSnapshot() {
         puntiNoi: game.puntiNoi,
         puntiLoro: game.puntiLoro,
         haPozzetto: game.giocatori.map(g => g.haPozzetto),
+        personaggi: game.giocatori.map(g => g.personaggio ? g.personaggio.id : null),
+        nomiGiocatori: game.giocatori.map(g => g.nome),
         fase: game.fase,
         haPescato: game.haPescato,
         turno: game.turno,
@@ -196,6 +198,24 @@ function ripristinaSnapshot(snapshot) {
 
     if (snapshot.turno !== undefined) game.turno = snapshot.turno;
     if (snapshot.giocatoreCorrente !== undefined) game.giocatoreCorrente = snapshot.giocatoreCorrente;
+
+    // Ripristina personaggi dei bot
+    game.giocatori.forEach((g, i) => {
+        if (g.isUmano) return;
+        let pers = null;
+        // File nuovi: cerca per ID (campo personaggi)
+        if (snapshot.personaggi && snapshot.personaggi[i]) {
+            pers = PERSONAGGI.find(p => p.id === snapshot.personaggi[i]);
+        }
+        // Fallback per file vecchi: cerca per nome (campo nomiGiocatori)
+        if (!pers && snapshot.nomiGiocatori && snapshot.nomiGiocatori[i]) {
+            pers = PERSONAGGI.find(p => p.nome === snapshot.nomiGiocatori[i]);
+        }
+        if (pers) {
+            g.personaggio = pers;
+            g.nome = pers.nome; // g.nome è proprietà normale, va aggiornata esplicitamente
+        }
+    });
 
     // Ri-calcola il max delle combinazioni per evitare ID collidenti
     const maxNoi = game.combinazioniNoi.length ? Math.max(...game.combinazioniNoi.map(c => c.id)) : -1;

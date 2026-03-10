@@ -2194,7 +2194,7 @@ const Strategia = {
                 // Controllo se tappa un buco coperto da una matta
                 if (numMatte > 0) {
                     for (let i = 0; i < nums.length - 1; i++) {
-                        if (nums[i + 1] - nums[i] > 1 && carta.numero > nums[i] && carta.numero < nums[i + 1]) return true;
+                        if (nums[i + 1] - nums[i] - 2 <= numMatte && carta.numero > nums[i] && carta.numero < nums[i + 1]) return true;
                     }
                 }
 
@@ -2213,7 +2213,28 @@ const Strategia = {
             }
         });
 
+        // Attacchi possibili sulle combinazioni AVVERSARIE (carte da non scartare)
+        const combinazioniAvversarie = giocatore.squadra === 0 ? game.combinazioniLoro : game.combinazioniNoi;
+        const attacchiAvversari = [];
+        mano.forEach(c => {
+            for (let i = 0; i < combinazioniAvversarie.length; i++) {
+                if (isAttaccabile(c, combinazioniAvversarie[i])) {
+                    attacchiAvversari.push({
+                        carta: c,
+                        combo: combinazioniAvversarie[i],
+                        lunghezzaRaggiunta: combinazioniAvversarie[i].carte.length + 1
+                    });
+                    break;
+                }
+            }
+        });
+
         const contestoLocale = { tris: trisVirtuali, scale: scaleVirtuali, attacchi: attacchiPossibili };
+
+        // Calcola le opzioni di gioco per lo scenario corrente (non dalla cache che usa sempre tutti gli scarti)
+        const manoOriginali = mano.map(c => c._origineRef || c);
+        const analisiScenario = this.analizzaCarte(manoOriginali, squadraCombo);
+        const opzioniScenario = this.generaOpzioniGioco(giocatore, analisiScenario, manoOriginali.length, scenario !== 'mano');
 
         // Calcoliamo lo score usando la mano virtuale su TUTTE le carte valutate
         for (let i = 0; i < mano.length; i++) {
@@ -2221,14 +2242,11 @@ const Strategia = {
             const result = this.valutaCartaAnalisiParallela(cartaVirtuale._origineRef, mano.map(m => m._origineRef), contestoLocale);
 
             // --- INIEZIONE OPZIONI DI GIOCO ---
-            // Recupero l'array opzioniGioco generato per lo scenario corrente
-            const opzioni = (giocatore.osservazioni && giocatore.osservazioni.analisiVirtuale && scenario !== 'mano')
-                ? giocatore.osservazioni.analisiVirtuale.opzioniGioco
-                : (giocatore.osservazioni ? giocatore.osservazioni.opzioniGioco : []);
+            const opzioni = opzioniScenario;
 
             if (opzioni && opzioni.length > 0) {
-                // Limitiamo la visualizzazione in tabella alle prime 8 migliori varianti
-                const maxOpz = Math.min(opzioni.length, 8);
+                // Mostra tutte le opzioni disponibili
+                const maxOpz = opzioni.length;
                 for (let o = 0; o < maxOpz; o++) {
                     const opt = opzioni[o];
                     const labelOpz = 'OPZ' + (o + 1);
@@ -2333,6 +2351,7 @@ const Strategia = {
             }
             // --- FINE OPZIONI ---
 
+            const avvAttacco = attacchiAvversari.find(a => a.carta.id === cartaVirtuale._origineRef.id);
             classifica.push({
                 carta: this.nomeCarta(cartaVirtuale._origineRef) + (cartaVirtuale._origine !== 'mano' ? '*' : ''),
                 cartaRef: cartaVirtuale._origineRef, // Aggiunto per ordinamento dinamico UI (Numero/Seme)
@@ -2340,14 +2359,26 @@ const Strategia = {
                 isMatta: cartaVirtuale._origineRef.isJolly || cartaVirtuale._origineRef.isPinella,
                 punteggio: result.punteggio,
                 breakdown: result.breakdown,
-                isConflitto: result.isConflitto
+                isConflitto: result.isConflitto,
+                avversaria: avvAttacco ? {
+                    lunghezza: avvAttacco.lunghezzaRaggiunta,
+                    comboDesc: avvAttacco.combo.carte.map(c => this.nomeCarta(c)).join(' '),
+                    tipoCombo: avvAttacco.combo.tipo === 1 ? 'T' : 'S'
+                } : null
             });
         }
 
         return {
             giocatore: giocatore.nome,
             scenario: scenario,
-            classifica: classifica
+            classifica: classifica,
+            opzioniScenario: opzioniScenario,
+            attacchiAvversari: attacchiAvversari.map(a => ({
+                carta: this.nomeCarta(a.carta._origineRef || a.carta),
+                comboDesc: a.combo.carte.map(c => this.nomeCarta(c)).join(' '),
+                lunghezzaRaggiunta: a.lunghezzaRaggiunta,
+                tipoCombo: a.combo.tipo === 1 ? 'T' : 'S'
+            }))
         };
     }
 };
