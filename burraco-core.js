@@ -907,6 +907,35 @@ const Strategia = {
             return b.valoreGlobaleNetto - a.valoreGlobaleNetto;
         });
 
+        // DEDUPLICAZIONE: rimuove opzioni equivalenti (stesse carte, stesse mosse in ordine diverso)
+        const _chiaveOpz = (opt) => {
+            const ids = [];
+            if (opt.carteUsate) opt.carteUsate.forEach(id => ids.push(id));
+            ids.sort();
+            const mosseKeys = [];
+            if (opt.mosse) {
+                opt.mosse.forEach(m => {
+                    if (m.tipo === 'tris' || m.tipo === 'scala') {
+                        const mIds = (m.carte || []).filter(c => c).map(c => c.id).sort();
+                        mosseKeys.push(m.tipo + ':' + mIds.join(','));
+                    } else if (m.tipo === 'calata') {
+                        const cid = m.combo ? m.combo.id : '?';
+                        const mid = m.carta ? m.carta.id : '?';
+                        mosseKeys.push('C:' + cid + ':' + mid);
+                    }
+                });
+            }
+            mosseKeys.sort();
+            return ids.join(',') + '|' + mosseKeys.join('|');
+        };
+        const _viste = new Set();
+        oss.opzioniGioco = oss.opzioniGioco.filter(opt => {
+            const chiave = _chiaveOpz(opt);
+            if (_viste.has(chiave)) return false;
+            _viste.add(chiave);
+            return true;
+        });
+
         return oss.opzioniGioco;
     },
 
@@ -2236,6 +2265,24 @@ const Strategia = {
         const analisiScenario = this.analizzaCarte(manoOriginali, squadraCombo);
         const opzioniScenario = this.generaOpzioniGioco(giocatore, analisiScenario, manoOriginali.length, scenario !== 'mano');
 
+        // Pre-calcolo lunghezze target cumulative per calate alla stessa combo (per ogni opzione)
+        const mossaTargetLengthsPerOpz = opzioniScenario ? opzioniScenario.map(function(opt) {
+            const tl = {};
+            const accumLen = {};
+            if (opt.mosse) {
+                for (let m = 0; m < opt.mosse.length; m++) {
+                    const mossa = opt.mosse[m];
+                    if (mossa.tipo === 'calata' && mossa.combo) {
+                        const cid = mossa.combo.id;
+                        if (accumLen[cid] === undefined) accumLen[cid] = mossa.combo.carte.length;
+                        accumLen[cid]++;
+                        tl[m] = accumLen[cid];
+                    }
+                }
+            }
+            return tl;
+        }) : [];
+
         // Calcoliamo lo score usando la mano virtuale su TUTTE le carte valutate
         for (let i = 0; i < mano.length; i++) {
             const cartaVirtuale = mano[i];
@@ -2309,7 +2356,10 @@ const Strategia = {
 
                                 // Composizione Badge Testuale per Interfaccia
                                 if (mossa.combo && mossa.combo.carte) {
-                                    currentTargetLength = mossa.combo.carte.length + 1; // La lunghezza dopo l'attacco
+                                    // Usa la lunghezza cumulativa se più calate attaccano la stessa combo
+                                    currentTargetLength = (mossaTargetLengthsPerOpz[o] && mossaTargetLengthsPerOpz[o][m] !== undefined)
+                                        ? mossaTargetLengthsPerOpz[o][m]
+                                        : mossa.combo.carte.length + 1;
                                     const tipoDesc = mossa.combo.tipo === 1 ? 'T' : 'S'; // 1 Tris, 2 Scala
                                     const siglaTarget = mossa.combo.tipo === 1 ? mossa.combo.numero : mossa.combo.seme;
                                     currentTargetBadge = `[${currentTargetLength}${tipoDesc}${siglaTarget || ''}]`;

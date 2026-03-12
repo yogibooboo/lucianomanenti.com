@@ -2978,6 +2978,7 @@ function getGiocatoreHTML(indiceGiocatore, ruolo) {
                     '<button onclick="window.analisiSortPath=&apos;seme&apos;; mostraAnalisiParallela(' + giocatoreIdx + ', &apos;' + scenario + '&apos;)" style="' + btnStyle + 'background:#334;color:#aaa;' + (window.analisiSortPath==='seme'?btnAttivo:'') + '">Ord. Seme</button>' +
                     '<div style="width:1px; height:24px; background:#555; margin:0 8px;"></div>' +
                     '<button onclick="mostraCoefficienti()" style="' + btnStyle + 'background:#334;color:#adf;">⚙ Coeff</button>' +
+                    '<button onclick="elaboraOpz()" style="' + btnStyle + 'background:#353;color:#afa;">&#9654; Elabora</button>' +
                 '</div>';
                 
                 if (d.classifica && d.classifica.length > 0 && d.classifica[0].breakdown) {
@@ -3003,6 +3004,8 @@ function getGiocatoreHTML(indiceGiocatore, ruolo) {
                         }
                     }
                     uniqueOpzLabels.sort((a,b) => parseInt(a.replace('OPZ','')) - parseInt(b.replace('OPZ','')));
+
+                    // Nota: la deduplicazione è già applicata a monte in generaOpzioniGioco (burraco-core.js)
                     var noOpz = uniqueOpzLabels.length === 0;
                     if (noOpz) uniqueOpzLabels.push('OPZ0');
 
@@ -3115,13 +3118,90 @@ function getGiocatoreHTML(indiceGiocatore, ruolo) {
                     bodyHTML += '</div>'; // Chiude contenitore Flex Legende
 
                     // 3. Tabella a Matrice (Header unito)
-                    var tutteLeColonneAVisualizzare = uniqueLabels.concat(uniqueOpzLabels);
+                    var tutteLeColonneAVisualizzare = uniqueOpzLabels; // metric columns removed, replaced by combo columns below
+
+                    // ============================================================
+                    // COLONNE COMBO: estensione massima delle combo in campo
+                    // ============================================================
+                    var _gameC = window.opener.game;
+                    var _giocC = _gameC.giocatori[giocatoreIdx];
+                    var _comboSquadra = _giocC.squadra === 0 ? _gameC.combinazioniNoi : _gameC.combinazioniLoro;
+                    var _origManoC = function(r) { return r.origine === 'mano' || r.origine === 'scarto' || r.origine === 'mazzo'; };
+                    var _allFisicheClf = d.classifica.filter(function(r) { return _origManoC(r) && !r.isMatta && r.cartaRef; }).map(function(r) { return r.cartaRef; });
+                    var _matteHandClf = d.classifica.filter(function(r) { return _origManoC(r) && r.isMatta; }).length;
+
+                    function _calcolaEstensione(combo) {
+                        var fisicheCombo = combo.carte.filter(function(c) { return !c.isPinella && !c.isJolly; });
+                        var matteCombo = combo.carte.length - fisicheCombo.length;
+                        if (fisicheCombo.length === 0) return null;
+                        if (combo.tipo === 1) {
+                            var numTris = fisicheCombo[0].numero;
+                            var attachable = _allFisicheClf.filter(function(c) { return c.numero === numTris; });
+                            var maxLen = combo.carte.length + attachable.length;
+                            return { maxCon: maxLen, maxSenza: maxLen, usedIds: new Set(attachable.map(function(c) { return c.id; })), mattaReplacerIds: new Set() };
+                        }
+                        var semeSc = fisicheCombo[0].seme;
+                        var physComboNums = fisicheCombo.map(function(c) { return c.numero; }).sort(function(a,b){return a-b;});
+                        var comboMinSc = physComboNums[0], comboMaxSc = physComboNums[physComboNums.length-1];
+                        var sameSemeHand = _allFisicheClf.filter(function(c) { return c.seme === semeSc; });
+                        var physAllNums = physComboNums.concat(sameSemeHand.map(function(c) { return c.numero; }));
+                        physAllNums = physAllNums.filter(function(n, idx, a) { return a.indexOf(n) === idx; }).sort(function(a,b){return a-b;});
+                        function findMaxWin(matteAvail) {
+                            var bestLen = combo.carte.length, bestLo = comboMinSc, bestHi = comboMaxSc;
+                            for (var lo = comboMinSc; lo >= 1; lo--) {
+                                for (var hi = comboMaxSc; hi <= 13; hi++) {
+                                    var physInWin = 0;
+                                    for (var pk = 0; pk < physAllNums.length; pk++) { if (physAllNums[pk] >= lo && physAllNums[pk] <= hi) physInWin++; }
+                                    var gaps = (hi - lo + 1) - physInWin;
+                                    if (gaps <= matteAvail && (hi - lo + 1) > bestLen) { bestLen = hi - lo + 1; bestLo = lo; bestHi = hi; }
+                                }
+                            }
+                            return { len: bestLen, lo: bestLo, hi: bestHi };
+                        }
+                        // Una combo può avere al massimo 1 matta (regola burraco)
+                        var resCon = findMaxWin(Math.min(1, matteCombo + _matteHandClf));
+                        var resSenza = findMaxWin(Math.min(1, matteCombo));
+                        // usedIds solo se c'è estensione reale rispetto alla combo originale
+                        var usedIdsSc = resCon.len > combo.carte.length
+                            ? new Set(sameSemeHand.filter(function(c) { return c.numero >= resCon.lo && c.numero <= resCon.hi; }).map(function(c) { return c.id; }))
+                            : new Set();
+                        // mattaReplacerIds: carte che liberano una matta, ma solo se effettivamente usate nell'estensione
+                        var mattaRepIds = new Set();
+                        if (matteCombo > 0 && usedIdsSc.size > 0) {
+                            for (var mri = 0; mri < physComboNums.length - 1; mri++) {
+                                var gLo = physComboNums[mri] + 1, gHi = physComboNums[mri+1] - 1;
+                                if (gHi >= gLo) { sameSemeHand.forEach(function(c) { if (usedIdsSc.has(c.id) && c.numero >= gLo && c.numero <= gHi) mattaRepIds.add(c.id); }); }
+                            }
+                        }
+                        return { maxCon: resCon.len, maxSenza: resSenza.len, usedIds: usedIdsSc, mattaReplacerIds: mattaRepIds };
+                    }
+                    var _comboEstensioni = _comboSquadra.map(function(combo) { return _calcolaEstensione(combo); });
+                    function _premioBaseCombo(tipoNum, n) {
+                        var cf = window.coeffScoreOpz || {};
+                        if (n < 3) return 0;
+                        var p = tipoNum === 1 ? (cf.premioTris || 10) : (cf.premioScala || 20);
+                        if (n >= 4) p += (cf.premio4c || 10);
+                        if (n >= 5) p += (cf.premio5c || 20);
+                        if (n >= 6) p += (cf.premio6c || 40);
+                        if (n >= 7) p += (cf.premioBurraco || 100);
+                        return p;
+                    }
+                    function _labelCombo(combo) {
+                        var fis = combo.carte.filter(function(c) { return !c.isPinella && !c.isJolly; });
+                        var n = combo.carte.length;
+                        return n + (combo.tipo === 1 ? 'T' + (fis.length > 0 ? fis[0].numero : '?') : 'S' + (fis.length > 0 ? fis[0].seme : '?'));
+                    }
 
                     bodyHTML += '<div style="padding:8px 12px; overflow-x:auto;">' +
                         '<table style="font-size:11px;border-collapse:collapse;width:100%">';
                     
                     bodyHTML += '<tr style="border-bottom:1px solid #777; color:#fff;">' +
                         '<th style="text-align:left; padding:4px;">CARTA</th>';
+                    // Colonne combo in campo
+                    for (var ci = 0; ci < _comboSquadra.length; ci++) {
+                        var ciLabel = _labelCombo(_comboSquadra[ci]);
+                        bodyHTML += '<th style="text-align:center; padding:4px; color:#9cf; border-left:2px solid #446;" title="' + ciLabel + '">' + ciLabel + '</th>';
+                    }
                     var avvHeaderInserito = false;
                     for (var l3 = 0; l3 < tutteLeColonneAVisualizzare.length; l3++) {
                         var isCST = tutteLeColonneAVisualizzare[l3].startsWith('T') || tutteLeColonneAVisualizzare[l3].startsWith('S') || tutteLeColonneAVisualizzare[l3].startsWith('C');
@@ -3216,6 +3296,12 @@ function getGiocatoreHTML(indiceGiocatore, ruolo) {
                     var _idIsMatta = {};
                     d.classifica.forEach(function(r) { if (r.cartaRef) _idIsMatta[r.cartaRef.id] = r.isMatta; });
 
+                    // Scale in campo (usate per scalabili noi / scalabili loro)
+                    var _game2 = window.opener.game;
+                    var _gioc2 = _game2.giocatori[giocatoreIdx];
+                    var _scalaNoi  = (_gioc2.squadra === 0 ? _game2.combinazioniNoi  : _game2.combinazioniLoro).filter(function(cb) { return cb.tipo !== 1; });
+                    var _scalaLoro = (_gioc2.squadra === 0 ? _game2.combinazioniLoro : _game2.combinazioniNoi ).filter(function(cb) { return cb.tipo !== 1; });
+
                     for (var scPre = 0; scPre < uniqueOpzLabels.length; scPre++) {
                         var opzLblPre = uniqueOpzLabels[scPre];
                         var opzIdxPre = parseInt(opzLblPre.replace('OPZ','')) - 1;
@@ -3227,17 +3313,44 @@ function getGiocatoreHTML(indiceGiocatore, ruolo) {
                             var _matteUs = 0;
                             if (_opt.carteUsate) { _opt.carteUsate.forEach(function(id) { if (_idIsMatta[id]) _matteUs++; }); }
                             var _nUsate = _opt.carteUsate ? _opt.carteUsate.size : 0;
+
+                            // Carte rimanenti fisiche (non usate in OPZ, non matte, esclusa la carta da scartare)
+                            var _scartoId = (scartiPreCalc[opzLblPre] && scartiPreCalc[opzLblPre].cartaRef) ? scartiPreCalc[opzLblPre].cartaRef.id : null;
+                            var _carteRimFis = d.classifica.filter(function(r) {
+                                return _originiMano(r) && !r.isMatta &&
+                                    !(_opt.carteUsate && _opt.carteUsate.has(r.cartaRef.id)) &&
+                                    r.cartaRef.id !== _scartoId;
+                            });
+
+                            // Orfane: nessuna coppia con altra carta rimasta (stesso numero o stesso seme a distanza <=2)
+                            var _orfane = _carteRimFis.filter(function(r) {
+                                var id = r.cartaRef.id, num = r.cartaRef.numero, seme = r.cartaRef.seme;
+                                var hasTris = _carteRimFis.some(function(x) { return x.cartaRef.id !== id && x.cartaRef.numero === num; });
+                                if (hasTris) return false;
+                                var hasScala = seme && _carteRimFis.some(function(x) {
+                                    return x.cartaRef.id !== id && x.cartaRef.seme === seme && Math.abs((x.cartaRef.numero || 0) - num) <= 2;
+                                });
+                                return !hasScala;
+                            }).length;
+
+                            // Scal noi/loro: attaccabili a una scala in campo
+                            var _scalNoi  = _carteRimFis.filter(function(r) { return _scalaNoi.some(function(cb)  { return _isAttaccabileAdAvversario(r.cartaRef, cb); }); }).length;
+                            var _scalLoro = _carteRimFis.filter(function(r) { return _scalaLoro.some(function(cb) { return _isAttaccabileAdAvversario(r.cartaRef, cb); }); }).length;
+
                             statOpzPreCalc[opzLblPre] = {
-                                matteUsate:    _matteUs,
-                                matteRim:      _totalMatteDisp - _matteUs,
-                                carteRim:      _totalCarteDisp - _nUsate - 1
+                                matteUsate: _matteUs,
+                                matteRim:   _totalMatteDisp - _matteUs,
+                                carteRim:   _totalCarteDisp - _nUsate - 1,
+                                orfane:     _orfane,
+                                scalNoi:    _scalNoi,
+                                scalLoro:   _scalLoro
                             };
                         }
                     }
 
                     for (var i = 0; i < d.classifica.length; i++) {
                         var c = d.classifica[i];
-                        
+
                         var colorCarta = '#ddd';
                         if (c.origine === 'scarto') colorCarta = '#f80';
                         if (c.origine === 'mazzo') colorCarta = '#a49';
@@ -3245,7 +3358,19 @@ function getGiocatoreHTML(indiceGiocatore, ruolo) {
 
                         bodyHTML += '<tr style="border-bottom:1px dotted #444;">' +
                             '<td style="padding:4px; color:' + colorCarta + '; font-weight:bold; white-space:nowrap;">' + c.carta + '</td>';
-                        
+
+                        // Celle combo in campo
+                        for (var ci2 = 0; ci2 < _comboSquadra.length; ci2++) {
+                            var est = _comboEstensioni[ci2];
+                            var ciCell = '-', ciCol = '#555';
+                            if (est && c.cartaRef && est.usedIds.has(c.cartaRef.id)) {
+                                var isRep = est.mattaReplacerIds.has(c.cartaRef.id);
+                                ciCell = est.maxCon + '/' + est.maxSenza + (isRep ? '*' : '');
+                                ciCol = '#9cf';
+                            }
+                            bodyHTML += '<td style="padding:4px; text-align:center; font-family:monospace; color:' + ciCol + '; border-left:2px solid #446;">' + ciCell + '</td>';
+                        }
+
                         var valMap = {};
                         var comboMapInfo = {};
                         if (c.breakdown) {
@@ -3379,7 +3504,7 @@ function getGiocatoreHTML(indiceGiocatore, ruolo) {
                     }
                     // ---- Righe SCARTO e SCORE in fondo alla tabella ----
                     if (uniqueOpzLabels.length > 0) {
-                        var colsSpan = 1 + uniqueLabels.length + 1; // CARTA + metriche + AVV
+                        var colsSpan = 1 + _comboSquadra.length + 1; // CARTA + combo cols + AVV
                         var rowBase = 'border-top:2px solid #666; background:rgba(0,0,60,0.5);';
                         bodyHTML += '<tr style="' + rowBase + '">';
                         bodyHTML += '<td colspan="' + colsSpan + '" style="padding:4px 6px; color:#8af; font-size:10px; font-weight:bold; letter-spacing:1px;">SCARTO</td>';
@@ -3390,7 +3515,22 @@ function getGiocatoreHTML(indiceGiocatore, ruolo) {
                         }
                         bodyHTML += '</tr>';
                         bodyHTML += '<tr style="' + rowBase + '">';
-                        bodyHTML += '<td colspan="' + colsSpan + '" style="padding:4px 6px; color:#8af; font-size:10px; font-weight:bold; letter-spacing:1px;">SCORE OPZ</td>';
+                        bodyHTML += '<td style="padding:4px 6px; color:#8af; font-size:10px; font-weight:bold; letter-spacing:1px;">SCORE OPZ</td>';
+                        // Punteggi incrementali per ogni combo in campo
+                        for (var ci_sc = 0; ci_sc < _comboSquadra.length; ci_sc++) {
+                            var combo_sc = _comboSquadra[ci_sc];
+                            var est_sc = _comboEstensioni[ci_sc];
+                            var scComboTxt = '-';
+                            if (est_sc && est_sc.maxCon > combo_sc.carte.length) {
+                                var pCon = _premioBaseCombo(combo_sc.tipo, est_sc.maxCon) - _premioBaseCombo(combo_sc.tipo, combo_sc.carte.length);
+                                var pSenza = _premioBaseCombo(combo_sc.tipo, est_sc.maxSenza) - _premioBaseCombo(combo_sc.tipo, combo_sc.carte.length);
+                                scComboTxt = pCon + '/' + pSenza;
+                            }
+                            bodyHTML += '<td style="padding:4px; text-align:center; color:#ff8; border-left:2px solid #446;">' + scComboTxt + '</td>';
+                        }
+                        // Cella AVV (nessun punteggio combo, solo segnaposto)
+                        bodyHTML += '<td style="padding:4px; text-align:center; color:#555; border-left:2px solid #844;">-</td>';
+                        // Punteggi per OPZ
                         for (var scIdx2 = 0; scIdx2 < uniqueOpzLabels.length; scIdx2++) {
                             var scRes2 = scoreOpzPreCalc[uniqueOpzLabels[scIdx2]];
                             var scScore = scRes2 ? scRes2.score.toFixed(1) : '-';
@@ -3407,14 +3547,34 @@ function getGiocatoreHTML(indiceGiocatore, ruolo) {
                             bodyHTML += '<td style="padding:4px; text-align:center; color:' + stCol3 + '; border-left:2px solid #446;">' + stTxt3 + '</td>';
                         }
                         bodyHTML += '</tr>';
-                        // Riga CARTE rimanenti
+                        // Riga CARTE RIMANENTI / ORFANE
                         bodyHTML += '<tr style="' + rowBase + '">';
-                        bodyHTML += '<td colspan="' + colsSpan + '" style="padding:4px 6px; color:#8af; font-size:10px; font-weight:bold; letter-spacing:1px;">CARTE rim</td>';
+                        bodyHTML += '<td colspan="' + colsSpan + '" style="padding:4px 6px; color:#8af; font-size:10px; font-weight:bold; letter-spacing:1px;">rim/Orfane</td>';
                         for (var scIdx4 = 0; scIdx4 < uniqueOpzLabels.length; scIdx4++) {
                             var stRes4 = statOpzPreCalc[uniqueOpzLabels[scIdx4]];
-                            var stTxt4 = stRes4 !== undefined ? String(stRes4.carteRim) : '-';
-                            var stCol4 = stRes4 && stRes4.carteRim <= 1 ? '#f84' : '#aaa';
-                            bodyHTML += '<td style="padding:4px; text-align:center; color:' + stCol4 + '; border-left:2px solid #446;">' + stTxt4 + '</td>';
+                            var rim4 = stRes4 !== undefined ? stRes4.carteRim : '-';
+                            var orf4 = stRes4 !== undefined ? stRes4.orfane : '-';
+                            var colRim4 = stRes4 && stRes4.carteRim <= 1 ? '#f84' : '#aaa';
+                            var colOrf4 = stRes4 && stRes4.orfane >= 3 ? '#f44' : stRes4 && stRes4.orfane >= 1 ? '#f84' : '#666';
+                            var cell4 = '<span style="color:' + colRim4 + ';">' + rim4 + '</span>' +
+                                        '<span style="color:#555;">/</span>' +
+                                        '<span style="color:' + colOrf4 + ';">' + orf4 + '</span>';
+                            bodyHTML += '<td style="padding:4px; text-align:center; font-family:monospace; border-left:2px solid #446;">' + cell4 + '</td>';
+                        }
+                        bodyHTML += '</tr>';
+                        // Riga SCALABILI NOI / LORO
+                        bodyHTML += '<tr style="' + rowBase + '">';
+                        bodyHTML += '<td colspan="' + colsSpan + '" style="padding:4px 6px; color:#8af; font-size:10px; font-weight:bold; letter-spacing:1px;">Scal noi/loro</td>';
+                        for (var scIdx5 = 0; scIdx5 < uniqueOpzLabels.length; scIdx5++) {
+                            var stRes5 = statOpzPreCalc[uniqueOpzLabels[scIdx5]];
+                            var noi5  = stRes5 !== undefined ? stRes5.scalNoi  : '-';
+                            var loro5 = stRes5 !== undefined ? stRes5.scalLoro : '-';
+                            var colNoi5  = stRes5 && stRes5.scalNoi  > 0 ? '#4f8' : '#666';
+                            var colLoro5 = stRes5 && stRes5.scalLoro > 0 ? '#f44' : '#666';
+                            var cell5 = '<span style="color:' + colNoi5 + ';">' + noi5 + '</span>' +
+                                        '<span style="color:#555;">/</span>' +
+                                        '<span style="color:' + colLoro5 + ';">' + loro5 + '</span>';
+                            bodyHTML += '<td style="padding:4px; text-align:center; font-family:monospace; border-left:2px solid #446;">' + cell5 + '</td>';
                         }
                         bodyHTML += '</tr>';
                     }
@@ -3750,6 +3910,10 @@ function getGiocatoreHTML(indiceGiocatore, ruolo) {
             var totalScore = 0;
             var breakdown = [];
 
+            // Traccia la lunghezza corrente di ogni combo per calate cumulative alla stessa combo
+            var comboCurrentLen = {};
+            comboSquadra.forEach(function(cb) { comboCurrentLen[cb.id] = cb.carte.length; });
+
             mosse.forEach(function(mossa) {
                 var mossoScore = 0;
                 var righe = [];
@@ -3808,7 +3972,10 @@ function getGiocatoreHTML(indiceGiocatore, ruolo) {
                     if (!combo && mossa.comboId !== undefined) {
                         combo = comboSquadra.find(function(cb) { return cb.id === mossa.comboId; });
                     }
-                    var lunghRisultante = combo ? combo.carte.length + 1 : 0;
+                    var _cid = combo ? combo.id : null;
+                    var _baseLenC = (_cid !== null && comboCurrentLen[_cid] !== undefined) ? comboCurrentLen[_cid] : (combo ? combo.carte.length : 0);
+                    var lunghRisultante = _baseLenC + 1;
+                    if (_cid !== null) comboCurrentLen[_cid] = lunghRisultante;
 
                     var valoreCarta = (carta.punti || 0) * cf.valCarte;
                     mossoScore += valoreCarta;
@@ -3848,6 +4015,76 @@ function getGiocatoreHTML(indiceGiocatore, ruolo) {
         window.analizzaOpz = function(opzIdx) {
             window.calcolaScartoPer(opzIdx, false);
             window.calcolaScoreOpz(opzIdx, false);
+        };
+
+        // ============================================================
+        // ELABORA: confronta tutti gli scenari/OPZ e sceglie il meglio
+        // ============================================================
+        window.elaboraOpz = function() {
+            var con = window.opener ? window.opener.console : console;
+            var game = window.opener.game;
+            var Strategia = window.opener.Strategia;
+            var giocatoreIdx = window._analisiGiocatoreIdx;
+            var g = game.giocatori[giocatoreIdx];
+
+            var savedData = window._analisiData;
+            var savedScenario = window._analisiScenario;
+
+            var scenari = ['mano', 'scarti'];
+            var candidati = [];
+
+            con.group('=== ELABORA: scelta migliore OPZ ===');
+            con.log('Giocatore:', g.nome || ('idx=' + giocatoreIdx));
+
+            scenari.forEach(function(scenario) {
+                con.group('--- Scenario: ' + scenario + ' ---');
+
+                var d = Strategia.generaAnalisiParallela(g, scenario);
+                window._analisiData = d;
+                window._analisiScenario = scenario;
+
+                var opzioniLen = d.opzioniScenario ? d.opzioniScenario.length : 0;
+                var opzIdxList = [];
+                for (var i = 0; i < opzioniLen; i++) opzIdxList.push(i);
+                if (opzIdxList.length === 0) opzIdxList.push(-1); // OPZ0 fallback
+
+                con.log('OPZ disponibili:', opzIdxList.length === 1 && opzIdxList[0] === -1 ? 'nessuna (OPZ0 fallback)' : opzIdxList.length);
+
+                opzIdxList.forEach(function(opzIdx) {
+                    var opzLabel = opzIdx === -1 ? 'OPZ0' : 'OPZ' + (opzIdx + 1);
+                    var scoreRes = window.calcolaScoreOpz(opzIdx, true);
+                    var scartoRes = window.calcolaScartoPer(opzIdx, true);
+
+                    var score = scoreRes ? scoreRes.score : 0;
+                    var scartoCarta = scartoRes ? scartoRes.carta : '-';
+
+                    con.log(opzLabel + ' \u2192 score=' + (score !== undefined ? score.toFixed(1) : '?') + ' | scarto=' + scartoCarta);
+
+                    candidati.push({ scenario: scenario, opzLabel: opzLabel, opzIdx: opzIdx, score: score || 0, scarto: scartoCarta });
+                });
+
+                con.groupEnd();
+            });
+
+            // Ripristina stato originale
+            window._analisiData = savedData;
+            window._analisiScenario = savedScenario;
+
+            // Ordina per score decrescente
+            candidati.sort(function(a, b) { return b.score - a.score; });
+            var best = candidati[0];
+
+            con.log('--- TUTTI I CANDIDATI (ordinati per score) ---');
+            candidati.forEach(function(c) {
+                var marker = (c === best) ? ' \u25c4 MIGLIORE' : '';
+                con.log('[' + c.scenario + '] ' + c.opzLabel + ' \u2192 score=' + c.score.toFixed(1) + ' | scarto=' + c.scarto + marker);
+            });
+
+            if (best) {
+                con.log('%c\u2192 SCELTA: [' + best.scenario + '] ' + best.opzLabel + ' \u2192 scarto: ' + best.scarto + ' (score=' + best.score.toFixed(1) + ')', 'font-size:13px; font-weight:bold; color:#0f8; background:#030;');
+            }
+
+            con.groupEnd();
         };
 
         // Chiudi con ESC
