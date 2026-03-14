@@ -1294,6 +1294,7 @@ async function turnoAI() {
             }
             game.pozzetti[pozzIdx] = [];
             giocatore.haPozzetto = true;
+            game.giocatori.forEach(g => { if (g.squadra === giocatore.squadra) g.haPozzetto = true; });
             playSound('magic');
         } else {
             finePartita(giocatore.squadra === 0);

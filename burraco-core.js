@@ -808,10 +808,50 @@ const Strategia = {
             const carteGiaUsate = new Set();
             opzioniCorrenti.forEach(o => o.carteUsate.forEach(id => carteGiaUsate.add(id)));
 
+            // Pre-calcola le posizioni calata già occupate (comboId+numero) nelle opzioni correnti
+            const posizioniCalataUsate = new Set();
+            opzioniCorrenti.forEach(o => {
+                if (o.mosse) o.mosse.forEach(m => {
+                    if (m.tipo === 'calata' && m.carta) posizioniCalataUsate.add(m.comboId + ':' + m.carta.numero);
+                });
+            });
+
             for (let i = startIdx; i < opzioniSingole.length; i++) {
                 if (numCombinazioni >= MAX_COMBINAZIONI) break;
 
                 const nuovaOpt = opzioniSingole[i];
+
+                // Verifica che le calate della nuova opzione non occupino posizioni già usate
+                let calataConflitto = false;
+                if (nuovaOpt.mosse) {
+                    for (const m of nuovaOpt.mosse) {
+                        if (m.tipo === 'calata' && m.carta && posizioniCalataUsate.has(m.comboId + ':' + m.carta.numero)) {
+                            calataConflitto = true;
+                            break;
+                        }
+                    }
+                }
+                if (calataConflitto) continue;
+
+                // Verifica che le calate sullo stesso combo scala siano valide insieme
+                // (es. singola1=[6P,4P→combo] con pinella a 5P + singola2=[JP→combo] con pinella a 10P = invalido)
+                if (nuovaOpt.mosse && typeof verificaCombinazione === 'function') {
+                    const calateNuovePerCombo = {};
+                    nuovaOpt.mosse.forEach(m => {
+                        if (m.tipo === 'calata' && m.carta && m.combo && m.combo.tipo === TIPO_SCALA)
+                            (calateNuovePerCombo[m.comboId] = calateNuovePerCombo[m.comboId] || { combo: m.combo, carte: [] }).carte.push(m.carta);
+                    });
+                    for (const [cid, info] of Object.entries(calateNuovePerCombo)) {
+                        const carteEsist = [];
+                        opzioniCorrenti.forEach(o => { if (o.mosse) o.mosse.forEach(em => {
+                            if (em.tipo === 'calata' && em.carta && String(em.comboId) === cid) carteEsist.push(em.carta);
+                        }); });
+                        if (carteEsist.length === 0) continue;
+                        if (!verificaCombinazione([...info.combo.carte, ...carteEsist, ...info.carte]).valida) { calataConflitto = true; break; }
+                    }
+                }
+                if (calataConflitto) continue;
+
                 // Tentiamo il match o lo Swap (Rescue Routine)
                 const optRisolta = tentaSwapID(nuovaOpt, carteGiaUsate);
 
@@ -826,6 +866,64 @@ const Strategia = {
         for (let i = 0; i < opzioniSingole.length; i++) {
             if (numCombinazioni >= MAX_COMBINAZIONI) break;
             generaCombinazioni(i + 1, [opzioniSingole[i]]);
+        }
+
+        // =========================================================
+        // SECONDO PASS: augmentazione delle opzioni già generate
+        // Per ogni opzione combinata, prova ad aggiungere singole non
+        // ancora incluse — usando tentaSwapID con PIANO B già incorporato.
+        // Cattura casi come "scala usa KC, tris_K parziale [KF,KP,KQ] salvabile".
+        // =========================================================
+        const MAX_AUGMENTAZIONI = 100;
+        let numAugmentazioni = 0;
+        const opzioniBase = [...oss.opzioniGioco]; // snapshot prima del secondo pass
+        for (const opt of opzioniBase) {
+            if (opt.carteUsate.size === 0) continue; // skip opzione "passa"
+            for (const singola of opzioniSingole) {
+                if (numAugmentazioni >= MAX_AUGMENTAZIONI) break;
+                // Salta se tutte le carte della singola sono già usate (inclusa completamente)
+                const tutteUsate = [...singola.carteUsate].every(id => opt.carteUsate.has(id));
+                if (tutteUsate) continue;
+                // Salta se nessuna carta della singola è in conflitto (sarebbe già stata combinata nel primo pass)
+                const nessunConflitto = [...singola.carteUsate].every(id => !opt.carteUsate.has(id));
+                if (nessunConflitto) continue;
+                // Caso interessante: conflitto parziale → tentaSwapID con PIANO B
+                const optRisolta = tentaSwapID(singola, opt.carteUsate);
+                if (!optRisolta) continue;
+                // Verifica che la combinazione non crei due calate alla stessa posizione (comboId:numero)
+                const _posOpt = new Set();
+                opt.mosse.forEach(m => { if (m.tipo==='calata'&&m.carta) _posOpt.add(m.comboId+':'+m.carta.numero); });
+                let _calataConflitto2 = false;
+                if (optRisolta.mosse) {
+                    for (const m of optRisolta.mosse) {
+                        if (m.tipo==='calata'&&m.carta&&_posOpt.has(m.comboId+':'+m.carta.numero)) { _calataConflitto2=true; break; }
+                    }
+                }
+                if (_calataConflitto2) continue;
+                // Verifica che le calate sullo stesso combo scala siano valide insieme (secondo pass)
+                if (optRisolta.mosse && typeof verificaCombinazione === 'function') {
+                    const _calateNuovePerCombo = {};
+                    optRisolta.mosse.forEach(m => {
+                        if (m.tipo === 'calata' && m.carta && m.combo && m.combo.tipo === TIPO_SCALA)
+                            (_calateNuovePerCombo[m.comboId] = _calateNuovePerCombo[m.comboId] || { combo: m.combo, carte: [] }).carte.push(m.carta);
+                    });
+                    for (const [cid, info] of Object.entries(_calateNuovePerCombo)) {
+                        const _carteEsist = [];
+                        opt.mosse.forEach(em => { if (em.tipo==='calata'&&em.carta&&String(em.comboId)===cid) _carteEsist.push(em.carta); });
+                        if (_carteEsist.length === 0) continue;
+                        if (!verificaCombinazione([...info.combo.carte, ..._carteEsist, ...info.carte]).valida) { _calataConflitto2 = true; break; }
+                    }
+                }
+                if (_calataConflitto2) continue;
+                const nuovaCombo = combinaOpzioni([opt, optRisolta]);
+                const evalObj = this.valutaOpzione(giocatore, nuovaCombo.mosse, nuovaCombo.carteUsate, numCarteMano);
+                nuovaCombo.valutazione = evalObj.punteggio;
+                nuovaCombo.breakdown = evalObj.breakdown;
+                nuovaCombo.puntiTavoloCalcolati = evalObj.puntiTotali;
+                oss.opzioniGioco.push(nuovaCombo);
+                numAugmentazioni++;
+            }
+            if (numAugmentazioni >= MAX_AUGMENTAZIONI) break;
         }
 
         // =========================================================
