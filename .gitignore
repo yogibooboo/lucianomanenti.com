@@ -44,3 +44,5 @@ dist/
 # AdSense internal files
 banners.txt
 doc/
+banner/
+gallery.html

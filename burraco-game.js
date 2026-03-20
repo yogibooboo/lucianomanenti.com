@@ -1050,270 +1050,240 @@ async function pausaDebugAI(giocatore, fase) {
     nascondiMessaggio();
 }
 
+// Dereferenzia una carta clone (da generaAnalisiParallela) alla carta reale in mano
+function derefCard(cloneCard, giocatore) {
+    if (!cloneCard) return null;
+    const refId = cloneCard._origineRef ? cloneCard._origineRef.id : cloneCard.id;
+    return giocatore.carte.find(c => c.id === refId) || null;
+}
+
+// Dereferenzia tutte le carte nei mosse da clone → reali
+function derefMosse(mosse, giocatore) {
+    if (!mosse) return [];
+    return mosse.map(m => {
+        if (m.tipo === 'tris' || m.tipo === 'scala') {
+            return { ...m, carte: (m.carte || []).map(c => derefCard(c, giocatore) || c) };
+        } else if (m.tipo === 'calata') {
+            return { ...m, carta: derefCard(m.carta, giocatore) || m.carta };
+        }
+        return m;
+    });
+}
+
 async function turnoAI() {
 
     const giocatore = game.giocatori[game.giocatoreCorrente];
     const selettoreCarte = getSelettoreCarteGiocatore(giocatore);
     const isLaterale = giocatore.posizione === 'left' || giocatore.posizione === 'right';
 
-    // ========== ANALISI STRATEGICA ==========
-    // Analizza la mano e genera opzioni di gioco
-    Strategia.analizzaMano(giocatore);
-
-    // Ritardo prima della pesca
     await delay(500);
 
-    // ===== DECISIONE: MAZZO O SCARTI? =====
-    const fontePesca = Strategia.decidiFontePesca(giocatore);
-    console.log(`AI ${giocatore.nome}: pesca da ${fontePesca.toUpperCase()}`);
+    // ===== ANALISI PARALLELA: scenari ['mano','scarti'] — identico a elaboraOpz =====
+    // 'mano' = baseline con sole carte in mano (→ pescheremo dal mazzo)
+    // 'scarti' = mano + scarti (→ pescheremo dagli scarti)
+    const best = scegliBestOpzioneAI(giocatore);
 
-    // ========== DEBUG: DOPO DECISIONE PESCA ==========
-    await pausaDebugAI(giocatore, `Turno ${game.turno} - Decisione: ${fontePesca.toUpperCase()}`);
+    const pescaScarti = best?.scenario === 'scarti' && game.scarti.length > 0;
+    console.log(`AI ${giocatore.nome}: elabora → ${best?.scenario?.toUpperCase() || '?'} → pesca ${pescaScarti ? 'SCARTI' : 'MAZZO'} | score=${best?.score?.toFixed(1) ?? '?'}`);
 
-    if (fontePesca === 'scarti' && game.scarti.length > 0) {
-        // ===== PESCA DA SCARTI (prende TUTTE le carte) =====
-        const cartePescate = [...game.scarti];
-        const numCarte = cartePescate.length;
+    // ========== DEBUG PAUSE 1: prima della scelta scarti/mazzo ==========
+    await pausaDebugAI(giocatore, `Turno ${game.turno} - Scelta: ${pescaScarti ? 'SCARTI' : 'MAZZO'}`);
 
-        // Svuota gli scarti
-        game.scarti = [];
-
-        // Aggiungi tutte le carte alla mano
-        for (const carta of cartePescate) {
-            // Carte visibili solo se debug mode o giocatore umano
-            carta.faceUp = game.mostraTutteCarteScoperte || giocatore.isUmano;
-            giocatore.carte.push(carta);
+    // ===== HELPER LOCALE: esegui le mosse dell'opzione =====
+    const eseguiMosseBest = async (mosse) => {
+        const mosseReali = derefMosse(mosse, giocatore);
+        for (const mossa of mosseReali) {
+            await delay(400);
+            if (mossa.tipo === 'tris' || mossa.tipo === 'scala') {
+                await depositaCombinazioneAI(giocatore, mossa);
+            } else if (mossa.tipo === 'calata') {
+                await eseguiCalataAI(giocatore, mossa);
+            }
         }
+        ordinaCarte(giocatore.carte);
+    };
 
-        // Aggiorna carteConosciute: tutti vedono cosa c'era negli scarti
-        if (giocatore.carteConosciute) {
-            for (const carta of cartePescate) {
-                giocatore.carteConosciute.push({
-                    cartaId: carta.id,
-                    turnoScoperta: game.turno
-                });
+    // ===== HELPER LOCALE: esegui lo scarto =====
+    const eseguiScarto = async (cartaClone) => {
+        // Dereferenzia: trova la carta reale in mano
+        let cartaDaScartare = derefCard(cartaClone, giocatore);
+        // Fallback: usa la vecchia strategia se non trovata o se la carta non è in mano
+        if (!cartaDaScartare || giocatore.carte.indexOf(cartaDaScartare) < 0) {
+            cartaDaScartare = Strategia.scegliCartaDaScartare(giocatore);
+        }
+        if (!cartaDaScartare) return;
+
+        // Non scartare l'ultima carta senza burraco
+        if (giocatore.carte.length === 1 && game.pozzetti[giocatore.squadra].length === 0) {
+            const combinazioniSquadra = giocatore.squadra === 0 ? game.combinazioniNoi : game.combinazioniLoro;
+            if (!combinazioniSquadra.some(c => c.isBurraco)) {
+                render();
+                return false; // segnala che non si è scartato
             }
         }
 
-        // Registra nella storia
-        registraMossa(AZIONE_PESCA_SCARTI, {
-            carte: cartePescate.map(c => c.id)
-        });
+        const idxScarto = giocatore.carte.indexOf(cartaDaScartare);
+        if (idxScarto >= 0) giocatore.carte.splice(idxScarto, 1);
+        console.log(`AI ${giocatore.nome}: scarta ${Strategia.nomeCarta(cartaDaScartare)}`);
 
+        if (giocatore.carteConosciute) {
+            giocatore.carteConosciute = giocatore.carteConosciute.filter(cc => cc.cartaId !== cartaDaScartare.id);
+        }
+        registraMossa(AZIONE_SCARTO, { carta: cartaDaScartare.id });
+        cartaDaScartare.faceUp = true;
+        game.scarti.push(cartaDaScartare);
         render();
 
-        // Animazione (semplificata: mostra solo l'ultima carta pescata)
-        playSound('dindon');
-        console.log(`AI ${giocatore.nome}: pescate ${numCarte} carte dagli scarti`);
+        // Animazione scarto
+        const container = $(selettoreCarte);
+        const ultimaCartaEl = container ? container.lastElementChild : null;
+        const partenzaRect = ultimaCartaEl ? ultimaCartaEl.getBoundingClientRect() : null;
+        if (partenzaRect) {
+            const scartiContainer = $('#scarti-container');
+            const cards = scartiContainer.querySelectorAll('.scarto');
+            const cartaElFinale = cards[cards.length - 1];
+            if (cartaElFinale) {
+                cartaElFinale.style.visibility = 'hidden';
+                const fakePartenza = document.createElement('div');
+                fakePartenza.style.cssText = `position:fixed;left:${partenzaRect.left}px;top:${partenzaRect.top}px;width:1px;height:1px`;
+                document.body.appendChild(fakePartenza);
+                playSound('scarta');
+                await animaCarta(cartaDaScartare, fakePartenza, cartaElFinale, {
+                    mostraFronte: true,
+                    rotazioneIniziale: isLaterale ? 90 : 0,
+                    rotazioneFinale: 0
+                });
+                fakePartenza.remove();
+                cartaElFinale.style.visibility = 'visible';
+            }
+        }
+        return true; // scartato
+    };
 
-    } else {
-        // ===== PESCA DA MAZZO =====
-        const carta = game.mazzo.pop();
-        if (carta) {
-            // Carta visibile solo se debug mode o giocatore umano
+    // ===== HELPER LOCALE: pesca pozzetto =====
+    const pescaPozzetto = () => {
+        const pozzIdx = giocatore.squadra;
+        if (game.pozzetti[pozzIdx].length === 0) return false;
+        for (const c of game.pozzetti[pozzIdx]) {
+            c.faceUp = game.mostraTutteCarteScoperte || giocatore.isUmano;
+            giocatore.carte.push(c);
+        }
+        game.pozzetti[pozzIdx] = [];
+        giocatore.haPozzetto = true;
+        game.giocatori.forEach(g => { if (g.squadra === giocatore.squadra) g.haPozzetto = true; });
+        playSound('magic');
+        render();
+        return true;
+    };
+
+    // ===== FASE 1: PESCA =====
+    let bestUsato = best; // aggiornato nel ramo mazzo dopo re-analisi
+    if (pescaScarti) {
+        // Pesca tutti gli scarti
+        const cartePescate = [...game.scarti];
+        game.scarti = [];
+        for (const carta of cartePescate) {
             carta.faceUp = game.mostraTutteCarteScoperte || giocatore.isUmano;
             giocatore.carte.push(carta);
+        }
+        if (giocatore.carteConosciute) {
+            for (const carta of cartePescate) {
+                giocatore.carteConosciute.push({ cartaId: carta.id, turnoScoperta: game.turno });
+            }
+        }
+        registraMossa(AZIONE_PESCA_SCARTI, { carte: cartePescate.map(c => c.id) });
+        render();
+        playSound('dindon');
+        console.log(`AI ${giocatore.nome}: pescate ${cartePescate.length} carte dagli scarti`);
 
-            // Registra nella storia
+        // ========== DEBUG PAUSE 2 (scarti): prima dell'esecuzione ==========
+        await pausaDebugAI(giocatore, `Turno ${game.turno} - Esecuzione scarti`);
+
+        // Esegui mosse già decise
+        await eseguiMosseBest(best?.opz?.mosse || []);
+
+    } else {
+        // Pesca dal mazzo
+        const carta = game.mazzo.pop();
+        if (carta) {
+            carta.faceUp = game.mostraTutteCarteScoperte || giocatore.isUmano;
+            giocatore.carte.push(carta);
             registraMossa(AZIONE_PESCA_MAZZO, { carta: carta.id });
-
             render();
 
-            // Anima la carta dal mazzo alla mano del giocatore
             const container = $(selettoreCarte);
             const ultimaCarta = container ? container.lastElementChild : null;
             if (ultimaCarta) {
                 ultimaCarta.style.visibility = 'hidden';
                 playSound('pesca');
-                // Ruota di 90 gradi se giocatore laterale
-                const opzioniAnim = {
+                await animaCartaDa(carta, '#mazzo', ultimaCarta, {
                     mostraFronte: game.mostraTutteCarteScoperte,
                     rotazioneIniziale: 0,
                     rotazioneFinale: isLaterale ? 90 : 0
-                };
-                await animaCartaDa(carta, '#mazzo', ultimaCarta, opzioniAnim);
+                });
                 ultimaCarta.style.visibility = 'visible';
             }
-
-            // Controlla se il mazzo e' quasi esaurito
             controlloMazzoEsaurito();
         }
+
+        // Re-analisi con la nuova carta in mano (identico a elaboraOpz per scenario 'mano')
+        const bestMazzo = scegliBestOpzioneAI(giocatore, true);
+
+        // ========== DEBUG PAUSE 2 (mazzo): prima dell'esecuzione ==========
+        await pausaDebugAI(giocatore, `Turno ${game.turno} - Esecuzione mazzo`);
+
+        await eseguiMosseBest(bestMazzo?.opz?.mosse || []);
+        bestUsato = bestMazzo || best;
     }
 
-    // Rianalizza la mano dopo aver pescato
-    Strategia.analizzaMano(giocatore);
-    ordinaCarte(giocatore.carte);
+    // ===== FASE 2: CONTROLLO 0 CARTE PRIMA DELLO SCARTO (pozzetto senza scarto) =====
+    if (giocatore.carte.length === 0 && !giocatore.haPozzetto) {
+        if (pescaPozzetto()) {
+            // ========== DEBUG PAUSE 3: dopo pozzetto, prima dell'analisi ==========
+            await pausaDebugAI(giocatore, `Turno ${game.turno} - Dopo pozzetto (senza scarto)`);
 
-    // Esegui la mossa migliore (la prima opzione dopo l'ordinamento per valutazione)
-    const opzioni = giocatore.osservazioni?.opzioniGioco || [];
-    // Cerca la prima opzione con mosse (salta "passa")
-    const mossaMigliore = opzioni.find(opt => opt.mosse && opt.mosse.length > 0);
+            const bestPoz = typeof window.scegliBestOpzioneAI === 'function'
+                ? window.scegliBestOpzioneAI(giocatore) : null;
 
-    // Log decisione giocata per debug
-    const top5Opzioni = opzioni.slice(0, 5);
-    if (mossaMigliore) {
-        const valGlobaleMigliore = mossaMigliore.valoreGlobaleNetto != null ? mossaMigliore.valoreGlobaleNetto : mossaMigliore.valutazione;
+            await eseguiMosseBest(bestPoz?.opz?.mosse || []);
 
-        Strategia.logPensiero(giocatore,
-            `Giocata: ${mossaMigliore.descCarte} (Score: ${valGlobaleMigliore?.toFixed(1)})`,
-            {
-                tipo: 'giocata',
-                mossaScelta: mossaMigliore.descCarte,
-                valutazione: valGlobaleMigliore,
-                breakdownScelta: mossaMigliore.breakdownGlobale || mossaMigliore.breakdown, // Dati per l'HUD UI Fase 7
-                alternative: top5Opzioni.map(o => ({
-                    desc: o.descCarte,
-                    valutazione: o.valoreGlobaleNetto != null ? o.valoreGlobaleNetto : o.valutazione,
-                    breakdown: o.breakdownGlobale || o.breakdown // Dati per l'HUD UI
-                }))
-            }
-        );
-        console.log(`AI ${giocatore.nome}: eseguo ${mossaMigliore.descCarte} (Score: ${valGlobaleMigliore?.toFixed(1)})`);
-
-        // ========== DEBUG: DOPO PESCA ==========
-        // (Spostato qui per permettere ispezione del log della Decisione Giocata prima dell'esecuzione fisica)
-        await pausaDebugAI(giocatore, `Turno ${game.turno} - Dopo pesca (Giocata Decisa)`);
-
-        // Esegui tutte le mosse dell'opzione
-        for (const mossa of mossaMigliore.mosse) {
-            await delay(400);
-
-            if (mossa.tipo === 'tris' || mossa.tipo === 'scala') {
-                // Deposita nuova combinazione
-                await depositaCombinazioneAI(giocatore, mossa);
-            } else if (mossa.tipo === 'calata') {
-                // Aggiungi carta a combinazione esistente
-                await eseguiCalataAI(giocatore, mossa);
-            }
-        }
-
-        // Riordina le carte dopo le mosse
-        ordinaCarte(giocatore.carte);
-    } else {
-        Strategia.logPensiero(giocatore, 'Giocata: passa (nessuna mossa conveniente)', {
-            tipo: 'giocata',
-            mossaScelta: '(passa)',
-            valutazione: 0,
-            alternative: top5Opzioni.map(o => ({
-                desc: o.descCarte,
-                valutazione: o.valutazione
-            }))
-        });
-
-        // ========== DEBUG: DOPO PESCA ==========
-        await pausaDebugAI(giocatore, `Turno ${game.turno} - Dopo pesca (Giocata Decisa)`);
-    }
-
-    // Ritardo prima dello scarto
-    await delay(500);
-
-    // Scarta la carta scelta dalla strategia
-    // Ma non scartare l'ultima carta se la squadra non ha un burraco
-    if (giocatore.carte.length > 0) {
-        if (giocatore.carte.length === 1 && game.pozzetti[giocatore.squadra].length === 0) {
-            const combinazioniSquadra = giocatore.squadra === 0 ? game.combinazioniNoi : game.combinazioniLoro;
-            const haBurraco = combinazioniSquadra.some(c => c.isBurraco);
-            if (!haBurraco) {
-                // Non puo' chiudere senza burraco: tiene l'ultima carta
-                render();
-                prossimoTurno();
-                return;
-            }
-        }
-        const cartaDaScartare = Strategia.scegliCartaDaScartare(giocatore);
-        // Rimuovi la carta dalla mano (splice, non pop)
-        const idxScarto = giocatore.carte.indexOf(cartaDaScartare);
-        if (idxScarto >= 0) {
-            giocatore.carte.splice(idxScarto, 1);
-        }
-        console.log(`AI ${giocatore.nome}: scarta ${Strategia.nomeCarta(cartaDaScartare)}`);
-
-        // ========== DEBUG: DOPO GIOCATA ==========
-        // (Spostato qui per permettere ispezione del log della Decisione Scarto prima dell'animazione)
-        await pausaDebugAI(giocatore, `Turno ${game.turno} - Dopo giocata (Scarto Deciso)`);
-
-        // Salva la posizione per l'animazione
-        const container = $(selettoreCarte);
-        const ultimaCartaEl = container ? container.lastElementChild : null;
-        const partenzaRect = ultimaCartaEl ? ultimaCartaEl.getBoundingClientRect() : null;
-
-        // Rimuovi da carteConosciute (non e' piu' in mano)
-        if (giocatore.carteConosciute) {
-            giocatore.carteConosciute = giocatore.carteConosciute.filter(
-                cc => cc.cartaId !== cartaDaScartare.id
-            );
-        }
-
-        // Registra nella storia
-        registraMossa(AZIONE_SCARTO, { carta: cartaDaScartare.id });
-
-        cartaDaScartare.faceUp = true;
-        game.scarti.push(cartaDaScartare);
-        render();
-
-        // Anima lo scarto
-        if (partenzaRect) {
-            const scartiContainer = $('#scarti-container');
-            const cards = scartiContainer.querySelectorAll('.scarto');
-            const cartaElFinale = cards[cards.length - 1];
-
-            if (cartaElFinale) {
-                cartaElFinale.style.visibility = 'hidden';
-
-                const fakePartenza = document.createElement('div');
-                fakePartenza.style.position = 'fixed';
-                fakePartenza.style.left = partenzaRect.left + 'px';
-                fakePartenza.style.top = partenzaRect.top + 'px';
-                fakePartenza.style.width = '1px';
-                fakePartenza.style.height = '1px';
-                document.body.appendChild(fakePartenza);
-
-                playSound('scarta');
-                // Ruota da 90 a 0 gradi se giocatore laterale
-                const opzioniAnim = {
-                    mostraFronte: true,
-                    rotazioneIniziale: isLaterale ? 90 : 0,
-                    rotazioneFinale: 0
-                };
-                await animaCarta(cartaDaScartare, fakePartenza, cartaElFinale, opzioniAnim);
-
-                fakePartenza.remove();
-                cartaElFinale.style.visibility = 'visible';
-            }
-        }
-    }
-
-    // Controlla se ha finito
-    if (giocatore.carte.length === 0) {
-        const pozzIdx = giocatore.squadra;
-        if (game.pozzetti[pozzIdx].length > 0) {
-            for (const c of game.pozzetti[pozzIdx]) {
-                // Carte visibili solo se debug mode o giocatore umano
-                c.faceUp = game.mostraTutteCarteScoperte || giocatore.isUmano;
-                giocatore.carte.push(c);
-            }
-            game.pozzetti[pozzIdx] = [];
-            giocatore.haPozzetto = true;
-            game.giocatori.forEach(g => { if (g.squadra === giocatore.squadra) g.haPozzetto = true; });
-            playSound('magic');
+            await delay(500);
+            const scartato = await eseguiScarto(bestPoz?.scarto);
+            if (scartato === false) { render(); prossimoTurno(); return; }
         } else {
             finePartita(giocatore.squadra === 0);
             return;
+        }
+    } else {
+        // ===== FASE 3: SCARTO NORMALE =====
+        await delay(500);
+        const scartato = await eseguiScarto(bestUsato?.scarto);
+        if (scartato === false) { render(); prossimoTurno(); return; }
+
+        // ===== FASE 4: CONTROLLO 0 CARTE DOPO LO SCARTO =====
+        if (giocatore.carte.length === 0) {
+            if (!giocatore.haPozzetto) {
+                // Caso standard: pozzetto dopo scarto (nessuna analisi aggiuntiva, turno finisce)
+                if (!pescaPozzetto()) {
+                    finePartita(giocatore.squadra === 0);
+                    return;
+                }
+            } else {
+                // Post-pozzetto con 0 carte: serve burraco per chiudere
+                finePartita(giocatore.squadra === 0);
+                return;
+            }
         }
     }
 
     render();
 
-    // Se ultimo turno (mazzo esaurito), fine partita senza chiusura
     if (game.ultimoTurno) {
         finePartita(null);
         return;
     }
 
-    // Ordina le carte residue del bot prima di passare la mano (utile per debug visivo HUD = true)
     ordinaCarte(giocatore.carte);
-
-    // Passa al prossimo
     prossimoTurno();
 }
 

@@ -290,6 +290,45 @@ function selezionaPersonaggiCasuali(numero) {
 }
 
 // ============================================================================
+// FUNZIONE GLOBALE: isCartaAttaccabileACombo
+// Unica fonte di verità — usata da core.js, burraco-ui.js e popup analisi
+// ============================================================================
+window.isCartaAttaccabileACombo = function(carta, combo) {
+    var fisiche = combo.carte.filter(function(c) { return !c.isJolly && !c.isPinella; });
+    var numMatte = combo.carte.length - fisiche.length;
+    if (fisiche.length === 0) return false;
+    if (carta.isJolly || carta.isPinella) return numMatte === 0;
+    var isTris = fisiche.every(function(c) { return c.numero === fisiche[0].numero; });
+    if (isTris) return carta.numero === fisiche[0].numero;
+    if (carta.seme !== fisiche[0].seme) return false;
+    var nums = fisiche.map(function(c) { return c.numero; }).sort(function(a,b){ return a-b; });
+    // Asso-alto: se la scala ha Asso(1) con carte ≥10 (es. QF KF AF), l'Asso vale 14
+    if (nums[0] === 1 && nums.some(function(n){ return n >= 10; })) {
+        nums = nums.slice(1).concat([14]).sort(function(a,b){ return a-b; });
+    }
+    // Asso-alto: carta in mano con numero=1 vale 14 nel contesto di una scala alta
+    var numCarta = carta.numero;
+    if (numCarta === 1 && nums.some(function(n){ return n >= 10; })) numCarta = 14;
+    // Una scala non può contenere due carte dello stesso numero
+    if (nums.indexOf(numCarta) !== -1) return false;
+    if (numCarta === nums[0] - 1) return true;
+    if (numCarta === nums[nums.length - 1] + 1) return true;
+    if (numMatte > 0) {
+        for (var i = 0; i < nums.length - 1; i++) {
+            if (nums[i+1] - nums[i] - 2 <= numMatte && numCarta > nums[i] && numCarta < nums[i+1]) return true;
+        }
+        var hasInternalGap = false;
+        for (var gi = 0; gi < nums.length - 1; gi++) { if (nums[gi+1] - nums[gi] > 1) { hasInternalGap = true; break; } }
+        if (!hasInternalGap) {
+            if (numCarta === nums[nums.length - 1] + 2) return true;
+            if (numCarta === nums[0] - 2) return true;
+        }
+    }
+    if (numCarta === 1 && nums[nums.length - 1] === 13) return true;
+    return false;
+};
+
+// ============================================================================
 // CLASSE CARTA
 // ============================================================================
 
@@ -944,7 +983,19 @@ const Strategia = {
             if (optCandidata.carteUsate.size === 0) return true; // Salvaguardiamo il "Passo base" nudo
             const isSottomessa = oss.opzioniGioco.some((altOpt, altIdx) => {
                 if (idx === altIdx) return false;
-                return isSubset(optCandidata.carteUsate, altOpt.carteUsate);
+                if (!isSubset(optCandidata.carteUsate, altOpt.carteUsate)) return false;
+                // Non eliminare se il candidato ha una mossa individuale più lunga dell'alt
+                // (es: tris 4c non deve essere eliminato da un'opzione che usa gli stessi Fanti
+                // distribuiti tra scala+tris 3c, anche se il set di carte è un sottoinsieme)
+                const hasMossaPiuLunga = (optCandidata.mosse || []).some(mc => {
+                    if (mc.tipo !== 'tris' && mc.tipo !== 'scala') return false;
+                    const lenCand = (mc.carte || []).length;
+                    const maxLenAlt = (altOpt.mosse || [])
+                        .filter(ma => ma.tipo === mc.tipo)
+                        .reduce((max, ma) => Math.max(max, (ma.carte || []).length), 0);
+                    return lenCand > maxLenAlt;
+                });
+                return !hasMossaPiuLunga;
             });
             return !isSottomessa;
         });
@@ -1040,6 +1091,12 @@ const Strategia = {
     // Valuta un'opzione di gioco (set di mosse simultanee)
     // Ritorna un punteggio assoluto in cui i "Punti Tavola" sono preponderanti,
     // e i tratti caratteriali agiscono come bonus/malus percentuali secondari.
+    //
+    // NOTA: questo punteggio (valutazione/valoreGlobaleNetto) viene usato SOLO per
+    // ordinare e filtrare le opzioni durante generaOpzioniGioco. I valori hardcoded
+    // qui dentro (+10/calata, +15 se ≥5c, +50 se burraco) NON influenzano la
+    // decisione finale dell'AI, che usa invece calcolaScoreOpz() in burraco-ui.js
+    // con i coefficienti configurabili (coeffScoreOpz).
     valutaOpzione(giocatore, mosse, _carteUsate, numCarteVirtuale = null) {
         const coeff = this.getCoeff(giocatore);
         const carteInMano = numCarteVirtuale !== null ? numCarteVirtuale : giocatore.carte.length;
@@ -2293,43 +2350,7 @@ const Strategia = {
         const scaleVirtuali = analisiVirtuale.possibiliScale || [];
         const attacchiPossibili = [];
 
-        const isAttaccabile = (carta, combo) => {
-            const fisiche = combo.carte.filter(c => !c.isJolly && !c.isPinella);
-            const numMatte = combo.carte.length - fisiche.length;
-            if (fisiche.length === 0) return false;
-
-            const isTris = fisiche.every(c => c.numero === fisiche[0].numero);
-            if (carta.isJolly || carta.isPinella) {
-                // Posso attaccare matta se la combo non ne ha già una
-                return numMatte === 0;
-            }
-
-            if (isTris) {
-                // Se è tris, deve avere lo stesso numero. (E non posso fare tris di matte)
-                return carta.numero === fisiche[0].numero;
-            } else {
-                // Se è scala, deve avere lo stesso seme
-                if (carta.seme !== fisiche[0].seme) return false;
-
-                // Mettiamo in ordine per capire i buchi
-                const nums = fisiche.map(c => c.numero).sort((a, b) => a - b);
-
-                // Controllo se estende regolarmente sopra o sotto
-                if (carta.numero === nums[0] - 1) return true;
-                if (carta.numero === nums[nums.length - 1] + 1) return true;
-
-                // Controllo se tappa un buco coperto da una matta
-                if (numMatte > 0) {
-                    for (let i = 0; i < nums.length - 1; i++) {
-                        if (nums[i + 1] - nums[i] - 2 <= numMatte && carta.numero > nums[i] && carta.numero < nums[i + 1]) return true;
-                    }
-                }
-
-                // Gestione Asso (numero 1 o 14) -- in base al motore del burraco l'asso sopra al re vale 14
-                if (carta.numero === 1 && nums[nums.length - 1] === 13) return true;
-                return false;
-            }
-        };
+        const isAttaccabile = (carta, combo) => window.isCartaAttaccabileACombo(carta, combo);
 
         mano.forEach(c => {
             for (let i = 0; i < squadraCombo.length; i++) {
