@@ -1024,13 +1024,11 @@ function prossimoTurno() {
  * @param {Giocatore} giocatore - Il giocatore AI corrente
  * @param {string} fase - Descrizione della fase (es. "Inizio turno", "Dopo pesca")
  */
-async function pausaDebugAI(giocatore, fase) {
+async function pausaDebugAI(giocatore, fase, defaultScenario) {
     if (!game.debugAI) return;
 
-    // L'analisi è già stata fatta da turnoAI() - non duplicare
-
-    // Apri/aggiorna la finestra info del giocatore
-    mostraPannelloGiocatore(game.giocatoreCorrente, `AI Debug - ${fase}`);
+    // Apri/aggiorna la finestra debug con lo scenario di default corretto per questa fase
+    mostraPannelloGiocatore(game.giocatoreCorrente, `AI Debug - ${fase}`, defaultScenario || 'scarti');
 
     // Mostra ultimo pensiero strategico
     const ultimoPensiero = giocatore.osservazioni?.logStrategico?.slice(-3) || [];
@@ -1081,7 +1079,7 @@ async function turnoAI() {
     // ===== ANALISI PARALLELA: scenari ['mano','scarti'] — identico a elaboraOpz =====
     // 'mano' = baseline con sole carte in mano (→ pescheremo dal mazzo)
     // 'scarti' = mano + scarti (→ pescheremo dagli scarti)
-    const best = scegliBestOpzioneAI(giocatore);
+    const best = scegliBestOpzioneAI(giocatore, false, false, 'prePesca');
 
     const pescaScarti = best?.scenario === 'scarti' && game.scarti.length > 0;
     console.log(`AI ${giocatore.nome}: elabora → ${best?.scenario?.toUpperCase() || '?'} → pesca ${pescaScarti ? 'SCARTI' : 'MAZZO'} | score=${best?.score?.toFixed(1) ?? '?'}`);
@@ -1197,7 +1195,7 @@ async function turnoAI() {
         console.log(`AI ${giocatore.nome}: pescate ${cartePescate.length} carte dagli scarti`);
 
         // ========== DEBUG PAUSE 2 (scarti): prima dell'esecuzione ==========
-        await pausaDebugAI(giocatore, `Turno ${game.turno} - Esecuzione scarti`);
+        await pausaDebugAI(giocatore, `Turno ${game.turno} - Esecuzione scarti`, 'scarti');
 
         // Esegui mosse già decise
         await eseguiMosseBest(best?.opz?.mosse || []);
@@ -1227,10 +1225,10 @@ async function turnoAI() {
         }
 
         // Re-analisi con la nuova carta in mano (identico a elaboraOpz per scenario 'mano')
-        const bestMazzo = scegliBestOpzioneAI(giocatore, true);
+        const bestMazzo = scegliBestOpzioneAI(giocatore, true, false, 'postPesca');
 
         // ========== DEBUG PAUSE 2 (mazzo): prima dell'esecuzione ==========
-        await pausaDebugAI(giocatore, `Turno ${game.turno} - Esecuzione mazzo`);
+        await pausaDebugAI(giocatore, `Turno ${game.turno} - Esecuzione mazzo`, 'mano');
 
         await eseguiMosseBest(bestMazzo?.opz?.mosse || []);
         bestUsato = bestMazzo || best;
@@ -1239,11 +1237,11 @@ async function turnoAI() {
     // ===== FASE 2: CONTROLLO 0 CARTE PRIMA DELLO SCARTO (pozzetto senza scarto) =====
     if (giocatore.carte.length === 0 && !giocatore.haPozzetto) {
         if (pescaPozzetto()) {
-            // ========== DEBUG PAUSE 3: dopo pozzetto, prima dell'analisi ==========
-            await pausaDebugAI(giocatore, `Turno ${game.turno} - Dopo pozzetto (senza scarto)`);
-
             const bestPoz = typeof window.scegliBestOpzioneAI === 'function'
-                ? window.scegliBestOpzioneAI(giocatore) : null;
+                ? window.scegliBestOpzioneAI(giocatore, false, false, 'postPozzetto') : null;
+
+            // ========== DEBUG PAUSE 3: dopo pozzetto, prima dell'analisi ==========
+            await pausaDebugAI(giocatore, `Turno ${game.turno} - Dopo pozzetto (senza scarto)`, 'mano');
 
             await eseguiMosseBest(bestPoz?.opz?.mosse || []);
 

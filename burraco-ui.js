@@ -1966,7 +1966,7 @@ function chiudiModals() {
 // Finestra debug unica (mantiene posizione riutilizzando la stessa finestra)
 let debugWindow = null;
 
-function mostraPannelloGiocatore(indiceGiocatore, ruolo) {
+function mostraPannelloGiocatore(indiceGiocatore, ruolo, defaultScenario) {
     const giocatore = game.giocatori[indiceGiocatore];
     if (!giocatore || !giocatore.personaggio) return;
 
@@ -1974,10 +1974,10 @@ function mostraPannelloGiocatore(indiceGiocatore, ruolo) {
     if (debugWindow && !debugWindow.closed) {
         // Aggiorna solo il contenuto senza chiudere/riaprire
         debugWindow.document.open();
-        debugWindow.document.write(getGiocatoreHTML(indiceGiocatore, ruolo));
+        debugWindow.document.write(getGiocatoreHTML(indiceGiocatore, ruolo, defaultScenario));
         debugWindow.document.close();
         // Sposta il focus solo se esplicitamente richiesto o se era minimizzata
-        // debugWindow.focus(); 
+        // debugWindow.focus();
         return;
     }
 
@@ -1995,7 +1995,7 @@ function mostraPannelloGiocatore(indiceGiocatore, ruolo) {
 
     // Scrivi il contenuto HTML
     win.document.open();
-    win.document.write(getGiocatoreHTML(indiceGiocatore, ruolo));
+    win.document.write(getGiocatoreHTML(indiceGiocatore, ruolo, defaultScenario));
     win.document.close();
 
     // Togli il focus dal popup per restituirlo al gioco
@@ -2693,10 +2693,23 @@ window._calcolaVariantiM = function(d, game, giocatoreIdx) {
 // Se soloMano=true usa solo 'mano' (dopo aver già pescato dal mazzo)
 // Ritorna { scenario, opzIdx, opz, score, scarto, rispettaVincolo, analisiData }
 // ============================================================
-function scegliBestOpzioneAI(giocatore, soloMano, verbose) {
+function scegliBestOpzioneAI(giocatore, soloMano, verbose, fase) {
     if (!Strategia || !game) return null;
 
-    const con = verbose ? console : { group:()=>{}, groupEnd:()=>{}, log:()=>{}, warn:()=>{} };
+    // Logger capturante: salva sempre i log in _diagLines, li stampa in console solo se verbose
+    const _diagLines = [];
+    const _indent = { v: 0 };
+    function _fmt(...args) {
+        // Converti argomenti in stringa leggibile (salta direttive %c)
+        const s = args.map(a => typeof a === 'string' ? a.replace(/%c/g, '') : String(a)).join(' ');
+        return '  '.repeat(_indent.v) + s.trim();
+    }
+    const con = {
+        group:    (...a) => { _diagLines.push(_fmt(...a)); _indent.v++; if (verbose) console.group(...a); },
+        groupEnd: ()    => { _indent.v = Math.max(0, _indent.v - 1); if (verbose) console.groupEnd(); },
+        log:      (...a) => { _diagLines.push(_fmt(...a)); if (verbose) console.log(...a); },
+        warn:     (...a) => { _diagLines.push('⚠ ' + _fmt(...a)); if (verbose) console.warn(...a); }
+    };
     const nomeC = c => Strategia.nomeCarta ? Strategia.nomeCarta(c) : (c.numero + (c.seme || ''));
 
     const giocatoreIdx = game.giocatori.indexOf(giocatore);
@@ -2725,10 +2738,15 @@ function scegliBestOpzioneAI(giocatore, soloMano, verbose) {
     con.log('Giocatore:', giocatore.nome || ('idx=' + giocatoreIdx));
     con.log('Fase vincolo mano (post-pozzetto pre-burraco):', faseVincoloMano, '| haPozzetto:', giocatore.haPozzetto, '| squadraHaBurraco:', squadraHaBurraco, '| squadra:', giocatore.squadra);
 
+    const _analisiDataPerScenario = {};
+
     for (const scenario of scenariDaUsare) {
         if (scenario === 'scarti' && game.scarti.length === 0) continue;
 
         const d = Strategia.generaAnalisiParallela(giocatore, scenario);
+        // Salva d PRIMA delle varianti (copia shallow di opzioniScenario)
+        // così _diagData.analisiDataPerScenario[scenario] è clean (solo OPZ base)
+        _analisiDataPerScenario[scenario] = Object.assign({}, d, { opzioniScenario: d.opzioniScenario.slice() });
 
         // Imposta contesto globale per calcolaScoreOpz / calcolaScartoPer
         window._analisiData = d;
@@ -2795,7 +2813,7 @@ function scegliBestOpzioneAI(giocatore, soloMano, verbose) {
             }
             const score = opzScore + scartoScore + mazzBonus + pozzBonus;
 
-            candidati.push({ scenario, opzIdx, opz, score, opzScore, scartoScore, mazzBonus, pozzBonus, scarto: scartoRes?.cartaRef || null, scartoCarta, rispettaVincolo, carteRim, analisiData: d });
+            candidati.push({ scenario, opzIdx, opz, score, opzScore, scartoScore, mazzBonus, pozzBonus, scarto: scartoRes?.cartaRef || null, scartoCarta, rispettaVincolo, carteRim, analisiData: d, _labelMaps: { bLabelMap, mLabelMap }, _scartoRes: scartoRes, _scoreRes: scoreRes });
         }
         con.groupEnd();
     }
@@ -2847,16 +2865,31 @@ function scegliBestOpzioneAI(giocatore, soloMano, verbose) {
     const usaFallback = validati.length === 0 && faseVincoloMano;
 
     con.log('--- TUTTI I CANDIDATI (ordinati per score) ---');
+    // Risolve label display (OPZ0M, OPZ1, ecc.) per ogni candidato — usata anche in _diagData
+    function _opzLabel(c, bLM, mLM) {
+        if (c.opzCLabel) return c.opzCLabel;
+        const raw = c.opzIdx === -1 ? 'OPZ0' : 'OPZ' + (c.opzIdx + 1);
+        if (bLM && bLM[raw]) return bLM[raw] + 'B';
+        if (mLM && mLM[raw]) return mLM[raw] + 'M';
+        return raw;
+    }
+    // Associa a ogni candidato le mappe label del suo scenario
+    const _scenarioLabelMaps = {};
+    for (const scenario of scenariDaUsare) {
+        _scenarioLabelMaps[scenario] = candidati.find(c => c.scenario === scenario)?._labelMaps || { bLabelMap: {}, mLabelMap: {} };
+    }
     candidati.forEach(c => {
         const marker = c === best ? ' ◄ MIGLIORE' : '';
         const vincTag = c.carteRim !== null && !c.rispettaVincolo ? ' ⚠' : '';
-        const lbl = c.opzCLabel || (c.opzIdx === -1 ? 'OPZ0' : 'OPZ' + (c.opzIdx + 1));
-        con.log('[' + c.scenario + '] ' + lbl + ' → score=' + c.score.toFixed(1) + ' (opz=' + (c.opzScore||0).toFixed(1) + ' sc=' + (c.scartoScore||0).toFixed(1) + (c.mazzBonus ? ' mazzo=+' + c.mazzBonus : '') + ') | scarto=' + (c.scartoCarta||'-') + vincTag + marker);
+        const lm = c._labelMaps || { bLabelMap: {}, mLabelMap: {} };
+        const lbl = _opzLabel(c, lm.bLabelMap, lm.mLabelMap);
+        con.log('[' + c.scenario + '] ' + lbl + ' → score=' + c.score.toFixed(1) + ' (opz=' + (c.opzScore||0).toFixed(1) + ' sc=' + (c.scartoScore||0).toFixed(1) + (c.mazzBonus ? ' mazzo=+' + c.mazzBonus : '') + (c.pozzBonus ? ' pozzetto=+' + c.pozzBonus : '') + ') | scarto=' + (c.scartoCarta||'-') + vincTag + marker);
     });
     if (usaFallback) con.warn('Nessuna opzione lascia ≥1 carta in mano: scelto il miglior fallback disponibile.');
     if (best) {
-        const bestLbl = best.opzCLabel || (best.opzIdx === -1 ? 'OPZ0' : 'OPZ' + (best.opzIdx + 1));
-        con.log('%c→ SCELTA: [' + best.scenario + '] ' + bestLbl + ' → scarto: ' + (best.scartoCarta||'-') + ' (score=' + best.score.toFixed(1) + (best.carteRim !== null ? ', rim=' + best.carteRim : '') + ')', 'font-size:13px; font-weight:bold; color:#0f8; background:#030;');
+        const bestLm = best._labelMaps || { bLabelMap: {}, mLabelMap: {} };
+        const bestLbl = _opzLabel(best, bestLm.bLabelMap, bestLm.mLabelMap);
+        con.log('→ SCELTA: [' + best.scenario + '] ' + bestLbl + ' → scarto: ' + (best.scartoCarta||'-') + ' (score=' + best.score.toFixed(1) + (best.carteRim !== null ? ', rim=' + best.carteRim : '') + ')');
     }
     con.groupEnd();
 
@@ -2866,6 +2899,30 @@ function scegliBestOpzioneAI(giocatore, soloMano, verbose) {
         window._analisiScenario = best.scenario;
         window._analisiGiocatoreIdx = giocatoreIdx;
     }
+
+    // ===== Salva dati diagnostici in window._diagData =====
+    const _fase = fase || (soloMano ? 'postPesca' : 'prePesca');
+    window._diagData = window._diagData || {};
+    window._diagData[_fase] = {
+        giocatoreIdx: giocatoreIdx,
+        giocatore: giocatore.nome || ('idx=' + giocatoreIdx),
+        scenari: scenariDaUsare,
+        candidati: candidati.map(c => {
+            const lm = c._labelMaps || { bLabelMap: {}, mLabelMap: {} };
+            return Object.assign({}, c, { label: _opzLabel(c, lm.bLabelMap, lm.mLabelMap) });
+        }),
+        best: best ? Object.assign({}, best, {
+            label: _opzLabel(best, (best._labelMaps||{}).bLabelMap||{}, (best._labelMaps||{}).mLabelMap||{})
+        }) : null,
+        logLines: _diagLines.slice(),
+        logPerOpz: {},   // verrà popolato on-demand al click colonna
+        analisiDataPerScenario: _analisiDataPerScenario
+    };
+    // Propaga ai turni precedenti non ancora salvati
+    if (_fase === 'postPesca') {
+        window._diagData['prePesca'] = window._diagData['prePesca'] || window._diagData['postPesca'];
+    }
+
     return best;
 }
 
@@ -2936,258 +2993,14 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
-function getGiocatoreHTML(indiceGiocatore, ruolo) {
-    const giocatore = game.giocatori[indiceGiocatore];
-    const p = giocatore.personaggio;
-    const c = p?.coefficienti || Strategia.defaultCoeff;
-
-    // Labels per i coefficienti (compatti, raggruppati per area)
-    const coeffLabels = {
-        // Pesca
-        premioScarti: 'Premio scarti',
-        compressione: 'Compressione',
-        // Calata
-        valoreCentralita: 'Centralita',
-        prefScale: 'Pref. scale',
-        sogliaDeposito: 'Deposito',
-        prefBurracoPulito: 'Burr. pulito',
-        parsimoniaMatte: 'Parsim. matte',
-        // Scarto
-        prudenzaScarto: 'Prudenza',
-        cooperazione: 'Cooperazione',
-        // Ruolo e chiusura
-        propensioAttacco: 'Attacco',
-        frettaChiusura: 'Fretta',
-        // Strategia
-        tendenzaControgioco: 'Controgioco',
-        // Osservazione e tattica
-        memoria: 'Memoria',
-        letturaAvversario: 'Lettura avv.',
-        audacia: 'Audacia'
-    };
-
-    // Genera HTML coefficienti (compatto, 2 colonne)
-    const coeffKeys = Object.keys(coeffLabels);
-    let coeffHTML = '<div class="coeff-grid">';
-    for (const key of coeffKeys) {
-        const valore = c[key] || 0;
-        const perc = valore * 10;
-        coeffHTML += `
-            <div class="coeff-item">
-                <span class="coeff-label">${coeffLabels[key]}</span>
-                <div class="coeff-bar"><div class="coeff-fill" style="width:${perc}%"></div></div>
-                <span class="coeff-value">${valore}</span>
-            </div>`;
-    }
-    coeffHTML += '</div>';
-
-    // Genera HTML "Combinazioni e attacchi possibili" (singole mosse)
-    function generaHTMLCombinazioni(oss, titolo) {
-        if (!oss) return `<div class="oss-empty">Nessuna combinazione (${titolo})</div>`;
-        const items = [];
-
-        // Elenca tutti i tris
-        if (oss.possibiliTris?.length > 0) {
-            for (const tris of oss.possibiliTris) {
-                const desc = Strategia.descrizioneCarte(tris.carte);
-                const matta = tris.usaMatta ? ' *' : '';
-                items.push(`<div class="combo-item tris" title="Tris${matta}"><span class="combo-tipo">T</span><span class="combo-desc">${desc}</span><span class="combo-punti">${tris.punti}pt</span></div>`);
-            }
-        }
-
-        // Elenca tutte le scale
-        if (oss.possibiliScale?.length > 0) {
-            for (const scala of oss.possibiliScale) {
-                const desc = Strategia.descrizioneCarte(scala.carte);
-                const matta = scala.usaMatta ? ' *' : '';
-                items.push(`<div class="combo-item scala" title="Scala ${scala.seme}${matta}"><span class="combo-tipo">S</span><span class="combo-desc">${desc}</span><span class="combo-punti">${scala.punti}pt</span></div>`);
-            }
-        }
-
-        // Elenca tutte le calate
-        if (oss.possibiliCalate?.length > 0) {
-            for (const seq of oss.possibiliCalate) {
-                const arr = Array.isArray(seq) ? seq : [seq];
-                const desc = arr.map(c => Strategia.nomeCarta(c.carta)).join(' + ');
-                const punti = arr.reduce((s, c) => s + c.carta.punti, 0);
-                items.push(`<div class="combo-item calata" title="Calata su combo"><span class="combo-tipo">C</span><span class="combo-desc">${desc}</span><span class="combo-punti">${punti}pt</span></div>`);
-            }
-        }
-
-        if (items.length > 0) {
-            // Info riassuntiva
-            const numMorte = oss.carteMorte?.length || 0;
-            const numMatte = oss.matte?.length || 0;
-            const matteDesc = oss.matte?.length > 0 ? Strategia.descrizioneCarte(oss.matte) : '';
-            return `
-                <div class="combo-info" style="margin-top:8px; border-top:1px solid rgba(255,255,255,0.1); padding-top:4px;"><span>${titolo} (${items.length}):</span></div>
-                <div class="combo-info">
-                    <span>Matte: ${numMatte > 0 ? matteDesc : 'nessuna'}</span>
-                    <span>Morte: ${numMorte}</span>
-                </div>
-                <div class="combo-list">${items.join('')}</div>
-                <div class="combo-legenda">T=Tris S=Scala C=Calata *=usa matta</div>`;
-        }
-        return `<div class="oss-empty">Nessuna mossa singola valida (${titolo})</div>`;
-    }
-
-    let comboHTML = '';
-    if (giocatore.osservazioni?.analisiVirtuale) {
-        // Mostra Pre e Post se ha pescato o sta valutando di pescare
-        const ossBase = giocatore.osservazioni.analisiBase || giocatore.osservazioni;
-        comboHTML += generaHTMLCombinazioni(ossBase, 'In Mano (Pre-Scarti)');
-        comboHTML += generaHTMLCombinazioni(giocatore.osservazioni.analisiVirtuale, 'Con Scarti in pancia (Simulata)');
-    } else if (giocatore.osservazioni) {
-        comboHTML += generaHTMLCombinazioni(giocatore.osservazioni, 'Combinazioni Correnti');
-    } else {
-        comboHTML = '<div class="oss-empty">Nessuna combinazione valida</div>';
-    }
-
-    // Genera HTML "Opzioni di gioco"
-    function generaHTMLOpzioni(listaOpzioni, titolo) {
-        if (!listaOpzioni || listaOpzioni.length === 0) return `<div class="oss-empty">Nessuna opzione (${titolo})</div>`;
-        const numTotale = listaOpzioni.length;
-        return `<div class="combo-info" style="margin-top:8px; border-top:1px solid rgba(255,255,255,0.1); padding-top:4px;"><span>${titolo} (${numTotale}):</span></div>` +
-            listaOpzioni.slice(0, 8).map((opt, i) => {
-                const descrizione = opt.descCarte || 'Passa';
-                const scoreNetto = opt.valoreGlobaleNetto !== undefined ? opt.valoreGlobaleNetto : (opt.puntiTotali || 0);
-
-                let bdHTML = '';
-                if (opt.breakdownGlobale && opt.breakdownGlobale.length > 0) {
-                    bdHTML = '<div class="opt-breakdown" style="display:none; padding:4px 8px; margin:2px 0 6px 16px; background:rgba(0,0,0,0.2); border-left:2px solid #555; font-size:10px; line-height:1.4;">';
-                    opt.breakdownGlobale.forEach(b => {
-                        const isSub = b.subtotale ? 'font-weight:bold; color:#fff; border-top:1px dashed #555; margin-top:2px; padding-top:2px;' : 'color:#bbb;';
-                        let valStr = typeof b.valore === 'number' ? (b.valore > 0 ? '+' + b.valore.toFixed(1) : b.valore.toFixed(1)) : b.valore;
-                        const colorVal = b.valore > 0 ? '#6a6' : (b.valore < 0 ? '#a66' : '#888');
-                        if (b.subtotale) valStr = `<span style="color:${scoreNetto >= 0 ? '#4f4' : '#f44'}">${valStr}</span>`;
-                        bdHTML += `<div style="display:flex; justify-content:space-between; ${isSub}"><span>${b.label}</span><span style="color:${b.subtotale ? 'inherit' : colorVal}">${valStr}</span></div>`;
-                    });
-                    bdHTML += '</div>';
-                }
-
-                const clickAction = bdHTML ? `onclick="var el=this.nextElementSibling; el.style.display=el.style.display==='none'?'block':'none';"` : '';
-                const cursorStyle = bdHTML ? 'cursor:pointer;' : '';
-
-                return `
-            <div class="obj-item combo" title="${descrizione}" style="justify-content:space-between; ${cursorStyle}" ${clickAction}>
-                <div style="display:flex; align-items:center; overflow:hidden;">
-                    <span class="obj-rank" style="margin-right:6px;">#${i + 1}</span>
-                    <span class="obj-nome" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${descrizione}</span>
-                </div>
-                <div style="display:flex; align-items:center;">
-                    ${bdHTML ? '<span style="color:#666; font-size:9px; margin-right:6px;">▼</span>' : ''}
-                    <span class="obj-pri" style="text-align:right; font-weight:normal; font-size:11px; color:#aaa; margin-right:6px;">[${opt.puntiTotali || 0}pt]</span>
-                    <span class="obj-pri" style="text-align:right; font-weight:bold; font-size:12px; color:${scoreNetto >= 0 ? '#4f4' : '#f44'};">${scoreNetto > 0 ? '+' : ''}${typeof scoreNetto === 'number' ? scoreNetto.toFixed(1) : scoreNetto}</span>
-                </div>
-            </div>
-            ${bdHTML}`;
-            }).join('');
-    }
-
-    let objHTML = '';
-    if (giocatore.osservazioni?.analisiVirtuale) {
-        // Mostra Pre e Post se ha pescato o sta valutando di pescare
-        const opzBase = giocatore.osservazioni.analisiBase?.opzioniGioco || giocatore.osservazioni.opzioniGioco;
-        objHTML += generaHTMLOpzioni(opzBase, 'In Mano (Pre-Scarti)');
-        objHTML += generaHTMLOpzioni(giocatore.osservazioni.analisiVirtuale.opzioniGioco, 'Con Scarti in pancia (Simulata)');
-    } else if (giocatore.osservazioni?.opzioniGioco) {
-        objHTML += generaHTMLOpzioni(giocatore.osservazioni.opzioniGioco, 'Opzioni Correnti');
-    } else {
-        objHTML = '<div class="oss-empty">Nessuna opzione valida</div>';
-    }
-
-    // Helper: escape HTML per prevenire injection da testo libero
-    const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-
-    // Genera HTML log strategico (ultimi 20 pensieri per colonna dedicata)
-    // Le righe con dettagli sono cliccabili
-    let logHTML = '<div class="oss-empty">Nessun pensiero registrato</div>';
-    let logDettagli = []; // Array per salvare i dettagli cliccabili
-    if (giocatore.osservazioni?.logStrategico?.length > 0) {
-        const ultimi = giocatore.osservazioni.logStrategico.slice(-20).reverse();
-        logHTML = ultimi.map((l, idx) => {
-            const hasDettagli = l.dettagli != null;
-            if (hasDettagli) {
-                logDettagli.push({ idx, dettagli: l.dettagli });
-            }
-            const clickClass = hasDettagli ? 'log-clickable' : '';
-            const clickAttr = hasDettagli ? `onclick="mostraDettagliPesca(${idx})"` : '';
-            return `
-            <div class="log-item ${clickClass}" ${clickAttr}>
-                <span class="log-turno">T${l.turno}:</span>
-                <span class="log-msg">${esc(l.messaggio)}</span>
-                ${hasDettagli ? '<span class="log-icon">🔍</span>' : ''}
-            </div>`;
-        }).join('');
-    }
-    // Espone i dettagli come variabile globale sul padre (evita di iniettare JSON
-    // dentro un tag <script> dove </script> nei dati romperebbe il parsing).
-    window._debugLogDettagli = logDettagli;
-
-    // Determina fase e ruolo per la visualizzazione debug
-    let faseDisplay = '?';
-    if (!giocatore.isUmano) {
-        const haPozzettoSquadra = game.giocatori
-            .filter(g => g.squadra === giocatore.squadra)
-            .some(g => g.haPozzetto);
-        const haBurraco = (giocatore.squadra === 0 ? game.combinazioniNoi : game.combinazioniLoro)
-            .some(cb => cb.isBurraco);
-        if (!haPozzettoSquadra) faseDisplay = 'PRE-POZZETTO';
-        else if (!haBurraco) faseDisplay = 'CERCA BURRACO';
-        else faseDisplay = 'CHIUSURA';
-    }
-
-    // Genera HTML carte conosciute (che gli altri sanno di questo giocatore)
-    let carteConosciuteHTML = '';
-    if (!giocatore.isUmano && giocatore.carteConosciute?.length > 0) {
-        const turniMemoria = 2 + (c.memoria || 5);
-        const recenti = giocatore.carteConosciute.filter(
-            cc => game.turno - cc.turnoScoperta <= turniMemoria
-        );
-        if (recenti.length > 0) {
-            const nomi = recenti.map(cc => {
-                const carta = typeof tutteLeCarte !== 'undefined' ? tutteLeCarte[cc.cartaId] : null;
-                return carta ? Strategia.nomeCarta(carta) : '?';
-            }).join(' ');
-            carteConosciuteHTML = `
-            <div class="strat-item">
-                <span class="strat-label">Carte note (${recenti.length}):</span>
-                <span class="strat-value" style="font-size:10px">${nomi}</span>
-            </div>`;
-        }
-    }
-
-    // Genera HTML stato attuale
-    let statoHTML = '';
-    if (!giocatore.isUmano) {
-        statoHTML = `
-            <div class="strat-item">
-                <span class="strat-label">Carte in mano:</span>
-                <span class="strat-value">${giocatore.carte.length}</span>
-            </div>
-            <div class="strat-item">
-                <span class="strat-label">Ha pozzetto:</span>
-                <span class="strat-value">${giocatore.haPozzetto ? 'Sì' : 'No'}</span>
-            </div>
-            <div class="strat-item">
-                <span class="strat-label">Fase:</span>
-                <span class="strat-value">${faseDisplay}</span>
-            </div>
-            <div class="strat-item">
-                <span class="strat-label">Ruolo:</span>
-                <span class="strat-value" style="color:#ffd700">${giocatore.osservazioni && giocatore.osservazioni.ruoloDinamico ? giocatore.osservazioni.ruoloDinamico : 'Neutro'}</span>
-            </div>
-            ${carteConosciuteHTML}`;
-    }
-
-    const avatarSrc = p ? `images/avatar/${p.nome}.jpg` : 'images/avatar/default.jpg';
-    const nomeDisplay = p?.nome || giocatore.nome || 'Giocatore';
-    const descDisplay = p?.descrizione || '';
+function getGiocatoreHTML(indiceGiocatore, ruolo, defaultScenario) {
+    // Nota: questa funzione genera solo la shell della debug window.
+    // Tutto il contenuto (analisi parallela) viene renderizzato inline da mostraAnalisiParallela.
 
     return `<!DOCTYPE html>
 <html>
 <head>
-    <title>${ruolo} - ${nomeDisplay}</title>
+    <title>${ruolo}</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
@@ -3317,481 +3130,13 @@ function getGiocatoreHTML(indiceGiocatore, ruolo) {
         .modal-footer { margin-top: 12px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.2); font-size: 11px; color: #888; }
     </style>
 </head>
-<body>
-    <div class="container">
-        <div class="header" style="display:flex; justify-content:space-between; align-items:center;">
-            <div style="width: 100px;"></div> <!-- Spacer -->
-            <div class="ruolo">${ruolo}</div>
-            <div>
-                <button onclick="mostraAnalisiParallela(${game.giocatoreCorrente})" style="background:#a49; border:none; border-radius:4px; color:white; padding:4px 8px; margin-right:8px; cursor:pointer; font-size:11px;">🔍 Analisi Parallela</button>
-                <button onclick="scaricaStatoJSON()" style="background:#4a9; border:none; border-radius:4px; color:white; padding:4px 8px; cursor:pointer; font-size:11px;">⬇️ Esporta Stato (JSON)</button>
-            </div>
-        </div>
-
-        <div class="personaggio">
-            <img class="avatar" src="${avatarSrc}" alt="${nomeDisplay}">
-            <div class="info-base">
-                <div class="nome">${nomeDisplay}</div>
-                <div class="desc">${descDisplay}</div>
-            </div>
-        </div>
-
-        <div class="sezione">
-            <div class="sezione-titolo">Coefficienti</div>
-            ${coeffHTML}
-        </div>
-
-        ${!giocatore.isUmano ? `
-        <div class="tre-colonne">
-            <div class="colonna">
-                <div class="sezione">
-                    <div class="sezione-titolo">Combinazioni e Attacchi Possibili</div>
-                    ${comboHTML}
-                </div>
-                <div class="sezione">
-                    <div class="sezione-titolo">Stato</div>
-                    ${statoHTML}
-                </div>
-            </div>
-            <div class="colonna">
-                <div class="sezione">
-                    <div class="sezione-titolo">Opzioni di Gioco (combinazioni)</div>
-                    ${objHTML}
-                </div>
-            </div>
-            <div class="colonna-log">
-                <div class="sezione" style="height: calc(100% - 12px);">
-                    <div class="sezione-titolo">Log Pensieri</div>
-                    <div class="log-scroll">${logHTML}</div>
-                </div>
-            </div>
-        </div>
-        ` : ''}
+<body style="margin:0;padding:0;background:#0a1628;">
+    <div id="debug-topbar" style="display:flex;justify-content:space-between;align-items:center;padding:5px 10px;background:#111;border-bottom:1px solid #333;font-size:11px;color:#888;">
+        <span>${ruolo}</span>
+        <button onclick="scaricaStatoJSON()" style="background:#2a5;border:none;border-radius:3px;color:#fff;padding:3px 8px;cursor:pointer;font-size:10px;">⬇️ JSON</button>
     </div>
+    <div id="analisi-root"></div>
     <script>
-        // Dati dei dettagli cliccabili - letti dal parent (evita problemi injection HTML)
-        var logDettagli = (window.opener && window.opener._debugLogDettagli) || [];
-        console.log('Debug Window: dati caricati', logDettagli.length);
-
-        function mostraDettagliPesca(idx) {
-            try {
-                var entry = logDettagli.find(function(e) { return e.idx === idx; });
-                if (!entry || !entry.dettagli) {
-                    alert('Dettagli non trovati per idx=' + idx + ' (logDettagli.length=' + logDettagli.length + ')');
-                    return;
-                }
-                var d = entry.dettagli;
-                if (d.tipo === 'pesca') {
-                    mostraModalPesca(d);
-                } else if (d.tipo === 'scarto') {
-                    mostraModalScarto(d);
-                } else if (d.tipo === 'giocata') {
-                    mostraModalGiocata(d);
-                } else {
-                    alert('Tipo sconosciuto: ' + d.tipo);
-                }
-            } catch(err) {
-                alert('Errore apertura dettagli: ' + err.message + '\\n' + err.stack);
-            }
-        }
-
-        function mostraModalPesca(d) {
-            var s = d.scarti || {};
-            var c = d.coeff || {};
-
-            // Genera HTML per le regole valutate
-            var regoleHTML = '';
-            if (d.regole && d.regole.length > 0) {
-                for (var i = 0; i < d.regole.length; i++) {
-                    var r = d.regole[i];
-                    var colore = r.esito === 'mazzo' ? '#f44' :
-                                 r.esito === 'scarti' ? '#4f4' :
-                                 r.esito === 'eccezione' ? '#f80' : '#888';
-                    var icona = r.esito === 'mazzo' ? 'MAZZO' :
-                                r.esito === 'scarti' ? 'SCARTI' :
-                                r.esito === 'eccezione' ? 'ECCEZ.' : 'skip';
-                    regoleHTML += '<div class="modal-row" style="margin-bottom:4px">' +
-                        '<span class="modal-label" style="font-weight:bold">' + r.regola + '</span>' +
-                        '<span class="modal-value" style="color:' + colore + '">' + icona + '</span>' +
-                    '</div>';
-
-                    // Se c'e' il dettaglio simulazione, mostra tabella di comparazione
-                    if (r.simulazione) {
-                        var sim = r.simulazione;
-                        regoleHTML += '<div style="margin:6px 0 12px 12px; background:rgba(0,0,0,0.3); padding:8px; border-radius:6px; border-left:3px solid #4a9;">';
-                        regoleHTML += '<div style="font-size:11px; color:#aaa; margin-bottom:6px; display:flex; justify-content:space-between;">' +
-                                      '<span>SNAPSHOT SIMULAZIONE SCARTI</span>' +
-                                      (sim.avvPericoloso ? '<span style="color:#f44">AVV. PERICOLOSO!</span>' : '') +
-                                      '</div>';
-                        regoleHTML += '<table style="font-size:11px;border-collapse:collapse;width:100%; text-align:right;">';
-                        regoleHTML += '<tr style="color:#888; border-bottom:1px solid #555;">' +
-                                      '<th style="text-align:left; padding-bottom:4px;">Metrica</th>' +
-                                      '<th style="padding-bottom:4px;color:#88a;text-align:center;">[C]</th>' +
-                                      '<th style="padding-bottom:4px;">In Mano</th>' +
-                                      '<th style="padding-bottom:4px;">Con Scarti</th>' +
-                                      '</tr>';
-                        regoleHTML += '<tr><td style="text-align:left;color:#bbb;font-weight:bold;">\u2B50 Punti Calabili (da Miglior Opz)</td><td style="color:#88a;text-align:center;">-</td><td style="color:#fff;font-weight:bold;">' + sim.dettagliBase.base.val + '</td><td style="color:#4f4;font-weight:bold;">' + sim.dettagliVirtuale.base.val + '</td></tr>';
-                        
-                        // INIEZIONE MICRO-BREAKDOWN OPZIONI ALLINEATA
-                        var bdBase = sim.dettagliBase.breakdownBase || [];
-                        var bdVirt = sim.dettagliVirtuale.breakdownBase || [];
-                        
-                        // Raccogli label uniche escludendo base e subtotali
-                        var labelUniche = [];
-                        var bdInsieme = bdBase.concat(bdVirt);
-                        for(var k = 0; k < bdInsieme.length; k++) {
-                            var lbl = bdInsieme[k].label;
-                            if (lbl && lbl !== 'Punti Tavolo Base' && !bdInsieme[k].subtotale) {
-                                if (labelUniche.indexOf(lbl) === -1) {
-                                    labelUniche.push(lbl);
-                                }
-                            }
-                        }
-
-                        // Stampa righe allineate per label
-                        for(var j = 0; j < labelUniche.length; j++) {
-                            var curLabel = labelUniche[j];
-                            
-                            // Cerca valore nel Base
-                            var valBase = '';
-                            var coeffBase = '-';
-                            for (var b = 0; b < bdBase.length; b++) { 
-                                if (bdBase[b].label === curLabel) {
-                                    valBase = bdBase[b].valore;
-                                    if (bdBase[b].coeff !== undefined) coeffBase = bdBase[b].coeff;
-                                }
-                            }
-                            
-                            // Cerca valore nel Virtuale
-                            var valVirt = '';
-                            var coeffVirt = '-';
-                            for (var v = 0; v < bdVirt.length; v++) { 
-                                if (bdVirt[v].label === curLabel) {
-                                    valVirt = bdVirt[v].valore;
-                                    if (bdVirt[v].coeff !== undefined) coeffVirt = bdVirt[v].coeff;
-                                }
-                            }
-
-                            var valCoeff = coeffBase !== '-' ? coeffBase : (coeffVirt !== '-' ? coeffVirt : '-');
-                            
-                            regoleHTML += '<tr>' +
-                                '<td style="text-align:left;color:#888;padding-left:12px;font-size:10px;">&bull; ' + curLabel + '</td>' +
-                                '<td style="color:#88a;text-align:center;font-size:10px;">' + valCoeff + '</td>' +
-                                '<td style="color:#aaa;font-size:10px;">' + (valBase !== '' ? (valBase > 0 ? '+':'') + valBase : '-') + '</td>' +
-                                '<td style="color:#6a6;font-size:10px;">' + (valVirt !== '' ? (valVirt > 0 ? '+':'') + valVirt : '-') + '</td>' +
-                                '</tr>';
-                        }
-
-                        regoleHTML += '<tr><td style="text-align:left;color:#bbb;margin-top:4px;">Bonus Burrachi (>7)</td><td style="color:#88a;text-align:center;">' + sim.dettagliBase.burraco.coeff + '</td><td style="color:#fff">' + sim.dettagliBase.burraco.val + '</td><td style="color:#4f4">' + sim.dettagliVirtuale.burraco.val + '</td></tr>';
-                        regoleHTML += '<tr><td style="text-align:left;color:#bbb">Bonus Pozzetto</td><td style="color:#88a;text-align:center;">' + sim.dettagliBase.pozzetto.coeff + '</td><td style="color:#fff">' + Number(sim.dettagliBase.pozzetto.val).toFixed(1) + '</td><td style="color:#4f4">' + Number(sim.dettagliVirtuale.pozzetto.val).toFixed(1) + '</td></tr>';
-                        regoleHTML += '<tr><td style="text-align:left;color:#bbb">Bonus Matte non usate</td><td style="color:#88a;text-align:center;">' + sim.dettagliBase.matte.coeff + '</td><td style="color:#fff">' + Number(sim.dettagliBase.matte.val).toFixed(1) + '</td><td style="color:#4f4">' + Number(sim.dettagliVirtuale.matte.val).toFixed(1) + '</td></tr>';
-                        regoleHTML += '<tr><td style="text-align:left;color:#bbb">Malus Zavorra (Morte)</td><td style="color:#88a;text-align:center;">' + sim.dettagliBase.cadaveri.coeff + '</td><td style="color:#f44">' + sim.dettagliBase.cadaveri.val.toFixed(1) + '</td><td style="color:#f44">' + sim.dettagliVirtuale.cadaveri.val.toFixed(1) + '</td></tr>';
-                        if (sim.dettagliBase.troppeCarte.val < 0 || sim.dettagliVirtuale.troppeCarte.val < 0) {
-                            regoleHTML += '<tr><td style="text-align:left;color:#bbb">Malus Troppe Carte (>11)</td><td style="color:#88a;text-align:center;">' + sim.dettagliBase.troppeCarte.coeff + '</td><td style="color:#f44">' + sim.dettagliBase.troppeCarte.val.toFixed(1) + '</td><td style="color:#f44">' + sim.dettagliVirtuale.troppeCarte.val.toFixed(1) + '</td></tr>';
-                        }
-                        regoleHTML += '<tr style="border-top:1px solid #555"><td style="text-align:left;color:#ddd; padding-top:4px" colspan="2">Score Teorico Totale</td><td style="color:#fff; font-weight:bold; padding-top:4px">' + sim.scoreBase + '</td><td style="color:#fff; font-weight:bold; padding-top:4px">' + sim.scoreVirtuale + '</td></tr>';
-                        
-                        if (sim.dettagliPremio) {
-                            var dp = sim.dettagliPremio;
-                            regoleHTML += '<tr><td colspan="4" style="height:4px;"></td></tr>';
-                            regoleHTML += '<tr style="border-top:1px dashed #555"><td style="text-align:left;color:#a9f; padding-top:4px">↳ Premio Scarti Base</td><td style="color:#a9f;text-align:center;padding-top:4px;">' + dp.coeffBase + '</td><td style="color:#a9f; padding-top:4px" colspan="2">' + dp.base + '</td></tr>';
-                            if (dp.modRuolo !== 0) {
-                                regoleHTML += '<tr><td style="text-align:left;color:#a9f; padding-top:0px" colspan="2">↳ Modif. Ruolo (' + dp.ruolo + ')</td><td style="color:' + (dp.modRuolo<0?'#f88':'#8f8') + '; padding-top:0px" colspan="2">' + (dp.modRuolo>0?'+':'') + dp.modRuolo + '</td></tr>';
-                            }
-                            
-                            var premioVal = parseFloat(sim.premio);
-                            var deltaVal = parseFloat(sim.delta);
-                            var totVal = deltaVal + premioVal;
-                            var deltaColor = totVal >= 0 ? '#4f4' : '#f44';
-                            
-                            regoleHTML += '<tr style="border-top:1px solid #555; font-weight:bold;">' +
-                                          '<td style="text-align:left;color:#ddd;padding-top:4px;">DELTA + PREMIO</td>' +
-                                          '<td colspan="3" style="color:' + deltaColor + '; font-size:12px; padding-top:4px;">' + (totVal > 0 ? '+' : '') + totVal.toFixed(1) + '  (&ge; 0)</td>' +
-                                          '</tr>';
-
-                        } else if (sim.dettagliSoglia) {
-                            // FALLBACK per retrocompatibilita coi Log JSON appena scritti
-                            var ds = sim.dettagliSoglia;
-                            regoleHTML += '<tr><td colspan="4" style="height:4px;"></td></tr>';
-                            regoleHTML += '<tr style="border-top:1px dashed #555"><td style="text-align:left;color:#99a; padding-top:4px" colspan="2">↳ Calcolo Soglia Base [C:' + ds.coeffBase + ']</td><td style="color:#99a; padding-top:4px" colspan="2">' + ds.base + '</td></tr>';
-                            if (ds.modRuolo !== 0) {
-                                regoleHTML += '<tr><td style="text-align:left;color:#99a; padding-top:0px" colspan="2">↳ Modif. Ruolo (' + ds.ruolo + ')</td><td style="color:' + (ds.modRuolo>0?'#f88':'#8f8') + '; padding-top:0px" colspan="2">' + (ds.modRuolo>0?'+':'') + ds.modRuolo + '</td></tr>';
-                            }
-                            
-                            var deltaColor = parseFloat(sim.delta) >= parseFloat(sim.soglia) ? '#4f4' : '#f44';
-                            regoleHTML += '<tr style="border-top:1px solid #555; font-weight:bold;">' +
-                                          '<td style="text-align:left;color:#ddd;padding-top:4px;">DELTA</td>' +
-                                          '<td colspan="3" style="color:' + deltaColor + '; font-size:12px; padding-top:4px;">' + (parseFloat(sim.delta) > 0 ? '+' : '') + sim.delta + '  (Soglia Finale: ' + sim.soglia + ')</td>' +
-                                          '</tr>';
-                        }
-                        regoleHTML += '</table></div>';
-                    } else if (r.utilita) {
-                        var u = r.utilita;
-                        regoleHTML += '<table style="margin:2px 0 8px 12px;font-size:11px;border-collapse:collapse;width:calc(100% - 24px)">';
-                        for (var v = 0; v < u.voci.length; v++) {
-                            var voce = u.voci[v];
-                            var stile = voce.subtotale ?
-                                'border-top:1px solid #555;font-weight:bold;padding-top:3px' : '';
-                            var valStr = voce.valore !== null && voce.valore !== undefined ?
-                                (voce.valore > 0 ? '+' : '') + voce.valore.toFixed(1) : '';
-                            var valColore = voce.valore > 0 ? '#8f8' : (voce.valore === 0 ? '#888' : '#f88');
-                            regoleHTML += '<tr style="' + stile + '">' +
-                                '<td style="color:#bbb;padding:1px 8px 1px 0">' + voce.label + '</td>' +
-                                '<td style="color:' + valColore + ';text-align:right;font-family:monospace;min-width:40px">' + valStr + '</td>' +
-                            '</tr>';
-                        }
-                        var totNum = (u.totale != null && isFinite(u.totale)) ? u.totale : 0;
-                        var sogliaNum = (u.sogliaEffettiva != null && isFinite(u.sogliaEffettiva)) ? u.sogliaEffettiva : 0;
-                        var totColore = totNum >= sogliaNum ? '#4f4' : '#f44';
-                        regoleHTML += '<tr style="border-top:1px solid #888;font-weight:bold;padding-top:3px">' +
-                            '<td style="color:#fff;padding:4px 8px 1px 0">TOTALE</td>' +
-                            '<td style="color:' + totColore + ';text-align:right;font-family:monospace;padding-top:4px">' + totNum.toFixed(1) + '</td>' +
-                        '</tr>';
-                        var sogliaDesc = u.numScarti === 1 ? 'base' :
-                                         u.numScarti === 2 ? 'base x0.8' : 'base x0.4';
-                        regoleHTML += '<tr>' +
-                            '<td style="color:#999;padding:1px 8px 1px 0;font-size:10px">Soglia (' + sogliaDesc + ')</td>' +
-                            '<td style="color:#999;text-align:right;font-family:monospace;font-size:10px">' + sogliaNum.toFixed(1) + '</td>' +
-                        '</tr>';
-                        regoleHTML += '</table>';
-                    } else {
-                        regoleHTML += '<div class="modal-row" style="padding-left:12px;font-size:11px;color:#aaa;margin-bottom:8px">' +
-                            r.desc + '</div>';
-                    }
-                }
-            }
-
-            var coeffHTML = '';
-            var coeffLabels = {
-                premioScarti: 'Premio scarti',
-                compressione: 'Compressione',
-                cooperazione: 'Cooperazione',
-                propensioAttacco: 'Attacco',
-                letturaAvversario: 'Lettura avv.',
-                memoria: 'Memoria'
-            };
-            var coeffKeys = Object.keys(coeffLabels);
-            for (var k = 0; k < coeffKeys.length; k++) {
-                var key = coeffKeys[k];
-                if (c[key] !== undefined) {
-                    coeffHTML += '<span style="margin-right:8px;font-size:11px">' +
-                        coeffLabels[key] + ':' + c[key] + '</span>';
-                }
-            }
-
-            apriModal(
-                'Decisione Pesca: <span style="color:' + (d.decisione === 'mazzo' ? '#4f4' : '#ff0') + '">' +
-                    d.decisione.toUpperCase() + '</span>',
-                '<div style="padding:8px 12px;border-bottom:1px solid #444">' +
-                    '<div style="font-size:12px;color:#ccc">' +
-                        'Scarti: <strong>' + s.numCarte + '</strong> carte in totale' +
-                        (s.isJolly ? ' <span style="color:#f80">(Include JOLLY!)</span>' : '') +
-                        (s.isPinella ? ' <span style="color:#f80">(Include PINELLA)</span>' : '') +
-                    '</div>' +
-                '</div>' +
-                '<div style="padding:8px 12px">' +
-                    '<div style="font-size:13px;font-weight:bold;margin-bottom:8px;color:#ddd">Albero decisionale:</div>' +
-                    regoleHTML +
-                '</div>',
-                coeffHTML
-            );
-        }
-
-        function mostraModalGiocata(d) {
-            var bodyHTML = '';
-            // Mossa scelta
-            bodyHTML += '<div style="padding:8px 12px;border-bottom:1px solid #444">' +
-                '<div style="font-size:12px;color:#ccc">Mossa: <strong style="color:#4f4">' +
-                    d.mossaScelta + '</strong>' +
-                    (d.valutazione != null ? ' (val: ' + d.valutazione.toFixed(2) + ')' : '') +
-                '</div></div>';
-            
-            // Helper locale per renderizzare una tabellina breakdown Olistico
-            var renderBreakdownTable = function(bdArray) {
-                if (!bdArray) return '';
-
-                // Uniformiamo se ci viene passato quello di valutaSituazione (Dictionary Dictionary):
-                if (!Array.isArray(bdArray)) {
-                    var mockArray = [
-                        {label: 'Punti Calabili', valore: bdArray.base ? bdArray.base.val : 0, coeff: bdArray.base ? bdArray.base.coeff : '-'},
-                        {label: 'Bonus Scale/Posizionali', valore: (bdArray.breakdownBase || []).reduce(function(s,x){ return (x.label !== 'Punti Tavolo Base' && !x.subtotale) ? s+x.valore : s; }, 0), coeff: '-'},
-                        {label: 'Bonus Burrachi', valore: bdArray.burraco ? bdArray.burraco.val : 0, coeff: bdArray.burraco ? bdArray.burraco.coeff : '-'},
-                        {label: 'Bonus Pozzetto', valore: bdArray.pozzetto ? bdArray.pozzetto.val : 0, coeff: bdArray.pozzetto ? bdArray.pozzetto.coeff : '-'},
-                        {label: 'Bonus Matte libere', valore: bdArray.matte ? bdArray.matte.val : 0, coeff: bdArray.matte ? bdArray.matte.coeff : '-'},
-                        {label: 'Malus Zavorra (Morte)', valore: bdArray.cadaveri ? bdArray.cadaveri.val : 0, coeff: bdArray.cadaveri ? bdArray.cadaveri.coeff : '-'}
-                    ];
-                    return renderBreakdownTable(mockArray.filter(function(x) { return x.valore !== 0; })); 
-                }
-
-                if (bdArray.length === 0) return '';
-                var table = '<table style="margin-top:6px; font-size:10px; border-collapse:collapse; width:100%; border-left:2px solid #555; padding-left:4px;">';
-                var totale = 0;
-                for (var b = 0; b < bdArray.length; b++) {
-                    var k = bdArray[b];
-                    
-                    if (k.valore === 0) continue;
-                    totale += k.valore;
-
-                    var color = k.valore > 0 ? '#4f4' : (k.valore < 0 ? '#f44' : '#888');
-                    var prefix = k.valore > 0 ? '+' : '';
-                    var coeffStr = (k.coeff && k.coeff !== '-') ? ' [C:' + k.coeff + ']' : '';
-                    
-                    table += '<tr style="border-bottom: 1px dotted #333">' +
-                                '<td style="padding: 2px 0; color:#aaa;">' + k.label + coeffStr + '</td>' +
-                                '<td style="text-align:right; font-family:monospace; color:' + color + ';">' + prefix + Number(k.valore).toFixed(1) + '</td>' +
-                              '</tr>';
-                }
-                var totColor = totale >= 0 ? '#4f4' : '#f44';
-                var totPrefix = totale > 0 ? '+' : '';
-                table += '<tr style="border-top: 1px solid #777; font-weight:bold;">' +
-                            '<td style="padding: 4px 0 2px 0; color:#fff;">Score Globale Netto</td>' +
-                            '<td style="text-align:right; font-family:monospace; color:' + totColor + '; padding: 4px 0 2px 0;">' + totPrefix + Number(totale).toFixed(1) + '</td>' +
-                         '</tr>';
-                table += '</table>';
-                return table;
-            };
-
-            // Breakdown Mossa Principale
-            if (d.breakdownScelta) {
-                 bodyHTML += '<div style="padding:4px 12px; border-bottom:1px solid #444; background:rgba(0,0,0,0.2)">';
-                 bodyHTML += renderBreakdownTable(d.breakdownScelta);
-                 bodyHTML += '</div>';
-            }
-
-            // Alternative
-            if (d.alternative && d.alternative.length > 0) {
-                bodyHTML += '<div style="padding:8px 12px">' +
-                    '<div style="font-size:13px;font-weight:bold;margin-bottom:8px;color:#ddd">Alternative valutate:</div>' +
-                    '<table style="font-size:11px;border-collapse:collapse;width:100%">';
-                for (var i = 0; i < d.alternative.length; i++) {
-                    var alt = d.alternative[i];
-                    var isMigliore = i === 0 && alt.desc === d.mossaScelta;
-                    var rowStyle = isMigliore ? 'color:#4f4;font-weight:bold' : 'color:#bbb';
-                    bodyHTML += '<tr style="' + rowStyle + '">' +
-                        '<td style="padding:4px 8px 4px 0">' + alt.desc + 
-                            (alt.breakdown && !isMigliore ? renderBreakdownTable(alt.breakdown) : '') + 
-                        '</td>' +
-                        '<td style="text-align:right;font-family:monospace;min-width:40px; vertical-align:top; padding-top:4px;">' +
-                            (alt.valutazione != null ? alt.valutazione.toFixed(2) : '-') + '</td>' +
-                    '</tr>';
-                }
-                bodyHTML += '</table></div>';
-            }
-            apriModal('Decisione Giocata', bodyHTML, '');
-        }
-
-        function mostraModalScarto(d) {
-            var bodyHTML = '';
-            
-            // Carta scelta (header)
-            bodyHTML += '<div style="padding:8px 12px;border-bottom:1px solid #444">' +
-                '<div style="font-size:12px;color:#ccc">Scarta: <strong style="color:#f80">' +
-                    d.cartaScelta + '</strong>' +
-                    (d.punteggioScelto != null ? ' (punt: ' + (d.punteggioScelto * 10).toFixed(1) + ')' : '') +
-                '</div></div>';
-
-            // Costruisci Matrice delle Motivazioni se presenti in classifica
-            if (d.classifica && d.classifica.length > 0 && d.classifica[0].breakdown) {
-                // 1. Estrai tutte le etichette uniche
-                var labelsMap = {};
-                for (var r = 0; r < d.classifica.length; r++) {
-                    var cb = d.classifica[r].breakdown;
-                    if (cb) {
-                        for (var b = 0; b < cb.length; b++) {
-                            labelsMap[cb[b].label] = true;
-                        }
-                    }
-                }
-                var uniqueLabels = Object.keys(labelsMap).sort();
-                
-                // 2. Assegna Lettere A, B, C...
-                var alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-                var labelToLetter = {};
-                for (var l = 0; l < uniqueLabels.length; l++) {
-                    // Cerca di non sforare l'alfabeto
-                    var letterId = (l < alphabet.length) ? alphabet.charAt(l) : l;
-                    labelToLetter[uniqueLabels[l]] = letterId;
-                }
-
-                // 3. Renderizza Legenda
-                bodyHTML += '<div style="padding:8px 12px; border-bottom:1px solid #444">' +
-                    '<div style="font-size:13px;font-weight:bold;margin-bottom:8px;color:#ddd">Legenda Motivazioni:</div>' +
-                    '<table style="font-size:11px;border-collapse:collapse;width:100%">';
-                for (var l2 = 0; l2 < uniqueLabels.length; l2++) {
-                    var key = uniqueLabels[l2];
-                    
-                    // Cerca l'eventuale stringa del coefficiente esplorando d.classifica
-                    var coeffStr = '';
-                    for (var rr = 0; rr < d.classifica.length; rr++) {
-                        var cbb = d.classifica[rr].breakdown;
-                        if (cbb) {
-                            for (var bb = 0; bb < cbb.length; bb++) {
-                                if (cbb[bb].label === key && cbb[bb].coeffStr) {
-                                    coeffStr = ' <span style="color:#888; font-size:9px;">[' + cbb[bb].coeffStr + ']</span>';
-                                    break;
-                                }
-                            }
-                        }
-                        if (coeffStr !== '') break;
-                    }
-
-                    bodyHTML += '<tr style="border-bottom:1px solid #333">' +
-                        '<td style="padding:2px 4px; color:#f80; font-weight:bold; width:20px;">' + labelToLetter[key] + '</td>' +
-                        '<td style="padding:2px 4px; color:#bbb">' + key + coeffStr + '</td>' +
-                    '</tr>';
-                }
-                bodyHTML += '</table></div>';
-
-                // 4. Renderizza Tabella a Matrice
-                bodyHTML += '<div style="padding:8px 12px; overflow-x:auto;">' +
-                    '<table style="font-size:11px;border-collapse:collapse;width:100%">';
-                
-                // Intestazione Tabella
-                bodyHTML += '<tr style="border-bottom:1px solid #777; color:#fff;">' +
-                    '<th style="text-align:left; padding:4px;">CARTA</th>' +
-                    '<th style="text-align:right; padding:4px;">TOT</th>';
-                for (var l3 = 0; l3 < uniqueLabels.length; l3++) {
-                    bodyHTML += '<th style="text-align:center; padding:4px; color:#f80; border-left:1px dotted #555;">' + labelToLetter[uniqueLabels[l3]] + '</th>';
-                }
-                bodyHTML += '</tr>';
-
-                // Righe Carte
-                for (var i = 0; i < d.classifica.length; i++) {
-                    var c = d.classifica[i];
-                    var isScelta = i === 0;
-                    var rowStyle = isScelta ? 'background:rgba(255,136,0,0.15); font-weight:bold;' : '';
-                    var nameColor = isScelta ? '#f80' : '#bbb';
-                    
-                    bodyHTML += '<tr style="border-bottom:1px dotted #444; ' + rowStyle + '">' +
-                        '<td style="padding:4px; color:' + nameColor + '; white-space:nowrap;">' + c.carta + '</td>' +
-                        '<td style="padding:4px; text-align:right; font-family:monospace; color:' + (c.punteggio > 0 ? '#4f4' : (c.punteggio < 0 ? '#f44' : '#888')) + ';">' + (c.punteggio > 0 ? '+' : '') + (c.punteggio * 10).toFixed(1) + '</td>';
-                    
-                    // Crea dizionario per accesso rapido ai valori del breakdown di questa carta
-                    var valMap = {};
-                    if (c.breakdown) {
-                        for (var k = 0; k < c.breakdown.length; k++) {
-                            valMap[c.breakdown[k].label] = c.breakdown[k].valore;
-                        }
-                    }
-
-                    // Celle per ogni Modificatore
-                    for (var l4 = 0; l4 < uniqueLabels.length; l4++) {
-                        var valRow = valMap[uniqueLabels[l4]];
-                        var cellStr = '-';
-                        var cellCol = '#555';
-                        if (valRow !== undefined && valRow !== 0) {
-                            var vPos = (valRow > 0);
-                            cellCol = vPos ? '#4f4' : '#f44';
-                            cellStr = (vPos ? '+' : '') + Number(valRow * 10).toFixed(1);
-                        }
-                        bodyHTML += '<td style="padding:4px; text-align:center; font-family:monospace; color:' + cellCol + '; border-left:1px dotted #555;">' + cellStr + '</td>';
-                    }
-                    bodyHTML += '</tr>';
-                }
-                bodyHTML += '</table></div>';
-            }
-            apriModal('Decisione Scarto', bodyHTML, '');
-        }
 
         window.mostraAnalisiParallela = function(giocatoreIdx, scenario) {
             try {
@@ -3802,9 +3147,33 @@ function getGiocatoreHTML(indiceGiocatore, ruolo) {
                 
                 // Imposta scenario di default se non passato
                 scenario = scenario || 'scarti';
-                
-                var g = window.opener.game.giocatori[giocatoreIdx];
-                var d = window.opener.Strategia.generaAnalisiParallela(g, scenario);
+
+                // Usa d pre-calcolato da _diagData (stato al momento della decisione AI)
+                var _diagOpener = window.opener._diagData;
+                var _diagFase = null, _diagPhaseData = null;
+                if (_diagOpener) {
+                    ['prePesca', 'postPesca', 'postPozzetto'].forEach(function(f) {
+                        if (!_diagFase && _diagOpener[f] && _diagOpener[f].analisiDataPerScenario &&
+                                _diagOpener[f].analisiDataPerScenario[scenario]) {
+                            _diagFase = f;
+                            _diagPhaseData = _diagOpener[f];
+                        }
+                    });
+                }
+                var d;
+                if (_diagPhaseData) {
+                    var _dStored = _diagPhaseData.analisiDataPerScenario[scenario];
+                    // Crea copia di lavoro per non mutare il d salvato in _diagData
+                    d = Object.assign({}, _dStored, {
+                        classifica: _dStored.classifica.map(function(r) {
+                            return Object.assign({}, r, { breakdown: (r.breakdown || []).slice() });
+                        }),
+                        opzioniScenario: _dStored.opzioniScenario.slice()
+                    });
+                } else {
+                    var g = window.opener.game.giocatori[giocatoreIdx];
+                    d = window.opener.Strategia.generaAnalisiParallela(g, scenario);
+                }
                 window._analisiData = d;
                 window._analisiGiocatoreIdx = giocatoreIdx;
                 window._analisiScenario = scenario;
@@ -3818,14 +3187,13 @@ function getGiocatoreHTML(indiceGiocatore, ruolo) {
                 var btnStyle = 'padding:6px 12px; margin-right:8px; border:none; border-radius:4px; cursor:pointer; font-weight:bold; font-size:11px;';
                 var btnMano = scenario === 'mano' ? 'background:#4a9; color:#fff;' : 'background:#244; color:#8aa;';
                 var btnScarti = scenario === 'scarti' ? 'background:#f80; color:#fff;' : 'background:#430; color:#aa6;';
-                var btnMazzo = scenario === 'mazzo' ? 'background:#a49; color:#fff;' : 'background:#424; color:#a6a;';
                 var btnAttivo = 'border:2px solid #fff;';
 
+                var _mostraScartBtn = !_diagFase || _diagFase === 'prePesca';
                 bodyHTML += '<div style="padding:12px; border-bottom:1px solid #444; background:rgba(0,0,0,0.3); display:flex; flex-wrap:wrap; align-items:center; gap:8px;">' +
                     '<div style="font-size:12px; color:#ccc; margin-right:12px;">Sandbox: <strong style="color:#fff;">' + d.giocatore + '</strong></div>' +
+                    (_mostraScartBtn ? '<button onclick="mostraAnalisiParallela(' + giocatoreIdx + ', &apos;scarti&apos;)" style="' + btnStyle + btnScarti + '">+ Predizione Scarti</button>' : '') +
                     '<button onclick="mostraAnalisiParallela(' + giocatoreIdx + ', &apos;mano&apos;)" style="' + btnStyle + btnMano + '">Solo Mano</button>' +
-                    '<button onclick="mostraAnalisiParallela(' + giocatoreIdx + ', &apos;scarti&apos;)" style="' + btnStyle + btnScarti + '">+ Predizione Scarti</button>' +
-                    '<button onclick="mostraAnalisiParallela(' + giocatoreIdx + ', &apos;mazzo&apos;)" style="' + btnStyle + btnMazzo + '">+ Prima carta Mazzo</button>' +
                     '<div style="width:1px; height:24px; background:#555; margin:0 4px;"></div>' +
                     '<button onclick="window.analisiSortPath=&apos;numero&apos;; mostraAnalisiParallela(' + giocatoreIdx + ', &apos;' + scenario + '&apos;)" style="' + btnStyle + 'background:#334;color:#aaa;' + (window.analisiSortPath==='numero'?btnAttivo:'') + '">Ord. Numero</button>' +
                     '<button onclick="window.analisiSortPath=&apos;seme&apos;; mostraAnalisiParallela(' + giocatoreIdx + ', &apos;' + scenario + '&apos;)" style="' + btnStyle + 'background:#334;color:#aaa;' + (window.analisiSortPath==='seme'?btnAttivo:'') + '">Ord. Seme</button>' +
@@ -4874,14 +4242,13 @@ function getGiocatoreHTML(indiceGiocatore, ruolo) {
                         bodyHTML += '</tr>';
                     }
                     bodyHTML += '</table></div>';
-                    // d viene ricostruito da generaAnalisiParallela ad ogni chiamata,
-                    // quindi le opzioni B iniettate restano valide per i click sui titoli colonna
-                    // e spariranno automaticamente alla prossima apertura della finestra.
+                    // d viene letto da _diagData (stato al momento della decisione AI) con copia di lavoro.
+                    // Le opzioni B/M iniettate sono valide per tutta la sessione di visualizzazione.
                 }
 
-                // Rimuovi eventuali pop-up vecchi dello stesso tipo prima di stamparne di nuovi
-                chiudiModal();
-                apriModal('🔍 Sandbox Analisi Parallela (WIP)', bodyHTML, 'Valori esplorativi della nuova Strategia Indipendente.', 'width:99vw; max-width:99vw; height:98vh; max-height:98vh; overflow-y:auto; position:fixed; top:1vh; left:0.5vw; margin:0; box-sizing:border-box;');
+                // Renderizza inline nella debug window (no modal overlay)
+                var root = document.getElementById('analisi-root');
+                if (root) root.innerHTML = bodyHTML;
             } catch(e) {
                 alert("Errore Analisi Parallela: " + e.message + "\\n" + e.stack);
             }
@@ -5277,19 +4644,25 @@ function getGiocatoreHTML(indiceGiocatore, ruolo) {
         // Usa i coefficienti del popup (potrebbero differire dal main window se modificati nel pannello)
         window.elaboraOpz = function() {
             var op = window.opener;
+            // Mostra log pre-salvato da _diagData se disponibile
+            var diagData = op._diagData;
+            var fase = (window._analisiScenario === 'mano' && diagData && diagData['postPesca'])
+                ? 'postPesca' : 'prePesca';
+            var faseData = diagData && diagData[fase];
+            if (faseData && faseData.logLines && faseData.logLines.length > 0) {
+                var con = window.opener ? window.opener.console : console;
+                con.group('%c▶ Log Analisi AI — ' + fase, 'font-size:13px;font-weight:bold;color:#4af;background:#001a30');
+                faseData.logLines.forEach(function(l) { con.log(l); });
+                con.groupEnd();
+                return;
+            }
+            // Fallback: riesegui AI (verbose) se _diagData non disponibile
             var g = op.game.giocatori[window._analisiGiocatoreIdx];
-
-            // Swap temporaneo coefficienti: il popup potrebbe avere valori diversi dal gioco
             var savedCf = op.coeffScoreOpz;
             op.coeffScoreOpz = window.coeffScoreOpz;
-
-            // soloMano=true se siamo già in fase post-pesca (mano o mazzo), false se l'utente può ancora scegliere se pescare dagli scarti
             var soloMano = (window._analisiScenario === 'mano' || window._analisiScenario === 'mazzo');
             op.scegliBestOpzioneAI(g, soloMano, true);
-
             op.coeffScoreOpz = savedCf;
-
-            // Sincronizza il contesto del popup con il risultato scelto dall'AI
             window._analisiData          = op._analisiData;
             window._analisiScenario      = op._analisiScenario;
             window._analisiGiocatoreIdx  = op._analisiGiocatoreIdx;
@@ -5301,7 +4674,7 @@ function getGiocatoreHTML(indiceGiocatore, ruolo) {
         });
 
         // Auto-apri analisi parallela all'apertura della pagina debug
-        setTimeout(function() { window.mostraAnalisiParallela(${indiceGiocatore}); }, 200);
+        setTimeout(function() { window.mostraAnalisiParallela(${indiceGiocatore}, '${defaultScenario || "scarti"}'); }, 200);
     </script>
 </body>
 </html>`;
