@@ -2412,86 +2412,213 @@ window._calcolaVariantiB = function(d, game, giocatoreIdx) {
         var mm = bOpt.mosse.map(function(m){ return m.carte ? Object.assign({},m,{carte:m.carte.slice()}) : Object.assign({},m); });
         if (sacrificed && sacrificed.length > 0) {
             var byM = {};
-            sacrificed.forEach(function(sc){ if(!byM[sc.mossoIdx]) byM[sc.mossoIdx]=[]; byM[sc.mossoIdx].push(sc.carta.id); });
+            var stealIdx = new Set();
+            sacrificed.forEach(function(sc){
+                if (sc.mossoTipo === 'calata') {
+                    stealIdx.add(sc.mossoIdx); // rimuovi la calata originale dal base-opt
+                } else {
+                    if(!byM[sc.mossoIdx]) byM[sc.mossoIdx]=[];
+                    byM[sc.mossoIdx].push(sc.carta.id);
+                }
+            });
             Object.keys(byM).forEach(function(mi){
                 var m = mm[parseInt(mi)]; if(!m||!m.carte) return;
                 m.carte = m.carte.filter(function(c){ return byM[mi].indexOf(c.id)===-1; });
                 if (m.carte.length < 3) mm[parseInt(mi)] = null;
             });
-            mm = mm.filter(function(m){ return m !== null; });
+            mm = mm.filter(function(m, idx){ return m !== null && !stealIdx.has(idx); });
             sacrificed.forEach(function(sc){ mm.push({tipo:'calata',carta:sc.carta,combo:sc.comboTarget,comboId:sc.comboTarget.id}); });
         }
         freeCalate.forEach(function(fc){ mm.push({tipo:'calata',carta:fc.carta,combo:fc.comboTarget,comboId:fc.comboTarget.id}); });
         return mm;
     }
 
+    // Calcola le carte calabili sulla combo cb per un dato bOpt.
+    // Ritorna { cb, freeList, sacList, cardIds } oppure null se nessuna carta.
+    function computeComboCandidate(bOpt, cb) {
+        var fisicheCombo = cb.carte.filter(function(c){return !c.isJolly&&!c.isPinella;});
+        if (fisicheCombo.length === 0) return null;
+        var matteCombo = cb.carte.length - fisicheCombo.length;
+        var avail = [];
+        d.classifica.forEach(function(r){ if(!origMano(r)||r.isMatta) return; if(bOpt.carteUsate&&bOpt.carteUsate.has(r.cartaRef.id)) return; avail.push({carta:r.cartaRef,mossoIdx:-1}); });
+        bOpt.mosse.forEach(function(mossa,mIdx){ if(mossa.tipo!=='tris'&&mossa.tipo!=='scala') return; (mossa.carte||[]).forEach(function(carta){ if(!carta.isJolly&&!carta.isPinella) avail.push({carta:carta,mossoIdx:mIdx}); }); });
+        // Calate del base-opt verso ALTRI combo: possono essere "rubate" e reindirizzate
+        bOpt.mosse.forEach(function(mossa, mIdx) {
+            if (mossa.tipo !== 'calata') return;
+            var carta = mossa.carta;
+            if (!carta || carta.isJolly || carta.isPinella) return;
+            var origCId = mossa.comboId !== undefined ? mossa.comboId : (mossa.combo ? mossa.combo.id : null);
+            if (origCId === cb.id) return; // già verso questo combo, già in physNums
+            avail.push({ carta: carta, mossoIdx: mIdx, mossoTipo: 'calata' });
+        });
+        var matteTotal = Math.min(1, matteCombo + matteHand);
+        var freeList = [], sacList = [];
+        if (cb.tipo === 1) {
+            var num = fisicheCombo[0].numero;
+            avail.forEach(function(ac){ if(ac.carta.numero!==num) return; if(ac.mossoIdx<0) freeList.push({carta:ac.carta,comboTarget:cb}); else sacList.push({carta:ac.carta,mossoIdx:ac.mossoIdx,mossoTipo:ac.mossoTipo,comboTarget:cb}); });
+        } else {
+            var seme = fisicheCombo[0].seme;
+            var physNums = fisicheCombo.map(function(c){return c.numero;}).sort(function(a,b){return a-b;});
+            // Includi numeri di calate già presenti in bOpt sullo stesso combo (evita posizioni duplicate nella scala)
+            bOpt.mosse.forEach(function(m) {
+                if (m.tipo==='calata' && m.carta && !m.carta.isJolly && !m.carta.isPinella
+                    && (m.comboId===cb.id || (m.combo&&m.combo.id===cb.id)) && m.carta.seme===seme)
+                    physNums.push(m.carta.numero);
+            });
+            physNums = physNums.filter(function(n,i,a){return a.indexOf(n)===i;}).sort(function(a,b){return a-b;});
+            var cMin = physNums[0], cMax = physNums[physNums.length-1];
+            var sameAvail = avail.filter(function(ac){return ac.carta.seme===seme;});
+            if (sameAvail.length === 0) return null;
+            var allNums = physNums.concat(sameAvail.map(function(ac){return ac.carta.numero;}));
+            allNums = allNums.filter(function(n,i,a){return a.indexOf(n)===i;}).sort(function(a,b){return a-b;});
+            var bestExt = cb.carte.length, bLo = cMin, bHi = cMax;
+            for (var lo = cMin; lo >= 1; lo--) {
+                for (var hi = cMax; hi <= 13; hi++) {
+                    var pin = 0; allNums.forEach(function(n){if(n>=lo&&n<=hi)pin++;});
+                    var gaps = (hi-lo+1)-pin;
+                    if (gaps<=matteTotal && (hi-lo+1)>bestExt) { bestExt=hi-lo+1; bLo=lo; bHi=hi; }
+                }
+            }
+            if (bestExt <= cb.carte.length) return null;
+            var used = {}; physNums.forEach(function(n){used[n]=true;});
+            sameAvail.forEach(function(ac){ var n=ac.carta.numero; if(n<bLo||n>bHi||used[n]) return; used[n]=true; if(ac.mossoIdx<0) freeList.push({carta:ac.carta,comboTarget:cb}); else sacList.push({carta:ac.carta,mossoIdx:ac.mossoIdx,mossoTipo:ac.mossoTipo,comboTarget:cb}); });
+            // Se ci sono gap nel range non coperti da carte fisiche, serve una matta dalla mano
+            var coveredNums = {}; physNums.forEach(function(n){coveredNums[n]=true;});
+            freeList.forEach(function(fc){coveredNums[fc.carta.numero]=true;});
+            sacList.forEach(function(sc){coveredNums[sc.carta.numero]=true;});
+            var gapScoperti = 0; for (var gn=bLo; gn<=bHi; gn++) { if (!coveredNums[gn]) gapScoperti++; }
+            if (gapScoperti > matteCombo && matteHand > 0) {
+                var mattaHandR = d.classifica.find(function(r){ return origMano(r) && r.isMatta && !(bOpt.carteUsate && bOpt.carteUsate.has(r.cartaRef.id)); });
+                if (mattaHandR) freeList.unshift({ carta: mattaHandR.cartaRef, comboTarget: cb });
+            }
+        }
+        if (freeList.length === 0 && sacList.length === 0) return null;
+        var cardIds = new Set();
+        freeList.forEach(function(fc){ cardIds.add(fc.carta.id); });
+        sacList.forEach(function(sc){ cardIds.add(sc.carta.id); });
+        return { cb: cb, freeList: freeList, sacList: sacList, cardIds: cardIds };
+    }
+
     var bLabelMap = {}, bFirstIdx = d.opzioniScenario.length;
-    d.opzioniScenario.slice(0, bFirstIdx).forEach(function(bOpt, opzIdx) {
+
+    // Lista base OPZ da esplorare: OPZ0 (non fa nulla) + tutte le OPZ esistenti
+    var opz0 = { mosse: [], carteUsate: new Set(), descCarte: 'OPZ0' };
+    var baseList = [{ opt: opz0, isOPZ0: true, baseIdx: -1 }];
+    d.opzioniScenario.slice(0, bFirstIdx).forEach(function(opt, i) {
+        baseList.push({ opt: opt, isOPZ0: false, baseIdx: i });
+    });
+
+    baseList.forEach(function(entry) {
+        var bOpt = entry.opt;
         if (!bOpt || !bOpt.mosse) return;
+        var isOPZ0 = entry.isOPZ0;
+        var baseIdx = entry.baseIdx;
+        var baseLabel = isOPZ0 ? '0' : String(baseIdx + 1);
+
+        // OPZ0 non è in d.opzioniScenario: la inseriamo temporaneamente per poter chiamare calcolaScoreOpz
+        var opzIdx;
+        if (isOPZ0) {
+            opzIdx = d.opzioniScenario.length;
+            d.opzioniScenario.push(bOpt);
+        } else {
+            opzIdx = baseIdx;
+        }
+
         var baseRes = window.calcolaScoreOpz(opzIdx, true);
         var bestScore = baseRes ? baseRes.score : 0;
         var bestMosse = null;
+
+        // Calcola i candidati per ogni combo in campo (una entry per combo)
+        var comboCandidates = [];
         comboSquadra.forEach(function(cb) {
-            var fisicheCombo = cb.carte.filter(function(c){return !c.isJolly&&!c.isPinella;});
-            if (fisicheCombo.length === 0) return;
-            var matteCombo = cb.carte.length - fisicheCombo.length;
-            var avail = [];
-            d.classifica.forEach(function(r){ if(!origMano(r)||r.isMatta) return; if(bOpt.carteUsate&&bOpt.carteUsate.has(r.cartaRef.id)) return; avail.push({carta:r.cartaRef,mossoIdx:-1}); });
-            bOpt.mosse.forEach(function(mossa,mIdx){ if(mossa.tipo!=='tris'&&mossa.tipo!=='scala') return; (mossa.carte||[]).forEach(function(carta){ if(!carta.isJolly&&!carta.isPinella) avail.push({carta:carta,mossoIdx:mIdx}); }); });
-            var matteTotal = Math.min(1, matteCombo + matteHand);
-            var freeList = [], sacList = [];
-            if (cb.tipo === 1) {
-                var num = fisicheCombo[0].numero;
-                avail.forEach(function(ac){ if(ac.carta.numero!==num) return; if(ac.mossoIdx<0) freeList.push({carta:ac.carta,comboTarget:cb}); else sacList.push({carta:ac.carta,mossoIdx:ac.mossoIdx,comboTarget:cb}); });
-            } else {
-                var seme = fisicheCombo[0].seme;
-                var physNums = fisicheCombo.map(function(c){return c.numero;}).sort(function(a,b){return a-b;});
-                // Includi numeri di calate già presenti in bOpt sullo stesso combo (evita posizioni duplicate nella scala)
-                bOpt.mosse.forEach(function(m) {
-                    if (m.tipo==='calata' && m.carta && !m.carta.isJolly && !m.carta.isPinella
-                        && (m.comboId===cb.id || (m.combo&&m.combo.id===cb.id)) && m.carta.seme===seme)
-                        physNums.push(m.carta.numero);
-                });
-                physNums = physNums.filter(function(n,i,a){return a.indexOf(n)===i;}).sort(function(a,b){return a-b;});
-                var cMin = physNums[0], cMax = physNums[physNums.length-1];
-                var sameAvail = avail.filter(function(ac){return ac.carta.seme===seme;});
-                if (sameAvail.length === 0) return;
-                var allNums = physNums.concat(sameAvail.map(function(ac){return ac.carta.numero;}));
-                allNums = allNums.filter(function(n,i,a){return a.indexOf(n)===i;}).sort(function(a,b){return a-b;});
-                var bestExt = cb.carte.length, bLo = cMin, bHi = cMax;
-                for (var lo = cMin; lo >= 1; lo--) {
-                    for (var hi = cMax; hi <= 13; hi++) {
-                        var pin = 0; allNums.forEach(function(n){if(n>=lo&&n<=hi)pin++;});
-                        var gaps = (hi-lo+1)-pin;
-                        if (gaps<=matteTotal && (hi-lo+1)>bestExt) { bestExt=hi-lo+1; bLo=lo; bHi=hi; }
-                    }
-                }
-                if (bestExt <= cb.carte.length) return;
-                var used = {}; physNums.forEach(function(n){used[n]=true;});
-                sameAvail.forEach(function(ac){ var n=ac.carta.numero; if(n<bLo||n>bHi||used[n]) return; used[n]=true; if(ac.mossoIdx<0) freeList.push({carta:ac.carta,comboTarget:cb}); else sacList.push({carta:ac.carta,mossoIdx:ac.mossoIdx,comboTarget:cb}); });
-                // Se ci sono gap nel range non coperti da carte fisiche, serve una matta dalla mano
-                var coveredNums = {}; physNums.forEach(function(n){coveredNums[n]=true;});
-                freeList.forEach(function(fc){coveredNums[fc.carta.numero]=true;});
-                sacList.forEach(function(sc){coveredNums[sc.carta.numero]=true;});
-                var gapScoperti = 0; for (var gn=bLo; gn<=bHi; gn++) { if (!coveredNums[gn]) gapScoperti++; }
-                if (gapScoperti > matteCombo && matteHand > 0) {
-                    var mattaHandR = d.classifica.find(function(r){ return origMano(r) && r.isMatta && !(bOpt.carteUsate && bOpt.carteUsate.has(r.cartaRef.id)); });
-                    if (mattaHandR) freeList.unshift({ carta: mattaHandR.cartaRef, comboTarget: cb });
-                }
-            }
-            if (freeList.length === 0 && sacList.length === 0) return;
-            var mm = buildModMosse(bOpt, freeList, sacList);
-            var orig = bOpt.mosse; bOpt.mosse = mm;
-            var res = window.calcolaScoreOpz(opzIdx, true);
-            bOpt.mosse = orig;
-            if (res && res.score > bestScore) { bestScore = res.score; bestMosse = mm; }
+            var cand = computeComboCandidate(bOpt, cb);
+            if (cand) comboCandidates.push(cand);
         });
+
+        // Prova tutti i sottoinsiemi non vuoti (powerset) dei comboCandidates
+        var n = comboCandidates.length;
+        var nProve = 0;
+        var _w2 = window.opener || window;
+        var _nomeCarta = function(c) { return _w2.Strategia && _w2.Strategia.nomeCarta ? _w2.Strategia.nomeCarta(c) : (c.numero + c.seme); };
+        if (game.debugAI && n > 0) {
+            console.log('[VariantiB] OPZ' + baseLabel + ' → ' + n + ' candidati:');
+            comboCandidates.forEach(function(cand, ci) {
+                var freeNames = cand.freeList.map(function(fc){ return _nomeCarta(fc.carta); }).join(',');
+                var sacNames = cand.sacList.map(function(sc){ return _nomeCarta(sc.carta); }).join(',');
+                var ids = Array.from(cand.cardIds).join(',');
+                console.log('  [' + ci + '] combo#' + cand.cb.id + ' free=[' + freeNames + '] sac=[' + sacNames + '] ids={' + ids + '}');
+            });
+            console.log('  base score=' + (baseRes ? baseRes.score.toFixed(2) : 'null'));
+        }
+        for (var mask = 1; mask < (1 << n); mask++) {
+            // Verifica che le carte usate dai combo selezionati siano disgiunte
+            var allCardIds = new Set();
+            var valid = true;
+            var selectedCandidates = [];
+            for (var i = 0; i < n; i++) {
+                if (!(mask & (1 << i))) continue;
+                var cand = comboCandidates[i];
+                var conflict = false;
+                cand.cardIds.forEach(function(id){ if (allCardIds.has(id)) conflict = true; });
+                if (conflict) { valid = false; break; }
+                cand.cardIds.forEach(function(id){ allCardIds.add(id); });
+                selectedCandidates.push(cand);
+            }
+            if (!valid) {
+                if (game.debugAI) console.log('  mask=' + mask + ' CONFLICT → skip');
+                continue;
+            }
+            nProve++;
+
+            var combinedFree = [], combinedSac = [];
+            selectedCandidates.forEach(function(cand){
+                combinedFree = combinedFree.concat(cand.freeList);
+                combinedSac = combinedSac.concat(cand.sacList);
+            });
+
+            var mm = buildModMosse(bOpt, combinedFree, combinedSac);
+            var origMosse = bOpt.mosse; bOpt.mosse = mm;
+            // Expand carteUsate with free calate so orfane penalty counts them as used
+            var origCU = bOpt.carteUsate;
+            var expandedCU = new Set(origCU);
+            combinedFree.forEach(function(fc) { expandedCU.add(fc.carta.id); });
+            bOpt.carteUsate = expandedCU;
+            var res = window.calcolaScoreOpz(opzIdx, true);
+            bOpt.mosse = origMosse;
+            bOpt.carteUsate = origCU;
+            var improved = res && res.score > bestScore;
+            if (game.debugAI) {
+                var combLabels = selectedCandidates.map(function(c){ return 'combo#'+c.cb.id; }).join('+');
+                var freeStr = combinedFree.map(function(fc){ return _nomeCarta(fc.carta); }).join(',');
+                var sacStr = combinedSac.map(function(sc){ return _nomeCarta(sc.carta); }).join(',');
+                console.log('  mask=' + mask + ' [' + combLabels + '] free=[' + freeStr + '] sac=[' + sacStr + '] → score=' + (res ? res.score.toFixed(2) : 'null') + (improved ? ' ◄ NUOVO BEST' : ''));
+            }
+            if (improved) { bestScore = res.score; bestMosse = mm; }
+        }
+
+        if (game.debugAI && n > 0) {
+            var baseScoreVal = baseRes ? baseRes.score : 0;
+            var deltaStr = bestMosse ? '+' + (bestScore - baseScoreVal).toFixed(1) : 'nessun miglioramento';
+            console.log('[VariantiB] OPZ' + baseLabel + ' (' + n + ' combo): ' + nProve + ' combinazioni provate → ' + deltaStr + ' vs base (bestScore=' + bestScore.toFixed(2) + ')');
+        }
+
+        // Ripristina d.opzioniScenario se avevamo inserito OPZ0 temporaneamente
+        if (isOPZ0) d.opzioniScenario.pop();
+
         if (!bestMosse) return;
         var bIdx = d.opzioniScenario.length;
-        bLabelMap['OPZ' + (bIdx + 1)] = 'OPZ' + (opzIdx + 1);
+        bLabelMap['OPZ' + (bIdx + 1)] = 'OPZ' + baseLabel;
         var bCU = new Set();
         bestMosse.forEach(function(m){ if(m.tipo==='tris'||m.tipo==='scala'){(m.carte||[]).forEach(function(c){bCU.add(c.id);});} else if(m.tipo==='calata'&&m.carta){bCU.add(m.carta.id);} });
-        d.opzioniScenario.push({ mosse: bestMosse, carteUsate: bCU, descCarte: 'OPZ' + (opzIdx + 1) + 'B' });
+        if (game.debugAI) {
+            var bestMosseStr = bestMosse.map(function(m){
+                if (m.tipo==='calata') return 'calata('+_nomeCarta(m.carta)+'→combo#'+m.comboId+')';
+                if (m.tipo==='tris'||m.tipo==='scala') return m.tipo+'['+(m.carte||[]).map(_nomeCarta).join(',')+']';
+                return m.tipo;
+            }).join(', ');
+            console.log('[VariantiB] OPZ' + baseLabel + 'B mosse: [' + bestMosseStr + '] bCU={' + Array.from(bCU).join(',') + '}');
+        }
+        d.opzioniScenario.push({ mosse: bestMosse, carteUsate: bCU, descCarte: 'OPZ' + baseLabel + 'B' });
     });
     return { bLabelMap: bLabelMap, bFirstIdx: bFirstIdx };
 };
@@ -3600,197 +3727,68 @@ function getGiocatoreHTML(indiceGiocatore, ruolo, defaultScenario) {
                         }
                     }
 
-                    // ---- OPZnB: variante B per ogni opzione ----
-                    // Aggiunge tutte le carte libere attaccabili (freeCalate) + prova sottoinsiemi
-                    // delle carte "in conflitto" (in nuove combo E attaccabili in campo)
-                    var _dbgCon = window.opener ? window.opener.console : console;
-                    _dbgCon.log('[OPZnB] noOpz='+noOpz+' comboSquadra='+_comboSquadra.length+' opzioniScenario='+(d.opzioniScenario?d.opzioniScenario.length:'null'));
-                    if (!noOpz && d.opzioniScenario) {
-                        var _nCarta = window.opener && window.opener.Strategia && window.opener.Strategia.nomeCarta;
-                        function _nomeCB(c) { return _nCarta ? _nCarta(c) : (c.numero + (c.seme||'')); }
+                    // ---- OPZnB: variante B per ogni opzione (via _calcolaVariantiB) ----
+                    if (!noOpz && d.opzioniScenario && window.opener && window.opener._calcolaVariantiB) {
+                        // Swap contesto opener come fa la delegazione di calcolaScoreOpz
+                        var _bSavedD  = window.opener._analisiData;
+                        var _bSavedI  = window.opener._analisiGiocatoreIdx;
+                        var _bSavedCF = window.opener.coeffScoreOpz;
+                        window.opener._analisiData         = d;
+                        window.opener._analisiGiocatoreIdx = giocatoreIdx;
+                        window.opener.coeffScoreOpz        = window.coeffScoreOpz;
+                        var _bVarRes = window.opener._calcolaVariantiB(d, window.opener.game, giocatoreIdx);
+                        window.opener._analisiData         = _bSavedD;
+                        window.opener._analisiGiocatoreIdx = _bSavedI;
+                        window.opener.coeffScoreOpz        = _bSavedCF;
+                        _bLabelMap = _bVarRes.bLabelMap;
+                        var _bFirstIdx = _bVarRes.bFirstIdx;
 
-                        function _buildModMosse(bOpt, freeCalate, sacrificed) {
-                            var modMosse = bOpt.mosse.map(function(m) {
-                                return m.carte ? Object.assign({}, m, { carte: m.carte.slice() }) : Object.assign({}, m);
-                            });
-                            if (sacrificed && sacrificed.length > 0) {
-                                var byMossa = {};
-                                sacrificed.forEach(function(sc) {
-                                    if (!byMossa[sc.mossoIdx]) byMossa[sc.mossoIdx] = [];
-                                    byMossa[sc.mossoIdx].push(sc.carta.id);
-                                });
-                                Object.keys(byMossa).forEach(function(mIdxStr) {
-                                    var m = modMosse[parseInt(mIdxStr)];
-                                    if (!m || !m.carte) return;
-                                    m.carte = m.carte.filter(function(c) { return byMossa[mIdxStr].indexOf(c.id) === -1; });
-                                    if (m.carte.length < 3) modMosse[parseInt(mIdxStr)] = null;
-                                });
-                                modMosse = modMosse.filter(function(m) { return m !== null; });
-                                sacrificed.forEach(function(sc) {
-                                    modMosse.push({ tipo: 'calata', carta: sc.carta, combo: sc.comboTarget, comboId: sc.comboTarget.id });
-                                });
-                            }
-                            freeCalate.forEach(function(fc) {
-                                modMosse.push({ tipo: 'calata', carta: fc.carta, combo: fc.comboTarget, comboId: fc.comboTarget.id });
-                            });
-                            return modMosse;
-                        }
-
-                        uniqueOpzLabels.forEach(function(bLbl) {
-                            var bIdxPre = parseInt(bLbl.replace('OPZ','')) - 1;
-                            if (bIdxPre === -1) { opzBPreCalc[bLbl] = null; return; }
-                            var bOpt = d.opzioniScenario[bIdxPre];
-                            if (!bOpt || !bOpt.mosse) { opzBPreCalc[bLbl] = null; return; }
-
-                            var baseScore = (scoreOpzPreCalc[bLbl] || { score: 0 }).score;
-                            var bestScore = baseScore;
-                            var bestMosse = null;
-
-                            function _tryVariantB(fc, sac) {
-                                var mm = _buildModMosse(bOpt, fc, sac);
-                                var orig = bOpt.mosse; bOpt.mosse = mm;
-                                var res = window.calcolaScoreOpz(bIdxPre, true);
-                                bOpt.mosse = orig;
-                                return res ? { score: res.score, mosse: mm } : null;
-                            }
-
-                            // Per ogni combo in campo, trova la massima estensione possibile
-                            // usando: carte libere (non in OPZ) + carte nelle mosse OPZ (sacrificabili)
-                            _comboSquadra.forEach(function(cb) {
-                                var fisicheCombo = cb.carte.filter(function(c){return !c.isJolly&&!c.isPinella;});
-                                if (fisicheCombo.length === 0) return;
-                                var matteCombo = cb.carte.length - fisicheCombo.length;
-
-                                // Raccoglie carte disponibili: libere + da mosse OPZ
-                                var avail = []; // {carta, mossoIdx} - mossoIdx=-1=libera
-                                d.classifica.forEach(function(r) {
-                                    if (!_originiMano(r) || r.isMatta) return;
-                                    if (bOpt.carteUsate && bOpt.carteUsate.has(r.cartaRef.id)) return;
-                                    avail.push({ carta: r.cartaRef, mossoIdx: -1 });
-                                });
-                                bOpt.mosse.forEach(function(mossa, mIdx) {
-                                    if (mossa.tipo !== 'tris' && mossa.tipo !== 'scala') return;
-                                    (mossa.carte||[]).forEach(function(carta) {
-                                        if (!carta.isJolly && !carta.isPinella) {
-                                            avail.push({ carta: carta, mossoIdx: mIdx });
-                                        }
-                                    });
-                                });
-
-                                var matteTotal = Math.min(1, matteCombo + _matteHandClf);
-                                var freeList = [], sacList = [];
-
-                                if (cb.tipo === 1) {
-                                    // Tris: aggiungi carte con stesso numero (più carte uguali ammesse)
-                                    var num = fisicheCombo[0].numero;
-                                    avail.forEach(function(ac) {
-                                        if (ac.carta.numero !== num) return;
-                                        if (ac.mossoIdx < 0) freeList.push({carta:ac.carta, comboTarget:cb});
-                                        else sacList.push({carta:ac.carta, mossoIdx:ac.mossoIdx, comboTarget:cb});
-                                    });
-                                } else {
-                                    // Scala: sliding window per trovare la finestra migliore
-                                    var seme = fisicheCombo[0].seme;
-                                    var physComboNums = fisicheCombo.map(function(c){return c.numero;}).sort(function(a,b){return a-b;});
-                                    // Aggiungi i numeri delle calate già presenti in bOpt (stesso combo) per evitare duplicati posizione
-                                    bOpt.mosse.forEach(function(mossa) {
-                                        if (mossa.tipo === 'calata' && mossa.carta && !mossa.carta.isJolly && !mossa.carta.isPinella
-                                            && (mossa.comboId === cb.id || (mossa.combo && mossa.combo.id === cb.id))
-                                            && mossa.carta.seme === seme) {
-                                            physComboNums.push(mossa.carta.numero);
-                                        }
-                                    });
-                                    physComboNums = physComboNums.filter(function(n,i,a){return a.indexOf(n)===i;}).sort(function(a,b){return a-b;});
-                                    var comboMin = physComboNums[0], comboMax = physComboNums[physComboNums.length-1];
-                                    var sameSemeAvail = avail.filter(function(ac){return ac.carta.seme===seme;});
-                                    if (sameSemeAvail.length === 0) return;
-
-                                    var physAllNums = physComboNums.concat(sameSemeAvail.map(function(ac){return ac.carta.numero;}));
-                                    physAllNums = physAllNums.filter(function(n,i,a){return a.indexOf(n)===i;}).sort(function(a,b){return a-b;});
-
-                                    var bestExtLen = cb.carte.length, bestLo = comboMin, bestHi = comboMax;
-                                    for (var lo = comboMin; lo >= 1; lo--) {
-                                        for (var hi = comboMax; hi <= 13; hi++) {
-                                            var physInWin = 0;
-                                            for (var pk2 = 0; pk2 < physAllNums.length; pk2++) { if (physAllNums[pk2]>=lo&&physAllNums[pk2]<=hi) physInWin++; }
-                                            var gaps = (hi-lo+1) - physInWin;
-                                            if (gaps <= matteTotal && (hi-lo+1) > bestExtLen) { bestExtLen=hi-lo+1; bestLo=lo; bestHi=hi; }
-                                        }
-                                    }
-                                    if (bestExtLen <= cb.carte.length) return;
-
-                                    // Carte necessarie: stessa finestra, non già nella combo
-                                    var usedNums = {};
-                                    physComboNums.forEach(function(n){usedNums[n]=true;});
-                                    sameSemeAvail.forEach(function(ac) {
-                                        var n = ac.carta.numero;
-                                        if (n < bestLo || n > bestHi || usedNums[n]) return;
-                                        usedNums[n] = true; // evita duplicati
-                                        if (ac.mossoIdx < 0) freeList.push({carta:ac.carta, comboTarget:cb});
-                                        else sacList.push({carta:ac.carta, mossoIdx:ac.mossoIdx, comboTarget:cb});
-                                    });
-                                    // Se ci sono gap nel range non coperti da carte fisiche, serve una matta dalla mano
-                                    var _covNum = {}; physComboNums.forEach(function(n){_covNum[n]=true;});
-                                    freeList.forEach(function(fc){_covNum[fc.carta.numero]=true;});
-                                    sacList.forEach(function(sc){_covNum[sc.carta.numero]=true;});
-                                    var _gapScop = 0; for (var _gn=bestLo; _gn<=bestHi; _gn++) { if (!_covNum[_gn]) _gapScop++; }
-                                    if (_gapScop > matteCombo && _matteHandClf > 0) {
-                                        var _mattaR = d.classifica.find(function(r){ return _originiMano(r) && r.isMatta && !(bOpt.carteUsate && bOpt.carteUsate.has(r.cartaRef.id)); });
-                                        if (_mattaR) freeList.unshift({ carta: _mattaR.cartaRef, comboTarget: cb });
-                                    }
-                                }
-
-                                if (freeList.length === 0 && sacList.length === 0) return;
-                                var rV = _tryVariantB(freeList, sacList);
-                                _dbgCon.log('[OPZnB] '+bLbl+' combo#'+cb.id+'('+cb.carte.length+'c): score='+(rV?rV.score.toFixed(1):'null')+' free='+freeList.length+' sac='+sacList.length);
-                                if (rV && rV.score > bestScore) { bestScore = rV.score; bestMosse = rV.mosse; }
-                            });
-
-                            _dbgCon.log('[OPZnB] '+bLbl+': base='+baseScore.toFixed(1)+' best='+bestScore.toFixed(1)+' ok='+(bestMosse!==null));
-                            opzBPreCalc[bLbl] = bestMosse ? { mosse: bestMosse } : null;
+                        // Reverse map: baseLbl → [bLabel, ...] per interleaving
+                        var _baseToB = {};
+                        Object.keys(_bLabelMap).forEach(function(bLabel) {
+                            var baseLbl = _bLabelMap[bLabel];
+                            if (!_baseToB[baseLbl]) _baseToB[baseLbl] = [];
+                            _baseToB[baseLbl].push(bLabel);
                         });
 
-                        // Inietta B come vere opzioni in d.opzioniScenario + breakdown in d.classifica
-                        _bLabelMap = {}; // bLabel -> origLabel (per display)
-                        var _bFirstIdx = d.opzioniScenario.length; // per cleanup dopo rendering
+                        // Ricostruisce uniqueOpzLabels interleaving base e B
                         var _newOpzLabels = [];
                         uniqueOpzLabels.forEach(function(baseLbl) {
                             _newOpzLabels.push(baseLbl);
-                            var bv = opzBPreCalc[baseLbl];
-                            if (!bv || !bv.mosse) return;
-                            var bIdx = d.opzioniScenario.length;
-                            var bLabel = 'OPZ' + (bIdx + 1);
-                            _bLabelMap[bLabel] = baseLbl;
-                            _newOpzLabels.push(bLabel);
-                            var bCarteUsate = new Set();
-                            bv.mosse.forEach(function(m) {
-                                if (m.tipo === 'tris' || m.tipo === 'scala') { (m.carte||[]).forEach(function(c){bCarteUsate.add(c.id);}); }
-                                else if (m.tipo === 'calata' && m.carta) { bCarteUsate.add(m.carta.id); }
-                            });
-                            d.opzioniScenario.push({ mosse: bv.mosse, carteUsate: bCarteUsate, descCarte: baseLbl + 'B' });
-                            // Breakdown sintetico per card rows
+                            (_baseToB[baseLbl] || []).forEach(function(bLabel) { _newOpzLabels.push(bLabel); });
+                        });
+                        // Aggiunge B labels la cui base non era in uniqueOpzLabels (es. OPZ0B)
+                        var _coveredLabels = new Set(_newOpzLabels);
+                        Object.keys(_bLabelMap).sort(function(a,b){return parseInt(a.replace('OPZ',''))-parseInt(b.replace('OPZ',''));}).forEach(function(bLabel) {
+                            if (!_coveredLabels.has(bLabel)) { _newOpzLabels.push(bLabel); _coveredLabels.add(bLabel); }
+                        });
+                        uniqueOpzLabels = _newOpzLabels;
+                        tutteLeColonneAVisualizzare = uniqueOpzLabels;
+
+                        // Aggiunge breakdown per ogni B variant già iniettata da _calcolaVariantiB
+                        for (var _bvi = _bFirstIdx; _bvi < d.opzioniScenario.length; _bvi++) {
+                            var _bvOpt = d.opzioniScenario[_bvi];
+                            var _bvLabel = 'OPZ' + (_bvi + 1);
                             var _bBD = {};
-                            var _bComboLen = {}; // tracking lunghezza incrementale per combo
+                            var _bComboLen = {};
                             _comboSquadra.forEach(function(cb){ _bComboLen[cb.id] = cb.carte.length; });
-                            bv.mosse.forEach(function(mossa, mIdx) {
+                            (_bvOpt.mosse || []).forEach(function(mossa, mIdx) {
                                 if (mossa.tipo === 'tris' || mossa.tipo === 'scala') {
                                     var fisiche = (mossa.carte||[]).filter(function(c){return !c.isJolly&&!c.isPinella;});
                                     var usaMatta = (mossa.carte||[]).some(function(c){return c.isJolly||c.isPinella;});
                                     var db = mossa.tipo==='tris' ? ('T'+(fisiche[0]?fisiche[0].numero:'?')) : ('S'+(fisiche[0]?fisiche[0].seme:'?'));
-                                    var cs = bLabel+'-'+mIdx+'-'+db;
-                                    (mossa.carte||[]).forEach(function(c){ _bBD[c.id]={label:bLabel,valore:1,comboSegreta:cs,isCalata:false,badgeTesto:null,targetLength:mossa.carte.length,mossaIdx:mIdx,mossaUsaMatta:usaMatta}; });
+                                    var cs = _bvLabel+'-'+mIdx+'-'+db;
+                                    (mossa.carte||[]).forEach(function(c){ _bBD[c.id]={label:_bvLabel,valore:1,comboSegreta:cs,isCalata:false,badgeTesto:null,targetLength:mossa.carte.length,mossaIdx:mIdx,mossaUsaMatta:usaMatta}; });
                                 } else if (mossa.tipo === 'calata' && mossa.carta) {
                                     var cid = mossa.combo ? mossa.combo.id : null;
                                     var baseLen = (cid !== null && _bComboLen[cid] !== undefined) ? _bComboLen[cid] : (mossa.combo ? mossa.combo.carte.length : 0);
                                     var tl = baseLen + 1;
                                     if (cid !== null) _bComboLen[cid] = tl;
-                                    _bBD[mossa.carta.id]={label:bLabel,valore:1,comboSegreta:null,isCalata:true,badgeTesto:String(tl),targetLength:tl,mossaIdx:mIdx,mossaUsaMatta:false};
+                                    _bBD[mossa.carta.id]={label:_bvLabel,valore:1,comboSegreta:null,isCalata:true,badgeTesto:String(tl),targetLength:tl,mossaIdx:mIdx,mossaUsaMatta:false};
                                 }
                             });
                             d.classifica.forEach(function(r){ if(r.cartaRef&&r.breakdown&&_bBD[r.cartaRef.id]) r.breakdown.push(_bBD[r.cartaRef.id]); });
-                        });
-                        uniqueOpzLabels = _newOpzLabels;
-                        tutteLeColonneAVisualizzare = uniqueOpzLabels; // aggiorna con B labels interleaved
+                        }
 
                         // Pre-calc (scarto, score, stat) per le B labels
                         Object.keys(_bLabelMap).forEach(function(bLabel) {

@@ -140,6 +140,16 @@ function adjustLayout() {
         tmidi.offsetyy = rect.top;
     }
 
+    if (!document.getElementById('adsense-fallback-style')) {
+        var styleEl = document.createElement('style');
+        styleEl.id = 'adsense-fallback-style';
+        styleEl.innerHTML =
+            'ins.adsbygoogle { pointer-events: none; } ' +
+            'ins.adsbygoogle iframe { pointer-events: auto; } ' +
+            'ins.adsbygoogle[data-ad-status="unfilled"] { display: none !important; pointer-events: none !important; }';
+        document.head.appendChild(styleEl);
+    }
+
     sidebarLeft.style.display = 'none';
     sidebarRight.style.display = 'none';
 
@@ -147,6 +157,16 @@ function adjustLayout() {
         var isMessageBanner = isFirst && width >= 160;
         var adsenseActive = window.gameConfig && window.gameConfig.adsenseActive;
         var slotId = null;
+        var amazonBannerUrl = null;
+
+        // Special rule for 300x600 slots during AdSense suspension:
+        // Specific CSS Backfill logic for 300x600 banners:
+        // We load a random Amazon banner (1-20)
+        if (width === 300 && height === 600) {
+            var randomId = Math.floor(Math.random() * 30) + 1;
+            var formattedId = randomId < 10 ? '0' + randomId : randomId;
+            amazonBannerUrl = 'banner/deal_' + formattedId + '.html';
+        }
 
         // Map fixed sizes to provided AdSense Slot IDs
         if (adsenseActive && window.gameConfig.adsenseSlots) {
@@ -156,7 +176,7 @@ function adjustLayout() {
 
         // If AdSense is active for this game, we skip the message banner in the top slot
         // to give full priority to the ad units.
-        if (!window.showBannerDimensions && !isMessageBanner && !slotId) {
+        if (!window.showBannerDimensions && !isMessageBanner && !slotId && !amazonBannerUrl) {
             return null;
         }
 
@@ -170,17 +190,30 @@ function adjustLayout() {
         var banner = document.createElement('div');
         banner.id = bannerId;
         banner.className = 'ad-banner';
+        banner.style.position = 'relative'; // Required for absolute children
         banner.style.width = width + 'px';
         banner.style.height = height + 'px';
 
         if (slotId && !window.showBannerDimensions) {
-            // Real AdSense Injection
             var caPub = window.gameConfig.adsenseClient || 'ca-pub-9335537153013492';
-            banner.innerHTML = '<ins class="adsbygoogle" ' +
-                'style="display:inline-block;width:' + width + 'px;height:' + height + 'px" ' +
+            var html = '';
+
+            // Inject Amazon Fallback BEHIND AdSense for Backfill
+            if (amazonBannerUrl) {
+                html += '<iframe src="' + amazonBannerUrl + '" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; overflow: hidden; z-index: 1;" scrolling="no"></iframe>';
+            }
+
+            // Real AdSense Injection Overlays Fallback
+            html += '<ins class="adsbygoogle" ' +
+                'style="display:inline-block; position: relative; width:' + width + 'px;height:' + height + 'px; z-index: 2;" ' +
                 'data-ad-client="' + caPub + '" ' +
                 'data-ad-slot="' + slotId + '" ' +
                 'data-adsbygoogle-status="pending"></ins>';
+
+            banner.innerHTML = html;
+        } else if (amazonBannerUrl && !window.showBannerDimensions) {
+            // Standalone Amazon Banner Injection (if AdSense config is missing)
+            banner.innerHTML = '<iframe src="' + amazonBannerUrl + '" style="width: 100%; height: 100%; border: none; overflow: hidden;" scrolling="no"></iframe>';
         } else if (isMessageBanner && !window.showBannerDimensions && !adsenseActive) {
             // Legacy Message Banner (only for games without AdSense like Burraco)
             var customStyle = (window.gameConfig && window.gameConfig.bannerStyle) || '';
@@ -204,6 +237,50 @@ function adjustLayout() {
             banner.style.justifyContent = 'center';
             banner.style.textAlign = 'center';
         }
+
+        // --- Amazon Banner Click Tracking ---
+        if (amazonBannerUrl && !window.showBannerDimensions) {
+            var startTime = Date.now();
+            var bannerIdCode = amazonBannerUrl.split('/').pop().replace('.html', '');
+            var pagePath = window.location.pathname.split('/').pop() || 'index.html';
+
+            var iframe = banner.querySelector('iframe');
+            if (iframe) {
+                var attachTracking = function () {
+                    try {
+                        var iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                        if (!iframeDoc || !iframeDoc.body) return;
+
+                        // Prevent attaching multiple times
+                        if (iframeDoc._tracked) return;
+                        iframeDoc._tracked = true;
+
+                        iframeDoc.body.addEventListener('click', function () {
+                            var exposureSeconds = Math.round((Date.now() - startTime) / 1000);
+                            if (typeof gtag === 'function') {
+                                gtag('event', 'Amazon_Banner_Click', {
+                                    'event_category': 'Affiliate',
+                                    'amazon_deal_id': bannerIdCode,
+                                    'tempo_esposizione': exposureSeconds,
+                                    'page_location': window.location.href, // GA standard
+                                    'non_interaction': false
+                                });
+                                console.log('GA Tracked: Amazon_Banner_Click | ' + bannerIdCode + ' | sec: ' + exposureSeconds + ' | on: ' + pagePath);
+                            }
+                        }, true); // useCapture to ensure it fires before navigation
+                    } catch (e) {
+                        console.warn('Amazon iframe click tracking blocked:', e);
+                    }
+                };
+
+                // Standard load listener: 
+                // Because the iframe is an orphan node here (not yet appended to the DOM), 
+                // it hasn't started loading yet. It will begin loading once attached in populateSidebar,
+                // securely guaranteeing this 'load' event will fire.
+                iframe.addEventListener('load', attachTracking);
+            }
+        }
+
         return banner;
     };
 
