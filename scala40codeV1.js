@@ -6,6 +6,58 @@ function log(msg) {
 } // log  
 log.enabled = true;
 
+var translations = {
+	it: {
+		undo: "UNDO",
+		opponents: "AVVERSARI",
+		face_up: "SCOPERTE",
+		deck: "mazzo",
+		discards: "scarti",
+		reset: "AZZERA",
+		new_limit: "nuovo limite: ",
+		too_high: "valore troppo alto",
+		too_low: "valore troppo basso",
+		cannot_empty: "non è possibile rimanere senza carte",
+		game_saved: "partita salvata",
+		turn: "TURNO DI: ",
+		player: "giocatore",
+		opponent: "avversario"
+	},
+	en: {
+		undo: "UNDO",
+		opponents: "OPPONENTS",
+		face_up: "FACE UP",
+		deck: "deck",
+		discards: "discards",
+		reset: "RESET",
+		new_limit: "new limit: ",
+		too_high: "value too high",
+		too_low: "value too low",
+		cannot_empty: "you cannot remain without cards",
+		game_saved: "game saved",
+		turn: "TURN OF: ",
+		player: "player",
+		opponent: "opponent"
+	}
+};
+
+function t(key) {
+	var lang = document.documentElement.lang || 'it';
+	if (translations[lang] && translations[lang][key]) {
+		return translations[lang][key];
+	}
+	return translations['it'][key] || key;
+}
+
+function getLangImg(name) {
+	var lang = document.documentElement.lang || 'it';
+	if (lang === 'en') {
+		// Try to match -en.png first
+		return 'images/scala40/' + name.replace('.png', '-en.png');
+	}
+	return 'images/scala40/' + name;
+}
+
 //log(location.href);
 log(location.search);
 
@@ -246,7 +298,7 @@ var scala = {
 			yg = 145, ya1 = 30, ya2 = 66, ya3 = 102, ylim = 192, wbig = 83, hbig = 35, xbig = 45;
 
 			$("#totalizzatore").append('<div style="position:absolute; top: ' + (ya3 + 3) + 'px; left: 2px;">' +
-				'<img src="images/scala40/totalea3.png" height="35" width="35">');
+				'<img src="' + getLangImg('totalea3.png') + '" height="35" width="35">');
 
 			this.creacontatore("totaleavversario3", wbig, hbig, "totalizzatore", xbig, ya3);
 
@@ -255,25 +307,23 @@ var scala = {
 		if (this.numeroavversari > 1) {
 
 			$("#totalizzatore").append('<div style="position:absolute; top: ' + (ya2 + 3) + 'px; left: 2px;">' +
-				'<img src="images/scala40/totalea2.png" height="35" width="35">');
+				'<img src="' + getLangImg('totalea2.png') + '" height="35" width="35">');
 
 			this.creacontatore("totaleavversario2", wbig, hbig, "totalizzatore", xbig, ya2);
 		}
 
-
-
 		$("#totalizzatore").append('<div style="position:absolute; top: ' + (ya1 + 3) + 'px; left: 2px;">' +
-			'<img src="images/scala40/totalea1.png" height="35" width="35">');
+			'<img src="' + getLangImg('totalea1.png') + '" height="35" width="35">');
 
 		$("#totalizzatore").append('<div style="position:absolute; top: ' + yg + 'px; left: -2px;">' +
-			'<img src="images/scala40/totaleg.png" height="40" width="40">');
+			'<img src="' + getLangImg('totaleg.png') + '" height="40" width="40">');
 
 		$("#totalizzatore").append('<div style="position:absolute; top: ' + (ylim - 5) + 'px; left: -2px;">' +
-			'<img src="images/scala40/totalelim.png" height="40" width="78">');
+			'<img src="' + getLangImg('totalelim.png') + '" height="40" width="78">');
 
 
 		$("#totalizzatore").append('<div style="position:absolute; top: 215px; left: -4px;">' +
-			'<img src="images/scala40/totalepartite.png" height="40" width="80">');
+			'<img src="' + getLangImg('totalepartite.png') + '" height="40" width="80">');
 
 		this.creacontatore("totaleavversario1", wbig, hbig, "totalizzatore", xbig, ya1);
 		this.creacontatore("totalegiocatore", wbig, hbig, "totalizzatore", xbig, yg);
@@ -350,9 +400,16 @@ var scala = {
 
 		this.creacontatore("punti" + nome, 100, 40, nome, 754, 2);  //130 50
 
+		var labelText = nome;
+		if (labelText.indexOf('avversario') === 0) {
+			labelText = t('opponent') + labelText.replace('avversario', ' ');
+		} else if (labelText === 'giocatore') {
+			labelText = t('player');
+		}
+
 		if (parnomecampo) $("#campogioco").append('<div id="et' + nome + '" class="etichetta" style="top:' +
 			(60 + this.altezzacampo * (posizione + 0.5)) + 'px; left: 350px; height:50px;">&nbsp' +
-			nome + '</div>')
+			labelText + '</div>')
 
 	},
 
@@ -642,11 +699,9 @@ var scala = {
 			return scala.totalelim();
 		});
 
-		$('#istruzioni').click(function () {
-			window.open('regole-scala40.html?lang=it', '_blank');
-		});
 		$('.pulsantehelp').click(function () {
-			window.open('regole-scala40.html?lang=en', '_blank');
+			var lang = localStorage.getItem('userLanguage') || 'it';
+			window.open('regole-scala40.html?lang=' + lang, '_blank');
 		});
 
 		$('#nuovo').click(function () {
@@ -728,7 +783,7 @@ var scala = {
 		stato.f40avversario = []; copia(scala.f40avversario, stato.f40avversario);
 		this.statostack.push(stato);
 		$("#pulsante2").css({ "border-color": "yellow" });
-		$("#pulsante2").text("UNDO (" + this.statostack.length + ")");
+		// $("#pulsante2").text(t('undo') + " (" + this.statostack.length + ")");
 	},
 
 	popstato: function (numerostato, lasciacopia) {
@@ -781,7 +836,7 @@ var scala = {
 
 
 		if (this.statostack.length == 0) $("#pulsante2").css({ "border-color": "#888888" });
-		$("#pulsante2").text("UNDO (" + this.statostack.length + ")");
+		// $("#pulsante2").text(t('undo') + " (" + this.statostack.length + ")");
 	},
 
 
@@ -1210,14 +1265,14 @@ var scala = {
 
 
 	totalelim: function () {
-		$("#testoallerta").html("nuovo limite: <input type='number' id='limiteinput' value=" + scala.totalelimite + "><br>");
+		$("#testoallerta").html(t('new_limit') + "<input type='number' id='limiteinput' value=" + scala.totalelimite + "><br>");
 		scala.mydialog("allerta", scala.limiteOK);
 	},
 
 	limiteOK: function () {
 		var valore = document.getElementById("limiteinput").value;
-		if (valore > 999) { scala.myalert("valore troppo alto"); return }
-		if (valore < 10) { scala.myalert("valore troppo basso"); return }
+		if (valore > 999) { scala.myalert(t('too_high')); return }
+		if (valore < 10) { scala.myalert(t('too_low')); return }
 		scala.totalelimite = valore;
 		scala.hidedialog();
 		scala.render();
@@ -1314,7 +1369,7 @@ var scala = {
 	},
 
 	scartatrisgiocatore: function () {
-		if (this.carteselezionate.length == this.giocatore.carte.length) scala.myalert("non è possibile rimanere senza carte");
+		if (this.carteselezionate.length == this.giocatore.carte.length) scala.myalert(t('cannot_empty'));
 		else this.scartatris(this.carteselezionate);
 		this.render();
 

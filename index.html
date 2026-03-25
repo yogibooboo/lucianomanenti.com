@@ -31,7 +31,7 @@
 	<link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
 	<link rel="manifest" href="favicon/site.webmanifest">
 
-	<meta name="Description"
+	<meta id="meta-description" name="Description"
 		content="Play free online card games like Scala 40, Machiavelli, Burraco, and Spider Solitaire. Also featuring an advanced, fully customizable metronome. Gioca gratis online a Scala 40, Machiavelli, Burraco e Spider.">
 
 </head>
@@ -41,6 +41,16 @@
 
 
 	<div id="campogioco">
+
+		<!-- Selettore Lingua -->
+		<div class="language-switcher-home">
+			<div id="btn-it" class="pulsante-flag" onclick="setLanguage('it')">
+				<img src="images/flag-it.png" alt="IT"> IT
+			</div>
+			<div id="btn-en" class="pulsante-flag" onclick="setLanguage('en')">
+				<img src="images/flag-en.png" alt="EN"> EN
+			</div>
+		</div>
 
 		<div id="intestazione"></div>
 
@@ -54,7 +64,9 @@
 		<a href="burraco.html">
 			<div id="icoburraco"><img src="images/home/burraco.png"></div>
 		</a>
-		<a href="spider.html">
+		
+		<!-- Link Dinamico Spider -->
+		<a id="link-spider" href="spider.html">
 			<div id="icospider"><img src="images/home/spiderhome.png"></div>
 		</a>
 
@@ -64,11 +76,22 @@
 
 		<div id="footer"
 			style="position: absolute; bottom: 20px; left: 0; width: 100%; text-align: center; color: white; font-family: sans-serif; font-size: 14px; text-shadow: 1px 1px 2px black;">
-			<a href="privacy.html" style="color: #ffd700; text-decoration: none; margin: 0 15px;">Privacy Policy</a> |
-			<a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)" style="color: #ffd700; text-decoration: none; margin: 0 15px;">Gestisci Cookie</a> |
-			<a href="aboutme.html" style="color: #ffd700; text-decoration: none; margin: 0 15px;">About Me</a> |
-			<span>© 2026 Luciano Manenti</span>
+			
+			<div class="lang-it">
+				<a href="privacy.html" style="color: #ffd700; text-decoration: none; margin: 0 15px;">Privacy Policy</a> |
+				<a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)" style="color: #ffd700; text-decoration: none; margin: 0 15px;">Gestisci Cookie</a> |
+				<a href="aboutme.html?lang=it" style="color: #ffd700; text-decoration: none; margin: 0 15px;">Chi Sono</a> |
+				<span>© 2026 Luciano Manenti</span>
+			</div>
+
+			<div class="lang-en" style="display:none;">
+				<a href="privacy.html" style="color: #ffd700; text-decoration: none; margin: 0 15px;">Privacy Policy</a> |
+				<a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)" style="color: #ffd700; text-decoration: none; margin: 0 15px;">Manage Cookies</a> |
+				<a href="aboutme.html?lang=en" style="color: #ffd700; text-decoration: none; margin: 0 15px;">About Me</a> |
+				<span>© 2026 Luciano Manenti</span>
+			</div>
 		</div>
+
 		<a href="info.html">
 			<div id="icoinfo"
 				style="position: absolute; bottom: 85px; left: 150px; width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,0.85); color: #2c3e50; font-family: serif; font-size: 28px; font-weight: bold; text-align: center; line-height: 40px; cursor: pointer; text-shadow: none; border: 2px solid #ffd700;">
@@ -100,24 +123,64 @@
 <script>
 	var adjustscreen = function () {
 		zm = 1, wh = $(window).height(), ww = $(window).width();
-		//if (wh<750) 
 		zm = wh / 750;
-		//if (ww<1600) 
 		zm = Math.min(zm, ww / 1024)
-		//$('body').css('zoom',zm+'%'); /* Webkit browsers */
-		//$('body').css('zoom',zm); /* Other non-webkit browsers */
-		//$('body').css('-moz-transform',"scale("+zm+", "+zm+")"); /* Moz-browsers */
 		$("body").css({ transform: "scale(" + zm + ")" });
-		//$("body").css({transform:"translate("+($("body").offset().left)+"px,"+($("body").offset().top)+"px)"});
 		$("#campogioco").css({ "position": "absolute", "left": (ww / zm - 1024) / 2 })
 	};
 	adjustscreen();
 
 	$(window).resize(function () {
-		//scala.offsetxx=$("#campogioco").offset().left;
-		//scala.offsetyy=$("#campogioco").offset().top;
 		adjustscreen();
 	});
+
+	// I18N LOGIC
+	function setLanguage(lang) {
+		localStorage.setItem('userLanguage', lang);
+		showLang(lang);
+	}
+
+	function showLang(lang) {
+		document.documentElement.lang = lang;
+		
+		// Update flags UI
+		$('.pulsante-flag').removeClass('active');
+		$('#btn-' + lang).addClass('active');
+
+		// Update Spider link
+		if (lang === 'en') {
+			$('#link-spider').attr('href', 'spider-en.html');
+			$('#meta-description').attr('content', 'Play free online card games like Scala 40, Machiavelli, Burraco, and Spider Solitaire. Also featuring an advanced, fully customizable metronome.');
+		} else {
+			$('#link-spider').attr('href', 'spider.html');
+			$('#meta-description').attr('content', 'Gioca gratis online a Scala 40, Machiavelli, Burraco e Spider. Include anche un metronomo avanzato e personalizzabile.');
+		}
+
+		// Show/hide language specific elements
+		if (lang === 'en') {
+			$('.lang-it').hide();
+			$('.lang-en').show();
+		} else {
+			$('.lang-en').hide();
+			$('.lang-it').show();
+		}
+	}
+
+	window.onload = function() {
+		// Priority: 1. URL param ?lang= 2. localStorage 3. Default (it)
+		var urlParams = new URLSearchParams(window.location.search);
+		var lang = urlParams.get('lang');
+		
+		if (!lang) {
+			lang = localStorage.getItem('userLanguage');
+		}
+		
+		if (!lang || (lang !== 'it' && lang !== 'en')) {
+			lang = 'it';
+		}
+		
+		showLang(lang);
+	};
 </script>
 
 </html>

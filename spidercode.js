@@ -1,3 +1,16 @@
+window.spiderI18n = {
+    'moves': { it: 'Mosse: ', en: 'Moves: ' },
+    'undo': { it: 'Annulla: ', en: 'Undo: ' },
+    'time': { it: 'Tempo: ', en: 'Time: ' },
+    'games': { it: 'Partite: ', en: 'Games: ' },
+    'best_score': { it: 'Miglior Punt.: ', en: 'Best score: ' },
+    'best_time': { it: 'Miglior Tempo: ', en: 'Best Time: ' }
+};
+window.t = function(key) {
+    var lang = document.documentElement.lang || 'it';
+    return window.spiderI18n[key] ? (window.spiderI18n[key][lang] || key) : key;
+};
+
 function log(msg) {
 	if (window.console && log.enabled) {
 		console.log(msg);
@@ -154,15 +167,19 @@ var scala = {
 
 
 		icarte = new Image();
+		icarte.onload = function() { scala.dirty = true; };
 		icarte.src = "images/scala40/conjollyplus.png";
 
 		icartesel = new Image();
+		icartesel.onload = function() { scala.dirty = true; };
 		icartesel.src = "images/scala40/conjollyselplus.png";
 
 		icartescoperte = new Image();
+		icartescoperte.onload = function() { scala.dirty = true; };
 		icartescoperte.src = "images/scala40/conjollyselblu.png";
 
 		tappetoscuretto = new Image();
+		tappetoscuretto.onload = function() { scala.dirty = true; };
 		tappetoscuretto.src = "images/scala40/tappetoverdescuretto.png";
 
 		//ctxg.drawImage(tmmetronomo, 50, 50,250,500);
@@ -657,15 +674,15 @@ var scala = {
 		ctxd.clearRect(0, 0, 500, 80);
 		ctxd.font = "24px Arial";
 		ctxd.fillStyle = "#888888";
-		ctxd.fillText("Moves: " + scala.moves, 20, 30);
-		ctxd.fillText("Undo: " + scala.numeroundo, 150, 30);
-		ctxd.fillText("Time: " + scala.totime(parseInt((performance.now() - scala.startgioco) / 1000)), 300, 30);
-		ctxd.fillText("Games: " + scala.games, 20, 60);
+		ctxd.fillText(t('moves') + scala.moves, 20, 30);
+		ctxd.fillText(t('undo') + scala.numeroundo, 150, 30);
+		ctxd.fillText(t('time') + scala.totime(parseInt((performance.now() - scala.startgioco) / 1000)), 300, 30);
+		ctxd.fillText(t('games') + scala.games, 20, 60);
 
 		if (scala.bestscore != 0) {
 			ctxd.font = "16px Arial";
-			ctxd.fillText("Best score: " + scala.bestscore, 150, 60);
-			ctxd.fillText(("Best Time: " + scala.totime(scala.besttime)), 300, 60);
+			ctxd.fillText(t('best_score') + scala.bestscore, 150, 60);
+			ctxd.fillText((t('best_time') + scala.totime(scala.besttime)), 300, 60);
 		}
 
 
@@ -1008,7 +1025,7 @@ var scala = {
 		}
 		scala.statostack.push(stato);
 		$("#pulsante2").css({ "border-color": "yellow" });
-		$("#pulsante2").text("UNDO (" + this.statostack.length + ")");
+		$("#pulsante2").html("↩");
 	},
 
 	popstato: function () {
@@ -1059,7 +1076,7 @@ var scala = {
 
 
 		if (this.statostack.length == 0) $("#pulsante2").css({ "border-color": "#888888" });
-		$("#pulsante2").text("UNDO (" + this.statostack.length + ")");
+		$("#pulsante2").html("↩");
 		suona(scarta);
 	},
 

@@ -728,3 +728,54 @@ h6 {
 	left: 12px;
 	display: none;
 }
+
+[lang="it"] .lang-en {
+	display: none !important;
+}
+
+[lang="en"] .lang-it {
+	display: none !important;
+}
+
+/* Stili per il selettore lingua in Home */
+.language-switcher-home {
+	position: absolute;
+	top: 110px;
+	right: 120px;
+	z-index: 1000;
+	display: flex;
+	gap: 10px;
+}
+
+.language-switcher-home .pulsante-flag {
+	border: 2px solid #888888;
+	border-radius: 8px;
+	padding: 2px 8px;
+	cursor: pointer;
+	font-family: Slackey, sans-serif;
+	font-size: 18px;
+	color: white;
+	background: rgba(0, 100, 0, 0.7);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: all 0.2s;
+	height: 32px;
+}
+
+.language-switcher-home .pulsante-flag:hover {
+	border-color: yellow;
+	background: rgba(0, 120, 0, 0.9);
+}
+
+.language-switcher-home .pulsante-flag.active {
+	border-color: #ffd700;
+	background: rgba(0, 150, 0, 1);
+	box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+.language-switcher-home img {
+	margin-right: 6px;
+	height: 18px;
+	pointer-events: none;
+}

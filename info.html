@@ -312,6 +312,9 @@
 
 	<script>
 		function showLang(lang) {
+			localStorage.setItem('userLanguage', lang);
+			document.documentElement.lang = lang;
+			
 			document.getElementById('lang-it').style.display = lang === 'it' ? 'block' : 'none';
 			document.getElementById('lang-en').style.display = lang === 'en' ? 'block' : 'none';
 			document.getElementById('btn-it').className = lang === 'it' ? 'active' : '';
@@ -327,9 +330,26 @@
 			if (window.opener) {
 				window.close();
 			} else {
-				history.back();
+				// Try to return to index.html with the right language
+				var lang = localStorage.getItem('userLanguage') || 'it';
+				window.location.href = 'index.html?lang=' + lang;
 			}
 		}
+
+		window.onload = function() {
+			var urlParams = new URLSearchParams(window.location.search);
+			var lang = urlParams.get('lang');
+			
+			if (!lang) {
+				lang = localStorage.getItem('userLanguage');
+			}
+			
+			if (!lang || (lang !== 'it' && lang !== 'en')) {
+				lang = 'it';
+			}
+			
+			showLang(lang);
+		};
 	</script>
 	<script>
 	(function() {

@@ -21,6 +21,12 @@ function getAndStoreScriptVersion() {
 // Call the function to set the version on script load
 getAndStoreScriptVersion();
 
+// Global function to store language preference and allow the navigation to proceed
+window.setLanguage = function(lang) {
+    localStorage.setItem('userLanguage', lang);
+    console.log('Language preference saved:', lang);
+};
+
 // Funzione per inviare un evento Google Analytics per un banner
 function sendAnalyticsEvent(bannerElement, triggerType) {
     if (typeof gtag === 'function') {

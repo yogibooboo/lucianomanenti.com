@@ -257,6 +257,11 @@ h6 {
 	background-image: url(images/scala40/wbutton.png);
 }
 
+#nuovo {
+	font-size: 18px;
+	line-height: 38px
+}
+
 .pulsanteback {
 	border-style: solid;
 	border-color: #888888;
@@ -354,6 +359,10 @@ h6 {
 	position: absolute;
 	cursor: pointer;
 	background-size: 115px 36px;
+	background-image: url(images/aiuto.png);
+}
+
+[lang="en"] .pulsantehelp {
 	background-image: url(images/help.png);
 }
 
@@ -493,6 +502,10 @@ h6 {
 	background-size: 130px 300px;
 	background-image: url(images/scala40/mtotalizzatore.png);
 	z-index: 40000;
+}
+
+[lang="en"] .totalizzatore {
+	background-image: url(images/scala40/mtotalizzatore-en.png);
 }
 
 #schermo {

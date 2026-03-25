@@ -48,12 +48,29 @@
 			margin-top: 30px;
 		}
 
-		.back-link {
+		.lang-switch {
+			text-align: right;
+		}
+
+		.lang-switch a {
 			display: inline-block;
-			margin-bottom: 20px;
+			padding: 6px 16px;
+			margin-left: 5px;
 			text-decoration: none;
-			color: #3498db;
+			border-radius: 5px;
 			font-weight: bold;
+			font-size: 14px;
+		}
+
+		.lang-switch a.active {
+			background: #2c3e50;
+			color: white;
+		}
+
+		.lang-switch a:not(.active) {
+			background: #ddd;
+			color: #333;
+			cursor: pointer;
 		}
 
 		.content-section {
@@ -69,6 +86,7 @@
 			margin-top: 40px;
 			padding-top: 20px;
 			border-top: 1px solid #eee;
+			font-size: 14px;
 		}
 
 		.footer-links a {
@@ -80,76 +98,118 @@
 </head>
 
 <body>
+	<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+		<a href="javascript:if(!window.close()){window.location.href='index.html';}" id="btn-back"
+			style="display: inline-block; padding: 6px 16px; background: #e74c3c; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 14px;">&#x2190;
+			Chiudi / Close</a>
+		<div class="lang-switch">
+			<a href="#" id="btn-it" class="active" onclick="showLang('it'); return false;">Italiano</a>
+			<a href="#" id="btn-en" onclick="showLang('en'); return false;">English</a>
+		</div>
+	</div>
+
 	<div class="banner"></div>
 
-	<a href="javascript:if(!window.close()){window.location.href='index.html';}" class="back-link">← Chiudi questa
-		pagina / Close this page</a>
-
 	<div class="content-section">
-		<h1>Chi Sono</h1>
-		<p>Benvenuti su <strong>lucianomanenti.com</strong>. Questo sito è nato dalla mia passione per la programmazione
-			come modo di passare il tempo quando ho cessato il lavoro.</p>
-		<p>Ho riscontrato con piacere che molti si sono appassionati a questi giochi, in particolare allo Scala 40, e
-			alcuni di voi mi hanno anche scritto messaggi commoventi su come questi giochi li hanno aiutati in momenti
-			difficili.</p>
-		<p>Qui potete trovare diversi giochi di carte classici (Scala 40, Machiavelli, Spider) e uno strumento utile per
-			musicisti: il mio metronomo "quasi-reale".</p>
-		<p>A grande richiesta sto cercando di aggiungere anche il Burraco. Ho aggiunto la rispettiva pagina con
-			l'indicazione "lavori in corso". Vi invito a commentare il layout e le prima meccaniche di gioco.</p>
+		<div id="lang-it">
+			<h1>Chi Sono</h1>
+			<p>Benvenuti su <strong>lucianomanenti.com</strong>. Questo sito è nato dalla mia passione per la
+				programmazione come modo di passare il tempo quando ho cessato il lavoro.</p>
+			<p>Ho riscontrato con piacere che molti si sono appassionati a questi giochi, in particolare allo Scala 40,
+				e alcuni di voi mi hanno anche scritto messaggi commoventi su come questi giochi li hanno aiutati in
+				momenti difficili.</p>
+			<p>Qui potete trovare diversi giochi di carte classici (Scala 40, Machiavelli, Spider) e uno strumento utile
+				per musicisti: il mio metronomo "quasi-reale".</p>
+			<p>A grande richiesta sto cercando di aggiungere anche il Burraco. Ho aggiunto la rispettiva pagina con
+				l'indicazione "lavori in corso". Vi invito a commentare il layout e le prima meccaniche di gioco.</p>
 
-		<p style="margin-top: 20px;">
-			<strong>Scrivetemi:</strong>
-			<a href="mailto:postmaster@lucianomanenti.com" style="color: #3498db;">postmaster@lucianomanenti.com</a>
-		</p>
+			<p style="margin-top: 20px;">
+				<strong>Scrivetemi:</strong>
+				<a href="mailto:postmaster@lucianomanenti.com" style="color: #3498db;">postmaster@lucianomanenti.com</a>
+			</p>
+		</div>
 
-		<hr style="border: 0; border-top: 1px solid #eee; margin: 40px 0;">
+		<div id="lang-en" style="display: none;">
+			<h1>About Me</h1>
+			<p>Welcome to <strong>lucianomanenti.com</strong>. This site was born from my passion for programming as a
+				way to spend my time after retiring.</p>
+			<p>I am delighted to see that many of you have become passionate about these games, especially Scala 40, and
+				some of you have even sent me touching messages about how these games have helped you during difficult
+				times.</p>
+			<p>Here you can find several classic card games (Scala 40, Machiavelli, Spider) and a useful tool for
+				musicians: my "quasi-real" metronome.</p>
+			<p>By popular demand, I am also working on adding Burraco. I have added the relative page marked as "work in
+				progress". I invite you to comment on the layout and the initial game mechanics.</p>
 
-		<h1>About Me</h1>
-		<p>Welcome to <strong>lucianomanenti.com</strong>. This site was born from my passion for programming as a way
-			to spend my time after retiring.</p>
-		<p>I am delighted to see that many of you have become passionate about these games, especially Scala 40, and
-			some of you have even sent me touching messages about how these games have helped you during difficult
-			times.</p>
-		<p>Here you can find several classic card games (Scala 40, Machiavelli, Spider) and a useful tool for musicians:
-			my "quasi-real" metronome.</p>
-		<p>By popular demand, I am also working on adding Burraco. I have added the relative page marked as "work in
-			progress". I invite you to comment on the layout and the initial game mechanics.</p>
-
-		<p style="margin-top: 30px;">
-			<strong>Scrivetemi / Contact me:</strong>
-			<a href="mailto:postmaster@lucianomanenti.com" style="color: #3498db;">postmaster@lucianomanenti.com</a>
-		</p>
+			<p style="margin-top: 30px;">
+				<strong>Contact me:</strong>
+				<a href="mailto:postmaster@lucianomanenti.com" style="color: #3498db;">postmaster@lucianomanenti.com</a>
+			</p>
+		</div>
 	</div>
 
 	<div class="banner"></div>
 
 	<div class="footer-links">
 		<a href="privacy.html">Privacy Policy</a> |
-		<a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)">Gestisci Cookie</a> |
-		<a href="javascript:if(!window.close()){window.location.href='index.html';}">Chiudi questa pagina / Close this
-			page</a>
+		<a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)">Gestisci Cookie / Manage Cookies</a> |
+		<a href="javascript:if(!window.close()){window.location.href='index.html';}" id="footer-back">Chiudi questa pagina / Close this page</a>
 	</div>
 
-	<p style="text-align: center; font-size: 0.8em; color: #999; margin-top: 20px;">
+	<p style="text-align: center; font-size: 0.8em; color: #999; margin-top: 25px;">
 		© 2026 Luciano Manenti
 	</p>
+
 	<script>
-	(function() {
-		var nascosto = false;
-		var observer = new MutationObserver(function() {
-			if (nascosto) return;
-			var divs = document.querySelectorAll('body > div');
-			for (var i = 0; i < divs.length; i++) {
-				if (divs[i].shadowRoot && !divs[i].className && (divs[i].getAttribute('style')||'').length > 5000) {
-					divs[i].style.setProperty('display', 'none', 'important');
-					nascosto = true;
-					observer.disconnect();
-					return;
-				}
+		function showLang(lang) {
+			document.getElementById('lang-it').style.display = lang === 'it' ? 'block' : 'none';
+			document.getElementById('lang-en').style.display = lang === 'en' ? 'block' : 'none';
+			document.getElementById('btn-it').className = lang === 'it' ? 'active' : '';
+			document.getElementById('btn-en').className = lang === 'en' ? 'active' : '';
+
+			// Update common labels
+			var btnBack = document.getElementById('btn-back');
+			if (btnBack) btnBack.innerHTML = lang === 'it' ? '&#x2190; Chiudi' : '&#x2190; Close';
+			
+			var footerBack = document.getElementById('footer-back');
+			if (footerBack) footerBack.innerHTML = lang === 'it' ? 'Chiudi questa pagina' : 'Close this page';
+		}
+
+		window.onload = function () {
+			// 1. Check URL parameters
+			const urlParams = new URLSearchParams(window.location.search);
+			let lang = urlParams.get('lang');
+
+			// 2. If not in URL, check localStorage (saved preference from the game)
+			if (!lang) {
+				lang = localStorage.getItem('userLanguage');
 			}
-		});
-		observer.observe(document.body, { childList: true });
-	})();
+
+			// 3. Fallback to 'it' if nothing found
+			if (lang !== 'en' && lang !== 'it') {
+				lang = 'it';
+			}
+
+			showLang(lang);
+		};
+	</script>
+	<script>
+		(function() {
+			var nascosto = false;
+			var observer = new MutationObserver(function() {
+				if (nascosto) return;
+				var divs = document.querySelectorAll('body > div');
+				for (var i = 0; i < divs.length; i++) {
+					if (divs[i].shadowRoot && !divs[i].className && (divs[i].getAttribute('style')||'').length > 5000) {
+						divs[i].style.setProperty('display', 'none', 'important');
+						nascosto = true;
+						observer.disconnect();
+						return;
+					}
+				}
+			});
+			observer.observe(document.body, { childList: true });
+		})();
 	</script>
 </body>
 

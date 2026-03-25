@@ -360,7 +360,7 @@ h1,h2,h3,h4,h5,h6{
 	padding:2px;
 	font-size:14px;
 	font-family:Slackey,"Lucida Grande","Lucida Sans Unicode",Tahoma,Geneva,Arial,Verdana,sans-serif;
-	color:#8888oo;
+	color:#888800;
 	text-align:center;
 	border-radius:9px;
 	width:100px;
@@ -625,4 +625,21 @@ h1,h2,h3,h4,h5,h6{
 	top:700px;
 	left:12px;
 	display:none;	
+}
+
+.pulsanteburraco {
+	border-style: solid;
+	border-color: #888888;
+	padding: 2px;
+	font-size: 22px;
+	font-family: Slackey, "Lucida Grande", "Lucida Sans Unicode", Tahoma, Geneva, Arial, Verdana, sans-serif;
+	color: #888888;
+	text-align: center;
+	border-radius: 9px;
+	width: 110px;
+	height: 31px;
+	position: absolute;
+	cursor: pointer;
+	background-size: 115px 36px;
+	background-image: url(images/home/pulsanteburraco.png);
 }
