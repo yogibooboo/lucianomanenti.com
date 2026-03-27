@@ -10,10 +10,13 @@
 		function gtag() { dataLayer.push(arguments); }
 		gtag('js', new Date());
 		gtag('config', 'G-WRBDRDQ4L8');
+		window.currentLang = 'it';
 	</script>
-	<title>Guida Metronomo Online / Online Metronome Guide</title>
+	<title>Guida Metronomo Online - lucianomanenti.com</title>
 	<meta name="Description"
-		content="Guida al metronomo online gratuito ad alta precisione con aspetto realistico. Guide to the free high-precision online metronome with realistic look.">
+		content="Guida al metronomo online gratuito ad alta precisione con aspetto realistico. Scopri come regolare i BPM, usare il clap start e altro.">
+	<link rel="alternate" hreflang="it" href="guida-metronomo.html">
+	<link rel="alternate" hreflang="en" href="guida-metronomo-en.html">
 	<link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
 	<link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
 	<link rel="shortcut icon" href="favicon/favicon.ico">
@@ -132,15 +135,14 @@
 			style="display: inline-block; padding: 6px 16px; background: #e74c3c; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 14px;">&#x2190;
 			Indietro</a>
 		<div class="lang-switch" style="margin-bottom: 0;">
-			<a href="#" id="btn-it" class="active" onclick="showLang('it'); return false;">Italiano</a>
-			<a href="#" id="btn-en" onclick="showLang('en'); return false;">English</a>
+			<a href="guida-metronomo.html" id="btn-it" class="active">Italiano</a>
+			<a href="guida-metronomo-en.html" id="btn-en">English</a>
 		</div>
 	</div>
 
 	<div class="banner"></div>
 
 	<div class="content-box">
-		<!-- SEZIONE ITALIANO -->
 		<div id="lang-it">
 			<h1>Guida al Metronomo Luciano</h1>
 
@@ -218,94 +220,14 @@
 
 			<p style="text-align: center;"><a href="metronome.html" class="play-btn">Apri il Metronomo</a></p>
 		</div>
-
-		<!-- ENGLISH SECTION -->
-		<div id="lang-en" style="display: none;">
-			<h1>Luciano Metronome Guide</h1>
-
-			<p>The Luciano Metronome is a free online tool with the following features:</p>
-			<ul>
-				<li><strong>Realistic look:</strong> faithfully reproduces the aesthetics of a classic mechanical
-					metronome.</li>
-				<li><strong>Flexible settings:</strong> you can adjust the tempo (BPM), the number of beats per measure,
-					and other options.</li>
-				<li><strong>Free and no registration:</strong> works directly in the browser, no installation needed.
-				</li>
-			</ul>
-
-			<h2>BPM Settings</h2>
-			<p>The set BPM value is displayed digitally on the metronome. Note that if the metronome is running, any
-				setting changes will be activated at the beginning of the next measure.</p>
-			<p>There are various ways to change the BPM value:</p>
-			<ul>
-				<li>You can adjust it by dragging the slider on the metronome.</li>
-				<li>You can increase/decrease by 1 or 5 units by clicking the buttons next to the BPM indicator.</li>
-				<li>You can increase/decrease using the UP / DOWN arrow keys on the keyboard.</li>
-			</ul>
-
-			<h2>Start / Stop</h2>
-			<p>There are also several possibilities for starting/stopping:</p>
-			<ul>
-				<li>Use the START/STOP button.</li>
-				<li>Use the <strong>spacebar</strong> on the keyboard.</li>
-				<li>Activate <strong>"Clap Start"</strong> mode. In this way, the metronome waits to receive a loud
-					signal from the microphone, such as a hand clap. It must then be stopped using one of the other
-					methods.</li>
-			</ul>
-
-			<h2>Time Signature</h2>
-			<p>In the <strong>large central panel</strong>, you can select the time signature for the performance. The
-				most common combinations are represented. Clicking on "More Options" reveals some more sophisticated
-				ones.</p>
-			<p>In the upper panel, two timeline bands are graphically represented:</p>
-			<ul>
-				<li>The upper one represents the main subdivisions (e.g., quarter notes).</li>
-				<li>The lower one represents the secondary subdivisions (e.g., eighth notes).</li>
-			</ul>
-			<p>When the metronome is running, a cursor will scroll horizontally.</p>
-			<p>Next to each band, there is a <strong>speaker</strong> symbol. Clicking on it allows you to enable or
-				disable the playback of the corresponding beats.</p>
-			<p>Additionally:</p>
-			<ul>
-				<li>Next to the upper band, a clickable <strong>rectangle</strong> is displayed. When it is
-					<strong>white</strong>, a special sound is played at the beginning of the measure.
-				</li>
-				<li>The clickable rectangle next to the lower band, however, activates a special sound on every main
-					beat when it is <strong>red</strong>.</li>
-			</ul>
-
-			<h2>Other Features</h2>
-			<ul>
-				<li><strong>VOLUME:</strong> adjusts the playback volume.</li>
-				<li><strong>ONE TWO THREE FOUR:</strong> adds vocal counting to the beats.</li>
-				<li><strong>SWING:</strong> Adjusts the rhythmic "groove" by shifting the off-beat notes forward in
-					time.
-					<ul>
-						<li><strong>0%:</strong> "Straight" rhythm, notes are evenly spaced.</li>
-						<li><strong>~33%:</strong> "Shuffle" or "Triplet" rhythm (typical of Blues/Jazz), with a
-							bouncing feel.</li>
-						<li>Higher values accentuate the effect until the note overlaps with the next beat.</li>
-					</ul>
-					<br><em>Note: to hear the swing effect, the secondary subdivisions listening must be activated (the
-						speaker icon on the second time band)</em>
-				</li>
-				<li><strong>INTRO:</strong> If selected, upon starting, it plays one measure with beats, then one with
-					"one two three four", and then proceeds normally.</li>
-				<li><strong>CLAP START:</strong> to start playback via a hand clap (see above).</li>
-			</ul>
-
-			<p style="text-align: center;"><a href="metronome.html" class="play-btn">Open the Metronome</a></p>
-		</div>
 	</div>
 
 	<div class="banner"></div>
 
 	<div class="nav-links">
 		<a href="index.html">Home</a> |
-		<a href="regole-scala40.html">Scala 40</a> |
-		<a href="regole-machiavelli.html">Machiavelli</a> |
-		<a href="regole-spider.html">Spider</a> |
-		<a href="privacy.html">Privacy</a> |
+		<a href="aboutme.html">Chi Sono</a> |
+		<a href="privacy.html">Privacy Policy</a> |
 		<a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)">Gestisci Cookie</a>
 	</div>
 
@@ -314,50 +236,26 @@
 	</p>
 
 	<script>
-		function showLang(lang) {
-			document.getElementById('lang-it').style.display = lang === 'it' ? 'block' : 'none';
-			document.getElementById('lang-en').style.display = lang === 'en' ? 'block' : 'none';
-			document.getElementById('btn-it').className = lang === 'it' ? 'active' : '';
-			document.getElementById('btn-en').className = lang === 'en' ? 'active' : '';
-
-			var btnBack = document.getElementById('btn-back');
-			if (btnBack) {
-				btnBack.innerHTML = lang === 'it' ? '&#x2190; Indietro' : '&#x2190; Back';
-			}
-		}
 		function goBack() {
-			if (window.opener) {
-				window.close();
-			} else {
-				history.back();
-			}
+			window.location.href = 'metronome.html';
 		}
 
-		window.onload = function () {
-			const urlParams = new URLSearchParams(window.location.search);
-			const lang = urlParams.get('lang');
-			if (lang === 'en' || lang === 'it') {
-				showLang(lang);
-			}
-		};
-	</script>
-	<script>
-	(function() {
-		var nascosto = false;
-		var observer = new MutationObserver(function() {
-			if (nascosto) return;
-			var divs = document.querySelectorAll('body > div');
-			for (var i = 0; i < divs.length; i++) {
-				if (divs[i].shadowRoot && !divs[i].className && (divs[i].getAttribute('style')||'').length > 5000) {
-					divs[i].style.setProperty('display', 'none', 'important');
-					nascosto = true;
-					observer.disconnect();
-					return;
+		(function() {
+			var nascosto = false;
+			var observer = new MutationObserver(function() {
+				if (nascosto) return;
+				var divs = document.querySelectorAll('body > div');
+				for (var i = 0; i < divs.length; i++) {
+					if (divs[i].shadowRoot && !divs[i].className && (divs[i].getAttribute('style')||'').length > 5000) {
+						divs[i].style.setProperty('display', 'none', 'important');
+						nascosto = true;
+						observer.disconnect();
+						return;
+					}
 				}
-			}
-		});
-		observer.observe(document.body, { childList: true });
-	})();
+			});
+			observer.observe(document.body, { childList: true });
+		})();
 	</script>
 </body>
 

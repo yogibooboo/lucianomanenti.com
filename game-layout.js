@@ -69,9 +69,18 @@ function injectLegalLinks() {
         footer = document.createElement('div');
         footer.id = 'game-legal-links';
         footer.style.cssText = 'position: fixed; bottom: 10px; right: 10px; font-size: 12px; font-family: sans-serif; z-index: 10000; color: rgba(255,255,255,0.6); pointer-events: auto;';
-        footer.innerHTML = '<a href="index.html" style="color: inherit; text-decoration: none; margin-left: 15px;">Home</a>' +
-            '<a href="aboutme.html" style="color: inherit; text-decoration: none; margin-left: 15px;">Chi Sono</a>' +
-            '<a href="privacy.html" style="color: inherit; text-decoration: none; margin-left: 15px;">Privacy Policy</a>';
+
+        var langSuffix = (window.currentLang === 'en') ? '-en.html' : '.html';
+        var homeUrl = (window.currentLang === 'en') ? 'index-en.html' : 'index.html';
+        var aboutMeUrl = 'aboutme' + langSuffix;
+        var privacyUrl = 'privacy' + langSuffix;
+        var homeLabel = (window.currentLang === 'en') ? 'Home' : 'Home'; // Same for both
+        var aboutMeLabel = (window.currentLang === 'en') ? 'About Me' : 'Chi Sono';
+        var privacyLabel = (window.currentLang === 'en') ? 'Privacy Policy' : 'Privacy Policy';
+
+        footer.innerHTML = '<a href="' + homeUrl + '" style="color: inherit; text-decoration: none; margin-left: 15px;">' + homeLabel + '</a>' +
+            '<a href="' + aboutMeUrl + '" style="color: inherit; text-decoration: none; margin-left: 15px;">' + aboutMeLabel + '</a>' +
+            '<a href="' + privacyUrl + '" style="color: inherit; text-decoration: none; margin-left: 15px;">' + privacyLabel + '</a>';
         document.body.appendChild(footer);
 
         // Add hover effect

@@ -700,8 +700,8 @@ var scala = {
 		});
 
 		$('.pulsantehelp').click(function () {
-			var lang = localStorage.getItem('userLanguage') || 'it';
-			window.open('regole-scala40.html?lang=' + lang, '_blank');
+			var langSuffix = (window.currentLang === 'en') ? '-en.html' : '.html';
+			window.open('regole-scala40' + langSuffix, '_blank');
 		});
 
 		$('#nuovo').click(function () {

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+	<!-- Italian Pages -->
 	<url>
 		<loc>https://lucianomanenti.com/</loc>
 		<priority>1.0</priority>
@@ -54,6 +55,64 @@
 	</url>
 	<url>
 		<loc>https://lucianomanenti.com/privacy.html</loc>
+		<priority>0.3</priority>
+	</url>
+
+	<!-- English Pages -->
+	<url>
+		<loc>https://lucianomanenti.com/index-en.html</loc>
+		<priority>1.0</priority>
+	</url>
+	<url>
+		<loc>https://lucianomanenti.com/info-en.html</loc>
+		<priority>0.9</priority>
+	</url>
+	<url>
+		<loc>https://lucianomanenti.com/scala40-en.html</loc>
+		<priority>0.9</priority>
+	</url>
+	<url>
+		<loc>https://lucianomanenti.com/machiavelli-en.html</loc>
+		<priority>0.9</priority>
+	</url>
+	<url>
+		<loc>https://lucianomanenti.com/burraco-en.html</loc>
+		<priority>0.9</priority>
+	</url>
+	<url>
+		<loc>https://lucianomanenti.com/spider-en.html</loc>
+		<priority>0.9</priority>
+	</url>
+	<url>
+		<loc>https://lucianomanenti.com/metronome-en.html</loc>
+		<priority>0.8</priority>
+	</url>
+	<url>
+		<loc>https://lucianomanenti.com/regole-scala40-en.html</loc>
+		<priority>0.7</priority>
+	</url>
+	<url>
+		<loc>https://lucianomanenti.com/regole-machiavelli-en.html</loc>
+		<priority>0.7</priority>
+	</url>
+	<url>
+		<loc>https://lucianomanenti.com/regole-spider-en.html</loc>
+		<priority>0.7</priority>
+	</url>
+	<url>
+		<loc>https://lucianomanenti.com/regole-burraco-en.html</loc>
+		<priority>0.7</priority>
+	</url>
+	<url>
+		<loc>https://lucianomanenti.com/guida-metronomo-en.html</loc>
+		<priority>0.7</priority>
+	</url>
+	<url>
+		<loc>https://lucianomanenti.com/aboutme-en.html</loc>
+		<priority>0.5</priority>
+	</url>
+	<url>
+		<loc>https://lucianomanenti.com/privacy-en.html</loc>
 		<priority>0.3</priority>
 	</url>
 </urlset>

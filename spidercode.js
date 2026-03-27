@@ -967,12 +967,14 @@ var scala = {
 
 
 		$('.pulsantehelp').click(function () {
-			window.location.assign("regole-spider.html?lang=en");
+			var langSuffix = (window.currentLang === 'en') ? '-en.html' : '.html';
+			window.location.assign('regole-spider' + langSuffix);
 		});
 
 
 		$('.pulsanteaiuto').click(function () {
-			window.location.assign("regole-spider.html?lang=it");
+			var langSuffix = (window.currentLang === 'en') ? '-en.html' : '.html';
+			window.location.assign('regole-spider' + langSuffix);
 		});
 
 		$('#nuovo').click(function () {

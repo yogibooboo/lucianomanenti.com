@@ -27,7 +27,10 @@ window.setLanguage = function(lang) {
     }
     
     // Rendi nuovamente (per aggiornare scritte dinamiche come "Carte: X")
-    render();
+    // Solo se il gioco è già inizializzato
+    if (typeof render === 'function' && game && game.fase && game.fase !== 'attesa') {
+        render();
+    }
 }
 
 window.updateUILabels = function() {
@@ -89,16 +92,7 @@ window.updateUILabels = function() {
 
 // Check language on load
 window.addEventListener('load', () => {
-    let lang = localStorage.getItem('userLanguage');
-    if (!lang) {
-        const urlParams = new URLSearchParams(window.location.search);
-        lang = urlParams.get('lang');
-    }
-    if (!lang) lang = 'it';
-    setLanguage(lang);
-    
-    // Setup eventi originali
-    setupEventi();
+    // solo layout/analytics, lingua e init già gestiti su DOMContentLoaded
 });
 
 // SETUP EVENTI
@@ -106,9 +100,21 @@ window.addEventListener('load', () => {
 
 function setupEventi() {
     // Pulsanti
-    $('#btn-istruzioni').addEventListener('click', () => window.open('regole-burraco.html?lang=' + window.currentLang, '_blank'));
+    $('#btn-istruzioni').addEventListener('click', () => {
+        const rulesUrl = window.currentLang === 'en' ? 'regole-burraco-en.html' : 'regole-burraco.html';
+        window.open(rulesUrl, '_blank');
+    });
     $('#btn-nuova').addEventListener('click', () => mostraModal('modal-nuova'));
     $('#btn-undo').addEventListener('click', undo);
+
+    // Mostra/nasconde input limite custom nel modal nuova partita
+    var selLimite = document.getElementById('sel-limite-torneo');
+    var divCustom = document.getElementById('div-limite-custom');
+    if (selLimite && divCustom) {
+        selLimite.addEventListener('change', function () {
+            divCustom.style.display = this.value === 'custom' ? '' : 'none';
+        });
+    }
     $('#btn-scoperte').addEventListener('click', toggleScoperte);
     $('#btn-ordina-numero').addEventListener('click', ordinaPerNumero);
     $('#btn-ordina-seme').addEventListener('click', ordinaPerSeme);
@@ -5393,14 +5399,8 @@ function init() {
 }
 
 function _ripristinaPrefsModal() {
-    // Listener per mostrare/nascondere input personalizzato
     var selLimite = document.getElementById('sel-limite-torneo');
     var divCustom = document.getElementById('div-limite-custom');
-    if (selLimite && divCustom) {
-        selLimite.addEventListener('change', function () {
-            divCustom.style.display = this.value === 'custom' ? '' : 'none';
-        });
-    }
 
     // Ripristina preferenze salvate (o imposta default: torneo 1005)
     try {
@@ -5420,4 +5420,18 @@ function _ripristinaPrefsModal() {
     } catch (e) { }
 }
 
-document.addEventListener('DOMContentLoaded', init);
+document.addEventListener('DOMContentLoaded', () => {
+    // Priority: 1. Explicit window.currentLang (from HTML shell)
+    // 2. LocalStorage 3. URL param 4. Default 'it'
+    let lang = window.currentLang;
+    if (!lang) {
+        lang = localStorage.getItem('userLanguage');
+        if (!lang) {
+            const urlParams = new URLSearchParams(window.location.search);
+            lang = urlParams.get('lang');
+        }
+    }
+    if (!lang) lang = 'it';
+    setLanguage(lang);
+    init();
+});

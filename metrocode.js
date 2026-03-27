@@ -28,11 +28,13 @@ $('#bstart').click(function () {
 });
 
 $('.pulsantehelp').click(function () {
-	window.open("guida-metronomo.html?lang=en", "_blank");
+	var langSuffix = (window.currentLang === 'en') ? '-en.html' : '.html';
+	window.open('guida-metronomo' + langSuffix, '_blank');
 });
 
 $('.pulsanteaiuto').click(function () {
-	window.open("guida-metronomo.html?lang=it", "_blank");
+	var langSuffix = (window.currentLang === 'en') ? '-en.html' : '.html';
+	window.open('guida-metronomo' + langSuffix, '_blank');
 });
 
 

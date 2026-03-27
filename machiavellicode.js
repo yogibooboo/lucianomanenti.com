@@ -635,10 +635,12 @@ var scala = {
 
 
 		$('.pulsantehelp').click(function () {
-			window.open('regole-machiavelli.html', '_blank');
+			var langSuffix = (window.currentLang === 'en') ? '-en.html' : '.html';
+			window.open('regole-machiavelli' + langSuffix, '_blank');
 		});
 		$('.pulsanteaiuto').click(function () {
-			window.open('regole-machiavelli.html', '_blank');
+			var langSuffix = (window.currentLang === 'en') ? '-en.html' : '.html';
+			window.open('regole-machiavelli' + langSuffix, '_blank');
 		});
 
 

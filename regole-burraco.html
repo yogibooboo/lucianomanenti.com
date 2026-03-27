@@ -10,10 +10,13 @@
 		function gtag() { dataLayer.push(arguments); }
 		gtag('js', new Date());
 		gtag('config', 'G-WRBDRDQ4L8');
+		window.currentLang = 'it';
 	</script>
-	<title>Regole Burraco - Come giocare / Burraco Rules - How to play</title>
+	<title>Regole Burraco - Come giocare</title>
 	<meta name="Description"
-		content="Regole, punteggi e strategia per giocare a Burraco online. Guida dettagliata al gioco di carte piu' amato in Italia.">
+		content="Regole, punteggi e strategia per giocare a Burraco online. Guida dettagliata al gioco di carte più amato in Italia.">
+	<link rel="alternate" hreflang="it" href="regole-burraco.html">
+	<link rel="alternate" hreflang="en" href="regole-burraco-en.html">
 	<link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
 	<link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
 	<link rel="shortcut icon" href="favicon/favicon.ico">
@@ -114,7 +117,6 @@
 			box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 		}
 
-		/* Minimal CSS for scoring table to match simple style */
 		.score-table {
 			width: 100%;
 			border-collapse: collapse;
@@ -143,12 +145,12 @@
 
 <body>
 	<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-		<a href="#" id="btn-back" onclick="goBack(); return false;"
+		<a href="#" id="btn-back" onclick="window.close(); return false;"
 			style="display: inline-block; padding: 6px 16px; background: #e74c3c; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 14px;">&#x2190;
 			Indietro</a>
 		<div class="lang-switch" style="margin-bottom: 0;">
-			<a href="#" id="btn-it" class="active" onclick="showLang('it'); return false;">Italiano</a>
-			<a href="#" id="btn-en" onclick="showLang('en'); return false;">English</a>
+			<a href="regole-burraco.html" id="btn-it" class="active">Italiano</a>
+			<a href="regole-burraco-en.html" id="btn-en">English</a>
 		</div>
 	</div>
 
@@ -331,164 +333,6 @@
 
 			<p style="text-align: center;"><a href="burraco.html" class="play-btn">Gioca a Burraco</a></p>
 		</div>
-
-		<div id="lang-en" style="display: none;">
-			<h1>Burraco Rules</h1>
-
-			<p><strong>Burraco</strong> is a Rummy-style card game using two decks of cards, extremely popular in
-				Italy. It involves strategy and teamwork. The game uses two standard 52-card decks plus 4 Jokers, for a
-				total of <strong>108 cards</strong>.</p>
-
-			<p>It can be played with 2 players (head-to-head) or 4 players (fixed pairs). In this online version
-				you can challenge the AI in both 1 vs 1 and 2 vs 2 mode.</p>
-
-			<p style="background: #fff9c4; padding: 12px 16px; border-radius: 6px; border-left: 4px solid #ffd700;">
-				This game is constantly evolving: new features and improvements are added regularly. Soon it will also
-				be possible to select your partner and opponents from various characters with different playing
-				characteristics. If you notice
-				anything not working as expected or have suggestions, write to us at
-				<a href="mailto:postmaster@lucianomanenti.com" style="color: #3498db;">postmaster@lucianomanenti.com</a>
-				— your feedback is valuable!
-			</p>
-
-			<h2>1. Objective</h2>
-			<p>The goal is to score more points than your opponents by melding cards into valid combinations and runs.
-				To win a round, you must:</p>
-			<ul>
-				<li>Form sets and runs.</li>
-				<li>Create at least one <strong>Burraco</strong> (a combination of 7+ cards).</li>
-				<li>Collect the <strong>Pozzetto</strong> (an extra pile of 11 cards).</li>
-				<li>Empty your hand by discarding the last card.</li>
-			</ul>
-
-			<h2>2. The Deal and Setup</h2>
-			<ul>
-				<li>Each player is dealt <strong>11 cards</strong>.</li>
-				<li>Two stacks of 11 cards each (called <strong>Pozzetti</strong>) are set aside face-down.</li>
-				<li>The remaining cards form the <strong>Draw Pile</strong>.</li>
-				<li>One card is turned face-up to start the <strong>Discard Pile</strong>.</li>
-			</ul>
-
-			<h2>3. Gameplay</h2>
-			<p>Turn order is clockwise. Each turn consists of three phases:</p>
-
-			<h3>Phase 1: Draw</h3>
-			<p>You must either:</p>
-			<ul>
-				<li>Draw the top card from the Draw Pile.</li>
-				<li>Pick up the <strong>entire</strong> Discard Pile (all cards).</li>
-			</ul>
-
-			<h3>Phase 2: Meld (Optional)</h3>
-			<p>You may place valid combinations face-up on the table:</p>
-			<ul>
-				<li><strong>Sets:</strong> 3 or more cards of the same rank (e.g., three 7s).</li>
-				<li><strong>Runs:</strong> 3 or more consecutive cards of the same suit.</li>
-			</ul>
-			<p>You can use <strong>Jokers</strong> or <strong>2s (Pinelle)</strong> as wild cards. A run can contain
-				only one wild card (unless the 2 is in its natural position in a run, e.g., 2&hearts; in a Hearts run).
-			</p>
-
-			<h3>Phase 3: Discard</h3>
-			<p>You must end your turn by discarding one card face-up.</p>
-
-			<h2>4. Burraco Types</h2>
-			<p>A combination of 7 or more cards is a Burraco. It is essential for closing the game.</p>
-			<ul>
-				<li><span class="highlight">Clean Burraco (Puro):</span> 7+ cards with NO wild cards (or a 2 in natural
-					position). Worth <strong>200 points</strong>.</li>
-				<li><span class="highlight">Semi-Clean Burraco:</span> 7+ cards consisting of a clean run of at least 7
-					cards plus a wild card. Worth <strong>150 points</strong>.</li>
-				<li><span class="highlight">Dirty Burraco (Sporco):</span> 7+ cards containing a wild card. Worth
-					<strong>100 points</strong>.
-				</li>
-			</ul>
-
-			<h2>5. Going Out (Closing)</h2>
-			<p>To end the round, a player or team must:</p>
-			<ol>
-				<li>Have already picked up their <strong>Pozzetto</strong>.</li>
-				<li>Have completed at least one valid Burraco.</li>
-				<li>Discard their last final card.</li>
-			</ol>
-
-			<h2>6. Deck Exhaustion</h2>
-			<p>If the draw pile runs down to only 2 cards remaining, the round ends automatically at the end of the
-				current turn. In this case, <strong>no team receives the closing bonus</strong> and points are counted
-				normally.</p>
-
-			<h2>7. Scoring</h2>
-			<table class="score-table">
-				<tr>
-					<th>Item</th>
-					<th>Points</th>
-				</tr>
-				<tr>
-					<td>Clean Burraco</td>
-					<td>+200</td>
-				</tr>
-				<tr>
-					<td>Semi-Clean Burraco</td>
-					<td>+150</td>
-				</tr>
-				<tr>
-					<td>Dirty Burraco</td>
-					<td>+100</td>
-				</tr>
-				<tr>
-					<td>Closing Bonus</td>
-					<td>+100</td>
-				</tr>
-				<tr>
-					<td>Joker</td>
-					<td>+30</td>
-				</tr>
-				<tr>
-					<td>Pinella (all 2s)</td>
-					<td>+20</td>
-				</tr>
-				<tr>
-					<td>Ace</td>
-					<td>+15</td>
-				</tr>
-				<tr>
-					<td>K, Q, J, 10, 9, 8</td>
-					<td>+10</td>
-				</tr>
-				<tr>
-					<td>7, 6, 5, 4, 3</td>
-					<td>+5</td>
-				</tr>
-				<tr>
-					<td><strong>Penalty:</strong> Failing to take Pozzetto</td>
-					<td>-100</td>
-				</tr>
-			</table>
-			<p>Points of cards remaining in hand are subtracted from the team's total score.</p>
-
-			<hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;">
-
-			<h2>How to play "Burraco Luciano"</h2>
-			<ul>
-				<li><strong>Draw:</strong> click on the deck or the discard pile.</li>
-				<li><strong>Discard:</strong> right-click a card, drag it to the discard pile, or select a card and click the discard area (useful on touch).</li>
-				<li><strong>Form combinations:</strong> select the cards and click on the combinations area.</li>
-				<li><strong>Add to a combination:</strong> drag a card from your hand onto an existing combination
-					on the field to add it. Or select the cards to add and click on the combination.</li>
-				<li><strong>Sort cards:</strong> use the 123 button (by value) or the suit symbol button (by suit).
-				</li>
-			</ul>
-
-			<h2>Buttons</h2>
-			<ul>
-				<li><strong>RULES:</strong> show game instructions.</li>
-				<li><strong>NEW:</strong> start a new game (1v1 or 2v2).</li>
-				<li><strong>↩ (UNDO):</strong> undo the most recent moves.</li>
-				<li><strong>FACE UP:</strong> play with open cards (for practice).</li>
-			</ul>
-
-			<p style="text-align: center;"><a href="burraco.html" class="play-btn">Play Burraco</a></p>
-		</div>
 	</div>
 
 	<div class="banner"></div>
@@ -506,53 +350,9 @@
 	<p style="text-align: center; font-size: 0.8em; color: #999; margin-top: 15px;">
 		© 2026 Luciano Manenti
 	</p>
-
-	<script>
-		function showLang(lang) {
-			document.getElementById('lang-it').style.display = lang === 'it' ? 'block' : 'none';
-			document.getElementById('lang-en').style.display = lang === 'en' ? 'block' : 'none';
-			document.getElementById('btn-it').className = lang === 'it' ? 'active' : '';
-			document.getElementById('btn-en').className = lang === 'en' ? 'active' : '';
-
-			var btnBack = document.getElementById('btn-back');
-			if (btnBack) {
-				btnBack.innerHTML = lang === 'it' ? '&#x2190; Indietro' : '&#x2190; Back';
-			}
-		}
-		function goBack() {
-			if (window.opener) {
-				window.close();
-			} else {
-				history.back();
-			}
-		}
-
-		window.onload = function () {
-			const urlParams = new URLSearchParams(window.location.search);
-			const lang = urlParams.get('lang');
-			if (lang === 'en' || lang === 'it') {
-				showLang(lang);
-			}
-		};
-	</script>
-	<script>
-	(function() {
-		var nascosto = false;
-		var observer = new MutationObserver(function() {
-			if (nascosto) return;
-			var divs = document.querySelectorAll('body > div');
-			for (var i = 0; i < divs.length; i++) {
-				if (divs[i].shadowRoot && !divs[i].className && (divs[i].getAttribute('style')||'').length > 5000) {
-					divs[i].style.setProperty('display', 'none', 'important');
-					nascosto = true;
-					observer.disconnect();
-					return;
-				}
-			}
-		});
-		observer.observe(document.body, { childList: true });
-	})();
-	</script>
 </body>
+
+</html>
+
 
 </html>

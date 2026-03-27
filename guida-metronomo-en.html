@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
+	<script>
+		window.dataLayer = window.dataLayer || [];
+		function gtag() { dataLayer.push(arguments); }
+		gtag('js', new Date());
+		gtag('config', 'G-WRBDRDQ4L8');
+		window.currentLang = 'en';
+	</script>
+	<title>Online Metronome Guide - lucianomanenti.com</title>
+	<link rel="alternate" hreflang="it" href="guida-metronomo.html">
+	<link rel="alternate" hreflang="en" href="guida-metronomo-en.html">
+	<meta name="Description"
+		content="Guide to the free high-precision online metronome with a realistic look. Learn how to use BPM settings, clap start, and more.">
+	<link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
+	<link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
+	<link rel="shortcut icon" href="favicon/favicon.ico">
+	<link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+	<style>
+		body {
+			font-family: sans-serif;
+			line-height: 1.7;
+			max-width: 800px;
+			margin: 40px auto;
+			padding: 20px;
+			color: #333;
+			background-color: #f9f9f9;
+		}
+
+		h1 {
+			color: #2c3e50;
+			border-bottom: 2px solid #ffd700;
+			padding-bottom: 10px;
+		}
+
+		h2 {
+			color: #2c3e50;
+			margin-top: 30px;
+			border-bottom: 1px solid #ddd;
+			padding-bottom: 5px;
+		}
+
+		h3 {
+			color: #2c3e50;
+			margin-top: 20px;
+			font-size: 1.1em;
+		}
+
+		.lang-switch {
+			text-align: right;
+			margin-bottom: 20px;
+		}
+
+		.lang-switch a {
+			display: inline-block;
+			padding: 6px 16px;
+			margin-left: 5px;
+			text-decoration: none;
+			border-radius: 5px;
+			font-weight: bold;
+			font-size: 14px;
+		}
+
+		.lang-switch a.active {
+			background: #2c3e50;
+			color: white;
+		}
+
+		.lang-switch a:not(.active) {
+			background: #ddd;
+			color: #333;
+			cursor: pointer;
+		}
+
+		.content-box {
+			background: white;
+			padding: 30px;
+			border-radius: 8px;
+			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+		}
+
+		.play-btn {
+			display: inline-block;
+			margin-top: 25px;
+			padding: 12px 30px;
+			background: #27ae60;
+			color: white;
+			text-decoration: none;
+			border-radius: 8px;
+			font-size: 18px;
+			font-weight: bold;
+		}
+
+		.nav-links {
+			text-align: center;
+			margin-top: 30px;
+			font-size: 14px;
+		}
+
+		.nav-links a {
+			color: #3498db;
+			text-decoration: none;
+			margin: 0 10px;
+		}
+
+		.banner {
+			width: 100%;
+			height: 150px;
+			background-image: url('images/home/castagne.jpg');
+			background-size: cover;
+			background-position: center;
+			border-radius: 8px;
+			margin: 20px 0;
+			box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+		}
+
+		ul {
+			margin-top: 10px;
+		}
+
+		li {
+			margin-bottom: 8px;
+		}
+	</style>
+</head>
+
+<body>
+	<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+		<a href="#" id="btn-back" onclick="goBack(); return false;"
+			style="display: inline-block; padding: 6px 16px; background: #e74c3c; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 14px;">&#x2190;
+			Back</a>
+		<div class="lang-switch" style="margin-bottom: 0;">
+			<a href="guida-metronomo.html" id="btn-it">Italiano</a>
+			<a href="guida-metronomo-en.html" id="btn-en" class="active">English</a>
+		</div>
+	</div>
+
+	<div class="banner"></div>
+
+	<div class="content-box">
+		<div id="lang-en">
+			<h1>Luciano Metronome Guide</h1>
+
+			<p>The Luciano Metronome is a free online tool with the following features:</p>
+			<ul>
+				<li><strong>Realistic look:</strong> faithfully reproduces the aesthetics of a classic mechanical
+					metronome.</li>
+				<li><strong>Flexible settings:</strong> you can adjust the tempo (BPM), the number of beats per measure,
+					and other options.</li>
+				<li><strong>Free and no registration:</strong> works directly in the browser, no installation needed.
+				</li>
+			</ul>
+
+			<h2>BPM Settings</h2>
+			<p>The set BPM value is displayed digitally on the metronome. Note that if the metronome is running, any
+				setting changes will be activated at the beginning of the next measure.</p>
+			<p>There are various ways to change the BPM value:</p>
+			<ul>
+				<li>You can adjust it by dragging the slider on the metronome.</li>
+				<li>You can increase/decrease by 1 or 5 units by clicking the buttons next to the BPM indicator.</li>
+				<li>You can increase/decrease using the UP / DOWN arrow keys on the keyboard.</li>
+			</ul>
+
+			<h2>Start / Stop</h2>
+			<p>There are also several possibilities for starting/stopping:</p>
+			<ul>
+				<li>Use the START/STOP button.</li>
+				<li>Use the <strong>spacebar</strong> on the keyboard.</li>
+				<li>Activate <strong>"Clap Start"</strong> mode. In this way, the metronome waits to receive a loud
+					signal from the microphone, such as a hand clap. It must then be stopped using one of the other
+					methods.</li>
+			</ul>
+
+			<h2>Time Signature</h2>
+			<p>In the <strong>large central panel</strong>, you can select the time signature for the performance. The
+				most common combinations are represented. Clicking on "More Options" reveals some more sophisticated
+				ones.</p>
+			<p>In the upper panel, two timeline bands are graphically represented:</p>
+			<ul>
+				<li>The upper one represents the main subdivisions (e.g., quarter notes).</li>
+				<li>The lower one represents the secondary subdivisions (e.g., eighth notes).</li>
+			</ul>
+			<p>When the metronome is running, a cursor will scroll horizontally.</p>
+			<p>Next to each band, there is a <strong>speaker</strong> symbol. Clicking on it allows you to enable or
+				disable the playback of the corresponding beats.</p>
+			<p>Additionally:</p>
+			<ul>
+				<li>Next to the upper band, a clickable <strong>rectangle</strong> is displayed. When it is
+					<strong>white</strong>, a special sound is played at the beginning of the measure.
+				</li>
+				<li>The clickable rectangle next to the lower band, however, activates a special sound on every main
+					beat when it is <strong>red</strong>.</li>
+			</ul>
+
+			<h2>Other Features</h2>
+			<ul>
+				<li><strong>VOLUME:</strong> adjusts the playback volume.</li>
+				<li><strong>ONE TWO THREE FOUR:</strong> adds vocal counting to the beats.</li>
+				<li><strong>SWING:</strong> Adjusts the rhythmic "groove" by shifting the off-beat notes forward in
+					time.
+					<ul>
+						<li><strong>0%:</strong> "Straight" rhythm, notes are evenly spaced.</li>
+						<li><strong>~33%:</strong> "Shuffle" or "Triplet" rhythm (typical of Blues/Jazz), with a
+							bouncing feel.</li>
+						<li>Higher values accentuate the effect until the note overlaps with the next beat.</li>
+					</ul>
+					<br><em>Note: to hear the swing effect, the secondary subdivisions listening must be activated (the
+						speaker icon on the second time band)</em>
+				</li>
+				<li><strong>INTRO:</strong> If selected, upon starting, it plays one measure with beats, then one with
+					"one two three four", and then proceeds normally.</li>
+				<li><strong>CLAP START:</strong> to start playback via a hand clap (see above).</li>
+			</ul>
+
+			<p style="text-align: center;"><a href="metronome-en.html" class="play-btn">Open the Metronome</a></p>
+		</div>
+	</div>
+
+	<div class="banner"></div>
+
+	<div class="nav-links">
+		<a href="index-en.html">Home</a> |
+		<a href="aboutme-en.html">About Me</a> |
+		<a href="privacy-en.html">Privacy Policy</a> |
+		<a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)">Manage Cookies</a>
+	</div>
+
+	<p style="text-align: center; font-size: 0.8em; color: #999; margin-top: 15px;">
+		© 2026 Luciano Manenti
+	</p>
+
+	<script>
+		function goBack() {
+			if (window.opener) {
+				window.close();
+			} else {
+				window.location.href = 'metronome-en.html';
+			}
+		}
+
+		(function() {
+			var nascosto = false;
+			var observer = new MutationObserver(function() {
+				if (nascosto) return;
+				var divs = document.querySelectorAll('body > div');
+				for (var i = 0; i < divs.length; i++) {
+					if (divs[i].shadowRoot && !divs[i].className && (divs[i].getAttribute('style')||'').length > 5000) {
+						divs[i].style.setProperty('display', 'none', 'important');
+						nascosto = true;
+						observer.disconnect();
+						return;
+					}
+				}
+			});
+			observer.observe(document.body, { childList: true });
+		})();
+	</script>
+</body>
+
+</html>

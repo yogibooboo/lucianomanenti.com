@@ -11,8 +11,12 @@
 		function gtag() { dataLayer.push(arguments); }
 		gtag('js', new Date());
 		gtag('config', 'G-WRBDRDQ4L8');
+		window.currentLang = 'it';
 	</script>
-	<title>Chi Sono / About Me - lucianomanenti.com</title>
+	<title>Chi Sono - lucianomanenti.com</title>
+	<link rel="alternate" hreflang="it" href="aboutme.html">
+	<link rel="alternate" hreflang="en" href="aboutme-en.html">
+	<link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
 	<style>
 		body {
 			font-family: sans-serif;
@@ -99,12 +103,12 @@
 
 <body>
 	<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-		<a href="javascript:if(!window.close()){window.location.href='index.html';}" id="btn-back"
+		<a href="#" onclick="window.close(); return false;" id="btn-back"
 			style="display: inline-block; padding: 6px 16px; background: #e74c3c; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 14px;">&#x2190;
-			Chiudi / Close</a>
+			Chiudi</a>
 		<div class="lang-switch">
-			<a href="#" id="btn-it" class="active" onclick="showLang('it'); return false;">Italiano</a>
-			<a href="#" id="btn-en" onclick="showLang('en'); return false;">English</a>
+			<a href="aboutme.html" id="btn-it" class="active">Italiano</a>
+			<a href="aboutme-en.html" id="btn-en">English</a>
 		</div>
 	</div>
 
@@ -128,32 +132,14 @@
 				<a href="mailto:postmaster@lucianomanenti.com" style="color: #3498db;">postmaster@lucianomanenti.com</a>
 			</p>
 		</div>
-
-		<div id="lang-en" style="display: none;">
-			<h1>About Me</h1>
-			<p>Welcome to <strong>lucianomanenti.com</strong>. This site was born from my passion for programming as a
-				way to spend my time after retiring.</p>
-			<p>I am delighted to see that many of you have become passionate about these games, especially Scala 40, and
-				some of you have even sent me touching messages about how these games have helped you during difficult
-				times.</p>
-			<p>Here you can find several classic card games (Scala 40, Machiavelli, Spider) and a useful tool for
-				musicians: my "quasi-real" metronome.</p>
-			<p>By popular demand, I am also working on adding Burraco. I have added the relative page marked as "work in
-				progress". I invite you to comment on the layout and the initial game mechanics.</p>
-
-			<p style="margin-top: 30px;">
-				<strong>Contact me:</strong>
-				<a href="mailto:postmaster@lucianomanenti.com" style="color: #3498db;">postmaster@lucianomanenti.com</a>
-			</p>
-		</div>
 	</div>
 
 	<div class="banner"></div>
 
 	<div class="footer-links">
 		<a href="privacy.html">Privacy Policy</a> |
-		<a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)">Gestisci Cookie / Manage Cookies</a> |
-		<a href="javascript:if(!window.close()){window.location.href='index.html';}" id="footer-back">Chiudi questa pagina / Close this page</a>
+		<a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)">Gestisci Cookie</a> |
+		<a href="#" onclick="window.close(); return false;" id="footer-back">Chiudi questa pagina</a>
 	</div>
 
 	<p style="text-align: center; font-size: 0.8em; color: #999; margin-top: 25px;">
@@ -161,38 +147,26 @@
 	</p>
 
 	<script>
-		function showLang(lang) {
-			document.getElementById('lang-it').style.display = lang === 'it' ? 'block' : 'none';
-			document.getElementById('lang-en').style.display = lang === 'en' ? 'block' : 'none';
-			document.getElementById('btn-it').className = lang === 'it' ? 'active' : '';
-			document.getElementById('btn-en').className = lang === 'en' ? 'active' : '';
-
-			// Update common labels
-			var btnBack = document.getElementById('btn-back');
-			if (btnBack) btnBack.innerHTML = lang === 'it' ? '&#x2190; Chiudi' : '&#x2190; Close';
-			
-			var footerBack = document.getElementById('footer-back');
-			if (footerBack) footerBack.innerHTML = lang === 'it' ? 'Chiudi questa pagina' : 'Close this page';
-		}
-
-		window.onload = function () {
-			// 1. Check URL parameters
-			const urlParams = new URLSearchParams(window.location.search);
-			let lang = urlParams.get('lang');
-
-			// 2. If not in URL, check localStorage (saved preference from the game)
-			if (!lang) {
-				lang = localStorage.getItem('userLanguage');
-			}
-
-			// 3. Fallback to 'it' if nothing found
-			if (lang !== 'en' && lang !== 'it') {
-				lang = 'it';
-			}
-
-			showLang(lang);
-		};
+		(function() {
+			var nascosto = false;
+			var observer = new MutationObserver(function() {
+				if (nascosto) return;
+				var divs = document.querySelectorAll('body > div');
+				for (var i = 0; i < divs.length; i++) {
+					if (divs[i].shadowRoot && !divs[i].className && (divs[i].getAttribute('style')||'').length > 5000) {
+						divs[i].style.setProperty('display', 'none', 'important');
+						nascosto = true;
+						observer.disconnect();
+						return;
+					}
+				}
+			});
+			observer.observe(document.body, { childList: true });
+		})();
 	</script>
+</body>
+
+</html>
 	<script>
 		(function() {
 			var nascosto = false;

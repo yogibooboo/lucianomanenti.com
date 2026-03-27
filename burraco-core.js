@@ -154,7 +154,7 @@ const burracoTranslations = {
     }
 };
 
-window.currentLang = 'it';
+window.currentLang = window.currentLang || 'it';
 
 window.t = function(key) {
     if (!burracoTranslations[window.currentLang]) return key;

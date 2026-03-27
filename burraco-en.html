@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="en">
 
 <head>
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9335537153013492"
         crossorigin="anonymous"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    	<title>Gioco del Burraco Online Gratis - lucianomanenti.com</title>
+    	<title>Play Free Burraco Online - lucianomanenti.com</title>
 	<link rel="alternate" hreflang="it" href="burraco.html">
 	<link rel="alternate" hreflang="en" href="burraco-en.html">
 	<link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
@@ -16,7 +16,7 @@
     <link rel="manifest" href="favicon/site.webmanifest">
 
     <meta name="Description"
-        content="Gioca a Burraco gratis online senza registrazione. Sfida il computer in modalità 1v1 o 2v2. Realizzato con passione da Luciano Manenti.">
+        content="Play free Burraco card game online. No registration required. Challenge the AI in 1v1 or 2v2 modes.">
     <meta http-Equiv="Cache-Control" Content="no-cache">
     <meta http-Equiv="Pragma" Content="no-cache">
     <meta http-Equiv="Expires" Content="0">
@@ -32,6 +32,9 @@
         gtag('config', 'G-WRBDRDQ4L8');
     </script>
     <script>
+        // Force English mode
+        window.currentLang = 'en';
+
         window.gameConfig = {
             gaPrefix: 'BUR_',
             hideLegalFooter: true,
@@ -47,7 +50,6 @@
                 en: '<!-- MESSAGE_EN_PLACEHOLDER -->'
             }
         };
-        window.currentLang = 'it';
     </script>
     <!-- Layout engine -->
     <script src="game-layout.js?v=4.6"></script>
@@ -77,12 +79,12 @@
                 </div>
                 <div id="torneo-info"></div>
             </div>
-            <a href="aboutme.html" target="_blank" id="btn-scrivetemi" class="pulsante-link">Scrivetemi</a>
+            <a href="aboutme-en.html" target="_blank" id="btn-scrivetemi" class="pulsante-link">Write to me</a>
 
             <!-- === COMPAGNO (top) === -->
             <div id="area-compagno" class="area-giocatore">
                 <img id="avatar-compagno" class="avatar" src="" alt="">
-                <div id="nome-compagno" class="nome-giocatore">Compagno</div>
+                <div id="nome-compagno" class="nome-giocatore">Partner</div>
                 <div id="carte-compagno" class="carte-container"></div>
                 <div id="ncarte-compagno" class="ncarte">0</div>
             </div>
@@ -90,7 +92,7 @@
             <!-- === AVVERSARIO SINISTRA === -->
             <div id="area-avversario-sx" class="area-giocatore laterale">
                 <img id="avatar-avv-sx" class="avatar" src="" alt="">
-                <div id="nome-avv-sx" class="nome-giocatore">Avversario 1</div>
+                <div id="nome-avv-sx" class="nome-giocatore">Opponent 1</div>
                 <div id="carte-avv-sx" class="carte-container verticale"></div>
                 <div id="ncarte-avv-sx" class="ncarte">0</div>
             </div>
@@ -98,7 +100,7 @@
             <!-- === AVVERSARIO DESTRA === -->
             <div id="area-avversario-dx" class="area-giocatore laterale">
                 <img id="avatar-avv-dx" class="avatar" src="" alt="">
-                <div id="nome-avv-dx" class="nome-giocatore">Avversario 2</div>
+                <div id="nome-avv-dx" class="nome-giocatore">Opponent 2</div>
                 <div id="carte-avv-dx" class="carte-container verticale"></div>
                 <div id="ncarte-avv-dx" class="ncarte">0</div>
             </div>
@@ -106,13 +108,13 @@
             <!-- === AREA COMBINAZIONI NOI (sinistra) === -->
             <div id="combinazioni-noi" class="area-combinazioni">
                 <div class="titolo-area">
-                    <span class="titolo-nome" id="label-noi">Noi</span>
+                    <span class="titolo-nome" id="label-noi">Us</span>
                     <span class="titolo-punti">
-                        <span class="punti-pozzetto" title="Pozzetto (-100 se non preso)"
+                        <span class="punti-pozzetto" title="Pozzetto (-100 if not taken)"
                             id="label-pozzetto-noi">Pozzetto: -100</span>
-                        <span class="punti-burraco" title="Punti burraco" id="label-burraco-noi">Burraco: 0</span>
-                        <span class="punti-carte" title="Punti carte" id="label-carte-noi">Carte: 0</span>
-                        <span class="punti-totale" title="Totale" id="label-totale-noi">= -100</span>
+                        <span class="punti-burraco" title="Burraco points" id="label-burraco-noi">Burraco: 0</span>
+                        <span class="punti-carte" title="Cards points" id="label-carte-noi">Cards: 0</span>
+                        <span class="punti-totale" title="Total" id="label-totale-noi">= -100</span>
                     </span>
                 </div>
             </div>
@@ -120,13 +122,13 @@
             <!-- === AREA COMBINAZIONI AVVERSARI (destra) === -->
             <div id="combinazioni-loro" class="area-combinazioni">
                 <div class="titolo-area">
-                    <span class="titolo-nome" id="label-loro">Loro</span>
+                    <span class="titolo-nome" id="label-loro">Them</span>
                     <span class="titolo-punti">
-                        <span class="punti-pozzetto" title="Pozzetto (-100 se non preso)"
+                        <span class="punti-pozzetto" title="Pozzetto (-100 if not taken)"
                             id="label-pozzetto-loro">Pozzetto: -100</span>
-                        <span class="punti-burraco" title="Punti burraco" id="label-burraco-loro">Burraco: 0</span>
-                        <span class="punti-carte" title="Punti carte" id="label-carte-loro">Carte: 0</span>
-                        <span class="punti-totale" title="Totale" id="label-totale-loro">= -100</span>
+                        <span class="punti-burraco" title="Burraco points" id="label-burraco-loro">Burraco: 0</span>
+                        <span class="punti-carte" title="Cards points" id="label-carte-loro">Cards: 0</span>
+                        <span class="punti-totale" title="Total" id="label-totale-loro">= -100</span>
                     </span>
                 </div>
             </div>
@@ -148,16 +150,16 @@
 
             <!-- === SCARTI === -->
             <div id="scarti-info">
-                <span class="titolo-nome" id="label-scarti">Scarti</span>
+                <span class="titolo-nome" id="label-scarti">Discard</span>
                 <span class="titolo-punti">
-                    <span class="punti-numero" id="label-ncarte-scarti">Carte: 0</span>
-                    <span class="punti-valore" id="label-punti-scarti">Punti: 0</span>
+                    <span class="punti-numero" id="label-ncarte-scarti">Cards: 0</span>
+                    <span class="punti-valore" id="label-punti-scarti">Points: 0</span>
                 </span>
             </div>
             <div id="scarti-container">
                 <div id="scarti-nota">
-                    <span id="label-scarti-nota">Ho aggiornato l'algoritmo di gioco, dovrebbe essere migliorato<br>
-                        Certamente non è finito, ma fatemi sapere cosa ne pensate!</span>
+                    <span id="label-scarti-nota">I've updated the game algorithm, it should be improved<br>
+                        It's certainly not finished, but let me know what you think!</span>
                 </div>
             </div>
 
@@ -169,10 +171,10 @@
 
             <!-- === GIOCATORE === -->
             <div id="giocatore-info">
-                <span class="titolo-nome" id="label-giocatore">Giocatore</span>
+                <span class="titolo-nome" id="label-giocatore">Player</span>
                 <span class="titolo-punti">
-                    <span class="punti-numero" id="label-ncarte-mano">Carte: 0</span>
-                    <span class="punti-valore" id="label-punti-mano">Punti: 0</span>
+                    <span class="punti-numero" id="label-ncarte-mano">Cards: 0</span>
+                    <span class="punti-valore" id="label-punti-mano">Points: 0</span>
                 </span>
             </div>
             <div id="area-giocatore" class="area-giocatore">
@@ -181,14 +183,14 @@
 
             <!-- === PULSANTI === -->
             <div style="position: absolute; top: 10px; left: 10px; z-index: 2000; display: flex; gap: 4px;">
-                <button onclick="window.location.href='burraco.html'" class="btn-lang active" id="btn-lang-it" title="Italiano"
-                    style="background: #2d5a3d; border: 1px solid #6b9b7a; color: white; border-radius: 4px; padding: 4px 10px; cursor: pointer; font-size: 14px; font-weight: bold; height: 32px; transition: all 0.2s;">IT</button>
-                <button onclick="window.location.href='burraco-en.html'" class="btn-lang" id="btn-lang-en" title="English"
-                    style="background: rgba(0,0,0,0.4); border: 1px solid #6b9b7a; color: white; border-radius: 4px; padding: 4px 10px; cursor: pointer; font-size: 14px; font-weight: bold; height: 32px; transition: all 0.2s;">EN</button>
+                <button onclick="window.location.href='burraco.html'" class="btn-lang" id="btn-lang-it" title="Italiano"
+                    style="background: rgba(0,0,0,0.4); border: 1px solid #6b9b7a; color: white; border-radius: 4px; padding: 4px 10px; cursor: pointer; font-size: 14px; font-weight: bold; height: 32px; transition: all 0.2s;">IT</button>
+                <button onclick="window.location.href='burraco-en.html'" class="btn-lang active" id="btn-lang-en" title="English"
+                    style="background: #2d5a3d; border: 1px solid #6b9b7a; color: white; border-radius: 4px; padding: 4px 10px; cursor: pointer; font-size: 14px; font-weight: bold; height: 32px; transition: all 0.2s;">EN</button>
             </div>
-            <div id="btn-nuova" class="pulsante2">NUOVA</div>
+            <div id="btn-nuova" class="pulsante2">NEW</div>
             <div id="btn-undo" class="pulsante2">&#x21A9;</div>
-            <div id="btn-scoperte" class="pulsante2">SCOPERTE</div>
+            <div id="btn-scoperte" class="pulsante2">FACE UP</div>
 
             <!-- === PULSANTI ORDINAMENTO === -->
             <div id="btn-ordina-numero" class="pulsante-ordina">123</div>
@@ -196,90 +198,79 @@
 
             <!-- === LINK ALTRI GIOCHI === -->
             <div class="link-giochi">
-                <a href="scala40.html">
+                <a href="scala40-en.html">
                     <div class="pulsante-link pulsante-scala40">Scala 40</div>
                 </a>
-                <a href="machiavelli.html">
+                <a href="machiavelli-en.html">
                     <div class="pulsante-link pulsante-machiavelli">Machiavelli</div>
                 </a>
-                <a href="spider.html">
+                <a href="spider-en.html">
                     <div class="pulsante-link pulsante-spider">Spider</div>
                 </a>
-                <a href="index.html">
+                <a href="index-en.html">
                     <div class="pulsante-link pulsante-home">Home</div>
                 </a>
             </div>
 
             <div id="btn-istruzioni" class="pulsante2"
                 style="bottom: 40px; left: 4px; top: auto; right: auto; width: 100px; height: 32px; line-height: 32px; font-size: 14px;">
-                ISTRUZIONI</div>
+                RULES</div>
 
             <div class="legal-links-text" style="right: 10px; bottom: 10px; gap: 15px;">
-                <a href="privacy.html" id="label-privacy" target="_blank">Privacy Policy</a>
+                <a href="privacy-en.html" id="label-privacy" target="_blank">Privacy Policy</a>
                 <a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)"
-                    id="label-gestisci-cookie">Gestisci Cookie</a>
+                    id="label-gestisci-cookie">Manage Cookies</a>
             </div>
 
             <!-- === MODALI === -->
             <div id="modal-nuova" class="modal">
-                <h2 id="modal-nuova-titolo">Nuova Partita</h2>
+                <h2 id="modal-nuova-titolo">New Game</h2>
                 <div class="modal-content">
-                    <p id="label-modalita">Modalita':</p>
+                    <p id="label-modalita">Mode:</p>
                     <label style="color: #999;"><input type="radio" name="modalita" value="1v1" disabled> <span
-                            id="label-1v1">1 vs 1 (in arrivo)</span></label><br>
+                            id="label-1v1">1 vs 1 (coming soon)</span></label><br>
                     <label><input type="radio" name="modalita" value="2v2" checked> <span id="label-2v2">2 vs 2</span>
-                        (<span id="label-compagno-desc">con compagno</span>)</label>
+                        (<span id="label-compagno-desc">with partner</span>)</label>
                     <hr style="border:0;border-top:1px solid #555;margin:14px 0">
-                    <p id="label-tipo-partita">Tipo partita:</p>
-                    <label><input type="radio" name="tipo-partita" value="singola"> <span id="label-mano-singola">Mano
-                            singola</span></label><br>
+                    <p id="label-tipo-partita">Game type:</p>
+                    <label><input type="radio" name="tipo-partita" value="singola"> <span id="label-mano-singola">Single hand</span></label><br>
                     <label><input type="radio" name="tipo-partita" value="torneo" checked> <span
-                            id="label-partita-punti">Partita a punti fino a:</span>
+                            id="label-partita-punti">Points match up to:</span>
                         <select id="sel-limite-torneo"
                             style="margin-left:6px;background:#2d5a3d;color:#fff;border:1px solid #6b9b7a;border-radius:4px;padding:2px 6px">
                             <option value="1005">1005</option>
                             <option value="2005">2005</option>
                             <option value="505">505</option>
-                            <option value="custom" id="label-limite-custom">Personalizzata...</option>
+                            <option value="custom" id="label-limite-custom">Custom...</option>
                         </select>
                     </label>
                     <div id="div-limite-custom" style="display:none;margin-top:6px;margin-left:20px">
-                        <span id="label-limite-pers">Limite personalizzato:</span>
+                        <span id="label-limite-pers">Custom limit:</span>
                         <input type="number" id="inp-limite-custom" value="1505" step="5"
                             style="width:60px;margin-left:6px;background:#2d5a3d;color:#fff;border:1px solid #6b9b7a;border-radius:4px;padding:2px 6px">
                     </div>
                 </div>
-                <button class="btn-modal" id="btn-inizia">INIZIA</button>
+                <button class="btn-modal" id="btn-inizia">START</button>
             </div>
 
             <div id="modal-vittoria" class="modal">
-                <h2 id="modal-vittoria-titolo">HAI VINTO!</h2>
+                <h2 id="modal-vittoria-titolo">YOU WON!</h2>
                 <div class="modal-content">
-                    <p id="label-complimenti">Complimenti!</p>
-                    <p><span id="label-punteggio-finale-v">Punteggio finale:</span> <span
+                    <p id="label-complimenti">Congratulations!</p>
+                    <p><span id="label-punteggio-finale-v">Final score:</span> <span
                             id="punteggio-finale-vinto">0</span></p>
                 </div>
-                <button class="btn-modal btn-nuova-partita" id="btn-nuova-v">NUOVA PARTITA</button>
+                <button class="btn-modal btn-nuova-partita" id="btn-nuova-v">NEW GAME</button>
             </div>
 
             <div id="modal-sconfitta" class="modal">
-                <h2 id="modal-sconfitta-titolo">HAI PERSO</h2>
+                <h2 id="modal-sconfitta-titolo">YOU LOST</h2>
                 <div class="modal-content">
-                    <p id="label-peccato">Peccato!</p>
-                    <p><span id="label-punteggio-finale-p">Punteggio finale:</span> <span
+                    <p id="label-peccato">Bad luck!</p>
+                    <p><span id="label-punteggio-finale-p">Final score:</span> <span
                             id="punteggio-finale-perso">0</span></p>
                 </div>
-                <button class="btn-modal btn-nuova-partita" id="btn-nuova-s">NUOVA PARTITA</button>
-            </div>
-
-            <!-- Titoli decorativi -->
-            <div id="titolo-gioco-loro" class="titolo-gioco">
-                <span class="titolo-burraco">BURRACO</span>
-                <span class="titolo-nome">Luciano</span>
-            </div>
-            <div id="titolo-gioco-noi" class="titolo-gioco">
-                <span class="titolo-burraco">BURRACO</span>
-                <span class="titolo-nome">Luciano</span>
+                <button class="btn-modal btn-nuova-partita" id="btn-nuova-s">NEW GAME</button>
             </div>
 
         </div>
@@ -322,4 +313,3 @@
 </body>
 
 </html>
-tml>
