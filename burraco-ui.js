@@ -6,12 +6,107 @@
 // ============================================================================
 
 // ============================================================================
+// I18N - Internazionalizzazione (Logica UI)
+// ============================================================================
+
+window.setLanguage = function(lang) {
+    console.log('setLanguage called with:', lang);
+    window.currentLang = lang;
+    localStorage.setItem('userLanguage', lang);
+    window.updateUILabels();
+    
+    // Aggiorna bottoni switcher
+    document.querySelectorAll('.btn-lang').forEach(btn => {
+        btn.style.background = 'rgba(0,0,0,0.4)';
+        btn.style.borderColor = '#6b9b7a';
+    });
+    const activeBtn = document.getElementById('btn-lang-' + lang);
+    if (activeBtn) {
+        activeBtn.style.background = '#2d5a3d';
+        activeBtn.style.borderColor = '#fff';
+    }
+    
+    // Rendi nuovamente (per aggiornare scritte dinamiche come "Carte: X")
+    render();
+}
+
+window.updateUILabels = function() {
+    console.log('updateUILabels called, currentLang:', window.currentLang);
+    const labels = [
+        'label-noi', 'label-loro', 'label-scarti', 'label-giocatore',
+        'modal-nuova-titolo', 'label-modalita', 'label-compagno-desc',
+        'label-tipo-partita', 'label-mano-singola', 'label-partita-punti',
+        'label-limite-custom', 'label-limite-pers', 'btn-inizia',
+        'modal-vittoria-titolo', 'label-complimenti', 'label-punteggio-finale-v',
+        'label-punteggio-finale-p', 'modal-sconfitta-titolo', 'label-peccato',
+        'btn-nuova-v', 'btn-nuova-s', 'label-privacy', 'label-gestisci-cookie',
+        'label-1v1', 'label-2v2'
+    ];
+    
+    labels.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            let key = id;
+            if (id === 'label-punteggio-finale-v' || id === 'label-punteggio-finale-p') key = 'label-punteggio-finale';
+            if (id === 'btn-nuova-v' || id === 'btn-nuova-s') key = 'btn-nuova-partita';
+            
+            // Per note con HTML (br), usa innerHTML
+            if (id === 'label-scarti-nota') {
+                el.innerHTML = window.t('msg-scarti-nota');
+            } else {
+                el.textContent = window.t(key);
+            }
+        }
+    });
+
+    // Aggiungi label-scarti-nota alla lista delle etichette (se non c'è già)
+    const extraLabels = ['label-scarti-nota'];
+    extraLabels.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = window.t('msg-scarti-nota');
+    });
+    
+    const btnIstr = document.getElementById('btn-istruzioni');
+    if (btnIstr) btnIstr.textContent = window.t('btn-istruzioni');
+    
+    const btnNuova = document.getElementById('btn-nuova');
+    if (btnNuova) btnNuova.textContent = window.t('btn-nuova');
+    
+    const btnScoperte = document.getElementById('btn-scoperte');
+    if (btnScoperte) btnScoperte.textContent = window.t('btn-scoperte');
+
+    const pozzettoNoi = document.getElementById('label-pozzetto-noi');
+    if (pozzettoNoi) {
+        const val = pozzettoNoi.textContent.split(': ')[1] || '-100';
+        pozzettoNoi.textContent = window.t('label-pozzetto') + ': ' + val;
+    }
+    const pozzettoLoro = document.getElementById('label-pozzetto-loro');
+    if (pozzettoLoro) {
+        const val = pozzettoLoro.textContent.split(': ')[1] || '-100';
+        pozzettoLoro.textContent = window.t('label-pozzetto') + ': ' + val;
+    }
+}
+
+// Check language on load
+window.addEventListener('load', () => {
+    let lang = localStorage.getItem('userLanguage');
+    if (!lang) {
+        const urlParams = new URLSearchParams(window.location.search);
+        lang = urlParams.get('lang');
+    }
+    if (!lang) lang = 'it';
+    setLanguage(lang);
+    
+    // Setup eventi originali
+    setupEventi();
+});
+
 // SETUP EVENTI
 // ============================================================================
 
 function setupEventi() {
     // Pulsanti
-    $('#btn-istruzioni').addEventListener('click', () => window.open('regole-burraco.html', '_blank'));
+    $('#btn-istruzioni').addEventListener('click', () => window.open('regole-burraco.html?lang=' + window.currentLang, '_blank'));
     $('#btn-nuova').addEventListener('click', () => mostraModal('modal-nuova'));
     $('#btn-undo').addEventListener('click', undo);
     $('#btn-scoperte').addEventListener('click', toggleScoperte);
@@ -287,8 +382,8 @@ function renderScarti() {
         const puntiScarti = game.scarti.reduce((sum, c) => sum + (c.punti || 0), 0);
         const numEl = scartiInfo.querySelector('.punti-numero');
         const valEl = scartiInfo.querySelector('.punti-valore');
-        if (numEl) numEl.textContent = `Carte: ${numScarti}`;
-        if (valEl) valEl.textContent = `Punti: ${puntiScarti}`;
+        if (numEl) numEl.textContent = `${t('label-carte')}: ${numScarti}`;
+        if (valEl) valEl.textContent = `${t('label-totale')}: ${puntiScarti}`;
     }
 
     // Mostra tutte le carte scartate
@@ -390,8 +485,8 @@ function renderManoGiocatore(giocatore, containerSel) {
         const puntiMano = giocatore.carte.reduce((sum, c) => sum + (c.punti || 0), 0);
         const numEl = giocatoreInfo.querySelector('.punti-numero');
         const valEl = giocatoreInfo.querySelector('.punti-valore');
-        if (numEl) numEl.textContent = `Carte: ${numCarte}`;
-        if (valEl) valEl.textContent = `Punti: ${puntiMano}`;
+        if (numEl) numEl.textContent = `${t('label-carte')}: ${numCarte}`;
+        if (valEl) valEl.textContent = `${t('label-totale')}: ${puntiMano}`;
     }
 
     const numCarte = giocatore.carte.length;
@@ -529,15 +624,15 @@ function renderAreaCombinazioni(combinazioni, containerSel) {
 
         const haBurraco = combinazioni.some(c => c.isBurraco);
         if (puntiBurracoEl) {
-            puntiBurracoEl.textContent = `Burraco: ${puntiBurraco}`;
+            puntiBurracoEl.textContent = `${t('label-burraco')}: ${puntiBurraco}`;
             puntiBurracoEl.classList.toggle('raggiunto', haBurraco);
         }
         if (puntiCarteEl) {
-            puntiCarteEl.textContent = `Carte: ${puntiCarte}`;
+            puntiCarteEl.textContent = `${t('label-carte')}: ${puntiCarte}`;
             puntiCarteEl.classList.toggle('negativo', puntiCarte < 0);
         }
         if (puntiPozzettoEl) {
-            puntiPozzettoEl.textContent = `Pozzetto: ${puntiPozzetto}`;
+            puntiPozzettoEl.textContent = `${t('label-pozzetto')}: ${puntiPozzetto}`;
             puntiPozzettoEl.classList.toggle('raggiunto', haPozzetto);
         }
         if (puntiTotaleEl) {
@@ -650,7 +745,9 @@ function renderPunteggi() {
     // Scritta limite torneo
     const torneoInfo = $('#torneo-info');
     if (torneoInfo && game.torneo) {
-        torneoInfo.textContent = 'partita a ' + game.torneo.limite + ' - mano ' + game.torneo.mano;
+        torneoInfo.textContent = t('info-torneo')
+            .replace('{limite}', game.torneo.limite)
+            .replace('{mano}', game.torneo.mano);
     }
 
     // Barra punteggi: usa il punteggio corrente della mano (come punti-totale)
@@ -1998,7 +2095,7 @@ function mostraPannelloGiocatore(indiceGiocatore, ruolo, defaultScenario) {
 
     if (!win) {
         console.error('Impossibile aprire la finestra (popup bloccato?)');
-        alert('Popup bloccato! Abilita i popup per questo sito.');
+        alert(t('msg-pop-bloccato'));
         return;
     }
 
@@ -3115,7 +3212,22 @@ function scegliBestOpzioneAI(giocatore, soloMano, verbose, fase) {
 let messaggioOverlay = null;
 
 function mostraMessaggio(testo, tipo = 'info') {
-    console.log('📢 mostraMessaggio() chiamata:', testo, tipo);
+    // Prova a tradurre se è una chiave, altrimenti usa il testo così com'è
+    let msg = testo;
+    if (window.currentLang === 'en') {
+        const lower = testo.toLowerCase().trim();
+        if (lower === 'pescare prima di scartare') msg = window.t('msg-pesca-scarto');
+        else if (lower === 'pescare prima di attaccare') msg = window.t('msg-pesca-attacco');
+        else if (lower === 'non puoi scartare la carta appena pescata dagli scarti') msg = window.t('msg-scarto-vietato');
+        else if (lower === 'serve almeno un burraco per chiudere') msg = window.t('msg-serve-burraco');
+        else if (lower === 'mazzo quasi esaurito! ultimo turno!') msg = window.t('msg-mazzo-quasi-finito');
+        else {
+            // Se non è una delle frasi fisse, prova a vedere se è già una chiave
+            msg = window.t(testo);
+        }
+    }
+
+    console.log('📢 mostraMessaggio() - Lingua:', window.currentLang, '| Input:', testo, '| Output:', msg);
     // Crea l'overlay se non esiste
     if (!messaggioOverlay) {
         console.log('📢 Creando nuovo overlay...');
@@ -3139,7 +3251,7 @@ function mostraMessaggio(testo, tipo = 'info') {
         console.log('📢 Overlay creato e aggiunto al body');
     }
 
-    messaggioOverlay.textContent = testo;
+    messaggioOverlay.textContent = msg;
     messaggioOverlay.style.display = 'block';
     messaggioOverlay.style.background = tipo === 'info' ? '#2196F3' : '#f44336';
     console.log('📢 Overlay aggiornato. Display:', messaggioOverlay.style.display);

@@ -883,6 +883,11 @@ async function depositaCombinazioneAI(giocatore, mossa) {
         carta.inCombinazione = true;
         carta.idCombinazione = comb.id;
         carta.faceUp = true;  // Le combinazioni sono sempre visibili
+        
+        // Assicurati che anche la carta "reale" nello stato globale sia faceUp
+        // (nel caso 'carta' sia un clone usato durante l'analisi)
+        const realCard = tutteLeCarte[carta.id];
+        if (realCard) realCard.faceUp = true;
     }
 
     combinazioni.push(comb);
@@ -947,6 +952,11 @@ async function eseguiCalataAI(giocatore, mossa) {
     carta.inCombinazione = true;
     carta.idCombinazione = combo.id;
     carta.faceUp = true;  // Le combinazioni sono sempre visibili
+
+    // Assicurati che anche la carta "reale" nello stato globale sia faceUp
+    // (nel caso 'carta' sia un clone usato durante l'analisi)
+    const realCard = tutteLeCarte[carta.id];
+    if (realCard) realCard.faceUp = true;
 
     if (combo.tipo === TIPO_SCALA) {
         // Controlla se stiamo aggiungendo un Asso a una scala che termina con K
@@ -1360,8 +1370,11 @@ function finePartita(haVintoNoi) {
         r.burracos = [];
         for (const c of combinazioni) {
             if (c.isBurraco) {
+                const labelCarte = window.t('label-carte') || 'carte';
+                const labelScala = window.t('label-scala') || 'scala';
+                const labelTris = window.t('label-tris') || 'tris';
                 r.burracos.push({
-                    desc: `${c.carte.length} carte (${c.tipo === TIPO_SCALA ? 'scala' : 'tris'})`,
+                    desc: `${c.carte.length} ${labelCarte} (${c.tipo === TIPO_SCALA ? labelScala : labelTris})`,
                     tipo: c.tipoBurraco,
                     punti: c.puntiBurraco
                 });
@@ -1423,35 +1436,39 @@ function mostraRisultatoFinale(risultato, vinceNoi) {
         let html = '<table style="width:100%;border-collapse:collapse;font-size:13px">';
 
         // Punti carte
-        html += riga('Punti carte in campo', r.puntiCarte, '#8f8');
+        html += riga(window.t('punti-carte-campo') || 'Punti carte in campo', r.puntiCarte, '#8f8');
 
         // Burracos
         for (const b of r.burracos) {
-            const etichetta = b.tipo === 'pulito' ? 'Burraco pulito' :
-                b.tipo === 'semipulito' ? 'Burraco semipulito' : 'Burraco sporco';
+            let etichetta = '';
+            if (b.tipo === 'pulito') etichetta = window.t('burraco-pulito') || 'Burraco pulito';
+            else if (b.tipo === 'semipulito') etichetta = window.t('burraco-semipulito') || 'Burraco semipulito';
+            else etichetta = window.t('burraco-sporco') || 'Burraco sporco';
+            
             const colore = b.tipo === 'pulito' ? '#4f4' :
                 b.tipo === 'semipulito' ? '#ff0' : '#f80';
             html += riga(`${etichetta} (${b.desc})`, b.punti, colore);
         }
         if (r.burracos.length === 0) {
-            html += riga('Nessun burraco', 0, '#888');
+            html += riga(window.t('nessun-burraco') || 'Nessun burraco', 0, '#888');
         }
 
         // Chiusura
         if (r.chiusura) {
-            html += riga('Bonus chiusura', r.puntiChiusura, '#4f4');
+            html += riga(window.t('bonus-chiusura') || 'Bonus chiusura', r.puntiChiusura, '#4f4');
         }
 
         // Penalita' mano
         for (const cm of r.carteMano) {
             if (cm.punti > 0) {
-                html += riga(`Carte in mano ${cm.nome} (${cm.numCarte})`, -cm.punti, '#f44');
+                const labelMano = (window.t('carte-in-mano') || 'Carte in mano') + ` ${cm.nome} (${cm.numCarte})`;
+                html += riga(labelMano, -cm.punti, '#f44');
             }
         }
 
         // Penalita' pozzetto
         if (r.pozzettoNonPreso) {
-            html += riga('Pozzetto non preso', -r.penalitaPozzetto, '#f44');
+            html += riga(window.t('pozzetto-non-preso-label') || 'Pozzetto non preso', -r.penalitaPozzetto, '#f44');
         }
 
         // Totale
@@ -1483,18 +1500,18 @@ function mostraRisultatoFinale(risultato, vinceNoi) {
         torneoConcluso = vinceTorneoNoi || vinceTorneoLoro;
         if (torneoConcluso) {
             titoloColore = vinceTorneoNoi ? '#4f4' : '#f44';
-            titolo = vinceTorneoNoi ? 'HAI VINTO LA PARTITA!' : 'HAI PERSO LA PARTITA';
+            titolo = vinceTorneoNoi ? window.t('titolo-vinto-partita') : window.t('titolo-perso-partita');
         } else {
             titoloColore = vinceNoi ? '#4f4' : '#f44';
-            titolo = (vinceNoi ? 'Mano vinta' : 'Mano persa') + ' - Mano ' + torneo.mano;
+            titolo = (vinceNoi ? window.t('mano-vinta') : window.t('mano-persa')) + ' - ' + (window.currentLang === 'it' ? 'Mano ' : 'Hand ') + torneo.mano;
         }
     } else {
         titoloColore = vinceNoi ? '#4f4' : '#f44';
-        titolo = vinceNoi ? 'HAI VINTO!' : 'HAI PERSO';
+        titolo = vinceNoi ? window.t('titolo-vinto') : window.t('titolo-perso');
     }
 
     const sottotitolo = game.ultimoTurno
-        ? '<p style="text-align:center;color:#fc8;margin:0 0 8px;font-size:13px">Mazzo esaurito - nessun bonus chiusura</p>'
+        ? `<p style="text-align:center;color:#fc8;margin:0 0 8px;font-size:13px">${window.t('msg-mazzo-finito-no-bonus')}</p>`
         : '';
 
     // ===== Riepilogo torneo: questa mano / totale precedente / totale generale =====
@@ -1510,16 +1527,16 @@ function mostraRisultatoFinale(risultato, vinceNoi) {
         return '<div style="margin:8px 0;background:rgba(0,0,0,0.25);border-radius:6px;padding:6px 8px">' +
             '<table style="width:100%;border-collapse:collapse;font-size:13px">' +
             '<tr><th></th>' +
-            '<th style="text-align:right;color:#8cf;padding:4px 8px">NOI</th>' +
-            '<th style="text-align:right;color:#fc8;padding:4px 8px">LORO</th></tr>' +
-            '<tr style="border-bottom:1px solid #444"><td style="padding:4px 4px;color:#ccc">Questa mano</td>' +
+            '<th style="text-align:right;color:#8cf;padding:4px 8px">' + window.t('label-noi').toUpperCase() + '</th>' +
+            '<th style="text-align:right;color:#fc8;padding:4px 8px">' + window.t('label-loro').toUpperCase() + '</th></tr>' +
+            '<tr style="border-bottom:1px solid #444"><td style="padding:4px 4px;color:#ccc">' + (window.currentLang === 'it' ? 'Questa mano' : 'This hand') + '</td>' +
             cellVal(risultato.noi.totale, false) + cellVal(risultato.loro.totale, false) + '</tr>' +
-            '<tr><td style="padding:4px 4px;color:#999">Totale precedente</td>' +
+            '<tr><td style="padding:4px 4px;color:#999">' + (window.currentLang === 'it' ? 'Totale precedente' : 'Previous total') + '</td>' +
             cellVal(prevNoi, false) + cellVal(prevLoro, false) + '</tr>' +
             '<tr style="border-top:2px solid #666;background:rgba(0,0,0,0.2)">' +
-            '<td style="padding:6px 4px;color:#fff;font-weight:bold;font-size:14px">Totale</td>' +
+            '<td style="padding:6px 4px;color:#fff;font-weight:bold;font-size:14px">' + window.t('label-totale') + '</td>' +
             cellVal(torneo.totNoi, true) + cellVal(torneo.totLoro, true) + '</tr>' +
-            '<tr><td colspan="3" style="text-align:right;color:#888;font-size:11px;padding:2px 4px">Limite: ' + torneo.limite + '</td></tr>' +
+            '<tr><td colspan="3" style="text-align:right;color:#888;font-size:11px;padding:2px 4px">' + (window.currentLang === 'it' ? 'Limite: ' : 'Limit: ') + torneo.limite + '</td></tr>' +
             '</table></div>';
     })() : '';
 
@@ -1528,13 +1545,13 @@ function mostraRisultatoFinale(risultato, vinceNoi) {
         sottotitolo + rigaTorneo +
         '<div style="display:flex;gap:20px">' +
         '<div style="flex:1">' +
-        '<h3 style="color:#8cf;margin:0 0 8px;font-size:14px;text-transform:uppercase">NOI</h3>' +
-        tabellaSquadra(risultato.noi, 'TOTALE NOI') +
+        '<h3 style="color:#8cf;margin:0 0 8px;font-size:14px;text-transform:uppercase">' + window.t('label-noi').toUpperCase() + '</h3>' +
+        tabellaSquadra(risultato.noi, window.t('label-totale').toUpperCase() + ' ' + window.t('label-noi').toUpperCase()) +
         '</div>' +
         '<div style="width:1px;background:#555"></div>' +
         '<div style="flex:1">' +
-        '<h3 style="color:#fc8;margin:0 0 8px;font-size:14px;text-transform:uppercase">LORO</h3>' +
-        tabellaSquadra(risultato.loro, 'TOTALE LORO') +
+        '<h3 style="color:#fc8;margin:0 0 8px;font-size:14px;text-transform:uppercase">' + window.t('label-loro').toUpperCase() + '</h3>' +
+        tabellaSquadra(risultato.loro, window.t('label-totale').toUpperCase() + ' ' + window.t('label-loro').toUpperCase()) +
         '</div>' +
         '</div>' +
         '</div>';
@@ -1544,14 +1561,14 @@ function mostraRisultatoFinale(risultato, vinceNoi) {
     if (torneo && !torneoConcluso) {
         // Torneo in corso: pulsante "PROSSIMA MANO" + abbandona
         bottoni = '<div style="display:flex;gap:10px;justify-content:center;margin:12px auto">' +
-            '<button class="btn-modal btn-trasparenza" title="Mostra/nascondi carte sotto">VEDI CARTE</button>' +
-            '<button class="btn-modal btn-abbandona-torneo">ABBANDONA</button>' +
-            '<button class="btn-modal btn-prossima-mano">PROSSIMA MANO</button>' +
+            '<button class="btn-modal btn-trasparenza" title="...">' + window.t('btn-vedi-carte') + '</button>' +
+            '<button class="btn-modal btn-abbandona-torneo">' + window.t('btn-abbandona') + '</button>' +
+            '<button class="btn-modal btn-prossima-mano">' + window.t('btn-prossima-mano') + '</button>' +
             '</div>';
     } else {
         bottoni = '<div style="display:flex;gap:10px;justify-content:center;margin:12px auto">' +
-            '<button class="btn-modal btn-trasparenza" title="Mostra/nascondi carte sotto">VEDI CARTE</button>' +
-            '<button class="btn-modal btn-nuova-partita">NUOVA PARTITA</button>' +
+            '<button class="btn-modal btn-trasparenza" title="...">' + window.t('btn-vedi-carte') + '</button>' +
+            '<button class="btn-modal btn-nuova-partita">' + window.t('btn-nuova-partita') + '</button>' +
             '</div>';
     }
 

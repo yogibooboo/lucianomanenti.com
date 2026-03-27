@@ -10,8 +10,156 @@
 // ============================================================================
 
 // ============================================================================
-// COSTANTI
+// I18N - Internazionalizzazione
 // ============================================================================
+
+const burracoTranslations = {
+    it: {
+        // UI Labels
+        'label-noi': 'Noi',
+        'label-loro': 'Loro',
+        'label-pozzetto': 'Pozzetto',
+        'label-burraco': 'Burraco',
+        'label-carte': 'carte',
+        'label-scala': 'scala',
+        'label-tris': 'tris',
+        'label-totale': 'Totale',
+        'label-scarti': 'Scarti',
+        'label-giocatore': 'Giocatore',
+        'btn-istruzioni': 'ISTRUZIONI',
+        'btn-nuova': 'NUOVA',
+        'btn-scoperte': 'SCOPERTE',
+        'modal-nuova-titolo': 'Nuova Partita',
+        'label-modalita': "Modalita':",
+        'label-compagno-desc': 'con compagno',
+        'label-tipo-partita': 'Tipo partita:',
+        'label-mano-singola': 'Mano singola',
+        'label-partita-punti': 'Partita a punti fino a:',
+        'label-limite-custom': 'Personalizzata...',
+        'label-limite-pers': 'Limite personalizzato:',
+        'btn-inizia': 'INIZIA',
+        'modal-vittoria-titolo': 'HAI VINTO!',
+        'label-complimenti': 'Complimenti!',
+        'label-punteggio-finale': 'Punteggio finale:',
+        'btn-nuova-partita': 'NUOVA PARTITA',
+        'modal-sconfitta-titolo': 'HAI PERSO',
+        'label-peccato': 'Peccato!',
+
+        // Messaggi di gioco
+        'msg-pesca-scarto': 'Pescare prima di scartare',
+        'msg-pesca-attacco': 'Pescare prima di attaccare',
+        'msg-scarto-vietato': 'Non puoi scartare la carta appena pescata dagli scarti',
+        'msg-serve-burraco': 'Serve almeno un burraco per chiudere',
+        'msg-mazzo-quasi-finito': 'Mazzo quasi esaurito! Ultimo turno!',
+        'msg-pop-bloccato': 'Popup bloccato! Abilita i popup per questo sito.',
+        
+        // Titoli Vittoria/Sconfitta (da game.js)
+        'titolo-vinto-partita': 'HAI VINTO LA PARTITA!',
+        'titolo-perso-partita': 'HAI PERSO LA PARTITA',
+        'titolo-vinto': 'HAI VINTO!',
+        'titolo-perso': 'HAI PERSO',
+        
+        // Punteggi
+        'info-torneo': 'partita a {limite} - mano {mano}',
+        'mano-vinta': 'Mano vinta',
+        'mano-persa': 'Mano persa',
+        'torneo-vinto-sub': 'Torneo completato con successo!',
+        'torneo-perso-sub': 'Torneo perso, riprova!',
+        'msg-mazzo-finito-no-bonus': 'Mazzo esaurito - nessun bonus chiusura',
+        'btn-vedi-carte': 'VEDI CARTE',
+        'punti-carte-campo': 'Punti carte in campo',
+        'burraco-pulito': 'Burraco pulito',
+        'burraco-semipulito': 'Burraco semipulito',
+        'burraco-sporco': 'Burraco sporco',
+        'nessun-burraco': 'Nessun burraco',
+        'bonus-chiusura': 'Bonus chiusura',
+        'carte-in-mano': 'Carte in mano',
+        'pozzetto-non-preso-label': 'Pozzetto non preso',
+        'msg-scarti-nota': "Ho aggiornato l'algoritmo di gioco, dovrebbe essere migliorato<br>Certamente non è finito, ma fatemi sapere cosa ne pensate!",
+        'label-privacy': 'Privacy Policy',
+        'label-gestisci-cookie': 'Gestisci Cookie',
+        'label-chi-sono': 'Chi Sono',
+        'label-1v1': '1 vs 1 (in arrivo)',
+        'label-2v2': '2 vs 2'
+    },
+    en: {
+        // UI Labels
+        'label-noi': 'Us',
+        'label-loro': 'Them',
+        'label-pozzetto': 'Pot',
+        'label-burraco': 'Burraco',
+        'label-carte': 'cards',
+        'label-scala': 'sequence',
+        'label-tris': 'set',
+        'label-totale': 'Total',
+        'label-scarti': 'Discard',
+        'label-giocatore': 'Player',
+        'btn-istruzioni': 'RULES',
+        'btn-nuova': 'NEW',
+        'btn-scoperte': 'FACE UP',
+        'modal-nuova-titolo': 'New Game',
+        'label-modalita': "Mode:",
+        'label-compagno-desc': 'with partner',
+        'label-1v1': '1 vs 1 (coming soon)',
+        'label-2v2': '2 vs 2',
+        'label-tipo-partita': 'Game type:',
+        'label-mano-singola': 'Single hand',
+        'label-partita-punti': 'Points game up to:',
+        'label-limite-custom': 'Custom...',
+        'label-limite-pers': 'Custom limit:',
+        'btn-inizia': 'START',
+        'modal-vittoria-titolo': 'YOU WON!',
+        'label-complimenti': 'Congratulations!',
+        'label-punteggio-finale': 'Final score:',
+        'btn-nuova-partita': 'NEW GAME',
+        'modal-sconfitta-titolo': 'YOU LOST',
+        'label-peccato': 'Bad luck!',
+
+        // Game Messages
+        'msg-pesca-scarto': 'Draw before discarding',
+        'msg-pesca-attacco': 'Draw before playing',
+        'msg-scarto-vietato': 'You cannot discard the card you just drew from the discard pile',
+        'msg-serve-burraco': 'You need at least one Burraco to close',
+        'msg-mazzo-quasi-finito': 'Deck almost empty! Last turn!',
+        'msg-pop-bloccato': 'Popup blocked! Please enable popups for this site.',
+        
+        // Victory/Defeat Titles (from game.js)
+        'titolo-vinto-partita': 'YOU WON THE GAME!',
+        'titolo-perso-partita': 'YOU LOST THE GAME',
+        'titolo-vinto': 'YOU WON!',
+        'titolo-perso': 'YOU LOST',
+        
+        // Scores
+        'info-torneo': 'game to {limite} - hand {mano}',
+        'mano-vinta': 'Hand won',
+        'mano-persa': 'Hand lost',
+        'torneo-vinto-sub': 'Tournament completed successfully!',
+        'torneo-perso-sub': 'Tournament lost, try again!',
+        'msg-mazzo-finito-no-bonus': 'Deck empty - no closing bonus',
+        'btn-prossima-mano': 'NEXT HAND',
+        'btn-abbandona': 'ABANDON',
+        'btn-vedi-carte': 'SEE CARDS',
+        'punti-carte-campo': 'Points cards on table',
+        'burraco-pulito': 'Clean Burraco',
+        'burraco-semipulito': 'Semi-clean Burraco',
+        'burraco-sporco': 'Dirty Burraco',
+        'nessun-burraco': 'No Burraco',
+        'bonus-chiusura': 'Closing bonus',
+        'carte-in-mano': 'Cards in hand',
+        'pozzetto-non-preso-label': 'Pot not taken',
+        'msg-scarti-nota': "I've updated the game algorithm, it should be improved.<br>It's certainly not finished, but let me know what you think!",
+        'label-privacy': 'Privacy Policy',
+        'label-gestisci-cookie': 'Manage Cookies',
+        'label-chi-sono': 'About Me'
+    }
+};
+
+window.currentLang = 'it';
+
+window.t = function(key) {
+    if (!burracoTranslations[window.currentLang]) return key;
+    return burracoTranslations[window.currentLang][key] || key;
+};
 
 const SEMI = ['C', 'Q', 'F', 'P']; // Cuori, Quadri, Fiori, Picche
 const NOMI_SEMI = { C: 'Cuori', Q: 'Quadri', F: 'Fiori', P: 'Picche', J: 'Jolly' };

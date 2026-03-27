@@ -82,7 +82,11 @@
                 </div>
                 <div id="torneo-info"></div>
             </div>
-            <a href="aboutme.html" target="_blank" id="btn-scrivetemi" class="pulsante-link">Scrivetemi Write to me</a>
+            <a href="aboutme.html" target="_blank" id="btn-scrivetemi" class="pulsante-link">Scrivetemi<br>Write to
+                me</a>
+
+            <!-- Language Switcher -->
+            <!-- Switcher rimosso da qui (spostato in alto a sinistra) -->
 
             <!-- === COMPAGNO (top) === -->
             <div id="area-compagno" class="area-giocatore">
@@ -111,12 +115,13 @@
             <!-- === AREA COMBINAZIONI NOI (sinistra) === -->
             <div id="combinazioni-noi" class="area-combinazioni">
                 <div class="titolo-area">
-                    <span class="titolo-nome">Noi</span>
+                    <span class="titolo-nome" id="label-noi">Noi</span>
                     <span class="titolo-punti">
-                        <span class="punti-pozzetto" title="Pozzetto (-100 se non preso)">Pozzetto: -100</span>
-                        <span class="punti-burraco" title="Punti burraco">Burraco: 0</span>
-                        <span class="punti-carte" title="Punti carte">Carte: 0</span>
-                        <span class="punti-totale" title="Totale">= -100</span>
+                        <span class="punti-pozzetto" title="Pozzetto (-100 se non preso)"
+                            id="label-pozzetto-noi">Pozzetto: -100</span>
+                        <span class="punti-burraco" title="Punti burraco" id="label-burraco-noi">Burraco: 0</span>
+                        <span class="punti-carte" title="Punti carte" id="label-carte-noi">Carte: 0</span>
+                        <span class="punti-totale" title="Totale" id="label-totale-noi">= -100</span>
                     </span>
                 </div>
             </div>
@@ -124,12 +129,13 @@
             <!-- === AREA COMBINAZIONI AVVERSARI (destra) === -->
             <div id="combinazioni-loro" class="area-combinazioni">
                 <div class="titolo-area">
-                    <span class="titolo-nome">Loro</span>
+                    <span class="titolo-nome" id="label-loro">Loro</span>
                     <span class="titolo-punti">
-                        <span class="punti-pozzetto" title="Pozzetto (-100 se non preso)">Pozzetto: -100</span>
-                        <span class="punti-burraco" title="Punti burraco">Burraco: 0</span>
-                        <span class="punti-carte" title="Punti carte">Carte: 0</span>
-                        <span class="punti-totale" title="Totale">= -100</span>
+                        <span class="punti-pozzetto" title="Pozzetto (-100 se non preso)"
+                            id="label-pozzetto-loro">Pozzetto: -100</span>
+                        <span class="punti-burraco" title="Punti burraco" id="label-burraco-loro">Burraco: 0</span>
+                        <span class="punti-carte" title="Punti carte" id="label-carte-loro">Carte: 0</span>
+                        <span class="punti-totale" title="Totale" id="label-totale-loro">= -100</span>
                     </span>
                 </div>
             </div>
@@ -151,17 +157,17 @@
 
             <!-- === SCARTI === -->
             <div id="scarti-info">
-                <span class="titolo-nome">Scarti</span>
+                <span class="titolo-nome" id="label-scarti">Scarti</span>
                 <span class="titolo-punti">
-                    <span class="punti-numero">Carte: 0</span>
-                    <span class="punti-valore">Punti: 0</span>
+                    <span class="punti-numero" id="label-ncarte-scarti">Carte: 0</span>
+                    <span class="punti-valore" id="label-punti-scarti">Punti: 0</span>
                 </span>
             </div>
             <div id="scarti-container">
                 <!-- Scarti visibili in linea -->
                 <div id="scarti-nota">
-                    Ho aggiornato l'algoritmo di gioco, dovrebbe essere migliorato<br>
-                    Certamente non è finito, ma fatemi sapere cosa ne pensate!
+                    <span id="label-scarti-nota">Ho aggiornato l'algoritmo di gioco, dovrebbe essere migliorato<br>
+                        Certamente non è finito, ma fatemi sapere cosa ne pensate!</span>
                 </div>
             </div>
 
@@ -173,10 +179,10 @@
 
             <!-- === GIOCATORE (bottom) === -->
             <div id="giocatore-info">
-                <span class="titolo-nome">Giocatore</span>
+                <span class="titolo-nome" id="label-giocatore">Giocatore</span>
                 <span class="titolo-punti">
-                    <span class="punti-numero">Carte: 0</span>
-                    <span class="punti-valore">Punti: 0</span>
+                    <span class="punti-numero" id="label-ncarte-mano">Carte: 0</span>
+                    <span class="punti-valore" id="label-punti-mano">Punti: 0</span>
                 </span>
             </div>
             <div id="area-giocatore" class="area-giocatore">
@@ -184,7 +190,12 @@
             </div>
 
             <!-- === PULSANTI === -->
-            <div id="btn-istruzioni" class="pulsante2">ISTRUZIONI</div>
+            <div style="position: absolute; top: 10px; left: 10px; z-index: 2000; display: flex; gap: 4px;">
+                <button onclick="setLanguage('it')" class="btn-lang" id="btn-lang-it" title="Italiano"
+                    style="background: rgba(0,0,0,0.4); border: 1px solid #6b9b7a; color: white; border-radius: 4px; padding: 4px 10px; cursor: pointer; font-size: 14px; font-weight: bold; height: 32px; transition: all 0.2s;">IT</button>
+                <button onclick="setLanguage('en')" class="btn-lang" id="btn-lang-en" title="English"
+                    style="background: rgba(0,0,0,0.4); border: 1px solid #6b9b7a; color: white; border-radius: 4px; padding: 4px 10px; cursor: pointer; font-size: 14px; font-weight: bold; height: 32px; transition: all 0.2s;">EN</button>
+            </div>
             <div id="btn-nuova" class="pulsante2">NUOVA</div>
             <div id="btn-undo" class="pulsante2">&#x21A9;</div>
             <div id="btn-scoperte" class="pulsante2">SCOPERTE</div>
@@ -209,36 +220,44 @@
                 </a>
             </div>
 
-            <div class="legal-links-text">
-                <a href="privacy.html" target="_blank">Privacy Policy</a>
-                <a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)">Gestisci Cookie</a>
+            <div id="btn-istruzioni" class="pulsante2"
+                style="bottom: 40px; left: 4px; top: auto; right: auto; width: 100px; height: 32px; line-height: 32px; font-size: 14px;">
+                ISTRUZIONI</div>
+
+            <div class="legal-links-text" style="right: 10px; bottom: 10px; gap: 15px;">
+                <a href="privacy.html" id="label-privacy" target="_blank">Privacy Policy</a>
+                <a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)"
+                    id="label-gestisci-cookie">Gestisci Cookie</a>
             </div>
 
             <!-- === MODALI === -->
 
 
             <div id="modal-nuova" class="modal">
-                <h2>Nuova Partita</h2>
+                <h2 id="modal-nuova-titolo">Nuova Partita</h2>
                 <div class="modal-content">
-                    <p>Modalita':</p>
-                    <label style="color: #999;"><input type="radio" name="modalita" value="1v1" disabled> 1 vs 1 (in
-                        arrivo)</label><br>
-                    <label><input type="radio" name="modalita" value="2v2" checked> 2 vs 2 (con compagno)</label>
+                    <p id="label-modalita">Modalita':</p>
+                    <label style="color: #999;"><input type="radio" name="modalita" value="1v1" disabled> <span
+                            id="label-1v1">1 vs 1 (in arrivo)</span></label><br>
+                    <label><input type="radio" name="modalita" value="2v2" checked> <span id="label-2v2">2 vs 2</span>
+                        (<span id="label-compagno-desc">con compagno</span>)</label>
                     <hr style="border:0;border-top:1px solid #555;margin:14px 0">
-                    <p>Tipo partita:</p>
-                    <label><input type="radio" name="tipo-partita" value="singola"> Mano singola</label><br>
-                    <label><input type="radio" name="tipo-partita" value="torneo" checked> Partita a punti fino a:
+                    <p id="label-tipo-partita">Tipo partita:</p>
+                    <label><input type="radio" name="tipo-partita" value="singola"> <span id="label-mano-singola">Mano
+                            singola</span></label><br>
+                    <label><input type="radio" name="tipo-partita" value="torneo" checked> <span
+                            id="label-partita-punti">Partita a punti fino a:</span>
                         <select id="sel-limite-torneo"
                             style="margin-left:6px;background:#2d5a3d;color:#fff;border:1px solid #6b9b7a;border-radius:4px;padding:2px 6px">
                             <option value="1005">1005</option>
                             <option value="2005">2005</option>
                             <option value="505">505</option>
-                            <option value="custom">Personalizzata...</option>
+                            <option value="custom" id="label-limite-custom">Personalizzata...</option>
                         </select>
                     </label>
                     <div id="div-limite-custom" style="display:none;margin-top:6px;margin-left:20px">
-                        Limite personalizzato: <input type="number" id="inp-limite-custom" min="100" max="9999" step="5"
-                            value="1505"
+                        <span id="label-limite-pers">Limite personalizzato:</span> <input type="number"
+                            id="inp-limite-custom" min="100" max="9999" step="5" value="1505"
                             style="width:70px;background:#2d5a3d;color:#fff;border:1px solid #6b9b7a;border-radius:4px;padding:2px 6px;margin-left:6px">
                     </div>
                 </div>
@@ -246,21 +265,23 @@
             </div>
 
             <div id="modal-vittoria" class="modal">
-                <h2>HAI VINTO!</h2>
+                <h2 id="modal-vittoria-titolo">HAI VINTO!</h2>
                 <div class="modal-content">
-                    <p>Complimenti!</p>
-                    <p>Punteggio finale: <span id="punteggio-finale-vinto">0</span></p>
+                    <p id="label-complimenti">Complimenti!</p>
+                    <p><span id="label-punteggio-finale-v">Punteggio finale:</span> <span
+                            id="punteggio-finale-vinto">0</span></p>
                 </div>
-                <button class="btn-modal btn-nuova-partita">NUOVA PARTITA</button>
+                <button class="btn-modal btn-nuova-partita" id="btn-nuova-v">NUOVA PARTITA</button>
             </div>
 
             <div id="modal-sconfitta" class="modal">
-                <h2>HAI PERSO</h2>
+                <h2 id="modal-sconfitta-titolo">HAI PERSO</h2>
                 <div class="modal-content">
-                    <p>Peccato!</p>
-                    <p>Punteggio finale: <span id="punteggio-finale-perso">0</span></p>
+                    <p id="label-peccato">Peccato!</p>
+                    <p><span id="label-punteggio-finale-p">Punteggio finale:</span> <span
+                            id="punteggio-finale-perso">0</span></p>
                 </div>
-                <button class="btn-modal btn-nuova-partita">NUOVA PARTITA</button>
+                <button class="btn-modal btn-nuova-partita" id="btn-nuova-s">NUOVA PARTITA</button>
             </div>
 
             <!-- Titoli decorativi -->
@@ -288,9 +309,9 @@
     <audio id="snd-dindon" src="sounds/scala40/ding.mp3"></audio>
 
     <!-- Codice diviso in 3 file per manutenibilità -->
-    <script src="burraco-core.js?v=9.23"></script>
-    <script src="burraco-game.js?v=8.18"></script>
-    <script src="burraco-ui.js?v=10.61"></script>
+    <script src="burraco-core.js?v=9.26"></script>
+    <script src="burraco-game.js?v=8.22"></script>
+    <script src="burraco-ui.js?v=10.63"></script>
     <script>
         (function () {
             var nascosto = false;

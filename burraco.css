@@ -100,7 +100,7 @@ body {
     gap: 4px;
     padding: 8px 16px 6px;
     background-image: url(images/scala40/tappetoverde.png);
-    box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
     z-index: 200;
 }
 
@@ -124,7 +124,7 @@ body {
     position: absolute;
     bottom: 0px;
     left: 4px;
-    width: 80px;
+    width: 90px;
     height: auto;
     line-height: 14px;
     padding: 3px 5px;
@@ -231,7 +231,7 @@ body {
 #avatar-avv-dx {
     bottom: -70px;
     right: 30px;
-    
+
 }
 
 
@@ -536,8 +536,10 @@ body {
    Modifica top/left/width/height a piacere. */
 #barra-punteggi {
     position: absolute;
-    top: 120px;   /* stesso livello del titolo-area (115+3+1) */
-    left: 432px;  /* centro campo (512) - meta' larghezza (80) */
+    top: 120px;
+    /* stesso livello del titolo-area (115+3+1) */
+    left: 432px;
+    /* centro campo (512) - meta' larghezza (80) */
     width: 160px;
     height: 5px;
     display: flex;
@@ -1220,7 +1222,7 @@ body {
 .combinazione {
     display: flex;
     flex-direction: column;
-    margin-right : 0px;
+    margin-right: 0px;
     padding: 1px;
     border-radius: 3px;
     width: fit-content;
