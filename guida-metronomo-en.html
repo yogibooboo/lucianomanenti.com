@@ -217,7 +217,7 @@
 				<li><strong>CLAP START:</strong> to start playback via a hand clap (see above).</li>
 			</ul>
 
-			<p style="text-align: center;"><a href="metronome-en.html" class="play-btn">Open the Metronome</a></p>
+			<p style="text-align: center;"><a href="#" onclick="goBack(); return false;" class="play-btn">Close</a></p>
 		</div>
 	</div>
 
@@ -238,8 +238,6 @@
 		function goBack() {
 			if (window.opener) {
 				window.close();
-			} else {
-				window.location.href = 'metronome-en.html';
 			}
 		}
 

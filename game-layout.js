@@ -1,9 +1,12 @@
-// Non-functional change to trigger recognition
-
 // Make the scale factor global so the game's mouse logic can use it
 window.gameScale = 1;
 // Global state to toggle banner content
 window.showBannerDimensions = false;
+
+// ─── AMAZON BANNER CONFIG ────────────────────────────────────────────────────
+var AMAZON_BANNERS_ENABLED = false;  // set to false to disable Amazon banners
+var AMAZON_BANNERS_COUNT   = 30;    // number of available deal_XX.html files
+// ─────────────────────────────────────────────────────────────────────────────
 
 // Function to get version from the script tag and store it globally
 function getAndStoreScriptVersion() {
@@ -177,8 +180,8 @@ function adjustLayout() {
         // Special rule for 300x600 slots during AdSense suspension:
         // Specific CSS Backfill logic for 300x600 banners:
         // We load a random Amazon banner (1-20)
-        if (width === 300 && height === 600) {
-            var randomId = Math.floor(Math.random() * 30) + 1;
+        if (AMAZON_BANNERS_ENABLED && width === 300 && height === 600) {
+            var randomId = Math.floor(Math.random() * AMAZON_BANNERS_COUNT) + 1;
             var formattedId = randomId < 10 ? '0' + randomId : randomId;
             amazonBannerUrl = 'banner/deal_' + formattedId + '.html';
         }

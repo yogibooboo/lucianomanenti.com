@@ -19,11 +19,13 @@ window.setLanguage = function(lang) {
     document.querySelectorAll('.btn-lang').forEach(btn => {
         btn.style.background = 'rgba(0,0,0,0.4)';
         btn.style.borderColor = '#6b9b7a';
+        btn.style.color = '#fff';
     });
     const activeBtn = document.getElementById('btn-lang-' + lang);
     if (activeBtn) {
-        activeBtn.style.background = '#2d5a3d';
-        activeBtn.style.borderColor = '#fff';
+        activeBtn.style.background = '#ffd700';
+        activeBtn.style.borderColor = '#ffd700';
+        activeBtn.style.color = '#2c3e50';
     }
     
     // Rendi nuovamente (per aggiornare scritte dinamiche come "Carte: X")

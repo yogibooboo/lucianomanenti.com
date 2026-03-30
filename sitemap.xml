@@ -3,116 +3,167 @@
 	<!-- Italian Pages -->
 	<url>
 		<loc>https://lucianomanenti.com/</loc>
+		<lastmod>2026-03-29</lastmod>
 		<priority>1.0</priority>
 	</url>
 	<url>
 		<loc>https://lucianomanenti.com/info.html</loc>
+		<lastmod>2026-03-29</lastmod>
 		<priority>0.9</priority>
 	</url>
 	<url>
 		<loc>https://lucianomanenti.com/scala40.html</loc>
+		<lastmod>2026-03-29</lastmod>
 		<priority>0.9</priority>
 	</url>
 	<url>
 		<loc>https://lucianomanenti.com/machiavelli.html</loc>
+		<lastmod>2026-03-29</lastmod>
 		<priority>0.9</priority>
 	</url>
 	<url>
 		<loc>https://lucianomanenti.com/burraco.html</loc>
+		<lastmod>2026-03-29</lastmod>
 		<priority>0.9</priority>
 	</url>
 	<url>
 		<loc>https://lucianomanenti.com/spider.html</loc>
+		<lastmod>2026-03-29</lastmod>
 		<priority>0.9</priority>
 	</url>
 	<url>
 		<loc>https://lucianomanenti.com/metronome.html</loc>
+		<lastmod>2026-03-29</lastmod>
 		<priority>0.8</priority>
 	</url>
 	<url>
 		<loc>https://lucianomanenti.com/regole-scala40.html</loc>
+		<lastmod>2026-03-29</lastmod>
 		<priority>0.7</priority>
 	</url>
 	<url>
 		<loc>https://lucianomanenti.com/regole-machiavelli.html</loc>
+		<lastmod>2026-03-29</lastmod>
 		<priority>0.7</priority>
 	</url>
 	<url>
 		<loc>https://lucianomanenti.com/regole-spider.html</loc>
+		<lastmod>2026-03-29</lastmod>
 		<priority>0.7</priority>
 	</url>
 	<url>
 		<loc>https://lucianomanenti.com/regole-burraco.html</loc>
+		<lastmod>2026-03-29</lastmod>
 		<priority>0.7</priority>
 	</url>
 	<url>
 		<loc>https://lucianomanenti.com/guida-metronomo.html</loc>
+		<lastmod>2026-03-29</lastmod>
 		<priority>0.7</priority>
 	</url>
 	<url>
 		<loc>https://lucianomanenti.com/aboutme.html</loc>
+		<lastmod>2026-03-29</lastmod>
 		<priority>0.5</priority>
 	</url>
 	<url>
 		<loc>https://lucianomanenti.com/privacy.html</loc>
+		<lastmod>2026-03-29</lastmod>
 		<priority>0.3</priority>
+	</url>
+
+	
+	<url>
+		<loc>https://lucianomanenti.com/rummy.html</loc>
+		<lastmod>2026-03-29</lastmod>
+		<priority>0.9</priority>
+	</url>
+	<url>
+		<loc>https://lucianomanenti.com/regole-rummy.html</loc>
+		<lastmod>2026-03-29</lastmod>
+		<priority>0.7</priority>
 	</url>
 
 	<!-- English Pages -->
 	<url>
 		<loc>https://lucianomanenti.com/index-en.html</loc>
+		<lastmod>2026-03-29</lastmod>
 		<priority>1.0</priority>
 	</url>
 	<url>
 		<loc>https://lucianomanenti.com/info-en.html</loc>
+		<lastmod>2026-03-29</lastmod>
 		<priority>0.9</priority>
 	</url>
 	<url>
 		<loc>https://lucianomanenti.com/scala40-en.html</loc>
+		<lastmod>2026-03-29</lastmod>
 		<priority>0.9</priority>
 	</url>
 	<url>
 		<loc>https://lucianomanenti.com/machiavelli-en.html</loc>
+		<lastmod>2026-03-29</lastmod>
 		<priority>0.9</priority>
 	</url>
 	<url>
 		<loc>https://lucianomanenti.com/burraco-en.html</loc>
+		<lastmod>2026-03-29</lastmod>
 		<priority>0.9</priority>
 	</url>
 	<url>
 		<loc>https://lucianomanenti.com/spider-en.html</loc>
+		<lastmod>2026-03-29</lastmod>
 		<priority>0.9</priority>
 	</url>
 	<url>
 		<loc>https://lucianomanenti.com/metronome-en.html</loc>
+		<lastmod>2026-03-29</lastmod>
 		<priority>0.8</priority>
 	</url>
 	<url>
 		<loc>https://lucianomanenti.com/regole-scala40-en.html</loc>
+		<lastmod>2026-03-29</lastmod>
 		<priority>0.7</priority>
 	</url>
 	<url>
 		<loc>https://lucianomanenti.com/regole-machiavelli-en.html</loc>
+		<lastmod>2026-03-29</lastmod>
 		<priority>0.7</priority>
 	</url>
 	<url>
 		<loc>https://lucianomanenti.com/regole-spider-en.html</loc>
+		<lastmod>2026-03-29</lastmod>
 		<priority>0.7</priority>
 	</url>
 	<url>
 		<loc>https://lucianomanenti.com/regole-burraco-en.html</loc>
+		<lastmod>2026-03-29</lastmod>
 		<priority>0.7</priority>
 	</url>
 	<url>
 		<loc>https://lucianomanenti.com/guida-metronomo-en.html</loc>
+		<lastmod>2026-03-29</lastmod>
 		<priority>0.7</priority>
 	</url>
 	<url>
 		<loc>https://lucianomanenti.com/aboutme-en.html</loc>
+		<lastmod>2026-03-29</lastmod>
 		<priority>0.5</priority>
 	</url>
 	<url>
 		<loc>https://lucianomanenti.com/privacy-en.html</loc>
+		<lastmod>2026-03-29</lastmod>
 		<priority>0.3</priority>
+	</url>
+
+	<url>
+		<loc>https://lucianomanenti.com/rummy-en.html</loc>
+		<lastmod>2026-03-29</lastmod>
+		<priority>0.9</priority>
+	</url>
+	<url>
+		<loc>https://lucianomanenti.com/regole-rummy-en.html</loc>
+		<lastmod>2026-03-29</lastmod>
+		<priority>0.7</priority>
 	</url>
 </urlset>

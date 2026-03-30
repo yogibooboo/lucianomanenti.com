@@ -12,13 +12,28 @@ RedirectMatch 301 ^/scala40[vV]1\.html$ /scala40.html
 # 2. Optimized Caching Rules
 <IfModule mod_expires.c>
     ExpiresActive On
-    # HTML shouldn't be cached too long to allow for updates
+    # HTML: never cache (always fetch fresh)
     ExpiresByType text/html "access plus 0 seconds"
-    # Static assets can be cached longer
+    # Static assets: cache long (versioned with ?v=x.x in URLs)
     ExpiresByType application/javascript "access plus 1 month"
     ExpiresByType text/css "access plus 1 month"
     ExpiresByType image/x-icon "access plus 1 year"
     ExpiresByType image/jpeg "access plus 1 year"
     ExpiresByType image/png "access plus 1 year"
     ExpiresByType image/svg+xml "access plus 1 year"
+    ExpiresByType audio/mpeg "access plus 1 year"
 </IfModule>
+
+# Force no-cache for HTML (stronger than Expires for mobile browsers)
+<FilesMatch "\.(html|htm)$">
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
+    Header set Pragma "no-cache"
+    Header set Expires "0"
+</FilesMatch>
+
+# Force no-cache for game-layout.js (config flags changed without versioning)
+<FilesMatch "^game-layout\.js$">
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
+    Header set Pragma "no-cache"
+    Header set Expires "0"
+</FilesMatch>

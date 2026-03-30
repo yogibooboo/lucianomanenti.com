@@ -25,6 +25,27 @@ html {
 	background-image: url(images/home/scala40.jpg);
 }
 
+#icorummy {
+	position: absolute;
+	border-style: solid;
+	border-color: #FFFFFF;
+	border-width: 5px;
+	top: 250px;
+	left: 100px;
+	width: 120px;
+	height: 75px;
+	background-size: 120px 75px;
+	background-image: url(images/home/rummy.jpg);
+}
+
+#icorummy img {
+	position: absolute;
+	top: 20px;
+	left: 170px;
+	width: 300px;
+	height: 50px;
+}
+
 #icoburraco {
 	position: absolute;
 	border-style: solid;
@@ -779,3 +800,23 @@ h6 {
 	height: 18px;
 	pointer-events: none;
 }
+/* --- ORDERING LOGIC --- */
+
+/* Base Positions (Italian or Default) */
+[lang="it"] #icoscala { top: 165px; }
+[lang="it"] #icorummy { top: 250px; }
+[lang="it"] #icomachia { top: 335px; }
+[lang="it"] #icospider { top: 420px; }
+[lang="it"] #icoburraco { top: 505px; }
+[lang="it"] #icometro { top: 590px; }
+[lang="it"] #icohanon, [lang="it"] #aboutme { top: 680px; }
+
+/* English Overrides */
+[lang="en"] #icorummy { top: 165px; }
+[lang="en"] #icoscala { top: 250px; }
+[lang="en"] #icomachia { top: 335px; }
+[lang="en"] #icospider { top: 420px; }
+[lang="en"] #icoburraco { top: 505px; }
+[lang="en"] #icometro { top: 590px; }
+[lang="en"] #icohanon, [lang="en"] #aboutme { top: 680px; }
+

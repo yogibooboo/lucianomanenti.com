@@ -13,6 +13,8 @@
 		gtag('config', 'G-WRBDRDQ4L8');
 		window.currentLang = 'it';
 	</script>
+	<meta name="Description"
+		content="Scopri di più su Luciano Manenti e la storia dietro i giochi di carte online: Scala 40, Burraco, Spider e Machiavelli gratuiti.">
 	<title>Chi Sono - lucianomanenti.com</title>
 	<link rel="alternate" hreflang="it" href="aboutme.html">
 	<link rel="alternate" hreflang="en" href="aboutme-en.html">
@@ -146,27 +148,6 @@
 		© 2026 Luciano Manenti
 	</p>
 
-	<script>
-		(function() {
-			var nascosto = false;
-			var observer = new MutationObserver(function() {
-				if (nascosto) return;
-				var divs = document.querySelectorAll('body > div');
-				for (var i = 0; i < divs.length; i++) {
-					if (divs[i].shadowRoot && !divs[i].className && (divs[i].getAttribute('style')||'').length > 5000) {
-						divs[i].style.setProperty('display', 'none', 'important');
-						nascosto = true;
-						observer.disconnect();
-						return;
-					}
-				}
-			});
-			observer.observe(document.body, { childList: true });
-		})();
-	</script>
-</body>
-
-</html>
 	<script>
 		(function() {
 			var nascosto = false;

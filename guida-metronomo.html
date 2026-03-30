@@ -218,7 +218,7 @@
 				<li><strong>CLAP START:</strong> per avviare la riproduzione tramite battito di mani (vedi sopra).</li>
 			</ul>
 
-			<p style="text-align: center;"><a href="metronome.html" class="play-btn">Apri il Metronomo</a></p>
+			<p style="text-align: center;"><a href="#" onclick="goBack(); return false;" class="play-btn">Chiudi</a></p>
 		</div>
 	</div>
 
@@ -237,7 +237,9 @@
 
 	<script>
 		function goBack() {
-			window.location.href = 'metronome.html';
+			if (window.opener) {
+				window.close();
+			}
 		}
 
 		(function() {

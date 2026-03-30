@@ -1,0 +1,999 @@
+/* ============================================================
+   RUMMY / GIN RUMMY - Stylesheet
+   Campo di gioco 1024x750
+   ============================================================ */
+
+/* === LAYOUT PRINCIPALE === */
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-color: #1a1a2e;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+.main-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.sidebar {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    background: linear-gradient(135deg, #1a6b30 0%, #145524 50%, #0f4a1c 100%);
+    overflow-y: auto;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    z-index: 1;
+    flex-shrink: 0;
+}
+
+#sidebar-left  { left: 0; }
+#sidebar-right { right: 0; }
+
+#campogioco {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 1024px;
+    height: 750px;
+    background: linear-gradient(135deg, #1a5f2a 0%, #0f4a1c 50%, #145524 100%);
+    background-image: url(images/scala40/tappetoverde.png);
+    transform-origin: center center;
+    border-radius: 10px;
+    box-shadow: inset 0 0 100px rgba(0,0,0,0.3);
+    overflow: hidden;
+}
+
+/* === SCHERMO OVERLAY MODALE === */
+
+#schermo {
+    display: none;
+    position: absolute;
+    top: 0; left: 0;
+    width: 1024px; height: 750px;
+    background: rgba(0,0,0,0.6);
+    z-index: 30000;
+}
+
+/* === PANNELLO PUNTEGGI === */
+
+#pannello-punteggi {
+    position: absolute;
+    left: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    background: rgba(0,0,0,0.45);
+    border: 1px solid rgba(255,215,0,0.3);
+    border-radius: 8px;
+    padding: 8px 12px;
+    z-index: 10;
+    color: #fff;
+    font-size: 18px;
+    font-weight: bold;
+    min-width: 80px;
+}
+
+.punteggio-riga {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+
+.punteggio-label {
+    font-size: 12px;
+    font-weight: normal;
+    color: rgba(255,255,255,0.6);
+}
+
+.punteggio-divider {
+    height: 1px;
+    background: rgba(255,215,0,0.2);
+    margin: 5px 0;
+}
+
+#punti-giocatore { color: #7fff7f; }
+#punti-avversario { color: #ff7f7f; }
+
+#info-partita {
+    position: absolute;
+    top: 42px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 12px;
+    color: rgba(255,255,255,0.6);
+    text-align: center;
+    white-space: nowrap;
+    z-index: 10;
+}
+
+/* === AREA AVVERSARIO (top) === */
+
+#area-avversario {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 620px;
+    height: 136px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 5;
+    background: rgba(0, 50, 0, 0.4);
+    border: 2px solid rgba(100, 150, 100, 0.5);
+    border-radius: 10px;
+    padding: 6px 10px;
+    box-sizing: border-box;
+}
+
+#avatar-avversario {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    border: 2px solid #ff7f7f;
+    object-fit: cover;
+    cursor: pointer;
+}
+
+#nome-avversario {
+    display: none;
+}
+
+#nome-giocatore {
+    display: none;
+}
+
+/* Etichette esterne ai contenitori */
+#label-avversario-ext,
+#label-giocatore-ext {
+    position: absolute;
+    left: 838px;
+    font-size: 20px;
+    font-weight: bold;
+    color: #e8d870;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.6);
+    z-index: 10;
+    white-space: nowrap;
+}
+
+#label-avversario-ext { top: 30px; }
+#label-giocatore-ext  { bottom: 70px; }
+
+#carte-avversario {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    overflow: visible;
+}
+
+#carte-avversario .carta {
+    position: relative;
+    flex-shrink: 0;
+    margin-right: -22px;
+    z-index: 1;
+}
+
+#carte-avversario .carta:last-child {
+    margin-right: 0;
+}
+
+#ncarte-avversario {
+    font-size: 12px;
+    color: rgba(255,255,255,0.7);
+}
+
+/* === CENTRO: MAZZO + SCARTI === */
+
+/* Mazzo */
+#mazzo-wrap {
+    position: absolute;
+    top: 270px;
+    left: 421px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    z-index: 5;
+}
+
+#mazzo-count, #scarti-count, .card-count {
+    font-size: 12px;
+    color: rgba(255,255,255,0.7);
+    text-align: center;
+}
+
+#mazzo {
+    width: 71px;
+    height: 96px;
+    cursor: pointer;
+}
+
+/* Scarti */
+#scarti-wrap {
+    position: absolute;
+    top: 270px;
+    left: 532px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    z-index: 5;
+}
+
+#scarti-label {
+    font-size: 12px;
+    color: rgba(255,255,255,0.7);
+    text-align: center;
+}
+
+#scarti-container {
+    width: 71px;
+    height: 96px;
+    position: relative;
+    cursor: pointer;
+}
+
+.scarti-stack {
+    width: 71px;
+    height: 96px;
+    position: relative;
+    cursor: pointer;
+}
+
+#scarti.drop-target {
+    outline: 3px solid #ffd700;
+    border-radius: 5px;
+    box-shadow: 0 0 12px rgba(255,215,0,0.6);
+}
+
+/* Titolo gioco */
+#titolo-gioco {
+    position: absolute;
+    top: 155px;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    white-space: nowrap;
+    z-index: 6;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+#titolo-riga1 {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+}
+#titolo-nome {
+    font-size: 32px;
+    font-weight: bold;
+    color: #e8c252;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    letter-spacing: 4px;
+}
+#titolo-sep { color: #c9a227; font-size: 28px; }
+#titolo-luciano {
+    font-size: 28px;
+    font-style: italic;
+    color: #c9a227;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
+#oklahoma-soglia {
+    font-size: 13px;
+    color: #ffaa33;
+    letter-spacing: 1px;
+}
+
+/* === DEALER BADGE === */
+.dealer-badge {
+    position: absolute;
+    font-size: 11px;
+    font-weight: bold;
+    color: #fff;
+    background: #c06020;
+    border: 1px solid #e07840;
+    border-radius: 4px;
+    padding: 2px 6px;
+    z-index: 15;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+#dealer-badge-avversario { top: 57px; left: 838px; }
+#dealer-badge-giocatore  { bottom: 44px; left: 838px; }
+
+/* === BOTTONI UPCARD === */
+/* Centrati tra mazzo (left:421) e scarti (left:532+71=603), top sopra i mazzi */
+#btn-prendi-upcard {
+    top: 448px;
+    left: 432px;
+    width: 72px;
+    background: linear-gradient(180deg, #4a9c5a 0%, #2d7a3d 100%);
+    border-color: #6bbb7a;
+    z-index: 25;
+}
+#btn-passa-upcard {
+    top: 448px;
+    left: 516px;
+    width: 72px;
+    background: linear-gradient(180deg, #7a5a3d 0%, #5a3a2d 100%);
+    border-color: #9b7a6b;
+    z-index: 25;
+}
+
+/* Indicatore turno / stato */
+#stato-gioco {
+    position: absolute;
+    top: 415px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 282px;
+    text-align: center;
+    font-size: 13px;
+    color: rgba(255,255,255,0.8);
+    background: rgba(0,0,0,0.4);
+    border-radius: 6px;
+    padding: 4px 8px;
+    z-index: 6;
+}
+
+/* === AREA GIOCATORE (bottom) === */
+
+#giocatore-info {
+    position: absolute;
+    bottom: 118px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 13px;
+    color: rgba(255,255,255,0.8);
+    z-index: 5;
+    white-space: nowrap;
+}
+
+#giocatore-info .info-nome { color: #7fff7f; font-weight: bold; }
+#giocatore-info .info-carte { color: rgba(255,255,255,0.7); }
+#giocatore-info .info-punti { color: #ffd700; }
+#giocatore-info .info-deadwood { color: #ff9900; }
+
+#deadwood-info {
+    position: absolute;
+    bottom: 174px;
+    left: 202px;
+    color: #ff9900;
+    font-size: 13px;
+    font-weight: bold;
+    z-index: 10;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.dw-option {
+    cursor: pointer;
+    padding: 1px 5px;
+    border-radius: 4px;
+    border: 1px solid rgba(255,153,0,0.4);
+    color: #ff9900;
+    font-size: 12px;
+    transition: background 0.15s;
+}
+.dw-option:hover { background: rgba(255,153,0,0.25); }
+.dw-active {
+    color: #7fd4ff;
+    border-color: #7fd4ff;
+    background: rgba(100,200,255,0.15);
+}
+.dw-off { color: rgba(255,255,255,0.45); border-color: rgba(255,255,255,0.2); }
+.dw-on  { color: #7fff7f; border-color: #7fff7f; }
+
+#area-giocatore {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 620px;
+    height: 136px;
+    z-index: 5;
+    background: rgba(0, 50, 0, 0.4);
+    border: 2px solid rgba(100, 150, 100, 0.5);
+    border-radius: 10px;
+    padding: 4px 8px 6px 8px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+}
+
+#carte-giocatore {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    width: 100%;
+    overflow: visible;
+}
+
+#carte-giocatore .carta {
+    position: relative;
+    flex-shrink: 0;
+    margin-right: -22px;
+    z-index: 1;
+}
+
+#carte-giocatore .carta:last-child {
+    margin-right: 0;
+}
+
+
+/* === AREA MELD (pannello risoluzione knock/gin) === */
+
+#area-meld {
+    display: none;
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.85);
+    z-index: 31000;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px;
+    padding: 14px 20px;
+    overflow-y: auto;
+    box-sizing: border-box;
+}
+
+#area-meld.visibile {
+    display: flex;
+}
+
+.meld-sezione {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+}
+
+.meld-titolo {
+    font-size: 13px;
+    font-weight: bold;
+    color: #ffd700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.meld-cards {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+}
+
+.meld-layoff-hint {
+    font-size: 12px;
+    color: #aad4aa;
+    margin-top: 2px;
+}
+
+/* Wrapper per carta nel pannello meld (permette badge) */
+.meld-card-wrap {
+    position: relative;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.meld-card-wrap .carta {
+    position: relative;
+}
+
+/* Badge "attaccata" sopra la carta */
+.layoff-badge {
+    position: absolute;
+    top: -14px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 9px;
+    color: #fff;
+    background: rgba(30, 130, 200, 0.85);
+    border-radius: 3px;
+    padding: 1px 4px;
+    white-space: nowrap;
+    pointer-events: none;
+    z-index: 10;
+}
+
+/* Bottone KNOCK/GIN armato (in attesa di selezione carta) */
+#btn-knock.armed,
+#btn-gin.armed {
+    animation: pulse-armed 0.8s ease-in-out infinite alternate;
+    outline: 2px solid #fff;
+}
+
+@keyframes pulse-armed {
+    from { opacity: 0.75; }
+    to   { opacity: 1; }
+}
+
+/* Carte dentro il pannello meld: posizione relativa (non assoluta) */
+.meld-gruppo .carta,
+.meld-cards > .carta {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.meld-gruppo {
+    position: relative;
+}
+
+/* Deadwood nel pannello meld */
+.meld-cards > .carta.deadwood-card {
+    opacity: 0.6;
+    outline: 2px solid rgba(255,80,80,0.6);
+    border-radius: 5px;
+}
+
+.meld-giocatore-row, .meld-avversario-row {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+}
+
+.meld-label {
+    font-size: 14px;
+    font-weight: bold;
+    color: #ffd700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.meld-gruppi {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    justify-content: center;
+}
+
+.meld-gruppo {
+    display: flex;
+    position: relative;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,215,0,0.3);
+    border-radius: 6px;
+    padding: 6px 8px;
+    gap: 2px;
+}
+
+.meld-deadwood {
+    display: flex;
+    gap: 4px;
+    background: rgba(255,100,100,0.1);
+    border: 1px solid rgba(255,100,100,0.3);
+    border-radius: 6px;
+    padding: 6px 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+    min-width: 60px;
+    min-height: 60px;
+}
+
+.meld-deadwood-label {
+    font-size: 11px;
+    color: #ff7f7f;
+    text-align: center;
+    margin-bottom: 4px;
+}
+
+.meld-separatore {
+    width: 80%;
+    height: 1px;
+    background: rgba(255,255,255,0.15);
+}
+
+#meld-risultato {
+    font-size: 14px;
+    color: #ffd700;
+    text-align: left;
+    text-shadow: 0 0 8px rgba(255,215,0,0.4);
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,215,0,0.25);
+    border-radius: 6px;
+    padding: 10px 16px;
+    line-height: 1.8;
+    min-width: 220px;
+}
+
+#btn-meld-ok {
+    margin-top: 8px;
+}
+
+/* === CARTE === */
+
+.carta {
+    position: absolute;
+    width: 71px;
+    height: 96px;
+    background-image: url(images/scala40/conjollyplus.png);
+    border-radius: 5px;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+}
+
+.carta:hover {
+    box-shadow: 3px 5px 10px rgba(0,0,0,0.4);
+}
+
+.carta.selezionata {
+    transform: translateY(-18px);
+    box-shadow: 0 8px 15px rgba(255,215,0,0.5);
+    background-image: url(images/scala40/conjollyselplus.png);
+    z-index: 10;
+}
+
+.carta.coperta {
+    background-position: -1136px 0;
+    cursor: default;
+}
+
+.carta.coperta:hover {
+    transform: none;
+}
+
+.carta.coperta.mazzo-1 {
+    background-position: -1136px -96px;
+}
+
+.carta.meld-card {
+    position: relative;
+    flex-shrink: 0;
+    transform: none !important;
+    cursor: default;
+    box-shadow: 1px 1px 4px rgba(0,0,0,0.4);
+}
+
+.carta.deadwood-card {
+    position: relative;
+    flex-shrink: 0;
+    transform: none !important;
+    cursor: default;
+    filter: brightness(0.7);
+    box-shadow: 1px 1px 4px rgba(255,0,0,0.3);
+}
+
+.carta.layoff-candidate {
+    outline: 2px solid #ffd700;
+    cursor: pointer;
+}
+
+.carta.dealing {
+    animation: cardDeal 0.25s ease-out;
+}
+
+@keyframes cardDeal {
+    from { transform: translateY(-200px) rotate(-10deg); opacity: 0; }
+    to   { transform: translateY(0) rotate(0deg); opacity: 1; }
+}
+
+/* === PULSANTI === */
+
+.pulsante2 {
+    position: absolute;
+    background: rgba(0,0,0,0.5);
+    border: 1px solid #6b9b7a;
+    border-radius: 4px;
+    color: #fff;
+    font-size: 13px;
+    font-weight: bold;
+    padding: 0 10px;
+    height: 32px;
+    line-height: 32px;
+    text-align: center;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s, border-color 0.15s;
+    z-index: 20;
+}
+
+.pulsante2:hover {
+    background: rgba(0,0,0,0.7);
+    border-color: #ffd700;
+}
+
+#btn-nuova    { top: 50px; left: 10px; width: 72px; height: 28px; line-height: 28px; font-size: 13px; }
+#btn-undo     { top: 48px; right: 4px; width: 80px; }
+#btn-scoperte { top: 10px; right: 4px; width: 80px; }
+
+/* Pulsanti ordinamento carte */
+.pulsante-ordina {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(180deg, #4a7c59 0%, #2d5a3d 100%);
+    border: 2px solid #6b9b7a;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 16px;
+    font-weight: bold;
+    text-align: center;
+    line-height: 40px;
+    cursor: pointer;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    transition: all 0.2s;
+    z-index: 200;
+}
+.pulsante-ordina:hover {
+    background: linear-gradient(180deg, #5a8c69 0%, #3d6a4d 100%);
+    transform: scale(1.1);
+}
+#btn-ordina-numero { left: 154px; bottom: 101px; }
+#btn-ordina-seme   { left: 154px; bottom: 55px; }
+#btn-istruzioni { top: 88px; left: 10px; width: 72px; height: 28px; line-height: 28px; font-size: 13px; }
+
+#btn-knock {
+    bottom: 172px;
+    right: calc(50% - 310px);
+    width: 80px;
+    background: rgba(180,100,0,0.7);
+    border-color: #ff9900;
+    display: none;
+}
+#btn-knock:hover { background: rgba(180,100,0,0.9); }
+#btn-knock.visibile { display: block; }
+
+#btn-gin {
+    bottom: 172px;
+    right: calc(50% - 310px + 88px);
+    width: 80px;
+    background: rgba(0,120,0,0.7);
+    border-color: #7fff7f;
+    display: none;
+}
+#btn-gin:hover { background: rgba(0,120,0,0.9); }
+#btn-gin.visibile { display: block; }
+
+/* === LINK ALTRI GIOCHI === */
+
+.link-giochi {
+    position: absolute;
+    bottom: 45px;
+    right: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    z-index: 200;
+}
+
+.link-giochi a {
+    text-decoration: none;
+}
+
+.pulsante-link {
+    width: 90px;
+    height: 30px;
+    border: 2px solid #888;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.2s;
+    color: #fff;
+    font-size: 11px;
+    font-weight: bold;
+    text-align: center;
+    line-height: 30px;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    text-decoration: none;
+    display: block;
+}
+
+.pulsante-link:hover { transform: scale(1.1); }
+
+.pulsante-burraco     { background-color: #3a5a4a; }
+.pulsante-scala40     { background-color: #3a5a3a; }
+.pulsante-machiavelli { background-color: #5a3a3a; }
+.pulsante-spider      { background-color: #5a5a3a; }
+.pulsante-home        { background-color: #3a3a5a; }
+
+/* === TOAST === */
+#toast {
+    position: absolute;
+    top: 232px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.82);
+    color: #fff;
+    font-size: 13px;
+    font-weight: bold;
+    padding: 6px 16px;
+    border-radius: 6px;
+    border: 1px solid #6b9b7a;
+    z-index: 10000;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.25s;
+}
+#toast.visibile {
+    opacity: 1;
+}
+
+/* === SWITCHER LINGUA === */
+
+#lang-switcher {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    display: flex;
+    gap: 4px;
+    z-index: 20;
+}
+
+.btn-lang {
+    background: rgba(0,0,0,0.4);
+    border: 1px solid #6b9b7a;
+    color: white;
+    border-radius: 4px;
+    padding: 4px 10px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    height: 32px;
+    transition: all 0.2s;
+}
+
+.btn-lang.active {
+    background: #e07840;
+    border-color: #e07840;
+}
+
+/* === WRITE TO ME BUTTON === */
+
+#btn-scrivetemi {
+    position: absolute;
+    bottom: 48px;
+    left: 4px;
+    width: 95px;
+    height: 32px;
+    line-height: 32px;
+    padding: 0 5px;
+    background-color: #2d5a3d;
+    z-index: 100;
+    box-sizing: border-box;
+    text-decoration: none;
+}
+
+/* === LEGAL === */
+
+.legal-links-text {
+    position: absolute;
+    bottom: 4px;
+    right: 10px;
+    font-size: 10px;
+    color: rgba(255,255,255,0.4);
+    display: flex;
+    gap: 10px;
+    z-index: 10;
+}
+.legal-links-text a { color: inherit; text-decoration: none; }
+.legal-links-text a:hover { color: rgba(255,255,255,0.7); }
+
+/* === MODALI === */
+
+.modal {
+    display: none;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: linear-gradient(135deg, #1a3a2a, #0f2a1c);
+    border: 1px solid #4a7a5a;
+    border-radius: 10px;
+    padding: 20px 30px;
+    z-index: 31000;
+    min-width: 340px;
+    max-width: 460px;
+    color: #fff;
+    text-align: left;
+}
+
+.modal h2 {
+    text-align: center;
+    color: #ffd700;
+    margin-bottom: 16px;
+    font-size: 20px;
+    letter-spacing: 1px;
+}
+
+.modal-content {
+    font-size: 14px;
+    line-height: 1.8;
+    color: #ccc;
+    margin-bottom: 16px;
+}
+
+.modal-content p { margin-bottom: 6px; }
+
+.modal-content label {
+    display: block;
+    cursor: pointer;
+    padding: 2px 0;
+}
+
+.btn-modal {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    background: linear-gradient(180deg, #3a7a4a, #2a5a3a);
+    border: 1px solid #6b9b7a;
+    border-radius: 6px;
+    color: #fff;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    text-align: center;
+    transition: background 0.2s;
+    margin-top: 6px;
+}
+.btn-modal:hover { background: linear-gradient(180deg, #4a8a5a, #3a6a4a); }
+
+/* Variante secondaria (es. Abbandona) */
+.btn-modal.secondario {
+    background: rgba(0,0,0,0.3);
+    border-color: #555;
+    font-size: 13px;
+    padding: 7px;
+    margin-top: 4px;
+}
+.btn-modal.secondario:hover { background: rgba(0,0,0,0.5); }
+
+/* === MESSAGGI TOAST === */
+
+#messaggio {
+    display: none;
+    position: absolute;
+    bottom: 140px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.8);
+    color: #fff;
+    padding: 8px 18px;
+    border-radius: 6px;
+    font-size: 14px;
+    z-index: 300;
+    white-space: nowrap;
+    border: 1px solid rgba(255,255,255,0.2);
+}
+#messaggio.error { border-color: #ff7f7f; color: #ff9999; }
+#messaggio.success { border-color: #7fff7f; color: #afffaf; }
+
+/* === TURNO INDICATOR === */
+
+#area-avversario.turno-attivo { outline: 2px solid #ff9900; border-radius: 8px; }
+#area-giocatore.turno-attivo  { outline: 2px solid #ffd700; border-radius: 8px; }
+
+/* === RESPONSIVE SCALING (gestito da game-layout.js) === */

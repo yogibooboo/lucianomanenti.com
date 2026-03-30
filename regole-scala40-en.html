@@ -176,7 +176,7 @@
 				<li><strong>OPPONENTS:</strong> choose the number of opponents (1, 2, or 3) and/or start a new game.</li>
 			</ul>
 
-			<p style="text-align: center;"><a href="scala40-en.html" class="play-btn">Play Scala 40</a></p>
+			<p style="text-align: center;"><a href="#" onclick="goBack(); return false;" class="play-btn">Close</a></p>
 		</div>
 	</div>
 
@@ -197,11 +197,7 @@
 
 	<script>
 		function goBack() {
-			if (window.opener) {
-				window.close();
-			} else {
-				window.location.href = 'scala40-en.html';
-			}
+			window.close();
 		}
 
 		(function() {

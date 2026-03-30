@@ -145,7 +145,7 @@
 
 <body>
 	<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-		<a href="#" id="btn-back" onclick="window.close(); return false;"
+		<a href="#" id="btn-back" onclick="goBack(); return false;"
 			style="display: inline-block; padding: 6px 16px; background: #e74c3c; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 14px;">&#x2190;
 			Indietro</a>
 		<div class="lang-switch" style="margin-bottom: 0;">
@@ -331,7 +331,7 @@
 				<li><strong>SCOPERTE:</strong> gioca a carte scoperte (per esercitarsi).</li>
 			</ul>
 
-			<p style="text-align: center;"><a href="burraco.html" class="play-btn">Gioca a Burraco</a></p>
+			<p style="text-align: center;"><a href="#" onclick="goBack(); return false;" class="play-btn">Chiudi</a></p>
 		</div>
 	</div>
 
@@ -350,6 +350,12 @@
 	<p style="text-align: center; font-size: 0.8em; color: #999; margin-top: 15px;">
 		© 2026 Luciano Manenti
 	</p>
+
+	<script>
+		function goBack() {
+			window.close();
+		}
+	</script>
 </body>
 
 </html>

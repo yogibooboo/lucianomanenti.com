@@ -26,7 +26,7 @@
 
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<link rel="stylesheet" href="spider.css?v=2.3" />
+	<link rel="stylesheet" href="spider.css?v=2.4" />
 
 	<meta name="Description"
 		content="Play free Spider Solitaire online, no registration, no ads. Play Solitaire for free.">
@@ -68,41 +68,53 @@
 			</div> <!-- nonpertest-->
 			<!-- Selettore Lingua -->
 			<div class="lang-switch-game" style="position: absolute; top: 10px; left: 150px; z-index: 10001;">
-				<a href="spider.html" style="display: inline-block; padding: 4px 10px; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 12px; background: rgba(255, 255, 255, 0.2); color: white; border: 1px solid rgba(255, 255, 255, 0.3);">IT</a>
-				<a href="spider-en.html" class="active" style="display: inline-block; padding: 4px 10px; margin-left: 5px; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 12px; background: #ffd700; color: #2c3e50; border: 1px solid #ffd700;">EN</a>
+				<a href="spider.html"
+					style="display: inline-block; padding: 4px 10px; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 12px; background: rgba(255, 255, 255, 0.2); color: white; border: 1px solid rgba(255, 255, 255, 0.3);">IT</a>
+				<a href="spider-en.html" class="active"
+					style="display: inline-block; padding: 4px 10px; margin-left: 5px; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 12px; background: #ffd700; color: #2c3e50; border: 1px solid #ffd700;">EN</a>
 			</div>
-			<div id="pulsante2" class="pulsante2" style="top: 5px; left: 878px; z-index:1000; font-size: 28px; line-height: 38px; font-family: Arial, sans-serif;">↩</div>
-			<div id="scoperte" class="pulsantes" style="top: 660px; left: 900px; z-index:1000">FACE UP</div>
+			<div id="scoperte" class="pulsantes" style="top: 5px; left: 753px; z-index:1000">FACE UP</div>
+			<div id="pulsante2" class="pulsante2"
+				style="top: 5px; left: 878px; z-index:1000; font-size: 28px; line-height: 38px; font-family: Arial, sans-serif;">
+				↩</div>
 
 
-			<div class="pulsantehelp" style="top: 660px; left: 10px; "></div>
+			<a href="regole-spider-en.html" target="_blank">
+				<div class="pulsantehelp" style="top: 705px; left: 10px; "></div>
+			</a>
 
 			<a href="aboutme-en.html" target="_blank">
-				<div class="pulsantecomments" style="top: 705px; left: 10px; "></div>
+				<div class="pulsantecomments" style="top: 705px; left: 150px; "></div>
 			</a>
+
 			<a href="privacy-en.html" target="_blank"
-				style="position: absolute; top: 730px; left: 670px; color: white; text-decoration: none; font-size: 14px; font-family: sans-serif; z-index: 1000;">Privacy
+				style="position: absolute; bottom: 35px; right: 280px; color: white; text-decoration: none; font-size: 11px; font-family: sans-serif; z-index: 1000;">Privacy
 				Policy</a>
 			<a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)"
-				style="position: absolute; top: 710px; left: 670px; color: white; text-decoration: none; font-size: 14px; font-family: sans-serif; z-index: 1000;">Manage Cookies</a>
-			<a href="burraco-en.html">
-				<div class="pulsanteburraco" style="top: 660px; left: 655px; "></div>
-			</a>
+				style="position: absolute; bottom: 15px; right: 280px; color: white; text-decoration: none; font-size: 11px; font-family: sans-serif; z-index: 1000;">Manage Cookies</a>
 
-			<a href="scala40-en.html">
-				<div class="pulsantescala40" style="top: 660px; left: 780px; "></div>
-			</a>
-			<a href="machiavelli-en.html">
-				<div class="pulsantemachiavelli" style="top: 705px; left: 780px; "></div>
-			</a>
-			<a href="index-en.html">
-				<div class="pulsanteback" style="top: 705px; left: 900px; "></div>
-			</a>
+			<div class="link-giochi">
+				<a href="rummy-en.html">
+					<div class="pulsante-link pulsante-rummy">Gin Rummy</div>
+				</a>
+				<a href="burraco-en.html">
+					<div class="pulsante-link pulsante-burraco">Burraco</div>
+				</a>
+				<a href="scala40-en.html">
+					<div class="pulsante-link pulsante-scala40">Scala 40</div>
+				</a>
+				<a href="machiavelli-en.html">
+					<div class="pulsante-link pulsante-machiavelli">Machiavelli</div>
+				</a>
+				<a href="index-en.html">
+					<div class="pulsante-link pulsante-home">Home</div>
+				</a>
+			</div>
 
 
 
 
-			<div style="position:absolute; top: 03px; left: 350px;"><img src="images/spider/dorata-spider.png"
+			<div style="position:absolute; top: 03px; left: 250px;"><img src="images/spider/dorata-spider.png"
 					height="45px" width="500px"></div>
 			<div id="autocomplete" style="position:absolute; top: 57px; left: 838px;"><img
 					src="images/spider/autocomplete.jpg" height="110px" width="170px"></div>
@@ -154,24 +166,24 @@
 		window.currentLang = 'en';
 	</script>
 	<script src="game-layout.js?v=4.6"></script>
-	<script src="spidercode.js?v=2.6"></script>
+	<script src="spidercode.js?v=2.7"></script>
 	<script>
-	(function() {
-		var nascosto = false;
-		var observer = new MutationObserver(function() {
-			if (nascosto) return;
-			var divs = document.querySelectorAll('body > div');
-			for (var i = 0; i < divs.length; i++) {
-				if (divs[i].shadowRoot && !divs[i].className && (divs[i].getAttribute('style')||'').length > 5000) {
-					divs[i].style.setProperty('display', 'none', 'important');
-					nascosto = true;
-					observer.disconnect();
-					return;
+		(function () {
+			var nascosto = false;
+			var observer = new MutationObserver(function () {
+				if (nascosto) return;
+				var divs = document.querySelectorAll('body > div');
+				for (var i = 0; i < divs.length; i++) {
+					if (divs[i].shadowRoot && !divs[i].className && (divs[i].getAttribute('style') || '').length > 5000) {
+						divs[i].style.setProperty('display', 'none', 'important');
+						nascosto = true;
+						observer.disconnect();
+						return;
+					}
 				}
-			}
-		});
-		observer.observe(document.body, { childList: true });
-	})();
+			});
+			observer.observe(document.body, { childList: true });
+		})();
 	</script>
 
 </body>

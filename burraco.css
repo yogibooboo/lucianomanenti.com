@@ -122,14 +122,26 @@ body {
 
 #btn-scrivetemi {
     position: absolute;
-    bottom: 0px;
+    bottom: 48px;
     left: 4px;
-    width: 90px;
-    height: auto;
-    line-height: 14px;
-    padding: 3px 5px;
+    width: 95px;
+    height: 32px;
+    line-height: 32px;
+    padding: 0 5px;
     background-color: #3a3a5a;
     z-index: 100;
+    box-sizing: border-box;
+}
+
+#btn-home-left {
+    position: absolute;
+    bottom: 8px;
+    left: 4px;
+    width: 95px;
+    height: 32px;
+    line-height: 32px;
+    box-sizing: border-box;
+    text-align: center;
 }
 
 
@@ -774,7 +786,7 @@ body {
 /* === PULSANTI === */
 .pulsante2 {
     position: absolute;
-    width: 100px;
+    width: 95px;
     height: 32px;
     background: linear-gradient(180deg, #4a7c59 0%, #2d5a3d 100%);
     border: 2px solid #6b9b7a;
@@ -788,6 +800,7 @@ body {
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
     transition: all 0.2s;
     z-index: 200;
+    box-sizing: border-box;
 }
 
 .pulsante2:hover {
@@ -921,6 +934,7 @@ body {
     line-height: 30px;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
     text-decoration: none;
+    box-sizing: border-box;
 }
 
 .pulsante-link:hover {
@@ -945,6 +959,10 @@ body {
 
 .pulsante-home {
     background-color: #3a3a5a;
+}
+
+.pulsante-rummy {
+    background-color: #2a7a7a;
 }
 
 /* === TITOLO GIOCO === */
