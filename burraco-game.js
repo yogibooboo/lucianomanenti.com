@@ -282,8 +282,26 @@ function iniziaPartita() {
     // Render iniziale
     render();
 
-    // Inizia turno giocatore
-    game.giocatoreCorrente = 0;
+    // Determina mazziere:
+    // 1. Dal torneo se stiamo continuando una mano
+    // 2. Da localStorage se è una nuova partita ma non il primissimo sorteggio
+    // 3. Casuale solo la prima volta in assoluto
+    if (game.torneo && game.torneo.mazziere !== undefined) {
+        game.mazziere = game.torneo.mazziere;
+    } else {
+        var mazzieresSalvato = null;
+        try { mazzieresSalvato = localStorage.getItem('burraco_mazziere'); } catch(e) {}
+        if (mazzieresSalvato !== null) {
+            game.mazziere = parseInt(mazzieresSalvato);
+        } else {
+            game.mazziere = Math.floor(Math.random() * game.giocatori.length);
+        }
+        try { localStorage.setItem('burraco_mazziere', game.mazziere); } catch(e) {}
+    }
+
+    // Il primo giocatore è quello dopo il mazziere in senso orario (indice +1)
+    var n = game.giocatori.length;
+    game.giocatoreCorrente = (game.mazziere + 1) % n;
     game.fase = 'pesca';
     game.haPescato = false;
 
@@ -301,6 +319,13 @@ function iniziaPartita() {
 
     // Snapshot iniziale (permette di annullare anche la prima pesca)
     salvaStato('inizio-partita');
+
+    // Notifica UI per animazione distribuzione e avvio AI se il primo giocatore non è umano
+    if (typeof window.burracoOnInizio === 'function') {
+        window.burracoOnInizio();
+    } else if (!game.giocatori[game.giocatoreCorrente].isUmano) {
+        setTimeout(turnoAI, 1000);
+    }
 }
 
 function creaGiocatori() {
@@ -959,18 +984,10 @@ async function eseguiCalataAI(giocatore, mossa) {
     if (realCard) realCard.faceUp = true;
 
     if (combo.tipo === TIPO_SCALA) {
-        // Controlla se stiamo aggiungendo un Asso a una scala che termina con K
-        if (carta.numero === 1 && !combo.assoAlto) {
-            const numeriEsistenti = combo.carte
-                .map(c => isCartaMatta(c) ? c.jollycomeNumero : c.numero);
-            const maxEsistente = Math.max(...numeriEsistenti);
-            if (maxEsistente === 13) {
-                combo.assoAlto = true;
-                console.log('AI: scala diventa assoAlto perche Asso aggiunto dopo K');
-            }
-        }
-        // Aggiungi in posizione corretta nella scala
+        // Aggiungi e riverifica la scala per ottenere assoAlto aggiornato (come fa il codice umano)
         combo.carte.push(carta);
+        const riVer = verificaScala(combo.carte);
+        if (riVer.valida) combo.assoAlto = riVer.assoAlto || false;
         combo.carte = ordinaScalaConJolly(combo.carte, combo.assoAlto);
     } else if (combo.tipo === TIPO_TRIS) {
         // Per i tris, aggiungi e riordina con matta alla fine (in basso visivamente)
@@ -1590,7 +1607,15 @@ function mostraRisultatoFinale(risultato, vinceNoi) {
     if (torneo && !torneoConcluso) {
         // Prossima mano: ricarica la pagina mantenendo il torneo
         modalEl.querySelector('.btn-prossima-mano').addEventListener('click', () => {
-            if (torneo) torneo.mano++;
+            if (torneo) {
+                torneo.mano++;
+                // Ruota mazziere in senso antiorario (indice -1)
+                var nG = game.giocatori.length;
+                torneo.mazziere = (game.mazziere !== undefined)
+                    ? (game.mazziere - 1 + nG) % nG
+                    : 0;
+                try { localStorage.setItem('burraco_mazziere', torneo.mazziere); } catch(e) {}
+            }
             try {
                 localStorage.setItem('burraco_torneo', JSON.stringify(torneo));
                 localStorage.setItem('burraco_nuova', game.modalita);
@@ -1600,6 +1625,8 @@ function mostraRisultatoFinale(risultato, vinceNoi) {
         // Abbandona torneo
         modalEl.querySelector('.btn-abbandona-torneo').addEventListener('click', () => {
             try { localStorage.removeItem('burraco_torneo'); } catch (e) { }
+            var nGA = game.giocatori.length;
+            try { localStorage.setItem('burraco_mazziere', (game.mazziere - 1 + nGA) % nGA); } catch (e) { }
             game.torneo = null;
             chiudiModals();
             mostraModal('modal-nuova');
@@ -1608,6 +1635,8 @@ function mostraRisultatoFinale(risultato, vinceNoi) {
         // Fine: nuova partita (azzera torneo)
         modalEl.querySelector('.btn-nuova-partita').addEventListener('click', () => {
             try { localStorage.removeItem('burraco_torneo'); } catch (e) { }
+            var nGB = game.giocatori.length;
+            try { localStorage.setItem('burraco_mazziere', (game.mazziere - 1 + nGB) % nGB); } catch (e) { }
             game.torneo = null;
             chiudiModals();
             mostraModal('modal-nuova');

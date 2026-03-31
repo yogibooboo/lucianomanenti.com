@@ -80,7 +80,11 @@ const burracoTranslations = {
         'label-gestisci-cookie': 'Gestisci Cookie',
         'label-chi-sono': 'Chi Sono',
         'label-1v1': '1 vs 1 (in arrivo)',
-        'label-2v2': '2 vs 2'
+        'label-2v2': '2 vs 2',
+        'label-mazziere': 'Mazziere',
+        'btn-prossima-mano': 'PROSSIMA MANO',
+        'btn-abbandona': 'ABBANDONA',
+        'label-mazziere-e': 'Mazziere:'
     },
     en: {
         // UI Labels
@@ -138,6 +142,7 @@ const burracoTranslations = {
         'msg-mazzo-finito-no-bonus': 'Deck empty - no closing bonus',
         'btn-prossima-mano': 'NEXT HAND',
         'btn-abbandona': 'ABANDON',
+        'label-mazziere-e': 'Dealer:',
         'btn-vedi-carte': 'SEE CARDS',
         'punti-carte-campo': 'Points cards on table',
         'burraco-pulito': 'Clean Burraco',
@@ -150,7 +155,8 @@ const burracoTranslations = {
         'msg-scarti-nota': "I've updated the game algorithm, it should be improved.<br>It's certainly not finished, but let me know what you think!",
         'label-privacy': 'Privacy Policy',
         'label-gestisci-cookie': 'Manage Cookies',
-        'label-chi-sono': 'About Me'
+        'label-chi-sono': 'About Me',
+        'label-mazziere': 'Dealer'
     }
 };
 

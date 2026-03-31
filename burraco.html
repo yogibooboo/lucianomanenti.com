@@ -21,7 +21,7 @@
     <meta http-Equiv="Pragma" Content="no-cache">
     <meta http-Equiv="Expires" Content="0">
 
-    <link rel="stylesheet" href="burraco.css?v=4.4" />
+    <link rel="stylesheet" href="burraco.css?v=4.6" />
 
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
@@ -78,6 +78,12 @@
                 <div id="torneo-info"></div>
             </div>
             <a href="aboutme.html" target="_blank" id="btn-scrivetemi" class="pulsante-link">Scrivetemi</a>
+
+            <!-- === DEALER BADGES === -->
+            <div id="dealer-badge-bottom" class="dealer-badge" style="display:none;"></div>
+            <div id="dealer-badge-top"    class="dealer-badge" style="display:none;"></div>
+            <div id="dealer-badge-left"   class="dealer-badge" style="display:none;"></div>
+            <div id="dealer-badge-right"  class="dealer-badge" style="display:none;"></div>
 
             <!-- === COMPAGNO (top) === -->
             <div id="area-compagno" class="area-giocatore">
@@ -288,6 +294,7 @@
     </div>
 
     <!-- Audio -->
+    <audio id="snd-deal" src="sounds/scala40/distribuisci10.mp3"></audio>
     <audio id="snd-pesca" src="sounds/scala40/cardplace1.mp3"></audio>
     <audio id="snd-scarta" src="sounds/scala40/cardslide1.mp3"></audio>
     <audio id="snd-combinazione" src="sounds/scala40/cardplace3.mp3"></audio>
@@ -299,9 +306,9 @@
     <audio id="snd-dindon" src="sounds/scala40/ding.mp3"></audio>
 
     <!-- JS Files -->
-    <script src="burraco-core.js?v=9.27"></script>
-    <script src="burraco-game.js?v=8.23"></script>
-    <script src="burraco-ui.js?v=10.67"></script>
+    <script src="burraco-core.js?v=9.30"></script>
+    <script src="burraco-game.js?v=8.27"></script>
+    <script src="burraco-ui.js?v=10.72"></script>
     <script>
         (function () {
             var nascosto = false;

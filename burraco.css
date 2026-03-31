@@ -217,14 +217,14 @@ body {
 /* Avatar compagno (top) - a sinistra delle carte */
 #avatar-compagno {
     left: -80px;
-    top: 40%;
+    top: calc(40% - 20px);
     transform: translateY(-50%);
 }
 
 /* Nome compagno - sotto l'avatar */
 #nome-compagno {
     top: auto !important;
-    bottom: -2px;
+    bottom: 18px;
     left: -80px !important;
     transform: none !important;
     width: 64px;
@@ -248,13 +248,15 @@ body {
 
 
 
-/* Indicatore turno - bordo giallo sul campo del giocatore attivo */
+/* Indicatore turno - bordo giallo e sfondo colorato sul campo del giocatore attivo */
 .turno-attivo {
     border: 2px solid #ffd700 !important;
+    background-color: rgba(255, 215, 0, 0.01) !important;
 }
 
 .turno-attivo.deve-pescare {
     border: 2px solid #ff4444 !important;
+    background-color: rgba(255, 100, 0, 0.1) !important;
 }
 
 /* Carta target per aggiunta a combinazione */
@@ -436,6 +438,22 @@ body {
 .carte-container.verticale {
     flex-direction: column;
 }
+
+/* === DEALER BADGE === */
+.dealer-badge {
+    position: absolute;
+    font-size: 11px;
+    font-weight: bold;
+    color: #fff;
+    background: #c06020;
+    border-radius: 3px;
+    padding: 2px 6px;
+    z-index: 200;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    pointer-events: none;
+}
+/* posizionamento gestito dinamicamente da aggiornaDealerBadge() */
 
 /* === AREE COMBINAZIONI === */
 .area-combinazioni {

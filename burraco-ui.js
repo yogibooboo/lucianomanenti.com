@@ -327,6 +327,7 @@ function render() {
     renderCombinazioni();
     renderPunteggi();
     renderUndoButton();
+    aggiornaDealerBadge();
 }
 
 function renderMazzo() {
@@ -663,21 +664,35 @@ function renderAreaCombinazioni(combinazioni, containerSel) {
         // Per le scale, visualizza in ordine discendente (dal valore piu' alto al piu' basso)
         let carteOrdinare = comb.carte;
         if (comb.tipo === TIPO_SCALA) {
-            carteOrdinare = [...comb.carte].sort((a, b) => {
-                // Gestisci matte: mettile in base alla loro posizione logica
-                // Per pinella naturale (jollycomeNumero = null), usa c.numero
-                let numA = isCartaMatta(a) ? a.jollycomeNumero : a.numero;
-                let numB = isCartaMatta(b) ? b.jollycomeNumero : b.numero;
-                // Asso alto (dopo il K) vale 14 SOLO se la scala e' assoAlto
-                if (comb.assoAlto) {
-                    if (numA === 1) numA = 14;
-                    if (numB === 1) numB = 14;
+            // Ricava il valore di ogni carta (incluse matte con jollycomeNumero null)
+            const _val = (c) => {
+                let v = isCartaMatta(c) ? c.jollycomeNumero : c.numero;
+                if (v === null || v === undefined) {
+                    // Jolly senza jollycomeNumero: ricava il buco dalla sequenza
+                    const valNormali = comb.carte
+                        .filter(x => x !== c)
+                        .map(x => {
+                            let n = isCartaMatta(x) ? (x.jollycomeNumero ?? 0) : x.numero;
+                            if (comb.assoAlto && n === 1) n = 14;
+                            return n;
+                        })
+                        .filter(n => n > 0)
+                        .sort((a, b) => a - b);
+                    // Trova il primo intero mancante nella sequenza
+                    for (let i = 0; i < valNormali.length - 1; i++) {
+                        if (valNormali[i + 1] - valNormali[i] > 1) { v = valNormali[i] + 1; break; }
+                    }
+                    if (v === null || v === undefined) v = 0;
                 }
-                return numB - numA; // Discendente
-            });
+                if (comb.assoAlto && v === 1) v = 14;
+                return v;
+            };
+            carteOrdinare = [...comb.carte].sort((a, b) => _val(b) - _val(a)); // Discendente
         }
 
         for (const carta of carteOrdinare) {
+            // Le carte in campo sono sempre scoperte
+            carta.faceUp = true;
             const cartaEl = creaElementoCarta(carta);
             cartaEl.style.position = 'relative';
             // Usa sprite blu per matte (jolly e pinella usata come matta)
@@ -787,6 +802,195 @@ function creaElementoCarta(carta) {
     el.style.backgroundPosition = `${pos.x}px ${pos.y}px`;
 
     return el;
+}
+
+// ============================================================================
+// DEALER BADGE
+// ============================================================================
+
+function aggiornaDealerBadge() {
+    ['dealer-badge-bottom', 'dealer-badge-top', 'dealer-badge-left', 'dealer-badge-right'].forEach(function (id) {
+        var el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+    });
+    if (game.mazziere === undefined || !game.giocatori || !game.giocatori[game.mazziere]) return;
+
+    var pos = game.giocatori[game.mazziere].posizione;
+    var badgeId = { 'bottom': 'dealer-badge-bottom', 'top': 'dealer-badge-top', 'left': 'dealer-badge-left', 'right': 'dealer-badge-right' }[pos];
+    if (!badgeId) return;
+    var badge = document.getElementById(badgeId);
+    if (!badge) return;
+
+    badge.textContent = window.t('label-mazziere');
+
+    // Calcola scale factor del campogioco (coordinate virtuali 1024×750)
+    var campo = document.getElementById('campogioco');
+    if (!campo) { badge.style.display = ''; return; }
+    var campoR = campo.getBoundingClientRect();
+    var scale = campoR.width / 1024;
+
+    badge.style.left = 'auto';
+    badge.style.right = 'auto';
+    badge.style.top = 'auto';
+    badge.style.bottom = 'auto';
+
+    if (pos === 'bottom') {
+        // Affianca #giocatore-info a destra, allineato verticalmente
+        var info = document.getElementById('giocatore-info');
+        if (info) {
+            var r = info.getBoundingClientRect();
+            if (r.width > 0) {
+                badge.style.left   = ((r.right  - campoR.left) / scale + 8) + 'px';
+                badge.style.bottom = ((campoR.bottom - r.bottom) / scale) + 'px';
+            }
+        }
+    } else {
+        // Posiziona sotto il nome del giocatore AI
+        var nameMap = { 'top': 'nome-compagno', 'left': 'nome-avv-sx', 'right': 'nome-avv-dx' };
+        var nameEl = document.getElementById(nameMap[pos]);
+        if (nameEl) {
+            var r = nameEl.getBoundingClientRect();
+            if (r.width > 0) {
+                badge.style.left = ((r.left - campoR.left) / scale) + 'px';
+                badge.style.top  = ((r.bottom - campoR.top) / scale + 3) + 'px';
+            }
+        }
+    }
+
+    badge.style.display = '';
+}
+
+function _mostraToastMazziere(onComplete) {
+    var nomeMazziere = (game.mazziere !== undefined && game.giocatori[game.mazziere])
+        ? game.giocatori[game.mazziere].nome
+        : '?';
+
+    var toast = document.createElement('div');
+    toast.textContent = window.t('label-mazziere-e') + ' ' + nomeMazziere;
+    toast.style.cssText = [
+        'position:absolute',
+        'top:50%',
+        'left:50%',
+        'transform:translate(-50%,-50%)',
+        'background:rgba(0,0,0,0.78)',
+        'color:#ffd700',
+        'font-size:22px',
+        'font-weight:bold',
+        'padding:18px 36px',
+        'border-radius:10px',
+        'border:2px solid #c06020',
+        'z-index:99999',
+        'pointer-events:none',
+        'text-align:center',
+        'white-space:nowrap'
+    ].join(';');
+
+    var campo = document.getElementById('campogioco');
+    if (campo) campo.appendChild(toast);
+
+    setTimeout(function () {
+        if (toast.parentNode) toast.parentNode.removeChild(toast);
+        if (onComplete) onComplete();
+    }, 1200);
+}
+
+// ============================================================================
+// ANIMAZIONE DISTRIBUZIONE
+// ============================================================================
+
+function _animaVoloDeal(fromR, toR, duration, callback) {
+    const el = document.createElement('div');
+    el.className = 'carta coperta mazzo-0';
+    el.style.position = 'fixed';
+    el.style.left = fromR.left + 'px';
+    el.style.top = fromR.top + 'px';
+    el.style.width = '71px';
+    el.style.height = '96px';
+    el.style.transform = 'scale(0.73)';
+    el.style.transformOrigin = 'top left';
+    el.style.zIndex = '10000';
+    el.style.pointerEvents = 'none';
+    el.style.boxShadow = '3px 3px 8px rgba(0,0,0,0.4)';
+    el.style.transition = 'left ' + duration + 'ms ease-out, top ' + duration + 'ms ease-out';
+    document.body.appendChild(el);
+    el.getBoundingClientRect(); // force reflow
+    el.style.left = toR.left + 'px';
+    el.style.top = toR.top + 'px';
+    var done = false;
+    function finish() { if (done) return; done = true; el.remove(); if (callback) callback(); }
+    el.addEventListener('transitionend', finish, { once: true });
+    setTimeout(finish, duration + 200);
+}
+
+function animaDealBurraco(onComplete) {
+    const mazzoEl = document.getElementById('mazzo');
+    if (!mazzoEl) { if (onComplete) onComplete(); return; }
+
+    const containerMap = {
+        'bottom': document.getElementById('carte-giocatore'),
+        'top':    document.getElementById('carte-compagno'),
+        'left':   document.getElementById('carte-avv-sx'),
+        'right':  document.getElementById('carte-avv-dx')
+    };
+
+    const numGiocatori = game.giocatori.length;
+    const numCarte = 11;
+    const cardIndices = {};
+    game.giocatori.forEach(function (_g, i) { cardIndices[i] = 0; });
+
+    // Sequenza round-robin: prima il giocatore dopo il mazziere
+    const sequence = [];
+    for (let round = 0; round < numCarte; round++) {
+        for (let i = 0; i < numGiocatori; i++) {
+            const playerIdx = (game.mazziere + 1 + i) % numGiocatori;
+            const container = containerMap[game.giocatori[playerIdx].posizione];
+            if (!container) { cardIndices[playerIdx]++; continue; }
+            const cardEls = Array.from(container.querySelectorAll('.carta'));
+            const cardIdx = cardIndices[playerIdx];
+            const cardEl = cardEls[cardIdx] || null;
+            cardIndices[playerIdx]++;
+            sequence.push({ cardEl: cardEl });
+        }
+    }
+
+    // Cattura rects PRIMA di nascondere
+    const rects = sequence.map(function (item) {
+        return item.cardEl ? item.cardEl.getBoundingClientRect() : null;
+    });
+
+    // Nascondi tutte le carte
+    Object.values(containerMap).forEach(function (c) {
+        if (c) c.querySelectorAll('.carta').forEach(function (el) { el.style.visibility = 'hidden'; });
+    });
+
+    const total = sequence.length;
+    if (total === 0) { if (onComplete) onComplete(); return; }
+
+    const STAGGER = 45;
+    const ANIM_DURATION = 280;
+    let landed = 0;
+    const mazzoR = mazzoEl.getBoundingClientRect();
+
+    playSound('deal');
+
+    function onLanded() {
+        landed++;
+        if (landed >= total) {
+            if (game.suoni.deal) { game.suoni.deal.pause(); game.suoni.deal.currentTime = 0; }
+            if (onComplete) onComplete();
+        }
+    }
+
+    sequence.forEach(function (item, idx) {
+        const toR = rects[idx];
+        if (!item.cardEl || !toR) { setTimeout(onLanded, idx * STAGGER); return; }
+        setTimeout(function () {
+            _animaVoloDeal(mazzoR, toR, ANIM_DURATION, function () {
+                item.cardEl.style.visibility = '';
+                onLanded();
+            });
+        }, idx * STAGGER);
+    });
 }
 
 // ============================================================================
@@ -2764,6 +2968,13 @@ window._calcolaVariantiB = function(d, game, giocatoreIdx) {
 // Ritorna { cartaSacrificata, opzIdx, opz, score, analisiData, opzCLabel } o null.
 // ============================================================
 window._calcolaVariantiC = function(d, game, giocatore, giocatoreIdx) {
+    // Non ha senso calcolare varianti C se tutta la mano è composta da matte/jolly:
+    // qualsiasi sacrificio rimuoverebbe una matta, producendo una simulazione distorta.
+    if (giocatore.carte.length > 0 && giocatore.carte.every(function(c) { return c.isJolly || c.isPinella; })) {
+        console.log('[_calcolaVariantiC] mano composta solo da matte/jolly → skip');
+        return null;
+    }
+
     var _w = window.opener || window;
     var Strategia = _w.Strategia;
     var origMano = function(r) { return r.origine === 'mano' || r.origine === 'scarto' || r.origine === 'mazzo'; };
@@ -5360,6 +5571,7 @@ function init() {
 
     // Carica suoni
     game.suoni = {
+        deal: $('#snd-deal'),
         pesca: $('#snd-pesca'),
         scarta: $('#snd-scarta'),
         combinazione: $('#snd-combinazione'),
@@ -5374,6 +5586,19 @@ function init() {
 
     // Setup eventi UI
     setupEventi();
+
+    // Hook chiamato da iniziaPartita() dopo render():
+    // mostra dealer badge, anima la distribuzione, avvia AI se primo giocatore non è umano
+    window.burracoOnInizio = function () {
+        aggiornaDealerBadge();
+        _mostraToastMazziere(function () {
+            animaDealBurraco(function () {
+                if (!game.giocatori[game.giocatoreCorrente].isUmano) {
+                    setTimeout(turnoAI, 800);
+                }
+            });
+        });
+    };
 
     // Se c'e' un flag localStorage da reload, leggi modalita e avvia
     var autoModalita = null;
