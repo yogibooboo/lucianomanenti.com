@@ -51,6 +51,8 @@
             }
         };
     </script>
+    <!-- Sopprimi AdSense al cold load (prima della conferma modal): evita doppia impression -->
+    <script>window.adsenseShouldNotLoad = !localStorage.getItem('burraco_nuova');</script>
     <!-- Layout engine -->
     <script src="game-layout.js?v=4.6"></script>
 </head>
@@ -297,9 +299,9 @@
     <audio id="snd-dindon" src="sounds/scala40/ding.mp3"></audio>
 
     <!-- JS Files -->
-    <script src="burraco-core.js?v=9.30"></script>
-    <script src="burraco-game.js?v=8.27"></script>
-    <script src="burraco-ui.js?v=10.72"></script>
+    <script src="burraco-core.js?v=9.32"></script>
+    <script src="burraco-game.js?v=8.28"></script>
+    <script src="burraco-ui.js?v=10.78"></script>
     <script>
         (function () {
             var nascosto = false;

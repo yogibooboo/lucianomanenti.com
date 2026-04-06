@@ -1149,7 +1149,21 @@ const Strategia = {
                         .reduce((max, ma) => Math.max(max, (ma.carte || []).length), 0);
                     return lenCand > maxLenAlt;
                 });
-                return !hasMossaPiuLunga;
+                // Non eliminare se il candidato ha una scala/tris PURA (senza matte) mentre
+                // l'alternativa usa una matta per la stessa posizione — rappresentano strategie diverse
+                // (es: SP: JP QP KP pura vs SP: Jolly JP QP + calata KP)
+                const hasMossaPiuPura = (optCandidata.mosse || []).some(mc => {
+                    if (mc.tipo !== 'tris' && mc.tipo !== 'scala') return false;
+                    if (mc.usaMatta) return false; // il candidato già usa matta, non è "più puro"
+                    const lenCand = (mc.carte || []).length;
+                    return (altOpt.mosse || []).some(ma =>
+                        ma.tipo === mc.tipo &&
+                        ma.usaMatta === true &&
+                        (ma.carte || []).length === lenCand &&
+                        (mc.tipo !== 'scala' || ma.seme === mc.seme)
+                    );
+                });
+                return !hasMossaPiuLunga && !hasMossaPiuPura;
             });
             return !isSottomessa;
         });
@@ -1523,7 +1537,12 @@ const Strategia = {
                 if (cB === cA) return false;
                 if (cB.ids.length <= cA.ids.length) return false; // Deve divorarla
                 // È A un esatto e rigido sottoinsieme ID di B? Morte.
-                return cA.ids.every(id => cB.ids.includes(id));
+                if (!cA.ids.every(id => cB.ids.includes(id))) return false;
+                // Eccezione: se le carte extra in B sono tutte wildcard (jolly/matte),
+                // non eliminare A — potrebbe servire quando il jolly è usato altrove.
+                const extraCards = cB.comb.carte.filter(c => !cA.ids.includes(c.id));
+                if (extraCards.every(c => c.isJolly || c.isPinella)) return false;
+                return true;
             });
         }).map(item => item.comb);
 

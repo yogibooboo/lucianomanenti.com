@@ -4,8 +4,13 @@ window.gameScale = 1;
 window.showBannerDimensions = false;
 
 // ─── AMAZON BANNER CONFIG ────────────────────────────────────────────────────
-var AMAZON_BANNERS_ENABLED = false;  // set to false to disable Amazon banners
-var AMAZON_BANNERS_COUNT   = 30;    // number of available deal_XX.html files
+var AMAZON_BANNERS_ENABLED = false;  // set to false to disable Amazon banners globally
+var AMAZON_BANNERS_RIGHT = false;    // if true, Amazon banners load on right sidebar only (independent of AMAZON_BANNERS_ENABLED)
+var AMAZON_BANNERS_COUNT = 30;    // number of available deal_XX.html files
+// ─────────────────────────────────────────────────────────────────────────────
+
+// ─── ADSENSE CONFIG ──────────────────────────────────────────────────────────
+var ADSENSE_ONLY_LEFT = true;  // if true, AdSense loads only in left sidebar; right sidebar shows dark placeholder without AdSense request
 // ─────────────────────────────────────────────────────────────────────────────
 
 // Function to get version from the script tag and store it globally
@@ -25,7 +30,7 @@ function getAndStoreScriptVersion() {
 getAndStoreScriptVersion();
 
 // Global function to store language preference and allow the navigation to proceed
-window.setLanguage = function(lang) {
+window.setLanguage = function (lang) {
     localStorage.setItem('userLanguage', lang);
     console.log('Language preference saved:', lang);
 };
@@ -123,14 +128,14 @@ function adjustLayout() {
     if (totalExtraWidth >= 320) {
         layoutMode = 'dual';
     } else if (totalExtraWidth >= 160) {
-        layoutMode = 'single-right';
+        layoutMode = 'single-left';
     }
 
     // Calculate desired visual center
     var cx = windowWidth / 2;
     var cy = windowHeight / 2;
-    if (layoutMode === 'single-right') {
-        cx = (gameWidth * scale) / 2;
+    if (layoutMode === 'single-left') {
+        cx = windowWidth - ((gameWidth * scale) / 2);
     }
 
     // Position the layout box so its center aligns with the desired visual center.
@@ -180,7 +185,8 @@ function adjustLayout() {
         // Special rule for 300x600 slots during AdSense suspension:
         // Specific CSS Backfill logic for 300x600 banners:
         // We load a random Amazon banner (1-20)
-        if (AMAZON_BANNERS_ENABLED && width === 300 && height === 600) {
+        var amazonEnabled = AMAZON_BANNERS_ENABLED || (AMAZON_BANNERS_RIGHT && side === 'right');
+        if (amazonEnabled && width === 300 && height === 600) {
             var randomId = Math.floor(Math.random() * AMAZON_BANNERS_COUNT) + 1;
             var formattedId = randomId < 10 ? '0' + randomId : randomId;
             amazonBannerUrl = 'banner/deal_' + formattedId + '.html';
@@ -192,9 +198,17 @@ function adjustLayout() {
             slotId = window.gameConfig.adsenseSlots[key];
         }
 
+        // When ADSENSE_ONLY_LEFT is true, suppress AdSense on the right sidebar
+        // but still allow the banner element to be created (for the dark background)
+        var adsenseSuppressed = ADSENSE_ONLY_LEFT && side === 'right';
+        if (adsenseSuppressed) {
+            slotId = null;
+        }
+
         // If AdSense is active for this game, we skip the message banner in the top slot
         // to give full priority to the ad units.
-        if (!window.showBannerDimensions && !isMessageBanner && !slotId && !amazonBannerUrl) {
+        // Exception: when AdSense is suppressed on right (ADSENSE_ONLY_LEFT), still create the banner.
+        if (!window.showBannerDimensions && !isMessageBanner && !slotId && !amazonBannerUrl && !adsenseSuppressed) {
             return null;
         }
 
@@ -211,6 +225,11 @@ function adjustLayout() {
         banner.style.position = 'relative'; // Required for absolute children
         banner.style.width = width + 'px';
         banner.style.height = height + 'px';
+
+        if (adsenseSuppressed && !amazonBannerUrl && !window.showBannerDimensions) {
+            // Right sidebar placeholder: dark background from .ad-banner CSS, no AdSense request, no Amazon
+            return banner;
+        }
 
         if (slotId && !window.showBannerDimensions) {
             var caPub = window.gameConfig.adsenseClient || 'ca-pub-9335537153013492';
@@ -349,11 +368,15 @@ function adjustLayout() {
                         if (ins) {
                             ins.removeAttribute('data-adsbygoogle-status');
                             var currentSlot = ins.getAttribute('data-ad-slot');
-                            try {
-                                console.log('AdSense Push: Slot ' + currentSlot + ' in ' + sidebarId + ' (' + format.width + 'x' + format.height + ')');
-                                (window.adsbygoogle = window.adsbygoogle || []).push({});
-                            } catch (e) {
-                                console.error('AdSense push error for ' + sidebarId + ':', e);
+                            if (window.adsenseShouldNotLoad === true) {
+                                console.log('AdSense Push: skipped (adsenseShouldNotLoad=true) for slot ' + currentSlot);
+                            } else {
+                                try {
+                                    console.log('AdSense Push: Slot ' + currentSlot + ' in ' + sidebarId + ' (' + format.width + 'x' + format.height + ')');
+                                    (window.adsbygoogle = window.adsbygoogle || []).push({});
+                                } catch (e) {
+                                    console.error('AdSense push error for ' + sidebarId + ':', e);
+                                }
                             }
                         }
 
@@ -373,10 +396,10 @@ function adjustLayout() {
         sidebarRight.style.display = 'flex';
         populateSidebar(sidebarLeft, sideWidth, 'left');
         populateSidebar(sidebarRight, sideWidth, 'right');
-    } else if (layoutMode === 'single-right') {
-        sidebarRight.style.width = totalExtraWidth + 'px';
-        sidebarRight.style.display = 'flex';
-        populateSidebar(sidebarRight, totalExtraWidth, 'left'); // Show Italian message (or ads)
+    } else if (layoutMode === 'single-left') {
+        sidebarLeft.style.width = totalExtraWidth + 'px';
+        sidebarLeft.style.display = 'flex';
+        populateSidebar(sidebarLeft, totalExtraWidth, 'left'); // Show Italian message (or ads)
     }
 }
 

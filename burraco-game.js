@@ -1117,14 +1117,39 @@ async function turnoAI() {
     // ===== HELPER LOCALE: esegui le mosse dell'opzione =====
     const eseguiMosseBest = async (mosse) => {
         const mosseReali = derefMosse(mosse, giocatore);
+        const calateRimaste = [];
+
         for (const mossa of mosseReali) {
             await delay(400);
             if (mossa.tipo === 'tris' || mossa.tipo === 'scala') {
                 await depositaCombinazioneAI(giocatore, mossa);
             } else if (mossa.tipo === 'calata') {
-                await eseguiCalataAI(giocatore, mossa);
+                if (puoAggiungereACombinazione(mossa.carta, mossa.combo)) {
+                    await eseguiCalataAI(giocatore, mossa);
+                } else {
+                    calateRimaste.push(mossa); // non ancora adiacente, riprova dopo
+                }
             }
         }
+
+        // Retry calate che non erano adiacenti al primo giro (es. scala estesa in più passi)
+        // Esempio: Jolly→combo[11P,12P,13P] sblocca 9P, che sblocca 8P, che sblocca 7P
+        let maxIter = calateRimaste.length;
+        while (calateRimaste.length > 0 && maxIter-- > 0) {
+            const rimaste = [];
+            for (const mossa of calateRimaste) {
+                await delay(400);
+                if (puoAggiungereACombinazione(mossa.carta, mossa.combo)) {
+                    await eseguiCalataAI(giocatore, mossa);
+                } else {
+                    rimaste.push(mossa);
+                }
+            }
+            if (rimaste.length === calateRimaste.length) break; // nessun progresso
+            calateRimaste.length = 0;
+            calateRimaste.push(...rimaste);
+        }
+
         ordinaCarte(giocatore.carte);
     };
 
