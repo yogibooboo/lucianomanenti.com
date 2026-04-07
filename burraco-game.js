@@ -593,7 +593,7 @@ function _verificaScalaOpzione(normali, jolly, carteOriginali, seme) {
     // Prova scala con Asso alto (A=14)
     if (numeri.includes(1)) {
         const numeriAssoAlto = numeri.map(n => n === 1 ? 14 : n).sort((a, b) => a - b);
-        const haCarteBasse = numeriAssoAlto.some(n => n >= 2 && n <= 3);
+        const haCarteBasse = numeriAssoAlto.some(n => n === 2);
         const haCarteAlte = numeriAssoAlto.some(n => n >= 12 && n <= 14);
         if (haCarteBasse && haCarteAlte) {
             return { valida: false, motivo: 'Giro A-2 non valido' };

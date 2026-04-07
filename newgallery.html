@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Amazon Banners Preview Gallery</title>
+    <style>
+        :root {
+            --amazon-orange: #ff9900;
+            --amazon-dark: #131921;
+            --deal-red: #cc0c39;
+            --bg-color: #0f172a;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            background: var(--bg-color);
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            color: white;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, 300px);
+            gap: 30px;
+            justify-content: center;
+        }
+
+        /* Banner Styles (Sincronizzati con deal_XX.html) */
+        .banner-wrapper {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            width: 300px;
+            height: 600px;
+            transition: transform 0.2s;
+        }
+
+        .banner-wrapper:hover {
+            transform: scale(1.02);
+        }
+
+        .banner-300x600 {
+            position: relative;
+            width: 300px;
+            height: 600px;
+            background: var(--amazon-dark);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+        }
+
+        .deal-header {
+            background: var(--deal-red);
+            color: white;
+            padding: 12px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 14px;
+            text-transform: uppercase;
+        }
+
+        .image-container {
+            width: 100%;
+            height: 200px;
+            background: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        .product-img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .content {
+            padding: 15px 24px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            text-align: center;
+            color: white;
+        }
+
+        .title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            line-height: 1.4;
+            /* Nuova formattazione per descrizioni lunghe */
+            display: -webkit-box;
+            -webkit-line-clamp: 6;
+            line-clamp: 6;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            max-height: 135px; /* ~6 righe */
+        }
+
+        .status-badge {
+            display: inline-block;
+            background: var(--deal-red);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: bold;
+            margin-bottom: 12px;
+        }
+
+        .expiry-info {
+            font-size: 13px;
+            color: #94a3b8;
+            font-style: italic;
+        }
+
+        .button-container {
+            padding: 0 24px 20px 24px;
+        }
+
+        .cta-btn {
+            display: block;
+            background: linear-gradient(180deg, #ff9900 0%, #e68a00 100%);
+            color: #000;
+            padding: 16px;
+            border-radius: 30px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .disclosure {
+            font-size: 10px;
+            color: #64748b;
+            text-align: center;
+            padding: 10px;
+            line-height: 1.2;
+        }
+
+        .slot-id {
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            background: rgba(0,0,0,0.5);
+            padding: 2px 5px;
+            font-size: 10px;
+            color: #aaa;
+            z-index: 10;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Amazon Banners Preview Gallery</h1>
+    <div id="gallery" class="gallery-grid">
+        <!-- Banners will be injected here -->
+    </div>
+
+    <script>
+        async function loadBanners() {
+            try {
+                const response = await fetch('banner/deals.json');
+                const deals = await response.json();
+                const gallery = document.getElementById('gallery');
+
+                deals.forEach(deal => {
+                    const banner = document.createElement('a');
+                    banner.href = deal.link || '#';
+                    banner.target = '_blank';
+                    banner.rel = 'sponsored noopener';
+                    banner.className = 'banner-wrapper';
+                    
+                    banner.innerHTML = `
+                        <div class="banner-300x600">
+                            <div class="slot-id">Slot ${deal.id}</div>
+                            <div class="deal-header">Offerta a Tempo</div>
+                            <div class="image-container">
+                                <img class="product-img" src="${deal.img || 'https://via.placeholder.com/300x200?text=No+Image'}" alt="Product">
+                            </div>
+                            <div class="content">
+                                <div class="title">${deal.title || 'Senza Titolo'}</div>
+                                <div class="price-info">
+                                    <span class="status-badge">OFFERTA A TEMPO</span>
+                                    <div class="expiry-info">${deal.expiry || 'In corso'}</div>
+                                </div>
+                            </div>
+                            <div class="button-container">
+                                <div class="cta-btn">Vedi offerta su Amazon.it</div>
+                            </div>
+                            <div class="disclosure">
+                                Disponibile su Amazon.it<br>
+                                <span style="font-size: 9px; opacity: 0.7;">Come affiliato Amazon, guadagno dagli acquisti idonei.</span>
+                            </div>
+                        </div>
+                    `;
+                    gallery.appendChild(banner);
+                });
+            } catch (error) {
+                console.error('Errore nel caricamento del JSON:', error);
+                document.getElementById('gallery').innerHTML = '<p>Errore nel caricamento dei dati. Assicurati che banner/deals.json esista e sia corretto.</p>';
+            }
+        }
+
+        loadBanners();
+    </script>
+</body>
+
+</html>

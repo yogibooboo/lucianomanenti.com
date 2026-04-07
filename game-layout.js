@@ -5,7 +5,7 @@ window.showBannerDimensions = false;
 
 // ─── AMAZON BANNER CONFIG ────────────────────────────────────────────────────
 var AMAZON_BANNERS_ENABLED = false;  // set to false to disable Amazon banners globally
-var AMAZON_BANNERS_RIGHT = false;    // if true, Amazon banners load on right sidebar only (independent of AMAZON_BANNERS_ENABLED)
+var AMAZON_BANNERS_RIGHT = true;    // if true, Amazon banners load on right sidebar only (independent of AMAZON_BANNERS_ENABLED)
 var AMAZON_BANNERS_COUNT = 30;    // number of available deal_XX.html files
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -181,15 +181,12 @@ function adjustLayout() {
         var adsenseActive = window.gameConfig && window.gameConfig.adsenseActive;
         var slotId = null;
         var amazonBannerUrl = null;
+        var amazonGeneric = false;
 
-        // Special rule for 300x600 slots during AdSense suspension:
-        // Specific CSS Backfill logic for 300x600 banners:
-        // We load a random Amazon banner (1-20)
         var amazonEnabled = AMAZON_BANNERS_ENABLED || (AMAZON_BANNERS_RIGHT && side === 'right');
         if (amazonEnabled && width === 300 && height === 600) {
-            var randomId = Math.floor(Math.random() * AMAZON_BANNERS_COUNT) + 1;
-            var formattedId = randomId < 10 ? '0' + randomId : randomId;
-            amazonBannerUrl = 'banner/deal_' + formattedId + '.html';
+            // Banner generico Amazon (link diretto, no iframe)
+            amazonGeneric = true;
         }
 
         // Map fixed sizes to provided AdSense Slot IDs
@@ -208,7 +205,7 @@ function adjustLayout() {
         // If AdSense is active for this game, we skip the message banner in the top slot
         // to give full priority to the ad units.
         // Exception: when AdSense is suppressed on right (ADSENSE_ONLY_LEFT), still create the banner.
-        if (!window.showBannerDimensions && !isMessageBanner && !slotId && !amazonBannerUrl && !adsenseSuppressed) {
+        if (!window.showBannerDimensions && !isMessageBanner && !slotId && !amazonBannerUrl && !amazonGeneric && !adsenseSuppressed) {
             return null;
         }
 
@@ -226,7 +223,7 @@ function adjustLayout() {
         banner.style.width = width + 'px';
         banner.style.height = height + 'px';
 
-        if (adsenseSuppressed && !amazonBannerUrl && !window.showBannerDimensions) {
+        if (adsenseSuppressed && !amazonBannerUrl && !amazonGeneric && !window.showBannerDimensions) {
             // Right sidebar placeholder: dark background from .ad-banner CSS, no AdSense request, no Amazon
             return banner;
         }
@@ -236,7 +233,9 @@ function adjustLayout() {
             var html = '';
 
             // Inject Amazon Fallback BEHIND AdSense for Backfill
-            if (amazonBannerUrl) {
+            if (amazonGeneric) {
+                html += '<a href="https://www.amazon.it/deals?&linkCode=ll2&tag=lucianomane00-21&linkId=51a86306a12a5877517c1a84c3add10f&ref_=as_li_ss_tl" target="_blank" rel="noopener" style="display:block;position:absolute;top:0;left:0;width:100%;height:100%;z-index:1;"><img src="banner/offerteamazon2.jpg" style="width:100%;height:100%;object-fit:cover;" alt="Offerte Amazon"></a>';
+            } else if (amazonBannerUrl) {
                 html += '<iframe src="' + amazonBannerUrl + '" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; overflow: hidden; z-index: 1;" scrolling="no"></iframe>';
             }
 
@@ -248,6 +247,9 @@ function adjustLayout() {
                 'data-adsbygoogle-status="pending"></ins>';
 
             banner.innerHTML = html;
+        } else if (amazonGeneric && !window.showBannerDimensions) {
+            // Standalone Generic Amazon Banner (direct <a> tag, no iframe)
+            banner.innerHTML = '<a href="https://www.amazon.it/deals?&linkCode=ll2&tag=lucianomane00-21&linkId=51a86306a12a5877517c1a84c3add10f&ref_=as_li_ss_tl" target="_blank" rel="noopener" style="display:block;width:100%;height:100%;"><img src="banner/offerteamazon2.jpg" style="width:100%;height:100%;object-fit:cover;" alt="Offerte Amazon"></a>';
         } else if (amazonBannerUrl && !window.showBannerDimensions) {
             // Standalone Amazon Banner Injection (if AdSense config is missing)
             banner.innerHTML = '<iframe src="' + amazonBannerUrl + '" style="width: 100%; height: 100%; border: none; overflow: hidden;" scrolling="no"></iframe>';
@@ -276,7 +278,26 @@ function adjustLayout() {
         }
 
         // --- Amazon Banner Click Tracking ---
-        if (amazonBannerUrl && !window.showBannerDimensions) {
+        if (amazonGeneric && !window.showBannerDimensions) {
+            var startTime = Date.now();
+            var pagePath = window.location.pathname.split('/').pop() || 'index.html';
+            var aLink = banner.querySelector('a');
+            if (aLink) {
+                aLink.addEventListener('click', function () {
+                    var exposureSeconds = Math.round((Date.now() - startTime) / 1000);
+                    if (typeof gtag === 'function') {
+                        gtag('event', 'Amazon_Banner_Click', {
+                            'event_category': 'Affiliate',
+                            'amazon_deal_id': 'generic',
+                            'tempo_esposizione': exposureSeconds,
+                            'page_location': window.location.href,
+                            'non_interaction': false
+                        });
+                        console.log('GA Tracked: Amazon_Banner_Click | generic | sec: ' + exposureSeconds + ' | on: ' + pagePath);
+                    }
+                });
+            }
+        } else if (amazonBannerUrl && !window.showBannerDimensions) {
             var startTime = Date.now();
             var bannerIdCode = amazonBannerUrl.split('/').pop().replace('.html', '');
             var pagePath = window.location.pathname.split('/').pop() || 'index.html';
@@ -310,8 +331,8 @@ function adjustLayout() {
                     }
                 };
 
-                // Standard load listener: 
-                // Because the iframe is an orphan node here (not yet appended to the DOM), 
+                // Standard load listener:
+                // Because the iframe is an orphan node here (not yet appended to the DOM),
                 // it hasn't started loading yet. It will begin loading once attached in populateSidebar,
                 // securely guaranteeing this 'load' event will fire.
                 iframe.addEventListener('load', attachTracking);
