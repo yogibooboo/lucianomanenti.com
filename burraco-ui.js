@@ -32,6 +32,8 @@ if (!window.coeffScoreOpz) {
         penCalataMatta:           20,
         premioPrimoBurraco:       50,
         premioMazzo:               5,
+        premioMattaPescata:       40,
+        penScartoMatta:           50,
         penCartaOrfana:            2,
         // Bonus D) "carta sottratta all'avversario" — scala separata da premioXc
         bonusAvv4c:               10,
@@ -2527,7 +2529,7 @@ window.calcolaScoreOpz = function(opzIdx, silent) {
             mossoScore += premioCalata;
             righe.push('  B) Premio calata →' + lunghRisultante + 'c: +' + premioCalata);
 
-            if (lunghRisultante >= 7) {
+            if (lunghRisultante === 7) {
                 var bonusPB = cf.premioPrimoBurraco !== undefined ? cf.premioPrimoBurraco : 50;
                 mossoScore += bonusPB;
                 righe.push('  B2) Premio primo burraco: +' + bonusPB);
@@ -2695,10 +2697,10 @@ window.calcolaScartoPer = function(opzIdx, _silent, comboSquadraOverride) {
     });
 
     var fase1 = candidati.filter(function(r) {
-        if (r.isMatta) return false;
+        if (r.isMatta) return true; // matte sempre candidate, penalizzate in scoring
         return !(pericoliAvversari[r.cartaRef.id] || []).some(function(p) { return p.lunghezza >= 7; });
     });
-    if (fase1.length === 0) { fase1 = candidati.filter(function(r) { return !r.isMatta; }); if (fase1.length === 0) fase1 = candidati; }
+    if (fase1.length === 0) { fase1 = candidati; }
 
     var connettivita = {};
     fase1.forEach(function(r) {
@@ -2734,11 +2736,11 @@ window.calcolaScartoPer = function(opzIdx, _silent, comboSquadraOverride) {
         }
         var nPropri = pericoliPropri[r.cartaRef.id] || 0;
         if (nPropri > 0) { var sProp = -(nPropri * (cf.penScartoCalabile || 7)); score += sProp; righe.push('  calabile propri(' + nPropri + '): ' + sProp.toFixed(1)); }
+        if (r.isMatta) { var sPenM = -(cf.penScartoMatta || 50); score += sPenM; righe.push('  pen. scarto matta: ' + sPenM); }
         return { r: r, score: score, righe: righe };
     });
     scoreFase3.sort(function(a, b) { return b.score - a.score; });
     var candidatoFinale = scoreFase3[0];
-    if (candidatoFinale && candidatoFinale.r.isMatta && scoreFase3.length > 1) candidatoFinale = scoreFase3[1];
 
     return candidatoFinale ? {
         carta: candidatoFinale.r.carta, cartaRef: candidatoFinale.r.cartaRef,
@@ -3459,6 +3461,8 @@ function scegliBestOpzioneAI(giocatore, soloMano, verbose, fase) {
             const scoreRes = window.calcolaScoreOpz(opzIdx, true);
             const opzScore = scoreRes ? scoreRes.score : 0;  // include sc interno
             const mazzBonus = (scenario === 'mano' && window.coeffScoreOpz.premioMazzo !== undefined) ? window.coeffScoreOpz.premioMazzo : 0;
+            const _scartiHaMatta = scenario === 'scarti' && game.scarti.some(function(c) { return c.isJolly || c.numero === 2; });
+            const mattaBonus = _scartiHaMatta ? (window.coeffScoreOpz.premioMattaPescata || 40) : 0;
             const opzData = opzIdx === -1 ? null : (d.opzioniScenario ? d.opzioniScenario[opzIdx] : null);
             const opz = opzData || { mosse: [], carteUsate: new Set() };
             const scartoCarta = scoreRes ? scoreRes.cartaScarto : '-';
@@ -3488,14 +3492,14 @@ function scegliBestOpzioneAI(giocatore, soloMano, verbose, fase) {
                 const rawLabel = opzIdx === -1 ? 'OPZ0' : 'OPZ' + (opzIdx + 1);
                 const opzLabel = bLabelMap[rawLabel] ? bLabelMap[rawLabel] + 'B' : mLabelMap[rawLabel] ? mLabelMap[rawLabel] + 'M' : pLabelMap[rawLabel] ? pLabelMap[rawLabel] : rawLabel;
                 if (faseVincoloMano) {
-                    con.log(opzLabel + ' [' + scenario + '] → score=' + (opzScore + mazzBonus + pozzBonus).toFixed(1) + ' (opz=' + opzScore.toFixed(1) + (mazzBonus ? ' mazzo=+' + mazzBonus : '') + (pozzBonus ? ' pozzetto=+' + pozzBonus : '') + ') | scarto=' + scartoCarta + ' | rim=' + carteRim + (_burraco ? ' [BURRACO]' : '') + (pozzBonus ? ' [POZZETTO]' : '') + (rispettaVincolo ? '' : ' ⚠ viola vincolo'));
+                    con.log(opzLabel + ' [' + scenario + '] → score=' + (opzScore + mazzBonus + mattaBonus + pozzBonus).toFixed(1) + ' (opz=' + opzScore.toFixed(1) + (mazzBonus ? ' mazzo=+' + mazzBonus : '') + (mattaBonus ? ' matta=+' + mattaBonus : '') + (pozzBonus ? ' pozzetto=+' + pozzBonus : '') + ') | scarto=' + scartoCarta + ' | rim=' + carteRim + (_burraco ? ' [BURRACO]' : '') + (pozzBonus ? ' [POZZETTO]' : '') + (rispettaVincolo ? '' : ' ⚠ viola vincolo'));
                 } else {
-                    con.log(opzLabel + ' → score=' + (opzScore + mazzBonus + pozzBonus).toFixed(1) + ' (opz=' + opzScore.toFixed(1) + (mazzBonus ? ' mazzo=+' + mazzBonus : '') + (pozzBonus ? ' pozzetto=+' + pozzBonus : '') + ') | scarto=' + scartoCarta + (_burraco ? ' [BURRACO]' : '') + (pozzBonus ? ' [POZZETTO]' : ''));
+                    con.log(opzLabel + ' → score=' + (opzScore + mazzBonus + mattaBonus + pozzBonus).toFixed(1) + ' (opz=' + opzScore.toFixed(1) + (mazzBonus ? ' mazzo=+' + mazzBonus : '') + (mattaBonus ? ' matta=+' + mattaBonus : '') + (pozzBonus ? ' pozzetto=+' + pozzBonus : '') + ') | scarto=' + scartoCarta + (_burraco ? ' [BURRACO]' : '') + (pozzBonus ? ' [POZZETTO]' : ''));
                 }
             }
-            const score = opzScore + mazzBonus + pozzBonus;
+            const score = opzScore + mazzBonus + mattaBonus + pozzBonus;
 
-            candidati.push({ scenario, opzIdx, opz, score, opzScore, mazzBonus, pozzBonus, scarto: scoreRes?.cartaRef || null, scartoCarta, rispettaVincolo, carteRim, analisiData: d, _labelMaps: { bLabelMap, mLabelMap, pLabelMap }, _scoreRes: scoreRes });
+            candidati.push({ scenario, opzIdx, opz, score, opzScore, mazzBonus, mattaBonus, pozzBonus, scarto: scoreRes?.cartaRef || null, scartoCarta, rispettaVincolo, carteRim, analisiData: d, _labelMaps: { bLabelMap, mLabelMap, pLabelMap }, _scoreRes: scoreRes });
         }
         con.groupEnd();
     }
@@ -4293,13 +4297,19 @@ function getGiocatoreHTML(indiceGiocatore, ruolo, defaultScenario) {
                     // Per scenario 'mano', il premioMazzo (+5) viene aggiunto sopra il punteggio opzione
                     var _mazzoBonusDisplay = (window._analisiScenario === 'mano' && window.coeffScoreOpz && window.coeffScoreOpz.premioMazzo !== undefined)
                         ? window.coeffScoreOpz.premioMazzo : 0;
+                    // Per scenario 'scarti', bonus se tra gli scarti c'è una matta
+                    var _mattaBonusDisplay = 0;
+                    if (window._analisiScenario === 'scarti' && window.opener.game.scarti) {
+                        var _scartiHaMattaD = window.opener.game.scarti.some(function(c) { return c.isJolly || c.numero === 2; });
+                        if (_scartiHaMattaD) _mattaBonusDisplay = (window.coeffScoreOpz && window.coeffScoreOpz.premioMattaPescata) || 40;
+                    }
 
                     for (var scPre = 0; scPre < uniqueOpzLabels.length; scPre++) {
                         var opzLblPre = uniqueOpzLabels[scPre];
                         var opzIdxPre = parseInt(opzLblPre.replace('OPZ','')) - 1;
                         var _rawScore = window.calcolaScoreOpz(opzIdxPre, true) || null;
-                        if (_rawScore && _mazzoBonusDisplay) {
-                            _rawScore = Object.assign({}, _rawScore, { score: _rawScore.score + _mazzoBonusDisplay });
+                        if (_rawScore && (_mazzoBonusDisplay || _mattaBonusDisplay)) {
+                            _rawScore = Object.assign({}, _rawScore, { score: _rawScore.score + _mazzoBonusDisplay + _mattaBonusDisplay });
                         }
                         scoreOpzPreCalc[opzLblPre] = _rawScore;
                         scartiPreCalc[opzLblPre] = scoreOpzPreCalc[opzLblPre] ? { carta: scoreOpzPreCalc[opzLblPre].cartaScarto, cartaRef: scoreOpzPreCalc[opzLblPre].cartaRef } : null;
@@ -4415,6 +4425,9 @@ function getGiocatoreHTML(indiceGiocatore, ruolo, defaultScenario) {
                         Object.keys(_bLabelMap).forEach(function(bLabel) {
                             var idx = parseInt(bLabel.replace('OPZ','')) - 1;
                             scoreOpzPreCalc[bLabel] = window.calcolaScoreOpz(idx, true) || null;
+                            if (scoreOpzPreCalc[bLabel] && (_mazzoBonusDisplay || _mattaBonusDisplay)) {
+                                scoreOpzPreCalc[bLabel] = Object.assign({}, scoreOpzPreCalc[bLabel], { score: scoreOpzPreCalc[bLabel].score + _mazzoBonusDisplay + _mattaBonusDisplay });
+                            }
                             scartiPreCalc[bLabel] = scoreOpzPreCalc[bLabel] ? { carta: scoreOpzPreCalc[bLabel].cartaScarto, cartaRef: scoreOpzPreCalc[bLabel].cartaRef } : null;
                             var _bSid = scoreOpzPreCalc[bLabel] && scoreOpzPreCalc[bLabel].cartaRef ? scoreOpzPreCalc[bLabel].cartaRef.id : null;
                             var _bOpt2 = d.opzioniScenario[idx];
@@ -5300,11 +5313,13 @@ function getGiocatoreHTML(indiceGiocatore, ruolo, defaultScenario) {
                 ['penScarto6c',       'Pen. scarto → avv 6c',           0, 100,   1],
                 ['penScarto5c',       'Pen. scarto → avv 5c',           0,  50,   1],
                 ['penScarto4c',       'Pen. scarto → avv ≤4c',          0,  30,   1],
-                ['penScartoCalabile', 'Pen. scarto calabile su propria', 0,  30,   1]
+                ['penScartoCalabile', 'Pen. scarto calabile su propria', 0,  30,   1],
+                ['penScartoMatta',    'Pen. scarto matta',               0, 200,   5]
             ];
             var campiVari = [
-                ['premioMazzo', 'Premio mazzo (pesca dal mazzo)', 0, 50, 1],
-                ['premioPozzetto', 'Premio pozzetto (svuota mano pre-pozzetto)', 0, 200, 5]
+                ['premioMazzo',        'Premio mazzo (pesca dal mazzo)',       0,  50, 1],
+                ['premioMattaPescata', 'Premio matta pescata dagli scarti',    0, 200, 5],
+                ['premioPozzetto',     'Premio pozzetto (svuota mano pre-pozzetto)', 0, 200, 5]
             ];
             function rigaCampo(c) {
                 return '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;">' +
@@ -5370,7 +5385,27 @@ function getGiocatoreHTML(indiceGiocatore, ruolo, defaultScenario) {
 
         // Wrapper: esegue scarto + score con log completo al click OPZ
         window.analizzaOpz = function(opzIdx) {
-            window.calcolaScoreOpz(opzIdx, false);
+            var con = window.opener ? window.opener.console : console;
+            var r = window.calcolaScoreOpz(opzIdx, false);
+            // Mostra bonus aggiuntivi esterni a calcolaScoreOpz
+            var _bonusExtra = 0;
+            var _bonusLabel = '';
+            if (window._analisiScenario === 'mano' && window.coeffScoreOpz && window.coeffScoreOpz.premioMazzo) {
+                _bonusExtra += window.coeffScoreOpz.premioMazzo;
+                _bonusLabel += ' mazzo=+' + window.coeffScoreOpz.premioMazzo;
+            }
+            if (window._analisiScenario === 'scarti') {
+                var _scartiList = window.opener && window.opener.game && window.opener.game.scarti;
+                var _hm = _scartiList && _scartiList.some(function(c) { return c.isJolly || c.numero === 2; });
+                if (_hm) {
+                    var _bm = (window.coeffScoreOpz && window.coeffScoreOpz.premioMattaPescata) || 40;
+                    _bonusExtra += _bm;
+                    _bonusLabel += ' matta=+' + _bm;
+                }
+            }
+            if (_bonusExtra && r) {
+                con.log('✓ + Bonus scenario (' + _bonusLabel.trim() + ') → TOTALE: ' + (r.score + _bonusExtra).toFixed(1));
+            }
         };
 
         // OPZnC: usa analisiData del dC (mano ridotta) per mostrare scarto+score corretto

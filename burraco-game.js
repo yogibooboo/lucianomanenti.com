@@ -1300,6 +1300,12 @@ async function turnoAI() {
             await delay(500);
             const scartato = await eseguiScarto(bestPoz?.scarto);
             if (scartato === false) { render(); prossimoTurno(); return; }
+
+            // ===== CONTROLLO 0 CARTE DOPO AVER GIOCATO IL POZZETTO =====
+            if (giocatore.carte.length === 0) {
+                finePartita(giocatore.squadra === 0);
+                return;
+            }
         } else {
             finePartita(giocatore.squadra === 0);
             return;

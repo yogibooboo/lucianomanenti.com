@@ -98,6 +98,22 @@ function injectLegalLinks() {
 }
 
 function adjustLayout() {
+    // Badge DEV MODE visibile quando AdSense è disabilitato per testing
+    if (document.body) {
+        var _devBadge = document.getElementById('dev-mode-badge');
+        if (localStorage.getItem('dev_mode') === '1') {
+            if (!_devBadge) {
+                _devBadge = document.createElement('div');
+                _devBadge.id = 'dev-mode-badge';
+                _devBadge.title = 'Dev mode attivo: AdSense disabilitato. Rimuovi con: localStorage.removeItem(\'dev_mode\')';
+                _devBadge.style.cssText = 'position:fixed;bottom:8px;right:8px;z-index:99999;background:#c00;color:#fff;font-size:11px;font-weight:bold;padding:3px 7px;border-radius:4px;cursor:default;opacity:0.85;';
+                _devBadge.textContent = 'DEV';
+                document.body.appendChild(_devBadge);
+            }
+        } else if (_devBadge) {
+            _devBadge.remove();
+        }
+    }
     injectLegalLinks();
     var gameWidth = 1024;
     var gameHeight = 750;
@@ -177,8 +193,10 @@ function adjustLayout() {
     sidebarRight.style.display = 'none';
 
     var createBanner = function (width, height, side, isFirst) {
-        var isMessageBanner = isFirst && width >= 160;
-        var adsenseActive = window.gameConfig && window.gameConfig.adsenseActive;
+        var devMode = localStorage.getItem('dev_mode') === '1';
+        var adsenseActive = !devMode && window.gameConfig && window.gameConfig.adsenseActive;
+        // In dev_mode su giochi con AdSense, disabilita anche i message banner (verrebbero creati al posto di AdSense)
+        var isMessageBanner = isFirst && width >= 160 && !(devMode && window.gameConfig && window.gameConfig.adsenseActive);
         var slotId = null;
         var amazonBannerUrl = null;
         var amazonGeneric = false;
@@ -197,7 +215,8 @@ function adjustLayout() {
 
         // When ADSENSE_ONLY_LEFT is true, suppress AdSense on the right sidebar
         // but still allow the banner element to be created (for the dark background)
-        var adsenseSuppressed = ADSENSE_ONLY_LEFT && side === 'right';
+        // In dev mode non creare placeholder dark inutili
+        var adsenseSuppressed = !devMode && ADSENSE_ONLY_LEFT && side === 'right';
         if (adsenseSuppressed) {
             slotId = null;
         }
@@ -213,7 +232,9 @@ function adjustLayout() {
         var existingBanner = document.getElementById(bannerId);
 
         if (existingBanner) {
-            return existingBanner;
+            // In dev mode rimuovi banner AdSense già cachati e ricrea da zero
+            if (devMode) existingBanner.remove();
+            else return existingBanner;
         }
 
         var banner = document.createElement('div');
