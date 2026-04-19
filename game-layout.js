@@ -6,7 +6,6 @@ window.showBannerDimensions = false;
 // ─── AMAZON BANNER CONFIG ────────────────────────────────────────────────────
 var AMAZON_BANNERS_ENABLED = false;  // set to false to disable Amazon banners globally
 var AMAZON_BANNERS_RIGHT = true;    // if true, Amazon banners load on right sidebar only (independent of AMAZON_BANNERS_ENABLED)
-var AMAZON_BANNERS_COUNT = 30;    // number of available deal_XX.html files
 // ─────────────────────────────────────────────────────────────────────────────
 
 // ─── ADSENSE CONFIG ──────────────────────────────────────────────────────────
@@ -200,11 +199,22 @@ function adjustLayout() {
         var slotId = null;
         var amazonBannerUrl = null;
         var amazonGeneric = false;
+        var amazonGenericImg = 'banner/offerteamazon2.jpg';
+        var amazonGenericLink = 'https://www.amazon.it/deals?&linkCode=ll2&tag=lucianomane00-21&linkId=51a86306a12a5877517c1a84c3add10f&ref_=as_li_ss_tl';
 
         var amazonEnabled = AMAZON_BANNERS_ENABLED || (AMAZON_BANNERS_RIGHT && side === 'right');
         if (amazonEnabled && width === 300 && height === 600) {
-            // Banner generico Amazon (link diretto, no iframe)
+            // Se il fetch è ancora in corso (null), non mostrare niente — verrà chiamato adjustLayout al termine
+            if (!slotId && window._amazonDeal600 === null) return null;
             amazonGeneric = true;
+            // Se è disponibile un deal specifico dal JSON, usa quello
+            if (window._amazonDeal600) {
+                amazonGenericImg = window._amazonDeal600.img;
+                amazonGenericLink = window._amazonDeal600.link;
+            }
+        } else if ((AMAZON_BANNERS_RIGHT && side === 'right') && width === 300 && height === 250) {
+            amazonGeneric = true;
+            amazonGenericImg = 'banner/offerteamazon300x250.jpg';
         }
 
         // Map fixed sizes to provided AdSense Slot IDs
@@ -255,7 +265,8 @@ function adjustLayout() {
 
             // Inject Amazon Fallback BEHIND AdSense for Backfill
             if (amazonGeneric) {
-                html += '<a href="https://www.amazon.it/deals?&linkCode=ll2&tag=lucianomane00-21&linkId=51a86306a12a5877517c1a84c3add10f&ref_=as_li_ss_tl" target="_blank" rel="noopener" style="display:block;position:absolute;top:0;left:0;width:100%;height:100%;z-index:1;"><img src="banner/offerteamazon2.jpg" style="width:100%;height:100%;object-fit:cover;" alt="Offerte Amazon"></a>';
+                var imgStyle = window._amazonDeal600 ? 'object-fit:contain;background:#fff;' : 'object-fit:cover;';
+                html += '<a href="' + amazonGenericLink + '" target="_blank" rel="noopener" style="display:block;position:absolute;top:0;left:0;width:100%;height:100%;z-index:1;"><img src="' + amazonGenericImg + '" style="width:100%;height:100%;' + imgStyle + '" alt="Offerte Amazon"></a>';
             } else if (amazonBannerUrl) {
                 html += '<iframe src="' + amazonBannerUrl + '" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; overflow: hidden; z-index: 1;" scrolling="no"></iframe>';
             }
@@ -269,8 +280,34 @@ function adjustLayout() {
 
             banner.innerHTML = html;
         } else if (amazonGeneric && !window.showBannerDimensions) {
-            // Standalone Generic Amazon Banner (direct <a> tag, no iframe)
-            banner.innerHTML = '<a href="https://www.amazon.it/deals?&linkCode=ll2&tag=lucianomane00-21&linkId=51a86306a12a5877517c1a84c3add10f&ref_=as_li_ss_tl" target="_blank" rel="noopener" style="display:block;width:100%;height:100%;"><img src="banner/offerteamazon2.jpg" style="width:100%;height:100%;object-fit:cover;" alt="Offerte Amazon"></a>';
+            // Standalone Amazon Banner
+            var deal = (width === 300 && height === 600) ? window._amazonDeal600 : null;
+            if (deal) {
+                var badgeText = deal.badge || 'OFFERTA A TEMPO';
+                var expiryText = deal.expiry || '';
+                banner.innerHTML =
+                    '<a href="' + amazonGenericLink + '" target="_blank" rel="sponsored noopener" style="display:block;width:100%;height:100%;text-decoration:none;color:inherit;">' +
+                        '<div style="position:relative;width:300px;height:600px;background:#131921;border:1px solid rgba(255,255,255,0.1);overflow:hidden;display:flex;flex-direction:column;box-sizing:border-box;font-family:Segoe UI,Roboto,Helvetica,Arial,sans-serif;">' +
+                            '<div style="background:#cc0c39;color:#fff;padding:12px;text-align:center;font-weight:bold;font-size:14px;text-transform:uppercase;">Offerta a Tempo</div>' +
+                            '<div style="width:100%;height:200px;background:#fff;display:flex;justify-content:center;align-items:center;padding:10px;box-sizing:border-box;">' +
+                                '<img src="' + amazonGenericImg + '" style="max-width:100%;max-height:100%;object-fit:contain;" alt="Offerte Amazon">' +
+                            '</div>' +
+                            '<div style="padding:15px 24px;flex-grow:1;display:flex;flex-direction:column;text-align:center;color:#fff;">' +
+                                '<div style="font-size:16px;font-weight:600;margin-bottom:15px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;overflow:hidden;">' + deal.title + '</div>' +
+                                '<div>' +
+                                    '<span style="display:inline-block;background:#cc0c39;color:#fff;padding:4px 10px;border-radius:4px;font-size:13px;font-weight:bold;margin-bottom:12px;">' + badgeText + '</span>' +
+                                    (expiryText ? '<div style="font-size:13px;color:#94a3b8;font-style:italic;">' + expiryText + '</div>' : '') +
+                                '</div>' +
+                            '</div>' +
+                            '<div style="padding:0 24px 20px;">' +
+                                '<div style="display:block;background:linear-gradient(180deg,#ff9900 0%,#e68a00 100%);color:#000;padding:16px;border-radius:30px;font-weight:bold;text-align:center;">Vedi offerta su Amazon.it</div>' +
+                            '</div>' +
+                            '<div style="font-size:10px;color:#64748b;text-align:center;padding:10px;line-height:1.2;">Disponibile su Amazon.it<br><span style="font-size:9px;opacity:0.7;">Come affiliato Amazon, guadagno dagli acquisti idonei.</span></div>' +
+                        '</div>' +
+                    '</a>';
+            } else {
+                banner.innerHTML = '<a href="' + amazonGenericLink + '" target="_blank" rel="noopener" style="display:block;width:100%;height:100%;"><img src="' + amazonGenericImg + '" style="width:100%;height:100%;object-fit:cover;" alt="Offerte Amazon"></a>';
+            }
         } else if (amazonBannerUrl && !window.showBannerDimensions) {
             // Standalone Amazon Banner Injection (if AdSense config is missing)
             banner.innerHTML = '<iframe src="' + amazonBannerUrl + '" style="width: 100%; height: 100%; border: none; overflow: hidden;" scrolling="no"></iframe>';
@@ -298,10 +335,22 @@ function adjustLayout() {
             banner.style.textAlign = 'center';
         }
 
-        // --- Amazon Banner Click Tracking ---
+        // --- Amazon Banner Impression + Click Tracking ---
         if (amazonGeneric && !window.showBannerDimensions) {
             var startTime = Date.now();
             var pagePath = window.location.pathname.split('/').pop() || 'index.html';
+            var dealId = (window._amazonDeal600 && window._amazonDeal600.id) ? window._amazonDeal600.id : 'generic';
+            // Impression solo per 300x600 e solo una volta per sessione (flag globale)
+            if (width === 300 && height === 600 && !window._amazonImpressionSent[bannerId] && typeof gtag === 'function') {
+                window._amazonImpressionSent[bannerId] = true;
+                gtag('event', 'Amazon_Banner_Impression', {
+                    'event_category': 'Affiliate',
+                    'amazon_deal_id': dealId,
+                    'page_location': window.location.href,
+                    'non_interaction': true
+                });
+                console.log('GA Tracked: Amazon_Banner_Impression | ' + dealId + ' | ' + width + 'x' + height + ' | on: ' + pagePath);
+            }
             var aLink = banner.querySelector('a');
             if (aLink) {
                 aLink.addEventListener('click', function () {
@@ -309,12 +358,12 @@ function adjustLayout() {
                     if (typeof gtag === 'function') {
                         gtag('event', 'Amazon_Banner_Click', {
                             'event_category': 'Affiliate',
-                            'amazon_deal_id': 'generic',
+                            'amazon_deal_id': dealId,
                             'tempo_esposizione': exposureSeconds,
                             'page_location': window.location.href,
                             'non_interaction': false
                         });
-                        console.log('GA Tracked: Amazon_Banner_Click | generic | sec: ' + exposureSeconds + ' | on: ' + pagePath);
+                        console.log('GA Tracked: Amazon_Banner_Click | ' + dealId + ' | sec: ' + exposureSeconds + ' | on: ' + pagePath);
                     }
                 });
             }
@@ -444,6 +493,35 @@ function adjustLayout() {
         populateSidebar(sidebarLeft, totalExtraWidth, 'left'); // Show Italian message (or ads)
     }
 }
+
+// Fetch deals.json and pick a random valid deal for the 300x600 banner
+window._amazonDeal600 = null;
+window._amazonImpressionSent = {}; // chiave: bannerId → true se impression già inviata
+(function () {
+    try {
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', 'banner/deals.json', true);
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                try {
+                    var data = JSON.parse(xhr.responseText);
+                    var deals = data.deals || data; // compatibile anche con array puro
+                    var valid = deals.filter(function (d) {
+                        return d.link && d.link !== '#' && d.img && d.img !== '';
+                    });
+                    if (valid.length > 0) {
+                        window._amazonDeal600 = valid[Math.floor(Math.random() * valid.length)];
+                        console.log('Amazon deal caricato:', window._amazonDeal600.id);
+                    } else {
+                        window._amazonDeal600 = false; // nessun deal valido, non aspettare oltre
+                    }
+                } catch (e) { window._amazonDeal600 = false; }
+                adjustLayout();
+            }
+        };
+        xhr.send();
+    } catch (e) { /* fetch fallito, rimane null */ }
+})();
 
 // Support both modern and older browsers for early execution
 if (document.readyState === 'loading') {

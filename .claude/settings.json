@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__chrome-devtools-global__navigate_page",
+      "mcp__chrome-devtools-global__list_console_messages",
+      "mcp__chrome-devtools-global__take_screenshot",
+      "mcp__chrome-devtools-global__list_pages",
+      "Bash(python -c ' *)"
+    ]
+  }
+}

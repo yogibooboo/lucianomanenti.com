@@ -1024,10 +1024,14 @@ async function eseguiCalataAI(giocatore, mossa) {
 }
 
 function controlloMazzoEsaurito() {
+    // Preavviso: mazzo quasi esaurito (ripetuto ad ogni pesca)
+    if (game.mazzo.length <= 8 && !game.ultimoTurno) {
+        mostraMessaggio('Mazzo quasi esaurito. La partita termina quando restano 2 carte!', 'info');
+        setTimeout(nascondiMessaggio, 4000);
+    }
+    // Fine partita: mazzo effettivamente esaurito
     if (!game.ultimoTurno && game.mazzo.length <= 2) {
         game.ultimoTurno = true;
-        mostraMessaggio('Mazzo quasi esaurito! Ultimo turno!', 'info');
-        setTimeout(nascondiMessaggio, 3000);
     }
 }
 
@@ -1474,7 +1478,15 @@ function finePartita(haVintoNoi) {
     // ===== MOSTRA SCHERMATA RISULTATI =====
     mostraRisultatoFinale(risultato, vinceNoi);
 
-    playSound(vinceNoi ? 'applauso' : 'sconfitta');
+    // Musica: riflette l'esito della partita (torneo) se conclusa, altrimenti della mano
+    const _torneo = game.torneo;
+    let _suonaVittoria;
+    if (_torneo && (_torneo.totNoi >= _torneo.limite || _torneo.totLoro >= _torneo.limite)) {
+        _suonaVittoria = _torneo.totNoi >= _torneo.totLoro;
+    } else {
+        _suonaVittoria = vinceNoi;
+    }
+    playSound(_suonaVittoria ? 'applauso' : 'sconfitta');
     renderPunteggi();
 }
 
@@ -1543,12 +1555,18 @@ function mostraRisultatoFinale(risultato, vinceNoi) {
     let torneoConcluso = false;
 
     if (torneo) {
-        const vinceTorneoNoi = torneo.totNoi >= torneo.limite;
-        const vinceTorneoLoro = torneo.totLoro >= torneo.limite;
-        torneoConcluso = vinceTorneoNoi || vinceTorneoLoro;
+        const vinceTorneoNoi = (torneo.totNoi >= torneo.limite) && (torneo.totNoi >= torneo.totLoro);
+        const vinceTorneoLoro = (torneo.totLoro >= torneo.limite) && (torneo.totLoro > torneo.totNoi);
+        torneoConcluso = torneo.totNoi >= torneo.limite || torneo.totLoro >= torneo.limite;
         if (torneoConcluso) {
             titoloColore = vinceTorneoNoi ? '#4f4' : '#f44';
-            titolo = vinceTorneoNoi ? window.t('titolo-vinto-partita') : window.t('titolo-perso-partita');
+            if (vinceTorneoNoi && !vinceNoi) {
+                titolo = (window.currentLang === 'it' ? 'Hai perso la mano ma hai vinto la partita!' : 'You lost the hand but won the match!');
+            } else if (!vinceTorneoNoi && vinceNoi) {
+                titolo = (window.currentLang === 'it' ? 'Hai vinto la mano ma hai perso la partita!' : 'You won the hand but lost the match!');
+            } else {
+                titolo = vinceTorneoNoi ? window.t('titolo-vinto-partita') : window.t('titolo-perso-partita');
+            }
         } else {
             titoloColore = vinceNoi ? '#4f4' : '#f44';
             titolo = (vinceNoi ? window.t('mano-vinta') : window.t('mano-persa')) + ' - ' + (window.currentLang === 'it' ? 'Mano ' : 'Hand ') + torneo.mano;

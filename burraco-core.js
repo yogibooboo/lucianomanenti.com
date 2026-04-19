@@ -617,8 +617,8 @@ class Combinazione {
         const matte = this.matteUsate;
         if (matte.length === 0) return 'pulito';
 
-        // Semipulito: esattamente 1 matta e si trova all'estremità
-        if (matte.length === 1) {
+        // Semipulito: solo scala, esattamente 1 matta all'estremità, almeno 7 carte naturali (8 totali)
+        if (this.tipo === TIPO_SCALA && matte.length === 1 && (this.carte.length - matte.length) >= 7) {
             const mattaIdx = this.carte.findIndex(c => c === matte[0]);
             if (mattaIdx === 0 || mattaIdx === this.carte.length - 1) {
                 return 'semipulito';
@@ -2535,18 +2535,23 @@ const Strategia = {
         });
 
         // Attacchi possibili sulle combinazioni AVVERSARIE (carte da non scartare)
+        // Trova la combo peggiore (lunghezza massima raggiunta) per ogni carta
         const combinazioniAvversarie = giocatore.squadra === 0 ? game.combinazioniLoro : game.combinazioniNoi;
         const attacchiAvversari = [];
         mano.forEach(c => {
+            let bestCombo = null, bestLen = 0;
             for (let i = 0; i < combinazioniAvversarie.length; i++) {
                 if (isAttaccabile(c, combinazioniAvversarie[i])) {
-                    attacchiAvversari.push({
-                        carta: c,
-                        combo: combinazioniAvversarie[i],
-                        lunghezzaRaggiunta: combinazioniAvversarie[i].carte.length + 1
-                    });
-                    break;
+                    const nl = combinazioniAvversarie[i].carte.length + 1;
+                    if (nl > bestLen) { bestLen = nl; bestCombo = combinazioniAvversarie[i]; }
                 }
+            }
+            if (bestCombo) {
+                attacchiAvversari.push({
+                    carta: c,
+                    combo: bestCombo,
+                    lunghezzaRaggiunta: bestLen
+                });
             }
         });
 

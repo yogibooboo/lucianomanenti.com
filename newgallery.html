@@ -171,7 +171,8 @@
         async function loadBanners() {
             try {
                 const response = await fetch('banner/deals.json');
-                const deals = await response.json();
+                const data = await response.json();
+                const deals = data.deals || data;
                 const gallery = document.getElementById('gallery');
 
                 deals.forEach(deal => {
@@ -191,7 +192,7 @@
                             <div class="content">
                                 <div class="title">${deal.title || 'Senza Titolo'}</div>
                                 <div class="price-info">
-                                    <span class="status-badge">OFFERTA A TEMPO</span>
+                                    <span class="status-badge">${deal.badge || 'OFFERTA A TEMPO'}</span>
                                     <div class="expiry-info">${deal.expiry || 'In corso'}</div>
                                 </div>
                             </div>

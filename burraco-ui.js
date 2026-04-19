@@ -2316,6 +2316,9 @@ function trovaCarta(id) {
 function mostraModal(id) {
     $('#schermo').style.display = 'block';
     $('#' + id).style.display = 'block';
+    if (id === 'modal-nuova' && typeof _ripristinaPrefsModal === 'function') {
+        _ripristinaPrefsModal();
+    }
 }
 
 function chiudiModals() {
@@ -2698,7 +2701,12 @@ window.calcolaScartoPer = function(opzIdx, _silent, comboSquadraOverride) {
 
     var fase1 = candidati.filter(function(r) {
         if (r.isMatta) return true; // matte sempre candidate, penalizzate in scoring
-        return !(pericoliAvversari[r.cartaRef.id] || []).some(function(p) { return p.lunghezza >= 7; });
+        var completaBurraco = (pericoliAvversari[r.cartaRef.id] || []).some(function(p) { return p.lunghezza >= 7; });
+        if (completaBurraco) {
+            var nomeC = Strategia && Strategia.nomeCarta ? Strategia.nomeCarta(r.cartaRef) : (r.cartaRef.numero + r.cartaRef.seme);
+            console.log('[SCARTO ESCLUSO] ' + nomeC + ' → completerebbe burraco avversario → escluso dai candidati scarto');
+        }
+        return !completaBurraco;
     });
     if (fase1.length === 0) { fase1 = candidati; }
 
@@ -5054,8 +5062,34 @@ function getGiocatoreHTML(indiceGiocatore, ruolo, defaultScenario) {
                 var g = window.opener.game;
                 
                 // Creiamo un clone filtrato per evitare riferimenti circolari
+                var _nomeCartaDebug = function(c) {
+                    if (c.numero >= 50) return 'JO';
+                    if (c.isPinella) return '2' + c.seme + '(pin)';
+                    return c.numero + c.seme;
+                };
+                var carteMap = {};
+                // Ricostruisce la mappa da tutte le carte del mazzo (incluse quelle distribuite)
+                var _allCards = [];
+                if (window.opener.tutteLeCarte) {
+                    _allCards = Object.values(window.opener.tutteLeCarte);
+                } else if (g.mazzo) {
+                    // Fallback: raccoglie da mazzo + mani + scarti + combinazioni
+                    var _seen = {};
+                    var _addCards = function(arr) { arr.forEach(function(c){ if(c && c.id !== undefined && !_seen[c.id]){ _seen[c.id]=true; _allCards.push(c); } }); };
+                    _addCards(g.mazzo);
+                    g.giocatori.forEach(function(p){ _addCards(p.carte || []); });
+                    _addCards(g.scarti || []);
+                    (g.combinazioniNoi || []).forEach(function(cb){ _addCards(cb.carte || []); });
+                    (g.combinazioniLoro || []).forEach(function(cb){ _addCards(cb.carte || []); });
+                    (g.pozzetti || []).forEach(function(pz){ _addCards(pz || []); });
+                }
+                _allCards.forEach(function(c) {
+                    carteMap[c.id] = { num: c.numero, seme: c.seme, desc: _nomeCartaDebug(c) };
+                });
+
                 var cloneSafe = {
                     turno: g.turno,
+                    carteMap: carteMap,
                     fase: g.fase,
                     giocatoreCorrente: g.giocatoreCorrente,
                     mazzoCopertoSize: g.mazzo.length,
