@@ -1294,7 +1294,7 @@ async function turnoAI() {
     if (giocatore.carte.length === 0 && !giocatore.haPozzetto) {
         if (pescaPozzetto()) {
             const bestPoz = typeof window.scegliBestOpzioneAI === 'function'
-                ? window.scegliBestOpzioneAI(giocatore, false, false, 'postPozzetto') : null;
+                ? window.scegliBestOpzioneAI(giocatore, true, false, 'postPozzetto') : null;
 
             // ========== DEBUG PAUSE 3: dopo pozzetto, prima dell'analisi ==========
             await pausaDebugAI(giocatore, `Turno ${game.turno} - Dopo pozzetto (senza scarto)`, 'mano');

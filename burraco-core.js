@@ -75,7 +75,7 @@ const burracoTranslations = {
         'bonus-chiusura': 'Bonus chiusura',
         'carte-in-mano': 'Carte in mano',
         'pozzetto-non-preso-label': 'Pozzetto non preso',
-        'msg-scarti-nota': "Ho aggiornato l'algoritmo di gioco, dovrebbe essere migliorato<br>Certamente non è finito, ma fatemi sapere cosa ne pensate!",
+        'msg-scarti-nota': "",
         'label-privacy': 'Privacy Policy',
         'label-gestisci-cookie': 'Gestisci Cookie',
         'label-chi-sono': 'Chi Sono',
@@ -152,7 +152,7 @@ const burracoTranslations = {
         'bonus-chiusura': 'Closing bonus',
         'carte-in-mano': 'Cards in hand',
         'pozzetto-non-preso-label': 'Pot not taken',
-        'msg-scarti-nota': "I've updated the game algorithm, it should be improved.<br>It's certainly not finished, but let me know what you think!",
+        'msg-scarti-nota': "",
         'label-privacy': 'Privacy Policy',
         'label-gestisci-cookie': 'Manage Cookies',
         'label-chi-sono': 'About Me',
@@ -164,7 +164,8 @@ window.currentLang = window.currentLang || 'it';
 
 window.t = function(key) {
     if (!burracoTranslations[window.currentLang]) return key;
-    return burracoTranslations[window.currentLang][key] || key;
+    const val = burracoTranslations[window.currentLang][key];
+    return val !== undefined ? val : key;
 };
 
 const SEMI = ['C', 'Q', 'F', 'P']; // Cuori, Quadri, Fiori, Picche
@@ -617,12 +618,16 @@ class Combinazione {
         const matte = this.matteUsate;
         if (matte.length === 0) return 'pulito';
 
-        // Semipulito: solo scala, esattamente 1 matta all'estremità, almeno 7 carte naturali (8 totali)
-        if (this.tipo === TIPO_SCALA && matte.length === 1 && (this.carte.length - matte.length) >= 7) {
-            const mattaIdx = this.carte.findIndex(c => c === matte[0]);
-            if (mattaIdx === 0 || mattaIdx === this.carte.length - 1) {
-                return 'semipulito';
+        // Semipulito: solo scala, esattamente 1 matta, sequenza ininterrotta di almeno 7 carte naturali
+        if (this.tipo === TIPO_SCALA && matte.length === 1) {
+            const fisiche = this.carte.filter(c => !c.isJolly && !c.isPinella);
+            const nums = fisiche.map(c => c.numero).sort((a, b) => a - b);
+            let maxRun = 1, curRun = 1;
+            for (let i = 1; i < nums.length; i++) {
+                curRun = (nums[i] === nums[i-1] + 1) ? curRun + 1 : 1;
+                if (curRun > maxRun) maxRun = curRun;
             }
+            if (maxRun >= 7) return 'semipulito';
         }
 
         return 'sporco';

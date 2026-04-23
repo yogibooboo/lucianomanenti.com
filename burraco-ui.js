@@ -29,7 +29,7 @@ if (!window.coeffScoreOpz) {
         premioLiberaMattaInterna: 15,
         premioLiberaMattaBordo:   10,
         premioMattaSolitaria:    200,
-        penCalataMatta:           20,
+        penCalataMatta:           35,
         premioPrimoBurraco:       50,
         premioMazzo:               5,
         premioMattaPescata:       40,
@@ -3153,50 +3153,89 @@ window._calcolaVariantiM = function(d, game, giocatoreIdx) {
             return origMano(r) && !(opt.carteUsate && opt.carteUsate.has(r.cartaRef.id));
         });
 
-        var mattaEntry = carteRim.find(function(r) { return r.isMatta; });
-        if (!mattaEntry) return; // nessuna matta disponibile
+        var matteEntries = carteRim.filter(function(r) { return r.isMatta; });
+        if (matteEntries.length === 0) return; // nessuna matta disponibile
 
         // Modalità "fine partita": esattamente 2 carte rimaste (matta + 1 non-matta) → prova tutte le combo
         // Si applica solo post-pesca (classifica include una carta di origine 'scarto' o 'mazzo').
         // In pre-pesca (scenario='mano' senza carta pescata) non possiamo sapere la mano finale.
         var hasPescato = d.classifica.some(function(r) { return r.origine === 'scarto' || r.origine === 'mazzo'; });
-        var isTwoRemaining = hasPescato && carteRim.length === 2 && carteRim.some(function(r) { return !r.isMatta; });
+        var nonMatte = carteRim.filter(function(r) { return !r.isMatta; });
+        var isTwoRemaining = hasPescato && carteRim.length === 2 && nonMatte.length === 1;
+        // Modalità "matte multiple": solo matte rimaste (o matte + 1 non-matta) → cala tutte su combo diverse
+        var isSoloMatte = hasPescato && nonMatte.length <= 1 && matteEntries.length >= 2;
         // Modalità "burraco opportunity": matta disponibile + combo da 6+ carte sul tavolo
         var isBurracoOpp = burracoTargets.length > 0;
 
-        if (!isTwoRemaining && !isBurracoOpp) return;
+        if (!isTwoRemaining && !isSoloMatte && !isBurracoOpp) return;
 
-        // Combo da tentare: se solo burraco-opp, limita a 6-card combo; altrimenti tutte
-        var targetCombos = (isTwoRemaining) ? comboSquadra : burracoTargets;
-
-        var matta = mattaEntry.cartaRef;
         var baseRes = window.calcolaScoreOpz(opzIdx, true);
         var baseScore = baseRes ? baseRes.score : 0;
         var bestScore = baseScore;
         var bestMosse = null;
 
-        targetCombos.forEach(function(combo) {
-            var puoAgg = _w.puoAggiungereACombinazione ? _w.puoAggiungereACombinazione(matta, combo) : false;
-            if (!puoAgg) return;
+        // Modalità matte multiple: greedy su N matte → N combo diverse (max 1 matta per combo)
+        if (isSoloMatte) {
+            var comboUsateM = new Set();
+            var assegnazioniM = [];
+            for (var mi = 0; mi < matteEntries.length; mi++) {
+                var mattaM = matteEntries[mi].cartaRef;
+                var trovataM = null;
+                for (var ci = 0; ci < comboSquadra.length; ci++) {
+                    var comboC = comboSquadra[ci];
+                    if (comboUsateM.has(comboC.id)) continue;
+                    var puoAggM = _w.puoAggiungereACombinazione ? _w.puoAggiungereACombinazione(mattaM, comboC) : false;
+                    if (puoAggM) { trovataM = comboC; break; }
+                }
+                if (!trovataM) { assegnazioniM = null; break; }
+                comboUsateM.add(trovataM.id);
+                assegnazioniM.push({ matta: mattaM, combo: trovataM });
+            }
+            if (assegnazioniM && assegnazioniM.length > 0) {
+                var mmM = (opt.mosse || []).map(function(m) {
+                    return m.carte ? Object.assign({}, m, { carte: m.carte.slice() }) : Object.assign({}, m);
+                });
+                // isMattaSolitaria=true solo se dopo aver calato tutte le matte non rimane nulla (chiusura)
+                var isChiusura = nonMatte.length === 0;
+                assegnazioniM.forEach(function(a) {
+                    mmM.push({ tipo: 'calata', carta: a.matta, combo: a.combo, comboId: a.combo.id, isMattaSolitaria: isChiusura });
+                });
+                var tempCUM = new Set(opt.carteUsate || []);
+                mmM.forEach(function(m) {
+                    if (m.tipo === 'tris' || m.tipo === 'scala') { (m.carte || []).forEach(function(c) { tempCUM.add(c.id); }); }
+                    else if (m.tipo === 'calata' && m.carta) { tempCUM.add(m.carta.id); }
+                });
+                var tempIdxM = d.opzioniScenario.length;
+                d.opzioniScenario.push({ mosse: mmM, carteUsate: tempCUM });
+                var resM = window.calcolaScoreOpz(tempIdxM, true);
+                d.opzioniScenario.pop();
+                if (resM && resM.score > bestScore) { bestScore = resM.score; bestMosse = mmM; }
+            }
+        }
 
-            var mm = (opt.mosse || []).map(function(m) {
-                return m.carte ? Object.assign({}, m, { carte: m.carte.slice() }) : Object.assign({}, m);
+        // Modalità singola matta (isTwoRemaining o isBurracoOpp)
+        if (!bestMosse) {
+            var matta = matteEntries[0].cartaRef;
+            var targetCombos = isTwoRemaining ? comboSquadra : burracoTargets;
+            targetCombos.forEach(function(combo) {
+                var puoAgg = _w.puoAggiungereACombinazione ? _w.puoAggiungereACombinazione(matta, combo) : false;
+                if (!puoAgg) return;
+                var mm = (opt.mosse || []).map(function(m) {
+                    return m.carte ? Object.assign({}, m, { carte: m.carte.slice() }) : Object.assign({}, m);
+                });
+                mm.push({ tipo: 'calata', carta: matta, combo: combo, comboId: combo.id, isMattaSolitaria: isTwoRemaining });
+                var tempCU = new Set(opt.carteUsate || []);
+                mm.forEach(function(m) {
+                    if (m.tipo === 'tris' || m.tipo === 'scala') { (m.carte || []).forEach(function(c) { tempCU.add(c.id); }); }
+                    else if (m.tipo === 'calata' && m.carta) { tempCU.add(m.carta.id); }
+                });
+                var tempIdx = d.opzioniScenario.length;
+                d.opzioniScenario.push({ mosse: mm, carteUsate: tempCU });
+                var res = window.calcolaScoreOpz(tempIdx, true);
+                d.opzioniScenario.pop();
+                if (res && res.score > bestScore) { bestScore = res.score; bestMosse = mm; }
             });
-            mm.push({ tipo: 'calata', carta: matta, combo: combo, comboId: combo.id, isMattaSolitaria: isTwoRemaining });
-
-            // Usa temp push/pop per calcolare score (funziona anche per OPZ0)
-            var tempCU = new Set(opt.carteUsate || []);
-            mm.forEach(function(m) {
-                if (m.tipo === 'tris' || m.tipo === 'scala') { (m.carte || []).forEach(function(c) { tempCU.add(c.id); }); }
-                else if (m.tipo === 'calata' && m.carta) { tempCU.add(m.carta.id); }
-            });
-            var tempIdx = d.opzioniScenario.length;
-            d.opzioniScenario.push({ mosse: mm, carteUsate: tempCU });
-            var res = window.calcolaScoreOpz(tempIdx, true);
-            d.opzioniScenario.pop();
-
-            if (res && res.score > bestScore) { bestScore = res.score; bestMosse = mm; }
-        });
+        }
 
         if (!bestMosse) return;
 

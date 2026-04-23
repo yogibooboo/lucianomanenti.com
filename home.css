@@ -56,7 +56,7 @@ html {
 	width: 120px;
 	height: 75px;
 	background-size: 120px 75px;
-	background-image: url(images/home/burraco.svg);
+	background-image: url(images/home/burraco.jpg);
 }
 
 #icoburraco img {
@@ -804,10 +804,10 @@ h6 {
 
 /* Base Positions (Italian or Default) */
 [lang="it"] #icoscala { top: 165px; }
-[lang="it"] #icorummy { top: 250px; }
+[lang="it"] #icorummy { top: 505px; }
 [lang="it"] #icomachia { top: 335px; }
 [lang="it"] #icospider { top: 420px; }
-[lang="it"] #icoburraco { top: 505px; }
+[lang="it"] #icoburraco { top: 250px; }
 [lang="it"] #icometro { top: 590px; }
 [lang="it"] #icohanon, [lang="it"] #aboutme { top: 680px; }
 

@@ -4,8 +4,8 @@ window.gameScale = 1;
 window.showBannerDimensions = false;
 
 // ─── AMAZON BANNER CONFIG ────────────────────────────────────────────────────
-var AMAZON_BANNERS_ENABLED = false;  // set to false to disable Amazon banners globally
-var AMAZON_BANNERS_RIGHT = true;    // if true, Amazon banners load on right sidebar only (independent of AMAZON_BANNERS_ENABLED)
+var AMAZON_BANNERS_ENABLED = true;  // set to false to disable Amazon banners globally
+var AMAZON_BANNERS_RIGHT = false;    // if true, Amazon banners load on right sidebar only (independent of AMAZON_BANNERS_ENABLED)
 // ─────────────────────────────────────────────────────────────────────────────
 
 // ─── ADSENSE CONFIG ──────────────────────────────────────────────────────────
@@ -212,7 +212,7 @@ function adjustLayout() {
                 amazonGenericImg = window._amazonDeal600.img;
                 amazonGenericLink = window._amazonDeal600.link;
             }
-        } else if ((AMAZON_BANNERS_RIGHT && side === 'right') && width === 300 && height === 250) {
+        } else if (amazonEnabled && width === 300 && height === 250) {
             amazonGeneric = true;
             amazonGenericImg = 'banner/offerteamazon300x250.jpg';
         }
@@ -287,23 +287,23 @@ function adjustLayout() {
                 var expiryText = deal.expiry || '';
                 banner.innerHTML =
                     '<a href="' + amazonGenericLink + '" target="_blank" rel="sponsored noopener" style="display:block;width:100%;height:100%;text-decoration:none;color:inherit;">' +
-                        '<div style="position:relative;width:300px;height:600px;background:#131921;border:1px solid rgba(255,255,255,0.1);overflow:hidden;display:flex;flex-direction:column;box-sizing:border-box;font-family:Segoe UI,Roboto,Helvetica,Arial,sans-serif;">' +
-                            '<div style="background:#cc0c39;color:#fff;padding:12px;text-align:center;font-weight:bold;font-size:14px;text-transform:uppercase;">Offerta a Tempo</div>' +
-                            '<div style="width:100%;height:200px;background:#fff;display:flex;justify-content:center;align-items:center;padding:10px;box-sizing:border-box;">' +
-                                '<img src="' + amazonGenericImg + '" style="max-width:100%;max-height:100%;object-fit:contain;" alt="Offerte Amazon">' +
-                            '</div>' +
-                            '<div style="padding:15px 24px;flex-grow:1;display:flex;flex-direction:column;text-align:center;color:#fff;">' +
-                                '<div style="font-size:16px;font-weight:600;margin-bottom:15px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;overflow:hidden;">' + deal.title + '</div>' +
-                                '<div>' +
-                                    '<span style="display:inline-block;background:#cc0c39;color:#fff;padding:4px 10px;border-radius:4px;font-size:13px;font-weight:bold;margin-bottom:12px;">' + badgeText + '</span>' +
-                                    (expiryText ? '<div style="font-size:13px;color:#94a3b8;font-style:italic;">' + expiryText + '</div>' : '') +
-                                '</div>' +
-                            '</div>' +
-                            '<div style="padding:0 24px 20px;">' +
-                                '<div style="display:block;background:linear-gradient(180deg,#ff9900 0%,#e68a00 100%);color:#000;padding:16px;border-radius:30px;font-weight:bold;text-align:center;">Vedi offerta su Amazon.it</div>' +
-                            '</div>' +
-                            '<div style="font-size:10px;color:#64748b;text-align:center;padding:10px;line-height:1.2;">Disponibile su Amazon.it<br><span style="font-size:9px;opacity:0.7;">Come affiliato Amazon, guadagno dagli acquisti idonei.</span></div>' +
-                        '</div>' +
+                    '<div style="position:relative;width:300px;height:600px;background:#131921;border:1px solid rgba(255,255,255,0.1);overflow:hidden;display:flex;flex-direction:column;box-sizing:border-box;font-family:Segoe UI,Roboto,Helvetica,Arial,sans-serif;">' +
+                    '<div style="background:#cc0c39;color:#fff;padding:12px;text-align:center;font-weight:bold;font-size:14px;text-transform:uppercase;">Offerta a Tempo</div>' +
+                    '<div style="width:100%;height:200px;background:#fff;display:flex;justify-content:center;align-items:center;padding:10px;box-sizing:border-box;">' +
+                    '<img src="' + amazonGenericImg + '" style="max-width:100%;max-height:100%;object-fit:contain;" alt="Offerte Amazon">' +
+                    '</div>' +
+                    '<div style="padding:15px 24px;flex-grow:1;display:flex;flex-direction:column;text-align:center;color:#fff;">' +
+                    '<div style="font-size:16px;font-weight:600;margin-bottom:15px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;overflow:hidden;">' + deal.title + '</div>' +
+                    '<div>' +
+                    '<span style="display:inline-block;background:#cc0c39;color:#fff;padding:4px 10px;border-radius:4px;font-size:13px;font-weight:bold;margin-bottom:12px;">' + badgeText + '</span>' +
+                    (expiryText ? '<div style="font-size:13px;color:#94a3b8;font-style:italic;">' + expiryText + '</div>' : '') +
+                    '</div>' +
+                    '</div>' +
+                    '<div style="padding:0 24px 20px;">' +
+                    '<div style="display:block;background:linear-gradient(180deg,#ff9900 0%,#e68a00 100%);color:#000;padding:16px;border-radius:30px;font-weight:bold;text-align:center;">Vedi offerta su Amazon.it</div>' +
+                    '</div>' +
+                    '<div style="font-size:10px;color:#64748b;text-align:center;padding:10px;line-height:1.2;">Disponibile su Amazon.it<br><span style="font-size:9px;opacity:0.7;">Come affiliato Amazon, guadagno dagli acquisti idonei.</span></div>' +
+                    '</div>' +
                     '</a>';
             } else {
                 banner.innerHTML = '<a href="' + amazonGenericLink + '" target="_blank" rel="noopener" style="display:block;width:100%;height:100%;"><img src="' + amazonGenericImg + '" style="width:100%;height:100%;object-fit:cover;" alt="Offerte Amazon"></a>';
