@@ -620,8 +620,11 @@ class Combinazione {
 
         // Semipulito: solo scala, esattamente 1 matta, sequenza ininterrotta di almeno 7 carte naturali
         if (this.tipo === TIPO_SCALA && matte.length === 1) {
-            const fisiche = this.carte.filter(c => !c.isJolly && !c.isPinella);
-            const nums = fisiche.map(c => c.numero).sort((a, b) => a - b);
+            const matteIds = new Set(matte.map(c => c.id));
+            const fisiche = this.carte.filter(c => !matteIds.has(c.id));
+            let nums = fisiche.map(c => c.numero).sort((a, b) => a - b);
+            // asso alto: se ci sono sia A(1) che K(13), aggiungi 14 per rilevare il run K-A
+            if (nums.includes(1) && nums.includes(13)) nums = nums.concat([14]);
             let maxRun = 1, curRun = 1;
             for (let i = 1; i < nums.length; i++) {
                 curRun = (nums[i] === nums[i-1] + 1) ? curRun + 1 : 1;

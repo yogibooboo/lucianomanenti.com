@@ -2686,7 +2686,7 @@ window.calcolaScartoPer = function(opzIdx, _silent, comboSquadraOverride) {
     candidati.forEach(function(r) {
         var pericoli = [];
         comboAvversarie.forEach(function(combo) {
-            if (_isAttaccabileAdAvversario(r.cartaRef, combo))
+            if (!combo.isBurraco && _isAttaccabileAdAvversario(r.cartaRef, combo))
                 pericoli.push({ lunghezza: combo.carte.length + 1 });
         });
         pericoliAvversari[r.cartaRef.id] = pericoli;

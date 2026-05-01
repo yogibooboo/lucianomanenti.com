@@ -1,15 +1,91 @@
-// Make the scale factor global so the game's mouse logic can use it
-window.gameScale = 1;
-// Global state to toggle banner content
+// ─── AMBIENTE E DEBUG ────────────────────────────────────────────────────────
+var devMode = localStorage.getItem('dev_mode') === '1';
 window.showBannerDimensions = false;
+window._leftPopulated = false;  // Sigillo colonna sinistra
+window._rightPopulated = false; // Sigillo colonna destra
 
-// ─── AMAZON BANNER CONFIG ────────────────────────────────────────────────────
+// ─── AMAZON BANNER CONFIG ───────────────────────────────────────────────────
 var AMAZON_BANNERS_ENABLED = true;  // set to false to disable Amazon banners globally
-var AMAZON_BANNERS_RIGHT = false;    // if true, Amazon banners load on right sidebar only (independent of AMAZON_BANNERS_ENABLED)
+var AMAZON_BANNERS_RIGHT = false;   // if true, Amazon banners load on right sidebar only
 // ─────────────────────────────────────────────────────────────────────────────
 
-// ─── ADSENSE CONFIG ──────────────────────────────────────────────────────────
-var ADSENSE_ONLY_LEFT = true;  // if true, AdSense loads only in left sidebar; right sidebar shows dark placeholder without AdSense request
+// ─── ADSENSE CONFIG & SHIELD ─────────────────────────────────────────────────
+// NOTA PER L'UTENTE: Durante il bando di 29 giorni, imposta ADSENSE_GLOBAL_ENABLED = false.
+// Al termine, rimettilo a true. Lo Shield ti proteggerà automaticamente dai click futuri.
+var ADSENSE_GLOBAL_ENABLED = false;  // Interruttore di sicurezza principale
+var ADSENSE_ONLY_LEFT = true;       // Se true, AdSense carica solo a sinistra
+var ADSENSE_SHIELD_DURATION = 24 * 60 * 60 * 1000; // 24 ore di blocco dopo un click
+var _isMouseOverAdSense = false;
+
+function getInternalUserId() {
+    var id = localStorage.getItem('internal_user_id');
+    if (!id) {
+        id = 'USR_' + Math.random().toString(36).substr(2, 9).toUpperCase();
+        localStorage.setItem('internal_user_id', id);
+    }
+    return id;
+}
+
+function isAdSenseShieldActive() {
+    var shieldUntil = localStorage.getItem('adsense_shield_until');
+    if (!shieldUntil) return false;
+    return Date.now() < parseInt(shieldUntil);
+}
+
+function activateAdSenseShield(isReal) {
+    var until = Date.now() + ADSENSE_SHIELD_DURATION;
+    localStorage.setItem('adsense_shield_until', until);
+
+    // Invio evento a Google Analytics
+    if (typeof gtag === 'function') {
+        gtag('event', 'adsense_click_detected', {
+            'event_category': 'AdSense_Shield',
+            'event_label': isReal ? 'Real_Click' : 'Simulated_Click',
+            'internal_user_id': getInternalUserId(),
+            'version': window.scriptVersion || 'unknown',
+            'transport_type': 'beacon'
+        });
+    }
+
+    console.log('%c[AdSense Shield] PROTEZIONE ATTIVATA per 24h (' + (isReal ? 'REAL' : 'SIM') + ')', 'background: #cc0c39; color: white; font-weight: bold; padding: 2px 5px;');
+    if (typeof adjustLayout === 'function') adjustLayout();
+}
+
+function resetAdSenseShield() {
+    localStorage.removeItem('adsense_shield_until');
+    console.log('[AdSense Shield] Protezione resettata.');
+    if (typeof adjustLayout === 'function') adjustLayout();
+}
+
+// Global detector for focus-blur (click proxy)
+window.addEventListener('blur', function () {
+    if (_isMouseOverAdSense && !isAdSenseShieldActive() && !devMode) {
+        activateAdSenseShield(true);
+    }
+});
+
+// ─── TASTIERA E COMANDI ──────────────────────────────────────────────────────
+document.addEventListener('keydown', function (event) {
+    var key = event.key.toLowerCase();
+
+    // Ctrl+Alt+S: Toggle Info/Stats Badge (Non-persistent)
+    if (event.ctrlKey && event.altKey && key === 's') {
+        event.preventDefault();
+        window.showBannerDimensions = !window.showBannerDimensions;
+        adjustLayout();
+        console.log('Toggled debug badge. Active:', window.showBannerDimensions);
+    }
+
+    // Ctrl+Alt+Q: Toggle Dev Mode (Persistent in LocalStorage)
+    if (event.ctrlKey && event.altKey && (key === 'q' || event.code === 'KeyQ')) {
+        event.preventDefault();
+        var isDev = localStorage.getItem('dev_mode') === '1';
+        localStorage.setItem('dev_mode', isDev ? '0' : '1');
+        console.log('[AdSense Shield] Toggled Dev Mode: ' + (isDev ? 'OFF' : 'ON'));
+        location.reload();
+    }
+});
+// ─────────────────────────────────────────────────────────────────────────────
 // ─────────────────────────────────────────────────────────────────────────────
 
 // Function to get version from the script tag and store it globally
@@ -97,21 +173,51 @@ function injectLegalLinks() {
 }
 
 function adjustLayout() {
-    // Badge DEV MODE visibile quando AdSense è disabilitato per testing
-    if (document.body) {
-        var _devBadge = document.getElementById('dev-mode-badge');
-        if (localStorage.getItem('dev_mode') === '1') {
-            if (!_devBadge) {
-                _devBadge = document.createElement('div');
-                _devBadge.id = 'dev-mode-badge';
-                _devBadge.title = 'Dev mode attivo: AdSense disabilitato. Rimuovi con: localStorage.removeItem(\'dev_mode\')';
-                _devBadge.style.cssText = 'position:fixed;bottom:8px;right:8px;z-index:99999;background:#c00;color:#fff;font-size:11px;font-weight:bold;padding:3px 7px;border-radius:4px;cursor:default;opacity:0.85;';
-                _devBadge.textContent = 'DEV';
-                document.body.appendChild(_devBadge);
-            }
-        } else if (_devBadge) {
-            _devBadge.remove();
+    // Badge STATISTICHE & SHIELD
+    if (window.showBannerDimensions) {
+        var badge = document.getElementById('debug-mode-badge');
+        if (!badge) {
+            badge = document.createElement('div');
+            badge.id = 'debug-mode-badge';
+            badge.style.cssText = 'position:fixed; top:10px; left:10px; background:rgba(0,0,0,0.85); color:#0f0; padding:12px; font-family:monospace; font-size:12px; z-index:99999; border:1px solid #0f0; pointer-events:auto; line-height:1.6; border-radius:8px; box-shadow:0 4px 15px rgba(0,0,0,0.5);';
+            document.body.appendChild(badge);
         }
+        var modeStr = devMode ? '<span style="color:#ffee00">DEV MODE (Persistent)</span>' : '<span style="color:#00ff00">PRODUCTION</span>';
+        var shieldStatus = isAdSenseShieldActive() ? '<span style="color:#ff4444; font-weight:bold;">ATTIVO (AdSense Bloccato)</span>' : '<span style="color:#888">Inattivo (AdSense Libero)</span>';
+        var adsenseGlobalStatus = (typeof ADSENSE_GLOBAL_ENABLED !== 'undefined' && ADSENSE_GLOBAL_ENABLED) ? '<span style="color:#00ff00">Abilitato</span>' : '<span style="color:#ff4444">DISABILITATO (Bando)</span>';
+
+        var remaining = '';
+        if (isAdSenseShieldActive()) {
+            var diff = parseInt(localStorage.getItem('adsense_shield_until')) - Date.now();
+            var hours = Math.floor(diff / (1000 * 60 * 60));
+            var mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            remaining = '<br>⏳ Scade tra: ' + hours + 'h ' + mins + 'm';
+        }
+
+        badge.innerHTML = '<strong>' + modeStr + '</strong><br>' +
+            'AdSense Globale: ' + adsenseGlobalStatus + '<br>' +
+            'AdSense Shield: ' + shieldStatus + remaining +
+            '<br><hr style="border:0; border-top:1px solid #444; margin:8px 0;">' +
+            '<button onclick="resetAdSenseShield()" style="cursor:pointer; font-size:10px; background:#333; color:#fff; border:1px solid #555; padding:2px 6px; border-radius:3px;">Reset Shield</button> ' +
+            '<span style="font-size:9px; color:#777; margin-left:5px;">Ctrl+Alt+S per chiudere</span>';
+    } else {
+        var badge = document.getElementById('debug-mode-badge');
+        if (badge) badge.remove();
+    }
+
+    // Badge DEV MODE persistente (piccolo indicatore in basso)
+    if (devMode && document.body) {
+        var _lowBadge = document.getElementById('dev-mode-badge-small');
+        if (!_lowBadge) {
+            _lowBadge = document.createElement('div');
+            _lowBadge.id = 'dev-mode-badge-small';
+            _lowBadge.style.cssText = 'position:fixed;bottom:8px;right:8px;z-index:99999;background:#c00;color:#fff;font-size:11px;font-weight:bold;padding:3px 7px;border-radius:4px;opacity:0.6;';
+            _lowBadge.textContent = 'DEV';
+            document.body.appendChild(_lowBadge);
+        }
+    } else {
+        var _lowBadge = document.getElementById('dev-mode-badge-small');
+        if (_lowBadge) _lowBadge.remove();
     }
     injectLegalLinks();
     var gameWidth = 1024;
@@ -184,23 +290,67 @@ function adjustLayout() {
         styleEl.innerHTML =
             'ins.adsbygoogle { pointer-events: none; } ' +
             'ins.adsbygoogle iframe { pointer-events: auto; } ' +
-            'ins.adsbygoogle[data-ad-status="unfilled"] { display: none !important; pointer-events: none !important; }';
+            'ins.adsbygoogle[data-ad-status="unfilled"] { display: none !important; pointer-events: none !important; } ' +
+            /* 30s Cycle (Right: 20s Rich + 10s Simple) */
+            '@keyframes amazonFadeRich30 { 0%, 63% { opacity: 1; visibility: visible; } 70%, 93% { opacity: 0; visibility: hidden; } 100% { opacity: 1; visibility: visible; } } ' +
+            '@keyframes amazonFadeSimple30 { 0%, 63% { opacity: 0; visibility: hidden; } 70%, 93% { opacity: 1; visibility: visible; } 100% { opacity: 0; visibility: hidden; } } ' +
+            /* 25s Cycle (Left: 15s Rich + 10s Simple) */
+            '@keyframes amazonFadeRich25 { 0%, 56% { opacity: 1; visibility: visible; } 64%, 92% { opacity: 0; visibility: hidden; } 100% { opacity: 1; visibility: visible; } } ' +
+            '@keyframes amazonFadeSimple25 { 0%, 56% { opacity: 0; visibility: hidden; } 64%, 92% { opacity: 1; visibility: visible; } 100% { opacity: 0; visibility: hidden; } }';
         document.head.appendChild(styleEl);
     }
 
-    sidebarLeft.style.display = 'none';
     sidebarRight.style.display = 'none';
 
+    var getAmazonRichHtml = function (deal, amazonGenericLink, amazonGenericImg, side) {
+        if (!deal) {
+            return '<a href="' + amazonGenericLink + '" target="_blank" rel="noopener" style="display:block;width:100%;height:100%;"><img src="' + amazonGenericImg + '" style="width:100%;height:100%;object-fit:cover;" alt="Offerte Amazon"></a>';
+        }
+        var badgeText = deal.badge || 'OFFERTA A TEMPO';
+        var expiryText = deal.expiry || '';
+        var imgUrl = deal.img || amazonGenericImg;
+
+        // Tempi differenziati: 25s a sinistra (15+10), 30s a destra (20+10)
+        var animSuffix = (side === 'left') ? '25' : '30';
+        var duration = (side === 'left') ? '25s' : '30s';
+
+        // Struttura a due strati con animazione
+        return '<a href="' + amazonGenericLink + '" target="_blank" rel="sponsored noopener" style="display:block;width:100%;height:100%;text-decoration:none;color:inherit;position:relative;overflow:hidden;background:#131921;">' +
+            // STRATO 1: Versione Ricca
+            '<div style="position:absolute;top:0;left:0;width:300px;height:600px;display:flex;flex-direction:column;box-sizing:border-box;font-family:Segoe UI,Roboto,Helvetica,Arial,sans-serif;animation: amazonFadeRich' + animSuffix + ' ' + duration + ' infinite; transition: opacity 1s ease-in-out;">' +
+            '<div style="background:#cc0c39;color:#fff;padding:12px;text-align:center;font-weight:bold;font-size:14px;text-transform:uppercase;">Offerta a Tempo</div>' +
+            '<div style="width:100%;height:200px;background:#fff;display:flex;justify-content:center;align-items:center;padding:10px;box-sizing:border-box;">' +
+            '<img src="' + imgUrl + '" style="max-width:100%;max-height:100%;object-fit:contain;" alt="Offerte Amazon">' +
+            '</div>' +
+            '<div style="padding:15px 24px;flex-grow:1;display:flex;flex-direction:column;text-align:center;color:#fff;">' +
+            '<div style="font-size:16px;font-weight:600;margin-bottom:15px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;overflow:hidden;">' + deal.title + '</div>' +
+            '<div>' +
+            '<span style="display:inline-block;background:#cc0c39;color:#fff;padding:4px 10px;border-radius:4px;font-size:13px;font-weight:bold;margin-bottom:12px;">' + badgeText + '</span>' +
+            (expiryText ? '<div style="font-size:13px;color:#94a3b8;font-style:italic;">' + expiryText + '</div>' : '') +
+            '</div>' +
+            '</div>' +
+            '<div style="padding:0 24px 20px;">' +
+            '<div style="display:block;background:linear-gradient(180deg,#ff9900 0%,#e68a00 100%);color:#000;padding:16px;border-radius:30px;font-weight:bold;text-align:center;">Vedi offerta su Amazon.it</div>' +
+            '</div>' +
+            '<div style="font-size:10px;color:#64748b;text-align:center;padding:10px;line-height:1.2;">Disponibile su Amazon.it<br><span style="font-size:9px;opacity:0.7;">Come affiliato Amazon, guadagno dagli acquisti idonei.</span></div>' +
+            '</div>' +
+            // STRATO 2: Versione Semplice (Solo Immagine)
+            '<div style="position:absolute;top:0;left:0;width:300px;height:600px;animation: amazonFadeSimple' + animSuffix + ' ' + duration + ' infinite; transition: opacity 1s ease-in-out; background:#fff; display:flex; align-items:center; justify-content:center;">' +
+            '<img src="' + imgUrl + '" style="width:100%;height:100%;object-fit:contain;" alt="Offerta Amazon">' +
+            '<div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.7);color:#fff;padding:15px;text-align:center;font-weight:bold;font-size:14px;">SCOPRI DI PIÙ SU AMAZON</div>' +
+            '</div>' +
+            '</a>';
+    };
+
     var createBanner = function (width, height, side, isFirst) {
-        var devMode = localStorage.getItem('dev_mode') === '1';
-        var adsenseActive = !devMode && window.gameConfig && window.gameConfig.adsenseActive;
+        var adsenseActive = ADSENSE_GLOBAL_ENABLED && !devMode && !isAdSenseShieldActive() && window.gameConfig && window.gameConfig.adsenseActive;
         // In dev_mode su giochi con AdSense, disabilita anche i message banner (verrebbero creati al posto di AdSense)
         var isMessageBanner = isFirst && width >= 160 && !(devMode && window.gameConfig && window.gameConfig.adsenseActive);
         var slotId = null;
         var amazonBannerUrl = null;
         var amazonGeneric = false;
         var amazonGenericImg = 'banner/offerteamazon2.jpg';
-        var amazonGenericLink = 'https://www.amazon.it/deals?&linkCode=ll2&tag=lucianomane00-21&linkId=51a86306a12a5877517c1a84c3add10f&ref_=as_li_ss_tl';
+        var amazonGenericLink = 'https://www.amazon.it/deals?&linkCode=ll2&tag=lucianomane0f-21&linkId=d542031952a47db9f26b8cc6c38762cb&ref_=as_li_ss_tl';
 
         var amazonEnabled = AMAZON_BANNERS_ENABLED || (AMAZON_BANNERS_RIGHT && side === 'right');
         if (amazonEnabled && width === 300 && height === 600) {
@@ -265,8 +415,8 @@ function adjustLayout() {
 
             // Inject Amazon Fallback BEHIND AdSense for Backfill
             if (amazonGeneric) {
-                var imgStyle = window._amazonDeal600 ? 'object-fit:contain;background:#fff;' : 'object-fit:cover;';
-                html += '<a href="' + amazonGenericLink + '" target="_blank" rel="noopener" style="display:block;position:absolute;top:0;left:0;width:100%;height:100%;z-index:1;"><img src="' + amazonGenericImg + '" style="width:100%;height:100%;' + imgStyle + '" alt="Offerte Amazon"></a>';
+                var deal = (width === 300 && height === 600) ? window._amazonDeal600 : null;
+                html += '<div style="position:absolute;top:0;left:0;width:100%;height:100%;z-index:1;">' + getAmazonRichHtml(deal, amazonGenericLink, amazonGenericImg, side) + '</div>';
             } else if (amazonBannerUrl) {
                 html += '<iframe src="' + amazonBannerUrl + '" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; overflow: hidden; z-index: 1;" scrolling="no"></iframe>';
             }
@@ -276,38 +426,15 @@ function adjustLayout() {
                 'style="display:inline-block; position: relative; width:' + width + 'px;height:' + height + 'px; z-index: 2;" ' +
                 'data-ad-client="' + caPub + '" ' +
                 'data-ad-slot="' + slotId + '" ' +
+                'onmouseenter="window._isMouseOverAdSense = true;" ' +
+                'onmouseleave="window._isMouseOverAdSense = false;" ' +
                 'data-adsbygoogle-status="pending"></ins>';
 
             banner.innerHTML = html;
         } else if (amazonGeneric && !window.showBannerDimensions) {
             // Standalone Amazon Banner
             var deal = (width === 300 && height === 600) ? window._amazonDeal600 : null;
-            if (deal) {
-                var badgeText = deal.badge || 'OFFERTA A TEMPO';
-                var expiryText = deal.expiry || '';
-                banner.innerHTML =
-                    '<a href="' + amazonGenericLink + '" target="_blank" rel="sponsored noopener" style="display:block;width:100%;height:100%;text-decoration:none;color:inherit;">' +
-                    '<div style="position:relative;width:300px;height:600px;background:#131921;border:1px solid rgba(255,255,255,0.1);overflow:hidden;display:flex;flex-direction:column;box-sizing:border-box;font-family:Segoe UI,Roboto,Helvetica,Arial,sans-serif;">' +
-                    '<div style="background:#cc0c39;color:#fff;padding:12px;text-align:center;font-weight:bold;font-size:14px;text-transform:uppercase;">Offerta a Tempo</div>' +
-                    '<div style="width:100%;height:200px;background:#fff;display:flex;justify-content:center;align-items:center;padding:10px;box-sizing:border-box;">' +
-                    '<img src="' + amazonGenericImg + '" style="max-width:100%;max-height:100%;object-fit:contain;" alt="Offerte Amazon">' +
-                    '</div>' +
-                    '<div style="padding:15px 24px;flex-grow:1;display:flex;flex-direction:column;text-align:center;color:#fff;">' +
-                    '<div style="font-size:16px;font-weight:600;margin-bottom:15px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;overflow:hidden;">' + deal.title + '</div>' +
-                    '<div>' +
-                    '<span style="display:inline-block;background:#cc0c39;color:#fff;padding:4px 10px;border-radius:4px;font-size:13px;font-weight:bold;margin-bottom:12px;">' + badgeText + '</span>' +
-                    (expiryText ? '<div style="font-size:13px;color:#94a3b8;font-style:italic;">' + expiryText + '</div>' : '') +
-                    '</div>' +
-                    '</div>' +
-                    '<div style="padding:0 24px 20px;">' +
-                    '<div style="display:block;background:linear-gradient(180deg,#ff9900 0%,#e68a00 100%);color:#000;padding:16px;border-radius:30px;font-weight:bold;text-align:center;">Vedi offerta su Amazon.it</div>' +
-                    '</div>' +
-                    '<div style="font-size:10px;color:#64748b;text-align:center;padding:10px;line-height:1.2;">Disponibile su Amazon.it<br><span style="font-size:9px;opacity:0.7;">Come affiliato Amazon, guadagno dagli acquisti idonei.</span></div>' +
-                    '</div>' +
-                    '</a>';
-            } else {
-                banner.innerHTML = '<a href="' + amazonGenericLink + '" target="_blank" rel="noopener" style="display:block;width:100%;height:100%;"><img src="' + amazonGenericImg + '" style="width:100%;height:100%;object-fit:cover;" alt="Offerte Amazon"></a>';
-            }
+            banner.innerHTML = getAmazonRichHtml(deal, amazonGenericLink, amazonGenericImg, side);
         } else if (amazonBannerUrl && !window.showBannerDimensions) {
             // Standalone Amazon Banner Injection (if AdSense config is missing)
             banner.innerHTML = '<iframe src="' + amazonBannerUrl + '" style="width: 100%; height: 100%; border: none; overflow: hidden;" scrolling="no"></iframe>';
@@ -326,13 +453,38 @@ function adjustLayout() {
             }
         } else {
             // Simulation/Debug Mode
-            banner.innerHTML = (slotId ? 'AD SLOT: ' + slotId + '<br>' : 'Bannner<br>') + width + 'x' + height;
-            banner.style.backgroundColor = 'rgba(128,128,128,0.2)';
-            banner.style.border = '1px dashed grey';
-            banner.style.display = 'flex';
-            banner.style.alignItems = 'center';
-            banner.style.justifyContent = 'center';
-            banner.style.textAlign = 'center';
+            var isAdSensePotential = (slotId || (window.gameConfig && window.gameConfig.adsenseActive));
+
+            if (devMode && isAdSensePotential && !isAdSenseShieldActive()) {
+                // SPECIAL: Clickable Simulation for AdSense Shield testing
+                banner.innerHTML = '<div style="width:100%; height:100%; background:#222; border:2px dashed #ffee00; display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; box-sizing:border-box; padding:15px; text-align:center;">' +
+                    '<span style="color:#ffee00; font-weight:bold; font-size:14px;">SIMULAZIONE ADSENSE</span>' +
+                    '<span style="font-size:11px; color:#aaa; margin-top:10px;">Clicca per simulare un clic e attivare lo scudo 24h</span>' +
+                    '</div>';
+                banner.onclick = function () {
+                    if (confirm("Vuoi simulare un clic su AdSense?\n\nQuesto attiverà lo scudo per 24 ore e nasconderà gli annunci reali (mostrando solo Amazon).")) {
+                        activateAdSenseShield(false);
+                    }
+                };
+            } else {
+                var label = (slotId ? 'AD SLOT: ' + slotId : 'Banner');
+                if (isAdSenseShieldActive() && isAdSensePotential) label = 'ADSENSE SHIELDED';
+
+                banner.innerHTML = label + '<br>' + width + 'x' + height;
+                banner.style.backgroundColor = 'rgba(128,128,128,0.2)';
+                banner.style.border = '1px dashed grey';
+                banner.style.display = 'flex';
+                banner.style.alignItems = 'center';
+                banner.style.justifyContent = 'center';
+                banner.style.textAlign = 'center';
+            }
+        }
+
+        // --- AdSense Shield Sensors ---
+        // Il rilevamento chirurgico è gestito direttamente dal tag <ins> (z-index 2).
+        // Usiamo il mouseleave del banner come rete di sicurezza globale.
+        if (slotId && !isAdSenseShieldActive() && !devMode) {
+            banner.onmouseleave = function () { window._isMouseOverAdSense = false; };
         }
 
         // --- Amazon Banner Impression + Click Tracking ---
@@ -419,20 +571,30 @@ function adjustLayout() {
     ];
 
     var populateSidebar = function (sidebar, availableWidth, sideConfig) {
+        // 1. Aspettiamo che il caricamento del deal Amazon sia terminato (true, false o oggetto)
+        // prima di fare qualunque cosa, per evitare doppie popolazioni.
+        if (window._amazonDeal600 === null) return;
+
+        var sidebarId = sidebar.id; // 'sidebar-left' or 'sidebar-right'
+
+        // 2. SIGILLO PREVENTIVO: Se la colonna è già stata popolata, esci subito.
+        // Questo blocca sul nascere le race condition tra DOMContentLoaded e load.
+        if (sidebarId === 'sidebar-left' && window._leftPopulated) return;
+        if (sidebarId === 'sidebar-right' && window._rightPopulated) return;
+
+        // 3. SIGILLIAMO SUBITO: La porta si chiude ora.
+        if (sidebarId === 'sidebar-left') window._leftPopulated = true;
+        if (sidebarId === 'sidebar-right') window._rightPopulated = true;
+
+        // 4. PULIZIA: Svuotiamo eventuali residui statici o di inizializzazione
+        sidebar.innerHTML = '';
+
         var currentAvailableHeight = windowHeight;
         var verticalGap = 15;
         var bannerWidthFamily = 0;
         if (availableWidth >= 300) bannerWidthFamily = 300;
         else if (availableWidth >= 160) bannerWidthFamily = 160;
         else if (availableWidth >= 120) bannerWidthFamily = 120;
-
-        var sidebarId = sidebar.id; // 'sidebar-left' or 'sidebar-right'
-
-        // Hide all existing banners in this sidebar first
-        var existingInSide = sidebar.querySelectorAll('.ad-banner');
-        for (var k = 0; k < existingInSide.length; k++) {
-            existingInSide[k].style.display = 'none';
-        }
 
         if (bannerWidthFamily > 0) {
             var applicableFormats = allAdFormats.filter(function (f) { return f.width === bannerWidthFamily; });
@@ -490,7 +652,16 @@ function adjustLayout() {
     } else if (layoutMode === 'single-left') {
         sidebarLeft.style.width = totalExtraWidth + 'px';
         sidebarLeft.style.display = 'flex';
-        populateSidebar(sidebarLeft, totalExtraWidth, 'left'); // Show Italian message (or ads)
+        populateSidebar(sidebarLeft, totalExtraWidth, 'left');
+        // Svuotiamo la destra se non serve più
+        sidebarRight.innerHTML = '';
+        sidebarRight.style.display = 'none';
+    } else {
+        // Nessuno spazio: distruzione definitiva di entrambi
+        sidebarLeft.innerHTML = '';
+        sidebarRight.innerHTML = '';
+        sidebarLeft.style.display = 'none';
+        sidebarRight.style.display = 'none';
     }
 }
 
@@ -540,14 +711,6 @@ window.addEventListener('load', function () {
         trackVisibleBanners('timer_refresh_' + minuteCounter);
     }, 60 * 1000);
 
-    document.addEventListener('keydown', function (event) {
-        if (event.ctrlKey && event.altKey && event.key.toLowerCase() === 's') {
-            event.preventDefault();
-            window.showBannerDimensions = !window.showBannerDimensions;
-            adjustLayout();
-            console.log('Toggled banner content. Showing dimensions:', window.showBannerDimensions);
-        }
-    });
 });
 
 window.addEventListener('resize', adjustLayout);
