@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
+	<script>
+		window.dataLayer = window.dataLayer || [];
+		function gtag() { dataLayer.push(arguments); }
+		gtag('js', new Date());
+		gtag('config', 'G-WRBDRDQ4L8');
+		window.currentLang = 'it';
+	</script>
+	<title>Regole Solitario Klondike - Come giocare - lucianomanenti.com</title>
+	<link rel="alternate" hreflang="it" href="regole-klondike.html">
+	<link rel="alternate" hreflang="en" href="regole-klondike-en.html">
+	<meta name="Description"
+		content="Regole e istruzioni per giocare al Solitario Klondike online gratis. Scopri come costruire le fondamenta, spostare le carte e vincere la partita.">
+	<link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
+	<link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
+	<link rel="shortcut icon" href="favicon/favicon.ico">
+	<link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+	<style>
+		body {
+			font-family: sans-serif;
+			line-height: 1.7;
+			max-width: 800px;
+			margin: 40px auto;
+			padding: 20px;
+			color: #333;
+			background-color: #f9f9f9;
+		}
+
+		h1 {
+			color: #2c3e50;
+			border-bottom: 2px solid #ffd700;
+			padding-bottom: 10px;
+		}
+
+		h2 {
+			color: #2c3e50;
+			margin-top: 30px;
+		}
+
+		.lang-switch {
+			text-align: right;
+			margin-bottom: 20px;
+		}
+
+		.lang-switch a {
+			display: inline-block;
+			padding: 6px 16px;
+			margin-left: 5px;
+			text-decoration: none;
+			border-radius: 5px;
+			font-weight: bold;
+			font-size: 14px;
+		}
+
+		.lang-switch a.active {
+			background: #2c3e50;
+			color: white;
+		}
+
+		.lang-switch a:not(.active) {
+			background: #ddd;
+			color: #333;
+			cursor: pointer;
+		}
+
+		.content-box {
+			background: white;
+			padding: 30px;
+			border-radius: 8px;
+			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+		}
+
+		.play-btn {
+			display: inline-block;
+			margin-top: 25px;
+			padding: 12px 30px;
+			background: #27ae60;
+			color: white;
+			text-decoration: none;
+			border-radius: 8px;
+			font-size: 18px;
+			font-weight: bold;
+		}
+
+		.nav-links {
+			text-align: center;
+			margin-top: 30px;
+			font-size: 14px;
+		}
+
+		.nav-links a {
+			color: #3498db;
+			text-decoration: none;
+			margin: 0 10px;
+		}
+
+		.banner {
+			width: 100%;
+			height: 150px;
+			background-image: url('images/home/castagne.jpg');
+			background-size: cover;
+			background-position: center;
+			border-radius: 8px;
+			margin: 20px 0;
+			box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+		}
+	</style>
+</head>
+
+<body>
+	<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+		<a href="#" id="btn-back" onclick="goBack(); return false;"
+			style="display: inline-block; padding: 6px 16px; background: #e74c3c; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 14px;">&#x2190;
+			Indietro</a>
+		<div class="lang-switch" style="margin-bottom: 0;">
+			<a href="regole-klondike.html" id="btn-it" class="active">Italiano</a>
+			<a href="regole-klondike-en.html" id="btn-en">English</a>
+		</div>
+	</div>
+
+	<div class="banner"></div>
+
+	<div class="content-box">
+		<h1>Regole del Solitario Klondike</h1>
+
+		<p>Il <strong>Solitario Klondike</strong> è il classico gioco di carte solitario, quello che tutti conoscono
+			semplicemente come "il Solitario". Si gioca con un mazzo da 52 carte e richiede strategia, pazienza e
+			un po' di fortuna.</p>
+
+		<h2>Obiettivo del gioco</h2>
+		<p>Spostare tutte le 52 carte nelle 4 <strong>pile fondamenta</strong> in alto, una per seme (cuori, quadri,
+			fiori, picche), costruendole in ordine crescente dall'Asso al Re. Quando tutte e 4 le fondamenta sono
+			complete, hai vinto.</p>
+
+		<h2>Come è disposto il tavolo</h2>
+		<ul>
+			<li><strong>Tableau (7 colonne):</strong> le colonne di gioco principali. La prima ha 1 carta, la seconda
+				2, fino alla settima con 7 carte. Solo l'ultima carta di ogni colonna è scoperta.</li>
+			<li><strong>Fondamenta (4 pile):</strong> in alto a destra, inizialmente vuote. Si riempiono dall'Asso
+				al Re per ciascun seme.</li>
+			<li><strong>Mazzo:</strong> le restanti 24 carte coperte, in alto a sinistra.</li>
+			<li><strong>Sfrido:</strong> accanto al mazzo, dove finiscono le carte girate.</li>
+		</ul>
+
+		<h2>Come si gioca</h2>
+		<ul>
+			<li>Le carte nel tableau si impilano in <strong>ordine decrescente alternando colore</strong>: una carta
+				nera su una rossa e viceversa (es. 9 di cuori su 10 di picche).</li>
+			<li>Si possono spostare gruppi di carte consecutive rispettando la regola del colore alternato.</li>
+			<li>Una colonna vuota può essere occupata solo da un <strong>Re</strong> (o da una sequenza che inizia
+				con un Re).</li>
+			<li>Cliccando sul mazzo si gira una carta alla volta nello sfrido; solo la carta in cima allo sfrido è
+				giocabile.</li>
+			<li>Quando il mazzo è esaurito, lo sfrido viene automaticamente riciclato nel mazzo.</li>
+			<li>Le fondamenta si costruiscono in ordine crescente per seme: Asso, 2, 3… fino al Re.</li>
+		</ul>
+
+		<h2>Come giocare a "Solitario Klondike di Luciano"</h2>
+		<ul>
+			<li><strong>Posizionamento automatico:</strong> clicca su una carta per spostarla automaticamente nella
+				posizione migliore (fondamenta se possibile, altrimenti tableau).</li>
+			<li><strong>Posizionamento manuale:</strong> trascina la carta (o il gruppo di carte) nella colonna
+				desiderata.</li>
+			<li><strong>Girare una carta:</strong> clicca sul mazzo in alto a sinistra.</li>
+			<li><strong>Completamento automatico:</strong> quando tutte le carte coperte sono state rivelate, il
+				gioco si completa da solo portando automaticamente le carte alle fondamenta.</li>
+		</ul>
+
+		<h2>Pulsanti</h2>
+		<ul>
+			<li><strong>NUOVO:</strong> inizia una nuova partita.</li>
+			<li><strong>↩ (Annulla):</strong> annulla l'ultima mossa.</li>
+		</ul>
+
+		<h2>Consigli</h2>
+		<p>Porta gli Assi alle fondamenta appena possibile. Cerca di scoprire le carte coperte il prima possibile:
+			ogni carta rivelata apre nuove possibilità. Una colonna vuota è preziosissima — usala per riorganizzare
+			sequenze e liberare Re bloccati. Non portare troppo presto le carte alle fondamenta se questo blocca i
+			movimenti nel tableau.</p>
+
+		<p style="text-align: center;"><a href="#" onclick="goBack(); return false;" class="play-btn">Chiudi e gioca</a></p>
+	</div>
+
+	<div class="banner"></div>
+
+	<div class="nav-links">
+		<a href="index.html">Home</a> |
+		<a href="klondike.html">Klondike</a> |
+		<a href="regole-spider.html">Spider</a> |
+		<a href="regole-scala40.html">Scala 40</a> |
+		<a href="regole-machiavelli.html">Machiavelli</a> |
+		<a href="regole-burraco.html">Burraco</a> |
+		<a href="regole-rummy.html">Gin Rummy</a> |
+		<a href="privacy.html">Privacy</a> |
+		<a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)">Gestisci Cookie</a>
+	</div>
+
+	<p style="text-align: center; font-size: 0.8em; color: #999; margin-top: 15px;">
+		© 2026 Luciano Manenti
+	</p>
+
+	<script>
+		function goBack() {
+			window.close();
+		}
+
+		(function () {
+			var nascosto = false;
+			var observer = new MutationObserver(function () {
+				if (nascosto) return;
+				var divs = document.querySelectorAll('body > div');
+				for (var i = 0; i < divs.length; i++) {
+					if (divs[i].shadowRoot && !divs[i].className && (divs[i].getAttribute('style') || '').length > 5000) {
+						divs[i].style.setProperty('display', 'none', 'important');
+						nascosto = true;
+						observer.disconnect();
+						return;
+					}
+				}
+			});
+			observer.observe(document.body, { childList: true });
+		})();
+	</script>
+</body>
+
+</html>

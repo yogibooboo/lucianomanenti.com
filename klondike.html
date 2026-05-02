@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+	<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9335537153013492"
+		crossorigin="anonymous"></script>
+	<!-- Google tag (gtag.js) -->
+	<script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
+	<script>
+		window.dataLayer = window.dataLayer || [];
+		function gtag() { dataLayer.push(arguments); }
+		gtag('js', new Date());
+		gtag('config', 'G-WRBDRDQ4L8');
+	</script>
+
+	<title>Solitario Klondike - Gioca gratis online - lucianomanenti.com</title>
+	<link rel="alternate" hreflang="it" href="klondike.html">
+	<link rel="alternate" hreflang="en" href="klondike-en.html">
+	<link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
+	<link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
+	<link rel="shortcut icon" href="favicon/favicon.ico">
+	<link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+	<link rel="manifest" href="favicon/site.webmanifest">
+
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="klondike.css?v=1.1" />
+
+	<meta name="Description"
+		content="Gioca Solitario Klondike gratis online senza registrazione. Play Klondike Solitaire free online, no registration.">
+</head>
+
+<body>
+
+	<div class="main-container">
+		<div id="sidebar-left" class="sidebar"></div>
+		<div id="sidebar-right" class="sidebar"></div>
+
+		<div id="campogioco">
+			<div id="schermo"></div>
+
+			<div id="haivinto" class="form" style="background-image:url(images/scala40/haivinto.jpg)">
+				<button class="bottone1" type="button" style="left: 180px;">NUOVA PARTITA</button>
+			</div>
+
+			<div id="nonpertest">
+				<div id="nuovo" class="pulsante2" style="top: 5px; left: 10px; z-index:1000">NUOVO</div>
+			</div>
+
+			<!-- Selettore Lingua -->
+			<div class="lang-switch-game" style="position: absolute; top: 10px; left: 150px; z-index: 10001;">
+				<a href="klondike.html" class="active"
+					style="display: inline-block; padding: 4px 10px; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 12px; background: #ffd700; color: #2c3e50; border: 1px solid #ffd700;">IT</a>
+				<a href="klondike-en.html"
+					style="display: inline-block; padding: 4px 10px; margin-left: 5px; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 12px; background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3);">EN</a>
+			</div>
+
+			<div id="scoperte" class="pulsante2" style="top: 5px; left: 750px; z-index:1000">SCOPERTE</div>
+
+			<!-- Bottone Annulla -->
+			<div id="pulsante2" class="pulsante2"
+				style="top: 5px; left: 904px; z-index:1000; font-size: 22px; line-height: 30px; font-family: Arial, sans-serif;">&#x21A9;</div>
+
+			<!-- Titolo -->
+			<div style="position:absolute; top:8px; left:50%; transform:translateX(-50%); color:gold; font-size:26px; font-family:Slackey,sans-serif; font-weight:bold; z-index:1000; text-shadow:2px 2px 4px #000; white-space:nowrap;">Solitario Klondike di Luciano</div>
+
+			<a href="regole-klondike.html" target="_blank" class="pulsantecomments" style="top: 706px; left: 345px;">Regole</a>
+			<a href="aboutme.html" target="_blank" class="pulsantecomments" style="top: 706px; left: 220px;">Scrivetemi</a>
+
+			<a href="privacy.html" target="_blank"
+				style="position: absolute; bottom: 35px; right: 280px; color: white; text-decoration: none; font-size: 11px; font-family: sans-serif; z-index: 1000;">Privacy Policy</a>
+			<a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)"
+				style="position: absolute; bottom: 15px; right: 280px; color: white; text-decoration: none; font-size: 11px; font-family: sans-serif; z-index: 1000;">Gestisci Cookie</a>
+
+			<div class="link-giochi">
+				<a href="rummy.html"><div class="pulsante-link pulsante-rummy">Gin Rummy</div></a>
+				<a href="burraco.html"><div class="pulsante-link pulsante-burraco">Burraco</div></a>
+				<a href="scala40.html"><div class="pulsante-link pulsante-scala40">Scala 40</div></a>
+				<a href="machiavelli.html"><div class="pulsante-link pulsante-machiavelli">Machiavelli</div></a>
+				<a href="spider.html"><div class="pulsante-link pulsante-spider">Spider</div></a>
+				<a href="index.html"><div class="pulsante-link pulsante-home">Home</div></a>
+			</div>
+
+			<button id="btn-reset-daily" class="btn-reset-rec" style="top:695px; left:152px;">Azzera</button>
+			<button id="btn-reset-ever"  class="btn-reset-rec" style="top:713px; left:152px;">Azzera</button>
+
+			<div id="gioco">
+				<canvas id="canvasgioco" width="1024" height="700"></canvas>
+			</div>
+
+		</div><!-- campogioco -->
+	</div>
+
+	<audio id="pesca" src="sounds/scala40/cardplace1.mp3"></audio>
+	<audio id="scarta" src="sounds/scala40/cardslide1.mp3"></audio>
+	<audio id="tada" src="sounds/scala40/tada.mp3"></audio>
+
+	<script src="jquery-2.1.1.js"></script>
+	<script>
+		window.gameConfig = {
+			gaPrefix: 'KLO_',
+			messages: {
+				it: '<!-- MESSAGGIO_IT_PLACEHOLDER -->',
+				en: '<!-- MESSAGE_EN_PLACEHOLDER -->'
+			},
+			adsenseActive: true,
+			adsenseSlots: {
+				'300x600': '5266697442',
+				'160x600': '1167670336',
+				'300x250': '8471445288',
+				'160x250': '8663016975'
+			},
+			hideLegalFooter: true
+		};
+		window.currentLang = 'it';
+	</script>
+	<script src="game-layout.js?v=4.6"></script>
+	<script src="klondike.js?v=1.9"></script>
+	<script>
+		(function () {
+			var nascosto = false;
+			var observer = new MutationObserver(function () {
+				if (nascosto) return;
+				var divs = document.querySelectorAll('body > div');
+				for (var i = 0; i < divs.length; i++) {
+					if (divs[i].shadowRoot && !divs[i].className && (divs[i].getAttribute('style') || '').length > 5000) {
+						divs[i].style.setProperty('display', 'none', 'important');
+						nascosto = true;
+						observer.disconnect();
+						return;
+					}
+				}
+			});
+			observer.observe(document.body, { childList: true });
+		})();
+	</script>
+
+</body>
+</html>

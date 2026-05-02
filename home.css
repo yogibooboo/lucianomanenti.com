@@ -174,7 +174,7 @@ html {
 }
 
 
-#icometro {
+#icoklondike {
 	position: absolute;
 	border-style: solid;
 	border-color: #FFFFFF;
@@ -184,15 +184,15 @@ html {
 	width: 120px;
 	height: 75px;
 	background-size: 120px 75px;
-	background-image: url(images/home/icometronomo.jpg);
+	background-image: url(images/home/klondike.jpg);
 }
 
-#icometro img {
+#icoklondike img {
 	position: absolute;
-	top: 20px;
+	top: 10px;
 	left: 170px;
-	width: 300px;
-	height: 50px;
+	width: 430px;
+	height: 65px;
 }
 
 #icospider {
@@ -804,19 +804,19 @@ h6 {
 
 /* Base Positions (Italian or Default) */
 [lang="it"] #icoscala { top: 165px; }
-[lang="it"] #icorummy { top: 505px; }
+[lang="it"] #icorummy { top: 590px; }
 [lang="it"] #icomachia { top: 335px; }
 [lang="it"] #icospider { top: 420px; }
 [lang="it"] #icoburraco { top: 250px; }
-[lang="it"] #icometro { top: 590px; }
+[lang="it"] #icoklondike { top: 505px; }
 [lang="it"] #icohanon, [lang="it"] #aboutme { top: 680px; }
 
 /* English Overrides */
-[lang="en"] #icorummy { top: 165px; }
-[lang="en"] #icoscala { top: 250px; }
-[lang="en"] #icomachia { top: 335px; }
-[lang="en"] #icospider { top: 420px; }
-[lang="en"] #icoburraco { top: 505px; }
-[lang="en"] #icometro { top: 590px; }
+[lang="en"] #icospider { top: 165px; }
+[lang="en"] #icoklondike { top: 250px; }
+[lang="en"] #icoscala { top: 335px; }
+[lang="en"] #icoburraco { top: 420px; }
+[lang="en"] #icomachia { top: 505px; }
+[lang="en"] #icorummy { top: 590px; }
 [lang="en"] #icohanon, [lang="en"] #aboutme { top: 680px; }
 

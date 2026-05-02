@@ -1,0 +1,235 @@
+/* klondike.css v1.0 */
+
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    font-family: sans-serif;
+    background-color: green;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.main-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.sidebar {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    background-color: green;
+    overflow-y: auto;
+    box-sizing: border-box;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    z-index: 1;
+    opacity: 1;
+    pointer-events: auto;
+    transition: opacity 0.3s ease;
+}
+
+#sidebar-left { left: 0; }
+#sidebar-right { right: 0; }
+
+.ad-banner {
+    background-color: #2d5a3d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ccc;
+    text-align: center;
+    box-sizing: border-box;
+    flex-shrink: 0;
+}
+
+#campogioco {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 1024px;
+    height: 750px;
+    background-image: url(images/scala40/tappetoverde.png);
+    transform: translate(-50%, -50%);
+    transform-origin: center center;
+}
+
+#gioco {
+    width: 1024px;
+    height: 700px;
+    position: absolute;
+    top: 50px;
+    left: 0px;
+    cursor: pointer;
+}
+
+#canvasgioco {
+    cursor: pointer;
+    display: block;
+}
+
+#schermo {
+    position: absolute;
+    top: 0px;
+    left: auto;
+    width: 1024px;
+    height: 750px;
+    background-image: url(images/scala40/nero.png);
+    z-index: 30000;
+    margin: 0px auto 0px;
+    opacity: 0.6;
+    display: none;
+}
+
+.form {
+    z-index: 40000;
+    position: absolute;
+    width: 500px;
+    height: 280px;
+    left: 250px;
+    top: 200px;
+    background-size: 500px 280px;
+    display: none;
+}
+
+.form button {
+    border-radius: 8px;
+    border: 2px solid rgba(255, 255, 255, 0.35);
+    position: absolute;
+    width: 130px;
+    height: 30px;
+    top: 242px;
+    z-index: 50000;
+    cursor: pointer;
+    font-family: Slackey, sans-serif;
+    font-size: 12px;
+    background: #7aaa9a;
+    color: #fff;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.45);
+    transition: transform 0.2s;
+}
+
+.form button:hover { transform: scale(1.05); }
+
+.pulsante2 {
+    border: 2px solid rgba(255, 255, 255, 0.35);
+    padding: 0;
+    font-size: 14px;
+    font-family: Slackey, "Lucida Grande", "Lucida Sans Unicode", Tahoma, Geneva, Arial, Verdana, sans-serif;
+    color: #fff;
+    text-align: center;
+    border-radius: 8px;
+    width: 110px;
+    height: 30px;
+    line-height: 30px;
+    position: absolute;
+    cursor: pointer;
+    background: #7aaa9a;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.45);
+    transition: transform 0.2s;
+}
+
+.pulsante2:hover { transform: scale(1.05); }
+
+.pulsanteaiuto {
+    border-style: solid;
+    border-color: #888888;
+    padding: 2px;
+    border-radius: 9px;
+    width: 110px;
+    height: 31px;
+    position: absolute;
+    cursor: pointer;
+    background-size: 115px 36px;
+    background-image: url(images/aiuto.png);
+}
+
+.pulsantecomments {
+    border: 2px solid rgba(255, 255, 255, 0.35);
+    padding: 0;
+    border-radius: 8px;
+    width: 110px;
+    height: 30px;
+    line-height: 30px;
+    position: absolute;
+    cursor: pointer;
+    background: #7aaa9a;
+    color: #fff;
+    font-size: 12px;
+    font-family: Slackey, sans-serif;
+    text-align: center;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.45);
+    text-decoration: none;
+    display: block;
+    z-index: 200;
+    transition: transform 0.2s;
+}
+
+.pulsantecomments:hover { transform: scale(1.05); }
+
+img { border-style: none; }
+
+.link-giochi {
+    position: absolute;
+    bottom: 15px;
+    right: 15px;
+    display: grid;
+    grid-template-columns: repeat(3, 80px);
+    gap: 6px;
+    z-index: 200;
+}
+
+.pulsante-link {
+    width: 80px;
+    height: 30px;
+    border: 2px solid #888;
+    border-radius: 8px;
+    background-color: #333;
+    cursor: pointer;
+    transition: transform 0.2s;
+    color: #fff;
+    font-size: 11px;
+    font-weight: bold;
+    text-align: center;
+    line-height: 30px;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    text-decoration: none;
+    display: block;
+    box-sizing: border-box;
+}
+
+.pulsante-link:hover { transform: scale(1.1); }
+
+.pulsante-scala40    { background-color: #3a5a3a; }
+.pulsante-machiavelli{ background-color: #5a3a3a; }
+.pulsante-spider     { background-color: #5a5a3a; }
+.pulsante-home       { background-color: #3a3a5a; }
+.pulsante-burraco    { background-color: #7a2a7a; }
+.pulsante-rummy      { background-color: #2a7a7a; }
+
+.btn-reset-rec {
+    position: absolute;
+    width: 52px;
+    height: 16px;
+    font-size: 9px;
+    font-weight: bold;
+    background: rgba(160,50,50,0.72);
+    color: white;
+    border: 1px solid rgba(255,255,255,0.35);
+    border-radius: 4px;
+    cursor: pointer;
+    z-index: 500;
+    padding: 0;
+    line-height: 16px;
+    transition: background 0.2s;
+}
+.btn-reset-rec:hover { background: rgba(210,65,65,0.92); }

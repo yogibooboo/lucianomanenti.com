@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
+	<script>
+		window.dataLayer = window.dataLayer || [];
+		function gtag() { dataLayer.push(arguments); }
+		gtag('js', new Date());
+		gtag('config', 'G-WRBDRDQ4L8');
+		window.currentLang = 'en';
+	</script>
+	<title>Klondike Solitaire Rules - How to play - lucianomanenti.com</title>
+	<link rel="alternate" hreflang="it" href="regole-klondike.html">
+	<link rel="alternate" hreflang="en" href="regole-klondike-en.html">
+	<meta name="Description"
+		content="Rules and instructions to play Klondike Solitaire online for free. Learn how to build foundations, move cards, and win the game.">
+	<link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
+	<link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
+	<link rel="shortcut icon" href="favicon/favicon.ico">
+	<link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+	<style>
+		body {
+			font-family: sans-serif;
+			line-height: 1.7;
+			max-width: 800px;
+			margin: 40px auto;
+			padding: 20px;
+			color: #333;
+			background-color: #f9f9f9;
+		}
+
+		h1 {
+			color: #2c3e50;
+			border-bottom: 2px solid #ffd700;
+			padding-bottom: 10px;
+		}
+
+		h2 {
+			color: #2c3e50;
+			margin-top: 30px;
+		}
+
+		.lang-switch {
+			text-align: right;
+			margin-bottom: 20px;
+		}
+
+		.lang-switch a {
+			display: inline-block;
+			padding: 6px 16px;
+			margin-left: 5px;
+			text-decoration: none;
+			border-radius: 5px;
+			font-weight: bold;
+			font-size: 14px;
+		}
+
+		.lang-switch a.active {
+			background: #2c3e50;
+			color: white;
+		}
+
+		.lang-switch a:not(.active) {
+			background: #ddd;
+			color: #333;
+			cursor: pointer;
+		}
+
+		.content-box {
+			background: white;
+			padding: 30px;
+			border-radius: 8px;
+			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+		}
+
+		.play-btn {
+			display: inline-block;
+			margin-top: 25px;
+			padding: 12px 30px;
+			background: #27ae60;
+			color: white;
+			text-decoration: none;
+			border-radius: 8px;
+			font-size: 18px;
+			font-weight: bold;
+		}
+
+		.nav-links {
+			text-align: center;
+			margin-top: 30px;
+			font-size: 14px;
+		}
+
+		.nav-links a {
+			color: #3498db;
+			text-decoration: none;
+			margin: 0 10px;
+		}
+
+		.banner {
+			width: 100%;
+			height: 150px;
+			background-image: url('images/home/castagne.jpg');
+			background-size: cover;
+			background-position: center;
+			border-radius: 8px;
+			margin: 20px 0;
+			box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+		}
+	</style>
+</head>
+
+<body>
+	<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+		<a href="#" id="btn-back" onclick="goBack(); return false;"
+			style="display: inline-block; padding: 6px 16px; background: #e74c3c; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 14px;">&#x2190;
+			Back</a>
+		<div class="lang-switch" style="margin-bottom: 0;">
+			<a href="regole-klondike.html" id="btn-it">Italiano</a>
+			<a href="regole-klondike-en.html" id="btn-en" class="active">English</a>
+		</div>
+	</div>
+
+	<div class="banner"></div>
+
+	<div class="content-box">
+		<h1>Klondike Solitaire Rules</h1>
+
+		<p><strong>Klondike Solitaire</strong> is the classic card solitaire game — the one everyone knows simply as
+			"Solitaire". It is played with a standard 52-card deck and requires strategy, patience, and a little
+			luck.</p>
+
+		<h2>Objective</h2>
+		<p>Move all 52 cards to the 4 <strong>foundation piles</strong> at the top, one per suit (hearts, diamonds,
+			clubs, spades), building each from Ace up to King. When all four foundations are complete, you win.</p>
+
+		<h2>Table layout</h2>
+		<ul>
+			<li><strong>Tableau (7 columns):</strong> the main playing columns. The first has 1 card, the second 2,
+				up to the seventh with 7 cards. Only the top card of each column is face up.</li>
+			<li><strong>Foundations (4 piles):</strong> at the top right, initially empty. Built from Ace to King
+				for each suit.</li>
+			<li><strong>Stock:</strong> the remaining 24 face-down cards, at the top left.</li>
+			<li><strong>Waste:</strong> next to the stock, where drawn cards are placed face up.</li>
+		</ul>
+
+		<h2>How to play</h2>
+		<ul>
+			<li>Cards in the tableau are stacked in <strong>descending order alternating color</strong>: a black card
+				on a red card and vice versa (e.g. 9 of hearts on 10 of spades).</li>
+			<li>Groups of consecutive cards can be moved together as long as they follow the alternating color
+				rule.</li>
+			<li>An empty column can only be filled by a <strong>King</strong> (or a sequence starting with a
+				King).</li>
+			<li>Clicking the stock draws one card at a time to the waste; only the top waste card is playable.</li>
+			<li>When the stock runs out, the waste is automatically recycled back into the stock.</li>
+			<li>Foundations are built in ascending order by suit: Ace, 2, 3… up to King.</li>
+		</ul>
+
+		<h2>How to play "Klondike Solitaire by Luciano"</h2>
+		<ul>
+			<li><strong>Automatic placement:</strong> click a card to move it automatically to the best available
+				position (foundation if possible, otherwise tableau).</li>
+			<li><strong>Manual placement:</strong> drag the card (or group of cards) to the desired column.</li>
+			<li><strong>Draw a card:</strong> click the stock pile at the top left.</li>
+			<li><strong>Auto-complete:</strong> when all face-down cards have been revealed, the game completes
+				itself automatically by flying the remaining cards to the foundations.</li>
+		</ul>
+
+		<h2>Buttons</h2>
+		<ul>
+			<li><strong>NEW:</strong> start a new game.</li>
+			<li><strong>↩ (Undo):</strong> undo the last move.</li>
+		</ul>
+
+		<h2>Tips</h2>
+		<p>Move Aces to the foundations as soon as possible. Try to uncover face-down cards early — each revealed
+			card opens new possibilities. An empty column is very valuable: use it to reorganize sequences and
+			unblock Kings. Avoid sending cards to the foundations too eagerly if it restricts your tableau
+			moves.</p>
+
+		<p style="text-align: center;"><a href="#" onclick="goBack(); return false;" class="play-btn">Close and play</a></p>
+	</div>
+
+	<div class="banner"></div>
+
+	<div class="nav-links">
+		<a href="index-en.html">Home</a> |
+		<a href="klondike-en.html">Klondike</a> |
+		<a href="regole-spider-en.html">Spider</a> |
+		<a href="regole-scala40-en.html">Scala 40</a> |
+		<a href="regole-machiavelli-en.html">Machiavelli</a> |
+		<a href="regole-burraco-en.html">Burraco</a> |
+		<a href="regole-rummy-en.html">Gin Rummy</a> |
+		<a href="privacy-en.html">Privacy</a> |
+		<a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)">Manage Cookies</a>
+	</div>
+
+	<p style="text-align: center; font-size: 0.8em; color: #999; margin-top: 15px;">
+		© 2026 Luciano Manenti
+	</p>
+
+	<script>
+		function goBack() {
+			window.close();
+		}
+
+		(function () {
+			var nascosto = false;
+			var observer = new MutationObserver(function () {
+				if (nascosto) return;
+				var divs = document.querySelectorAll('body > div');
+				for (var i = 0; i < divs.length; i++) {
+					if (divs[i].shadowRoot && !divs[i].className && (divs[i].getAttribute('style') || '').length > 5000) {
+						divs[i].style.setProperty('display', 'none', 'important');
+						nascosto = true;
+						observer.disconnect();
+						return;
+					}
+				}
+			});
+			observer.observe(document.body, { childList: true });
+		})();
+	</script>
+</body>
+
+</html>
