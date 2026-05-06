@@ -618,19 +618,25 @@ class Combinazione {
         const matte = this.matteUsate;
         if (matte.length === 0) return 'pulito';
 
-        // Semipulito: solo scala, esattamente 1 matta, sequenza ininterrotta di almeno 7 carte naturali
-        if (this.tipo === TIPO_SCALA && matte.length === 1) {
+        // Semipulito: esattamente 1 matta e almeno 7 carte naturali
+        if (matte.length === 1) {
             const matteIds = new Set(matte.map(c => c.id));
             const fisiche = this.carte.filter(c => !matteIds.has(c.id));
-            let nums = fisiche.map(c => c.numero).sort((a, b) => a - b);
-            // asso alto: se ci sono sia A(1) che K(13), aggiungi 14 per rilevare il run K-A
-            if (nums.includes(1) && nums.includes(13)) nums = nums.concat([14]);
-            let maxRun = 1, curRun = 1;
-            for (let i = 1; i < nums.length; i++) {
-                curRun = (nums[i] === nums[i-1] + 1) ? curRun + 1 : 1;
-                if (curRun > maxRun) maxRun = curRun;
+            if (this.tipo === TIPO_SCALA) {
+                // Per scala: le 7+ fisiche devono formare una sequenza ininterrotta
+                let nums = fisiche.map(c => c.numero).sort((a, b) => a - b);
+                // asso alto: se ci sono sia A(1) che K(13), aggiungi 14 per rilevare il run K-A
+                if (nums.includes(1) && nums.includes(13)) nums = nums.concat([14]);
+                let maxRun = 1, curRun = 1;
+                for (let i = 1; i < nums.length; i++) {
+                    curRun = (nums[i] === nums[i-1] + 1) ? curRun + 1 : 1;
+                    if (curRun > maxRun) maxRun = curRun;
+                }
+                if (maxRun >= 7) return 'semipulito';
+            } else if (this.tipo === TIPO_TRIS) {
+                // Per tris: bastano 7+ fisiche dello stesso valore
+                if (fisiche.length >= 7) return 'semipulito';
             }
-            if (maxRun >= 7) return 'semipulito';
         }
 
         return 'sporco';

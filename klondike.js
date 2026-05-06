@@ -1,4 +1,4 @@
-// klondike.js v1.9
+// klondike.js v1.10
 
 var CUORI = 'C', QUADRI = 'Q', FIORI = 'F', PICCHE = 'P';
 var SEMI = [FIORI, QUADRI, CUORI, PICCHE];
@@ -738,7 +738,7 @@ document.addEventListener('DOMContentLoaded', function() {
     canvas.addEventListener('touchmove', onMove, { passive: false });
     canvas.addEventListener('touchend', onUp, { passive: false });
 
-    document.getElementById('nuovo').addEventListener('click', function() { initGame(); });
+    document.getElementById('nuovo').addEventListener('click', function() { location.reload(); });
     document.getElementById('pulsante2').addEventListener('click', function() { doUndo(); });
 
     var btnScoperte = document.getElementById('scoperte');
@@ -762,9 +762,5 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     var winBtn = document.querySelector('#haivinto .bottone1');
-    if (winBtn) winBtn.addEventListener('click', function() {
-        document.getElementById('haivinto').style.display = 'none';
-        document.getElementById('schermo').style.display = 'none';
-        initGame();
-    });
+    if (winBtn) winBtn.addEventListener('click', function() { location.reload(); });
 });
