@@ -84,7 +84,10 @@ const burracoTranslations = {
         'label-mazziere': 'Mazziere',
         'btn-prossima-mano': 'PROSSIMA MANO',
         'btn-abbandona': 'ABBANDONA',
-        'label-mazziere-e': 'Mazziere:'
+        'label-mazziere-e': 'Mazziere:',
+        'label-burraco-pulito': 'PULITO',
+        'label-burraco-semipulito': 'S/PULITO',
+        'label-burraco-sporco': 'SPORCO'
     },
     en: {
         // UI Labels
@@ -156,7 +159,10 @@ const burracoTranslations = {
         'label-privacy': 'Privacy Policy',
         'label-gestisci-cookie': 'Manage Cookies',
         'label-chi-sono': 'About Me',
-        'label-mazziere': 'Dealer'
+        'label-mazziere': 'Dealer',
+        'label-burraco-pulito': 'CLEAN',
+        'label-burraco-semipulito': 'S/CLEAN',
+        'label-burraco-sporco': 'DIRTY'
     }
 };
 

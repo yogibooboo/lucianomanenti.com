@@ -701,9 +701,16 @@ function renderAreaCombinazioni(combinazioni, containerSel) {
 
         if (comb.isBurraco) {
             // Usa il nuovo sistema a 3 livelli
-            if (comb.isPulito) combEl.classList.add('burraco-pulito');
-            else if (comb.isSemipulito) combEl.classList.add('burraco-semipulito');
-            else combEl.classList.add('burraco-sporco');
+            let tipoClass, tipoLabel;
+            if (comb.isPulito)         { tipoClass = 'burraco-pulito';     tipoLabel = t('label-burraco-pulito')     || 'PULITO'; }
+            else if (comb.isSemipulito){ tipoClass = 'burraco-semipulito'; tipoLabel = t('label-burraco-semipulito') || 'S/PULITO'; }
+            else                       { tipoClass = 'burraco-sporco';     tipoLabel = t('label-burraco-sporco')     || 'SPORCO'; }
+            combEl.classList.add(tipoClass);
+
+            const burracoLabel = document.createElement('div');
+            burracoLabel.className = 'burraco-label ' + tipoClass;
+            burracoLabel.textContent = tipoLabel;
+            combEl.appendChild(burracoLabel);
         }
 
         // Per le scale, visualizza in ordine discendente (dal valore piu' alto al piu' basso)
@@ -746,7 +753,6 @@ function renderAreaCombinazioni(combinazioni, containerSel) {
             }
             combEl.appendChild(cartaEl);
         }
-
         container.appendChild(combEl);
     }
 
