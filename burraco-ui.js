@@ -424,10 +424,10 @@ function getCartaSpritePosition(carta, faceUp) {
 function renderScarti() {
     const container = $('#scarti-container');
     const nota = container.querySelector('#scarti-nota');
+    const scartiInfo = container.querySelector('#scarti-info');
     container.innerHTML = '';
 
-    // Aggiorna indicatore scarti (stesso stile di Noi/Loro)
-    const scartiInfo = $('#scarti-info');
+    // Aggiorna indicatore scarti
     if (scartiInfo) {
         const numScarti = game.scarti.length;
         const puntiScarti = game.scarti.reduce((sum, c) => sum + (c.punti || 0), 0);
@@ -435,18 +435,20 @@ function renderScarti() {
         const valEl = scartiInfo.querySelector('.punti-valore');
         if (numEl) numEl.textContent = `${t('label-carte')}: ${numScarti}`;
         if (valEl) valEl.textContent = `${t('label-totale')}: ${puntiScarti}`;
+        container.appendChild(scartiInfo);
     }
 
     // Mostra tutte le carte scartate
-    const overlap = 20;
+    const overlap = 30;
+    const cardTop = Math.round((container.offsetHeight - 96) / 2);
 
     for (let i = 0; i < game.scarti.length; i++) {
         const carta = game.scarti[i];
         const el = creaElementoCarta(carta);
         el.classList.add('scarto');
         el.style.position = 'absolute';
-        el.style.left = (-5 + i * overlap) + 'px';
-        el.style.top = '-7px';
+        el.style.left = (5 + i * overlap) + 'px';
+        el.style.top = cardTop + 'px';
         el.style.zIndex = i;
         container.appendChild(el);
     }
@@ -541,10 +543,10 @@ function renderManoGiocatore(giocatore, containerSel) {
     }
 
     const numCarte = giocatore.carte.length;
-    // Carte piccole: 52px di larghezza visiva (71px * 0.73 scale)
-    const cartaW = 52;
-    // Overlap di 2/3: mostra solo 1/3 della carta = ~17px
-    const overlapBase = 17;
+    // Larghezza visiva con scale(1.1): 71 * 1.1 ≈ 78px
+    const cartaW = 78;
+    // Overlap +50% rispetto al precedente 17px
+    const overlapBase = 26;
     const maxWidth = 620;
 
     // Calcola overlap - usa overlapBase ma riduci se troppe carte
@@ -589,7 +591,7 @@ function renderManoAvversario(giocatore, containerSel, contatoreSel) {
     const isVertical = giocatore.posizione === 'left' || giocatore.posizione === 'right';
     const isRightPlayer = giocatore.posizione === 'right';
     const isTopPlayer = giocatore.posizione === 'top';
-    const overlap = isVertical ? 15 : 20;
+    const overlap = isVertical ? 22 : 30;
 
     for (let i = 0; i < numCarte; i++) {
         const carta = giocatore.carte[i];
@@ -610,21 +612,22 @@ function renderManoAvversario(giocatore, containerSel, contatoreSel) {
         el.style.position = 'absolute';
 
         if (isVertical) {
-            el.style.left = '40px';
             if (isRightPlayer) {
-                // Avversario destra: prima carta vicino al fondo dello schermo
-                el.style.bottom = (-45 + i * overlap) + 'px';
+                // Avversario destra: spostato a destra + inizia dentro il contenitore
+                el.style.left = '55px';
+                el.style.bottom = (-10 + i * overlap) + 'px';
                 el.style.top = 'auto';
             } else {
-                // Avversario sinistra: prima carta vicino alla cima dello schermo
+                // Avversario sinistra: spostato a sinistra per rientrare nel bordo destro
+                el.style.left = '27px';
                 el.style.top = (5 + i * overlap) + 'px';
             }
         } else {
             if (isTopPlayer) {
-                // Compagno: prima carta al bordo destro, le altre verso sinistra
-                el.style.right = (-210 + i * overlap) + 'px';
-                el.style.left = 'auto';
-                el.style.top = '-35px';
+                // Compagno: parte dall'alto-sinistra del contenitore
+                el.style.left = (i * overlap) + 'px';
+                el.style.right = 'auto';
+                el.style.top = '5px';
             } else {
                 el.style.left = (i * overlap) + 'px';
                 el.style.top = '0px';
@@ -777,8 +780,8 @@ function comprimiCombinazioni(container, containerSel) {
     // Larghezza disponibile (meno padding)
     var containerWidth = container.clientWidth - 10;
 
-    // Larghezza visuale di ogni combinazione: carta scalata a 0.73
-    var cartaWidth = Math.round(71 * 0.73); // 52px
+    // Larghezza visuale di ogni combinazione: carta scalata a 1.1
+    var cartaWidth = Math.round(71 * 1.1); // 78px
     var sommaLarghezze = 0;
     for (var i = 0; i < combElements.length; i++) {
         sommaLarghezze += cartaWidth + 2; // +2 per padding combinazione
@@ -877,13 +880,13 @@ function aggiornaDealerBadge() {
     badge.style.bottom = 'auto';
 
     if (pos === 'bottom') {
-        // Affianca #giocatore-info a destra, allineato verticalmente
+        // Sotto il bordo sinistro di #giocatore-info
         var info = document.getElementById('giocatore-info');
         if (info) {
             var r = info.getBoundingClientRect();
             if (r.width > 0) {
-                badge.style.left   = ((r.right  - campoR.left) / scale + 8) + 'px';
-                badge.style.bottom = ((campoR.bottom - r.bottom) / scale) + 'px';
+                badge.style.left = ((r.left   - campoR.left) / scale) + 'px';
+                badge.style.top  = ((r.bottom - campoR.top)  / scale + 3) + 'px';
             }
         }
     } else {
@@ -893,8 +896,10 @@ function aggiornaDealerBadge() {
         if (nameEl) {
             var r = nameEl.getBoundingClientRect();
             if (r.width > 0) {
-                badge.style.left = ((r.left - campoR.left) / scale) + 'px';
-                badge.style.top  = ((r.bottom - campoR.top) / scale + 3) + 'px';
+                var leftOffset = pos === 'right' ? -15 : pos === 'left' ? -10 : 0;
+                var topOffset  = pos === 'right' ? -4  : 0;
+                badge.style.left = ((r.left - campoR.left) / scale + leftOffset) + 'px';
+                badge.style.top  = ((r.bottom - campoR.top) / scale + 3 + topOffset) + 'px';
             }
         }
     }
@@ -948,7 +953,7 @@ function _animaVoloDeal(fromR, toR, duration, callback) {
     el.style.top = fromR.top + 'px';
     el.style.width = '71px';
     el.style.height = '96px';
-    el.style.transform = 'scale(0.73)';
+    el.style.transform = 'scale(1.1)';
     el.style.transformOrigin = 'top left';
     el.style.zIndex = '10000';
     el.style.pointerEvents = 'none';
@@ -1068,8 +1073,9 @@ function animaCarta(carta, daElemento, aElemento, opzioni = {}) {
         let inizioLeft = daRect.left;
         let inizioTop = daRect.top;
         if (rotazioneIniziale === 90) {
-            inizioLeft += 70;  // Compensa lo spostamento causato dalla rotazione (altezza carta scalata)
+            inizioLeft += 106;  // Compensa lo spostamento causato dalla rotazione (altezza carta scalata)
         }
+        const cardScale = 1.1 * (window.gameScale || 1);
         cartaVolante.style.position = 'fixed';
         cartaVolante.style.left = inizioLeft + 'px';
         cartaVolante.style.top = inizioTop + 'px';
@@ -1077,7 +1083,7 @@ function animaCarta(carta, daElemento, aElemento, opzioni = {}) {
         cartaVolante.style.height = '96px';
         cartaVolante.style.zIndex = '10000';
         cartaVolante.style.pointerEvents = 'none';
-        cartaVolante.style.transform = `scale(0.73) rotate(${rotazioneIniziale}deg)`;
+        cartaVolante.style.transform = `scale(${cardScale}) rotate(${rotazioneIniziale}deg)`;
         cartaVolante.style.transformOrigin = 'top left';
         cartaVolante.style.boxShadow = '5px 5px 15px rgba(0,0,0,0.5)';
 
@@ -1089,16 +1095,16 @@ function animaCarta(carta, daElemento, aElemento, opzioni = {}) {
         // Applica transizione e muovi
         cartaVolante.style.transition = `left ${durata}ms ease-out, top ${durata}ms ease-out, transform ${durata}ms ease-out`;
 
-        // Compensa l'offset dovuto alla rotazione (altezza carta scalata = 96 * 0.73 ≈ 70px)
+        // Compensa l'offset dovuto alla rotazione (altezza carta scalata = 96 * 1.1 ≈ 106px)
         let finalLeft = aRect.left;
         let finalTop = aRect.top;
         if (rotazioneFinale === 90) {
-            finalLeft += 70;  // Compensa lo spostamento causato dalla rotazione
+            finalLeft += 106;  // Compensa lo spostamento causato dalla rotazione
         }
 
         cartaVolante.style.left = finalLeft + 'px';
         cartaVolante.style.top = finalTop + 'px';
-        cartaVolante.style.transform = `scale(0.73) rotate(${rotazioneFinale}deg)`;
+        cartaVolante.style.transform = `scale(${cardScale}) rotate(${rotazioneFinale}deg)`;
 
         // Al termine dell'animazione
         setTimeout(() => {
@@ -1220,7 +1226,7 @@ function pescaDaScarti() {
     render();
 }
 
-async function scartaCarta(carta) {
+async function scartaCarta(carta, fromRect = null) {
     if (game.fase !== 'gioco') {
         mostraMessaggio('Pescare prima di scartare', 'error');
         setTimeout(nascondiMessaggio, 2000);
@@ -1268,9 +1274,9 @@ async function scartaCarta(carta) {
     // Chiude la finestra temporale per modificare la matta
     game.combinazioneModificabile = null;
 
-    // Salva la posizione di partenza della carta
+    // Salva la posizione di partenza: usa fromRect (posizione rilascio drag) se disponibile
     const cartaElPartenza = carta.elemento;
-    const partenzaRect = cartaElPartenza ? cartaElPartenza.getBoundingClientRect() : null;
+    const partenzaRect = fromRect || (cartaElPartenza ? cartaElPartenza.getBoundingClientRect() : null);
 
     game.giocatori[0].carte.splice(idx, 1);
     carta.selezionata = false;
@@ -2065,7 +2071,8 @@ function onMouseUp(e) {
 
     const { carta, elemento, moved, fantasma, combinazioneTargetEl, combinazioneTarget } = game.trascinamento;
 
-    // Rimuovi il fantasma se esiste
+    // Cattura posizione fantasma prima di rimuoverlo (usata come origine animazione)
+    const fantasmaRect = fantasma ? fantasma.getBoundingClientRect() : null;
     if (fantasma) {
         fantasma.remove();
     }
@@ -2092,7 +2099,7 @@ function onMouseUp(e) {
             if (e.clientX >= rect.left && e.clientX <= rect.right &&
                 e.clientY >= rect.top && e.clientY <= rect.bottom) {
                 // Rilasciata sugli scarti
-                scartaCarta(carta);
+                scartaCarta(carta, fantasmaRect);
             } else {
                 // Verifica se rilasciata su un'altra carta nella mano per riordinare
                 const cartaDestEl = document.elementFromPoint(e.clientX, e.clientY)?.closest('.carta');
@@ -2140,12 +2147,13 @@ function onTouchStart(e) {
     const cartaEl = document.elementFromPoint(touch.clientX, touch.clientY)?.closest('.carta');
     if (!cartaEl) return;
 
-    e.preventDefault();
-
     const cartaId = parseInt(cartaEl.dataset.cartaId);
     const carta = trovaCarta(cartaId);
 
+    // preventDefault solo per carte in mano: le carte nelle combinazioni
+    // non devono bloccare il click sintetico che gestisce depositaCombinazione
     if (carta && game.giocatori[0].carte.includes(carta)) {
+        e.preventDefault();
         game.trascinamento = {
             carta: carta,
             elemento: cartaEl,
@@ -2252,7 +2260,8 @@ function onTouchEnd(e) {
 
     const { carta, elemento, moved, fantasma, combinazioneTargetEl, combinazioneTarget } = game.trascinamento;
 
-    // Rimuovi il fantasma se esiste
+    // Cattura posizione fantasma prima di rimuoverlo (usata come origine animazione)
+    const fantasmaRect = fantasma ? fantasma.getBoundingClientRect() : null;
     if (fantasma) {
         fantasma.remove();
     }
@@ -2278,7 +2287,7 @@ function onTouchEnd(e) {
             const rect = $('#scarti-container').getBoundingClientRect();
             if (touch.clientX >= rect.left && touch.clientX <= rect.right &&
                 touch.clientY >= rect.top && touch.clientY <= rect.bottom) {
-                scartaCarta(carta);
+                scartaCarta(carta, fantasmaRect);
             } else {
                 render();
             }

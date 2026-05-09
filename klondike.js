@@ -8,9 +8,9 @@ var CARD_W = 85,  CARD_H = 115;    // dimensioni carta renderizzata (+20%)
 
 var COL_PITCH = 140;
 var COL_X = [50, 190, 330, 470, 610, 750, 890];
-var STOCK_X = 50,  STOCK_Y = 12;
-var WASTE_X = 190, WASTE_Y = 12;
-var FOUND_X = [470, 610, 750, 890];
+var STOCK_X = 750, STOCK_Y = 12;
+var WASTE_X = 890, WASTE_Y = 12;
+var FOUND_X = [50, 190, 330, 470];
 var FOUND_Y = 12;
 var TAB_Y = 135;
 var FD_PITCH = 22;
@@ -465,7 +465,9 @@ function doAutoCompleteStep() {
 function getPos(e) {
     var rect = canvas.getBoundingClientRect();
     var scaleX = canvas.width / rect.width, scaleY = canvas.height / rect.height;
-    var src = e.touches ? e.touches[0] : (e.changedTouches ? e.changedTouches[0] : e);
+    var src = (e.touches && e.touches.length) ? e.touches[0]
+            : (e.changedTouches && e.changedTouches.length) ? e.changedTouches[0]
+            : e;
     return { x: (src.clientX - rect.left) * scaleX, y: (src.clientY - rect.top) * scaleY };
 }
 
@@ -571,7 +573,6 @@ function onMove(e) {
 function onUp(e) {
     if (!dragging) return;
     e.preventDefault();
-    var p = getPos(e);
 
     // Smart click: il drag non è mai partito → instrada la carta automaticamente
     if (dragStart) {

@@ -21,7 +21,7 @@
     <meta http-Equiv="Pragma" Content="no-cache">
     <meta http-Equiv="Expires" Content="0">
 
-    <link rel="stylesheet" href="burraco.css?v=4.7" />
+    <link rel="stylesheet" href="burraco.css?v=4.10" />
 
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
@@ -155,14 +155,14 @@
             <div id="mazzo"></div>
 
             <!-- === SCARTI === -->
-            <div id="scarti-info">
-                <span class="titolo-nome" id="label-scarti">Scarti</span>
-                <span class="titolo-punti">
-                    <span class="punti-numero" id="label-ncarte-scarti">Carte: 0</span>
-                    <span class="punti-valore" id="label-punti-scarti">Punti: 0</span>
-                </span>
-            </div>
             <div id="scarti-container">
+                <div id="scarti-info">
+                    <span class="titolo-nome" id="label-scarti">Scarti</span>
+                    <span class="titolo-punti">
+                        <span class="punti-numero" id="label-ncarte-scarti">Carte: 0</span>
+                        <span class="punti-valore" id="label-punti-scarti">Punti: 0</span>
+                    </span>
+                </div>
                 <div id="scarti-nota">
                     <span id="label-scarti-nota"></span>
                 </div>
@@ -175,14 +175,14 @@
             </div>
 
             <!-- === GIOCATORE === -->
-            <div id="giocatore-info">
-                <span class="titolo-nome" id="label-giocatore">Giocatore</span>
-                <span class="titolo-punti">
-                    <span class="punti-numero" id="label-ncarte-mano">Carte: 0</span>
-                    <span class="punti-valore" id="label-punti-mano">Punti: 0</span>
-                </span>
-            </div>
             <div id="area-giocatore" class="area-giocatore">
+                <div id="giocatore-info">
+                    <span class="titolo-nome" id="label-giocatore">Giocatore</span>
+                    <span class="titolo-punti">
+                        <span class="punti-numero" id="label-ncarte-mano">Carte: 0</span>
+                        <span class="punti-valore" id="label-punti-mano">Punti: 0</span>
+                    </span>
+                </div>
                 <div id="carte-giocatore" class="carte-container"></div>
             </div>
 
@@ -313,7 +313,7 @@
     <!-- JS Files -->
     <script src="burraco-core.js?v=9.38"></script>
     <script src="burraco-game.js?v=8.31"></script>
-    <script src="burraco-ui.js?v=10.83"></script>
+    <script src="burraco-ui.js?v=10.98"></script>
     <script>
         (function () {
             var nascosto = false;

@@ -217,14 +217,14 @@ body {
 /* Avatar compagno (top) - a sinistra delle carte */
 #avatar-compagno {
     left: -80px;
-    top: calc(40% - 20px);
+    top: calc(40% - 10px);
     transform: translateY(-50%);
 }
 
 /* Nome compagno - sotto l'avatar */
 #nome-compagno {
     top: auto !important;
-    bottom: 18px;
+    bottom: 30px;
     left: -80px !important;
     transform: none !important;
     width: 64px;
@@ -274,12 +274,12 @@ body {
 
 /* Compagno (top) */
 #area-compagno {
-    top: 25px;
+    top: 0px;
     right: 180px;
     left: auto;
     transform: none;
     width: 600px;
-    height: 85px;
+    height: 118px;
     z-index: 150;
 }
 
@@ -291,8 +291,12 @@ body {
 }
 
 #carte-compagno {
-    flex-direction: row;
-    margin-left: 210px;
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    margin-left: 0;
 }
 
 #ncarte-compagno {
@@ -303,7 +307,7 @@ body {
 
 /* Carte del compagno ridotte */
 #carte-compagno .carta {
-    transform: scale(0.73);
+    transform: scale(1.1);
     transform-origin: top left;
 }
 
@@ -370,8 +374,8 @@ body {
 /* Giocatore (bottom) */
 #giocatore-info {
     position: absolute;
-    bottom: 94px;
-    left: 180px;
+    top: 4px;
+    right: 8px;
 
     display: flex;
     align-items: center;
@@ -403,7 +407,7 @@ body {
     left: 180px;
 
     width: 650px;
-    height: 85px;
+    height: 110px;
     background: rgba(0, 50, 0, 0.4);
     border: 2px solid rgba(100, 150, 100, 0.5);
     border-radius: 10px;
@@ -416,16 +420,16 @@ body {
     flex-direction: row;
     align-items: flex-end;
     position: relative;
-    height: 60px;
+    height: 110px;
     width: 100%;
-    margin-top: 10px;
+    margin-top: 0px;
 }
 
 /* Carte del giocatore piu' piccole - usa transform scale */
 #carte-giocatore .carta {
     width: 71px;
     height: 96px;
-    transform: scale(0.73);
+    transform: scale(1.1);
     transform-origin: bottom left;
 }
 
@@ -571,7 +575,7 @@ body {
     left: 432px;
     /* centro campo (512) - meta' larghezza (80) */
     width: 160px;
-    height: 5px;
+    height: 30px;
     display: flex;
     border-radius: 3px;
     overflow: hidden;
@@ -587,7 +591,7 @@ body {
 /* === MAZZO === */
 #mazzo-info {
     position: absolute;
-    bottom: 205px;
+    bottom: 99px;
     left: 120px;
     display: flex;
     align-items: center;
@@ -613,13 +617,13 @@ body {
 
 #mazzo {
     position: absolute;
-    bottom: 114px;
+    bottom: 130px;
     left: 100px;
     width: 71px;
     height: 96px;
     background: url(images/scala40/conjollyplus.png) -1136px 0;
     /* colonna 16 */
-    transform: scale(0.73);
+    transform: scale(1.1);
     transform-origin: center center;
     border-radius: 6px;
     display: flex;
@@ -632,14 +636,14 @@ body {
 }
 
 #mazzo:hover {
-    transform: scale(1.05);
+    transform: scale(1.2);
 }
 
 /* === SCARTI === */
 #scarti-info {
     position: absolute;
-    bottom: 205px;
-    left: 180px;
+    top: 4px;
+    right: 8px;
     display: flex;
     align-items: center;
     gap: 10px;
@@ -670,7 +674,7 @@ body {
     bottom: 120px;
     left: 180px;
     width: 650px;
-    height: 85px;
+    height: 118px;
     display: flex;
     align-items: center;
     padding: 5px 10px;
@@ -698,7 +702,7 @@ body {
 /* === POZZETTI === */
 #pozzetto {
     position: absolute;
-    bottom: 124px;
+    bottom: 160px;
     right: 100px;
     width: 80px;
     height: 80px;
@@ -711,7 +715,7 @@ body {
     height: 96px;
     background: url(images/scala40/conjollyplus.png) -1136px 0;
     /* colonna 16 */
-    transform: scale(0.73);
+    transform: scale(1.1);
     transform-origin: top left;
     border-radius: 5px;
     box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
@@ -723,9 +727,9 @@ body {
 }
 
 #pozzetto2 {
-    top: 15px;
-    left: 75px;
-    transform: scale(0.73) rotate(90deg);
+    top: 20px;
+    left: 107px;
+    transform: scale(1.1) rotate(90deg);
     transform-origin: top left;
 }
 
@@ -782,7 +786,7 @@ body {
 .carta.piccola {
     width: 71px;
     height: 96px;
-    transform: scale(0.73) rotate(90deg) translateY(-50%);
+    transform: scale(1.1) rotate(90deg) translateY(-50%);
     transform-origin: top left;
 }
 
@@ -790,14 +794,14 @@ body {
 .carta.scarto {
     position: relative;
     flex-shrink: 0;
-    transform: scale(0.73);
+    transform: scale(1.1);
     transform-origin: center center;
 }
 
 /* Carta volante per animazioni */
 .carta.carta-volante {
     pointer-events: none;
-    transform: scale(0.73);
+    transform: scale(1.1);
     box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.5);
 }
 
@@ -1271,10 +1275,10 @@ body {
     position: relative;
     width: 71px;
     height: 96px;
-    transform: scale(0.73);
+    transform: scale(1.1);
     transform-origin: top left;
-    margin-bottom: -72px;
-    margin-right: -19px;
+    margin-bottom: -60px;
+    margin-right: 7px;
 }
 
 .combinazione .carta:last-child {

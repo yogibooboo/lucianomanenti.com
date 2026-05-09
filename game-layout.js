@@ -246,7 +246,7 @@ function adjustLayout() {
 
     var totalExtraWidth = windowWidth - (gameWidth * scale);
     var layoutMode = 'none';
-    if (totalExtraWidth >= 320) {
+    if (totalExtraWidth >= 600) {
         layoutMode = 'dual';
     } else if (totalExtraWidth >= 160) {
         layoutMode = 'single-left';

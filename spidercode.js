@@ -107,6 +107,38 @@ $('#campogioco').mouseup(function (ev) {    // se uno rilascia il mouse fuori da
 		scala.giocoup(ev);
 });
 
+function touchOffset(ev) {
+	var canvas = document.getElementById('canvasgioco');
+	var rect = canvas.getBoundingClientRect();
+	var t = (ev.touches && ev.touches.length) ? ev.touches[0] : ev.changedTouches[0];
+	return {
+		offsetX: (t.clientX - rect.left) * (canvas.width / rect.width),
+		offsetY: (t.clientY - rect.top)  * (canvas.height / rect.height)
+	};
+}
+
+$('#canvasgioco').on('touchstart', function(ev) {
+	ev.preventDefault();
+	scala.giocodown(touchOffset(ev.originalEvent));
+});
+
+$('#canvasgioco').on('touchmove', function(ev) {
+	ev.preventDefault();
+	scala.giocomove(touchOffset(ev.originalEvent));
+});
+
+$('#canvasgioco').on('touchend', function(ev) {
+	ev.preventDefault();
+	scala.giocoup({});
+});
+
+$('#campogioco').on('touchend', function(ev) {
+	if (scala.scaladown) {
+		ev.preventDefault();
+		scala.giocoup({});
+	}
+});
+
 
 $('#canvasmazzo').click(function (ev) {
 	scala.mazzoclick(ev);
