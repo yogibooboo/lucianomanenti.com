@@ -30,34 +30,6 @@
 	<meta name="Description"
 		content="Free online metronome with advanced features: pendulum design, multiple time signatures, and subdivisions.">
 
-	<style>
-		.lang-switch-game {
-			position: absolute;
-			top: 10px;
-			right: 10px;
-			z-index: 10001;
-		}
-
-		.lang-switch-game a {
-			display: inline-block;
-			padding: 4px 10px;
-			margin-left: 5px;
-			text-decoration: none;
-			border-radius: 4px;
-			font-weight: bold;
-			font-size: 12px;
-			background: rgba(255, 255, 255, 0.2);
-			color: white;
-			border: 1px solid rgba(255, 255, 255, 0.3);
-		}
-
-		.lang-switch-game a.active {
-			background: #ffd700;
-			color: #2c3e50;
-			border-color: #ffd700;
-		}
-	</style>
-
 	<script>
 		window.currentLang = 'en';
 		window.gameConfig = {
@@ -82,16 +54,15 @@
 
 <body>
 
-	<div class="lang-switch-game">
-		<a href="metronome.html" id="btn-it">IT</a>
-		<a href="metronome-en.html" id="btn-en" class="active">EN</a>
-	</div>
-
 	<div class="main-container">
 		<div id="sidebar-left" class="sidebar"></div>
 		<div id="sidebar-right" class="sidebar"></div>
 
 		<div id="campogioco">
+			<div class="lang-switch-game">
+				<a href="metronome.html">IT</a>
+				<a href="metronome-en.html" class="active">EN</a>
+			</div>
 
 			<div id="metronomo">
 				<canvas id="canvasmetronomo" width="400" height="700">

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -24,7 +24,7 @@
 
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<link rel="stylesheet" href="klondike.css?v=1.1" />
+	<link rel="stylesheet" href="klondike.css?v=1.2" />
 
 	<meta name="Description"
 		content="Play Klondike Solitaire free online, no registration, no ads. Gioca Solitario Klondike gratis online senza registrazione.">
@@ -39,7 +39,7 @@
 		<div id="campogioco">
 			<div id="schermo"></div>
 
-			<div id="haivinto" class="form" style="background-image:url(images/scala40/haivinto.jpg)">
+			<div id="haivinto" class="form" style="background-image:url(images/scala40/haivinto-en.jpg)">
 				<button class="bottone1" type="button" style="left: 180px;">NEW GAME</button>
 			</div>
 
@@ -48,18 +48,19 @@
 			</div>
 
 			<!-- Language switcher -->
-			<div class="lang-switch-game" style="position: absolute; top: 10px; left: 150px; z-index: 10001;">
+			<div class="lang-switch-game" style="position: absolute; top: 10px; left: 150px; z-index: 10001; display: flex; align-items: center; gap: 6px;">
 				<a href="klondike.html"
 					style="display: inline-block; padding: 4px 10px; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 12px; background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3);">IT</a>
 				<a href="klondike-en.html" class="active"
-					style="display: inline-block; padding: 4px 10px; margin-left: 5px; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 12px; background: #ffd700; color: #2c3e50; border: 1px solid #ffd700;">EN</a>
+					style="display: inline-block; padding: 4px 10px; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 12px; background: #ffd700; color: #2c3e50; border: 1px solid #ffd700;">EN</a>
+				<div id="btn-audio" class="btn-audio-game" aria-label="Audio"></div>
 			</div>
 
 			<div id="scoperte" class="pulsante2" style="top: 5px; left: 750px; z-index:1000">FACE UP</div>
 
 			<!-- Undo button -->
 			<div id="pulsante2" class="pulsante2"
-				style="top: 5px; left: 904px; z-index:1000; font-size: 22px; line-height: 30px; font-family: Arial, sans-serif;">&#x21A9;</div>
+				style="top: 5px; left: 904px; z-index:1000;"></div>
 
 			<!-- Title -->
 			<div style="position:absolute; top:8px; left:50%; transform:translateX(-50%); color:gold; font-size:26px; font-family:Slackey,sans-serif; font-weight:bold; z-index:1000; text-shadow:2px 2px 4px #000; white-space:nowrap;">Klondike Solitaire by Luciano</div>
@@ -95,6 +96,7 @@
 	<audio id="scarta" src="sounds/scala40/cardslide1.mp3"></audio>
 	<audio id="tada" src="sounds/scala40/tada.mp3"></audio>
 
+	<script src="audio-toggle.js?v=1.2"></script>
 	<script src="jquery-2.1.1.js"></script>
 	<script>
 		window.gameConfig = {
@@ -133,6 +135,7 @@
 			});
 			observer.observe(document.body, { childList: true });
 		})();
+		window.initAudioToggle('#btn-audio');
 	</script>
 
 </body>

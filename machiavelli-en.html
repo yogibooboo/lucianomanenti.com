@@ -34,14 +34,17 @@
 		.lang-switch-game {
 			position: absolute;
 			top: 10px;
-			right: 160px;
+			left: 1345px;
 			z-index: 10001;
+			display: flex;
+			align-items: center;
+			gap: 2px;
 		}
 
 		.lang-switch-game a {
 			display: inline-block;
 			padding: 4px 10px;
-			margin-left: 5px;
+			margin-left: 0;
 			text-decoration: none;
 			border-radius: 4px;
 			font-weight: bold;
@@ -67,6 +70,7 @@
 	<div class="lang-switch-game">
 		<a href="machiavelli.html" id="btn-it">IT</a>
 		<a href="machiavelli-en.html" id="btn-en" class="active">EN</a>
+		<div id="btn-audio" class="btn-audio-game" aria-label="Audio"></div>
 	</div>
 
 	<div id="schermo"></div>
@@ -87,7 +91,7 @@
 			<div id="accessoridestra" class="campo">
 
 				<div id="nuovo" class="pulsante5" style="top: 5px; left: 10px; z-index:1000">PLAYERS</div>
-				<div id="pulsante2" class="pulsante2" style="top: 125px; left:10px; z-index:1000">UNDO (0)</div>
+				<div id="pulsante2" class="pulsante2" style="top: 125px; left:10px; z-index:1000"></div>
 				<div id="scoperte" class="pulsante5" style="top: 65px; left: 10px; z-index:1000">UNCOVER</div>
 
 				<div id="passopasso" class="pulsante5" style="top: 340px; left: 10px; ">STEP BY STEP</div>
@@ -135,12 +139,8 @@
 			</div> <!--campotris serve solo come sfondo e riferimento dimensionale-->
 			<div id="campotris0" class="campo2" style="top:110px; left: 270px; width:1054px;height:104px;"> </div>
 			<div id="campotris1" class="campo2" style="top: 220px; left: 270px;  width:1054px;height:104px;"> </div>
-			<div id="campotris2" class="campo2" style="top: 330px; left: 270px;  width:1054px;height:104px;">
-				<div class="bg-text">Now playable on tablets. You can split combinations on the field with a touch</div>
-			</div>
-			<div id="campotris3" class="campo2" style="top: 440px; left: 270px;  width:1054px;height:104px;">
-				<div class="bg-text">Now playable on tablets. You can split combinations on the field with a touch</div>
-			</div>
+			<div id="campotris2" class="campo2" style="top: 330px; left: 270px;  width:1054px;height:104px;"></div>
+			<div id="campotris3" class="campo2" style="top: 440px; left: 270px;  width:1054px;height:104px;"></div>
 			<div id="campotris4" class="campo2" style="top: 550px; left: 270px;  width:1054px;height:104px;"></div>
 
 			<div id="giocatore" class="campo2" style="top: 660px; left: 270px;  width:1054px;height:104px;">
@@ -175,7 +175,7 @@
 				<button class="bottone1" type="button" style="left: 650px;">OK</button>
 			</div>
 
-			<div id="haivinto" class="form" style="background-image:url(images/scala40/haivinto.jpg)">
+			<div id="haivinto" class="form" style="background-image:url(images/scala40/haivinto-en.jpg)">
 				<button class="bottone1" type="button" style="left: 200px;">NEW GAME</button>
 			</div>
 
@@ -185,12 +185,12 @@
 			</div>
 
 
-			<div id="haipersotorneo" class="form" style="background-image:url(images/scala40/haipersotorneo.jpg)">
+			<div id="haipersotorneo" class="form" style="background-image:url(images/scala40/haipersotorneo-en.jpg)">
 				<button class="bottone1" type="button" style="left: 100px;">NEW TOURNAMENT</button>
 				<button class="bottone2" type="button" style="left: 300px;">PLAY AGAIN</button>
 			</div>
 
-			<div id="haivintotorneo" class="form" style="background-image:url(images/scala40/haivintotorneo.jpg)">
+			<div id="haivintotorneo" class="form" style="background-image:url(images/scala40/haivintotorneo-en.jpg)">
 				<button class="bottone1" type="button" style="left: 100px;">NEW TOURNAMENT</button>
 				<button class="bottone2" type="button" style="left: 300px;">PLAY AGAIN</button>
 			</div>
@@ -222,6 +222,7 @@
 		<audio id="dindon" src="sounds/scala40/dindon.mp3"></audio>
 		<audio id="split" src="sounds/scala40/split.mp3"></audio>
 
+		<script src="audio-toggle.js?v=1.2"></script>
 		<script src="jquery-2.1.1.js"></script>
 		<script src="machiavellicode.js?v=1.5"></script>
 		<script src="machiavellic2.js?v=1.5"></script>
@@ -244,6 +245,7 @@
 			});
 			observer.observe(document.body, { childList: true });
 		})();
+		window.initAudioToggle('#btn-audio');
 	</script>
 </body>
 

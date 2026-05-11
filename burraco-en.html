@@ -21,7 +21,7 @@
     <meta http-Equiv="Pragma" Content="no-cache">
     <meta http-Equiv="Expires" Content="0">
 
-    <link rel="stylesheet" href="burraco.css?v=4.11" />
+    <link rel="stylesheet" href="burraco.css?v=4.12" />
 
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
@@ -196,10 +196,11 @@
                     style="background: #ffd700 !important; border: 1px solid #ffd700 !important; color: #2c3e50 !important; border-radius: 4px; padding: 4px 10px; cursor: pointer; font-size: 14px; font-weight: bold; height: 32px; transition: all 0.2s;">EN</button>
             </div>
             <div id="btn-nuova" class="pulsante2">NEW</div>
-            <div id="btn-undo" class="pulsante2">&#x21A9;</div>
+            <div id="btn-undo" class="pulsante2"></div>
             <div id="btn-scoperte" class="pulsante2">FACE UP</div>
 
             <!-- === PULSANTI ORDINAMENTO === -->
+            <div id="btn-audio" class="pulsante-ordina" aria-label="Audio"></div>
             <div id="btn-ordina-numero" class="pulsante-ordina">123</div>
             <div id="btn-ordina-seme" class="pulsante-ordina">&hearts;&spades;</div>
 
@@ -302,6 +303,7 @@
     <audio id="snd-dindon" src="sounds/scala40/ding.mp3"></audio>
 
     <!-- JS Files -->
+    <script src="audio-toggle.js?v=1.0"></script>
     <script src="burraco-core.js?v=9.39"></script>
     <script src="burraco-game.js?v=8.31"></script>
     <script src="burraco-ui.js?v=10.99"></script>

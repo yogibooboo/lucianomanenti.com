@@ -162,6 +162,7 @@ function setupEventi() {
     $('#btn-scoperte').addEventListener('click', toggleScoperte);
     $('#btn-ordina-numero').addEventListener('click', ordinaPerNumero);
     $('#btn-ordina-seme').addEventListener('click', ordinaPerSeme);
+    window.initAudioToggle('#btn-audio');
 
     // Scorciatoie di Debug per Import/Export Stato (Seed) della Partita su disco fisico
     document.addEventListener('keydown', (e) => {

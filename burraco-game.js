@@ -26,6 +26,7 @@ function shuffle(array) {
 }
 
 function playSound(nome) {
+    if (window.audioMuted) return;
     const audio = game.suoni[nome];
     if (audio) {
         audio.currentTime = 0;

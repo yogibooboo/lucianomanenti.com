@@ -27,7 +27,7 @@
     <meta http-Equiv="Pragma" Content="no-cache">
     <meta http-Equiv="Expires" Content="0">
 
-    <link rel="stylesheet" href="rummy.css?v=2.7" />
+    <link rel="stylesheet" href="rummy.css?v=2.8" />
 
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9335537153013492"
         crossorigin="anonymous"></script>
@@ -147,15 +147,16 @@
             <div id="toast"></div>
 
             <!-- === UI BUTTONS === -->
-            <div style="position: absolute; top: 10px; left: 10px; z-index: 2000; display: flex; gap: 4px;">
+            <div style="position: absolute; top: 10px; left: 10px; z-index: 2000; display: flex; gap: 4px; align-items: center;">
                 <button onclick="window.location.href='rummy.html'" class="btn-lang" id="btn-lang-it" title="Italiano">IT</button>
                 <button onclick="window.location.href='rummy-en.html'" class="btn-lang active" id="btn-lang-en" title="English">EN</button>
+                <div id="btn-audio" class="btn-audio-game" aria-label="Audio"></div>
             </div>
 
             <div id="btn-nuova" class="pulsante2">NEW</div>
             <div id="btn-istruzioni" class="pulsante2"><span id="btn-istruzioni-lbl">RULES</span></div>
             <div id="btn-scoperte" class="pulsante2"><span id="btn-scoperte-lbl">FACE UP</span></div>
-            <div id="btn-undo" class="pulsante2">&#x21A9;</div>
+            <div id="btn-undo" class="pulsante2"></div>
 
             <div id="btn-ordina-numero" class="pulsante-ordina" title="Sort by number">123</div>
             <div id="btn-ordina-seme" class="pulsante-ordina" title="Sort by suit">&hearts;&spades;</div>
@@ -254,6 +255,7 @@
     <audio id="snd-sconfitta" src="sounds/scala40/haiperso.mp3"></audio>
 
     <!-- JS Files -->
+    <script src="audio-toggle.js?v=1.2"></script>
     <script src="rummy-core.js?v=1.1"></script>
     <script src="rummy-game.js?v=1.3"></script>
     <script src="rummy-ui.js?v=2.5"></script>
@@ -274,6 +276,7 @@
             });
             observer.observe(document.body, { childList: true });
         })();
+        window.initAudioToggle('#btn-audio');
     </script>
 
 </body>
