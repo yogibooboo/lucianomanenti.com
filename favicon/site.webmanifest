@@ -1,6 +1,8 @@
 {
   "name": "Luciano Manenti",
   "short_name": "Manenti",
+  "start_url": "/index.html",
+  "scope": "/",
   "icons": [
     {
       "src": "web-app-manifest-192x192.png",

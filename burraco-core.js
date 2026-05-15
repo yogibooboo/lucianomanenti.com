@@ -1307,6 +1307,7 @@ const Strategia = {
 
         // Bonus Calate pre-esistenti (ottime per svuotarsi e fare burrachi)
         let bonusCalate = 0;
+        let penalitaCalate = 0;
         for (const m of mosse) {
             if (m.tipo === 'calata') {
                 bonusCalate += 10; // Forzatura positiva
@@ -1314,12 +1315,21 @@ const Strategia = {
                     const len = m.combo.carte.length;
                     if (len === 6) bonusCalate += 50;      // Diventa Burraco! PRIORITY
                     else if (len >= 5) bonusCalate += 15;  // Si avvicina
+                    // Penalità: attaccare una matta a un burraco pulito lo degrada (-100 punti reali)
+                    if (m.carta && (m.carta.isJolly || m.carta.isPinella) &&
+                        m.combo.isBurraco && m.combo.tipoBurraco === 'pulito') {
+                        penalitaCalate -= (coeff.penMattaSuBurracoPulito ?? 100);
+                    }
                 }
             }
         }
         if (bonusCalate > 0) {
             valutazione += bonusCalate;
             breakdown.push({ label: 'Bonus Legature Carte', valore: bonusCalate });
+        }
+        if (penalitaCalate < 0) {
+            valutazione += penalitaCalate;
+            breakdown.push({ label: 'Pen. matta su burraco pulito', valore: penalitaCalate });
         }
 
         // Malus Deposito: Rimosso per la fase di Valutazione Preventiva Pesca.

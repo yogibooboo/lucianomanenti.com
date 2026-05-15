@@ -30,6 +30,7 @@ if (!window.coeffScoreOpz) {
         premioLiberaMattaBordo:   10,
         premioMattaSolitaria:    200,
         penCalataMatta:           35,
+        penMattaSuBurracoPulito: 100,
         premioPrimoBurraco:       50,
         premioMazzo:               5,
         premioMattaPescata:       40,
@@ -3754,7 +3755,7 @@ function mostraMessaggio(testo, tipo = 'info') {
         messaggioOverlay.id = 'debug-messaggio-overlay';
         messaggioOverlay.style.cssText = `
             position: fixed;
-            top: 0;
+            bottom: 0;
             left: 0;
             right: 0;
             padding: 15px;
@@ -5389,6 +5390,7 @@ function getGiocatoreHTML(indiceGiocatore, ruolo, defaultScenario) {
                 ['premioLiberaMattaBordo',   'Libera matta bordo',         0,  50,    1],
                 ['premioMattaSolitaria',     'Matta solitaria (fine part.)',0, 500,    5],
                 ['penCalataMatta',           'Pen. calata matta',          0, 100,    5],
+                ['penMattaSuBurracoPulito', 'Pen. matta su burr. pulito', 0, 300,    5],
                 ['premioPrimoBurraco',       'Premio primo burraco',       0, 200,    5],
                 ['bonusAvv4c', 'Bonus sottr. avv →4c', 0,  50,  1],
                 ['bonusAvv5c', 'Bonus sottr. avv →5c', 0, 100,  1],
@@ -5448,7 +5450,7 @@ function getGiocatoreHTML(indiceGiocatore, ruolo, defaultScenario) {
 
         window.applicaCoefficienti = function(gIdx, scen) {
             var cf = window.coeffScoreOpz;
-            ['valCarte','premioTris','premioScala','premioTrisEstremo','premio4c','premio5c','premio6c','premioBurraco','premioOltreBurraco','penMattaBase','penCartaOrfana','premioLiberaMattaInterna','premioLiberaMattaBordo','premioMattaSolitaria','penCalataMatta','premioPrimoBurraco','bonusAvv4c','bonusAvv5c','bonusAvv6c','bonusAvv7c','bonusAvv8c','coeffScartoDecent','coeffScartoConn','penScarto6c','penScarto5c','penScarto4c','penScartoCalabile','premioMazzo','premioPozzetto'].forEach(function(k) {
+            ['valCarte','premioTris','premioScala','premioTrisEstremo','premio4c','premio5c','premio6c','premioBurraco','premioOltreBurraco','penMattaBase','penCartaOrfana','premioLiberaMattaInterna','premioLiberaMattaBordo','premioMattaSolitaria','penCalataMatta','penMattaSuBurracoPulito','premioPrimoBurraco','bonusAvv4c','bonusAvv5c','bonusAvv6c','bonusAvv7c','bonusAvv8c','coeffScartoDecent','coeffScartoConn','penScarto6c','penScarto5c','penScarto4c','penScartoCalabile','premioMazzo','premioPozzetto'].forEach(function(k) {
                 var el = document.getElementById('coeff-' + k);
                 if (el) cf[k] = parseFloat(el.value) || 0;
             });
