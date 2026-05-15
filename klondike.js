@@ -1,20 +1,25 @@
-// klondike.js v1.10
+// klondike.js v1.12
 
 var CUORI = 'C', QUADRI = 'Q', FIORI = 'F', PICCHE = 'P';
 var SEMI = [FIORI, QUADRI, CUORI, PICCHE];
 var valoreseme = { 'F': 0, 'Q': 1, 'C': 2, 'P': 3 };
 var SPRITE_W = 71, SPRITE_H = 96;  // dimensioni cella nello sprite sheet
-var CARD_W = 85,  CARD_H = 115;    // dimensioni carta renderizzata (+20%)
 
-var COL_PITCH = 140;
-var COL_X = [50, 190, 330, 470, 610, 750, 890];
-var STOCK_X = 750, STOCK_Y = 12;
-var WASTE_X = 890, WASTE_Y = 12;
-var FOUND_X = [50, 190, 330, 470];
+// Layout adattivo: carte grandi su smartphone, originali su tablet/desktop
+var _isPhone = Math.min(screen.width, screen.height) < 600;
+
+var CARD_W  = _isPhone ? 130 : 85;
+var CARD_H  = _isPhone ? 176 : 115;
+var COL_PITCH = _isPhone ? 134 : 140;
+var COL_X   = _isPhone ? [10, 144, 278, 412, 546, 680, 814]
+                       : [50, 190, 330, 470, 610, 750, 890];
+var STOCK_X = _isPhone ? 680 : 750,  STOCK_Y = 12;
+var WASTE_X = _isPhone ? 814 : 890,  WASTE_Y = 12;
+var FOUND_X = _isPhone ? [10, 144, 278, 412] : [50, 190, 330, 470];
 var FOUND_Y = 12;
-var TAB_Y = 135;
-var FD_PITCH = 22;
-var FU_PITCH = 30;
+var TAB_Y   = _isPhone ? 200 : 135;
+var FD_PITCH = _isPhone ? 14 : 22;
+var FU_PITCH = _isPhone ? 22 : 30;
 var ANIM_DUR = 220; // ms per card flight
 var DRAG_THRESHOLD = 8;
 
