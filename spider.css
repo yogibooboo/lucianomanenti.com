@@ -88,15 +88,14 @@ html, body {
 /* ==== ORIGINAL STYLES (with modifications) ==== */
 
 #gioco{
-	
+
 	width :1000px;
-	height:600px;
+	height:700px;
 	position:absolute;
 	top:50px;
 	left:10px;
 	cursor:pointer;
-	/* background:#A0522D;  */
-	
+
 }
 #canvasgioco{
 	border-style:solid;
@@ -105,41 +104,14 @@ html, body {
 	cursor:pointer;
 	
 }
-#canvaspile{
-	position:absolute;
-	border-style:solid;
-	border-color:#888888;
-	border-radius:10px;
-	cursor:pointer;
-	left:820px;
-	top:120px;
-	
-}
-
 #canvasmazzo{
 	position:absolute;
-	border-style:solid;
-	border-color:#888888;
-	border-radius:10px;
 	cursor:pointer;
 	top:0px;
-	left:820px;
-	/*background-image:url(images/scala40/tappetoverdescuretto.png);*/
-	
+	left:802px;
 }
 
 
-#canvasdati{
-	position:absolute;
-	border-style:solid;
-	border-color:#888888;
-	border-radius:10px;
-	cursor:pointer;
-	left:130px;
-	top:610px;
-	background-color:#333333;
-	
-}
 
 #autocomplete{
 	z-index:40000;

@@ -158,18 +158,18 @@ var scala = {
 	statostack: [],
 
 
-	steccastepx: 80,
+	steccastepx: 100,
 	steccastepy: 22,
-	steccaoffsetx: 10,
-	steccaoffsety: 10,
-	mazzooffsetx: 830,
-	mazzooffsety: 10,
-	pileoffsetx: 825,
-	pileoffsety: 132,
-	pilestepx: 90,
-	pilestepy: 120,
-	altezzacarta: 96,
-	larghezzacarta: 71,
+	steccaoffsetx: 2,
+	steccaoffsety: 128,
+	mazzooffsetx: 802,
+	mazzooffsety: 5,
+	mazzostepx: 25,
+	pileoffsetx: 2,
+	pileoffsety: 5,
+	pilestepx: 100,
+	altezzacarta: 119,
+	larghezzacarta: 88,
 
 	start: function () {
 		this.inizializzazioni();
@@ -189,9 +189,7 @@ var scala = {
 		// richiede al canvas il contesto 2D
 		ctxg = canvasg.getContext('2d');
 
-		canvasd = document.getElementById("canvasdati");
-		// richiede al canvas il contesto 2D
-		ctxd = canvasd.getContext('2d');
+		// canvasdati rimosso: le statistiche sono disegnate su canvasgioco
 
 		/*    	canvasm = document.getElementById("canvasmazzo");
 					// richiede al canvas il contesto 2D
@@ -543,8 +541,8 @@ var scala = {
 			//muove le carte nella pila libera
 			found13 = true;
 			var carta, x, y;
-			x = scala.pileoffsetx + scala.pilestepx * (pila & 1);
-			y = scala.pileoffsety + scala.pilestepy * (parseInt(pila / 2));
+			x = scala.pileoffsetx + scala.pilestepx * pila;
+			y = scala.pileoffsety;
 			for (var j = 12; j >= 0; j--) {
 				carta = stecca.pop();
 				scala.pile[pila][j] = carta;
@@ -703,26 +701,22 @@ var scala = {
 			return;
 		}
 
-		ctxd.clearRect(0, 0, 500, 80);
-		ctxd.font = "24px Arial";
-		ctxd.fillStyle = "#888888";
-		ctxd.fillText(t('moves') + scala.moves, 20, 30);
-		ctxd.fillText(t('undo') + scala.numeroundo, 150, 30);
-		ctxd.fillText(t('time') + scala.totime(parseInt((performance.now() - scala.startgioco) / 1000)), 300, 30);
-		ctxd.fillText(t('games') + scala.games, 20, 60);
+		ctxg.clearRect(0, 0, 1000, 700);
+		ctxg.font = "20px Arial";
+		ctxg.fillStyle = "#888888";
+		ctxg.fillText(t('moves') + scala.moves, 20, 668);
+		ctxg.fillText(t('undo') + scala.numeroundo, 220, 668);
+		ctxg.fillText(t('time') + scala.totime(parseInt((performance.now() - scala.startgioco) / 1000)), 450, 668);
+		ctxg.fillText(t('games') + scala.games, 700, 668);
 
 		if (scala.bestscore != 0) {
-			ctxd.font = "16px Arial";
-			ctxd.fillText(t('best_score') + scala.bestscore, 150, 60);
-			ctxd.fillText((t('best_time') + scala.totime(scala.besttime)), 300, 60);
+			ctxg.font = "16px Arial";
+			ctxg.fillText(t('best_score') + scala.bestscore, 220, 692);
+			ctxg.fillText((t('best_time') + scala.totime(scala.besttime)), 450, 692);
 		}
 
-
-		ctxg.clearRect(0, 0, 1000, 600);
-
-		for (var i = 0; i < 4; i++) {
-			ctxg.drawImage(tappetoscuretto, scala.pileoffsetx, scala.pileoffsety + scala.pilestepy * i, 80, 95);
-			ctxg.drawImage(tappetoscuretto, scala.pileoffsetx + scala.pilestepx, scala.pileoffsety + scala.pilestepy * i, 80, 95);
+		for (var i = 0; i < 8; i++) {
+			ctxg.drawImage(tappetoscuretto, scala.pileoffsetx + scala.pilestepx * i, scala.pileoffsety, scala.larghezzacarta, scala.altezzacarta);
 		}
 
 
@@ -873,7 +867,7 @@ var scala = {
 			showy += scala.deltamovey;
 		}
 
-		ctxg.drawImage(imgcarte, -backx, -backy, scala.larghezzacarta, scala.altezzacarta,
+		ctxg.drawImage(imgcarte, -backx, -backy, 71, 96,
 			showx, showy, scala.larghezzacarta, scala.altezzacarta);
 		return;
 
@@ -917,8 +911,8 @@ var scala = {
 		for (; ncarta < 50; ncarta++) {
 			carta = this.stock[ncarta];
 			carta.contenitore = scala.mazzo.carte;
-			carta.posrefx = ncarta + parseInt(ncarta / 10) * 7 + scala.mazzooffsetx;
-			carta.posrefy = scala.mazzooffsety;;
+			carta.posrefx = parseInt(ncarta / 10) * scala.mazzostepx + ncarta % 10 + scala.mazzooffsetx;
+			carta.posrefy = scala.mazzooffsety;
 			this.mazzo.carte[ncarta] = carta;
 
 		}

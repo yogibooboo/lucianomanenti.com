@@ -1,4 +1,4 @@
-// klondike.js v1.12
+// klondike.js v1.13
 
 var CUORI = 'C', QUADRI = 'Q', FIORI = 'F', PICCHE = 'P';
 var SEMI = [FIORI, QUADRI, CUORI, PICCHE];
@@ -19,7 +19,7 @@ var FOUND_X = _isPhone ? [10, 144, 278, 412] : [50, 190, 330, 470];
 var FOUND_Y = 12;
 var TAB_Y   = _isPhone ? 200 : 135;
 var FD_PITCH = _isPhone ? 14 : 22;
-var FU_PITCH = _isPhone ? 22 : 30;
+var FU_PITCH = _isPhone ? 40 : 30;
 var ANIM_DUR = 220; // ms per card flight
 var DRAG_THRESHOLD = 8;
 
@@ -191,10 +191,27 @@ function drawEmptySlot(x, y, label) {
     }
     ctx.restore();
 }
+function getColPitches(col) {
+    if (!_isPhone) return { fd: FD_PITCH, fu: FU_PITCH };
+    var col_arr = tableau[col];
+    var nd = 0, nu = 0;
+    for (var i = 0; i < col_arr.length - 1; i++) {
+        if (col_arr[i].faceUp) nu++;
+        else nd++;
+    }
+    var avail = canvas.height - TAB_Y - CARD_H;
+    var needed = nd * FD_PITCH + nu * FU_PITCH;
+    if (needed <= avail) return { fd: FD_PITCH, fu: FU_PITCH };
+    var fu = Math.max(FD_PITCH, Math.floor((avail - nd * FD_PITCH) / Math.max(nu, 1)));
+    if (nu === 0 || nd * FD_PITCH + nu * fu <= avail) return { fd: FD_PITCH, fu: fu };
+    var ratio = avail / needed;
+    return { fd: Math.max(6, Math.floor(FD_PITCH * ratio)), fu: Math.max(6, Math.floor(FU_PITCH * ratio)) };
+}
 function getTabCardY(col, ci) {
+    var p = getColPitches(col);
     var y = TAB_Y;
     for (var i = 0; i < ci; i++)
-        y += (tableau[col][i].faceUp ? FU_PITCH : FD_PITCH);
+        y += (tableau[col][i].faceUp ? p.fu : p.fd);
     return y;
 }
 
