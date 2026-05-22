@@ -5,14 +5,15 @@ window._leftPopulated = false;  // Sigillo colonna sinistra
 window._rightPopulated = false; // Sigillo colonna destra
 
 // ─── AMAZON BANNER CONFIG ───────────────────────────────────────────────────
-var AMAZON_BANNERS_ENABLED = true;  // set to false to disable Amazon banners globally
-var AMAZON_BANNERS_RIGHT = false;   // if true, Amazon banners load on right sidebar only
+var AMAZON_BANNERS_ENABLED = false;  // set to false to disable Amazon banners globally
+var AMAZON_BANNERS_RIGHT = true;   // if true, Amazon banners load on right sidebar only
+var AMAZON_FALLBACK_ON_SHIELD = true; // se true, Amazon subentra a sinistra quando AdSense viene bloccato dallo scudo
 // ─────────────────────────────────────────────────────────────────────────────
 
 // ─── ADSENSE CONFIG & SHIELD ─────────────────────────────────────────────────
 // NOTA PER L'UTENTE: Durante il bando di 29 giorni, imposta ADSENSE_GLOBAL_ENABLED = false.
 // Al termine, rimettilo a true. Lo Shield ti proteggerà automaticamente dai click futuri.
-var ADSENSE_GLOBAL_ENABLED = false;  // Interruttore di sicurezza principale
+var ADSENSE_GLOBAL_ENABLED = true;  // Interruttore di sicurezza principale
 var ADSENSE_ONLY_LEFT = true;       // Se true, AdSense carica solo a sinistra
 var ADSENSE_SHIELD_DURATION = 24 * 60 * 60 * 1000; // 24 ore di blocco dopo un click
 var _isMouseOverAdSense = false;
@@ -353,6 +354,9 @@ function adjustLayout() {
         var amazonGenericLink = 'https://www.amazon.it/deals?&linkCode=ll2&tag=lucianomane0f-21&linkId=d542031952a47db9f26b8cc6c38762cb&ref_=as_li_ss_tl';
 
         var amazonEnabled = AMAZON_BANNERS_ENABLED || (AMAZON_BANNERS_RIGHT && side === 'right');
+        if (AMAZON_FALLBACK_ON_SHIELD && side === 'left' && isAdSenseShieldActive()) {
+            amazonEnabled = true;
+        }
         if (amazonEnabled && width === 300 && height === 600) {
             // Se il fetch è ancora in corso (null), non mostrare niente — verrà chiamato adjustLayout al termine
             if (!slotId && window._amazonDeal600 === null) return null;
@@ -384,7 +388,8 @@ function adjustLayout() {
         // If AdSense is active for this game, we skip the message banner in the top slot
         // to give full priority to the ad units.
         // Exception: when AdSense is suppressed on right (ADSENSE_ONLY_LEFT), still create the banner.
-        if (!window.showBannerDimensions && !isMessageBanner && !slotId && !amazonBannerUrl && !amazonGeneric && !adsenseSuppressed) {
+        var isAdSenseSimulation = devMode && window.gameConfig && window.gameConfig.adsenseActive && (!ADSENSE_ONLY_LEFT || side === 'left');
+        if (!window.showBannerDimensions && !isMessageBanner && !slotId && !amazonBannerUrl && !amazonGeneric && !adsenseSuppressed && !isAdSenseSimulation) {
             return null;
         }
 

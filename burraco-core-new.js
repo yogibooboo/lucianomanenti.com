@@ -178,12 +178,6 @@ const SEMI = ['C', 'Q', 'F', 'P']; // Cuori, Quadri, Fiori, Picche
 const NOMI_SEMI = { C: 'Cuori', Q: 'Quadri', F: 'Fiori', P: 'Picche', J: 'Jolly' };
 const VALORI_SEMI = { F: 0, Q: 1, C: 2, P: 3, J: 4 };
 
-// Dimensioni carta nello sprite originale (conjollyplus.png)
-const CARTA_W = 71;
-const CARTA_H = 96;
-const SPRITE_W = 1233;  // 71 * 17 colonne + qualcosa
-const SPRITE_H = 384;   // 96 * 4 righe
-
 // Tipi di combinazione
 const TIPO_TRIS = 1;
 const TIPO_SCALA = 2;
@@ -211,17 +205,6 @@ const AZIONE_COMBINAZIONE = 4;
 const AZIONE_ATTACCO = 5;
 const AZIONE_POZZETTO = 6;
 
-// Obiettivi strategici AI
-// Immediati (focus turno corrente)
-const OBJ_BURRACO_EXTEND = 1;     // Estendi combo esistente a burraco
-const OBJ_POZZETTO_RUSH = 2;      // Forza calate per raggiungere pozzetto
-const OBJ_BLOCCO_AVVERSARIO = 3;  // Blocca progressi avversari
-const OBJ_MANO_PULIZIA = 4;       // Pulisci mano da carte inutili
-// Setup/Futuri (payoff successivo)
-const OBJ_SETUP_BURRACO = 5;      // Prepara per burraco futuro
-const OBJ_SETUP_POZZETTO = 6;     // Prepara per pozzetto
-const OBJ_SETUP_BLOCCO = 7;       // Prepara blocco avversario
-const OBJ_SETUP_MATTA = 8;        // Gestisci/conserva matta per futuro
 
 // ============================================================================
 // PERSONAGGI PREDEFINITI
@@ -2930,3 +2913,1060 @@ window.Strategia = Strategia;
 
 // Mappa globale di tutte le carte per ID (per restore veloce)
 let tutteLeCarte = {};
+
+
+// ============================================================================
+// INFRASTRUTTURA AI — spostata da burraco-ui.js
+// Contiene: coeffScoreOpz, calcolaScoreOpz, calcolaScartoPer,
+// _calcolaVariantiB/C/M/P/V, _proiettaComboConCalate
+// Il motore decisionale (scegliBestOpzioneAI) è in burraco-engine-*.js
+// ============================================================================
+// ============================================================================
+// ###COEFFICIENTI### — Scoring opzioni AI (modificabili anche dal pannello debug)
+// coeffScoreOpz è definito in burraco-engine-*.js e caricato da burraco-engine-*.json
+
+
+function _isAttaccabileAdAvversario(carta, combo) {
+    return window.isCartaAttaccabileACombo(carta, combo);
+}
+
+window.calcolaScoreOpz = function(opzIdx, silent, logCollector) {
+    var _lc = logCollector || null;
+    var con = _lc ? {
+        log:      function(msg) { _lc.push(typeof msg === 'string' ? msg.replace(/^%c/, '') : String(msg)); },
+        group:    function(msg) { _lc.push('▶ ' + (msg || '')); },
+        groupEnd: function()    { _lc.push(''); },
+        warn:     function(msg) { _lc.push('⚠ ' + (msg || '')); }
+    } : silent ? { log: function(){}, group: function(){}, groupEnd: function(){}, warn: function(){} } : console;
+    var d = window._analisiData;
+    if (!d) { con.log('[ScoreOpz] Nessun dato analisi disponibile'); return null; }
+    var _w = window.opener || window;
+    var game = _w.game;
+    var Strategia = _w.Strategia;
+    var giocatore = game.giocatori[window._analisiGiocatoreIdx];
+    var comboAvversarie = giocatore.squadra === 0 ? game.combinazioniLoro : game.combinazioniNoi;
+    var comboSquadra   = giocatore.squadra === 0 ? game.combinazioniNoi  : game.combinazioniLoro;
+
+    var opt = opzIdx === -1 ? { mosse: [], descCarte: 'OPZ0' } : (d.opzioniScenario ? d.opzioniScenario[opzIdx] : null);
+    if (!opt && opzIdx !== -1) { con.log('[ScoreOpz] OPZ' + (opzIdx + 1) + ' non trovata'); return null; }
+
+    var opzLabel = opzIdx === -1 ? 'OPZ0' : 'OPZ' + (opzIdx + 1);
+    var mosse = opt.mosse || [];
+
+    // Calcola scarto anticipatamente per mostrarlo prima del gruppo score
+    var _scartoInter = window.calcolaScartoPer(opzIdx, true);
+    if ((!silent || _lc) && _scartoInter && _scartoInter._candidati) {
+        var _nc = _scartoInter._nomeC;
+        con.group('--- Scarto candidati (fase1=' + _scartoInter._fase1Count + '/' + _scartoInter._totCount + ') ---');
+        _scartoInter._candidati.forEach(function(s) {
+            var isScelta = (s === _scartoInter._candidatoFinale);
+            var label = _nc(s.r) + ' → ' + s.score.toFixed(1) + (isScelta ? ' ◄ SCARTO' : '');
+            con.log(label);
+            s.righe.forEach(function(riga) { con.log(riga); });
+        });
+        con.groupEnd();
+        con.log('  → Scarto scelto: ' + _scartoInter.carta + ' (sc=' + _scartoInter.score.toFixed(1) + ')');
+    }
+
+    con.group('=== SCORE OPZ per ' + opzLabel + ' [' + (opt.descCarte || '?') + '] ===');
+
+    if (mosse.length === 0) {
+        con.log('Nessuna mossa.');
+    }
+
+    var cf = window.coeffScoreOpz;
+
+    function premioBase(tipo, lunghezza) {
+        if (lunghezza < 3) return 0;
+        var p = tipo === 'scala' ? cf.premioScala : cf.premioTris;
+        if (lunghezza >= 4) p += cf.premio4c;
+        if (lunghezza >= 5) p += cf.premio5c;
+        if (lunghezza >= 6) p += cf.premio6c;
+        if (lunghezza >= 7) p += cf.premioBurraco;
+        if (lunghezza >= 8) p += (lunghezza - 7) * (cf.premioOltreBurraco || 0);
+        return p;
+    }
+    function premioIncrementale(n) {
+        if (n === 3) return cf.premioTris;
+        if (n === 4) return cf.premio4c;
+        if (n === 5) return cf.premio5c;
+        if (n === 6) return cf.premio6c;
+        if (n === 7) return cf.premioBurraco;
+        if (n >= 8) return (cf.premioOltreBurraco || 0);
+        return 0;
+    }
+    function premioIncrementaleAvv(n) {
+        if (n === 3) return 0;
+        if (n === 4) return cf.bonusAvv4c !== undefined ? cf.bonusAvv4c : cf.premio4c;
+        if (n === 5) return cf.bonusAvv5c !== undefined ? cf.bonusAvv5c : cf.premio5c;
+        if (n === 6) return cf.bonusAvv6c !== undefined ? cf.bonusAvv6c : cf.premio6c;
+        if (n === 7) return cf.bonusAvv7c !== undefined ? cf.bonusAvv7c : cf.premioBurraco;
+        if (n >= 8) return cf.bonusAvv8c !== undefined ? cf.bonusAvv8c : 0;
+        return 0;
+    }
+    function nomeC(c) {
+        return Strategia && Strategia.nomeCarta ? Strategia.nomeCarta(c) : ((c.numero || '') + (c.seme || ''));
+    }
+    function isFisica(c) { return !c.isJolly && !c.isPinella; }
+
+    var totalScore = 0;
+    var breakdown = [];
+    var comboCurrentLen = {};
+    comboSquadra.forEach(function(cb) { comboCurrentLen[cb.id] = cb.carte.length; });
+
+    mosse.forEach(function(mossa) {
+        var mossoScore = 0;
+        var righe = [];
+        if (mossa.tipo === 'tris' || mossa.tipo === 'scala') {
+            var carte = mossa.carte || [];
+            var fisiche = carte.filter(isFisica);
+            var numMatte = carte.length - fisiche.length;
+            var lunghezza = carte.length;
+
+            var valoreCarte = fisiche.reduce(function(s, c) { return s + (c.punti || 0); }, 0) * cf.valCarte;
+            mossoScore += valoreCarte;
+            righe.push('  A) Valore carte ×' + cf.valCarte + ': +' + valoreCarte.toFixed(1) + ' [' + fisiche.map(nomeC).join(' ') + ']');
+
+            var premio = premioBase(mossa.tipo, lunghezza);
+            mossoScore += premio;
+            righe.push('  B) Premio ' + mossa.tipo + ' ' + lunghezza + 'c: +' + premio);
+
+            if (mossa.tipo === 'tris' && fisiche.length > 0) {
+                var numTris = fisiche[0].numero;
+                if (numTris === 1 || numTris === 3 || numTris === 13) {
+                    mossoScore += cf.premioTrisEstremo;
+                    righe.push('  B2) Bonus tris estremo (' + nomeC(fisiche[0]) + '): +' + cf.premioTrisEstremo);
+                }
+            }
+
+            if (numMatte > 0) {
+                var penMatta = -cf.penMattaBase * (lunghezza - 2);
+                mossoScore += penMatta;
+                righe.push('  C) Penalità matta (-' + cf.penMattaBase + '×' + (lunghezza - 2) + '): ' + penMatta.toFixed(1));
+            }
+
+            fisiche.forEach(function(carta) {
+                var bestLen = 0;
+                comboAvversarie.forEach(function(combo) {
+                    if (_isAttaccabileAdAvversario(carta, combo)) {
+                        var nl = combo.carte.length + 1; if (nl > bestLen) bestLen = nl;
+                    }
+                });
+                if (bestLen > 0) {
+                    var bonusAvv = premioIncrementaleAvv(bestLen);
+                    mossoScore += bonusAvv;
+                    righe.push('  D) Bonus sottratta avv [' + nomeC(carta) + '] →' + bestLen + 'c: +' + bonusAvv);
+                }
+            });
+
+            con.log(mossa.tipo.toUpperCase() + ' [' + fisiche.map(nomeC).join(' ') + (numMatte > 0 ? ' M' : '') + '] → +' + mossoScore.toFixed(1));
+            righe.forEach(function(r) { con.log(r); });
+
+        } else if (mossa.tipo === 'calata') {
+            var carta = mossa.carta;
+            if (!carta) return;
+            var combo = mossa.combo;
+            if (!combo && mossa.comboId !== undefined) {
+                combo = comboSquadra.find(function(cb) { return cb.id === mossa.comboId; });
+            }
+            var _cid = combo ? combo.id : null;
+            var _baseLenC = (_cid !== null && comboCurrentLen[_cid] !== undefined) ? comboCurrentLen[_cid] : (combo ? combo.carte.length : 0);
+            var lunghRisultante = _baseLenC + 1;
+            if (_cid !== null) comboCurrentLen[_cid] = lunghRisultante;
+
+            var valoreCarta = (carta.punti || 0) * cf.valCarte;
+            mossoScore += valoreCarta;
+            righe.push('  A) Valore carta ×' + cf.valCarte + ': +' + valoreCarta.toFixed(1) + ' [' + nomeC(carta) + ']');
+
+            var premioCalata = premioIncrementale(lunghRisultante);
+            mossoScore += premioCalata;
+            righe.push('  B) Premio calata →' + lunghRisultante + 'c: +' + premioCalata);
+
+            if (lunghRisultante === 7) {
+                var bonusPB = cf.premioPrimoBurraco !== undefined ? cf.premioPrimoBurraco : 50;
+                mossoScore += bonusPB;
+                righe.push('  B2) Premio primo burraco: +' + bonusPB);
+            }
+
+            var bestLen = 0;
+            comboAvversarie.forEach(function(comboAvv) {
+                if (_isAttaccabileAdAvversario(carta, comboAvv)) {
+                    var nl = comboAvv.carte.length + 1; if (nl > bestLen) bestLen = nl;
+                }
+            });
+            if (bestLen > 0) {
+                var bonusAvv = premioIncrementale(bestLen);
+                mossoScore += bonusAvv;
+                righe.push('  D) Bonus sottratta avv [' + nomeC(carta) + '] →' + bestLen + 'c: +' + bonusAvv);
+            }
+
+            // Premio calata che libera una matta (solo su scale)
+            if (combo && combo.tipo === 2 /* TIPO_SCALA */) {
+                var _puoAgg = _w.puoAggiungereACombinazione ? _w.puoAggiungereACombinazione(carta, combo) : false;
+                if (_puoAgg && _puoAgg.sostituzione) {
+                    var _fisC = combo.carte.filter(function(c) { return !c.isJolly && !c.isPinella; });
+                    var _numsC = _fisC.map(function(c) { return c.numero; }).sort(function(a,b){ return a-b; });
+                    var _isBordo = _numsC.length === 0 || carta.numero < _numsC[0] || carta.numero > _numsC[_numsC.length-1];
+                    var _bonusMatta = _isBordo ? (cf.premioLiberaMattaBordo || 10) : (cf.premioLiberaMattaInterna || 15);
+                    mossoScore += _bonusMatta;
+                    righe.push('  E) Libera matta ' + (_isBordo ? 'bordo' : 'interna') + ': +' + _bonusMatta);
+                }
+            }
+
+            // Premio matta solitaria (opzione generata da _calcolaVariantiM)
+            if (mossa.isMattaSolitaria) {
+                var _bonusMS = cf.premioMattaSolitaria || 200;
+                mossoScore += _bonusMS;
+                righe.push('  F) Bonus matta solitaria: +' + _bonusMS);
+            }
+
+            // Penalità calata matta (jolly/pinella): scoraggia calate non decisive
+            if (!isFisica(carta)) {
+                var _penCM = cf.penCalataMatta !== undefined ? cf.penCalataMatta : 20;
+                mossoScore -= _penCM;
+                righe.push('  G) Penalità calata matta: -' + _penCM);
+            }
+
+            con.log('CALATA [' + nomeC(carta) + '] → combo#' + mossa.comboId + ' (' + lunghRisultante + 'c) → +' + mossoScore.toFixed(1));
+            righe.forEach(function(r) { con.log(r); });
+        }
+        totalScore += mossoScore;
+        breakdown.push({ tipo: mossa.tipo, score: mossoScore });
+    });
+
+    // _scartoInter già calcolato prima del gruppo score
+    var _scartoScore = _scartoInter ? _scartoInter.score : 0;
+    var scartoId = _scartoInter && _scartoInter.cartaRef ? _scartoInter.cartaRef.id : null;
+
+    // H) Penalità carte orfane rimaste in mano dopo l'opzione
+    var _nOrfane = 0;
+    var _penCO = cf.penCartaOrfana !== undefined ? cf.penCartaOrfana : 2;
+    var _origManoFn = function(r) { return r.origine === 'mano' || r.origine === 'scarto' || r.origine === 'mazzo'; };
+    var _cuSet = (opt && opt.carteUsate) ? opt.carteUsate : new Set();
+    var _rimaste = d.classifica.filter(function(r) {
+        return _origManoFn(r) && !r.isMatta && !_cuSet.has(r.cartaRef.id) &&
+            (!scartoId || r.cartaRef.id !== scartoId);
+    });
+    var _orfaneIds = new Set();
+    _rimaste.forEach(function(r) {
+        var _conn = _rimaste.some(function(x) {
+            if (x.cartaRef.id === r.cartaRef.id) return false;
+            if (x.cartaRef.numero === r.cartaRef.numero) return true;
+            if (x.cartaRef.seme && x.cartaRef.seme === r.cartaRef.seme) {
+                return Math.abs((x.cartaRef.numero || 0) - (r.cartaRef.numero || 0)) <= 2;
+            }
+            return false;
+        });
+        if (!_conn) { _nOrfane++; _orfaneIds.add(r.cartaRef.id); }
+    });
+    if (_penCO > 0 && _nOrfane > 0) {
+        var _penOrfaneTot = -(_penCO * _nOrfane);
+        totalScore += _penOrfaneTot;
+        con.log('H) Penalità carte orfane (' + _nOrfane + ' carte): ' + _penOrfaneTot.toFixed(1));
+    }
+
+    // Controlla se anche la carta scartata era orfana rispetto alle rimaste
+    var _scartoOrfana = false;
+    if (scartoId) {
+        var _scartoEntry = d.classifica.find(function(r) { return r.cartaRef && r.cartaRef.id === scartoId; });
+        if (_scartoEntry && !_scartoEntry.isMatta) {
+            _scartoOrfana = !_rimaste.some(function(x) {
+                if (x.cartaRef.numero === _scartoEntry.cartaRef.numero) return true;
+                if (x.cartaRef.seme && x.cartaRef.seme === _scartoEntry.cartaRef.seme)
+                    return Math.abs((x.cartaRef.numero || 0) - (_scartoEntry.cartaRef.numero || 0)) <= 2;
+                return false;
+            });
+        }
+    }
+
+    var _totaleCombinato = totalScore + _scartoScore;
+    con.log('%c✓ SCORE TOTALE: ' + _totaleCombinato.toFixed(1) + ' (opz=' + totalScore.toFixed(1) + ' sc=' + _scartoScore.toFixed(1) + ')', 'font-size:14px; font-weight:bold; color:#ff8; background:#030');
+    con.groupEnd();
+    return {
+        score: _totaleCombinato,
+        opzScore: totalScore,
+        scartoScore: _scartoScore,
+        cartaScarto: _scartoInter ? _scartoInter.carta : '-',
+        cartaRef: _scartoInter ? _scartoInter.cartaRef : null,
+        breakdown: breakdown,
+        orfane: _nOrfane,
+        orfaneIds: _orfaneIds,
+        scartoOrfana: _scartoOrfana
+    };
+};
+
+// Costruisce una versione proiettata di comboSquadra simulando le calate nelle mosse.
+// Ogni mossa tipo 'calata' con carta e comboTarget aggiunge virtualmente la carta alla combo.
+window._proiettaComboConCalate = function(comboSquadra, mosse) {
+    if (!mosse || mosse.length === 0) return comboSquadra;
+    var calate = mosse.filter(function(m) { return m.tipo === 'calata' && m.carta && m.combo; });
+    if (calate.length === 0) return comboSquadra;
+    return comboSquadra.map(function(combo) {
+        var carteExtra = calate.filter(function(m) { return m.combo === combo; }).map(function(m) { return m.carta; });
+        if (carteExtra.length === 0) return combo;
+        return Object.assign({}, combo, { carte: combo.carte.concat(carteExtra) });
+    });
+};
+
+window.calcolaScartoPer = function(opzIdx, _silent, comboSquadraOverride) {
+    var d = window._analisiData;
+    if (!d || !d.opzioniScenario) return null;
+    var opt = opzIdx === -1 ? null : d.opzioniScenario[opzIdx];
+    if (!opt && opzIdx !== -1) return null;
+    var _w = window.opener || window;
+    var game = _w.game;
+    var Strategia = _w.Strategia;
+    var giocatore = game.giocatori[window._analisiGiocatoreIdx];
+    var comboAvversarie = giocatore.squadra === 0 ? game.combinazioniLoro : game.combinazioniNoi;
+    var comboSquadra = comboSquadraOverride || window._comboSquadraOverride || (giocatore.squadra === 0 ? game.combinazioniNoi : game.combinazioniLoro);
+
+    var carteUsateSet = opt ? opt.carteUsate : new Set();
+    // Se c'è una sola carta negli scarti, non può essere scartata (regola: carta appena pescata)
+    var _scartiUnici = d.classifica.filter(function(r) { return r.origine === 'scarto'; });
+    var _idVietato = _scartiUnici.length === 1 ? _scartiUnici[0].cartaRef.id : null;
+    var candidati = d.classifica.filter(function(r) {
+        if (r.origine !== 'mano' && r.origine !== 'mazzo' && r.origine !== 'scarto') return false;
+        if (carteUsateSet.has(r.cartaRef.id)) return false;
+        if (_idVietato !== null && r.cartaRef.id === _idVietato) return false;
+        return true;
+    });
+    if (candidati.length === 0) return null;
+
+    var pericoliAvversari = {};
+    candidati.forEach(function(r) {
+        var pericoli = [];
+        comboAvversarie.forEach(function(combo) {
+            if (!combo.isBurraco && _isAttaccabileAdAvversario(r.cartaRef, combo))
+                pericoli.push({ lunghezza: combo.carte.length + 1 });
+        });
+        pericoliAvversari[r.cartaRef.id] = pericoli;
+    });
+
+    var pericoliPropri = {};
+    candidati.forEach(function(r) {
+        var n = 0;
+        comboSquadra.forEach(function(combo) { if (_isAttaccabileAdAvversario(r.cartaRef, combo)) n++; });
+        pericoliPropri[r.cartaRef.id] = n;
+    });
+
+    var fase1 = candidati.filter(function(r) {
+        if (r.isMatta) return true; // matte sempre candidate, penalizzate in scoring
+        var completaBurraco = (pericoliAvversari[r.cartaRef.id] || []).some(function(p) { return p.lunghezza >= 7; });
+        if (completaBurraco) {
+            var nomeC = Strategia && Strategia.nomeCarta ? Strategia.nomeCarta(r.cartaRef) : (r.cartaRef.numero + r.cartaRef.seme);
+            console.log('[SCARTO ESCLUSO] ' + nomeC + ' → completerebbe burraco avversario → escluso dai candidati scarto');
+        }
+        return !completaBurraco;
+    });
+    if (fase1.length === 0) { fase1 = candidati; }
+
+    var connettivita = {};
+    fase1.forEach(function(r) {
+        var conn = 0;
+        fase1.filter(function(x) { return x.cartaRef.id !== r.cartaRef.id; }).forEach(function(x) {
+            if (x.isMatta || r.isMatta) return;
+            if (x.cartaRef.numero === r.cartaRef.numero) { conn++; return; }
+            if (x.cartaRef.seme && x.cartaRef.seme === r.cartaRef.seme) {
+                var dist = Math.abs((x.cartaRef.numero||0) - (r.cartaRef.numero||0));
+                if (dist === 1) conn++; else if (dist === 2) conn += 0.5;
+            }
+        });
+        connettivita[r.cartaRef.id] = conn;
+    });
+
+    var nomeC = function(r) { return Strategia && Strategia.nomeCarta ? Strategia.nomeCarta(r.cartaRef) : (r.cartaRef.numero + r.cartaRef.seme); };
+    var scoreFase3 = fase1.map(function(r) {
+        var score = 0;
+        var righe = [];
+        var cf = window.coeffScoreOpz;
+        var centralita = Strategia.getCentralita ? Strategia.getCentralita(r.cartaRef.numero) : 0.5;
+        var sDec = (1 - centralita) * (cf.coeffScartoDecent || 5);
+        score += sDec;
+        righe.push('  decent: +' + sDec.toFixed(1));
+        var conn = connettivita[r.cartaRef.id] || 0;
+        if (conn > 0) { var sConn = -(conn * (cf.coeffScartoConn || 8)); score += sConn; righe.push('  conn(' + conn.toFixed(1) + '): ' + sConn.toFixed(1)); }
+        var pericoli = pericoliAvversari[r.cartaRef.id] || [];
+        if (pericoli.length > 0) {
+            var peggiore = pericoli.reduce(function(w, p) { return p.lunghezza > w.lunghezza ? p : w; }, pericoli[0]);
+            var pen = peggiore.lunghezza >= 6 ? -(cf.penScarto6c || 25) : peggiore.lunghezza === 5 ? -(cf.penScarto5c || 15) : -(cf.penScarto4c || 5);
+            score += pen;
+            righe.push('  pericolo avv ' + peggiore.lunghezza + 'c: ' + pen);
+        }
+        var nPropri = pericoliPropri[r.cartaRef.id] || 0;
+        if (nPropri > 0) { var sProp = -(nPropri * (cf.penScartoCalabile || 7)); score += sProp; righe.push('  calabile propri(' + nPropri + '): ' + sProp.toFixed(1)); }
+        if (r.isMatta) { var sPenM = -(cf.penScartoMatta || 50); score += sPenM; righe.push('  pen. scarto matta: ' + sPenM); }
+        return { r: r, score: score, righe: righe };
+    });
+    scoreFase3.sort(function(a, b) { return b.score - a.score; });
+    var candidatoFinale = scoreFase3[0];
+
+    return candidatoFinale ? {
+        carta: candidatoFinale.r.carta, cartaRef: candidatoFinale.r.cartaRef,
+        origine: candidatoFinale.r.origine, score: candidatoFinale.score,
+        _candidati: scoreFase3, _candidatoFinale: candidatoFinale,
+        _fase1Count: fase1.length, _totCount: candidati.length,
+        _nomeC: nomeC
+    } : null;
+};
+
+window._calcolaVariantiB = function(d, game, giocatoreIdx) {
+    var giocatore = game.giocatori[giocatoreIdx];
+    var comboSquadra = giocatore.squadra === 0 ? game.combinazioniNoi : game.combinazioniLoro;
+    if (!d || !d.opzioniScenario || comboSquadra.length === 0) return { bLabelMap: {}, bFirstIdx: d ? d.opzioniScenario.length : 0 };
+
+    var origMano = function(r) { return r.origine === 'mano' || r.origine === 'scarto' || r.origine === 'mazzo'; };
+    var matteHand = d.classifica.filter(function(r){ return origMano(r) && r.isMatta; }).length;
+
+    function buildModMosse(bOpt, freeCalate, sacrificed) {
+        var mm = bOpt.mosse.map(function(m){ return m.carte ? Object.assign({},m,{carte:m.carte.slice()}) : Object.assign({},m); });
+        if (sacrificed && sacrificed.length > 0) {
+            var byM = {};
+            var stealIdx = new Set();
+            sacrificed.forEach(function(sc){
+                if (sc.mossoTipo === 'calata') {
+                    stealIdx.add(sc.mossoIdx); // rimuovi la calata originale dal base-opt
+                } else {
+                    if(!byM[sc.mossoIdx]) byM[sc.mossoIdx]=[];
+                    byM[sc.mossoIdx].push(sc.carta.id);
+                }
+            });
+            Object.keys(byM).forEach(function(mi){
+                var m = mm[parseInt(mi)]; if(!m||!m.carte) return;
+                m.carte = m.carte.filter(function(c){ return byM[mi].indexOf(c.id)===-1; });
+                if (m.carte.length < 3) mm[parseInt(mi)] = null;
+            });
+            mm = mm.filter(function(m, idx){ return m !== null && !stealIdx.has(idx); });
+            sacrificed.forEach(function(sc){ mm.push({tipo:'calata',carta:sc.carta,combo:sc.comboTarget,comboId:sc.comboTarget.id}); });
+        }
+        freeCalate.forEach(function(fc){ mm.push({tipo:'calata',carta:fc.carta,combo:fc.comboTarget,comboId:fc.comboTarget.id}); });
+        return mm;
+    }
+
+    // Calcola le carte calabili sulla combo cb per un dato bOpt.
+    // Ritorna { cb, freeList, sacList, cardIds } oppure null se nessuna carta.
+    function computeComboCandidate(bOpt, cb) {
+        var fisicheCombo = cb.carte.filter(function(c){return !c.isJolly&&!c.isPinella;});
+        if (fisicheCombo.length === 0) return null;
+        var matteCombo = cb.carte.length - fisicheCombo.length;
+        var avail = [];
+        d.classifica.forEach(function(r){ if(!origMano(r)||r.isMatta) return; if(bOpt.carteUsate&&bOpt.carteUsate.has(r.cartaRef.id)) return; avail.push({carta:r.cartaRef,mossoIdx:-1}); });
+        bOpt.mosse.forEach(function(mossa,mIdx){ if(mossa.tipo!=='tris'&&mossa.tipo!=='scala') return; (mossa.carte||[]).forEach(function(carta){ if(!carta.isJolly&&!carta.isPinella) avail.push({carta:carta,mossoIdx:mIdx}); }); });
+        // Calate del base-opt verso ALTRI combo: possono essere "rubate" e reindirizzate
+        bOpt.mosse.forEach(function(mossa, mIdx) {
+            if (mossa.tipo !== 'calata') return;
+            var carta = mossa.carta;
+            if (!carta || carta.isJolly || carta.isPinella) return;
+            var origCId = mossa.comboId !== undefined ? mossa.comboId : (mossa.combo ? mossa.combo.id : null);
+            if (origCId === cb.id) return; // già verso questo combo, già in physNums
+            avail.push({ carta: carta, mossoIdx: mIdx, mossoTipo: 'calata' });
+        });
+        var matteTotal = Math.min(1, matteCombo + matteHand);
+        var freeList = [], sacList = [];
+        if (cb.tipo === 1) {
+            var num = fisicheCombo[0].numero;
+            avail.forEach(function(ac){ if(ac.carta.numero!==num) return; if(ac.mossoIdx<0) freeList.push({carta:ac.carta,comboTarget:cb}); else sacList.push({carta:ac.carta,mossoIdx:ac.mossoIdx,mossoTipo:ac.mossoTipo,comboTarget:cb}); });
+        } else {
+            var seme = fisicheCombo[0].seme;
+            var physNums = fisicheCombo.map(function(c){return c.numero;}).sort(function(a,b){return a-b;});
+            // Includi numeri di calate già presenti in bOpt sullo stesso combo (evita posizioni duplicate nella scala)
+            bOpt.mosse.forEach(function(m) {
+                if (m.tipo==='calata' && m.carta && !m.carta.isJolly && !m.carta.isPinella
+                    && (m.comboId===cb.id || (m.combo&&m.combo.id===cb.id)) && m.carta.seme===seme)
+                    physNums.push(m.carta.numero);
+            });
+            physNums = physNums.filter(function(n,i,a){return a.indexOf(n)===i;}).sort(function(a,b){return a-b;});
+            var cMin = physNums[0], cMax = physNums[physNums.length-1];
+            var sameAvail = avail.filter(function(ac){return ac.carta.seme===seme;});
+            if (sameAvail.length === 0) return null;
+            var allNums = physNums.concat(sameAvail.map(function(ac){return ac.carta.numero;}));
+            allNums = allNums.filter(function(n,i,a){return a.indexOf(n)===i;}).sort(function(a,b){return a-b;});
+            var bestExt = cb.carte.length, bLo = cMin, bHi = cMax;
+            for (var lo = cMin; lo >= 1; lo--) {
+                for (var hi = cMax; hi <= 13; hi++) {
+                    var pin = 0; allNums.forEach(function(n){if(n>=lo&&n<=hi)pin++;});
+                    var gaps = (hi-lo+1)-pin;
+                    if (gaps<=matteTotal && (hi-lo+1)>bestExt) { bestExt=hi-lo+1; bLo=lo; bHi=hi; }
+                }
+            }
+            if (bestExt <= cb.carte.length) return null;
+            var used = {}; physNums.forEach(function(n){used[n]=true;});
+            sameAvail.forEach(function(ac){ var n=ac.carta.numero; if(n<bLo||n>bHi||used[n]) return; used[n]=true; if(ac.mossoIdx<0) freeList.push({carta:ac.carta,comboTarget:cb}); else sacList.push({carta:ac.carta,mossoIdx:ac.mossoIdx,mossoTipo:ac.mossoTipo,comboTarget:cb}); });
+            // Se ci sono gap nel range non coperti da carte fisiche, serve una matta dalla mano
+            var coveredNums = {}; physNums.forEach(function(n){coveredNums[n]=true;});
+            freeList.forEach(function(fc){coveredNums[fc.carta.numero]=true;});
+            sacList.forEach(function(sc){coveredNums[sc.carta.numero]=true;});
+            var gapScoperti = 0; for (var gn=bLo; gn<=bHi; gn++) { if (!coveredNums[gn]) gapScoperti++; }
+            if (gapScoperti > matteCombo && matteHand > 0) {
+                var mattaHandR = d.classifica.find(function(r){ return origMano(r) && r.isMatta && !(bOpt.carteUsate && bOpt.carteUsate.has(r.cartaRef.id)); });
+                if (mattaHandR) freeList.unshift({ carta: mattaHandR.cartaRef, comboTarget: cb });
+            }
+        }
+        if (freeList.length === 0 && sacList.length === 0) return null;
+        var cardIds = new Set();
+        freeList.forEach(function(fc){ cardIds.add(fc.carta.id); });
+        sacList.forEach(function(sc){ cardIds.add(sc.carta.id); });
+        return { cb: cb, freeList: freeList, sacList: sacList, cardIds: cardIds };
+    }
+
+    var bLabelMap = {}, bFirstIdx = d.opzioniScenario.length;
+
+    // Lista base OPZ da esplorare: OPZ0 (non fa nulla) + tutte le OPZ esistenti
+    var opz0 = { mosse: [], carteUsate: new Set(), descCarte: 'OPZ0' };
+    var baseList = [{ opt: opz0, isOPZ0: true, baseIdx: -1 }];
+    d.opzioniScenario.slice(0, bFirstIdx).forEach(function(opt, i) {
+        baseList.push({ opt: opt, isOPZ0: false, baseIdx: i });
+    });
+
+    baseList.forEach(function(entry) {
+        var bOpt = entry.opt;
+        if (!bOpt || !bOpt.mosse) return;
+        var isOPZ0 = entry.isOPZ0;
+        var baseIdx = entry.baseIdx;
+        var baseLabel = isOPZ0 ? '0' : String(baseIdx + 1);
+
+        // OPZ0 non è in d.opzioniScenario: la inseriamo temporaneamente per poter chiamare calcolaScoreOpz
+        var opzIdx;
+        if (isOPZ0) {
+            opzIdx = d.opzioniScenario.length;
+            d.opzioniScenario.push(bOpt);
+        } else {
+            opzIdx = baseIdx;
+        }
+
+        var baseRes = window.calcolaScoreOpz(opzIdx, true);
+        var bestScore = baseRes ? baseRes.score : 0;
+        var bestMosse = null;
+
+        // Calcola i candidati per ogni combo in campo (una entry per combo)
+        var comboCandidates = [];
+        comboSquadra.forEach(function(cb) {
+            var cand = computeComboCandidate(bOpt, cb);
+            if (cand) comboCandidates.push(cand);
+        });
+
+        // Prova tutti i sottoinsiemi non vuoti (powerset) dei comboCandidates
+        var n = comboCandidates.length;
+        var nProve = 0;
+        var _w2 = window.opener || window;
+        var _nomeCarta = function(c) { return _w2.Strategia && _w2.Strategia.nomeCarta ? _w2.Strategia.nomeCarta(c) : (c.numero + c.seme); };
+        if (game.debugAI && n > 0) {
+            console.log('[VariantiB] OPZ' + baseLabel + ' → ' + n + ' candidati:');
+            comboCandidates.forEach(function(cand, ci) {
+                var freeNames = cand.freeList.map(function(fc){ return _nomeCarta(fc.carta); }).join(',');
+                var sacNames = cand.sacList.map(function(sc){ return _nomeCarta(sc.carta); }).join(',');
+                var ids = Array.from(cand.cardIds).join(',');
+                console.log('  [' + ci + '] combo#' + cand.cb.id + ' free=[' + freeNames + '] sac=[' + sacNames + '] ids={' + ids + '}');
+            });
+            console.log('  base score=' + (baseRes ? baseRes.score.toFixed(2) : 'null'));
+        }
+        for (var mask = 1; mask < (1 << n); mask++) {
+            // Verifica che le carte usate dai combo selezionati siano disgiunte
+            var allCardIds = new Set();
+            var valid = true;
+            var selectedCandidates = [];
+            for (var i = 0; i < n; i++) {
+                if (!(mask & (1 << i))) continue;
+                var cand = comboCandidates[i];
+                var conflict = false;
+                cand.cardIds.forEach(function(id){ if (allCardIds.has(id)) conflict = true; });
+                if (conflict) { valid = false; break; }
+                cand.cardIds.forEach(function(id){ allCardIds.add(id); });
+                selectedCandidates.push(cand);
+            }
+            if (!valid) {
+                if (game.debugAI) console.log('  mask=' + mask + ' CONFLICT → skip');
+                continue;
+            }
+            nProve++;
+
+            var combinedFree = [], combinedSac = [];
+            selectedCandidates.forEach(function(cand){
+                combinedFree = combinedFree.concat(cand.freeList);
+                combinedSac = combinedSac.concat(cand.sacList);
+            });
+
+            var mm = buildModMosse(bOpt, combinedFree, combinedSac);
+            var origMosse = bOpt.mosse; bOpt.mosse = mm;
+            // Expand carteUsate with free calate so orfane penalty counts them as used
+            var origCU = bOpt.carteUsate;
+            var expandedCU = new Set(origCU);
+            combinedFree.forEach(function(fc) { expandedCU.add(fc.carta.id); });
+            bOpt.carteUsate = expandedCU;
+            var res = window.calcolaScoreOpz(opzIdx, true);
+            bOpt.mosse = origMosse;
+            bOpt.carteUsate = origCU;
+            var improved = res && res.score > bestScore;
+            if (game.debugAI) {
+                var combLabels = selectedCandidates.map(function(c){ return 'combo#'+c.cb.id; }).join('+');
+                var freeStr = combinedFree.map(function(fc){ return _nomeCarta(fc.carta); }).join(',');
+                var sacStr = combinedSac.map(function(sc){ return _nomeCarta(sc.carta); }).join(',');
+                console.log('  mask=' + mask + ' [' + combLabels + '] free=[' + freeStr + '] sac=[' + sacStr + '] → score=' + (res ? res.score.toFixed(2) : 'null') + (improved ? ' ◄ NUOVO BEST' : ''));
+            }
+            if (improved) { bestScore = res.score; bestMosse = mm; }
+        }
+
+        if (game.debugAI && n > 0) {
+            var baseScoreVal = baseRes ? baseRes.score : 0;
+            var deltaStr = bestMosse ? '+' + (bestScore - baseScoreVal).toFixed(1) : 'nessun miglioramento';
+            console.log('[VariantiB] OPZ' + baseLabel + ' (' + n + ' combo): ' + nProve + ' combinazioni provate → ' + deltaStr + ' vs base (bestScore=' + bestScore.toFixed(2) + ')');
+        }
+
+        // Ripristina d.opzioniScenario se avevamo inserito OPZ0 temporaneamente
+        if (isOPZ0) d.opzioniScenario.pop();
+
+        if (!bestMosse) return;
+        var bIdx = d.opzioniScenario.length;
+        bLabelMap['OPZ' + (bIdx + 1)] = 'OPZ' + baseLabel;
+        var bCU = new Set();
+        bestMosse.forEach(function(m){ if(m.tipo==='tris'||m.tipo==='scala'){(m.carte||[]).forEach(function(c){bCU.add(c.id);});} else if(m.tipo==='calata'&&m.carta){bCU.add(m.carta.id);} });
+        if (game.debugAI) {
+            var bestMosseStr = bestMosse.map(function(m){
+                if (m.tipo==='calata') return 'calata('+_nomeCarta(m.carta)+'→combo#'+m.comboId+')';
+                if (m.tipo==='tris'||m.tipo==='scala') return m.tipo+'['+(m.carte||[]).map(_nomeCarta).join(',')+']';
+                return m.tipo;
+            }).join(', ');
+            console.log('[VariantiB] OPZ' + baseLabel + 'B mosse: [' + bestMosseStr + '] bCU={' + Array.from(bCU).join(',') + '}');
+        }
+        d.opzioniScenario.push({ mosse: bestMosse, carteUsate: bCU, descCarte: 'OPZ' + baseLabel + 'B' });
+    });
+    return { bLabelMap: bLabelMap, bFirstIdx: bFirstIdx };
+};
+
+// ============================================================
+// Varianti C: sacrifica una carta della mano per sbloccare il vincolo
+// Usata quando faseVincoloMano=true e la miglior opzione scarti viola rim<1.
+// Per ogni carta della mano nelle mosse dell'opzione violante, la rimuove
+// temporaneamente e rigenera l'analisi scarti sul resto.
+// Ritorna { cartaSacrificata, opzIdx, opz, score, analisiData, opzCLabel } o null.
+// ============================================================
+window._calcolaVariantiC = function(d, game, giocatore, giocatoreIdx) {
+    // Non ha senso calcolare varianti C se tutta la mano è composta da matte/jolly:
+    // qualsiasi sacrificio rimuoverebbe una matta, producendo una simulazione distorta.
+    if (giocatore.carte.length > 0 && giocatore.carte.every(function(c) { return c.isJolly || c.isPinella; })) {
+        console.log('[_calcolaVariantiC] mano composta solo da matte/jolly → skip');
+        return null;
+    }
+
+    var _w = window.opener || window;
+    var Strategia = _w.Strategia;
+    var origMano = function(r) { return r.origine === 'mano' || r.origine === 'scarto' || r.origine === 'mazzo'; };
+
+    var savedAnalisi = window._analisiData;
+    var savedScenario = window._analisiScenario;
+    var savedIdx = window._analisiGiocatoreIdx;
+
+    window._analisiData = d;
+    window._analisiScenario = 'scarti';
+    window._analisiGiocatoreIdx = giocatoreIdx;
+
+    var totalCarteD = d.classifica.filter(origMano).length;
+    var opzioniLen = d.opzioniScenario ? d.opzioniScenario.length : 0;
+
+    // Trova la miglior opzione violante (rim<1, no burraco)
+    var bestViolIdx = -1, bestViolScore = -Infinity;
+    for (var i = 0; i < opzioniLen; i++) {
+        var opzV = d.opzioniScenario[i];
+        if (!opzV) continue;
+        var usateV = opzV.carteUsate ? opzV.carteUsate.size : 0;
+        var rimV = totalCarteD - usateV - 1;
+        var burrV = (opzV.mosse || []).some(function(m) { return (m.tipo==='tris'||m.tipo==='scala') && m.carte && m.carte.length >= 7; });
+        if (rimV < 1 && !burrV) {
+            var srV = window.calcolaScoreOpz(i, true);
+            var scV = srV ? srV.score : 0;
+            if (scV > bestViolScore) { bestViolScore = scV; bestViolIdx = i; }
+        }
+    }
+    console.log('[_calcolaVariantiC] bestViolIdx=' + bestViolIdx + ' (score=' + bestViolScore.toFixed(1) + ') totalCarteD=' + totalCarteD);
+    if (bestViolIdx < 0) {
+        window._analisiData = savedAnalisi; window._analisiScenario = savedScenario; window._analisiGiocatoreIdx = savedIdx;
+        return null;
+    }
+
+    var opzViolante = d.opzioniScenario[bestViolIdx];
+
+    // Raccoglie carte presenti nelle mosse dell'opzione violante (sia mano che scarto)
+    var carteDaProvare = new Map(); // id -> { card, isScarto }
+    (opzViolante.mosse || []).forEach(function(m) {
+        var refs = m.tipo === 'calata' ? [m.carta] : (m.carte || []);
+        refs.forEach(function(c) {
+            if (!c) return;
+            var refId = c._origineRef ? c._origineRef.id : c.id;
+            var realCard = giocatore.carte.find(function(rc) { return rc.id === refId; });
+            if (realCard && !carteDaProvare.has(realCard.id)) {
+                carteDaProvare.set(realCard.id, { card: realCard, isScarto: false });
+                return;
+            }
+            // Prova anche tra le carte scarto
+            if (!realCard) {
+                var scartoCard = game.scarti.find(function(sc) { return sc.id === refId; });
+                if (scartoCard && !carteDaProvare.has(scartoCard.id)) {
+                    carteDaProvare.set(scartoCard.id, { card: scartoCard, isScarto: true });
+                }
+            }
+        });
+    });
+
+    function _provaSacrificio(cartaDaRimuovere, isScarto) {
+        var idx;
+        if (isScarto) {
+            idx = game.scarti.indexOf(cartaDaRimuovere);
+            if (idx < 0) return;
+            game.scarti.splice(idx, 1);
+        } else {
+            idx = giocatore.carte.indexOf(cartaDaRimuovere);
+            if (idx < 0) return;
+            giocatore.carte.splice(idx, 1);
+        }
+
+        var dC = Strategia.generaAnalisiParallela(giocatore, 'scarti');
+        window._analisiData = dC;
+        window._analisiScenario = 'scarti';
+        window._analisiGiocatoreIdx = giocatoreIdx;
+        window._calcolaVariantiB(dC, game, giocatoreIdx);
+
+        var totalCarteDC = dC.classifica.filter(origMano).length;
+        var opzioniLenC = dC.opzioniScenario ? dC.opzioniScenario.length : 0;
+        var opzIdxList = [];
+        for (var oi = 0; oi < opzioniLenC; oi++) opzIdxList.push(oi);
+        if (opzIdxList.length === 0) opzIdxList.push(-1);
+
+        opzIdxList.forEach(function(oi) {
+            var sr = window.calcolaScoreOpz(oi, true);
+            var sc = sr ? sr.score : 0;
+            var opzData = oi === -1 ? null : dC.opzioniScenario[oi];
+            var opz = opzData || { mosse: [], carteUsate: new Set() };
+            var usate = opzData && opzData.carteUsate ? opzData.carteUsate.size : 0;
+            var burraco = (opz.mosse || []).some(function(m) { return (m.tipo==='tris'||m.tipo==='scala') && m.carte && m.carte.length >= 7; });
+            if (totalCarteDC - usate - 1 >= 1 || burraco) {
+                if (!bestC || sc > bestC.score) {
+                    bestC = { cartaSacrificata: cartaDaRimuovere, opzIdx: oi, opz: opz, score: sc, analisiData: dC };
+                }
+            }
+        });
+
+        if (isScarto) {
+            game.scarti.splice(idx, 0, cartaDaRimuovere);
+        } else {
+            giocatore.carte.splice(idx, 0, cartaDaRimuovere);
+        }
+    }
+
+    var bestC = null;
+    carteDaProvare.forEach(function(entry) {
+        _provaSacrificio(entry.card, entry.isScarto);
+    });
+
+    console.log('[_calcolaVariantiC] carteDaProvare.size=' + carteDaProvare.size + ' → bestC=' + (bestC ? bestC.opzIdx + ' score=' + bestC.score.toFixed(1) : 'null'));
+    if (bestC) bestC.opzCLabel = 'OPZ' + (bestViolIdx + 1) + 'C';
+
+    window._analisiData = savedAnalisi;
+    window._analisiScenario = savedScenario;
+    window._analisiGiocatoreIdx = savedIdx;
+    return bestC;
+};
+
+// ============================================================
+// ============================================================
+// Varianti M: se dopo le mosse restano esattamente 2 carte (1 matta + 1 da scartare)
+// e la matta è calabile su una combo di squadra, aggiunge la calata nelle mosse
+// con tag isMattaSolitaria=true per ricevere il premioMattaSolitaria in calcolaScoreOpz.
+// Si applica solo quando NON siamo in fase di vincolo mano (post-pozzetto pre-burraco).
+// ============================================================
+window._calcolaVariantiM = function(d, game, giocatoreIdx) {
+    var giocatore = game.giocatori[giocatoreIdx];
+    var comboSquadra = giocatore.squadra === 0 ? game.combinazioniNoi : game.combinazioniLoro;
+    var mFirstIdx = d ? d.opzioniScenario.length : 0;
+    if (!d || !d.opzioniScenario || comboSquadra.length === 0)
+        return { mFirstIdx: mFirstIdx, mLabelMap: {} };
+
+    var _w = window.opener || window;
+    var origMano = function(r) { return r.origine === 'mano' || r.origine === 'scarto' || r.origine === 'mazzo'; };
+    var mLabelMap = {};
+
+    // Combos con 6+ carte: opportunità burraco via calata matta
+    // (generaOpzioniGioco in core.js non genera queste calate per scelta progettuale)
+    var burracoTargets = comboSquadra.filter(function(cb) { return cb.carte.length >= 6; });
+
+    // Itera su OPZ0 (nessuna mossa base) + tutte le opzioni generate
+    var baseOptions = [{ _opzIdx: -1, mosse: [], carteUsate: new Set() }];
+    d.opzioniScenario.slice(0, mFirstIdx).forEach(function(opt, i) {
+        if (opt && opt.mosse) baseOptions.push({ _opzIdx: i });
+    });
+
+    baseOptions.forEach(function(wrapper) {
+        var opzIdx = wrapper._opzIdx;
+        var opt = opzIdx === -1 ? wrapper : d.opzioniScenario[opzIdx];
+        if (!opt || !opt.mosse) return;
+
+        // Carte rimanenti dopo questa opzione (escluse quelle usate)
+        var carteRim = d.classifica.filter(function(r) {
+            return origMano(r) && !(opt.carteUsate && opt.carteUsate.has(r.cartaRef.id));
+        });
+
+        var matteEntries = carteRim.filter(function(r) { return r.isMatta; });
+        if (matteEntries.length === 0) return; // nessuna matta disponibile
+
+        // Modalità "fine partita": esattamente 2 carte rimaste (matta + 1 non-matta) → prova tutte le combo
+        // Si applica solo post-pesca (classifica include una carta di origine 'scarto' o 'mazzo').
+        // In pre-pesca (scenario='mano' senza carta pescata) non possiamo sapere la mano finale.
+        var hasPescato = d.classifica.some(function(r) { return r.origine === 'scarto' || r.origine === 'mazzo'; });
+        var nonMatte = carteRim.filter(function(r) { return !r.isMatta; });
+        var isTwoRemaining = hasPescato && carteRim.length === 2 && nonMatte.length === 1;
+        // Modalità "matte multiple": solo matte rimaste (o matte + 1 non-matta) → cala tutte su combo diverse
+        var isSoloMatte = hasPescato && nonMatte.length <= 1 && matteEntries.length >= 2;
+        // Modalità "burraco opportunity": matta disponibile + combo da 6+ carte sul tavolo
+        var isBurracoOpp = burracoTargets.length > 0;
+
+        if (!isTwoRemaining && !isSoloMatte && !isBurracoOpp) return;
+
+        var baseRes = window.calcolaScoreOpz(opzIdx, true);
+        var baseScore = baseRes ? baseRes.score : 0;
+        var bestScore = baseScore;
+        var bestMosse = null;
+
+        // Modalità matte multiple: greedy su N matte → N combo diverse (max 1 matta per combo)
+        if (isSoloMatte) {
+            var comboUsateM = new Set();
+            var assegnazioniM = [];
+            for (var mi = 0; mi < matteEntries.length; mi++) {
+                var mattaM = matteEntries[mi].cartaRef;
+                var trovataM = null;
+                for (var ci = 0; ci < comboSquadra.length; ci++) {
+                    var comboC = comboSquadra[ci];
+                    if (comboUsateM.has(comboC.id)) continue;
+                    var puoAggM = _w.puoAggiungereACombinazione ? _w.puoAggiungereACombinazione(mattaM, comboC) : false;
+                    if (puoAggM) { trovataM = comboC; break; }
+                }
+                if (!trovataM) { assegnazioniM = null; break; }
+                comboUsateM.add(trovataM.id);
+                assegnazioniM.push({ matta: mattaM, combo: trovataM });
+            }
+            if (assegnazioniM && assegnazioniM.length > 0) {
+                var mmM = (opt.mosse || []).map(function(m) {
+                    return m.carte ? Object.assign({}, m, { carte: m.carte.slice() }) : Object.assign({}, m);
+                });
+                // isMattaSolitaria=true solo se dopo aver calato tutte le matte non rimane nulla (chiusura)
+                var isChiusura = nonMatte.length === 0;
+                assegnazioniM.forEach(function(a) {
+                    mmM.push({ tipo: 'calata', carta: a.matta, combo: a.combo, comboId: a.combo.id, isMattaSolitaria: isChiusura });
+                });
+                var tempCUM = new Set(opt.carteUsate || []);
+                mmM.forEach(function(m) {
+                    if (m.tipo === 'tris' || m.tipo === 'scala') { (m.carte || []).forEach(function(c) { tempCUM.add(c.id); }); }
+                    else if (m.tipo === 'calata' && m.carta) { tempCUM.add(m.carta.id); }
+                });
+                var tempIdxM = d.opzioniScenario.length;
+                d.opzioniScenario.push({ mosse: mmM, carteUsate: tempCUM });
+                var resM = window.calcolaScoreOpz(tempIdxM, true);
+                d.opzioniScenario.pop();
+                if (resM && resM.score > bestScore) { bestScore = resM.score; bestMosse = mmM; }
+            }
+        }
+
+        // Modalità singola matta (isTwoRemaining o isBurracoOpp)
+        if (!bestMosse) {
+            var matta = matteEntries[0].cartaRef;
+            var targetCombos = isTwoRemaining ? comboSquadra : burracoTargets;
+            targetCombos.forEach(function(combo) {
+                var puoAgg = _w.puoAggiungereACombinazione ? _w.puoAggiungereACombinazione(matta, combo) : false;
+                if (!puoAgg) return;
+                var mm = (opt.mosse || []).map(function(m) {
+                    return m.carte ? Object.assign({}, m, { carte: m.carte.slice() }) : Object.assign({}, m);
+                });
+                mm.push({ tipo: 'calata', carta: matta, combo: combo, comboId: combo.id, isMattaSolitaria: isTwoRemaining });
+                var tempCU = new Set(opt.carteUsate || []);
+                mm.forEach(function(m) {
+                    if (m.tipo === 'tris' || m.tipo === 'scala') { (m.carte || []).forEach(function(c) { tempCU.add(c.id); }); }
+                    else if (m.tipo === 'calata' && m.carta) { tempCU.add(m.carta.id); }
+                });
+                var tempIdx = d.opzioniScenario.length;
+                d.opzioniScenario.push({ mosse: mm, carteUsate: tempCU });
+                var res = window.calcolaScoreOpz(tempIdx, true);
+                d.opzioniScenario.pop();
+                if (res && res.score > bestScore) { bestScore = res.score; bestMosse = mm; }
+            });
+        }
+
+        if (!bestMosse) return;
+
+        var mIdx = d.opzioniScenario.length;
+        var mLabel = opzIdx === -1 ? 'OPZ0M' : ('OPZ' + (opzIdx + 1) + 'M');
+        mLabelMap['OPZ' + (mIdx + 1)] = mLabel;
+
+        var mCU = new Set(opt.carteUsate || []);
+        bestMosse.forEach(function(m) {
+            if (m.tipo === 'tris' || m.tipo === 'scala') { (m.carte || []).forEach(function(c) { mCU.add(c.id); }); }
+            else if (m.tipo === 'calata' && m.carta) { mCU.add(m.carta.id); }
+        });
+        d.opzioniScenario.push({ mosse: bestMosse, carteUsate: mCU, descCarte: mLabel });
+    });
+
+    return { mFirstIdx: mFirstIdx, mLabelMap: mLabelMap };
+};
+
+// ============================================================
+// Varianti P: se dopo le mosse resta esattamente 1 carta non-matta (il futuro scarto)
+// e tutte le matte rimanenti trovano posto su combo della squadra,
+// genera una variante che le cala tutte → pozzBonus applicato automaticamente.
+// Si applica solo quando !giocatore.haPozzetto.
+// ============================================================
+window._calcolaVariantiP = function(d, game, giocatoreIdx) {
+    var giocatore = game.giocatori[giocatoreIdx];
+    var pFirstIdx = d ? d.opzioniScenario.length : 0;
+    var pLabelMap = {};
+
+    if (!d || !d.opzioniScenario || giocatore.haPozzetto) {
+        return { pFirstIdx: pFirstIdx, pLabelMap: pLabelMap };
+    }
+
+    var _w = window.opener || window;
+    var origMano = function(r) { return r.origine === 'mano' || r.origine === 'scarto' || r.origine === 'mazzo'; };
+    var comboSquadra = giocatore.squadra === 0 ? game.combinazioniNoi : game.combinazioniLoro;
+
+    if (comboSquadra.length === 0) return { pFirstIdx: pFirstIdx, pLabelMap: pLabelMap };
+
+    // Opzioni base: OPZ0 + tutte le opzioni già generate (B, M incluse)
+    var baseOptions = [{ _opzIdx: -1, mosse: [], carteUsate: new Set() }];
+    d.opzioniScenario.slice(0, pFirstIdx).forEach(function(opt, i) {
+        if (opt && opt.mosse) baseOptions.push({ _opzIdx: i });
+    });
+
+    baseOptions.forEach(function(wrapper) {
+        var opzIdx = wrapper._opzIdx;
+        var opt = opzIdx === -1 ? wrapper : d.opzioniScenario[opzIdx];
+        if (!opt || !opt.mosse) return;
+
+        // Carte rimanenti dopo questa opzione
+        var carteRim = d.classifica.filter(function(r) {
+            return origMano(r) && !(opt.carteUsate && opt.carteUsate.has(r.cartaRef.id));
+        });
+
+        // Serve esattamente 1 non-matta (il futuro scarto) e ≥1 matta
+        var nonMatte = carteRim.filter(function(r) { return !r.isMatta; });
+        var matte = carteRim.filter(function(r) { return r.isMatta; });
+        if (nonMatte.length !== 1 || matte.length === 0) return;
+
+        // Assegnazione greedy: ogni matta su una combo diversa della squadra
+        var comboUsate = new Set();
+        var assegnazioni = [];
+        for (var mi = 0; mi < matte.length; mi++) {
+            var matta = matte[mi].cartaRef;
+            var trovata = null;
+            for (var ci = 0; ci < comboSquadra.length; ci++) {
+                var combo = comboSquadra[ci];
+                if (comboUsate.has(combo.id)) continue;
+                var puoAgg = _w.puoAggiungereACombinazione ? _w.puoAggiungereACombinazione(matta, combo) : false;
+                if (puoAgg) { trovata = combo; break; }
+            }
+            if (!trovata) { assegnazioni = null; break; }
+            comboUsate.add(trovata.id);
+            assegnazioni.push({ matta: matta, combo: trovata });
+        }
+        if (!assegnazioni) return;
+
+        // Costruisci le mosse extra (copia base + calate matte)
+        var mm = (opt.mosse || []).map(function(m) {
+            return m.carte ? Object.assign({}, m, { carte: m.carte.slice() }) : Object.assign({}, m);
+        });
+        assegnazioni.forEach(function(a) {
+            mm.push({ tipo: 'calata', carta: a.matta, combo: a.combo, comboId: a.combo.id });
+        });
+
+        // Calcola score con temp push/pop
+        var tempCU = new Set(opt.carteUsate || []);
+        mm.forEach(function(m) {
+            if (m.tipo === 'tris' || m.tipo === 'scala') { (m.carte || []).forEach(function(c) { tempCU.add(c.id); }); }
+            else if (m.tipo === 'calata' && m.carta) { tempCU.add(m.carta.id); }
+        });
+        var tempIdx = d.opzioniScenario.length;
+        d.opzioniScenario.push({ mosse: mm, carteUsate: tempCU });
+        var res = window.calcolaScoreOpz(tempIdx, true);
+        d.opzioniScenario.pop();
+
+        // Genera solo se lo score migliora rispetto alla base
+        var baseRes = window.calcolaScoreOpz(opzIdx, true);
+        var baseScore = baseRes ? baseRes.score : 0;
+        if (!res || res.score <= baseScore) return;
+
+        var pIdx = d.opzioniScenario.length;
+        var rawBase = opzIdx === -1 ? 'OPZ0' : 'OPZ' + (opzIdx + 1);
+        var pLabel = rawBase + 'P';
+        pLabelMap['OPZ' + (pIdx + 1)] = pLabel;
+
+        var pCU = new Set(opt.carteUsate || []);
+        mm.forEach(function(m) {
+            if (m.tipo === 'tris' || m.tipo === 'scala') { (m.carte || []).forEach(function(c) { pCU.add(c.id); }); }
+            else if (m.tipo === 'calata' && m.carta) { pCU.add(m.carta.id); }
+        });
+        d.opzioniScenario.push({ mosse: mm, carteUsate: pCU, descCarte: pLabel });
+
+        console.log('[VariantiP] ' + pLabel + ' → ' + matte.length + ' matt' + (matte.length > 1 ? 'e' : 'a') + ' calat' + (matte.length > 1 ? 'e' : 'a') + ' su ' + assegnazioni.map(function(a) { return 'combo#' + a.combo.id; }).join(',') + ' → score=' + res.score.toFixed(1));
+    });
+
+    return { pFirstIdx: pFirstIdx, pLabelMap: pLabelMap };
+};
+
+// ============================================================
+// Varianti V: in faseVincoloMano, per ogni opzione 'scarti' che viola il vincolo
+// (rim < 1) e contiene ≥2 calate, genera versioni "potate" rimuovendo le calate
+// finali finché rim ≥ 1. Restituisce il miglior candidato potato.
+// Sicuro: rimuove sempre dalla fine della sequenza calate, preservando il prefisso valido.
+// ============================================================
+window._calcolaVariantiV = function(candidatiScartiViolanti, totalCarteD) {
+    var bestV = null;
+
+    candidatiScartiViolanti.forEach(function(cand) {
+        var d = cand.analisiData;
+        if (!d || cand.opzIdx < 0) return;
+        var opz = d.opzioniScenario[cand.opzIdx];
+        if (!opz || !opz.mosse) return;
+
+        // Considera solo le calate (le mosse che consumano 1 carta ciascuna)
+        var calate = opz.mosse.filter(function(m) { return m.tipo === 'calata'; });
+        if (calate.length < 2) return; // con 1 sola calata non c'è nulla da potare
+
+        // Prova a rimuovere le calate finali (1 alla volta) finché il vincolo è soddisfatto
+        for (var trim = 1; trim < calate.length; trim++) {
+            var calateRimaste = calate.slice(0, calate.length - trim);
+            // Ricostruisce l'insieme completo di mosse: non-calate + calate rimaste
+            var mosseTrim = opz.mosse.filter(function(m) {
+                return m.tipo !== 'calata' || calateRimaste.indexOf(m) >= 0;
+            });
+
+            // Calcola carteUsate per le mosse trimmate
+            var cuTrim = new Set();
+            mosseTrim.forEach(function(m) {
+                if (m.tipo === 'calata' && m.carta) cuTrim.add(m.carta.id);
+                else (m.carte || []).forEach(function(c) { cuTrim.add(c.id); });
+            });
+
+            var rimTrim = totalCarteD - cuTrim.size - 1;
+            if (rimTrim < 1) continue; // ancora violante, prova a togliere un'altra calata
+
+            // Calcola score con una push/pop temporanea
+            var tempIdx = d.opzioniScenario.length;
+            d.opzioniScenario.push({ mosse: mosseTrim, carteUsate: cuTrim });
+            window._analisiData = d;
+            window._analisiScenario = 'scarti';
+            var sr = window.calcolaScoreOpz(tempIdx, true);
+            d.opzioniScenario.pop();
+
+            var sc = sr ? sr.score : 0;
+            if (!bestV || sc > bestV.score) {
+                bestV = {
+                    score:       sc,
+                    mosse:       mosseTrim,
+                    carteUsate:  cuTrim,
+                    rimTrim:     rimTrim,
+                    srcCand:     cand,
+                    analisiData: d,
+                    scoreRes:    sr
+                };
+            }
+            break; // trovata la versione potata minima valida per questa opzione
+        }
+    });
+
+    return bestV;
+};
+

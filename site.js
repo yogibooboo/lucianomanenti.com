@@ -31,6 +31,7 @@
     function playBuffer(src, vol) {
         var ctx = getCtx();
         var gain = (typeof vol === 'number' && vol >= 0 && vol !== 1) ? vol : 1;
+        var startTime = Date.now();
 
         function doPlay(buffer) {
             var source = ctx.createBufferSource();
@@ -56,6 +57,13 @@
             .then(function (buf) { return ctx.decodeAudioData(buf); })
             .then(function (decoded) {
                 _cache[src] = decoded;
+                if (Date.now() - startTime > 500) return; // stale: troppo tardi, scartiamo
+                if (ctx.state === 'suspended') {
+                    // Contesto non ancora pronto: aspettiamo il resume e poi suoniamo
+                    return ctx.resume().then(function () {
+                        if (Date.now() - startTime <= 500) doPlay(decoded);
+                    });
+                }
                 doPlay(decoded);
             });
     }

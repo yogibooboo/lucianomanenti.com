@@ -264,7 +264,14 @@
                     </div>
                 </div>
                 <button class="btn-modal" id="btn-inizia">INIZIA</button>
+                <button class="btn-modal" id="btn-avvia-automa" style="background:rgba(0,0,0,0.3);font-size:11px;padding:6px 16px;margin-top:4px;color:#aaa;border-color:#555">AVVIA AUTOMA</button>
             </div>
+
+            <div id="automa-banner" style="display:none;position:fixed;bottom:60px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.85);color:#fff;padding:8px 18px;border-radius:20px;z-index:9000;font-size:13px;cursor:pointer;border:1px solid #4a4;user-select:none;text-align:center;line-height:1.5" title="Clicca per fermare"></div>
+
+            <div id="modal-automa-config" class="modal" style="width:460px;top:3%;transform:translateX(-50%);max-height:94vh;overflow-y:auto"></div>
+
+            <div id="fast-counter" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.92);border:2px solid #4a4;border-radius:14px;padding:24px 48px;z-index:9001;flex-direction:column;align-items:center;text-align:center;min-width:300px"></div>
 
             <div id="modal-vittoria" class="modal">
                 <h2 id="modal-vittoria-titolo">HAI VINTO!</h2>
@@ -312,9 +319,14 @@
     <audio id="snd-dindon" src="sounds/scala40/ding.mp3"></audio>
 
     <!-- JS Files -->
-    <script src="site.js?v=1.0"></script>
+    <script src="site.js?v=1.1"></script>
     <script src="burraco-core-new.js?v=1.0"></script>
-    <script src="burraco-game.js?v=8.31"></script>
+    <script src="burraco-engine-default.coeffs.js?v=1.0"></script>
+    <script src="burraco-engine-default.js?v=1.0"></script>
+    <script src="burraco-engine-b.coeffs.js?v=1.0"></script>
+    <script src="burraco-engine-b.js?v=1.0"></script>
+    <script src="burraco-mazzi-seed.js?v=1.0"></script>
+    <script src="burraco-game-new.js?v=1.0"></script>
     <script src="burraco-ui-new.js?v=1.0"></script>
     <script>
         (function () {
