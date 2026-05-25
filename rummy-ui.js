@@ -758,7 +758,7 @@
 
         // New game button
         var btnNuova = document.getElementById('btn-nuova');
-        if (btnNuova) btnNuova.addEventListener('click', mostraModalNuova);
+        if (btnNuova) btnNuova.addEventListener('click', function () { location.reload(); });
 
         // Scoperte toggle
         var btnScoperte = document.getElementById('btn-scoperte');
@@ -817,9 +817,7 @@
         ['btn-nuova-v', 'btn-nuova-s'].forEach(function (id) {
             var btn = document.getElementById(id);
             if (btn) btn.addEventListener('click', function () {
-                nascondiModal('modal-vittoria');
-                nascondiModal('modal-sconfitta');
-                mostraModalNuova();
+                location.reload();
             });
         });
 

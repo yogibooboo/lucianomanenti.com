@@ -1,4 +1,4 @@
-// klondike.js v1.13
+// klondike.js v1.14
 
 var CUORI = 'C', QUADRI = 'Q', FIORI = 'F', PICCHE = 'P';
 var SEMI = [FIORI, QUADRI, CUORI, PICCHE];
@@ -60,6 +60,7 @@ function loadRecords() {
 }
 
 function saveRecords(secs, mvs) {
+    var result = { newDaily: false, newEver: false };
     try {
         var today = new Date().toISOString().slice(0, 10);
         var isBetter = function(cur, cand) {
@@ -69,14 +70,19 @@ function saveRecords(secs, mvs) {
         var ds = localStorage.getItem('klondike_best_daily');
         var daily = ds ? JSON.parse(ds) : null;
         if (!daily || daily.date !== today) daily = null;
-        if (isBetter(daily, cand))
+        if (isBetter(daily, cand)) {
             localStorage.setItem('klondike_best_daily', JSON.stringify({ date: today, secs: secs, moves: mvs }));
+            result.newDaily = true;
+        }
         var es = localStorage.getItem('klondike_best_ever');
         var ever = es ? JSON.parse(es) : null;
-        if (isBetter(ever, cand))
+        if (isBetter(ever, cand)) {
             localStorage.setItem('klondike_best_ever', JSON.stringify({ secs: secs, moves: mvs }));
+            result.newEver = true;
+        }
     } catch(ex) {}
     cachedRecords = loadRecords();
+    return result;
 }
 
 function Card(n, s) { this.numero = n; this.seme = s; this.faceUp = false; }
@@ -393,17 +399,48 @@ function applyRemove(src) {
     }
 }
 
+function fmtTime(secs) {
+    var m = Math.floor(secs / 60), s = secs % 60;
+    return m + ':' + (s < 10 ? '0' : '') + s;
+}
+
+function buildWinRecordHtml(newFlags) {
+    var isEn = document.documentElement.lang === 'en';
+    var rec = cachedRecords;
+    var movesWord = isEn ? 'moves' : 'mosse';
+    var newWord   = isEn ? 'new!' : 'nuovo!';
+    var labelDay  = isEn ? 'Daily record'    : 'Rec. giornaliero';
+    var labelEver = isEn ? 'All-time record' : 'Rec. assoluto';
+    var dailyTxt  = rec.daily ? (fmtTime(rec.daily.secs) + ' &nbsp; ' + rec.daily.moves + ' ' + movesWord) : '—';
+    var everTxt   = rec.ever  ? (fmtTime(rec.ever.secs)  + ' &nbsp; ' + rec.ever.moves  + ' ' + movesWord) : '—';
+    var html = '<div class="win-records">';
+    html += '<div class="win-rec-row' + (newFlags.newDaily ? ' win-rec-new' : '') + '">';
+    html += '<span class="win-rec-label">' + labelDay + '</span><span class="win-rec-val">' + dailyTxt + '</span>';
+    if (newFlags.newDaily) html += '<span class="win-rec-star">&#9733; ' + newWord + '</span>';
+    html += '</div>';
+    html += '<div class="win-rec-row' + (newFlags.newEver ? ' win-rec-new' : '') + '">';
+    html += '<span class="win-rec-label">' + labelEver + '</span><span class="win-rec-val">' + everTxt + '</span>';
+    if (newFlags.newEver) html += '<span class="win-rec-star">&#9733; ' + newWord + '</span>';
+    html += '</div>';
+    html += '</div>';
+    return html;
+}
+
 // --- Win & sounds ---
 function checkWin() {
     for (var fi = 0; fi < 4; fi++) if (foundations[fi].length < 13) return;
     gameWon = true;
     if (timerInterval) clearInterval(timerInterval);
-    saveRecords(seconds, moves);  // aggiorna record (cachedRecords refreshato dentro saveRecords)
+    var newFlags = saveRecords(seconds, moves);
     playSound('tada');
     renderAll();
     setTimeout(function() {
+        var box = document.getElementById('haivinto');
+        var existing = box.querySelector('.win-records');
+        if (existing) existing.remove();
+        box.insertAdjacentHTML('beforeend', buildWinRecordHtml(newFlags));
         document.getElementById('schermo').style.display = 'block';
-        document.getElementById('haivinto').style.display = 'block';
+        box.style.display = 'block';
     }, 800);
 }
 function playSound(id) {

@@ -8,6 +8,8 @@ window._rightPopulated = false; // Sigillo colonna destra
 var AMAZON_BANNERS_ENABLED = false;  // set to false to disable Amazon banners globally
 var AMAZON_BANNERS_RIGHT = true;   // if true, Amazon banners load on right sidebar only
 var AMAZON_FALLBACK_ON_SHIELD = true; // se true, Amazon subentra a sinistra quando AdSense viene bloccato dallo scudo
+var AMAZON_USE_NEW_DEALS = true;      // se true, usa newdeals.json e i pesi. Se false, usa il deals.json tradizionale
+var AMAZON_DEALS_PULSE_THRESHOLD = 35; // Soglia di sconto oltre la quale il badge pulsa (default 35%)
 // ─────────────────────────────────────────────────────────────────────────────
 
 // ─── ADSENSE CONFIG & SHIELD ─────────────────────────────────────────────────
@@ -15,7 +17,7 @@ var AMAZON_FALLBACK_ON_SHIELD = true; // se true, Amazon subentra a sinistra qua
 // Al termine, rimettilo a true. Lo Shield ti proteggerà automaticamente dai click futuri.
 var ADSENSE_GLOBAL_ENABLED = true;  // Interruttore di sicurezza principale
 var ADSENSE_ONLY_LEFT = true;       // Se true, AdSense carica solo a sinistra
-var ADSENSE_SHIELD_DURATION = 24 * 60 * 60 * 1000; // 24 ore di blocco dopo un click
+var ADSENSE_SHIELD_DURATION = 12 * 60 * 60 * 1000; // 12 ore di blocco dopo un click
 var _isMouseOverAdSense = false;
 
 function getInternalUserId() {
@@ -297,7 +299,15 @@ function adjustLayout() {
             '@keyframes amazonFadeSimple30 { 0%, 63% { opacity: 0; visibility: hidden; } 70%, 93% { opacity: 1; visibility: visible; } 100% { opacity: 0; visibility: hidden; } } ' +
             /* 25s Cycle (Left: 15s Rich + 10s Simple) */
             '@keyframes amazonFadeRich25 { 0%, 56% { opacity: 1; visibility: visible; } 64%, 92% { opacity: 0; visibility: hidden; } 100% { opacity: 1; visibility: visible; } } ' +
-            '@keyframes amazonFadeSimple25 { 0%, 56% { opacity: 0; visibility: hidden; } 64%, 92% { opacity: 1; visibility: visible; } 100% { opacity: 0; visibility: hidden; } }';
+            '@keyframes amazonFadeSimple25 { 0%, 56% { opacity: 0; visibility: hidden; } 64%, 92% { opacity: 1; visibility: visible; } 100% { opacity: 0; visibility: hidden; } } ' +
+            /* Badge Styling & Pulsing Animation */
+            '.amazon-badge { display: inline-block; background: #e47911; color: white; padding: 4px 10px; font-weight: bold; border-radius: 4px; font-size: 14px; transition: transform 0.3s ease; } ' +
+            '@keyframes amazonPulseAnim { ' +
+            '0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.7); background: #e47911; } ' +
+            '50% { transform: scale(1.15); box-shadow: 0 0 15px 5px rgba(255, 0, 0, 0.5); background: #ff0000; } ' +
+            '100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 0, 0, 0); background: #e47911; } ' +
+            '} ' +
+            '.amazon-badge-pulse { animation: amazonPulseAnim 1s infinite !important; }';
         document.head.appendChild(styleEl);
     }
 
@@ -307,38 +317,114 @@ function adjustLayout() {
         if (!deal) {
             return '<a href="' + amazonGenericLink + '" target="_blank" rel="noopener" style="display:block;width:100%;height:100%;"><img src="' + amazonGenericImg + '" style="width:100%;height:100%;object-fit:cover;" alt="Offerte Amazon"></a>';
         }
+
+        if (!AMAZON_USE_NEW_DEALS) {
+            var badgeText = deal.badge || 'OFFERTA A TEMPO';
+            var expiryText = deal.expiry || '';
+            var imgUrl = deal.img || amazonGenericImg;
+            var animSuffix = (side === 'left') ? '25' : '30';
+            var duration = (side === 'left') ? '25s' : '30s';
+
+            return '<a href="' + amazonGenericLink + '" target="_blank" rel="sponsored noopener" style="display:block;width:100%;height:100%;text-decoration:none;color:inherit;position:relative;overflow:hidden;background:#131921;">' +
+                // STRATO 1: Versione Ricca
+                '<div style="position:absolute;top:0;left:0;width:300px;height:600px;display:flex;flex-direction:column;box-sizing:border-box;font-family:Segoe UI,Roboto,Helvetica,Arial,sans-serif;animation: amazonFadeRich' + animSuffix + ' ' + duration + ' infinite; transition: opacity 1s ease-in-out;">' +
+                '<div style="background:#cc0c39;color:#fff;padding:12px;text-align:center;font-weight:bold;font-size:14px;text-transform:uppercase;">Offerta a Tempo</div>' +
+                '<div style="width:100%;height:200px;background:#fff;display:flex;justify-content:center;align-items:center;padding:10px;box-sizing:border-box;">' +
+                '<img src="' + imgUrl + '" style="max-width:100%;max-height:100%;object-fit:contain;" alt="Offerte Amazon">' +
+                '</div>' +
+                '<div style="padding:15px 24px;flex-grow:1;display:flex;flex-direction:column;text-align:center;color:#fff;">' +
+                '<div style="font-size:16px;font-weight:600;margin-bottom:15px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;overflow:hidden;">' + deal.title + '</div>' +
+                '<div>' +
+                '<span style="display:inline-block;background:#cc0c39;color:#fff;padding:4px 10px;border-radius:4px;font-size:13px;font-weight:bold;margin-bottom:12px;">' + badgeText + '</span>' +
+                (expiryText ? '<div style="font-size:13px;color:#94a3b8;font-style:italic;">' + expiryText + '</div>' : '') +
+                '</div>' +
+                '</div>' +
+                '<div style="padding:0 24px 20px;">' +
+                '<div style="display:block;background:linear-gradient(180deg,#ff9900 0%,#e68a00 100%);color:#000;padding:16px;border-radius:30px;font-weight:bold;text-align:center;">Vedi offerta su Amazon.it</div>' +
+                '</div>' +
+                '<div style="font-size:10px;color:#64748b;text-align:center;padding:10px;line-height:1.2;">Disponibile su Amazon.it<br><span style="font-size:9px;opacity:0.7;">Come affiliato Amazon, guadagno dagli acquisti idonei.</span></div>' +
+                '</div>' +
+                // STRATO 2: Versione Semplice (Solo Immagine)
+                '<div style="position:absolute;top:0;left:0;width:300px;height:600px;animation: amazonFadeSimple' + animSuffix + ' ' + duration + ' infinite; transition: opacity 1s ease-in-out; background:#fff; display:flex; align-items:center; justify-content:center;">' +
+                '<img src="' + imgUrl + '" style="width:100%;height:100%;object-fit:contain;" alt="Offerta Amazon">' +
+                '<div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.7);color:#fff;padding:15px;text-align:center;font-weight:bold;font-size:14px;">SCOPRI DI PIÙ SU AMAZON</div>' +
+                '</div>' +
+                '</a>';
+        }
+        
+        var headerText = (AMAZON_USE_NEW_DEALS && deal.custom_message) ? deal.custom_message : 'Offerta a Tempo';
         var badgeText = deal.badge || 'OFFERTA A TEMPO';
         var expiryText = deal.expiry || '';
-        var imgUrl = deal.img || amazonGenericImg;
+        
+        var firstImg = (AMAZON_USE_NEW_DEALS && deal.active_images && deal.active_images.length > 0) ? deal.active_images[0] : (deal.img || amazonGenericImg);
+        var secondImg = firstImg;
+        var imagesAttr = '';
+        if (AMAZON_USE_NEW_DEALS && deal.active_images && deal.active_images.length > 0) {
+            imagesAttr = ' data-images="' + deal.active_images.join(',') + '" data-side="' + side + '" data-rich-index="0" data-simple-index="0" data-anim-start="' + new Date().getTime() + '"';
+        }
 
         // Tempi differenziati: 25s a sinistra (15+10), 30s a destra (20+10)
         var animSuffix = (side === 'left') ? '25' : '30';
         var duration = (side === 'left') ? '25s' : '30s';
 
+        var priceAndBadgeHtml = '';
+        var expiryTitleAttr = (expiryText ? ' title="' + expiryText + '"' : '');
+
+        if (AMAZON_USE_NEW_DEALS) {
+            var priceHtml = (deal.price && deal.price.trim() !== '') ? '<span style="font-size:28px; font-weight:bold; color:#ff5252; margin:0;">' + deal.price + '</span>' : '';
+            var badgeHtml = '';
+            if (deal.badge && deal.badge.trim() !== '') {
+                var isHighDiscount = false;
+                var match = deal.badge.match(/(\d+)%/);
+                if (match && parseInt(match[1], 10) > AMAZON_DEALS_PULSE_THRESHOLD) {
+                    isHighDiscount = true;
+                }
+                var pulseClass = isHighDiscount ? ' amazon-badge-pulse' : '';
+                badgeHtml = '<span class="amazon-badge' + pulseClass + '">' + deal.badge + '</span>';
+            }
+            if (priceHtml || badgeHtml) {
+                var gapStyle = (priceHtml && badgeHtml) ? ' gap:10px;' : '';
+                priceAndBadgeHtml = '<div style="display:flex; justify-content:center; align-items:center;' + gapStyle + ' margin-bottom:8px;"' + expiryTitleAttr + '>' +
+                    priceHtml +
+                    badgeHtml +
+                    '</div>';
+            }
+        } else {
+            priceAndBadgeHtml = '<div style="margin-bottom:12px;"' + expiryTitleAttr + '>' +
+                '<span style="display:inline-block;background:#cc0c39;color:#fff;padding:4px 10px;border-radius:4px;font-size:13px;font-weight:bold;">' + badgeText + '</span>' +
+                '</div>';
+        }
+
         // Struttura a due strati con animazione
-        return '<a href="' + amazonGenericLink + '" target="_blank" rel="sponsored noopener" style="display:block;width:100%;height:100%;text-decoration:none;color:inherit;position:relative;overflow:hidden;background:#131921;">' +
+        return '<a href="' + amazonGenericLink + '" target="_blank" rel="sponsored noopener" style="display:block;width:100%;height:100%;text-decoration:none;color:inherit;position:relative;overflow:hidden;background:#131921;"' + imagesAttr + '>' +
             // STRATO 1: Versione Ricca
             '<div style="position:absolute;top:0;left:0;width:300px;height:600px;display:flex;flex-direction:column;box-sizing:border-box;font-family:Segoe UI,Roboto,Helvetica,Arial,sans-serif;animation: amazonFadeRich' + animSuffix + ' ' + duration + ' infinite; transition: opacity 1s ease-in-out;">' +
-            '<div style="background:#cc0c39;color:#fff;padding:12px;text-align:center;font-weight:bold;font-size:14px;text-transform:uppercase;">Offerta a Tempo</div>' +
-            '<div style="width:100%;height:200px;background:#fff;display:flex;justify-content:center;align-items:center;padding:10px;box-sizing:border-box;">' +
-            '<img src="' + imgUrl + '" style="max-width:100%;max-height:100%;object-fit:contain;" alt="Offerte Amazon">' +
+            '<div style="background:#cc0c39;color:#fff;padding:12px;text-align:center;font-weight:bold;font-size:14px;text-transform:uppercase;">' + headerText + '</div>' +
+            '<div style="width:100%;height:260px;background:#fff;display:flex;justify-content:center;align-items:center;padding:0;box-sizing:border-box;">' +
+            '<img src="' + firstImg + '" class="amazon-banner-img amazon-rich-img" style="max-width:100%;max-height:100%;object-fit:contain;" alt="Offerte Amazon">' +
             '</div>' +
-            '<div style="padding:15px 24px;flex-grow:1;display:flex;flex-direction:column;text-align:center;color:#fff;">' +
-            '<div style="font-size:16px;font-weight:600;margin-bottom:15px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;overflow:hidden;">' + deal.title + '</div>' +
-            '<div>' +
-            '<span style="display:inline-block;background:#cc0c39;color:#fff;padding:4px 10px;border-radius:4px;font-size:13px;font-weight:bold;margin-bottom:12px;">' + badgeText + '</span>' +
-            (expiryText ? '<div style="font-size:13px;color:#94a3b8;font-style:italic;">' + expiryText + '</div>' : '') +
+            '<div style="padding:15px 24px 0;flex-grow:1;display:flex;flex-direction:column;text-align:center;color:#fff;justify-content:center;min-height:0;">' +
+            '<div style="font-size:16px;font-weight:600;margin-bottom:0;line-height:1.4;display:-webkit-box;-webkit-line-clamp:6;overflow:hidden;">' + deal.title + '</div>' +
             '</div>' +
-            '</div>' +
-            '<div style="padding:0 24px 20px;">' +
+            priceAndBadgeHtml +
+            '<div style="padding:0 24px 0;">' +
             '<div style="display:block;background:linear-gradient(180deg,#ff9900 0%,#e68a00 100%);color:#000;padding:16px;border-radius:30px;font-weight:bold;text-align:center;">Vedi offerta su Amazon.it</div>' +
             '</div>' +
-            '<div style="font-size:10px;color:#64748b;text-align:center;padding:10px;line-height:1.2;">Disponibile su Amazon.it<br><span style="font-size:9px;opacity:0.7;">Come affiliato Amazon, guadagno dagli acquisti idonei.</span></div>' +
+            '<div style="font-size:12px;color:#64748b;text-align:center;padding:8px 10px 8px;line-height:1.2;">Come affiliato Amazon,<br>guadagno dagli acquisti idonei.</div>' +
             '</div>' +
-            // STRATO 2: Versione Semplice (Solo Immagine)
-            '<div style="position:absolute;top:0;left:0;width:300px;height:600px;animation: amazonFadeSimple' + animSuffix + ' ' + duration + ' infinite; transition: opacity 1s ease-in-out; background:#fff; display:flex; align-items:center; justify-content:center;">' +
-            '<img src="' + imgUrl + '" style="width:100%;height:100%;object-fit:contain;" alt="Offerta Amazon">' +
-            '<div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.7);color:#fff;padding:15px;text-align:center;font-weight:bold;font-size:14px;">SCOPRI DI PIÙ SU AMAZON</div>' +
+            // STRATO 2: Versione Semplice (Immagine Ingrandita + Info)
+            '<div style="position:absolute;top:0;left:0;width:300px;height:600px;display:flex;flex-direction:column;box-sizing:border-box;font-family:Segoe UI,Roboto,Helvetica,Arial,sans-serif;animation: amazonFadeSimple' + animSuffix + ' ' + duration + ' infinite; transition: opacity 1s ease-in-out; background:#131921;">' +
+            '<div style="background:#cc0c39;color:#fff;padding:12px;text-align:center;font-weight:bold;font-size:14px;text-transform:uppercase;">' + headerText + '</div>' +
+            '<div style="width:100%;flex-grow:1;background:#fff;display:flex;justify-content:center;align-items:center;padding:0;box-sizing:border-box;min-height:0;">' +
+            '<img src="' + secondImg + '" class="amazon-banner-img amazon-simple-img" style="max-width:100%;max-height:100%;object-fit:contain;" alt="Offerte Amazon">' +
+            '</div>' +
+            '<div style="padding:15px 24px 5px;display:flex;flex-direction:column;text-align:center;color:#fff;">' +
+            priceAndBadgeHtml +
+            '</div>' +
+            '<div style="padding:0 24px 0;">' +
+            '<div style="display:block;background:linear-gradient(180deg,#ff9900 0%,#e68a00 100%);color:#000;padding:16px;border-radius:30px;font-weight:bold;text-align:center;">Vedi offerta su Amazon.it</div>' +
+            '</div>' +
+            '<div style="font-size:12px;color:#64748b;text-align:center;padding:8px 10px 8px;line-height:1.2;">Come affiliato Amazon,<br>guadagno dagli acquisti idonei.</div>' +
             '</div>' +
             '</a>';
     };
@@ -363,12 +449,13 @@ function adjustLayout() {
             amazonGeneric = true;
             // Se è disponibile un deal specifico dal JSON, usa quello
             if (window._amazonDeal600) {
-                amazonGenericImg = window._amazonDeal600.img;
+                amazonGenericImg = (AMAZON_USE_NEW_DEALS && window._amazonDeal600.active_images && window._amazonDeal600.active_images.length > 0) ? window._amazonDeal600.active_images[0] : window._amazonDeal600.img;
                 amazonGenericLink = window._amazonDeal600.link;
             }
         } else if (amazonEnabled && width === 300 && height === 250) {
             amazonGeneric = true;
-            amazonGenericImg = 'banner/offerteamazon300x250.jpg';
+            amazonGenericImg = 'banner/galleryamazon300x250.jpg';
+            amazonGenericLink = 'view_gallery.html';
         }
 
         // Map fixed sizes to provided AdSense Slot IDs
@@ -496,7 +583,11 @@ function adjustLayout() {
         if (amazonGeneric && !window.showBannerDimensions) {
             var startTime = Date.now();
             var pagePath = window.location.pathname.split('/').pop() || 'index.html';
-            var dealId = (window._amazonDeal600 && window._amazonDeal600.id) ? window._amazonDeal600.id : 'generic';
+            var dealId = 'generic';
+            if (window._amazonDeal600 && window._amazonDeal600.title) {
+                var titleText = window._amazonDeal600.title;
+                dealId = titleText.length > 60 ? titleText.substring(0, 60) + '...' : titleText;
+            }
             // Impression solo per 300x600 e solo una volta per sessione (flag globale)
             if (width === 300 && height === 600 && !window._amazonImpressionSent[bannerId] && typeof gtag === 'function') {
                 window._amazonImpressionSent[bannerId] = true;
@@ -670,24 +761,51 @@ function adjustLayout() {
     }
 }
 
-// Fetch deals.json and pick a random valid deal for the 300x600 banner
+// Fetch deals.json or newdeals.json and pick a deal for the 300x600 banner
 window._amazonDeal600 = null;
 window._amazonImpressionSent = {}; // chiave: bannerId → true se impression già inviata
 (function () {
     try {
         var xhr = new XMLHttpRequest();
-        xhr.open('GET', 'banner/deals.json', true);
+        var jsonFile = AMAZON_USE_NEW_DEALS ? 'banner/newdeals.json' : 'banner/deals.json';
+        xhr.open('GET', jsonFile, true);
         xhr.onreadystatechange = function () {
             if (xhr.readyState === 4 && xhr.status === 200) {
                 try {
                     var data = JSON.parse(xhr.responseText);
                     var deals = data.deals || data; // compatibile anche con array puro
                     var valid = deals.filter(function (d) {
-                        return d.link && d.link !== '#' && d.img && d.img !== '';
+                        return d.link && d.link !== '#' && d.img && d.img !== '' && d.active !== false;
                     });
                     if (valid.length > 0) {
-                        window._amazonDeal600 = valid[Math.floor(Math.random() * valid.length)];
-                        console.log('Amazon deal caricato:', window._amazonDeal600.id);
+                        if (AMAZON_USE_NEW_DEALS) {
+                            // Algoritmo di estrazione casuale pesata (Weighted Randomness)
+                            var totalWeight = 0;
+                            var i;
+                            for (i = 0; i < valid.length; i++) {
+                                var w = typeof valid[i].weight !== 'undefined' ? parseInt(valid[i].weight, 10) : 5;
+                                if (isNaN(w) || w < 1) w = 5;
+                                valid[i]._tempWeight = w;
+                                totalWeight += w;
+                            }
+                            
+                            var r = Math.random() * totalWeight;
+                            var sum = 0;
+                            var selectedDeal = valid[valid.length - 1]; // fallback
+                            for (i = 0; i < valid.length; i++) {
+                                sum += valid[i]._tempWeight;
+                                if (r <= sum) {
+                                    selectedDeal = valid[i];
+                                    break;
+                                }
+                            }
+                            window._amazonDeal600 = selectedDeal;
+                            console.log('Amazon deal caricato (pesato):', window._amazonDeal600.id, 'con peso:', window._amazonDeal600._tempWeight);
+                        } else {
+                            // Selezione casuale uniforme tradizionale
+                            window._amazonDeal600 = valid[Math.floor(Math.random() * valid.length)];
+                            console.log('Amazon deal caricato (tradizionale):', window._amazonDeal600.id);
+                        }
                     } else {
                         window._amazonDeal600 = false; // nessun deal valido, non aspettare oltre
                     }
@@ -706,9 +824,75 @@ if (document.readyState === 'loading') {
     adjustLayout();
 }
 
+// Image rotation logic for Amazon banners with variant images
+function initAmazonImageRotator() {
+    setInterval(function () {
+        var banners = document.querySelectorAll('a[data-images]');
+        for (var i = 0; i < banners.length; i++) {
+            var banner = banners[i];
+            var imagesStr = banner.getAttribute('data-images');
+            if (!imagesStr) continue;
+            var images = imagesStr.split(',');
+            if (images.length <= 1) continue;
+
+            var side = banner.getAttribute('data-side') || 'right';
+            var duration = (side === 'left') ? 25 : 30;
+            var animStartStr = banner.getAttribute('data-anim-start');
+            if (!animStartStr) continue;
+            var animStart = parseInt(animStartStr, 10);
+            if (isNaN(animStart)) continue;
+
+            var elapsed = (new Date().getTime() - animStart) / 1000;
+            var progress = elapsed % duration;
+
+            // Determine current phase
+            var phase = -1; // unsafe / transition
+            if (duration === 30) {
+                if (progress >= 2 && progress < 18) phase = 0; // Rich visible, Simple hidden
+                else if (progress >= 22 && progress < 27) phase = 1; // Simple visible, Rich hidden
+            } else if (duration === 25) {
+                if (progress >= 2 && progress < 13) phase = 0; // Rich visible, Simple hidden
+                else if (progress >= 17 && progress < 22) phase = 1; // Simple visible, Rich hidden
+            }
+
+            if (phase === -1) continue;
+
+            var lastPhaseStr = banner.getAttribute('data-last-phase');
+            var lastPhase = lastPhaseStr ? parseInt(lastPhaseStr, 10) : -1;
+
+            if (phase !== lastPhase) {
+                var richIndex = parseInt(banner.getAttribute('data-rich-index') || '0', 10);
+                var simpleIndex = parseInt(banner.getAttribute('data-simple-index') || '0', 10);
+
+                if (phase === 0) {
+                    // Rich is visible, Simple is hidden.
+                    // Set Simple's image to the same as Rich's current index
+                    simpleIndex = richIndex;
+                    var simpleImg = banner.querySelector('.amazon-simple-img');
+                    if (simpleImg) {
+                        simpleImg.src = images[simpleIndex];
+                    }
+                    banner.setAttribute('data-simple-index', simpleIndex);
+                } else if (phase === 1) {
+                    // Simple is visible, Rich is hidden.
+                    // Update Rich's image to the next variant after the current Simple index
+                    richIndex = (simpleIndex + 1) % images.length;
+                    var richImg = banner.querySelector('.amazon-rich-img');
+                    if (richImg) {
+                        richImg.src = images[richIndex];
+                    }
+                    banner.setAttribute('data-rich-index', richIndex);
+                }
+                banner.setAttribute('data-last-phase', phase);
+            }
+        }
+    }, 1000);
+}
+
 window.addEventListener('load', function () {
     adjustLayout();
     trackVisibleBanners('initial_load');
+    initAmazonImageRotator();
 
     var minuteCounter = 0;
     setInterval(function () {

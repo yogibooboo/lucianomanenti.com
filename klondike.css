@@ -117,10 +117,15 @@ html, body {
     z-index: 40000;
     position: absolute;
     width: 500px;
-    height: 280px;
+    height: 390px;
     left: 250px;
-    top: 200px;
+    top: 140px;
     background-size: 500px 280px;
+    background-repeat: no-repeat;
+    background-position: top;
+    background-color: #2d5a4a;
+    border-radius: 10px;
+    overflow: hidden;
     display: none;
 }
 
@@ -130,7 +135,7 @@ html, body {
     position: absolute;
     width: 130px;
     height: 30px;
-    top: 242px;
+    top: 352px;
     z-index: 50000;
     cursor: pointer;
     font-family: Slackey, sans-serif;
@@ -139,6 +144,50 @@ html, body {
     color: #fff;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.45);
     transition: transform 0.2s;
+}
+
+.win-records {
+    position: absolute;
+    top: 285px;
+    left: 0;
+    width: 100%;
+    padding: 6px 16px;
+    box-sizing: border-box;
+    font-family: Slackey, sans-serif;
+    color: #fff;
+}
+
+.win-rec-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    margin-bottom: 4px;
+    background: rgba(255,255,255,0.08);
+}
+
+.win-rec-row.win-rec-new {
+    background: rgba(255, 215, 0, 0.22);
+    outline: 1px solid rgba(255, 215, 0, 0.5);
+}
+
+.win-rec-label {
+    font-size: 12px;
+    opacity: 0.75;
+    width: 130px;
+    flex-shrink: 0;
+}
+
+.win-rec-val {
+    font-size: 14px;
+    flex: 1;
+}
+
+.win-rec-star {
+    font-size: 13px;
+    color: gold;
+    text-shadow: 0 0 6px rgba(255,215,0,0.7);
 }
 
 .form button:hover { transform: scale(1.05); }
@@ -246,6 +295,25 @@ img { border-style: none; }
 .pulsante-home       { background-color: #3a3a5a; }
 .pulsante-burraco    { background-color: #7a2a7a; }
 .pulsante-rummy      { background-color: #2a7a7a; }
+
+/* Testo pulsanti ingrandito su smartphone (corrisponde a _isPhone in klondike.js) */
+@media screen and (max-width: 599px),
+       screen and (orientation: landscape) and (max-height: 599px) {
+    .pulsante2 {
+        font-size: 22px;
+        height: 40px;
+        line-height: 40px;
+    }
+    #pulsante2 {
+        background-size: 30px 30px;
+    }
+    .pulsantecomments {
+        font-size: 18px;
+        height: 40px;
+        line-height: 40px;
+        width: 130px;
+    }
+}
 
 .btn-reset-rec {
     position: absolute;

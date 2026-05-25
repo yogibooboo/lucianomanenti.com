@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-WRBDRDQ4L8');
+    </script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Le Nostre Offerte Amazon Selezionate | lucianomanenti.com</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* Base styles */
+        :root {
+            --bg-color: #0b0c10;
+            --card-bg: #131921;
+            --text-primary: #ffffff;
+            --text-secondary: #94a3b8;
+            --accent-gold: #ff9900;
+            --accent-hover: #e68a00;
+            --accent-red: #ff5252;
+            --glow-color: rgba(255, 153, 0, 0.15);
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* Container & Grid */
+        .page-container {
+            width: 100%;
+            max-width: 1960px; /* Aumentato per contenere fino a 6 colonne */
+            padding: 40px 20px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2.5rem;
+            margin: 0 0 10px 0;
+            background: linear-gradient(135deg, #fff 30%, var(--accent-gold) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        header p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            margin: 0;
+        }
+
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 12px 28px;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            margin-bottom: 30px;
+        }
+
+        .back-button:hover {
+            background: var(--accent-gold);
+            color: #000;
+            border-color: var(--accent-gold);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 153, 0, 0.4);
+        }
+
+        .gallery-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px; /* Ridotto per far entrare comodamente 6 colonne su schermi larghi */
+            width: 100%;
+            margin-bottom: 50px;
+            min-height: 200px;
+        }
+
+        /* Banner Card */
+        .banner-card {
+            width: 300px;
+            height: 600px;
+            background: var(--card-bg);
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+            position: relative;
+            text-decoration: none;
+            color: inherit;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), 
+                        box-shadow 0.3s cubic-bezier(0.25, 0.8, 0.25, 1),
+                        border-color 0.3s ease;
+        }
+
+        .banner-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 35px var(--glow-color);
+            border-color: rgba(255, 153, 0, 0.3);
+        }
+
+        .banner-header {
+            background: #cc0c39;
+            color: #fff;
+            padding: 12px;
+            text-align: center;
+            font-weight: 700;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .image-container {
+            width: 100%;
+            height: 260px;
+            background: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        .image-container img {
+            max-width: 90%;
+            max-height: 90%;
+            object-fit: contain;
+            transition: transform 0.5s ease, opacity 0.3s ease;
+        }
+
+        .info-container {
+            padding: 15px 24px 0;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            text-align: center;
+            color: #fff;
+            justify-content: center;
+            min-height: 0;
+        }
+
+        .title {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 0;
+            line-height: 1.45;
+            display: -webkit-box;
+            -webkit-line-clamp: 6;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        /* Price and Badge */
+        .price-badge-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+            min-height: 42px;
+        }
+
+        .price {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--accent-red);
+            margin: 0;
+        }
+
+        .amazon-badge {
+            display: inline-block;
+            background: #e47911;
+            color: white;
+            padding: 4px 10px;
+            font-weight: bold;
+            border-radius: 4px;
+            font-size: 13px;
+            transition: transform 0.3s ease;
+        }
+
+        /* Pulse Animation */
+        @keyframes amazonPulseAnim {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.7); background: #e47911; }
+            50% { transform: scale(1.1); box-shadow: 0 0 12px 4px rgba(255, 0, 0, 0.5); background: #ff0000; }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 0, 0, 0); background: #e47911; }
+        }
+
+        .amazon-badge-pulse {
+            animation: amazonPulseAnim 1s infinite !important;
+        }
+
+        /* Button Box */
+        .button-box {
+            padding: 0 24px 0;
+            margin-bottom: 12px;
+        }
+
+        .cta-button {
+            display: block;
+            background: linear-gradient(180deg, #ff9900 0%, #e68a00 100%);
+            color: #000;
+            padding: 14px;
+            border-radius: 30px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: all 0.2s ease;
+        }
+
+        .banner-card:hover .cta-button {
+            background: linear-gradient(180deg, #ffb300 0%, #ff9900 100%);
+            box-shadow: 0 6px 15px rgba(255, 153, 0, 0.3);
+        }
+
+        .disclaimer {
+            font-size: 11px;
+            color: #64748b;
+            text-align: center;
+            padding: 0 10px 14px;
+            line-height: 1.3;
+        }
+
+        /* Loader */
+        .loader {
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border-left-color: var(--accent-gold);
+            animation: spin 1s linear infinite;
+            margin: 80px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            color: var(--accent-red);
+            text-align: center;
+            font-size: 1.1rem;
+            padding: 40px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="page-container">
+        
+        <!-- Pulsante di uscita superiore -->
+        <a href="index.html" class="back-button">← Torna ai Giochi</a>
+
+        <header>
+            <h1>Offerte Amazon in Evidenza</h1>
+        </header>
+
+        <!-- Loader di caricamento -->
+        <div id="loader" class="loader"></div>
+
+        <!-- Griglia delle Offerte -->
+        <div class="gallery-grid" id="gallery-grid"></div>
+
+        <!-- Pulsante di uscita inferiore -->
+        <a href="index.html" class="back-button" id="bottom-back" style="display: none;">← Torna ai Giochi</a>
+
+    </div>
+
+    <script>
+        const pageStartTime = Date.now();
+        const AMAZON_DEALS_PULSE_THRESHOLD = 35; // Soglia sconto per far pulsare il badge (35%)
+
+        // Carica i dati delle offerte
+        fetch('banner/newdeals.json?nocache=' + new Date().getTime())
+            .then(response => response.json())
+            .then(data => {
+                const loader = document.getElementById('loader');
+                const grid = document.getElementById('gallery-grid');
+                const bottomBack = document.getElementById('bottom-back');
+                
+                loader.style.display = 'none';
+
+                if (!data.deals || data.deals.length === 0) {
+                    grid.innerHTML = "<p class='error-message'>Nessuna offerta attiva al momento. Torna a trovarci più tardi!</p>";
+                    return;
+                }
+
+                // Filtra solo le offerte attive ed esclude i segnaposto
+                const activeDeals = data.deals.filter(deal => 
+                    deal.active !== false && 
+                    deal.title !== '⚠️ Prodotto Rimosso o Non Valido' &&
+                    deal.title !== 'In elaborazione...'
+                );
+
+                if (activeDeals.length === 0) {
+                    grid.innerHTML = "<p class='error-message'>Nessuna offerta attiva al momento. Torna a trovarci più tardi!</p>";
+                    return;
+                }
+
+                // Genera le card per ciascun deal
+                activeDeals.forEach(deal => {
+                    const card = document.createElement('a');
+                    card.className = 'banner-card';
+                    card.href = deal.link;
+                    card.target = '_blank';
+                    card.rel = 'sponsored noopener';
+
+                    const headerText = deal.custom_message ? deal.custom_message : 'Offerta a tempo';
+                    const expiryText = deal.expiry ? deal.expiry : '';
+                    
+                    // Gestione immagini (singola o varianti)
+                    const imagesList = deal.active_images && deal.active_images.length > 0 ? deal.active_images : [deal.img];
+                    const firstImage = imagesList[0];
+
+                    // Gestione Prezzo e Badge sconto
+                    let priceAndBadgeHtml = '';
+                    if (deal.price && deal.price.trim() !== 'Errore' && deal.price.trim() !== '') {
+                        const priceHtml = `<span class="price">${deal.price}</span>`;
+                        let badgeHtml = '';
+                        
+                        if (deal.badge && deal.badge.trim() !== '') {
+                            let isHighDiscount = false;
+                            const match = deal.badge.match(/(\d+)%/);
+                            if (match && parseInt(match[1], 10) > AMAZON_DEALS_PULSE_THRESHOLD) {
+                                isHighDiscount = true;
+                            }
+                            const pulseClass = isHighDiscount ? ' amazon-badge-pulse' : '';
+                            badgeHtml = `<span class="amazon-badge${pulseClass}">${deal.badge}</span>`;
+                        }
+
+                        const expiryTitle = expiryText ? ` title="${expiryText}"` : '';
+                        priceAndBadgeHtml = `
+                            <div class="price-badge-row"${expiryTitle}>
+                                ${priceHtml}
+                                ${badgeHtml}
+                            </div>
+                        `;
+                    }
+
+                    card.innerHTML = `
+                        <div class="banner-header">${headerText}</div>
+                        <div class="image-container">
+                            <img src="${firstImage}" alt="Immagine Prodotto">
+                        </div>
+                        <div class="info-container">
+                            <div class="title" title="${deal.title}">${deal.title}</div>
+                        </div>
+                        ${priceAndBadgeHtml}
+                        <div class="button-box">
+                            <span class="cta-button">Vedi offerta su Amazon.it</span>
+                        </div>
+                        <div class="disclaimer">Come affiliato Amazon, guadagno dagli acquisti idonei.</div>
+                    `;
+
+                    // Tracciamento dei click per GA4
+                    card.addEventListener('click', function () {
+                        if (typeof gtag === 'function') {
+                            const titleText = deal.title;
+                            const dealId = titleText.length > 60 ? titleText.substring(0, 60) + '...' : titleText;
+                            const exposureSeconds = Math.round((Date.now() - pageStartTime) / 1000);
+                            
+                            gtag('event', 'Amazon_Banner_Click', {
+                                'event_category': 'Affiliate',
+                                'amazon_deal_id': dealId,
+                                'tempo_esposizione': exposureSeconds,
+                                'page_location': window.location.href,
+                                'non_interaction': false
+                            });
+                        }
+                    });
+
+                    grid.appendChild(card);
+                });
+
+                // Mostra il pulsante di uscita inferiore se ci sono più di 4 elementi
+                if (activeDeals.length > 4) {
+                    bottomBack.style.display = 'inline-flex';
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                document.getElementById('loader').style.display = 'none';
+                document.getElementById('gallery-grid').innerHTML = "<p class='error-message'>Si è verificato un errore nel caricamento delle offerte. Riprova più tardi.</p>";
+            });
+    </script>
+</body>
+</html>
