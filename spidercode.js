@@ -702,17 +702,35 @@ var scala = {
 		}
 
 		ctxg.clearRect(0, 0, 1000, 700);
-		ctxg.font = "20px Arial";
-		ctxg.fillStyle = "#888888";
-		ctxg.fillText(t('moves') + scala.moves, 20, 668);
-		ctxg.fillText(t('undo') + scala.numeroundo, 220, 668);
-		ctxg.fillText(t('time') + scala.totime(parseInt((performance.now() - scala.startgioco) / 1000)), 450, 668);
-		ctxg.fillText(t('games') + scala.games, 700, 668);
+
+		// Score panel background
+		var px = 280, py = 620, pw = 360, ph = 72, pr = 10;
+		if (scala.bestscore != 0) { ph = 96; py -= 24; }
+		ctxg.fillStyle = "rgba(0,0,0,0.45)";
+		ctxg.beginPath();
+		ctxg.moveTo(px + pr, py);
+		ctxg.lineTo(px + pw - pr, py);
+		ctxg.arcTo(px + pw, py, px + pw, py + pr, pr);
+		ctxg.lineTo(px + pw, py + ph - pr);
+		ctxg.arcTo(px + pw, py + ph, px + pw - pr, py + ph, pr);
+		ctxg.lineTo(px + pr, py + ph);
+		ctxg.arcTo(px, py + ph, px, py + ph - pr, pr);
+		ctxg.lineTo(px, py + pr);
+		ctxg.arcTo(px, py, px + pr, py, pr);
+		ctxg.closePath();
+		ctxg.fill();
+
+		ctxg.font = "18px Arial";
+		ctxg.font = "16px Arial";
+		ctxg.fillStyle = "#cccccc";
+		ctxg.fillText(t('games') + scala.games, px + 10, py + 26);
+		ctxg.fillText(t('moves') + scala.moves,    px + 10, py + 50);
+		ctxg.fillText(t('undo') + scala.numeroundo, px + 120, py + 50);
+		ctxg.fillText(t('time') + scala.totime(parseInt((performance.now() - scala.startgioco) / 1000)), px + 220, py + 50);
 
 		if (scala.bestscore != 0) {
-			ctxg.font = "16px Arial";
-			ctxg.fillText(t('best_score') + scala.bestscore, 220, 692);
-			ctxg.fillText((t('best_time') + scala.totime(scala.besttime)), 450, 692);
+			ctxg.fillText(t('best_score') + scala.bestscore,              px + 10,  py + 76);
+			ctxg.fillText(t('best_time')  + scala.totime(scala.besttime), px + 180, py + 76);
 		}
 
 		for (var i = 0; i < 8; i++) {

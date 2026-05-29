@@ -117,7 +117,7 @@ html, body {
     z-index: 40000;
     position: absolute;
     width: 500px;
-    height: 390px;
+    height: 510px;
     left: 250px;
     top: 140px;
     background-size: 500px 280px;
@@ -133,13 +133,13 @@ html, body {
     border-radius: 8px;
     border: 2px solid rgba(255, 255, 255, 0.35);
     position: absolute;
-    width: 130px;
-    height: 30px;
-    top: 352px;
+    width: 280px;
+    height: 44px;
+    top: 458px;
     z-index: 50000;
     cursor: pointer;
     font-family: Slackey, sans-serif;
-    font-size: 12px;
+    font-size: 24px;
     background: #7aaa9a;
     color: #fff;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.45);
@@ -158,12 +158,9 @@ html, body {
 }
 
 .win-rec-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 4px 8px;
+    padding: 6px 12px;
     border-radius: 6px;
-    margin-bottom: 4px;
+    margin-bottom: 8px;
     background: rgba(255,255,255,0.08);
 }
 
@@ -173,21 +170,29 @@ html, body {
 }
 
 .win-rec-label {
-    font-size: 12px;
+    font-size: 18px;
     opacity: 0.75;
-    width: 130px;
-    flex-shrink: 0;
+    display: block;
+    margin-bottom: 2px;
+}
+
+.win-rec-bottom {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    white-space: nowrap;
 }
 
 .win-rec-val {
-    font-size: 14px;
+    font-size: 28px;
     flex: 1;
 }
 
 .win-rec-star {
-    font-size: 13px;
+    font-size: 26px;
     color: gold;
     text-shadow: 0 0 6px rgba(255,215,0,0.7);
+    white-space: nowrap;
 }
 
 .form button:hover { transform: scale(1.05); }
@@ -296,6 +301,22 @@ img { border-style: none; }
 .pulsante-burraco    { background-color: #7a2a7a; }
 .pulsante-rummy      { background-color: #2a7a7a; }
 
+.link-giochi-open {
+    grid-template-columns: repeat(2, 225px);
+    background: rgba(0, 0, 0, 0.55);
+    padding: 15px;
+    border-radius: 12px;
+    gap: 15px;
+    bottom: 80px;
+}
+
+.link-giochi-open .pulsante-link {
+    width: 225px;
+    height: 83px;
+    font-size: 27px;
+    line-height: 83px;
+}
+
 /* Testo pulsanti ingrandito su smartphone (corrisponde a _isPhone in klondike.js) */
 @media screen and (max-width: 599px),
        screen and (orientation: landscape) and (max-height: 599px) {
@@ -306,12 +327,6 @@ img { border-style: none; }
     }
     #pulsante2 {
         background-size: 30px 30px;
-    }
-    .pulsantecomments {
-        font-size: 18px;
-        height: 40px;
-        line-height: 40px;
-        width: 130px;
     }
 }
 

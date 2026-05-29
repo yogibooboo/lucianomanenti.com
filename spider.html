@@ -27,7 +27,7 @@
 
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<link rel="stylesheet" href="spider.css?v=2.8" />
+	<link rel="stylesheet" href="spider.css?v=2.9" />
 
 	<meta name="Description"
 		content="Play free Spider Solitaire online, no registration,no ads. Gioca Spider Solitario gratis online senza registrazione, senza pubblicit�. Spider Luciano.�">
@@ -171,7 +171,7 @@
 		window.currentLang = 'it';
 	</script>
 	<script src="game-layout.js?v=4.6"></script>
-	<script src="spidercode.js?v=3.0"></script>
+	<script src="spidercode.js?v=4.2"></script>
 	<script>
 		(function () {
 			var nascosto = false;
@@ -190,6 +190,34 @@
 			observer.observe(document.body, { childList: true });
 		})();
 		window.initAudioToggle('#btn-audio');
+	</script>
+	<script>
+		// Pulsantiera giochi espandibile su smartphone
+		(function() {
+			var isPhone = Math.min(screen.width, screen.height) < 600;
+			if (!isPhone) return;
+			var linkGiochi = document.querySelector('.link-giochi');
+			if (!linkGiochi) return;
+			var lnkExpanded = false;
+			var lnkCooldown = false;
+			linkGiochi.addEventListener('touchend', function(e) {
+				if (!lnkExpanded) {
+					e.preventDefault(); e.stopPropagation();
+					lnkExpanded = true; lnkCooldown = true;
+					linkGiochi.classList.add('link-giochi-open');
+					setTimeout(function() { lnkCooldown = false; }, 500);
+				}
+			}, true);
+			linkGiochi.addEventListener('click', function(e) {
+				if (!lnkExpanded || lnkCooldown) { e.preventDefault(); e.stopPropagation(); }
+			}, true);
+			document.addEventListener('touchend', function(e) {
+				if (lnkExpanded && !lnkCooldown && !linkGiochi.contains(e.target)) {
+					lnkExpanded = false;
+					linkGiochi.classList.remove('link-giochi-open');
+				}
+			});
+		})();
 	</script>
 
 </body>

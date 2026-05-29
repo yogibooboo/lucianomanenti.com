@@ -1,4 +1,4 @@
-// klondike.js v1.14
+// klondike.js v1.18
 
 var CUORI = 'C', QUADRI = 'Q', FIORI = 'F', PICCHE = 'P';
 var SEMI = [FIORI, QUADRI, CUORI, PICCHE];
@@ -22,6 +22,59 @@ var FD_PITCH = _isPhone ? 14 : 22;
 var FU_PITCH = _isPhone ? 40 : 30;
 var ANIM_DUR = 220; // ms per card flight
 var DRAG_THRESHOLD = 8;
+
+if (_isPhone) {
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.pulsantecomments').forEach(function(btn) {
+            btn.style.fontSize   = '24px';
+            btn.style.height     = '40px';
+            btn.style.lineHeight = '40px';
+            btn.style.width      = '130px';
+            btn.style.top        = '692px';
+            var href = btn.getAttribute('href') || '';
+            if (href.indexOf('aboutme') !== -1) {
+                btn.style.left = '215px';
+            } else if (href.indexOf('regole') !== -1) {
+                btn.style.left = '358px';
+            }
+        });
+
+        // Pulsantiera giochi: primo tap espande, secondo tap naviga
+        var linkGiochi = document.querySelector('.link-giochi');
+        if (linkGiochi) {
+            var lnkExpanded = false;
+            var lnkCooldown = false;
+
+            // Intercetta touchend per espandere e bloccare il click sintetico successivo
+            linkGiochi.addEventListener('touchend', function(e) {
+                if (!lnkExpanded) {
+                    e.preventDefault();      // blocca il click sintetico
+                    e.stopPropagation();
+                    lnkExpanded = true;
+                    lnkCooldown = true;
+                    linkGiochi.classList.add('link-giochi-open');
+                    setTimeout(function() { lnkCooldown = false; }, 500);
+                }
+            }, true);
+
+            // Blocca anche eventuali click residui durante il cooldown
+            linkGiochi.addEventListener('click', function(e) {
+                if (!lnkExpanded || lnkCooldown) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+            }, true);
+
+            // Collassa toccando fuori
+            document.addEventListener('touchend', function(e) {
+                if (lnkExpanded && !lnkCooldown && !linkGiochi.contains(e.target)) {
+                    lnkExpanded = false;
+                    linkGiochi.classList.remove('link-giochi-open');
+                }
+            });
+        }
+    });
+}
 
 var canvas, ctx, spriteImg, spriteImgBlu;
 var showFaceDown = false;
@@ -415,13 +468,15 @@ function buildWinRecordHtml(newFlags) {
     var everTxt   = rec.ever  ? (fmtTime(rec.ever.secs)  + ' &nbsp; ' + rec.ever.moves  + ' ' + movesWord) : '—';
     var html = '<div class="win-records">';
     html += '<div class="win-rec-row' + (newFlags.newDaily ? ' win-rec-new' : '') + '">';
-    html += '<span class="win-rec-label">' + labelDay + '</span><span class="win-rec-val">' + dailyTxt + '</span>';
+    html += '<span class="win-rec-label">' + labelDay + '</span>';
+    html += '<div class="win-rec-bottom"><span class="win-rec-val">' + dailyTxt + '</span>';
     if (newFlags.newDaily) html += '<span class="win-rec-star">&#9733; ' + newWord + '</span>';
-    html += '</div>';
+    html += '</div></div>';
     html += '<div class="win-rec-row' + (newFlags.newEver ? ' win-rec-new' : '') + '">';
-    html += '<span class="win-rec-label">' + labelEver + '</span><span class="win-rec-val">' + everTxt + '</span>';
+    html += '<span class="win-rec-label">' + labelEver + '</span>';
+    html += '<div class="win-rec-bottom"><span class="win-rec-val">' + everTxt + '</span>';
     if (newFlags.newEver) html += '<span class="win-rec-star">&#9733; ' + newWord + '</span>';
-    html += '</div>';
+    html += '</div></div>';
     html += '</div>';
     return html;
 }
