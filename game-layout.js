@@ -3,6 +3,9 @@ var devMode = localStorage.getItem('dev_mode') === '1';
 window.showBannerDimensions = false;
 window._leftPopulated = false;  // Sigillo colonna sinistra
 window._rightPopulated = false; // Sigillo colonna destra
+window._amazonDealsList = []; // Array dei deal validi caricati
+window._amazonBannerShownInSidebar = false; // Flag per verificare se mostrato a lato
+window._amazonDealsImpressionTracked = {}; // Tracciamento impression per ID deal
 
 // ─── AMAZON BANNER CONFIG ───────────────────────────────────────────────────
 var AMAZON_BANNERS_ENABLED = false;  // set to false to disable Amazon banners globally
@@ -10,6 +13,7 @@ var AMAZON_BANNERS_RIGHT = true;   // if true, Amazon banners load on right side
 var AMAZON_FALLBACK_ON_SHIELD = true; // se true, Amazon subentra a sinistra quando AdSense viene bloccato dallo scudo
 var AMAZON_USE_NEW_DEALS = true;      // se true, usa newdeals.json e i pesi. Se false, usa il deals.json tradizionale
 var AMAZON_DEALS_PULSE_THRESHOLD = 35; // Soglia di sconto oltre la quale il badge pulsa (default 35%)
+var ENABLE_AMAZON_ON_FINISH = true;   // se true, abilita l'affiancamento del banner Amazon e il vedi carte a fine partita su Scala 40
 // ─────────────────────────────────────────────────────────────────────────────
 
 // ─── ADSENSE CONFIG & SHIELD ─────────────────────────────────────────────────
@@ -147,14 +151,16 @@ function trackVisibleBanners(triggerType) {
         }
     }
 }
-
 function injectLegalLinks() {
+    var isMachiavelli = window.location.pathname.indexOf('machiavelli') !== -1;
+    var isSpider = window.location.pathname.indexOf('spider') !== -1;
+    if (isMachiavelli || isSpider) return; // Disabilitato su Machiavelli e Spider: link già presenti nativamente
     if (window.gameConfig && window.gameConfig.hideLegalFooter) return;
     var footer = document.getElementById('game-legal-links');
     if (!footer) {
         footer = document.createElement('div');
         footer.id = 'game-legal-links';
-        footer.style.cssText = 'position: fixed; bottom: 10px; right: 10px; font-size: 12px; font-family: sans-serif; z-index: 10000; color: rgba(255,255,255,0.6); pointer-events: auto;';
+        footer.style.cssText = 'position: fixed; bottom: 10px; right: 10px; font-size: 11px; font-family: sans-serif; z-index: 10000; color: rgba(255,255,255,0.6); pointer-events: auto; text-align: right; line-height: 1.4;';
 
         var langSuffix = (window.currentLang === 'en') ? '-en.html' : '.html';
         var homeUrl = (window.currentLang === 'en') ? 'index-en.html' : 'index.html';
@@ -164,9 +170,14 @@ function injectLegalLinks() {
         var aboutMeLabel = (window.currentLang === 'en') ? 'About Me' : 'Chi Sono';
         var privacyLabel = (window.currentLang === 'en') ? 'Privacy Policy' : 'Privacy Policy';
 
-        footer.innerHTML = '<a href="' + homeUrl + '" style="color: inherit; text-decoration: none; margin-left: 15px;">' + homeLabel + '</a>' +
-            '<a href="' + aboutMeUrl + '" style="color: inherit; text-decoration: none; margin-left: 15px;">' + aboutMeLabel + '</a>' +
-            '<a href="' + privacyUrl + '" style="color: inherit; text-decoration: none; margin-left: 15px;">' + privacyLabel + '</a>';
+        footer.innerHTML = '<div style="margin-bottom: 2px;">' +
+            '<a href="' + homeUrl + '" style="color: inherit; text-decoration: none;">' + homeLabel + '</a>' +
+            '<span style="margin: 0 6px; opacity: 0.5;">•</span>' +
+            '<a href="' + aboutMeUrl + '" style="color: inherit; text-decoration: none;">' + aboutMeLabel + '</a>' +
+            '</div>' +
+            '<div>' +
+            '<a href="' + privacyUrl + '" style="color: inherit; text-decoration: none;">' + privacyLabel + '</a>' +
+            '</div>';
         document.body.appendChild(footer);
 
         // Add hover effect
@@ -446,6 +457,7 @@ function adjustLayout() {
         if (amazonEnabled && width === 300 && height === 600) {
             // Se il fetch è ancora in corso (null), non mostrare niente — verrà chiamato adjustLayout al termine
             if (!slotId && window._amazonDeal600 === null) return null;
+            window._amazonBannerShownInSidebar = true;
             amazonGeneric = true;
             // Se è disponibile un deal specifico dal JSON, usa quello
             if (window._amazonDeal600) {
@@ -589,15 +601,20 @@ function adjustLayout() {
                 dealId = titleText.length > 60 ? titleText.substring(0, 60) + '...' : titleText;
             }
             // Impression solo per 300x600 e solo una volta per sessione (flag globale)
-            if (width === 300 && height === 600 && !window._amazonImpressionSent[bannerId] && typeof gtag === 'function') {
+            if (width === 300 && height === 600 && !window._amazonImpressionSent[bannerId]) {
                 window._amazonImpressionSent[bannerId] = true;
-                gtag('event', 'Amazon_Banner_Impression', {
-                    'event_category': 'Affiliate',
-                    'amazon_deal_id': dealId,
-                    'page_location': window.location.href,
-                    'non_interaction': true
-                });
-                console.log('GA Tracked: Amazon_Banner_Impression | ' + dealId + ' | ' + width + 'x' + height + ' | on: ' + pagePath);
+                if (window._amazonDeal600) {
+                    window._amazonDealsImpressionTracked[window._amazonDeal600.id] = true;
+                }
+                if (typeof gtag === 'function') {
+                    gtag('event', 'Amazon_Banner_Impression', {
+                        'event_category': 'Affiliate',
+                        'amazon_deal_id': dealId,
+                        'page_location': window.location.href,
+                        'non_interaction': true
+                    });
+                    console.log('GA Tracked: Amazon_Banner_Impression | ' + dealId + ' | ' + width + 'x' + height + ' | on: ' + pagePath);
+                }
             }
             var aLink = banner.querySelector('a');
             if (aLink) {
@@ -761,6 +778,35 @@ function adjustLayout() {
     }
 }
 
+// Algoritmo di estrazione casuale pesata o tradizionale per i deal Amazon
+function selectWeightedAmazonDeal(validDeals) {
+    if (!validDeals || validDeals.length === 0) return null;
+    if (AMAZON_USE_NEW_DEALS) {
+        var totalWeight = 0;
+        var i;
+        for (i = 0; i < validDeals.length; i++) {
+            var w = typeof validDeals[i].weight !== 'undefined' ? parseInt(validDeals[i].weight, 10) : 5;
+            if (isNaN(w) || w < 1) w = 5;
+            validDeals[i]._tempWeight = w;
+            totalWeight += w;
+        }
+        
+        var r = Math.random() * totalWeight;
+        var sum = 0;
+        var selectedDeal = validDeals[validDeals.length - 1]; // fallback
+        for (i = 0; i < validDeals.length; i++) {
+            sum += validDeals[i]._tempWeight;
+            if (r <= sum) {
+                selectedDeal = validDeals[i];
+                break;
+            }
+        }
+        return selectedDeal;
+    } else {
+        return validDeals[Math.floor(Math.random() * validDeals.length)];
+    }
+}
+
 // Fetch deals.json or newdeals.json and pick a deal for the 300x600 banner
 window._amazonDeal600 = null;
 window._amazonImpressionSent = {}; // chiave: bannerId → true se impression già inviata
@@ -778,35 +824,18 @@ window._amazonImpressionSent = {}; // chiave: bannerId → true se impression gi
                         return d.link && d.link !== '#' && d.img && d.img !== '' && d.active !== false;
                     });
                     if (valid.length > 0) {
-                        if (AMAZON_USE_NEW_DEALS) {
-                            // Algoritmo di estrazione casuale pesata (Weighted Randomness)
-                            var totalWeight = 0;
-                            var i;
-                            for (i = 0; i < valid.length; i++) {
-                                var w = typeof valid[i].weight !== 'undefined' ? parseInt(valid[i].weight, 10) : 5;
-                                if (isNaN(w) || w < 1) w = 5;
-                                valid[i]._tempWeight = w;
-                                totalWeight += w;
+                        window._amazonDealsList = valid;
+                        var selected = selectWeightedAmazonDeal(valid);
+                        window._amazonDeal600 = selected;
+                        if (selected) {
+                            if (AMAZON_USE_NEW_DEALS) {
+                                console.log('Amazon deal caricato (pesato):', selected.id, 'con peso:', selected._tempWeight);
+                            } else {
+                                console.log('Amazon deal caricato (tradizionale):', selected.id);
                             }
-                            
-                            var r = Math.random() * totalWeight;
-                            var sum = 0;
-                            var selectedDeal = valid[valid.length - 1]; // fallback
-                            for (i = 0; i < valid.length; i++) {
-                                sum += valid[i]._tempWeight;
-                                if (r <= sum) {
-                                    selectedDeal = valid[i];
-                                    break;
-                                }
-                            }
-                            window._amazonDeal600 = selectedDeal;
-                            console.log('Amazon deal caricato (pesato):', window._amazonDeal600.id, 'con peso:', window._amazonDeal600._tempWeight);
-                        } else {
-                            // Selezione casuale uniforme tradizionale
-                            window._amazonDeal600 = valid[Math.floor(Math.random() * valid.length)];
-                            console.log('Amazon deal caricato (tradizionale):', window._amazonDeal600.id);
                         }
                     } else {
+                        window._amazonDealsList = [];
                         window._amazonDeal600 = false; // nessun deal valido, non aspettare oltre
                     }
                 } catch (e) { window._amazonDeal600 = false; }
@@ -910,6 +939,8 @@ window.addEventListener('resize', adjustLayout);
 // aggiorna il DOM solo se la posizione o lo z-index sono effettivamente cambiati.
 (function () {
     var initOptimization = function () {
+        var isMachiavelli = window.location.pathname.indexOf('machiavelli') !== -1;
+        if (isMachiavelli) return;
         if (!window.scala || !window.scala.rendicontenitore) return;
 
         // Salva la funzione originale (opzionale, per debug)
@@ -972,3 +1003,284 @@ window.addEventListener('resize', adjustLayout);
     }
 })();
 // [FINE OPTIMIZATION MODULE]
+
+// ─── INTEGRATION AMAZON BANNER ON GAME FINISH (SCALA 40) ────────────────────
+function setupAmazonFinishBanner(formId) {
+    if (!ENABLE_AMAZON_ON_FINISH) return;
+
+    var modal = document.getElementById(formId);
+    if (!modal) return;
+
+    var giocatore = document.getElementById('giocatore');
+    var targetTop;
+    if (giocatore) {
+        // Sposta il modale appena sopra il campo giocatore
+        targetTop = giocatore.offsetTop - (modal.offsetHeight || 280) - 5;
+    } else {
+        // Fallback per Spider o altri giochi sprovvisti di #giocatore
+        var campogioco = document.getElementById('campogioco');
+        var campogiocoHeight = campogioco ? (campogioco.offsetHeight || 750) : 750;
+        targetTop = campogiocoHeight - (modal.offsetHeight || 280) - 5;
+    }
+    modal.style.top = targetTop + 'px';
+
+    var isEnglish = (window.currentLang === 'en');
+    var btnText = isEnglish ? 'VIEW CARDS' : 'VEDI CARTE';
+
+    // 2. Crea o ripristina il pulsante "VEDI CARTE"
+    var btnVedi = modal.querySelector('.btn-vedi-carte');
+    if (!btnVedi) {
+        btnVedi = document.createElement('button');
+        btnVedi.className = 'btn-vedi-carte';
+        btnVedi.type = 'button';
+        btnVedi.textContent = btnText;
+        btnVedi.style.position = 'absolute';
+        btnVedi.style.cursor = 'pointer';
+
+        var isToggled = false;
+        var originalBg = '';
+        var originalBorder = '';
+        var originalBoxShadow = '';
+
+        btnVedi.onclick = function (e) {
+            if (e) e.stopPropagation();
+            isToggled = !isToggled;
+            var otherChildren = modal.children;
+            var schermo = document.getElementById('schermo');
+
+            if (isToggled) {
+                // Rendi modale invisibile
+                originalBg = modal.style.backgroundImage || getComputedStyle(modal).backgroundImage;
+                originalBorder = modal.style.border || getComputedStyle(modal).border;
+                originalBoxShadow = modal.style.boxShadow || getComputedStyle(modal).boxShadow;
+
+                if (schermo) schermo.style.display = 'none';
+                modal.style.backgroundImage = 'none';
+                modal.style.border = 'none';
+                modal.style.boxShadow = 'none';
+                modal.style.backgroundColor = 'transparent';
+
+                for (var i = 0; i < otherChildren.length; i++) {
+                    var child = otherChildren[i];
+                    if (child !== btnVedi) {
+                        child.style.visibility = 'hidden';
+                    }
+                }
+                btnVedi.textContent = isEnglish ? 'BACK' : 'INDIETRO';
+            } else {
+                // Ripristina modale
+                if (schermo) schermo.style.display = 'block';
+                modal.style.backgroundImage = originalBg;
+                modal.style.border = originalBorder;
+                modal.style.boxShadow = originalBoxShadow;
+                modal.style.backgroundColor = '';
+
+                for (var i = 0; i < otherChildren.length; i++) {
+                    var child = otherChildren[i];
+                    child.style.visibility = 'visible';
+                }
+                btnVedi.textContent = isEnglish ? 'VIEW CARDS' : 'VEDI CARTE';
+            }
+        };
+        modal.appendChild(btnVedi);
+    } else {
+        btnVedi.textContent = btnText;
+    }
+
+    // 3. Riposiziona i pulsanti presenti (affiancamento del pulsante vedi carte in modo perfettamente simmetrico)
+    var buttons = modal.querySelectorAll('button');
+    var otherButtons = [];
+    for (var i = 0; i < buttons.length; i++) {
+        if (buttons[i] !== btnVedi) {
+            otherButtons.push(buttons[i]);
+        }
+    }
+    if (otherButtons.length === 1) {
+        otherButtons[0].style.left = '130px';
+        btnVedi.style.left = '270px';
+    } else if (otherButtons.length === 2) {
+        otherButtons[0].style.left = '60px';
+        otherButtons[1].style.left = '200px';
+        btnVedi.style.left = '340px';
+    }
+
+    // 4. Mostra il banner Amazon sopra il modale
+    // Rimuoviamo il vecchio banner se esistente (utile in caso di riapertura)
+    var oldBanner = modal.querySelector('.amazon-finish-banner');
+    if (oldBanner) {
+        oldBanner.remove();
+    }
+
+    // Selezione del deal
+    var deal = null;
+    if (window._amazonBannerShownInSidebar && window._amazonDeal600) {
+        deal = window._amazonDeal600;
+    } else {
+        // Se il banner laterale non era visualizzato, sceglie un nuovo banner su base statistica
+        deal = selectWeightedAmazonDeal(window._amazonDealsList) || window._amazonDeal600;
+    }
+
+    if (deal) {
+        var imgUrl = (deal.active_images && deal.active_images.length > 0) ? deal.active_images[0] : (deal.img || 'banner/galleryamazon300x250.jpg');
+        var linkUrl = deal.link || 'view_gallery.html';
+        var titleText = deal.title || 'generic';
+        var dealId = titleText.length > 60 ? titleText.substring(0, 60) + '...' : titleText;
+
+        // Altezza dinamica fino al bordo superiore di campogioco (con margine di 5px in alto e in basso)
+        var bannerHeight = targetTop - 10;
+        if (bannerHeight < 150) bannerHeight = 150; // limite minimo di sicurezza
+
+        // Genera il container a 2 colonne (larghezza 700px)
+        var aLink = document.createElement('a');
+        aLink.className = 'amazon-finish-banner';
+        aLink.href = linkUrl;
+        aLink.target = '_blank';
+        aLink.rel = 'sponsored noopener';
+        aLink.style.cssText = 'display: flex; width: 700px; height: ' + bannerHeight + 'px; text-decoration: none; position: absolute; top: -' + (targetTop - 5) + 'px; left: -200px; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.3); border: 2px solid #ddd; background: #fff; box-sizing: border-box; z-index: 50000;';
+
+        // 4.1 Colonna info (Sinistra, 200px)
+        var infoCol = document.createElement('div');
+        infoCol.style.cssText = 'width: 200px; height: 100%; background: #131921; color: #fff; padding: 0; display: flex; flex-direction: column; box-sizing: border-box; text-align: left; border-right: 1px solid #333; font-family: Segoe UI, Roboto, Helvetica, Arial, sans-serif;';
+
+        // Banner rosso in cima alla colonna info
+        var headerText = (AMAZON_USE_NEW_DEALS && deal.custom_message) ? deal.custom_message : (isEnglish ? 'LIMITED TIME DEAL' : 'OFFERTA A TEMPO');
+        var headerDiv = document.createElement('div');
+        headerDiv.style.cssText = 'background: #cc0c39; color: #fff; padding: 8px 12px; text-align: center; font-weight: bold; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; box-sizing: border-box; width: 100%;';
+        headerDiv.textContent = headerText;
+        infoCol.appendChild(headerDiv);
+
+        // Contenitore per i testi con padding
+        var contentDiv = document.createElement('div');
+        contentDiv.style.cssText = 'padding: 12px; display: flex; flex-direction: column; flex-grow: 1; min-height: 0; box-sizing: border-box; width: 100%;';
+
+        // Titolo/Descrizione
+        var descDiv = document.createElement('div');
+        descDiv.style.cssText = 'font-size: 12px; line-height: 1.3; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; margin-bottom: 8px; font-weight: 500;';
+        descDiv.textContent = deal.title || '';
+        contentDiv.appendChild(descDiv);
+
+        // Prezzo con tooltip expiry
+        var priceDiv = document.createElement('div');
+        priceDiv.style.cssText = 'font-size: 20px; font-weight: bold; color: #ff5252; margin-bottom: 4px;';
+        if (deal.price && deal.price.trim() !== '') {
+            priceDiv.textContent = deal.price;
+        }
+        if (deal.expiry) {
+            priceDiv.setAttribute('title', deal.expiry);
+        }
+        contentDiv.appendChild(priceDiv);
+
+        // Badge Sconto (se presente)
+        if (deal.badge && deal.badge.trim() !== '') {
+            var isHighDiscount = false;
+            var match = deal.badge.match(/(\d+)%/);
+            if (match && parseInt(match[1], 10) > AMAZON_DEALS_PULSE_THRESHOLD) {
+                isHighDiscount = true;
+            }
+            var pulseClass = isHighDiscount ? ' amazon-badge-pulse' : '';
+            var badgeSpan = document.createElement('span');
+            badgeSpan.className = 'amazon-badge' + pulseClass;
+            badgeSpan.style.cssText = 'font-size: 11px; padding: 2px 6px; align-self: flex-start; margin-bottom: 4px;';
+            badgeSpan.textContent = deal.badge;
+            contentDiv.appendChild(badgeSpan);
+        }
+
+        // Pulsante "Vedi offerta su Amazon.it"
+        var ctaDiv = document.createElement('div');
+        ctaDiv.style.cssText = 'display: block; background: linear-gradient(180deg, #ff9900 0%, #e68a00 100%); color: #000; padding: 8px; border-radius: 20px; font-weight: bold; text-align: center; font-size: 11px; margin-top: 8px; margin-bottom: 8px;';
+        ctaDiv.textContent = isEnglish ? 'View offer on Amazon.it' : 'Vedi offerta su Amazon.it';
+        contentDiv.appendChild(ctaDiv);
+
+        // Disclaimer
+        var disclaimerDiv = document.createElement('div');
+        disclaimerDiv.style.cssText = 'font-size: 9px; color: #94a3b8; line-height: 1.1; margin-top: auto;';
+        disclaimerDiv.innerHTML = 'Come affiliato Amazon,<br>guadagno dagli acquisti idonei.';
+        contentDiv.appendChild(disclaimerDiv);
+
+        infoCol.appendChild(contentDiv);
+
+        // 4.2 Colonna immagine (Destra, 500px)
+        var imgCol = document.createElement('div');
+        imgCol.style.cssText = 'width: 496px; height: 100%; background: #fff; display: flex; justify-content: center; align-items: center; padding: 5px; box-sizing: border-box;';
+
+        var img = document.createElement('img');
+        img.src = imgUrl;
+        img.style.cssText = 'max-width: 100%; max-height: 100%; object-fit: contain;';
+        img.alt = 'Amazon Deal Image';
+        imgCol.appendChild(img);
+
+        aLink.appendChild(infoCol);
+        aLink.appendChild(imgCol);
+        modal.appendChild(aLink);
+
+        // Tracciamento Google Analytics - Impression (solo se NUOVA in questa sessione per questo deal)
+        if (!window._amazonDealsImpressionTracked[deal.id]) {
+            window._amazonDealsImpressionTracked[deal.id] = true;
+            if (typeof gtag === 'function') {
+                gtag('event', 'Amazon_Banner_Impression', {
+                    'event_category': 'Affiliate',
+                    'amazon_deal_id': dealId + '_finish',
+                    'format': 'finish',
+                    'page_location': window.location.href,
+                    'non_interaction': true
+                });
+            }
+            console.log('GA Tracked (Finish): Amazon_Banner_Impression | ' + dealId);
+        } else {
+            console.log('GA Tracked (Finish): Amazon_Banner_Impression SKIPPED (Already shown) | ' + dealId);
+        }
+
+        // Tracciamento Google Analytics - Click (con parametro format: finish)
+        var startTime = Date.now();
+        aLink.onclick = function () {
+            var exposureSeconds = Math.round((Date.now() - startTime) / 1000);
+            if (typeof gtag === 'function') {
+                gtag('event', 'Amazon_Banner_Click', {
+                    'event_category': 'Affiliate',
+                    'amazon_deal_id': dealId + '_finish',
+                    'format': 'finish',
+                    'tempo_esposizione': exposureSeconds,
+                    'page_location': window.location.href,
+                    'non_interaction': false
+                });
+            }
+            console.log('GA Tracked (Finish): Amazon_Banner_Click | ' + dealId + ' | sec: ' + exposureSeconds);
+        };
+    }
+}
+
+(function () {
+    var initAmazonFinishModal = function () {
+        var isTargetGame = window.location.pathname.indexOf('scala40') !== -1 || window.location.pathname.indexOf('machiavelli') !== -1 || window.location.pathname.indexOf('spider') !== -1;
+        if (!isTargetGame || !window.scala || !window.scala.mostradialogo) return;
+
+        var originalMostraDialogo = window.scala.mostradialogo;
+
+        window.scala.mostradialogo = function (dialogo) {
+            originalMostraDialogo.call(this, dialogo);
+
+            if (!ENABLE_AMAZON_ON_FINISH) return;
+
+            var id = dialogo.replace('#', '');
+            if (id === 'haivinto' || id === 'haiperso' || id === 'haivintotorneo' || id === 'haipersotorneo') {
+                try {
+                    setupAmazonFinishBanner(id);
+                } catch (e) {
+                    console.error("Errore setupAmazonFinishBanner:", e);
+                }
+            }
+        };
+        var gameName = 'Scala40';
+        if (window.location.pathname.indexOf('machiavelli') !== -1) gameName = 'Machiavelli';
+        else if (window.location.pathname.indexOf('spider') !== -1) gameName = 'Spider';
+        console.log("Amazon Finish Modal Integration (" + gameName + "): ACTIVE");
+    };
+
+    if (document.readyState === 'complete') {
+        setTimeout(initAmazonFinishModal, 600); // Esegui dopo l'inizializzazione del modulo di ottimizzazione
+    } else {
+        window.addEventListener('load', function () {
+            setTimeout(initAmazonFinishModal, 600);
+        });
+    }
+})();
