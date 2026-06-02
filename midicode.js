@@ -346,15 +346,19 @@ const tmidi = {
 			this.applySettings();
 		};
 
-		window.addEventListener('resize', () => {
-			const rect = document.getElementById("campogioco").getBoundingClientRect();
-			this.offsetxx = rect.left;
-			this.offsetyy = rect.top;
-			if (window.gameScale) {
-				// We don't need to manually update offsets if we use getBoundingClientRect in handlers,
-				// but original code might rely on these. Let's keep them updated.
-			}
-		});
+		if (window.registerLayoutResizeListener) {
+			window.registerLayoutResizeListener(function (offsetLeft, offsetTop, scale) {
+				tmidi.offsetxx = offsetLeft;
+				tmidi.offsetyy = offsetTop;
+			});
+		} else {
+			window.addEventListener('resize', function () {
+				var rect = document.getElementById("campogioco").getBoundingClientRect();
+				tmidi.offsetxx = rect.left;
+				tmidi.offsetyy = rect.top;
+			});
+		}
+
 
 		document.querySelector('.pulsanteaiuto').addEventListener('click', () => {
 			window.open("instructions/hanon_test.htm", "_blank", "toolbar=no, scrollbars=yes, resizable=yes, top=100, left=400, width=1000, height=800");

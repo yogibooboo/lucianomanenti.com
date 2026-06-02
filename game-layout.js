@@ -7,13 +7,27 @@ window._amazonDealsList = []; // Array dei deal validi caricati
 window._amazonBannerShownInSidebar = false; // Flag per verificare se mostrato a lato
 window._amazonDealsImpressionTracked = {}; // Tracciamento impression per ID deal
 
+// ─── API REGISTRAZIONE LISTENER RESIZE (GAME-AGNOSTIC) ─────────────────────
+window._layoutResizeListeners = window._layoutResizeListeners || [];
+window.registerLayoutResizeListener = function (callback) {
+    if (typeof callback === 'function') {
+        window._layoutResizeListeners.push(callback);
+        // Sincronizza immediatamente se il layout è già pronto
+        var campogioco = document.getElementById('campogioco');
+        if (campogioco && window.gameScale !== undefined) {
+            var rect = campogioco.getBoundingClientRect();
+            callback(rect.left, rect.top, window.gameScale);
+        }
+    }
+};
+
 // ─── AMAZON BANNER CONFIG ───────────────────────────────────────────────────
 var AMAZON_BANNERS_ENABLED = false;  // set to false to disable Amazon banners globally
 var AMAZON_BANNERS_RIGHT = true;   // if true, Amazon banners load on right sidebar only
 var AMAZON_FALLBACK_ON_SHIELD = true; // se true, Amazon subentra a sinistra quando AdSense viene bloccato dallo scudo
 var AMAZON_USE_NEW_DEALS = true;      // se true, usa newdeals.json e i pesi. Se false, usa il deals.json tradizionale
 var AMAZON_DEALS_PULSE_THRESHOLD = 35; // Soglia di sconto oltre la quale il badge pulsa (default 35%)
-var ENABLE_AMAZON_ON_FINISH = true;   // se true, abilita l'affiancamento del banner Amazon e il vedi carte a fine partita su Scala 40
+var ENABLE_AMAZON_ON_FINISH = true;   // se true, abilita l'affiancamento del banner Amazon e la gestione del fine partita
 // ─────────────────────────────────────────────────────────────────────────────
 
 // ─── ADSENSE CONFIG & SHIELD ─────────────────────────────────────────────────
@@ -152,9 +166,6 @@ function trackVisibleBanners(triggerType) {
     }
 }
 function injectLegalLinks() {
-    var isMachiavelli = window.location.pathname.indexOf('machiavelli') !== -1;
-    var isSpider = window.location.pathname.indexOf('spider') !== -1;
-    if (isMachiavelli || isSpider) return; // Disabilitato su Machiavelli e Spider: link già presenti nativamente
     if (window.gameConfig && window.gameConfig.hideLegalFooter) return;
     var footer = document.getElementById('game-legal-links');
     if (!footer) {
@@ -287,15 +298,11 @@ function adjustLayout() {
     campogioco.style.msTransform = 'scale(' + scale + ')';
     campogioco.style.webkitTransform = 'scale(' + scale + ')';
 
-    if (window.scala) {
+    if (window._layoutResizeListeners) {
         var rect = campogioco.getBoundingClientRect();
-        scala.offsetxx = rect.left;
-        scala.offsetyy = rect.top;
-    }
-    if (window.tmidi) {
-        var rect = campogioco.getBoundingClientRect();
-        tmidi.offsetxx = rect.left;
-        tmidi.offsetyy = rect.top;
+        for (var i = 0; i < window._layoutResizeListeners.length; i++) {
+            window._layoutResizeListeners[i](rect.left, rect.top, scale);
+        }
     }
 
     if (!document.getElementById('adsense-fallback-style')) {
@@ -933,179 +940,62 @@ window.addEventListener('load', function () {
 
 window.addEventListener('resize', adjustLayout);
 
-// [INIZIO OPTIMIZATION MODULE]
-// Questa sezione migliora drasticamente le prestazioni del gioco, specialmente con molte carte negli scarti.
-// Intercetta la funzione di disegno originale (scala.rendicontenitore) e la rende "intelligente":
-// aggiorna il DOM solo se la posizione o lo z-index sono effettivamente cambiati.
-(function () {
-    var initOptimization = function () {
-        var isMachiavelli = window.location.pathname.indexOf('machiavelli') !== -1;
-        if (isMachiavelli) return;
-        if (!window.scala || !window.scala.rendicontenitore) return;
 
-        // Salva la funzione originale (opzionale, per debug)
-        window.scala.originalRendicontenitore = window.scala.rendicontenitore;
 
-        // Sovrascrive con la versione ottimizzata
-        window.scala.rendicontenitore = function (cont, speed) {
-            var velocita = speed || 400;
-            var newtop, newleft, carta, divCard;
-
-            for (var i = 0; i < cont.carte.length; i++) {
-                carta = cont.carte[i];
-                divCard = carta.gui; // Cache del riferimento DOM
-
-                // Calcola le nuove coordinate target
-                newtop = cont.top + cont.offsety + Math.floor(i * cont.deltay);
-                newleft = cont.left + cont.offsetx + Math.floor(i * cont.deltax) + cont.xtris * carta.ntris;
-
-                // Aggiorna i dati nel modello logico
-                carta.top = newtop;
-                carta.left = newleft;
-                carta.zindex = i;
-
-                // --- LOGICA DI OTTIMIZZAZIONE ---
-                // Verifica se i valori attuali nel DOM sono già corretti.
-                // Usiamo una tolleranza di 1px per le coordinate.
-                var currentLeft = parseInt(divCard.style.left) || 0;
-                var currentTop = parseInt(divCard.style.top) || 0;
-                var currentZ = parseInt(divCard.style.zIndex) || 0;
-
-                var isPositionsSame = Math.abs(currentLeft - newleft) < 1 && Math.abs(currentTop - newtop) < 1;
-                var isZIndexSame = currentZ === i;
-
-                // Se tutto è identico, SALTA L'UPDATE DEL DOM! (Risparmia CPU/GPU)
-                if (isPositionsSame && isZIndexSame) {
-                    // Assicuriamoci solo che la carta sia visibile se necessario (showcard è leggera)
-                    this.showcard(carta);
-                    continue;
-                }
-                // -------------------------------
-
-                if (window.scala.immediato) {
-                    $(divCard).css({ "top": newtop, "left": newleft, "z-index": i }, velocita);
-                } else {
-                    $(divCard).animate({ "top": newtop, "left": newleft, "z-index": i }, velocita);
-                }
-                this.showcard(carta);
-            }
-        };
-        console.log("Scala40 Render Optimization: ACTIVE");
-    };
-
-    // Tenta l'iniezione quando il documento è pronto o quando window.scala diventa disponibile
-    if (document.readyState === 'complete') {
-        setTimeout(initOptimization, 500); // Piccolo ritardo per sicurezza
-    } else {
-        window.addEventListener('load', function () {
-            setTimeout(initOptimization, 500);
-        });
-    }
-})();
-// [FINE OPTIMIZATION MODULE]
-
-// ─── INTEGRATION AMAZON BANNER ON GAME FINISH (SCALA 40) ────────────────────
-function setupAmazonFinishBanner(formId) {
+// ─── INTEGRATION AMAZON BANNER ON GAME FINISH (GENERIC) ────────────────────
+function setupAmazonFinishBanner(formId, options) {
     if (!ENABLE_AMAZON_ON_FINISH) return;
 
     var modal = document.getElementById(formId);
     if (!modal) return;
 
-    var giocatore = document.getElementById('giocatore');
-    var targetTop;
-    if (giocatore) {
-        // Sposta il modale appena sopra il campo giocatore
-        targetTop = giocatore.offsetTop - (modal.offsetHeight || 280) - 5;
-    } else {
-        // Fallback per Spider o altri giochi sprovvisti di #giocatore
-        var campogioco = document.getElementById('campogioco');
-        var campogiocoHeight = campogioco ? (campogioco.offsetHeight || 750) : 750;
-        targetTop = campogiocoHeight - (modal.offsetHeight || 280) - 5;
-    }
-    modal.style.top = targetTop + 'px';
+    options = options || {};
 
-    var isEnglish = (window.currentLang === 'en');
-    var btnText = isEnglish ? 'VIEW CARDS' : 'VEDI CARTE';
-
-    // 2. Crea o ripristina il pulsante "VEDI CARTE"
-    var btnVedi = modal.querySelector('.btn-vedi-carte');
-    if (!btnVedi) {
-        btnVedi = document.createElement('button');
-        btnVedi.className = 'btn-vedi-carte';
-        btnVedi.type = 'button';
-        btnVedi.textContent = btnText;
-        btnVedi.style.position = 'absolute';
-        btnVedi.style.cursor = 'pointer';
-
-        var isToggled = false;
-        var originalBg = '';
-        var originalBorder = '';
-        var originalBoxShadow = '';
-
-        btnVedi.onclick = function (e) {
-            if (e) e.stopPropagation();
-            isToggled = !isToggled;
-            var otherChildren = modal.children;
-            var schermo = document.getElementById('schermo');
-
-            if (isToggled) {
-                // Rendi modale invisibile
-                originalBg = modal.style.backgroundImage || getComputedStyle(modal).backgroundImage;
-                originalBorder = modal.style.border || getComputedStyle(modal).border;
-                originalBoxShadow = modal.style.boxShadow || getComputedStyle(modal).boxShadow;
-
-                if (schermo) schermo.style.display = 'none';
-                modal.style.backgroundImage = 'none';
-                modal.style.border = 'none';
-                modal.style.boxShadow = 'none';
-                modal.style.backgroundColor = 'transparent';
-
-                for (var i = 0; i < otherChildren.length; i++) {
-                    var child = otherChildren[i];
-                    if (child !== btnVedi) {
-                        child.style.visibility = 'hidden';
-                    }
-                }
-                btnVedi.textContent = isEnglish ? 'BACK' : 'INDIETRO';
-            } else {
-                // Ripristina modale
-                if (schermo) schermo.style.display = 'block';
-                modal.style.backgroundImage = originalBg;
-                modal.style.border = originalBorder;
-                modal.style.boxShadow = originalBoxShadow;
-                modal.style.backgroundColor = '';
-
-                for (var i = 0; i < otherChildren.length; i++) {
-                    var child = otherChildren[i];
-                    child.style.visibility = 'visible';
-                }
-                btnVedi.textContent = isEnglish ? 'VIEW CARDS' : 'VEDI CARTE';
+    // 1. Stile Modale
+    if (options.modalStyle) {
+        for (var prop in options.modalStyle) {
+            if (options.modalStyle.hasOwnProperty(prop)) {
+                modal.style[prop] = options.modalStyle[prop];
             }
-        };
-        modal.appendChild(btnVedi);
+        }
     } else {
-        btnVedi.textContent = btnText;
+        modal.style.overflow = 'visible';
     }
 
-    // 3. Riposiziona i pulsanti presenti (affiancamento del pulsante vedi carte in modo perfettamente simmetrico)
-    var buttons = modal.querySelectorAll('button');
-    var otherButtons = [];
-    for (var i = 0; i < buttons.length; i++) {
-        if (buttons[i] !== btnVedi) {
-            otherButtons.push(buttons[i]);
+    // 2. Calcolo targetTop
+    var targetTop = options.targetTop;
+    if (targetTop === undefined) {
+        var giocatore = document.getElementById('giocatore');
+        if (giocatore) {
+            targetTop = giocatore.offsetTop - (modal.offsetHeight || 280) - 5;
+        } else {
+            var campogioco = document.getElementById('campogioco');
+            var campogiocoHeight = campogioco ? (campogioco.offsetHeight || 750) : 750;
+            targetTop = campogiocoHeight - (modal.offsetHeight || 280) - 5;
         }
     }
-    if (otherButtons.length === 1) {
-        otherButtons[0].style.left = '130px';
-        btnVedi.style.left = '270px';
-    } else if (otherButtons.length === 2) {
-        otherButtons[0].style.left = '60px';
-        otherButtons[1].style.left = '200px';
-        btnVedi.style.left = '340px';
+    if (options.applyModalTop !== false) {
+        modal.style.top = targetTop + 'px';
     }
 
-    // 4. Mostra il banner Amazon sopra il modale
-    // Rimuoviamo il vecchio banner se esistente (utile in caso di riapertura)
+    var isEnglish = (window.currentLang === 'en');
+
+    // 3. Dimensionamento del Banner Amazon
+    var bannerHeight = options.bannerHeight;
+    if (bannerHeight === undefined) {
+        bannerHeight = targetTop - 15;
+        if (bannerHeight < 150) bannerHeight = 150;
+    }
+
+    var bannerWidth = options.bannerWidth !== undefined ? options.bannerWidth : 700;
+    var infoColWidth = options.infoColWidth !== undefined ? options.infoColWidth : 200;
+    var imgColWidth = bannerWidth - infoColWidth - 4;
+    if (imgColWidth < 50) imgColWidth = 50;
+
+    var bannerTopOffset = options.bannerTopOffset !== undefined ? options.bannerTopOffset : (targetTop - 5);
+    var leftOffset = options.leftOffset !== undefined ? options.leftOffset : -200;
+
+    // Rimuovi vecchio banner se esistente
     var oldBanner = modal.querySelector('.amazon-finish-banner');
     if (oldBanner) {
         oldBanner.remove();
@@ -1116,7 +1006,6 @@ function setupAmazonFinishBanner(formId) {
     if (window._amazonBannerShownInSidebar && window._amazonDeal600) {
         deal = window._amazonDeal600;
     } else {
-        // Se il banner laterale non era visualizzato, sceglie un nuovo banner su base statistica
         deal = selectWeightedAmazonDeal(window._amazonDealsList) || window._amazonDeal600;
     }
 
@@ -1126,51 +1015,56 @@ function setupAmazonFinishBanner(formId) {
         var titleText = deal.title || 'generic';
         var dealId = titleText.length > 60 ? titleText.substring(0, 60) + '...' : titleText;
 
-        // Altezza dinamica fino al bordo superiore di campogioco (con margine di 5px in alto e in basso)
-        var bannerHeight = targetTop - 10;
-        if (bannerHeight < 150) bannerHeight = 150; // limite minimo di sicurezza
-
-        // Genera il container a 2 colonne (larghezza 700px)
         var aLink = document.createElement('a');
         aLink.className = 'amazon-finish-banner';
         aLink.href = linkUrl;
         aLink.target = '_blank';
         aLink.rel = 'sponsored noopener';
-        aLink.style.cssText = 'display: flex; width: 700px; height: ' + bannerHeight + 'px; text-decoration: none; position: absolute; top: -' + (targetTop - 5) + 'px; left: -200px; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.3); border: 2px solid #ddd; background: #fff; box-sizing: border-box; z-index: 50000;';
+        aLink.style.cssText = 'display: flex; width: ' + bannerWidth + 'px; height: ' + bannerHeight + 'px; text-decoration: none; position: absolute; top: -' + bannerTopOffset + 'px; left: ' + leftOffset + 'px; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.3); border: 2px solid #ddd; background: #fff; box-sizing: border-box; z-index: 50000;';
 
-        // 4.1 Colonna info (Sinistra, 200px)
+        // 3.1 Colonna info (Sinistra)
         var infoCol = document.createElement('div');
-        infoCol.style.cssText = 'width: 200px; height: 100%; background: #131921; color: #fff; padding: 0; display: flex; flex-direction: column; box-sizing: border-box; text-align: left; border-right: 1px solid #333; font-family: Segoe UI, Roboto, Helvetica, Arial, sans-serif;';
+        infoCol.style.cssText = 'width: ' + infoColWidth + 'px; height: 100%; background: #131921; color: #fff; padding: 0; display: flex; flex-direction: column; box-sizing: border-box; text-align: left; border-right: 1px solid #333; font-family: Segoe UI, Roboto, Helvetica, Arial, sans-serif;';
 
-        // Banner rosso in cima alla colonna info
         var headerText = (AMAZON_USE_NEW_DEALS && deal.custom_message) ? deal.custom_message : (isEnglish ? 'LIMITED TIME DEAL' : 'OFFERTA A TEMPO');
         var headerDiv = document.createElement('div');
         headerDiv.style.cssText = 'background: #cc0c39; color: #fff; padding: 8px 12px; text-align: center; font-weight: bold; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; box-sizing: border-box; width: 100%;';
         headerDiv.textContent = headerText;
         infoCol.appendChild(headerDiv);
 
-        // Contenitore per i testi con padding
+        // Stile testi con o senza modalità banner ridotta
+        var isSmallBanner = options.isSmallBanner !== undefined ? options.isSmallBanner : (bannerHeight < 180);
         var contentDiv = document.createElement('div');
-        contentDiv.style.cssText = 'padding: 12px; display: flex; flex-direction: column; flex-grow: 1; min-height: 0; box-sizing: border-box; width: 100%;';
+        var contentPadding = isSmallBanner ? '6px 8px' : '12px';
+        contentDiv.style.cssText = 'padding: ' + contentPadding + '; display: flex; flex-direction: column; flex-grow: 1; min-height: 0; box-sizing: border-box; width: 100%;';
 
-        // Titolo/Descrizione
         var descDiv = document.createElement('div');
-        descDiv.style.cssText = 'font-size: 12px; line-height: 1.3; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; margin-bottom: 8px; font-weight: 500;';
+        var otherElementsHeight = isSmallBanner ? 105 : 145;
+        var availableTextHeight = bannerHeight - otherElementsHeight;
+        var lineHeight = isSmallBanner ? 14.3 : 15.6;
+        var maxLines = Math.floor(availableTextHeight / lineHeight);
+        if (maxLines < 1) maxLines = 1;
+        var lineClamp = options.lineClamp !== undefined ? options.lineClamp : maxLines;
+        var descMargin = isSmallBanner ? '4px' : '8px';
+        var descFontSize = isSmallBanner ? '11px' : '12px';
+        descDiv.style.cssText = 'font-size: ' + descFontSize + '; line-height: 1.3; overflow: hidden; display: -webkit-box; -webkit-line-clamp: ' + lineClamp + '; -webkit-box-orient: vertical; margin-bottom: ' + descMargin + '; font-weight: 500; text-align: center;';
         descDiv.textContent = deal.title || '';
         contentDiv.appendChild(descDiv);
 
-        // Prezzo con tooltip expiry
-        var priceDiv = document.createElement('div');
-        priceDiv.style.cssText = 'font-size: 20px; font-weight: bold; color: #ff5252; margin-bottom: 4px;';
-        if (deal.price && deal.price.trim() !== '') {
-            priceDiv.textContent = deal.price;
-        }
+        var priceAndBadgeRow = document.createElement('div');
+        priceAndBadgeRow.style.cssText = 'display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: auto; margin-bottom: ' + (isSmallBanner ? '4px' : '8px') + '; width: 100%;';
         if (deal.expiry) {
-            priceDiv.setAttribute('title', deal.expiry);
+            priceAndBadgeRow.setAttribute('title', deal.expiry);
         }
-        contentDiv.appendChild(priceDiv);
 
-        // Badge Sconto (se presente)
+        var priceSpan = document.createElement('span');
+        var priceFontSize = isSmallBanner ? '15px' : '20px';
+        priceSpan.style.cssText = 'font-size: ' + priceFontSize + '; font-weight: bold; color: #ff5252;';
+        if (deal.price && deal.price.trim() !== '') {
+            priceSpan.textContent = deal.price;
+            priceAndBadgeRow.appendChild(priceSpan);
+        }
+
         if (deal.badge && deal.badge.trim() !== '') {
             var isHighDiscount = false;
             var match = deal.badge.match(/(\d+)%/);
@@ -1179,29 +1073,32 @@ function setupAmazonFinishBanner(formId) {
             }
             var pulseClass = isHighDiscount ? ' amazon-badge-pulse' : '';
             var badgeSpan = document.createElement('span');
+            var badgeFontSize = isSmallBanner ? '10px' : '11px';
             badgeSpan.className = 'amazon-badge' + pulseClass;
-            badgeSpan.style.cssText = 'font-size: 11px; padding: 2px 6px; align-self: flex-start; margin-bottom: 4px;';
+            badgeSpan.style.cssText = 'font-size: ' + badgeFontSize + '; padding: 2px 6px;';
             badgeSpan.textContent = deal.badge;
-            contentDiv.appendChild(badgeSpan);
+            priceAndBadgeRow.appendChild(badgeSpan);
         }
+        contentDiv.appendChild(priceAndBadgeRow);
 
-        // Pulsante "Vedi offerta su Amazon.it"
         var ctaDiv = document.createElement('div');
-        ctaDiv.style.cssText = 'display: block; background: linear-gradient(180deg, #ff9900 0%, #e68a00 100%); color: #000; padding: 8px; border-radius: 20px; font-weight: bold; text-align: center; font-size: 11px; margin-top: 8px; margin-bottom: 8px;';
+        var ctaPadding = isSmallBanner ? '4px' : '8px';
+        var ctaMarginBottom = isSmallBanner ? '4px' : '8px';
+        var ctaFontSize = isSmallBanner ? '10px' : '11px';
+        ctaDiv.style.cssText = 'display: block; width: 100%; box-sizing: border-box; background: linear-gradient(180deg, #ff9900 0%, #e68a00 100%); color: #000; padding: ' + ctaPadding + '; border-radius: 20px; font-weight: bold; text-align: center; font-size: ' + ctaFontSize + '; margin-top: 0; margin-bottom: ' + ctaMarginBottom + ';';
         ctaDiv.textContent = isEnglish ? 'View offer on Amazon.it' : 'Vedi offerta su Amazon.it';
         contentDiv.appendChild(ctaDiv);
 
-        // Disclaimer
         var disclaimerDiv = document.createElement('div');
-        disclaimerDiv.style.cssText = 'font-size: 9px; color: #94a3b8; line-height: 1.1; margin-top: auto;';
+        disclaimerDiv.style.cssText = 'font-size: 9px; color: #94a3b8; line-height: 1.1; text-align: center; margin-top: 4px;';
         disclaimerDiv.innerHTML = 'Come affiliato Amazon,<br>guadagno dagli acquisti idonei.';
         contentDiv.appendChild(disclaimerDiv);
 
         infoCol.appendChild(contentDiv);
 
-        // 4.2 Colonna immagine (Destra, 500px)
+        // 3.2 Colonna immagine (Destra)
         var imgCol = document.createElement('div');
-        imgCol.style.cssText = 'width: 496px; height: 100%; background: #fff; display: flex; justify-content: center; align-items: center; padding: 5px; box-sizing: border-box;';
+        imgCol.style.cssText = 'width: ' + imgColWidth + 'px; height: 100%; background: #fff; display: flex; justify-content: center; align-items: center; padding: 5px; box-sizing: border-box;';
 
         var img = document.createElement('img');
         img.src = imgUrl;
@@ -1213,7 +1110,7 @@ function setupAmazonFinishBanner(formId) {
         aLink.appendChild(imgCol);
         modal.appendChild(aLink);
 
-        // Tracciamento Google Analytics - Impression (solo se NUOVA in questa sessione per questo deal)
+        // Tracciamento Google Analytics - Impression
         if (!window._amazonDealsImpressionTracked[deal.id]) {
             window._amazonDealsImpressionTracked[deal.id] = true;
             if (typeof gtag === 'function') {
@@ -1221,16 +1118,15 @@ function setupAmazonFinishBanner(formId) {
                     'event_category': 'Affiliate',
                     'amazon_deal_id': dealId + '_finish',
                     'format': 'finish',
+                    'asin': deal.asin || '',
                     'page_location': window.location.href,
                     'non_interaction': true
                 });
             }
             console.log('GA Tracked (Finish): Amazon_Banner_Impression | ' + dealId);
-        } else {
-            console.log('GA Tracked (Finish): Amazon_Banner_Impression SKIPPED (Already shown) | ' + dealId);
         }
 
-        // Tracciamento Google Analytics - Click (con parametro format: finish)
+        // Tracciamento Google Analytics - Click
         var startTime = Date.now();
         aLink.onclick = function () {
             var exposureSeconds = Math.round((Date.now() - startTime) / 1000);
@@ -1239,48 +1135,19 @@ function setupAmazonFinishBanner(formId) {
                     'event_category': 'Affiliate',
                     'amazon_deal_id': dealId + '_finish',
                     'format': 'finish',
+                    'asin': deal.asin || '',
                     'tempo_esposizione': exposureSeconds,
                     'page_location': window.location.href,
                     'non_interaction': false
                 });
             }
-            console.log('GA Tracked (Finish): Amazon_Banner_Click | ' + dealId + ' | sec: ' + exposureSeconds);
         };
+    }
+
+    if (typeof options.onSetupButtons === 'function') {
+        options.onSetupButtons(modal);
     }
 }
 
-(function () {
-    var initAmazonFinishModal = function () {
-        var isTargetGame = window.location.pathname.indexOf('scala40') !== -1 || window.location.pathname.indexOf('machiavelli') !== -1 || window.location.pathname.indexOf('spider') !== -1;
-        if (!isTargetGame || !window.scala || !window.scala.mostradialogo) return;
 
-        var originalMostraDialogo = window.scala.mostradialogo;
 
-        window.scala.mostradialogo = function (dialogo) {
-            originalMostraDialogo.call(this, dialogo);
-
-            if (!ENABLE_AMAZON_ON_FINISH) return;
-
-            var id = dialogo.replace('#', '');
-            if (id === 'haivinto' || id === 'haiperso' || id === 'haivintotorneo' || id === 'haipersotorneo') {
-                try {
-                    setupAmazonFinishBanner(id);
-                } catch (e) {
-                    console.error("Errore setupAmazonFinishBanner:", e);
-                }
-            }
-        };
-        var gameName = 'Scala40';
-        if (window.location.pathname.indexOf('machiavelli') !== -1) gameName = 'Machiavelli';
-        else if (window.location.pathname.indexOf('spider') !== -1) gameName = 'Spider';
-        console.log("Amazon Finish Modal Integration (" + gameName + "): ACTIVE");
-    };
-
-    if (document.readyState === 'complete') {
-        setTimeout(initAmazonFinishModal, 600); // Esegui dopo l'inizializzazione del modulo di ottimizzazione
-    } else {
-        window.addEventListener('load', function () {
-            setTimeout(initAmazonFinishModal, 600);
-        });
-    }
-})();

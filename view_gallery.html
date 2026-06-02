@@ -401,6 +401,8 @@
                             gtag('event', 'Amazon_Banner_Click', {
                                 'event_category': 'Affiliate',
                                 'amazon_deal_id': dealId,
+                                'asin': deal.asin || '',
+                                'format': 'gallery',
                                 'tempo_esposizione': exposureSeconds,
                                 'page_location': window.location.href,
                                 'non_interaction': false

@@ -262,7 +262,9 @@ h6 {
 	cursor: pointer;
 	background-size: 130px 40px;
 	background-image: url(images/scala40/wbutton.png);
-
+	display: flex;
+	align-items: center;
+	justify-content: center;
 }
 
 .pulsante4 {
@@ -280,7 +282,9 @@ h6 {
 	cursor: pointer;
 	background-size: 130px 40px;
 	background-image: url(images/scala40/wbutton.png);
-
+	display: flex;
+	align-items: center;
+	justify-content: center;
 }
 
 .pulsante5 {
@@ -299,7 +303,9 @@ h6 {
 	cursor: pointer;
 	background-size: 130px 48px;
 	background-image: url(images/scala40/wbutton.png);
-
+	display: flex;
+	align-items: center;
+	justify-content: center;
 }
 
 
@@ -318,7 +324,9 @@ h6 {
 	cursor: pointer;
 	background-size: 130px 40px;
 	background-image: url(images/home/manentibutton.png);
-
+	display: flex;
+	align-items: center;
+	justify-content: center;
 }
 
 .pulsantescala40 {
@@ -336,7 +344,9 @@ h6 {
 	cursor: pointer;
 	background-size: 130px 40px;
 	background-image: url(images/home/pulsantescala40.png);
-
+	display: flex;
+	align-items: center;
+	justify-content: center;
 }
 
 .pulsanteburraco {
@@ -354,7 +364,9 @@ h6 {
 	cursor: pointer;
 	background-size: 130px 40px;
 	background-image: url(images/home/pulsanteburraco.png);
-
+	display: flex;
+	align-items: center;
+	justify-content: center;
 }
 
 .pulsantespider {
@@ -372,7 +384,9 @@ h6 {
 	cursor: pointer;
 	background-size: 130px 40px;
 	background-image: url(images/home/spider.png);
-
+	display: flex;
+	align-items: center;
+	justify-content: center;
 }
 
 
@@ -391,7 +405,9 @@ h6 {
 	cursor: pointer;
 	background-size: 130px 40px;
 	background-image: url(images/home/pulsantecomments.png);
-
+	display: flex;
+	align-items: center;
+	justify-content: center;
 }
 
 .pulsanteazz {

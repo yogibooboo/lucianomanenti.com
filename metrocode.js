@@ -7,10 +7,22 @@ log.enabled = true;
 
 // recupera l'elemento canvas
 
-$(window).resize(function () {
-	tmidi.offsetxx = $("#campogioco").offset().left;
-	tmidi.offsetyy = $("#campogioco").offset().top;
-});
+if (window.registerLayoutResizeListener) {
+	window.registerLayoutResizeListener(function (offsetLeft, offsetTop, scale) {
+		if (window.tmidi) {
+			window.tmidi.offsetxx = offsetLeft;
+			window.tmidi.offsetyy = offsetTop;
+		}
+	});
+} else {
+	$(window).resize(function () {
+		if (window.tmidi) {
+			tmidi.offsetxx = $("#campogioco").offset().left;
+			tmidi.offsetyy = $("#campogioco").offset().top;
+		}
+	});
+}
+
 
 
 var reader = new FileReader();

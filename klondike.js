@@ -458,25 +458,44 @@ function fmtTime(secs) {
 }
 
 function buildWinRecordHtml(newFlags) {
+    var isAmazon = window.ENABLE_AMAZON_ON_FINISH;
     var isEn = document.documentElement.lang === 'en';
     var rec = cachedRecords;
     var movesWord = isEn ? 'moves' : 'mosse';
     var newWord   = isEn ? 'new!' : 'nuovo!';
     var labelDay  = isEn ? 'Daily record'    : 'Rec. giornaliero';
     var labelEver = isEn ? 'All-time record' : 'Rec. assoluto';
-    var dailyTxt  = rec.daily ? (fmtTime(rec.daily.secs) + ' &nbsp; ' + rec.daily.moves + ' ' + movesWord) : '—';
-    var everTxt   = rec.ever  ? (fmtTime(rec.ever.secs)  + ' &nbsp; ' + rec.ever.moves  + ' ' + movesWord) : '—';
-    var html = '<div class="win-records">';
-    html += '<div class="win-rec-row' + (newFlags.newDaily ? ' win-rec-new' : '') + '">';
-    html += '<span class="win-rec-label">' + labelDay + '</span>';
-    html += '<div class="win-rec-bottom"><span class="win-rec-val">' + dailyTxt + '</span>';
-    if (newFlags.newDaily) html += '<span class="win-rec-star">&#9733; ' + newWord + '</span>';
+
+    var dailyTxt  = rec.daily ? (fmtTime(rec.daily.secs) + (isAmazon ? '<br>' : ' &nbsp; ') + rec.daily.moves + ' ' + movesWord) : '—';
+    var everTxt   = rec.ever  ? (fmtTime(rec.ever.secs)  + (isAmazon ? '<br>' : ' &nbsp; ') + rec.ever.moves  + ' ' + movesWord) : '—';
+
+    var styleRecords = isAmazon ? 'position: absolute; top: 0px; left: 500px; width: 200px; height: 280px; padding: 15px 12px; box-sizing: border-box; font-family: Slackey, sans-serif; color: #fff; background: rgba(0,0,0,0.18); border-left: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; justify-content: center; gap: 8px;' : '';
+    var styleRow = isAmazon ? 'padding: 6px 8px; border-radius: 6px; background: rgba(255,255,255,0.08); margin: 0; min-height: 90px; box-sizing: border-box;' : '';
+    var styleLabel = isAmazon ? 'font-size: 13px; opacity: 0.75; display: block; margin-bottom: 2px; line-height: 1.2;' : '';
+    var styleBottom = isAmazon ? 'display: block; position: relative;' : '';
+    var styleVal = isAmazon ? 'font-size: 18px; line-height: 1.2; display: block;' : '';
+    var styleStar = isAmazon ? 'font-size: 14px; color: gold; text-shadow: 0 0 6px rgba(255,215,0,0.7); display: block; margin-top: 2px;' : '';
+
+    var html = '<div class="win-records" style="' + styleRecords + '">';
+    
+    var rowClass1 = 'win-rec-row' + (newFlags.newDaily ? ' win-rec-new' : '');
+    var rowStyle1 = styleRow + (newFlags.newDaily && isAmazon ? ' background: rgba(255, 215, 0, 0.22); outline: 1px solid rgba(255, 215, 0, 0.5);' : '');
+    html += '<div class="' + rowClass1 + '" style="' + rowStyle1 + '">';
+    html += '<span class="win-rec-label" style="' + styleLabel + '">' + labelDay + '</span>';
+    html += '<div class="win-rec-bottom" style="' + styleBottom + '">';
+    html += '<span class="win-rec-val" style="' + styleVal + '">' + dailyTxt + '</span>';
+    if (newFlags.newDaily) html += '<span class="win-rec-star" style="' + styleStar + '">&#9733; ' + newWord + '</span>';
     html += '</div></div>';
-    html += '<div class="win-rec-row' + (newFlags.newEver ? ' win-rec-new' : '') + '">';
-    html += '<span class="win-rec-label">' + labelEver + '</span>';
-    html += '<div class="win-rec-bottom"><span class="win-rec-val">' + everTxt + '</span>';
-    if (newFlags.newEver) html += '<span class="win-rec-star">&#9733; ' + newWord + '</span>';
+    
+    var rowClass2 = 'win-rec-row' + (newFlags.newEver ? ' win-rec-new' : '');
+    var rowStyle2 = styleRow + (newFlags.newEver && isAmazon ? ' background: rgba(255, 215, 0, 0.22); outline: 1px solid rgba(255, 215, 0, 0.5);' : '');
+    html += '<div class="' + rowClass2 + '" style="' + rowStyle2 + '">';
+    html += '<span class="win-rec-label" style="' + styleLabel + '">' + labelEver + '</span>';
+    html += '<div class="win-rec-bottom" style="' + styleBottom + '">';
+    html += '<span class="win-rec-val" style="' + styleVal + '">' + everTxt + '</span>';
+    if (newFlags.newEver) html += '<span class="win-rec-star" style="' + styleStar + '">&#9733; ' + newWord + '</span>';
     html += '</div></div>';
+    
     html += '</div>';
     return html;
 }
@@ -494,9 +513,130 @@ function checkWin() {
         var existing = box.querySelector('.win-records');
         if (existing) existing.remove();
         box.insertAdjacentHTML('beforeend', buildWinRecordHtml(newFlags));
+
+        if (window.ENABLE_AMAZON_ON_FINISH) {
+            if (typeof setupAmazonFinishBanner === 'function') {
+                setupAmazonFinishBanner('haivinto', {
+                    modalStyle: {
+                        width: '700px',
+                        height: '340px',
+                        left: '162px',
+                        backgroundPosition: 'left top',
+                        backgroundSize: '500px 280px',
+                        overflow: 'visible'
+                    },
+                    targetTop: 310,
+                    bannerHeight: 300,
+                    bannerTopOffset: 305,
+                    leftOffset: 0,
+                    showVediCarte: false,
+                    onSetupButtons: function (modal) {
+                        var buttons = modal.querySelectorAll('button');
+                        for (var i = 0; i < buttons.length; i++) {
+                            buttons[i].style.top = '285px';
+                            buttons[i].style.width = '280px';
+                            buttons[i].style.fontSize = '24px';
+                            buttons[i].style.left = '210px';
+                        }
+                    }
+                });
+            }
+        } else {
+            // Ripristina layout originale se Amazon non è attivo
+            box.style.width = '';
+            box.style.height = ''; 
+            box.style.top = ''; 
+            box.style.left = '';
+            box.style.backgroundPosition = '';
+            box.style.backgroundSize = '';
+            box.style.overflow = '';
+            var buttons = box.querySelectorAll('button');
+            for (var b = 0; b < buttons.length; b++) {
+                if (buttons[b].className !== 'btn-vedi-carte') {
+                    buttons[b].style.top = ''; 
+                    buttons[b].style.width = ''; 
+                    buttons[b].style.fontSize = ''; 
+                    buttons[b].style.left = '110px'; 
+                }
+            }
+        }
         document.getElementById('schermo').style.display = 'block';
         box.style.display = 'block';
     }, 800);
+}
+function confirmNewGame() {
+    if (moves === 0) {
+        location.reload();
+        return;
+    }
+    var box = document.getElementById('confermatermina');
+    if (!box) return;
+
+    if (window.ENABLE_AMAZON_ON_FINISH) {
+        if (typeof setupAmazonFinishBanner === 'function') {
+            setupAmazonFinishBanner('confermatermina', {
+                modalStyle: {
+                    width: '700px',
+                    height: '180px',
+                    left: '162px',
+                    background: '#2d5a4a',
+                    overflow: 'visible'
+                },
+                targetTop: 470,
+                bannerHeight: 460,
+                bannerTopOffset: 465,
+                leftOffset: 0,
+                showVediCarte: false,
+                onSetupButtons: function (modal) {
+                    var btnNo = modal.querySelector('.btn-no-continua');
+                    var btnSi = modal.querySelector('.btn-si-termina');
+                    if (btnNo) {
+                        btnNo.style.top = '110px';
+                        btnNo.style.width = '240px';
+                        btnNo.style.left = '80px';
+                        btnNo.style.fontSize = '20px';
+                    }
+                    if (btnSi) {
+                        btnSi.style.top = '110px';
+                        btnSi.style.width = '240px';
+                        btnSi.style.left = '380px';
+                        btnSi.style.fontSize = '20px';
+                    }
+                    var msg = modal.querySelector('.confirm-message');
+                    if (msg) {
+                        msg.style.marginTop = '20px';
+                    }
+                }
+            });
+        }
+    } else {
+        box.style.width = '';
+        box.style.height = ''; 
+        box.style.top = ''; 
+        box.style.left = '';
+        box.style.background = '';
+        box.style.overflow = '';
+        var btnNo = box.querySelector('.btn-no-continua');
+        var btnSi = box.querySelector('.btn-si-termina');
+        if (btnNo) {
+            btnNo.style.top = ''; 
+            btnNo.style.width = ''; 
+            btnNo.style.fontSize = ''; 
+            btnNo.style.left = '110px'; 
+        }
+        if (btnSi) {
+            btnSi.style.top = ''; 
+            btnSi.style.width = ''; 
+            btnSi.style.fontSize = ''; 
+            btnSi.style.left = '110px'; 
+        }
+        var msg = box.querySelector('.confirm-message');
+        if (msg) {
+            msg.style.marginTop = '';
+        }
+    }
+    document.getElementById('schermo').style.display = 'block';
+    box.style.display = 'block';
 }
 function playSound(id) {
     try { var el = document.getElementById(id); if (el) { el.currentTime = 0; el.play(); } } catch(e) {}
@@ -853,7 +993,7 @@ document.addEventListener('DOMContentLoaded', function() {
     canvas.addEventListener('touchmove', onMove, { passive: false });
     canvas.addEventListener('touchend', onUp, { passive: false });
 
-    document.getElementById('nuovo').addEventListener('click', function() { location.reload(); });
+    document.getElementById('nuovo').addEventListener('click', confirmNewGame);
     document.getElementById('pulsante2').addEventListener('click', function() { doUndo(); });
 
     var btnScoperte = document.getElementById('scoperte');
@@ -875,6 +1015,31 @@ document.addEventListener('DOMContentLoaded', function() {
         cachedRecords = loadRecords();
         renderAll();
     });
+
+    var btnNo = document.querySelector('#confermatermina .btn-no-continua');
+    if (btnNo) {
+        btnNo.addEventListener('click', function() {
+            document.getElementById('schermo').style.display = 'none';
+            document.getElementById('confermatermina').style.display = 'none';
+            // Reset modal styles
+            var box = document.getElementById('confermatermina');
+            box.style.width = '';
+            box.style.height = ''; 
+            box.style.top = ''; 
+            box.style.left = '';
+            box.style.background = '';
+            box.style.overflow = '';
+            var oldBanner = box.querySelector('.amazon-finish-banner');
+            if (oldBanner) oldBanner.remove();
+        });
+    }
+
+    var btnSi = document.querySelector('#confermatermina .btn-si-termina');
+    if (btnSi) {
+        btnSi.addEventListener('click', function() {
+            location.reload();
+        });
+    }
 
     var winBtn = document.querySelector('#haivinto .bottone1');
     if (winBtn) winBtn.addEventListener('click', function() { location.reload(); });

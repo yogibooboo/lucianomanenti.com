@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <title>Scala 40 New - lucianomanenti.com</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="scala40new.css?v=0.1">
+</head>
+
+<body>
+
+<div class="main-container">
+    <div id="sidebar-left"  class="sidebar"></div>
+    <div id="sidebar-right" class="sidebar"></div>
+
+    <div id="campogioco">
+        <div id="schermo"></div>
+
+        <!-- Dialog vittoria round -->
+        <div id="haivinto" class="form">
+            <h2>HAI VINTO! 🎉</h2>
+            <button id="btn-nuova-dopo-vinto" type="button">NUOVA PARTITA</button>
+        </div>
+
+        <!-- Dialog sconfitta round -->
+        <div id="haiperso" class="form">
+            <h2>HAI PERSO</h2>
+            <button id="btn-nuova-dopo-perso" type="button">NUOVA PARTITA</button>
+        </div>
+
+        <!-- Toolbar -->
+        <div id="btn-nuovo" class="pulsante2" style="top:5px; left:10px;">NUOVO</div>
+        <div id="btn-calata" class="pulsante2" style="top:5px; left:105px;">CALATA</div>
+        <div id="btn-scarta" class="pulsante2" style="top:5px; left:200px;">SCARTA</div>
+        <div id="btn-undo"   class="pulsante2" style="top:5px; left:295px; width:40px;"></div>
+
+        <!-- Lingua / audio -->
+        <div class="lang-switch-game" style="position:absolute; top:10px; left:355px; z-index:10001; display:flex; align-items:center; gap:6px;">
+            <div id="btn-audio" class="btn-audio-game" aria-label="Audio"></div>
+        </div>
+
+        <!-- Alert inline -->
+        <div id="s40-alert"></div>
+
+        <!-- Slot vuoti mazzo e scarti (decorativi, posizioni = _mazzoZone/_scartiZone) -->
+        <div class="slot-vuoto" style="width:71px; height:96px; top:300px; left:875px;"></div>
+        <div class="slot-vuoto" style="width:71px; height:96px; top:300px; left:785px;"></div>
+
+        <!-- Link ad altri giochi -->
+        <div class="link-giochi">
+            <a href="rummy.html">   <div class="pulsante-link pulsante-rummy">Gin Rummy</div></a>
+            <a href="burraco.html"> <div class="pulsante-link pulsante-burraco">Burraco</div></a>
+            <a href="scala40.html"> <div class="pulsante-link pulsante-scala40">Scala 40</div></a>
+            <a href="spider.html">  <div class="pulsante-link pulsante-spider">Spider</div></a>
+            <a href="klondike.html"><div class="pulsante-link pulsante-klondike">Klondike</div></a>
+            <a href="index.html">   <div class="pulsante-link pulsante-home">Home</div></a>
+        </div>
+
+    </div><!-- /campogioco -->
+</div>
+
+<audio id="pesca"       src="sounds/scala40/cardplace1.mp3"></audio>
+<audio id="scarta"      src="sounds/scala40/cardslide1.mp3"></audio>
+<audio id="scartatris"  src="sounds/scala40/cardplace3.mp3"></audio>
+<audio id="ordina"      src="sounds/scala40/cardslide5.mp3"></audio>
+<audio id="tada"        src="sounds/scala40/tada.mp3"></audio>
+<audio id="perso"       src="sounds/scala40/haiperso.mp3"></audio>
+<audio id="ding"        src="sounds/scala40/ding.mp3"></audio>
+
+<script src="site.js?v=1.1"></script>
+<script>
+    window.gameConfig = {
+        gaPrefix: 'S40N_',
+        messages: { it: '', en: '' },
+        adsenseActive: false,
+        hideLegalFooter: true
+    };
+    window.currentLang = 'it';
+</script>
+<script src="game-layout.js?v=4.6"></script>
+<script src="scala40new-core.js?v=0.1"></script>
+<script src="scala40new-game.js?v=0.1"></script>
+<script src="scala40new-ui.js?v=0.1"></script>
+
+<script>
+// ── Controller ────────────────────────────────────────────────────────────────
+(function () {
+    'use strict';
+
+    var game, ui;
+    var campo = document.getElementById('campogioco');
+
+    // ── Alert helper ──────────────────────────────────────────────────────────
+    var alertTimer = null;
+    function showAlert(msg) {
+        var el = document.getElementById('s40-alert');
+        el.textContent = msg;
+        el.classList.add('visible');
+        clearTimeout(alertTimer);
+        alertTimer = setTimeout(function () { el.classList.remove('visible'); }, 2200);
+    }
+
+    function playSound(id) {
+        var el = document.getElementById(id);
+        if (el) { el.currentTime = 0; el.play(); }
+    }
+
+    // ── Modale ───────────────────────────────────────────────────────────────
+    function showDialog(id) {
+        document.getElementById('schermo').style.display = 'block';
+        document.getElementById(id).style.display = 'block';
+    }
+    function hideDialogs() {
+        document.getElementById('schermo').style.display = 'none';
+        ['haivinto', 'haiperso'].forEach(function (id) {
+            document.getElementById(id).style.display = 'none';
+        });
+    }
+
+    // ── Turno AI ──────────────────────────────────────────────────────────────
+    function runAiTurn() {
+        if (game.state.phase === 'over') return;
+        if (game.state.currentPlayer === 0) return;
+
+        setTimeout(function () {
+            var log = game.aiTurn();
+            ui.render();
+            playSound('pesca');
+
+            // Controlla fine partita dopo la mossa AI
+            if (game.state.phase === 'over') {
+                endRound();
+                return;
+            }
+
+            // Continua con altri AI se necessario
+            if (game.state.currentPlayer !== 0) {
+                runAiTurn();
+            }
+        }, 800);
+    }
+
+    // ── Fine round ────────────────────────────────────────────────────────────
+    function endRound() {
+        var deltas   = game.scoreRound();
+        var humanWon = deltas[0] === 0;
+
+        ui.render();
+        setTimeout(function () {
+            if (humanWon) {
+                playSound('tada');
+                showDialog('haivinto');
+            } else {
+                playSound('perso');
+                showDialog('haiperso');
+            }
+        }, 600);
+    }
+
+    // ── Avvia partita ─────────────────────────────────────────────────────────
+    function startGame(numPlayers) {
+        hideDialogs();
+        if (ui) ui.destroy();          // rimuove i vecchi div-carta
+        game = new S40Game(numPlayers || 2);
+        ui   = new S40UI(game, campo);
+        ui.init();
+
+        // Dopo ogni render: se non è il turno del giocatore, lancia AI
+        var origRender = ui.render.bind(ui);
+        ui.render = function () {
+            origRender();
+            if (game.state.currentPlayer !== 0 && game.state.phase === 'play') {
+                runAiTurn();
+            }
+        };
+    }
+
+    // ── Bottoni toolbar ───────────────────────────────────────────────────────
+    document.getElementById('btn-nuovo').addEventListener('click', function () {
+        startGame(2);
+    });
+
+    document.getElementById('btn-calata').addEventListener('click', function () {
+        if (!game || game.state.currentPlayer !== 0) return;
+        if (!game.state.hasDrawn) { showAlert(window.S40Core.s40t('draw_first')); return; }
+        var result = ui.laySelectedMeld();
+        if (!result.ok) {
+            if (result.reason === 'need_40') showAlert('Servono almeno 40 punti per aprire');
+            else if (result.reason === 'invalid_meld') showAlert('Selezione non valida');
+            else if (result.reason === 'draw_first') showAlert(window.S40Core.s40t('draw_first'));
+            else showAlert(result.reason);
+            playSound('ding');
+        } else {
+            playSound('scartatris');
+            if (game.state.phase === 'over') { endRound(); return; }
+        }
+    });
+
+    document.getElementById('btn-scarta').addEventListener('click', function () {
+        if (!game || game.state.currentPlayer !== 0) return;
+        if (!game.state.hasDrawn) { showAlert(window.S40Core.s40t('draw_first')); playSound('ding'); return; }
+        if (ui.selectedIds.length !== 1) { showAlert('Seleziona una carta da scartare'); playSound('ding'); return; }
+        var result = ui.discardSelected();
+        if (result.ok) {
+            playSound('scarta');
+            if (game.state.phase === 'over') { endRound(); return; }
+        } else if (result.reason === 'need_40_on_discard') {
+            showAlert('Calate: ' + result.total + ' pt (servono 40) — premi UNDO per annullare le calate');
+            playSound('ding');
+        } else if (result.reason === 'cannot_empty') {
+            showAlert(window.S40Core.s40t('cannot_empty'));
+            playSound('ding');
+        }
+    });
+
+    document.getElementById('btn-undo').addEventListener('click', function () {
+        if (!game) return;
+        var ok = ui.doUndo();
+        if (!ok) showAlert('Niente da annullare');
+    });
+
+    document.getElementById('btn-nuova-dopo-vinto').addEventListener('click', function () {
+        startGame(2);
+    });
+    document.getElementById('btn-nuova-dopo-perso').addEventListener('click', function () {
+        startGame(2);
+    });
+
+    // ── Avvio ─────────────────────────────────────────────────────────────────
+    startGame(2);
+
+    // Audio toggle
+    if (window.initAudioToggle) window.initAudioToggle('#btn-audio');
+
+})();
+</script>
+
+</body>
+</html>

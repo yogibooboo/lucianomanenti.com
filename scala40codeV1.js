@@ -1255,11 +1255,124 @@ var scala = {
 	},
 
 	mostradialogo: function (dialogo) {
-		$(dialogo).show();
+		var selector = (dialogo.indexOf('#') === 0) ? dialogo : '#' + dialogo;
+		$(selector).show();
 
 		$("#schermo").css({ "width": $(window).width() / window.gameScale });
 		$("#schermo").show();
 		this.fmodale = true;
+
+		// Gestione Amazon Finish Banner per Scala 40
+		if (window.ENABLE_AMAZON_ON_FINISH && typeof setupAmazonFinishBanner === 'function') {
+			var id = dialogo.replace('#', '');
+			if (id === 'haivinto' || id === 'haiperso' || id === 'haivintotorneo' || id === 'haipersotorneo') {
+				try {
+					var modal = document.getElementById(id);
+					if (modal) {
+						var giocatore = document.getElementById('giocatore');
+						var targetTop;
+						if (giocatore) {
+							targetTop = giocatore.offsetTop - (modal.offsetHeight || 280) - 5;
+						} else {
+							var campogioco = document.getElementById('campogioco');
+							var campogiocoHeight = campogioco ? (campogioco.offsetHeight || 750) : 750;
+							targetTop = campogiocoHeight - (modal.offsetHeight || 280) - 5;
+						}
+						modal.style.top = targetTop + 'px';
+						modal.style.overflow = 'visible';
+
+						var isEnglish = (window.currentLang === 'en');
+						var btnText = isEnglish ? 'VIEW CARDS' : 'VEDI CARTE';
+
+						// 1. Crea il pulsante "VEDI CARTE"
+						var btnVedi = modal.querySelector('.btn-vedi-carte');
+						if (!btnVedi) {
+							btnVedi = document.createElement('button');
+							btnVedi.className = 'btn-vedi-carte';
+							btnVedi.type = 'button';
+							btnVedi.textContent = btnText;
+							btnVedi.style.position = 'absolute';
+							btnVedi.style.cursor = 'pointer';
+
+							var isToggled = false;
+							var originalBg = '';
+							var originalBorder = '';
+							var originalBoxShadow = '';
+
+							btnVedi.onclick = function (e) {
+								if (e) e.stopPropagation();
+								isToggled = !isToggled;
+								var otherChildren = modal.children;
+								var schermo = document.getElementById('schermo');
+
+								if (isToggled) {
+									originalBg = modal.style.backgroundImage || getComputedStyle(modal).backgroundImage;
+									originalBorder = modal.style.border || getComputedStyle(modal).border;
+									originalBoxShadow = modal.style.boxShadow || getComputedStyle(modal).boxShadow;
+
+									if (schermo) schermo.style.display = 'none';
+									modal.style.backgroundImage = 'none';
+									modal.style.border = 'none';
+									modal.style.boxShadow = 'none';
+									modal.style.backgroundColor = 'transparent';
+
+									for (var i = 0; i < otherChildren.length; i++) {
+										var child = otherChildren[i];
+										if (child !== btnVedi) {
+											child.style.visibility = 'hidden';
+										}
+									}
+									btnVedi.textContent = isEnglish ? 'BACK' : 'INDIETRO';
+								} else {
+									if (schermo) schermo.style.display = 'block';
+									modal.style.backgroundImage = originalBg;
+									modal.style.border = originalBorder;
+									modal.style.boxShadow = originalBoxShadow;
+									modal.style.backgroundColor = '';
+
+									for (var i = 0; i < otherChildren.length; i++) {
+										var child = otherChildren[i];
+										child.style.visibility = 'visible';
+									}
+									btnVedi.textContent = isEnglish ? 'VIEW CARDS' : 'VEDI CARTE';
+								}
+							};
+							modal.appendChild(btnVedi);
+						} else {
+							btnVedi.textContent = btnText;
+						}
+
+						// 2. Riposiziona i pulsanti presenti
+						var buttons = modal.querySelectorAll('button');
+						var otherButtons = [];
+						for (var i = 0; i < buttons.length; i++) {
+							if (buttons[i] !== btnVedi) {
+								otherButtons.push(buttons[i]);
+							}
+						}
+						if (otherButtons.length === 1) {
+							otherButtons[0].style.left = '130px';
+							btnVedi.style.left = '270px';
+						} else if (otherButtons.length === 2) {
+							otherButtons[0].style.left = '60px';
+							otherButtons[1].style.left = '200px';
+							btnVedi.style.left = '340px';
+						}
+
+						// 3. Chiama la funzione generica dei banner senza alterare il modale o i bottoni
+						setupAmazonFinishBanner(id, {
+							applyModalTop: false,
+							targetTop: targetTop,
+							leftOffset: -200,
+							bannerHeight: targetTop - 15,
+							bannerTopOffset: targetTop - 5
+						});
+					}
+				} catch (e) {
+					console.error("Errore setup Amazon Finish Banner:", e);
+				}
+			}
+		}
 	},
 
 
@@ -1477,22 +1590,40 @@ var scala = {
 
 	rendicontenitore: function (cont, speed) {
 		var velocita = speed || 400;
-		var newtop, newleft, carta;
+		var newtop, newleft, carta, divCard;
 		for (var i = 0; i < cont.carte.length; i++) {
 			carta = cont.carte[i];
+			divCard = carta.gui; // Cache del riferimento DOM
+
 			newtop = cont.top + cont.offsety + Math.floor(i * cont.deltay);
 			newleft = cont.left + cont.offsetx + Math.floor(i * cont.deltax) + cont.xtris * carta.ntris;
+
 			carta.top = newtop;
 			carta.left = newleft;
 			carta.zindex = i;
+
+			// --- LOGICA DI OTTIMIZZAZIONE ---
+			// Verifica se i valori attuali nel DOM sono già corretti (tolleranza 1px).
+			var currentLeft = parseInt(divCard.style.left) || 0;
+			var currentTop = parseInt(divCard.style.top) || 0;
+			var currentZ = parseInt(divCard.style.zIndex) || 0;
+
+			var isPositionsSame = Math.abs(currentLeft - newleft) < 1 && Math.abs(currentTop - newtop) < 1;
+			var isZIndexSame = currentZ === i;
+
+			if (isPositionsSame && isZIndexSame) {
+				this.showcard(carta);
+				continue;
+			}
+			// -------------------------------
+
 			if (scala.immediato) {
-				$(carta.gui).css({ "top": newtop, "left": newleft, "z-index": i }, velocita);
+				$(divCard).css({ "top": newtop, "left": newleft, "z-index": i }, velocita);
 			}
 			else {
-				$(carta.gui).animate({ "top": newtop, "left": newleft, "z-index": i }, velocita);
+				$(divCard).animate({ "top": newtop, "left": newleft, "z-index": i }, velocita);
 			}
 			this.showcard(carta);
-
 		}
 	},
 
@@ -3009,5 +3140,15 @@ $(document).ready(function () {
 	scala.collegaeventi();
 
 });
+
+if (window.registerLayoutResizeListener) {
+	window.registerLayoutResizeListener(function (offsetLeft, offsetTop, scale) {
+		if (window.scala) {
+			window.scala.offsetxx = offsetLeft;
+			window.scala.offsetyy = offsetTop;
+		}
+	});
+}
+
 
 
