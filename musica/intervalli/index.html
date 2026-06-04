@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9335537153013492" crossorigin="anonymous"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-WRBDRDQ4L8');
+        window.currentLang = 'it';
+    </script>
+
+    <title>Intervalli Musicali - Ear Training - lucianomanenti.com</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="../../favicon/favicon-96x96.png" sizes="96x96">
+    <link rel="icon" type="image/svg+xml" href="../../favicon/favicon.svg">
+    <link rel="shortcut icon" href="../../favicon/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../favicon/apple-touch-icon.png">
+    <link rel="manifest" href="../../favicon/site.webmanifest">
+    <link rel="stylesheet" href="../musica.css?v=1.0">
+    <link rel="stylesheet" href="intervalli.css?v=2.3">
+    <meta name="Description" content="Allena l'orecchio musicale riconoscendo gli intervalli: 2ª minore, 3ª maggiore, 5ª giusta e tutti gli altri. Gratis online.">
+
+    <script>
+        window.gameConfig = {
+            gaPrefix: 'MUSINT_',
+            hideLegalFooter: true,
+            adsenseActive: true,
+            adsenseSlots: {
+                '300x600': '5266697442',
+                '160x600': '1167670336',
+                '300x250': '8471445288',
+                '160x250': '8663016975'
+            }
+        };
+    </script>
+    <script src="../../game-layout.js?v=4.6"></script>
+</head>
+<body>
+
+<div class="main-container">
+    <div id="sidebar-left" class="sidebar"></div>
+    <div id="sidebar-right" class="sidebar"></div>
+
+    <div id="campogioco">
+
+        <!-- Top bar -->
+        <div id="topbar">
+            <a href="../" class="back-link">&#8592; Musica</a>
+            <span class="title">&#9834; Intervalli</span>
+            <div id="score-area">
+                <span id="score">0 / 0</span>
+                <button id="btn-reset">Azzera</button>
+            </div>
+        </div>
+
+        <!-- Mode selector -->
+        <div id="mode-selector">
+            <button class="btn-mode active" data-mode="ascendente">&#8679; Ascendente</button>
+            <button class="btn-mode" data-mode="discendente">&#8681; Discendente</button>
+            <button class="btn-mode" data-mode="armonico">&#8645; Armonico</button>
+        </div>
+
+        <!-- Difficulty selector -->
+        <div id="diff-selector">
+            <button class="btn-diff active" data-diff="1">1 &mdash; Base</button>
+            <button class="btn-diff" data-diff="2">2 &mdash; Facile</button>
+            <button class="btn-diff" data-diff="3">3 &mdash; Medio</button>
+            <button class="btn-diff" data-diff="4">4 &mdash; Esperto</button>
+            <button class="btn-diff" data-diff="5">5 &mdash; Estesi</button>
+        </div>
+
+        <!-- Note selector -->
+        <div id="note-selector">
+            <span class="nota-label">Nota di base:</span>
+            <button id="btn-root-random" class="active">&#x21BA; Casuale</button>
+            <button id="btn-root-prev" class="btn-root-nav">&#9664;</button>
+            <span id="root-note-display">C4</span>
+            <button id="btn-root-next" class="btn-root-nav">&#9654;</button>
+        </div>
+
+        <!-- Play area + Pentagramma -->
+        <div id="play-area">
+            <div id="staff-bg"></div>
+            <div id="play-col">
+                <button id="btn-play" disabled title="Caricamento campioni...">&#9654;</button>
+                <div id="feedback"></div>
+            </div>
+            <svg id="staff-svg" xmlns="http://www.w3.org/2000/svg"
+                 viewBox="0 0 220 130" preserveAspectRatio="xMidYMid meet"></svg>
+        </div>
+
+        <!-- Tastiera piano -->
+        <div id="piano-keyboard"></div>
+
+        <!-- Label -->
+        <div id="label-scegli">Scegli l&rsquo;intervallo</div>
+
+        <!-- Griglia intervalli -->
+        <div id="grid-intervalli">
+            <button class="btn-interval" data-id="min2" disabled>2&ordf; minore</button>
+            <button class="btn-interval" data-id="mag2" disabled>2&ordf; maggiore</button>
+            <button class="btn-interval" data-id="min3" disabled>3&ordf; minore</button>
+            <button class="btn-interval" data-id="mag3" disabled>3&ordf; maggiore</button>
+            <button class="btn-interval" data-id="qua4" disabled>4&ordf; giusta</button>
+            <button class="btn-interval" data-id="tri"  disabled>Tritono</button>
+            <button class="btn-interval" data-id="qua5" disabled>5&ordf; giusta</button>
+            <button class="btn-interval" data-id="min6" disabled>6&ordf; minore</button>
+            <button class="btn-interval" data-id="mag6" disabled>6&ordf; maggiore</button>
+            <button class="btn-interval" data-id="min7" disabled>7&ordf; minore</button>
+            <button class="btn-interval" data-id="mag7" disabled>7&ordf; maggiore</button>
+            <button class="btn-interval" data-id="ott" disabled>Ottava</button>
+        </div>
+
+        <!-- Griglia intervalli estesi (visibile solo con Estesi attivo) -->
+        <div id="grid-estesi">
+            <button class="btn-interval btn-ext" data-id="min9"  disabled>9&ordf; minore</button>
+            <button class="btn-interval btn-ext" data-id="mag9"  disabled>9&ordf; maggiore</button>
+            <button class="btn-interval btn-ext" data-id="min10" disabled>10&ordf; minore</button>
+            <button class="btn-interval btn-ext" data-id="mag10" disabled>10&ordf; maggiore</button>
+            <button class="btn-interval btn-ext" data-id="qua11" disabled>11&ordf; giusta</button>
+        </div>
+
+        <!-- Bottom nav -->
+        <div id="bottom-nav">
+            <a href="../">&#8592; Musica</a>
+            <a href="../../index.html">Home Giochi</a>
+            <a href="../../privacy.html" target="_blank">Privacy</a>
+        </div>
+
+    </div><!-- campogioco -->
+</div>
+
+<script src="../../site.js?v=1.1"></script>
+<!-- Tone.js: scarica da https://unpkg.com/tone e metti in musica/lib/tone.js -->
+<script src="../lib/tone.js"></script>
+<script src="intervalli.js?v=1.0"></script>
+</body>
+</html>

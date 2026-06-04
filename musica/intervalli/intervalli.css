@@ -1,0 +1,194 @@
+/* intervalli.css v1.8 */
+
+/* ── Top bar ─────────────────────────────────────────────────────────────── */
+#topbar {
+    position: absolute; top: 0; left: 0;
+    width: 1024px; height: 52px;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 20px; box-sizing: border-box;
+    background: rgba(15,5,0,0.55);
+    border-bottom: 1px solid rgba(0,0,0,0.5);
+}
+#topbar .back-link { color: #ffd090; font-size: 13px; text-decoration: none; letter-spacing: 0.5px; }
+#topbar .back-link:hover { color: #ffd700; }
+#topbar .title { font-family: Georgia, serif; font-size: 22px; color: #ffd700; letter-spacing: 2px; }
+#score-area { display: flex; align-items: center; gap: 10px; }
+#score { font-size: 18px; color: #ffd090; font-variant-numeric: tabular-nums; min-width: 60px; text-align: right; }
+#btn-reset {
+    background: #5a3010; border: 1px solid #7a4a20;
+    color: rgba(255,210,120,0.65); font-size: 11px; padding: 4px 10px;
+    border-radius: 4px; cursor: pointer; letter-spacing: 0.5px;
+}
+#btn-reset:hover { background: #7a4520; color: rgba(255,210,120,0.95); }
+
+/* ── Mode selector ───────────────────────────────────────────────────────── */
+#mode-selector {
+    position: absolute; top: 62px; left: 0; width: 1024px;
+    display: flex; justify-content: center; gap: 12px;
+}
+.btn-mode {
+    background: #7a4a1e; border: 1px solid #a06830;
+    color: rgba(255,225,170,0.8); font-size: 14px; padding: 8px 28px;
+    border-radius: 24px; cursor: pointer; letter-spacing: 0.5px; transition: all 0.15s;
+}
+.btn-mode:hover { background: #9a6030; color: #fff5e0; }
+.btn-mode.active { background: #c89018; border-color: #a07010; color: #1a0800; font-weight: 600; }
+
+/* ── Difficulty selector ─────────────────────────────────────────────────── */
+#diff-selector {
+    position: absolute; top: 110px; left: 0; width: 1024px;
+    display: flex; justify-content: center; align-items: center; gap: 10px;
+}
+.btn-diff {
+    background: #7a4a1e; border: 1px solid #a06830;
+    color: rgba(255,225,170,0.8); font-size: 12px; padding: 6px 22px;
+    border-radius: 20px; cursor: pointer; letter-spacing: 0.5px; transition: all 0.15s;
+}
+.btn-diff:hover { background: #9a6030; color: #fff5e0; }
+.btn-diff.active { background: #c89018; border-color: #a07010; color: #1a0800; font-weight: 600; }
+
+/* ── Note selector ───────────────────────────────────────────────────────── */
+#note-selector {
+    position: absolute; top: 152px; left: 0; width: 1024px;
+    display: flex; justify-content: center; align-items: center; gap: 8px;
+}
+.nota-label { font-size: 12px; color: #ffd090; letter-spacing: 0.5px; margin-right: 2px; }
+#btn-root-random {
+    background: #7a4a1e; border: 1px solid #a06830;
+    color: rgba(255,225,170,0.8); font-size: 12px; padding: 5px 14px;
+    border-radius: 20px; cursor: pointer; transition: all 0.15s; letter-spacing: 0.5px;
+}
+#btn-root-random:hover { background: #9a6030; color: #fff5e0; }
+#btn-root-random.active { background: #c89018; border-color: #a07010; color: #1a0800; font-weight: 600; }
+.btn-root-nav {
+    background: #7a4a1e; border: 1px solid #a06830;
+    color: rgba(255,225,170,0.85); font-size: 11px; width: 28px; height: 28px;
+    border-radius: 50%; cursor: pointer; display: flex; align-items: center;
+    justify-content: center; transition: all 0.15s; padding: 0;
+}
+.btn-root-nav:hover { background: #9a6030; color: #fff5e0; }
+#root-note-display {
+    font-size: 14px; color: #ffd090; min-width: 34px;
+    text-align: center; font-variant-numeric: tabular-nums;
+    letter-spacing: 0.5px; transition: color 0.15s; cursor: pointer;
+}
+#note-selector.fixed .btn-root-nav { background: #c89018; border-color: #a07010; color: #1a0800; }
+#note-selector.fixed .btn-root-nav:hover { background: #d8a828; }
+#note-selector.fixed #root-note-display { color: #ffd700; }
+
+/* ── Play area + Pentagramma ─────────────────────────────────────────────── */
+#play-area {
+    position: absolute; top: 196px; left: 0; width: 1024px;
+    display: flex; flex-direction: row; align-items: flex-start; justify-content: center;
+    gap: 24px; height: 150px;
+}
+
+#play-col {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 12px; flex-shrink: 0; width: 92px;
+    margin-top: 18px;
+}
+
+#btn-play {
+    width: 80px; height: 80px; border-radius: 50%;
+    background: rgba(255,215,0,0.12); border: 2px solid rgba(255,215,0,0.5);
+    color: #ffd700; font-size: 28px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s; padding-left: 4px;
+    box-shadow: 0 0 30px rgba(255,215,0,0.1);
+}
+#btn-play:hover:not(:disabled) { background: rgba(255,215,0,0.22); border-color: rgba(255,215,0,0.8); box-shadow: 0 0 40px rgba(255,215,0,0.2); }
+#btn-play:disabled { opacity: 0.35; cursor: default; }
+
+#feedback {
+    height: 24px; font-size: 16px; font-weight: 600;
+    letter-spacing: 0.5px; color: transparent; transition: color 0.2s;
+    text-align: center; width: 100%;
+}
+
+#staff-bg {
+    position: absolute;
+    top: -12px; left: 470px;
+    width: 232px; height: 142px;
+    background: #3d1e08;
+    border-radius: 8px;
+    border: 1px solid #6a3a18;
+    pointer-events: none;
+    z-index: 0;
+}
+
+#staff-svg {
+    width: 220px; height: 130px; flex-shrink: 0; display: block; overflow: visible;
+    position: relative; z-index: 1;
+    margin-top: -10px;
+}
+
+/* ── Piano keyboard ──────────────────────────────────────────────────────── */
+#piano-keyboard {
+    position: absolute; top: 338px; left: 0; width: 1024px;
+    display: flex; justify-content: center;
+}
+.piano-wrapper { position: relative; width: 882px; height: 90px; flex-shrink: 0; }
+.piano-key {
+    position: absolute; border-radius: 0 0 4px 4px;
+    box-sizing: border-box; transition: background 0.08s;
+    -webkit-user-select: none; user-select: none;
+}
+.piano-key.white {
+    width: 42px; height: 90px;
+    background: #dcd8c8; border: 1px solid rgba(0,0,0,0.45); z-index: 1;
+}
+.piano-key.black {
+    width: 26px; height: 58px;
+    background: #1a1a1a; border: 1px solid #000; z-index: 2;
+}
+.key-label {
+    position: absolute; bottom: 4px; left: 0; right: 0;
+    text-align: center; font-size: 8px; color: rgba(0,0,0,0.3); pointer-events: none;
+}
+.piano-key.root       { background: #ffd700 !important; cursor: default; }
+.piano-key.black.root { background: #e6c200 !important; }
+.piano-key.answer       { background: rgba(90,160,230,0.55)  !important; cursor: pointer; }
+.piano-key.black.answer { background: rgba(50,120,210,0.85)  !important; cursor: pointer; }
+.piano-key.answer:hover       { background: rgba(90,160,230,0.8)  !important; }
+.piano-key.black.answer:hover { background: rgba(50,120,210,1)    !important; }
+.piano-key.correct       { background: rgba(46,204,113,0.65) !important; }
+.piano-key.black.correct { background: rgba(46,204,113,0.9)  !important; }
+.piano-key.wrong       { background: rgba(231,76,60,0.55)  !important; cursor: pointer; }
+.piano-key.black.wrong { background: rgba(231,76,60,0.85)  !important; cursor: pointer; }
+
+/* ── Label sopra griglia ─────────────────────────────────────────────────── */
+#label-scegli {
+    position: absolute; top: 440px; left: 0; width: 1024px;
+    text-align: center; font-size: 12px; color: #ffd090;
+    letter-spacing: 2px; text-transform: uppercase;
+}
+
+/* ── Griglia intervalli ──────────────────────────────────────────────────── */
+#grid-intervalli {
+    position: absolute; top: 456px; left: 0; width: 1024px;
+    display: grid; grid-template-columns: repeat(4, 218px); gap: 10px; justify-content: center;
+}
+.btn-interval {
+    background: #c8a060; border: 1px solid #a07838;
+    color: #1a0800; font-size: 15px; height: 54px;
+    border-radius: 8px; cursor: pointer; letter-spacing: 0.3px; transition: all 0.12s;
+    font-weight: 500;
+}
+.btn-interval:hover:not(:disabled):not(.inactive) { background: #d8b070; border-color: #b08840; }
+.btn-interval:disabled { cursor: default; }
+.btn-interval.correct { background: #2ecc71 !important; border-color: #27ae60 !important; color: #fff !important; }
+.btn-interval.wrong   { background: #e74c3c !important; border-color: #c0392b !important; color: #fff !important; }
+.btn-interval.inactive { background: #3a1e08; border-color: #5a3015; color: rgba(255,190,80,0.22); cursor: default; font-weight: 400; }
+
+/* ── Griglia intervalli estesi ───────────────────────────────────────────── */
+#grid-estesi {
+    position: absolute; top: 650px; left: 0; width: 1024px;
+    display: grid; grid-template-columns: repeat(5, 172px); gap: 10px; justify-content: center;
+}
+.btn-ext { height: 48px; font-size: 14px; }
+
+/* ── Bottom nav ──────────────────────────────────────────────────────────── */
+#bottom-nav { position: absolute; bottom: 10px; left: 0; width: 1024px; text-align: center; }
+#bottom-nav a { color: #ffd090; font-size: 12px; text-decoration: none; margin: 0 18px; }
+#bottom-nav a:hover { color: #fff; }

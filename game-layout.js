@@ -454,7 +454,7 @@ function adjustLayout() {
         var slotId = null;
         var amazonBannerUrl = null;
         var amazonGeneric = false;
-        var amazonGenericImg = 'banner/offerteamazon2.jpg';
+        var amazonGenericImg = '/banner/offerteamazon2.jpg';
         var amazonGenericLink = 'https://www.amazon.it/deals?&linkCode=ll2&tag=lucianomane0f-21&linkId=d542031952a47db9f26b8cc6c38762cb&ref_=as_li_ss_tl';
 
         var amazonEnabled = AMAZON_BANNERS_ENABLED || (AMAZON_BANNERS_RIGHT && side === 'right');
@@ -473,8 +473,8 @@ function adjustLayout() {
             }
         } else if (amazonEnabled && width === 300 && height === 250) {
             amazonGeneric = true;
-            amazonGenericImg = 'banner/galleryamazon300x250.jpg';
-            amazonGenericLink = 'view_gallery.html';
+            amazonGenericImg = '/banner/galleryamazon300x250.jpg';
+            amazonGenericLink = '/view_gallery.html';
         }
 
         // Map fixed sizes to provided AdSense Slot IDs
@@ -820,32 +820,38 @@ window._amazonImpressionSent = {}; // chiave: bannerId → true se impression gi
 (function () {
     try {
         var xhr = new XMLHttpRequest();
-        var jsonFile = AMAZON_USE_NEW_DEALS ? 'banner/newdeals.json' : 'banner/deals.json';
+        var jsonFile = AMAZON_USE_NEW_DEALS ? '/banner/newdeals.json' : '/banner/deals.json';
         xhr.open('GET', jsonFile, true);
         xhr.onreadystatechange = function () {
-            if (xhr.readyState === 4 && xhr.status === 200) {
-                try {
-                    var data = JSON.parse(xhr.responseText);
-                    var deals = data.deals || data; // compatibile anche con array puro
-                    var valid = deals.filter(function (d) {
-                        return d.link && d.link !== '#' && d.img && d.img !== '' && d.active !== false;
-                    });
-                    if (valid.length > 0) {
-                        window._amazonDealsList = valid;
-                        var selected = selectWeightedAmazonDeal(valid);
-                        window._amazonDeal600 = selected;
-                        if (selected) {
-                            if (AMAZON_USE_NEW_DEALS) {
-                                console.log('Amazon deal caricato (pesato):', selected.id, 'con peso:', selected._tempWeight);
-                            } else {
-                                console.log('Amazon deal caricato (tradizionale):', selected.id);
+            if (xhr.readyState === 4) {
+                if (xhr.status === 200) {
+                    try {
+                        var data = JSON.parse(xhr.responseText);
+                        var deals = data.deals || data; // compatibile anche con array puro
+                        var valid = deals.filter(function (d) {
+                            return d.link && d.link !== '#' && d.img && d.img !== '' && d.active !== false;
+                        });
+                        if (valid.length > 0) {
+                            window._amazonDealsList = valid;
+                            var selected = selectWeightedAmazonDeal(valid);
+                            window._amazonDeal600 = selected;
+                            if (selected) {
+                                if (AMAZON_USE_NEW_DEALS) {
+                                    console.log('Amazon deal caricato (pesato):', selected.id, 'con peso:', selected._tempWeight);
+                                } else {
+                                    console.log('Amazon deal caricato (tradizionale):', selected.id);
+                                }
                             }
+                        } else {
+                            window._amazonDealsList = [];
+                            window._amazonDeal600 = false; // nessun deal valido, non aspettare oltre
                         }
-                    } else {
-                        window._amazonDealsList = [];
-                        window._amazonDeal600 = false; // nessun deal valido, non aspettare oltre
-                    }
-                } catch (e) { window._amazonDeal600 = false; }
+                    } catch (e) { window._amazonDeal600 = false; }
+                } else {
+                    // deals.json non raggiungibile (es. pagina in sottodirectory): procedi senza Amazon
+                    window._amazonDealsList = [];
+                    window._amazonDeal600 = false;
+                }
                 adjustLayout();
             }
         };
