@@ -626,6 +626,16 @@ html, body {
     background: rgba(255,255,255,0.15);
 }
 
+#meld-esito-finale {
+    font-size: 22px;
+    font-weight: bold;
+    text-align: center;
+    padding: 6px 0 10px;
+    letter-spacing: 1px;
+}
+#meld-esito-finale.vinto { color: #2ecc71; text-shadow: 0 0 10px rgba(46,204,113,0.5); }
+#meld-esito-finale.perso { color: #e74c3c; text-shadow: 0 0 10px rgba(231,76,60,0.5); }
+
 #meld-risultato {
     font-size: 14px;
     color: #ffd700;

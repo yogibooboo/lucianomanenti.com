@@ -31,7 +31,7 @@
 	<link rel="manifest" href="favicon/site.webmanifest">
 
 	<meta name="Description"
-		content="Gioca gratis online a Scala 40, Gin Rummy, Machiavelli, Burraco, Solitari Spider e Klondike. Include anche un metronomo avanzato e completamente personalizzabile.">
+		content="Gioca gratis online a Scala 40, Gin Rummy, Machiavelli, Burraco, Solitari Spider e Klondike. Include ear training musicale (intervalli e accordi) e un metronomo avanzato.">
 
 </head>
 
@@ -71,10 +71,17 @@
 			<div id="icoklondike"><img src="images/home/klondike.png"></div>
 		</a>
 
-		<!-- Metronomo: piccola icona in alto a destra -->
-		<a href="metronome.html" style="position:absolute; top:185px; left:775px; text-align:center; text-decoration:none; display:block; cursor:pointer; z-index:100;">
-			<img src="images/home/icometronomo.jpg" style="width:110px; height:auto; border:3px solid rgba(255,255,255,0.7); border-radius:8px; display:block; margin:0 auto; box-shadow:2px 2px 6px rgba(0,0,0,0.5);">
-			<div style="color:white; font-family:Slackey,sans-serif; font-size:12px; margin-top:6px; text-shadow:1px 1px 3px black;">Metronomo</div>
+		<!-- Musica / Ear Training -->
+		<a href="musica/" style="position:absolute; top:185px; right:94px; width:225px; height:200px; z-index:1000; border-radius:10px; box-shadow:0 6px 20px rgba(0,0,0,0.7); border:1px solid rgba(255,215,0,0.4); display:block; text-decoration:none; overflow:hidden; background-color:#5a2e0a; background-image:url('images/wood2.png'); background-repeat:repeat; cursor:pointer;"
+		   onmouseover="this.style.borderColor='rgba(255,215,0,0.9)'; this.style.boxShadow='0 6px 30px rgba(255,215,0,0.25)';"
+		   onmouseout="this.style.borderColor='rgba(255,215,0,0.4)'; this.style.boxShadow='0 6px 20px rgba(0,0,0,0.7)';">
+			<div style="position:absolute; inset:0; background:linear-gradient(180deg,rgba(0,0,0,0.25) 0%,rgba(0,0,0,0.55) 100%);"></div>
+			<div style="position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:7px;">
+				<div style="font-family:'Segoe UI Symbol','Apple Symbols',serif; font-size:56px; color:#ffd700; line-height:1; text-shadow:0 0 28px rgba(255,215,0,0.7), 0 2px 8px rgba(0,0,0,0.9);">&#9835;&#xFE0E;</div>
+				<div style="font-family:Georgia,serif; font-size:30px; color:#ffd700; letter-spacing:5px; text-shadow:0 2px 8px rgba(0,0,0,0.9), 0 0 15px rgba(255,215,0,0.3);">Musica</div>
+				<div style="width:60px; height:1px; background:rgba(255,215,0,0.45);"></div>
+				<div style="font-family:sans-serif; font-size:11px; color:rgba(255,215,0,0.6); letter-spacing:3px; text-transform:uppercase;">Ear Training &amp; Utilità</div>
+			</div>
 		</a>
 
 		<div id="footer"

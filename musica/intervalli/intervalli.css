@@ -1,5 +1,7 @@
 /* intervalli.css v1.8 */
 
+.lang-switch-game { right: 160px; }
+
 /* ── Top bar ─────────────────────────────────────────────────────────────── */
 #topbar {
     position: absolute; top: 0; left: 0;
@@ -86,7 +88,7 @@
 #play-col {
     display: flex; flex-direction: column; align-items: center;
     gap: 12px; flex-shrink: 0; width: 92px;
-    margin-top: 18px;
+    margin-top: 8px;
 }
 
 #btn-play {
@@ -104,6 +106,7 @@
     height: 24px; font-size: 16px; font-weight: 600;
     letter-spacing: 0.5px; color: transparent; transition: color 0.2s;
     text-align: center; width: 100%;
+    margin-top: -5px;
 }
 
 #staff-bg {
@@ -159,7 +162,7 @@
 
 /* ── Label sopra griglia ─────────────────────────────────────────────────── */
 #label-scegli {
-    position: absolute; top: 440px; left: 0; width: 1024px;
+    position: absolute; top: 437px; left: 0; width: 1024px;
     text-align: center; font-size: 12px; color: #ffd090;
     letter-spacing: 2px; text-transform: uppercase;
 }
@@ -189,6 +192,8 @@
 .btn-ext { height: 48px; font-size: 14px; }
 
 /* ── Bottom nav ──────────────────────────────────────────────────────────── */
-#bottom-nav { position: absolute; bottom: 10px; left: 0; width: 1024px; text-align: center; }
-#bottom-nav a { color: #ffd090; font-size: 12px; text-decoration: none; margin: 0 18px; }
-#bottom-nav a:hover { color: #fff; }
+#bottom-nav {
+    position: absolute; bottom: 10px; left: 0; width: 1024px;
+    display: flex; flex-direction: row; align-items: center;
+    justify-content: space-between; padding: 0 20px; box-sizing: border-box;
+}

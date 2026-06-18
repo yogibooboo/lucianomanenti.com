@@ -636,6 +636,29 @@ h6 {
 	border-radius: 50%;
 }
 
+/* === BOTTOM NAV === */
+#bottom-nav {
+    position: absolute; bottom: 8px; left: 0; width: 1024px;
+    display: flex; flex-direction: row; align-items: center;
+    justify-content: space-between; padding: 0 20px; box-sizing: border-box;
+}
+.btn-nav-group { display: flex; gap: 10px; align-items: center; }
+.btn-nav {
+    display: inline-block; width: 118px; height: 28px;
+    border: 1px solid rgba(255,255,255,0.35); border-radius: 6px;
+    color: white; font-size: 12px; font-family: sans-serif;
+    text-align: center; line-height: 28px; text-decoration: none;
+    cursor: pointer; transition: transform 0.12s, opacity 0.12s;
+    box-shadow: 1px 1px 4px rgba(0,0,0,0.5);
+}
+.btn-nav:hover { transform: scale(1.07); }
+.btn-nav-music   { background-color: #1a5468; }
+.btn-nav-help    { background-color: #1e6b3a; }
+.btn-nav-home    { background-color: #2c3e50; }
+.btn-nav-contact { background-color: #7a3a10; }
+.nav-links-small a { color: rgba(255,255,255,0.45); font-size: 11px; text-decoration: none; margin: 0 12px; font-family: sans-serif; }
+.nav-links-small a:hover { color: white; }
+
 /* === LANG SWITCH + AUDIO === */
 .lang-switch-game {
 	position: absolute;

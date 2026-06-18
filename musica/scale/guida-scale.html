@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-WRBDRDQ4L8');
+        window.currentLang = 'it';
+    </script>
+    <title>Guida alle Scale Musicali - Ear Training - lucianomanenti.com</title>
+    <meta name="Description" content="Guida didattica completa al riconoscimento delle scale musicali: maggiore, minore (nat, arm, mel), modi gregoriani, scale pentatoniche, blues e avanzate.">
+    <link rel="alternate" hreflang="it" href="guida-scale.html">
+    <link rel="alternate" hreflang="en" href="guida-scale-en.html">
+    <link rel="icon" type="image/png" href="../../favicon/favicon-96x96.png" sizes="96x96">
+    <link rel="icon" type="image/svg+xml" href="../../favicon/favicon.svg">
+    <link rel="shortcut icon" href="../../favicon/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../favicon/apple-touch-icon.png">
+    <style>
+        body {
+            font-family: sans-serif;
+            line-height: 1.75;
+            max-width: 820px;
+            margin: 40px auto;
+            padding: 20px;
+            color: #333;
+            background-color: #f9f9f9;
+        }
+
+        h1 { color: #2c3e50; border-bottom: 2px solid #ffd700; padding-bottom: 10px; }
+        h2 { color: #2c3e50; margin-top: 36px; border-bottom: 1px solid #ddd; padding-bottom: 5px; }
+        h3 { color: #2c3e50; margin-top: 22px; font-size: 1.05em; }
+
+        .lang-switch { text-align: right; margin-bottom: 20px; }
+        .lang-switch a {
+            display: inline-block; padding: 6px 16px; margin-left: 5px;
+            text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 14px;
+        }
+        .lang-switch a.active { background: #2c3e50; color: white; }
+        .lang-switch a:not(.active) { background: #ddd; color: #333; cursor: pointer; }
+
+        .content-box {
+            background: white; padding: 30px; border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.07);
+        }
+
+        .nav-links { text-align: center; margin-top: 30px; font-size: 14px; }
+        .nav-links a { color: #3498db; text-decoration: none; margin: 0 12px; }
+
+        ul, ol { margin-top: 8px; }
+        li { margin-bottom: 7px; }
+
+        .box { border-radius: 8px; padding: 16px 20px; margin: 20px 0; font-size: 0.97em; }
+        .box-info    { background: #eaf4fb; border-left: 4px solid #3498db; }
+        .box-tip     { background: #eafaf1; border-left: 4px solid #2ecc71; }
+        .box-warning { background: #fef9e7; border-left: 4px solid #f1c40f; }
+        .box strong  { display: block; margin-bottom: 4px; font-size: 1em; }
+
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 0.93em; }
+        th { background: #2c3e50; color: white; padding: 10px 12px; text-align: left; }
+        td { padding: 9px 12px; border-bottom: 1px solid #eee; vertical-align: top; }
+        tr:nth-child(even) td { background: #f8f8f8; }
+        tr:hover td { background: #fff8e1; }
+
+        .semitoni {
+            display: inline-block; background: #2c3e50; color: white;
+            border-radius: 12px; padding: 2px 9px; font-size: 0.85em;
+            font-weight: bold; min-width: 28px; text-align: center;
+        }
+
+        .quality-major   { color: #27ae60; font-weight: 600; }
+        .quality-minor   { color: #8e44ad; font-weight: 600; }
+        .quality-mode    { color: #2980b9; font-weight: 600; }
+        .quality-pent    { color: #e67e22; font-weight: 600; }
+        .quality-advanced{ color: #c0392b; font-weight: 600; }
+
+        .ui-block {
+            background: #f0f0f0; border-radius: 8px; padding: 14px 18px;
+            margin: 12px 0; border-left: 3px solid #95a5a6;
+        }
+        .ui-block .ui-label { font-weight: bold; color: #2c3e50; font-size: 0.95em; margin-bottom: 4px; }
+
+        .diff-pill {
+            display: inline-block; padding: 3px 12px; border-radius: 20px;
+            font-size: 0.85em; font-weight: bold; margin-right: 6px;
+            background: #2c3e50; color: white;
+        }
+
+        .play-btn {
+            display: inline-block; margin-top: 25px; padding: 12px 30px;
+            background: #27ae60; color: white; text-decoration: none;
+            border-radius: 8px; font-size: 18px; font-weight: bold;
+        }
+
+        .banner {
+            width: 100%; height: 150px;
+            background-image: url('../../images/home/castagne.jpg');
+            background-size: cover; background-position: center;
+            border-radius: 8px; margin: 20px 0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+    <a href="#" id="btn-back" onclick="window.close(); return false;"
+       style="display:inline-block; padding:6px 16px; background:#e74c3c; color:white; text-decoration:none; border-radius:5px; font-weight:bold; font-size:14px;">&#x2715; Chiudi</a>
+    <div class="lang-switch" style="margin-bottom:0;">
+        <a href="guida-scale.html" class="active">Italiano</a>
+        <a href="guida-scale-en.html">English</a>
+    </div>
+</div>
+
+<div class="banner"></div>
+
+<div class="content-box">
+
+    <h1>&#9834; Guida alle Scale Musicali</h1>
+
+    <p>Questa guida ti introduce al <strong>riconoscimento delle scale musicali</strong> per via uditiva. Imparerai cos'è una scala, le differenze strutturali tra le varie scale dell'esercizio, come funziona l'interfaccia e le strategie pratiche per allenare l'orecchio.</p>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <h2>1. Cos'è una scala?</h2>
+
+    <p>Una <strong>scala musicale</strong> è una successione ordinata di note (chiamate gradi) all'interno di un'ottava. La sequenza di intervalli (espressa in <strong>toni e semitoni</strong>) determina il carattere o "colore" della scala, influenzando lo stile e le emozioni della melodia che su di essa viene costruita.</p>
+
+    <p>Ogni scala inizia su una nota fondamentale (la <strong>tonica</strong>) e si sviluppa verso l'alto (scala ascendente) o verso il basso (scala discendente). Ad esempio, la scala Maggiore ha una sequenza fissa di intervalli: 2 - 2 - 1 - 2 - 2 - 2 - 1 semitoni (Tono - Tono - Semitono - Tono - Tono - Tono - Semitono).</p>
+
+    <div class="box box-info">
+        <strong>📌 Nota di base (Tonica)</strong>
+        È il centro di gravità della scala, la nota che dà stabilità. Nell'esercizio, la nota di base è sempre evidenziata in giallo sulla tastiera del pianoforte e sul pentagramma all'inizio di ogni turno.
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <h2>2. Tabella delle scale per livello</h2>
+
+    <p>Le scale utilizzate nell'esercizio, strutturate per livello di difficoltà con la sequenza di intervalli in semitoni e il rispettivo colore sonoro.</p>
+
+    <h3>Livello 1 — Base (le due scale fondamentali)</h3>
+    <table>
+        <thead><tr><th>Scala</th><th>Intervalli (semitoni)</th><th>Carattere sonoro</th></tr></thead>
+        <tbody>
+            <tr><td><span class="quality-major">Maggiore</span></td><td><span class="semitoni">2</span>-<span class="semitoni">2</span>-<span class="semitoni">1</span>-<span class="semitoni">2</span>-<span class="semitoni">2</span>-<span class="semitoni">2</span>-<span class="semitoni">1</span></td><td>Luminosa, gioiosa, stabile, classica.</td></tr>
+            <tr><td><span class="quality-minor">Minore Naturale</span></td><td><span class="semitoni">2</span>-<span class="semitoni">1</span>-<span class="semitoni">2</span>-<span class="semitoni">2</span>-<span class="semitoni">1</span>-<span class="semitoni">2</span>-<span class="semitoni">2</span></td><td>Malinconica, scura, nostalgica. (Modo Eolio).</td></tr>
+        </tbody>
+    </table>
+
+    <h3>Livello 2 — Facile (scale minori armonica e melodica)</h3>
+    <table>
+        <thead><tr><th>Scala</th><th>Intervalli (semitoni)</th><th>Carattere sonoro</th></tr></thead>
+        <tbody>
+            <tr><td><span class="quality-minor">Minore Armonica</span></td><td><span class="semitoni">2</span>-<span class="semitoni">1</span>-<span class="semitoni">2</span>-<span class="semitoni">2</span>-<span class="semitoni">1</span>-<span class="semitoni">3</span>-<span class="semitoni">1</span></td><td>Sapore mediorientale o barocco, forte tensione finale (sensibile).</td></tr>
+            <tr><td><span class="quality-minor">Minore Melodica</span></td><td><span class="semitoni">2</span>-<span class="semitoni">1</span>-<span class="semitoni">2</span>-<span class="semitoni">2</span>-<span class="semitoni">2</span>-<span class="semitoni">2</span>-<span class="semitoni">1</span></td><td>Ascendente brillante, risolve verso l'alto; discende come la minore naturale.</td></tr>
+        </tbody>
+    </table>
+
+    <h3>Livello 3 — Medio (Modi Gregoriani/Diatonici)</h3>
+    <table>
+        <thead><tr><th>Scala</th><th>Intervalli (semitoni)</th><th>Carattere sonoro</th></tr></thead>
+        <tbody>
+            <tr><td><span class="quality-mode">Dorico</span></td><td><span class="semitoni">2</span>-<span class="semitoni">1</span>-<span class="semitoni">2</span>-<span class="semitoni">2</span>-<span class="semitoni">2</span>-<span class="semitoni">1</span>-<span class="semitoni">2</span></td><td>Minore ma con una nota solare (sesta maggiore), tipica del jazz/celtico.</td></tr>
+            <tr><td><span class="quality-mode">Frigio</span></td><td><span class="semitoni">1</span>-<span class="semitoni">2</span>-<span class="semitoni">2</span>-<span class="semitoni">2</span>-<span class="semitoni">1</span>-<span class="semitoni">2</span>-<span class="semitoni">2</span></td><td>Molto scuro, spagnoleggiante/flamenco, caratterizzato dalla seconda minore.</td></tr>
+            <tr><td><span class="quality-mode">Lidio</span></td><td><span class="semitoni">2</span>-<span class="semitoni">2</span>-<span class="semitoni">2</span>-<span class="semitoni">1</span>-<span class="semitoni">2</span>-<span class="semitoni">2</span>-<span class="semitoni">1</span></td><td>Maggiore sognante, etereo, fantascientifico (quarta eccedente).</td></tr>
+            <tr><td><span class="quality-mode">Misolidio</span></td><td><span class="semitoni">2</span>-<span class="semitoni">2</span>-<span class="semitoni">1</span>-<span class="semitoni">2</span>-<span class="semitoni">2</span>-<span class="semitoni">1</span>-<span class="semitoni">2</span></td><td>Maggiore ma più rilassato, blues/rock (settima minore).</td></tr>
+            <tr><td><span class="quality-mode">Eolio</span></td><td><span class="semitoni">2</span>-<span class="semitoni">1</span>-<span class="semitoni">2</span>-<span class="semitoni">2</span>-<span class="semitoni">1</span>-<span class="semitoni">2</span>-<span class="semitoni">2</span></td><td>Coincide esattamente con la Minore Naturale.</td></tr>
+            <tr><td><span class="quality-mode">Locrio</span></td><td><span class="semitoni">1</span>-<span class="semitoni">2</span>-<span class="semitoni">2</span>-<span class="semitoni">1</span>-<span class="semitoni">2</span>-<span class="semitoni">2</span>-<span class="semitoni">2</span></td><td>Instabile e teso, ha la quinta diminuita. Modo poco comune.</td></tr>
+        </tbody>
+    </table>
+
+    <h3>Livello 4 — Esperto</h3>
+    <table>
+        <thead><tr><th>Scala</th><th>Intervalli (semitoni)</th><th>Carattere sonoro</th></tr></thead>
+        <tbody>
+            <tr><td><span class="quality-pent">Pentatonica Mag.</span></td><td><span class="semitoni">2</span>-<span class="semitoni">2</span>-<span class="semitoni">3</span>-<span class="semitoni">2</span>-<span class="semitoni">3</span></td><td>Di 5 note. Molto aperta, pop/folk orientale, priva di semitoni.</td></tr>
+            <tr><td><span class="quality-pent">Blues</span></td><td><span class="semitoni">3</span>-<span class="semitoni">2</span>-<span class="semitoni">1</span>-<span class="semitoni">1</span>-<span class="semitoni">3</span>-<span class="semitoni">2</span></td><td>Tipica del jazz/blues, include la "blue note" cromatica.</td></tr>
+            <tr><td><span class="quality-advanced">Diminuita</span></td><td><span class="semitoni">2</span>-<span class="semitoni">1</span>-<span class="semitoni">2</span>-<span class="semitoni">1</span>-<span class="semitoni">2</span>-<span class="semitoni">1</span>-<span class="semitoni">2</span>-<span class="semitoni">1</span></td><td>Ottatonica (8 note), simmetrica (tono-semitono), forte sapore cinematografico/suspense.</td></tr>
+        </tbody>
+    </table>
+
+    <h3>Livello 5 — Avanzate</h3>
+    <table>
+        <thead><tr><th>Scala</th><th>Intervalli (semitoni)</th><th>Carattere sonoro</th></tr></thead>
+        <tbody>
+            <tr><td><span class="quality-advanced">Aumentata</span></td><td><span class="semitoni">3</span>-<span class="semitoni">1</span>-<span class="semitoni">3</span>-<span class="semitoni">1</span>-<span class="semitoni">3</span>-<span class="semitoni">1</span></td><td>Simmetrica, misteriosa, sognante. Scompone l'ottava in terze minori.</td></tr>
+            <tr><td><span class="quality-advanced">Alterata</span></td><td><span class="semitoni">1</span>-<span class="semitoni">2</span>-<span class="semitoni">1</span>-<span class="semitoni">2</span>-<span class="semitoni">2</span>-<span class="semitoni">2</span>-<span class="semitoni">2</span></td><td>Tipica del jazz moderno. Tensione estrema con tutte le alterazioni possibili.</td></tr>
+        </tbody>
+    </table>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <h2>3. Come funziona l'esercizio</h2>
+
+    <p>Il sistema propone una scala generata casualmente a partire da una nota fondamentale. L'utente può indovinare la scala tramite la griglia o riprodurre le note sulla tastiera virtuale/fisica.</p>
+
+    <h3>Elementi dell'Interfaccia</h3>
+
+    <div class="ui-block">
+        <div class="ui-label">▶ Pulsante Play</div>
+        Ascolta la scala corrente. Se hai già risposto correttamente, premerlo genera una nuova domanda.
+    </div>
+
+    <div class="ui-block">
+        <div class="ui-label">&#8645; Direzione (Ascendente / Discendente / Entrambe)</div>
+        Scegli come deve essere riprodotta la scala: solo a salire, solo a scendere o in entrambe le direzioni di fila.
+        <br><em>Nota: Per la scala minore melodica (che sale in un modo e scende in un altro), la modalità discendente non viene proposta per evitare ambiguità.</em>
+    </div>
+
+    <div class="ui-block">
+        <div class="ui-label">&#127929; Tastiera del pianoforte (Riconoscimento attivo)</div>
+        La nota di base (tonica) è evidenziata in **giallo**. Puoi rispondere suonando le note consecutive che compongono la scala:
+        - I tasti corretti diventano **verdi**.
+        - I tasti errati diventano **rossi**.
+        Se premi tutte le note corrette della scala senza commettere errori, l'esercizio termina con successo e viene assegnato il punto.
+    </div>
+
+    <div class="ui-block">
+        <div class="ui-label">&#9632; Griglia Scale</div>
+        Mostra le scale attive per il livello di difficoltà selezionato. Clicca il pulsante corrispondente per indovinare. Se indovini al primo colpo ottieni il punto, dopodiché puoi cliccare sugli altri pulsanti per ascoltare e confrontare le altre scale con la stessa tonica.
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <h2>4. Ingresso MIDI (Tastiera Fisica)</h2>
+
+    <p>Puoi collegare una vera **tastiera MIDI USB** al tuo computer per svolgere l'esercizio in modo naturale e immediato.</p>
+
+    <ul>
+        <li>L'ingresso MIDI è sempre attivo (non occorre configurarlo). Supporta anche il collegamento a caldo: puoi inserire il cavo USB prima o dopo aver aperto il browser.</li>
+        <li><strong>Corrispondenza esatta dell'ottava</strong>: devi suonare le note esattamente nell'ottava indicata a schermo. Se la tonica mostrata è C4 (60), devi iniziare a suonare a partire dal Do centrale della tua tastiera. Le note suonate su ottave diverse verranno ignorate.</li>
+        <li>Tutte le note premute sulla tastiera fisica si riflettono istantaneamente sulla tastiera virtuale a schermo diventando verdi (se giuste) o rosse (se errate).</li>
+    </ul>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <h2>5. Consigli per l'Ear Training</h2>
+
+    <h3>Ascolto dei gradi chiave</h3>
+    <p>Molti modi e scale si differenziano per un solo grado rispetto alla scala maggiore o minore naturale. Concentrati su queste differenze:</p>
+    <ul>
+        <li>Se senti una scala maggiore ma ha un suono leggermente "strano" o "spaziale", fai attenzione al 4° grado: se è alzato, è un **Lidio**. Se ha invece un sapore blues/rock sul finale, fai caso al 7° grado: se è abbassato, è un **Misolidio**.</li>
+        <li>Se ascolti una scala minore, fai attenzione al 6° grado: se è più alto del solito (suona più aperto), si tratta del **Dorico**. Se invece la partenza è subito cupa (2° grado abbassato), è un **Frigio**.</li>
+    </ul>
+
+    <h3>La scala Minore Melodica</h3>
+    <p>Ricorda che la scala minore melodica è asimmetrica: sale con il 6° e 7° grado innalzati (più simile a una scala maggiore con la terza minore) e discende come una minore naturale. Nell'esercizio, se scegli la direzione ascendente o entrambe, dovrai premere i tasti della versione ascendente per completare l'esercizio sulla tastiera.</p>
+
+    <p style="text-align:center;"><a href="#" onclick="window.close(); return false;" class="play-btn">Chiudi</a></p>
+
+</div><!-- content-box -->
+
+<div class="banner"></div>
+
+<div class="nav-links">
+    <a href="../">&#8592; Musica</a>
+    <a href="../../index.html">Home Giochi</a>
+    <a href="../../privacy.html" target="_blank">Privacy Policy</a> |
+    <a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)">Gestisci Cookie</a>
+</div>
+
+<p style="text-align:center; font-size:0.8em; color:#999; margin-top:15px;">© 2026 Luciano Manenti</p>
+
+<script>
+    (function() {
+        var nascosto = false;
+        var observer = new MutationObserver(function() {
+            if (nascosto) return;
+            var divs = document.querySelectorAll('body > div');
+            for (var i = 0; i < divs.length; i++) {
+                if (divs[i].shadowRoot && !divs[i].className && (divs[i].getAttribute('style')||'').length > 5000) {
+                    divs[i].style.setProperty('display', 'none', 'important');
+                    nascosto = true;
+                    observer.disconnect();
+                    return;
+                }
+            }
+        });
+        observer.observe(document.body, { childList: true });
+    })();
+</script>
+</body>
+</html>

@@ -40,6 +40,14 @@
 
     var EXTENDED_IDS = ['min9', 'mag9', 'min10', 'mag10', 'qua11'];
 
+    var EN = window.currentLang === 'en';
+    var T = {
+        ready:   EN ? 'Ready — press ▶ to listen'  : 'Pronto — premi ▶ per ascoltare',
+        correct: EN ? 'Correct! ✓'                  : 'Corretto! ✓',
+        wrong:   EN ? 'Wrong — try again!'           : 'Sbagliato — riprova!',
+        error:   EN ? 'Audio samples load error'     : 'Errore caricamento campioni audio'
+    };
+
     // Note display (con ♯ invece di #)
     var NOTE_DISPLAY = ['C','C♯','D','D♯','E','F','F♯','G','G♯','A','A♯','B'];
     var NOTE_NAMES   = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
@@ -86,7 +94,7 @@
     // sampler2 → destra (+0.5 pan) per la nota superiore in armonico:
     //   evita la cancellazione di fase tra il 2° armonico della nota radice
     //   e la fondamentale della nota superiore (problema tipico dell'ottava).
-    var sampler  = new Tone.Sampler({ urls: SAMPLER_URLS, baseUrl: '../sounds/piano/', onload: onBothLoaded, onerror: function () { setFeedback('Errore caricamento campioni audio', '#e74c3c'); } }).toDestination();
+    var sampler  = new Tone.Sampler({ urls: SAMPLER_URLS, baseUrl: '../sounds/piano/', onload: onBothLoaded, onerror: function () { setFeedback(T.error, '#e74c3c'); } }).toDestination();
     var sampler2 = new Tone.Sampler({ urls: SAMPLER_URLS, baseUrl: '../sounds/piano/', onload: onBothLoaded }).toDestination();
 
     function onSamplerReady() {
@@ -95,7 +103,7 @@
         updateIntervalButtons();
         updateRootNoteDisplay();
         document.getElementById('btn-play').disabled = false;
-        setFeedback('Pronto — premi ▶ per ascoltare', 'rgba(255,255,255,0.35)');
+        setFeedback(T.ready, 'rgba(255,255,255,0.35)');
         newQuestion(false);
     }
 
@@ -184,7 +192,7 @@
             state.answered = true;
             state.total++;
             if (state.triedIds.length === 0) state.score++;
-            setFeedback('Corretto! ✓', '#2ecc71');
+            setFeedback(T.correct, '#2ecc71');
             var btn = document.querySelector('.btn-interval[data-id="' + intervalId + '"]');
             if (btn) btn.classList.add('correct');
             updateKeyboard();
@@ -195,7 +203,7 @@
             state.triedIds.push(intervalId);
             var btn = document.querySelector('.btn-interval[data-id="' + intervalId + '"]');
             if (btn) btn.classList.add('wrong');
-            setFeedback('Sbagliato — riprova!', '#e74c3c');
+            setFeedback(T.wrong, '#e74c3c');
             updateKeyboard();
         }
     }
@@ -484,6 +492,23 @@
         } else if (!state.answered) {
             answer(interval.id);
         }
+    }
+
+    // ── MIDI Input Support ────────────────────────────────────────────────────
+    if (navigator.requestMIDIAccess) {
+        navigator.requestMIDIAccess().then(function(midiAccess) {
+            for (var input of midiAccess.inputs.values()) {
+                input.onmidimessage = function(event) {
+                    var cmd = event.data[0] & 0xf0;
+                    var noteNum = event.data[1];
+                    var velocity = event.data[2];
+
+                    if (cmd === 0x90 && velocity > 0 && noteNum >= 48 && noteNum <= 72) {
+                        onKeyClick(noteNum);
+                    }
+                };
+            }
+        });
     }
 
     // ── Event listeners ───────────────────────────────────────────────────────

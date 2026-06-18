@@ -19,7 +19,9 @@
     <link rel="shortcut icon" href="../../favicon/favicon.ico">
     <link rel="apple-touch-icon" sizes="180x180" href="../../favicon/apple-touch-icon.png">
     <link rel="manifest" href="../../favicon/site.webmanifest">
-    <link rel="stylesheet" href="../musica.css?v=1.0">
+    <link rel="alternate" hreflang="it" href="index.html">
+    <link rel="alternate" hreflang="en" href="index-en.html">
+    <link rel="stylesheet" href="../musica.css?v=1.1">
     <link rel="stylesheet" href="intervalli.css?v=2.3">
     <meta name="Description" content="Allena l'orecchio musicale riconoscendo gli intervalli: 2ª minore, 3ª maggiore, 5ª giusta e tutti gli altri. Gratis online.">
 
@@ -45,6 +47,11 @@
     <div id="sidebar-right" class="sidebar"></div>
 
     <div id="campogioco">
+
+        <div class="lang-switch-game">
+            <a href="index.html" class="active">IT</a>
+            <a href="index-en.html">EN</a>
+        </div>
 
         <!-- Top bar -->
         <div id="topbar">
@@ -125,9 +132,16 @@
 
         <!-- Bottom nav -->
         <div id="bottom-nav">
-            <a href="../">&#8592; Musica</a>
-            <a href="../../index.html">Home Giochi</a>
-            <a href="../../privacy.html" target="_blank">Privacy</a>
+            <div class="btn-nav-group">
+                <a href="../" class="btn-nav btn-nav-music">&#8592; Musica</a>
+                <a href="guida-intervalli.html" target="_blank" class="btn-nav btn-nav-help">Istruzioni</a>
+                <a href="../../index.html" class="btn-nav btn-nav-home">Home Giochi</a>
+                <a href="../../aboutme.html" target="_blank" class="btn-nav btn-nav-contact">Scrivetemi</a>
+            </div>
+            <div class="nav-links-small">
+                <a href="../../privacy.html" target="_blank">Privacy</a>
+                <a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)">Gestisci Cookie</a>
+            </div>
         </div>
 
     </div><!-- campogioco -->
@@ -137,5 +151,23 @@
 <!-- Tone.js: scarica da https://unpkg.com/tone e metti in musica/lib/tone.js -->
 <script src="../lib/tone.js"></script>
 <script src="intervalli.js?v=1.0"></script>
+<script>
+    (function() {
+        var nascosto = false;
+        var observer = new MutationObserver(function() {
+            if (nascosto) return;
+            var divs = document.querySelectorAll('body > div');
+            for (var i = 0; i < divs.length; i++) {
+                if (divs[i].shadowRoot && !divs[i].className && (divs[i].getAttribute('style')||'').length > 5000) {
+                    divs[i].style.setProperty('display', 'none', 'important');
+                    nascosto = true;
+                    observer.disconnect();
+                    return;
+                }
+            }
+        });
+        observer.observe(document.body, { childList: true });
+    })();
+</script>
 </body>
 </html>

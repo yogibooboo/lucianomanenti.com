@@ -1,0 +1,402 @@
+/* accordi2.css v2.0 — restyling moderno: palco scuro caldo, accenti oro,
+   design system unificato per i pulsanti, tasti 3D, animazioni leggere */
+
+:root {
+    --gold:         #ffd75e;
+    --gold-deep:    #e8a818;
+    --text-warm:    #f3ddb3;
+    --text-dim:     rgba(243,221,179,0.55);
+    --panel-border: rgba(255,200,120,0.2);
+    --btn-bg:       rgba(255,205,130,0.08);
+    --btn-border:   rgba(255,200,120,0.24);
+    --ok:           #2ecc71;
+    --ko:           #e74c3c;
+}
+
+/* Palco scuro e caldo sopra la texture legno */
+#campogioco {
+    background-image:
+        radial-gradient(1100px 480px at 50% -80px, rgba(255,170,60,0.16), transparent 62%),
+        linear-gradient(180deg, rgba(26,13,4,0.87), rgba(8,4,1,0.94)),
+        url('../../images/wood2.png');
+}
+
+.lang-switch-game { right: 300px; }
+.lang-switch-game a {
+    background: rgba(0,0,0,0.4);
+    border: 1px solid var(--btn-border);
+    color: var(--text-warm);
+}
+.lang-switch-game a.active {
+    background: linear-gradient(180deg, var(--gold), var(--gold-deep));
+    border-color: #b87f10;
+    color: #2a1500;
+}
+
+/* ── Top bar ─────────────────────────────────────────────────────────────── */
+#topbar {
+    position: absolute; top: 0; left: 0;
+    width: 1024px; height: 52px;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 20px; box-sizing: border-box;
+    background: linear-gradient(180deg, rgba(0,0,0,0.5), rgba(0,0,0,0.25));
+    border-bottom: 1px solid var(--panel-border);
+}
+#topbar .back-link {
+    color: var(--text-dim); font-size: 12px; text-decoration: none;
+    letter-spacing: 1px; text-transform: uppercase; transition: color 0.15s;
+}
+#topbar .back-link:hover { color: var(--gold); }
+#topbar .title {
+    font-family: Georgia, serif; font-size: 23px; letter-spacing: 3px;
+    background: linear-gradient(180deg, #ffeebc, var(--gold-deep));
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 2px 14px rgba(255,190,60,0.25);
+}
+#score-area { display: flex; align-items: center; gap: 12px; }
+#streak {
+    font-size: 13px; color: #ffb45e; font-variant-numeric: tabular-nums;
+    letter-spacing: 0.5px; min-width: 64px; text-align: right;
+}
+#score {
+    font-size: 18px; color: var(--text-warm); font-variant-numeric: tabular-nums;
+    min-width: 60px; text-align: right; font-weight: 600;
+}
+#btn-reset, #btn-stats {
+    background: rgba(0,0,0,0.35); border: 1px solid var(--btn-border);
+    color: var(--text-dim); font-size: 11px; padding: 5px 11px;
+    border-radius: 6px; cursor: pointer; letter-spacing: 0.5px;
+    transition: all 0.15s;
+}
+#btn-stats { font-size: 13px; }
+#btn-reset:hover, #btn-stats:hover {
+    background: rgba(255,200,120,0.12); color: var(--gold);
+    border-color: rgba(255,200,120,0.45);
+}
+
+/* ── Design system pulsanti pill ─────────────────────────────────────────── */
+.btn-mode, .btn-diff, #btn-inversions, #btn-auto-advance,
+#btn-root-random, .btn-root-nav, #btn-compare {
+    background: var(--btn-bg);
+    border: 1px solid var(--btn-border);
+    color: #ecd2a0;
+    border-radius: 999px; cursor: pointer;
+    letter-spacing: 0.5px; transition: all 0.15s;
+}
+.btn-mode:hover, .btn-diff:hover, #btn-inversions:hover, #btn-auto-advance:hover,
+#btn-root-random:hover, .btn-root-nav:hover, #btn-compare:hover {
+    background: rgba(255,200,120,0.16);
+    border-color: rgba(255,200,120,0.5);
+    color: #fff3da;
+}
+.btn-mode.active, .btn-diff.active, #btn-inversions.active,
+#btn-auto-advance.active, #btn-root-random.active {
+    background: linear-gradient(180deg, var(--gold), var(--gold-deep));
+    border-color: #b87f10;
+    color: #2a1500; font-weight: 600;
+    box-shadow: 0 2px 12px rgba(255,180,40,0.35);
+}
+
+/* ── Mode selector ───────────────────────────────────────────────────────── */
+#mode-selector {
+    position: absolute; top: 62px; left: 0; width: 1024px;
+    display: flex; justify-content: center; gap: 12px;
+}
+.btn-mode { font-size: 14px; padding: 8px 28px; }
+
+/* ── Difficulty selector ─────────────────────────────────────────────────── */
+#diff-selector {
+    position: absolute; top: 108px; left: 0; width: 1024px;
+    display: flex; justify-content: center; align-items: center; gap: 10px;
+}
+.btn-diff { font-size: 12px; padding: 6px 18px; }
+.btn-diff[data-diff="custom"] { border-style: dashed; }
+.btn-diff[data-diff="custom"].active { border-style: solid; }
+
+/* ── Inversions selector ─────────────────────────────────────────────────── */
+#inv-selector {
+    position: absolute; top: 150px; left: 0; width: 1024px;
+    display: flex; justify-content: center; align-items: center; gap: 12px;
+}
+.inv-label, .nota-label {
+    font-size: 11px; color: var(--text-dim);
+    letter-spacing: 1.5px; text-transform: uppercase;
+}
+.inv-sep { color: rgba(255,200,120,0.2); margin: 0 8px; font-size: 14px; }
+#btn-inversions, #btn-auto-advance { font-size: 12px; padding: 5px 20px; }
+
+/* ── Note selector ───────────────────────────────────────────────────────── */
+#note-selector {
+    position: absolute; top: 188px; left: 0; width: 1024px;
+    display: flex; justify-content: center; align-items: center; gap: 8px;
+}
+.nota-label { margin-right: 2px; }
+#btn-root-random { font-size: 12px; padding: 5px 14px; }
+.btn-root-nav {
+    font-size: 11px; width: 28px; height: 28px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; padding: 0;
+}
+#root-note-display {
+    font-size: 14px; color: var(--text-warm); min-width: 34px;
+    text-align: center; font-variant-numeric: tabular-nums;
+    letter-spacing: 0.5px; transition: color 0.15s; cursor: pointer;
+}
+#note-selector.fixed .btn-root-nav {
+    background: linear-gradient(180deg, var(--gold), var(--gold-deep));
+    border-color: #b87f10; color: #2a1500;
+}
+#note-selector.fixed .btn-root-nav:hover { filter: brightness(1.08); }
+#note-selector.fixed #root-note-display { color: var(--gold); font-weight: 600; }
+
+/* ── Play area + Pentagramma ─────────────────────────────────────────────── */
+#play-area {
+    position: absolute; top: 226px; left: 0; width: 1024px;
+    display: flex; flex-direction: row; align-items: flex-start; justify-content: center;
+    gap: 24px; height: 140px;
+}
+
+#play-col {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 8px; flex-shrink: 0; width: 110px;
+    margin-top: 4px;
+}
+
+@keyframes playGlow {
+    0%, 100% { box-shadow: 0 0 22px rgba(255,190,60,0.18), inset 0 0 16px rgba(255,200,90,0.08); }
+    50%      { box-shadow: 0 0 38px rgba(255,190,60,0.34), inset 0 0 22px rgba(255,200,90,0.14); }
+}
+#btn-play {
+    width: 82px; height: 82px; border-radius: 50%;
+    background:
+        radial-gradient(circle at 35% 28%, rgba(255,230,160,0.28), transparent 55%),
+        rgba(255,215,0,0.07);
+    border: 2px solid rgba(255,215,94,0.55);
+    color: var(--gold); font-size: 30px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: transform 0.15s, border-color 0.15s; padding-left: 4px;
+    animation: playGlow 3s ease-in-out infinite;
+}
+#btn-play:hover:not(:disabled) { transform: scale(1.06); border-color: var(--gold); }
+#btn-play:disabled { opacity: 0.3; cursor: default; animation: none; }
+
+#feedback {
+    height: 22px; font-size: 15px; font-weight: 600;
+    letter-spacing: 0.5px; color: transparent; transition: color 0.2s;
+    text-align: center; width: 100%;
+    margin-top: -4px;
+}
+
+#btn-compare { font-size: 11px; padding: 4px 12px; }
+#btn-compare.hidden { display: none; }
+
+#staff-bg {
+    position: absolute;
+    top: -8px; left: 470px;
+    width: 232px; height: 142px;
+    background: linear-gradient(180deg, #241105, #150902);
+    border-radius: 12px;
+    border: 1px solid var(--panel-border);
+    box-shadow: 0 10px 26px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,220,150,0.06);
+    pointer-events: none;
+    z-index: 0;
+}
+
+#staff-svg {
+    width: 220px; height: 130px; flex-shrink: 0; display: block; overflow: visible;
+    position: relative; z-index: 1;
+    margin-top: -10px;
+}
+
+/* ── Piano keyboard ──────────────────────────────────────────────────────── */
+#piano-keyboard {
+    position: absolute; top: 374px; left: 0; width: 1024px;
+    display: flex; justify-content: center;
+}
+.piano-wrapper {
+    position: relative; width: 882px; height: 90px; flex-shrink: 0;
+    filter: drop-shadow(0 12px 18px rgba(0,0,0,0.5));
+}
+/* Feltro rosso sopra i tasti */
+.piano-wrapper::before {
+    content: ''; position: absolute; top: -5px; left: -4px; right: -4px; height: 5px;
+    background: linear-gradient(180deg, #9c2430, #5d1118);
+    border-radius: 2px; z-index: 3;
+}
+.piano-key {
+    position: absolute; border-radius: 0 0 4px 4px;
+    box-sizing: border-box; transition: background 0.08s, transform 0.05s;
+    -webkit-user-select: none; user-select: none;
+}
+.piano-key:active { transform: translateY(1px); }
+.piano-key.white {
+    width: 42px; height: 90px;
+    background: linear-gradient(180deg, #fdfaf0 0%, #f1ecdc 70%, #d8d1bc 100%);
+    border: 1px solid rgba(20,10,0,0.55);
+    box-shadow: inset 0 -5px 7px rgba(0,0,0,0.12), inset -1px 0 0 rgba(255,255,255,0.5);
+    z-index: 1;
+}
+.piano-key.black {
+    width: 26px; height: 58px;
+    background: linear-gradient(180deg, #3c3c3c 0%, #161616 28%, #060606 100%);
+    border: 1px solid #000;
+    box-shadow: inset 0 1px 1px rgba(255,255,255,0.22), 0 3px 5px rgba(0,0,0,0.55);
+    z-index: 2;
+}
+.key-label {
+    position: absolute; bottom: 4px; left: 0; right: 0;
+    text-align: center; font-size: 8px; color: rgba(0,0,0,0.3); pointer-events: none;
+}
+.piano-key.root {
+    background: linear-gradient(180deg, #ffe27a, #e8b400) !important;
+    cursor: default;
+    box-shadow: 0 0 12px rgba(255,200,40,0.55) !important;
+}
+.piano-key.black.root { background: linear-gradient(180deg, #f0ce40, #c29a00) !important; }
+.piano-key.correct       { background: linear-gradient(180deg, #6fe0a0, #2ecc71) !important; }
+.piano-key.black.correct { background: linear-gradient(180deg, #3ad27e, #1f9c54) !important; }
+.piano-key.wrong         { background: linear-gradient(180deg, #f08070, #e74c3c) !important; }
+.piano-key.black.wrong   { background: linear-gradient(180deg, #e2604e, #b03426) !important; }
+
+/* ── Label sopra griglia (anche risultato accordo) ───────────────────────── */
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(5px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+#label-scegli {
+    position: absolute; top: 466px; left: 0; width: 1024px;
+    text-align: center; font-size: 11px; color: var(--text-dim);
+    letter-spacing: 2.5px; text-transform: uppercase;
+}
+#label-scegli.result {
+    color: var(--gold); font-size: 15px; text-transform: none; letter-spacing: 0.5px;
+    font-weight: 600; animation: fadeUp 0.3s ease-out;
+    text-shadow: 0 0 16px rgba(255,200,60,0.35);
+}
+
+/* ── Griglia accordi ─────────────────────────────────────────────────────── */
+#grid-accordi {
+    position: absolute; top: 487px; left: 0; width: 1024px;
+    display: grid; grid-template-columns: repeat(4, 218px); gap: 8px; justify-content: center;
+}
+@keyframes pop {
+    0%   { transform: scale(1); }
+    45%  { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25%      { transform: translateX(-4px); }
+    75%      { transform: translateX(4px); }
+}
+.btn-accord {
+    background: linear-gradient(180deg, rgba(255,205,130,0.17), rgba(255,205,130,0.06));
+    border: 1px solid rgba(255,200,120,0.3);
+    color: var(--text-warm); font-size: 14px; height: 44px;
+    border-radius: 10px; cursor: pointer; letter-spacing: 0.3px;
+    transition: all 0.13s; font-weight: 500;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.35);
+}
+.btn-accord:hover:not(:disabled):not(.inactive) {
+    background: linear-gradient(180deg, rgba(255,210,140,0.28), rgba(255,210,140,0.12));
+    border-color: rgba(255,215,94,0.6);
+    color: #fff3da;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+}
+.btn-accord:disabled { cursor: default; }
+.btn-accord.correct {
+    background: linear-gradient(180deg, #45d985, #23a85a) !important;
+    border-color: #1f9c54 !important; color: #fff !important;
+    animation: pop 0.25s ease-out;
+    box-shadow: 0 0 16px rgba(46,204,113,0.4) !important;
+}
+.btn-accord.wrong {
+    background: linear-gradient(180deg, #ee6552, #cf3a29) !important;
+    border-color: #b03426 !important; color: #fff !important;
+    animation: shake 0.3s;
+}
+.btn-accord.inactive {
+    background: rgba(0,0,0,0.28); border-color: rgba(255,200,120,0.09);
+    color: rgba(243,221,179,0.18); cursor: default; font-weight: 400;
+    box-shadow: none;
+}
+
+/* Modalità selezione custom: accordi cliccabili come interruttori */
+.btn-accord.selectable {
+    background: rgba(0,0,0,0.3); border: 1px dashed rgba(255,200,120,0.4);
+    color: var(--text-dim); cursor: pointer; font-weight: 400;
+    box-shadow: none;
+}
+.btn-accord.selectable:hover { background: rgba(255,200,120,0.1); color: #fff3da; }
+.btn-accord.selectable.selected {
+    background: linear-gradient(180deg, var(--gold), var(--gold-deep));
+    border: 1px solid #b87f10; color: #2a1500;
+    font-weight: 600; box-shadow: 0 0 12px rgba(255,200,60,0.35);
+}
+
+/* ── Modale statistiche ──────────────────────────────────────────────────── */
+#stats-modal {
+    position: absolute; top: 0; left: 0; width: 1024px; height: 750px;
+    background: rgba(8,4,1,0.72); z-index: 10002;
+    -webkit-backdrop-filter: blur(5px); backdrop-filter: blur(5px);
+    display: flex; align-items: center; justify-content: center;
+}
+#stats-modal.hidden { display: none; }
+#stats-box {
+    width: 580px; max-height: 640px;
+    background: linear-gradient(180deg, #2a1507, #170b03);
+    border: 1px solid var(--panel-border); border-radius: 14px;
+    padding: 18px 24px 20px; box-sizing: border-box;
+    color: var(--text-warm);
+    box-shadow: 0 18px 60px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,220,150,0.07);
+    display: flex; flex-direction: column;
+    animation: fadeUp 0.22s ease-out;
+}
+#stats-head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 10px;
+}
+#stats-head .stats-title {
+    font-family: Georgia, serif; font-size: 20px; letter-spacing: 1px;
+    background: linear-gradient(180deg, #ffeebc, var(--gold-deep));
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+#btn-stats-close {
+    background: none; border: none; color: var(--text-dim);
+    font-size: 18px; cursor: pointer; padding: 2px 6px; transition: color 0.15s;
+}
+#btn-stats-close:hover { color: var(--gold); }
+#stats-summary {
+    font-size: 13px; color: #ffb45e; margin-bottom: 12px;
+    letter-spacing: 0.5px; white-space: pre;
+}
+#stats-table-wrap { overflow-y: auto; flex: 1; }
+#stats-table-wrap::-webkit-scrollbar { width: 8px; }
+#stats-table-wrap::-webkit-scrollbar-thumb { background: rgba(255,200,120,0.25); border-radius: 4px; }
+#stats-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+#stats-table th {
+    text-align: left; padding: 6px 8px; color: var(--gold);
+    border-bottom: 1px solid var(--panel-border); font-weight: 600;
+    position: sticky; top: 0; background: #2a1507;
+}
+#stats-table td { padding: 5px 8px; border-bottom: 1px solid rgba(255,200,120,0.1); }
+#stats-table .pct-good { color: var(--ok); font-weight: 600; }
+#stats-table .pct-mid  { color: #f1c40f; font-weight: 600; }
+#stats-table .pct-bad  { color: var(--ko); font-weight: 600; }
+#stats-table .stats-empty { color: var(--text-dim); padding: 20px 8px; text-align: center; }
+#stats-actions { margin-top: 14px; text-align: right; }
+#btn-stats-reset {
+    background: rgba(0,0,0,0.35); border: 1px solid var(--btn-border);
+    color: var(--text-dim); font-size: 11px; padding: 5px 14px;
+    border-radius: 6px; cursor: pointer; letter-spacing: 0.5px; transition: all 0.15s;
+}
+#btn-stats-reset:hover { background: rgba(231,76,60,0.18); border-color: rgba(231,76,60,0.5); color: #ff9c8c; }
+
+/* ── Bottom nav ──────────────────────────────────────────────────────────── */
+#bottom-nav {
+    position: absolute; bottom: 10px; left: 0; width: 1024px;
+    display: flex; flex-direction: row; align-items: center;
+    justify-content: space-between; padding: 0 20px; box-sizing: border-box;
+}

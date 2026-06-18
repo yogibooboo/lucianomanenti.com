@@ -6,7 +6,9 @@
       "mcp__chrome-devtools-global__take_screenshot",
       "mcp__chrome-devtools-global__list_pages",
       "Bash(python -c ' *)",
-      "WebSearch"
+      "WebSearch",
+      "PowerShell(Get-Process python -ErrorAction SilentlyContinue | Where-Object { \\(Get-CimInstance Win32_Process -Filter \"ProcessId=$\\($_.Id\\)\"\\).CommandLine -match 'http.server 8741' } | Stop-Process -Force -Confirm:$false)",
+      "PowerShell(Start-Process -WindowStyle Hidden python -ArgumentList '-m','http.server','8741' -WorkingDirectory '.'; Start-Sleep -Seconds 1; \\(Invoke-WebRequest -UseBasicParsing http://localhost:8741/musica/index.html\\).StatusCode)"
     ]
   }
 }

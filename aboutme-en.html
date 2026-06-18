@@ -52,6 +52,7 @@
 			border-bottom: 1px solid #eee;
 			padding-bottom: 5px;
 			margin-top: 30px;
+			scroll-margin-top: 300px;
 		}
 
 		.lang-switch {
@@ -100,6 +101,43 @@
 			text-decoration: none;
 			margin: 0 15px;
 		}
+
+		.pc-images-container {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 20px;
+			justify-content: center;
+			margin: 25px 0;
+		}
+
+		.pc-image-card {
+			flex: 1;
+			min-width: 250px;
+			max-width: 360px;
+			background: #f0f0f0;
+			padding: 12px;
+			border-radius: 8px;
+			box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+			text-align: center;
+			box-sizing: border-box;
+		}
+
+		.pc-image-card img {
+			width: 100%;
+			height: auto;
+			border-radius: 6px;
+			border: 1px solid #ddd;
+			display: block;
+			margin: 0 auto;
+		}
+
+		.pc-image-caption {
+			font-size: 13px;
+			color: #555;
+			margin-top: 10px;
+			font-style: italic;
+			line-height: 1.4;
+		}
 	</style>
 </head>
 
@@ -118,21 +156,105 @@
 
 	<div class="content-section">
 		<div id="lang-en">
+			<p style="font-style: italic; margin-top: -20px; margin-bottom: 20px;">For any comments, requests, or reports, write to me at <a href="mailto:postmaster@lucianomanenti.com" style="color: #3498db; text-decoration: underline;">postmaster@lucianomanenti.com</a></p>
 			<h1>About Me</h1>
-			<p>Welcome to <strong>lucianomanenti.com</strong>. This site was born from my passion for programming as a
-				way to spend my time after retiring.</p>
-			<p>I am delighted to see that many of you have become passionate about these games, especially Scala 40, and
-				some of you have even sent me touching messages about how these games have helped you during difficult
-				times.</p>
-			<p>Here you can find several classic card games (Scala 40, Machiavelli, Spider) and a useful tool for
-				 musicians: my "quasi-real" metronome.</p>
-			<p>By popular demand, I am also working on adding Burraco. I have added the relative page marked as "work in
-				progress". I invite you to comment on the layout and the initial game mechanics.</p>
+			<p>Welcome to <strong>lucianomanenti.com</strong>. This site was born from my passion for electronics and programming as a way to spend my time after retiring.</p>
+			
+			<p>In these pictures you can see a precursor to the PC that I developed for fun around 1980, when Steve Jobs and Steve Wozniak were creating the Apple II in a garage. Who knows… maybe if I had been born in Silicon Valley…</p>
+			
+			<div class="pc-images-container">
+				<div class="pc-image-card">
+					<img src="images/mypcclose.jpg" alt="PC Precursor (Closed)">
+					<div class="pc-image-caption">The computer assembled and closed in its case</div>
+				</div>
+				<div class="pc-image-card">
+					<img src="images/mypcopen.jpg" alt="PC Precursor (Open)">
+					<div class="pc-image-caption">The interior of the computer with the wire-wrap wiring visible</div>
+				</div>
+			</div>
+			
+			<p>Actually, the inspiration came to me about fifteen years ago from one of my neighbors, a Scala 40 enthusiast who was not satisfied with the sites existing back then. I took my personal website—which I had previously used to protest against the A4 motorway I traveled on as a commuter (those interested can see <a href="images/gdb-a4.jpg" target="_blank" style="color: #3498db; text-decoration: underline;">the article in the Giornale di Brescia about my initiative, year 2000</a>)—and I set up the Scala 40 game just for him. I developed it in a very handcrafted way (as you can see), by hand, without using any special tools.</p>
+			
+			<p>Then, finding pleasure in doing this, I challenged myself to develop a much more complex algorithm to play Machiavelli. I would say it turned out quite well, so much so that I am often surprised by what my algorithm can manage to do.</p>
+			
+			<p>Since the games are online, I have discovered with surprise and pleasure that many people have become passionate about them, especially Scala 40, and some of you have even written touching messages about how these games helped you during difficult times.</p>
+			
+			<p>For many years, I left the website as it was, noticing that on average 40,000 games were played per day.</p>
+			
+			<p>Recently, by popular demand, I tried to develop the game of Burraco, which I didn't know. It is a great challenge. Compared to Machiavelli, it is much simpler in terms of game mechanics, but much more complex in terms of strategy, leaving room for the player's personal touch or couple chemistry. The first draft turned out even better than I expected, but I realize there is plenty of room for improvement. I would be pleased if experienced players would explain any strategic mistakes they find in my game. My special thanks to those who have already started doing so. As of today (June 2026), we are already at about 4,000 games per day (compared to the 40,000 of Scala 40), but the growth potential is clear.</p>
+			
+			<p>I then introduced Klondike Solitaire, as it was very simple compared to Burraco, and it has still reached its 1,000 games per day.</p>
+			
+			<p>Finally, I added Gin Rummy (a rummy variant), just to try to attract some English-speaking players. It is a game I don't know, implemented in a very basic way. Here too, if any experienced player wants to give me some tips, I would appreciate it.</p>
 
-			<p style="margin-top: 30px;">
-				<strong>Contact me:</strong>
-				<a href="mailto:postmaster@lucianomanenti.com" style="color: #3498db;">postmaster@lucianomanenti.com</a>
-			</p>
+			<h2 id="pubblicita">Why the ads (for now)…</h2>
+			<p>Lately, I wondered if it wasn't worth leveraging the website's potential to earn a little money. Not for myself, as I don't feel the need, but for my thirty-year-old daughter who in recent months decided to live on her own.</p>
+			
+			<p>I said to myself, why not? After all, there were unused spaces on the sides of the game board that could be utilized. It seemed like a wasted resource. Before doing it, however, I wanted to ask for your opinion. If you remember, for a few weeks I used the side areas to tell you about my intention to introduce ads, asking you to write to me to share your thoughts.</p>
+			
+			<p>I received about fifty replies. Almost all of them thanked me for the website, expressing the opinion that a bit of advertising was acceptable to keep the website free. Only a couple said flat out: "no more ads!".</p>
+			
+			<p>At that point, I decided to introduce it. I set a few limits for myself:</p>
+			<ul>
+				<li>do not alter the games; the ad spaces must be placed in the side areas that were not previously used;</li>
+				<li>absolutely avoid popups or any ads that must be closed in order to play;</li>
+				<li>possibly avoid ads for betting sites, gambling, or morally questionable content.</li>
+			</ul>
+			
+			<p>Various suggestions can be found online to monetize the website by asking players for contributions, for example with Buy Me a Coffee, or by offering paid premium content. But I do not want to ask my players for money.</p>
+			
+			<p>I am running a test, although at the moment it is quite disappointing. The few euros I am earning wouldn't even cover the costs of opening a VAT number for my daughter, which would be essential for a continuous income.</p>
+			
+			<p>If it goes on like this, I will remove the ads and restore the website as before. I have fun anyway, and I really enjoy it when you write to me, to share your feedback, to report problems, or anything else (greetings to that player who keeps calling me an idiot… 😅).</p>
+			
+			<p>Also let me know if there is any other game you would like to see on my website.</p>
+			
+			<p>In any case, if anyone is really annoyed by the advertising, write to me and I will teach you a trick to remove it from my site. I don't want to lose friends just for that.</p>
+			
+			<p>I invite you to keep writing to me at: <a href="mailto:postmaster@lucianomanenti.com">postmaster@lucianomanenti.com</a>. It is my pleasure, and I reply to everyone.</p>
+
+			<h2>For those interested in the advertising details</h2>
+			<p>I started with Google's advertising. It was definitely much more complicated than I thought.</p>
+			
+			<p>First, the site needs an initial approval. Google requires the website to have original content that can attract visitors, but it judges this solely based on the text present on the site. Since my website is essentially based on games, and thus on a program that manages them, it doesn't contain much text, unlike a blog. So to get it approved, I had to add descriptive pages like the various help pages, which were previously inside the code and invisible to Google.</p>
+			
+			<p>Once the website was approved, after a few attempts, I faced a series of other problems, all related to the fact that Google deemed the clicks on my banners anomalous in some way and therefore limited ad serving for a few days. Later, they completely suspended ad serving for a month due to click issues. This was done without providing detailed explanations because, they say, malicious users could exploit the details to bypass controls. Too bad that even someone like me, who has no intention of cheating, has no way of understanding what the issue actually was.</p>
+			
+			<p>The first time, I thought it was my fault. I clicked at most 3 or 4 times on the ads (and Google strictly forbids clicking on your own ads), but not on the ad itself—only on the tiny triangle icon that appears on it, because I wanted to investigate where it came from. In any case, I waited out the month (there was nothing else to do) and then made sure to avoid clicking on the ads; I also added a software block to prevent me from doing so accidentally.</p>
+			
+			<p>After the month, ad serving resumed, then came another restriction, and then a total block for another month due to "multiple clicks." It seems that if someone clicks on the ads too many times, Google assumes it is a friend of mine doing it to help me out. However, without further details, it is really hard to understand what the actual situation is. At this point, if I had a competitor or an enemy (though I wouldn't know who...) clicking too many times out of spite (how many? Who knows), my ads would be completely blocked.</p>
+			
+			<p>To address this, I implemented a software control to ensure that if someone clicks on a Google ad, they won't be shown any more ads for a day (replacing them with other ads to prevent someone from doing this on purpose to remove the ads once they figure out the trick). By the way, I had to implement this solution with a workaround because Google does not let you know when someone clicks on their ads.</p>
+			
+			<p>The second month has passed and for now I have no further blocks, but the earnings are really low, just a few euros a day. As I said, if it continues like this, it won't even cover the expenses of my daughter's VAT number.</p>
+			
+			<p>Anyway, it was interesting to see the real-time auction mechanism between the various advertising agencies managed by Google for each individual ad. A crazy mechanism that I would have never imagined. I will spare you all the details about privacy and GDPR, because they bore me too.</p>
+
+			<h2>If you are not tired yet, now let's talk about Amazon</h2>
+			<p>I became an Amazon Associate as an alternative when Google suspended my ads.</p>
+			
+			<p>Amazon works in another way, and seems more oriented to influencers than a website like mine. In the beginning you still need an approval, but to get it you have to register and sell at least three products. After selling the three products, you are verified for the final approval. The problem is that initially, for those who are not yet approved, they only give you the possibility to have an "affiliate link" for the various products to be introduced on your site. This might be fine for an influencer who promotes a specific product and then links to it, but not for my website where I need to display ads with images and descriptions. Moreover, it is strictly forbidden to show prices, because prices must be constantly updated, and to do this you need a software API which you are only given access to after having sold 10 products. So I had to build my own banners by taking images and descriptions from the Amazon site and adding the affiliate link. A real chore.</p>
+			
+			<p>I still managed to get approved only on the third attempt, then I reached 10 products sold, got access to the software, and now the Amazon banners are generated semi-automatically and the prices are updated automatically.</p>
+			
+			<p>Currently, Google ads are displayed on the left of the game (replaced by Amazon after the first click) and Amazon ads on the right.</p>
+			
+			<p>I earn a percentage between 1% and 5% on the sold products, not only the advertised ones but also on others eventually purchased after entering Amazon from my site. But currently, in about a month, I have earned about 30 euros. The Amazon banners are clicked between 50 and 100 times a day, but purchases are typically 0, some days 1 or 2. In short, definitely disappointing.</p>
+			
+			<p>I also tried adding an Amazon ad on the final screen of the game. This roughly doubled the clicks, probably because during the game one is too focused on the game itself to be interested in ads, while at the end there is a moment of pause where you can get distracted by the ad, but the results are the ones I mentioned.</p>
+
+			<h2>Other experiences</h2>
+			<p>I also received a proposal from an advertising agency for ads to be shown once a day as popups for online gambling and betting sites, but I did not accept. I was assured that it is all perfectly legal, but I do not want to make money by bringing people to ruin.</p>
+
+			<h2>In conclusion</h2>
+			<p>I thought I had great numbers for advertising. It seems that 40,000 pages per day with ads visible on average for two minutes should be extraordinary values for a website. But evidently the focus on the game takes away appeal from the advertising. Although it seems strange to me, because from my personal experience it is not that on other sites I pay much attention to ads that are certainly less persistent than mine...</p>
+			
+			<p>It is also true that the valuation of Italian advertising is far lower than that of Anglo-Saxon websites, but I didn't think it would be by this much.</p>
+			
+			<p>It was an interesting experience, I learned a few things, but if the figures don't change, it will end soon and I will return to the traditional website. Now I am working on adding a music learning and ear training section. Just to keep the fun going.</p>
+
+			<h2>If you have made it this far and want to leave any comments</h2>
+			<p>Write to me at: <a href="mailto:postmaster@lucianomanenti.com">postmaster@lucianomanenti.com</a></p>
 		</div>
 	</div>
 

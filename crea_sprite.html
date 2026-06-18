@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generatore Sprite Sheet Carte Napoletane</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #1a1a2e;
+            color: #ffffff;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            max-width: 900px;
+            width: 100%;
+            background: #162447;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+            text-align: center;
+        }
+        h1 {
+            color: #ffd700;
+            margin-top: 0;
+        }
+        .status {
+            font-size: 16px;
+            margin: 20px 0;
+            padding: 10px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #1f4068;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            display: none;
+        }
+        .progress-fill {
+            width: 0%;
+            height: 100%;
+            background: #ffd700;
+            transition: width 0.1s;
+        }
+        button {
+            background: linear-gradient(180deg, #ffd700 0%, #b8860b 100%);
+            border: 2px solid #ffd700;
+            color: #1a1a2e;
+            font-size: 18px;
+            font-weight: bold;
+            padding: 12px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            transition: transform 0.2s, filter 0.2s;
+            margin: 10px;
+        }
+        button:hover {
+            filter: brightness(1.1);
+            transform: scale(1.03);
+        }
+        button:disabled {
+            background: #555;
+            border-color: #777;
+            color: #aaa;
+            cursor: not-allowed;
+            transform: none;
+            filter: none;
+        }
+        .preview-container {
+            margin-top: 30px;
+            overflow-x: auto;
+            border: 2px solid #1f4068;
+            border-radius: 8px;
+            padding: 10px;
+            background: #121b2d;
+            display: none;
+        }
+        canvas {
+            display: block;
+            margin: 0 auto;
+            background: transparent;
+        }
+        #svg-container {
+            display: block;
+            position: absolute;
+            left: -99999px;
+            top: -99999px;
+            visibility: hidden;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Generatore Sprite Sheet Scopa Napoletana</h1>
+    <p>Questo strumento caricherà il file vettoriale <code>napoletane.svg</code> (36MB), ritaglierà le carte una per una e creerà una singola immagine PNG compressa ottimizzata per il web.</p>
+    
+    <div id="status" class="status">In attesa del caricamento dell'SVG...</div>
+    
+    <div id="progress-container" class="progress-bar">
+        <div id="progress-fill" class="progress-fill"></div>
+    </div>
+    
+    <button id="btn-load" onclick="startGeneration()">Avvia Generazione</button>
+    <button id="btn-download" disabled onclick="downloadSpriteSheet()">Scarica carte_napoletane.png</button>
+    
+    <div id="preview-container" class="preview-container">
+        <h3 style="color: #ffd700; margin-top: 0;">Anteprima dello Sprite Sheet Generato (1207x384px)</h3>
+        <canvas id="sprite-canvas" width="1207" height="384"></canvas>
+    </div>
+</div>
+
+<!-- Contenitore per inserire l'SVG nel DOM ed effettuare il calcolo dei BBox -->
+<div id="svg-container"></div>
+
+<script>
+    const cardWidth = 71;
+    const cardHeight = 96;
+    
+    // Mappatura dei semi (righe dello sprite)
+    const SUITS = [
+        { name: 'club', row: 0 },    // Bastoni (Fiori)
+        { name: 'diamond', row: 1 }, // Denari (Quadri)
+        { name: 'heart', row: 2 },   // Coppe (Cuori)
+        { name: 'spade', row: 3 }    // Spade (Picche)
+    ];
+    
+    // Mappatura dei valori alle colonne dello sprite
+    function getCardColumn(number) {
+        if (number <= 7) return number - 1; // 1 -> Col 0, ..., 7 -> Col 6
+        if (number === 8) return 10; // Jack -> Col 10
+        if (number === 9) return 11; // Queen -> Col 11
+        if (number === 10) return 12; // King -> Col 12
+        return -1;
+    }
+
+    let svgImage = null;
+    let canvas = null;
+    let ctx = null;
+    let minX = 0;
+    let minY = 0;
+    let validTasks = [];
+
+    function updateStatus(text) {
+        document.getElementById('status').textContent = text;
+    }
+
+    function setProgress(percent) {
+        document.getElementById('progress-container').style.display = 'block';
+        document.getElementById('progress-fill').style.width = percent + '%';
+    }
+
+    function startGeneration() {
+        document.getElementById('btn-load').disabled = true;
+        updateStatus("Caricamento del file napoletane.svg (36MB) in corso... Potrebbe volerci qualche secondo.");
+        
+        fetch('napoletane.svg')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Impossibile caricare napoletane.svg. Assicurati che sia nella stessa cartella.");
+                }
+                return response.text();
+            })
+            .then(svgText => {
+                updateStatus("SVG caricato. Analisi della struttura ed inserimento nel DOM...");
+                const container = document.getElementById('svg-container');
+                container.innerHTML = svgText;
+                
+                setTimeout(prepareRendering, 500);
+            })
+            .catch(error => {
+                updateStatus("Errore: " + error.message);
+                document.getElementById('btn-load').disabled = false;
+            });
+    }
+
+    function prepareRendering() {
+        updateStatus("Struttura inserita. Calcolo dei limiti geometrici delle carte...");
+        
+        canvas = document.getElementById('sprite-canvas');
+        ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        const svgElement = document.getElementById('svg-container').querySelector('svg');
+        if (!svgElement) {
+            updateStatus("Errore: Impossibile trovare l'elemento <svg> nel file caricato.");
+            document.getElementById('btn-load').disabled = false;
+            return;
+        }
+
+        // Creiamo la lista delle carte da disegnare
+        const tasks = [];
+        SUITS.forEach(suit => {
+            for (let num = 1; num <= 10; num++) {
+                let suffix = num;
+                if (num === 8) suffix = 'jack';
+                else if (num === 9) suffix = 'queen';
+                else if (num === 10) suffix = 'king';
+                
+                const elementId = suit.name + '_' + suffix;
+                tasks.push({ id: elementId, col: getCardColumn(num), row: suit.row, label: suit.name + ' ' + num });
+            }
+        });
+        tasks.push({ id: 'back', col: 16, row: 0, label: 'Retro Rosso' });
+        tasks.push({ id: 'back', col: 16, row: 1, label: 'Retro Blu' });
+
+        // Calcoliamo l'unione dei Bounding Box per allargare il viewBox principale
+        minX = Infinity;
+        minY = Infinity;
+        let maxX = -Infinity;
+        let maxY = -Infinity;
+        
+        validTasks = [];
+        
+        function transformPoint(x, y, matrix) {
+            return {
+                x: matrix.a * x + matrix.c * y + matrix.e,
+                y: matrix.b * x + matrix.d * y + matrix.f
+            };
+        }
+        
+        tasks.forEach(task => {
+            const el = document.getElementById(task.id);
+            if (el) {
+                try {
+                    const bbox = el.getBBox();
+                    const ctm = el.getCTM();
+                    if (bbox && bbox.width > 0 && bbox.height > 0) {
+                        let txBBox = { x: bbox.x, y: bbox.y, width: bbox.width, height: bbox.height };
+                        if (ctm) {
+                            const p1 = transformPoint(bbox.x, bbox.y, ctm);
+                            const p2 = transformPoint(bbox.x + bbox.width, bbox.y, ctm);
+                            const p3 = transformPoint(bbox.x, bbox.y + bbox.height, ctm);
+                            const p4 = transformPoint(bbox.x + bbox.width, bbox.y + bbox.height, ctm);
+                            
+                            const xs = [p1.x, p2.x, p3.x, p4.x];
+                            const ys = [p1.y, p2.y, p3.y, p4.y];
+                            
+                            txBBox = {
+                                x: Math.min(...xs),
+                                y: Math.min(...ys),
+                                width: Math.max(...xs) - Math.min(...xs),
+                                height: Math.max(...ys) - Math.min(...ys)
+                            };
+                        }
+                        
+                        minX = Math.min(minX, txBBox.x);
+                        minY = Math.min(minY, txBBox.y);
+                        maxX = Math.max(maxX, txBBox.x + txBBox.width);
+                        maxY = Math.max(maxY, txBBox.y + txBBox.height);
+                        task.bbox = txBBox;
+                        validTasks.push(task);
+                    }
+                } catch (e) {
+                    console.error("Errore BBox per:", task.id, e);
+                }
+            }
+        });
+
+        if (validTasks.length === 0) {
+            updateStatus("Errore: Nessun elemento carta valido trovato nell'SVG.");
+            document.getElementById('btn-load').disabled = false;
+            return;
+        }
+
+        // Aggiorna il viewBox e le dimensioni del tag <svg> per includere tutti gli elementi
+        const svgW = maxX - minX;
+        const svgH = maxY - minY;
+        svgElement.setAttribute('viewBox', `${minX} ${minY} ${svgW} ${svgH}`);
+        svgElement.setAttribute('width', svgW);
+        svgElement.setAttribute('height', svgH);
+        
+        updateStatus("Limiti ricalcolati. Generazione dell'immagine vettoriale temporanea...");
+
+        // Crea Blob URL dell'SVG allargato
+        const svgString = new XMLSerializer().serializeToString(svgElement);
+        const svgBlob = new Blob([svgString], {type: 'image/svg+xml;charset=utf-8'});
+        const blobUrl = URL.createObjectURL(svgBlob);
+        
+        svgImage = new Image();
+        svgImage.onload = function() {
+            URL.revokeObjectURL(blobUrl);
+            renderAllCards();
+        };
+        svgImage.onerror = function() {
+            updateStatus("Errore durante il caricamento dell'immagine SVG.");
+            document.getElementById('btn-load').disabled = false;
+        };
+        svgImage.src = blobUrl;
+    }
+
+    function renderAllCards() {
+        let currentTaskIdx = 0;
+        
+        function processNextTask() {
+            if (currentTaskIdx >= validTasks.length) {
+                updateStatus("Generazione completata con successo! Clicca sotto per scaricare lo sprite sheet.");
+                setProgress(100);
+                document.getElementById('preview-container').style.display = 'block';
+                document.getElementById('btn-download').disabled = false;
+                return;
+            }
+            
+            const task = validTasks[currentTaskIdx];
+            setProgress(Math.floor((currentTaskIdx / validTasks.length) * 100));
+            updateStatus("Disegno della carta: " + task.label + " (" + (currentTaskIdx + 1) + "/" + validTasks.length + ")");
+            
+            const bbox = task.bbox;
+            const destX = task.col * cardWidth;
+            const destY = task.row * cardHeight;
+            
+            // Ritaglia la carta usando le coordinate traslate in base a minX e minY
+            ctx.drawImage(
+                svgImage,
+                bbox.x - minX, bbox.y - minY, bbox.width, bbox.height, // Ritaglio corretto dall'SVG allargato
+                destX, destY, cardWidth, cardHeight
+            );
+            
+            currentTaskIdx++;
+            setTimeout(processNextTask, 15);
+        }
+        
+        setTimeout(processNextTask, 50);
+    }
+
+    function downloadSpriteSheet() {
+        const canvas = document.getElementById('sprite-canvas');
+        const link = document.createElement('a');
+        link.download = 'carte_napoletane.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+    }
+</script>
+
+</body>
+</html>

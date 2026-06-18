@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-WRBDRDQ4L8');
+        window.currentLang = 'en';
+    </script>
+    <title>Musical Chords 2 Guide - Ear Training - lucianomanenti.com</title>
+    <meta name="Description" content="Guide to the Chords 2 exercise: chord recognition ear training with personal statistics, streaks, custom training sets and chord comparison.">
+    <link rel="alternate" hreflang="it" href="guida-accordi2.html">
+    <link rel="alternate" hreflang="en" href="guida-accordi2-en.html">
+    <link rel="icon" type="image/png" href="../../favicon/favicon-96x96.png" sizes="96x96">
+    <link rel="icon" type="image/svg+xml" href="../../favicon/favicon.svg">
+    <link rel="shortcut icon" href="../../favicon/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../favicon/apple-touch-icon.png">
+    <style>
+        body {
+            font-family: sans-serif;
+            line-height: 1.75;
+            max-width: 820px;
+            margin: 40px auto;
+            padding: 20px;
+            color: #333;
+            background-color: #f9f9f9;
+        }
+
+        h1 { color: #2c3e50; border-bottom: 2px solid #ffd700; padding-bottom: 10px; }
+        h2 { color: #2c3e50; margin-top: 36px; border-bottom: 1px solid #ddd; padding-bottom: 5px; }
+        h3 { color: #2c3e50; margin-top: 22px; font-size: 1.05em; }
+
+        .lang-switch { text-align: right; margin-bottom: 20px; }
+        .lang-switch a {
+            display: inline-block; padding: 6px 16px; margin-left: 5px;
+            text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 14px;
+        }
+        .lang-switch a.active { background: #2c3e50; color: white; }
+        .lang-switch a:not(.active) { background: #ddd; color: #333; cursor: pointer; }
+
+        .content-box {
+            background: white; padding: 30px; border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.07);
+        }
+
+        .nav-links { text-align: center; margin-top: 30px; font-size: 14px; }
+        .nav-links a { color: #3498db; text-decoration: none; margin: 0 12px; }
+
+        ul, ol { margin-top: 8px; }
+        li { margin-bottom: 7px; }
+
+        .box { border-radius: 8px; padding: 16px 20px; margin: 20px 0; font-size: 0.97em; }
+        .box-info    { background: #eaf4fb; border-left: 4px solid #3498db; }
+        .box-tip     { background: #eafaf1; border-left: 4px solid #2ecc71; }
+        .box-warning { background: #fef9e7; border-left: 4px solid #f1c40f; }
+        .box-new     { background: #fdf2e9; border-left: 4px solid #e67e22; }
+        .box strong  { display: block; margin-bottom: 4px; font-size: 1em; }
+
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 0.93em; }
+        th { background: #2c3e50; color: white; padding: 10px 12px; text-align: left; }
+        td { padding: 9px 12px; border-bottom: 1px solid #eee; vertical-align: top; }
+        tr:nth-child(even) td { background: #f8f8f8; }
+        tr:hover td { background: #fff8e1; }
+
+        .semitoni {
+            display: inline-block; background: #2c3e50; color: white;
+            border-radius: 12px; padding: 2px 9px; font-size: 0.85em;
+            font-weight: bold; min-width: 28px; text-align: center;
+        }
+
+        .quality-major   { color: #27ae60; font-weight: 600; }
+        .quality-minor   { color: #8e44ad; font-weight: 600; }
+        .quality-dom     { color: #2980b9; font-weight: 600; }
+        .quality-aug     { color: #e67e22; font-weight: 600; }
+        .quality-dim     { color: #c0392b; font-weight: 600; }
+        .quality-sus     { color: #7f8c8d; font-weight: 600; }
+        .quality-jazz    { color: #16a085; font-weight: 600; }
+
+        .ui-block {
+            background: #f0f0f0; border-radius: 8px; padding: 14px 18px;
+            margin: 12px 0; border-left: 3px solid #95a5a6;
+        }
+        .ui-block .ui-label { font-weight: bold; color: #2c3e50; font-size: 0.95em; margin-bottom: 4px; }
+        .ui-block.new { border-left-color: #e67e22; background: #fdf6f0; }
+
+        .diff-pill {
+            display: inline-block; padding: 3px 12px; border-radius: 20px;
+            font-size: 0.85em; font-weight: bold; margin-right: 6px;
+            background: #2c3e50; color: white;
+        }
+
+        .key {
+            display: inline-block; background: #fff; border: 1px solid #bbb;
+            border-bottom-width: 3px; border-radius: 5px; padding: 1px 9px;
+            font-family: monospace; font-size: 0.9em; font-weight: bold; color: #2c3e50;
+        }
+
+        .play-btn {
+            display: inline-block; margin-top: 25px; padding: 12px 30px;
+            background: #27ae60; color: white; text-decoration: none;
+            border-radius: 8px; font-size: 18px; font-weight: bold;
+        }
+
+        .banner {
+            width: 100%; height: 150px;
+            background-image: url('../../images/home/castagne.jpg');
+            background-size: cover; background-position: center;
+            border-radius: 8px; margin: 20px 0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+    <a href="#" id="btn-back" onclick="window.close(); return false;"
+       style="display:inline-block; padding:6px 16px; background:#e74c3c; color:white; text-decoration:none; border-radius:5px; font-weight:bold; font-size:14px;">&#x2715; Close</a>
+    <div class="lang-switch" style="margin-bottom:0;">
+        <a href="guida-accordi2.html">Italiano</a>
+        <a href="guida-accordi2-en.html" class="active">English</a>
+    </div>
+</div>
+
+<div class="banner"></div>
+
+<div class="content-box">
+
+    <h1>&#9834; Musical Chords 2 Guide</h1>
+
+    <p>This is the <strong>enhanced version</strong> of the chord recognition exercise: on top of the classic features it adds <strong>personal per-chord statistics</strong>, a <strong>streak</strong> counter, <strong>custom training sets</strong> with the chords of your choice and a <strong>direct comparison</strong> between the correct chord and the wrong one.</p>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <h2>1. What's new in version 2</h2>
+
+    <div class="ui-block new">
+        <div class="ui-label">&#128202; Per-chord statistics</div>
+        The &#128202; button at the top right opens the statistics panel: for each chord you see how many attempts you made, how many first-try correct answers, your success rate and — most useful — <strong>which chord you confuse it with most often</strong>. Data is saved in your browser between sessions.
+    </div>
+
+    <div class="ui-block new">
+        <div class="ui-label">&#128293; Streak</div>
+        At the top you see your run of consecutive correct answers and your all-time best. One mistake and the streak restarts from zero — a little incentive to stay focused.
+    </div>
+
+    <div class="ui-block new">
+        <div class="ui-label">&#9733; "Custom" level — targeted training</div>
+        Besides the 5 classic levels there is the <strong>★ Custom</strong> level: tap the chords you want to train (minimum 2) and the exercise will pick only from those. Perfect for working on the pairs you confuse, e.g. Dom 7th vs Maj 7th.
+    </div>
+
+    <div class="ui-block new">
+        <div class="ui-label">&#127922; Compare</div>
+        When you make a mistake, a <strong>Compare</strong> button appears below the Play button: click it and you hear the correct chord followed by the one you chose, on the same root note. The fastest way to fix the difference in your ear.
+    </div>
+
+    <div class="ui-block new">
+        <div class="ui-label">&#9834; Chord name and notes</div>
+        After a correct answer, the full chord is shown above the grid, e.g. <em>Major = C · E · G</em>, including the inversion that was used.
+    </div>
+
+    <div class="ui-block new">
+        <div class="ui-label">&#9000; Keyboard shortcuts</div>
+        <span class="key">Space</span> listen / next chord &nbsp;·&nbsp; <span class="key">1</span>–<span class="key">9</span> answer with the n-th active button &nbsp;·&nbsp; <span class="key">C</span> compare after a mistake &nbsp;·&nbsp; <span class="key">Esc</span> close the statistics panel.
+    </div>
+
+    <div class="ui-block new">
+        <div class="ui-label">&#128190; Saved settings</div>
+        Mode, level, inversions, advance mode, root note and your custom chord set are remembered: next time you visit, everything is as you left it.
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <h2>2. What is a chord?</h2>
+
+    <p>A <strong>chord</strong> is a combination of three or more notes played together (or in sequence). The distance between the notes — measured in <strong>semitones</strong> — determines the chord quality: whether it sounds happy or sad, stable or tense, classical or jazzy.</p>
+
+    <p>Every chord is built from a <strong>root note</strong>, adding notes at precise distances. For example, a C major chord is made of C + E + G: a major third (4 semitones) and a perfect fifth (7 semitones) above C.</p>
+
+    <div class="box box-info">
+        <strong>📌 Chord vs Interval</strong>
+        An interval is the distance between <em>two</em> notes. A chord combines <em>three or more</em> notes simultaneously, creating a complex harmonic color. Recognizing chords requires a more trained ear than intervals.
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <h2>3. Chord table</h2>
+
+    <p>The chords in the exercise, grouped by level, with their structure in semitones and their sonic character.</p>
+
+    <h3>Level 1 — Basic (fundamental triads)</h3>
+    <table>
+        <thead><tr><th>Chord</th><th>Structure (semitones)</th><th>Character</th></tr></thead>
+        <tbody>
+            <tr><td><span class="quality-major">Major</span></td><td><span class="semitoni">4</span> + <span class="semitoni">3</span></td><td>Bright, stable, joyful</td></tr>
+            <tr><td><span class="quality-minor">Minor</span></td><td><span class="semitoni">3</span> + <span class="semitoni">4</span></td><td>Dark, melancholic, intimate</td></tr>
+        </tbody>
+    </table>
+
+    <h3>Level 2 — Seventh chords</h3>
+    <table>
+        <thead><tr><th>Chord</th><th>Structure (semitones)</th><th>Character</th></tr></thead>
+        <tbody>
+            <tr><td><span class="quality-dom">Dom 7th</span></td><td><span class="semitoni">4</span>+<span class="semitoni">3</span>+<span class="semitoni">3</span></td><td>Tense, bluesy, wants to resolve</td></tr>
+            <tr><td><span class="quality-major">Maj 7th</span></td><td><span class="semitoni">4</span>+<span class="semitoni">3</span>+<span class="semitoni">4</span></td><td>Dreamy, romantic, sophisticated</td></tr>
+            <tr><td><span class="quality-minor">Min 7th</span></td><td><span class="semitoni">3</span>+<span class="semitoni">4</span>+<span class="semitoni">3</span></td><td>Sweetly melancholic, typical of jazz</td></tr>
+        </tbody>
+    </table>
+
+    <h3>Level 3 — Altered and sixth chords</h3>
+    <table>
+        <thead><tr><th>Chord</th><th>Structure (semitones)</th><th>Character</th></tr></thead>
+        <tbody>
+            <tr><td><span class="quality-aug">Augmented</span></td><td><span class="semitoni">4</span>+<span class="semitoni">4</span></td><td>Suspended, enigmatic, unstable</td></tr>
+            <tr><td><span class="quality-dim">Diminished 7th</span></td><td><span class="semitoni">3</span>+<span class="semitoni">3</span>+<span class="semitoni">3</span></td><td>Anguished, dramatic, symmetric</td></tr>
+            <tr><td><span class="quality-major">Maj 6th</span></td><td><span class="semitoni">4</span>+<span class="semitoni">3</span>+<span class="semitoni">2</span></td><td>Warm, nostalgic, retro</td></tr>
+            <tr><td><span class="quality-minor">Min 6th</span></td><td><span class="semitoni">3</span>+<span class="semitoni">4</span>+<span class="semitoni">2</span></td><td>Bittersweet melancholy, tango</td></tr>
+        </tbody>
+    </table>
+
+    <h3>Level 4 — Advanced chords</h3>
+    <table>
+        <thead><tr><th>Chord</th><th>Structure (semitones)</th><th>Character</th></tr></thead>
+        <tbody>
+            <tr><td><span class="quality-dim">Half-Diminished</span></td><td><span class="semitoni">3</span>+<span class="semitoni">3</span>+<span class="semitoni">4</span></td><td>Tense but less dark than dim7, typical of jazz</td></tr>
+            <tr><td><span class="quality-sus">Sus 2</span></td><td><span class="semitoni">2</span>+<span class="semitoni">5</span></td><td>Open, suspended, no third</td></tr>
+            <tr><td><span class="quality-sus">Sus 4</span></td><td><span class="semitoni">5</span>+<span class="semitoni">2</span></td><td>Solemn, suspended, wants to resolve to the third</td></tr>
+        </tbody>
+    </table>
+
+    <h3>Level 5 — Jazz</h3>
+    <table>
+        <thead><tr><th>Chord</th><th>Structure</th><th>Character</th></tr></thead>
+        <tbody>
+            <tr><td><span class="quality-jazz">Dom 9th</span></td><td>Dom 7th + major ninth</td><td>Rich, full, blues-jazz</td></tr>
+            <tr><td><span class="quality-jazz">Maj 9th</span></td><td>Maj 7th + major ninth</td><td>Bright, dreamy, sophisticated pop</td></tr>
+            <tr><td><span class="quality-jazz">Min 9th</span></td><td>Min 7th + major ninth</td><td>Deep, meditative, modal jazz</td></tr>
+        </tbody>
+    </table>
+
+    <div class="box box-info">
+        <strong>📌 How to read the structure</strong>
+        The numbers indicate the semitones between one chord note and the next. Major = 4+3 means: major third (4 semitones) + minor third (3 semitones) above. C major = C (0) + E (4) + G (7).
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <h2>4. Inversions</h2>
+
+    <p>A chord is in <strong>root position</strong> when the root note is the lowest one. In <strong>inversions</strong>, one of the other chord notes moves to the bottom:</p>
+
+    <ul>
+        <li><strong>Root position</strong> (C-E-G): C is the bass.</li>
+        <li><strong>1st inversion</strong> (E-G-C): E is the bass — the chord sounds lighter.</li>
+        <li><strong>2nd inversion</strong> (G-C-E): G is the bass — a more unstable feeling.</li>
+    </ul>
+
+    <p>The same chord that you recognize easily in root position can be much harder to identify in inversion, because its color changes considerably. Enable inversions only when you know the chords well in root position.</p>
+
+    <div class="box box-warning">
+        <strong>⚠️ Inversions and the root note</strong>
+        In the exercise, the root note is always highlighted in yellow on the keyboard and on the staff — even in inversions. It is a theoretical reference, not the lowest sounding note. Don't click it by mistake thinking it belongs to the inversion!
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <h2>5. How the exercise works</h2>
+
+    <p>The program randomly picks a chord, plays it, and you have to identify it by clicking the corresponding button in the grid — or by finding its notes on the keyboard.</p>
+
+    <h3>Interface step by step</h3>
+
+    <div class="ui-block">
+        <div class="ui-label">▶ Play button</div>
+        Plays the current chord. If you have already answered, it moves to the next chord. Shortcut: <span class="key">Space</span>.
+    </div>
+
+    <div class="ui-block">
+        <div class="ui-label">&#9834; Staff</div>
+        Before the answer it shows only the root note (in yellow). After a correct answer, the full chord appears in root position: the chord notes in green, the root always in yellow.
+    </div>
+
+    <div class="ui-block">
+        <div class="ui-label">&#127929; Piano keyboard</div>
+        The root note is yellow. You can click the keys to hear single notes as a reference. Alternatively, you can answer by finding all the chord notes on the keyboard: correct notes turn green, wrong ones red. When you find all the chord notes the point is awarded (only if you clicked no wrong notes).
+    </div>
+
+    <div class="ui-block">
+        <div class="ui-label">&#9632; Chord grid</div>
+        The buttons of the current level are lit. Click the one you think is the chord. If you're wrong it turns red — you can click it again to hear it, or use <strong>&#127922; Compare</strong>. After answering, clicking any button plays the corresponding chord.
+    </div>
+
+    <div class="ui-block">
+        <div class="ui-label">⏸ Manual / ▶▶ Auto advance</div>
+        In <em>Manual</em> mode (default) the exercise stops on the answer: you can replay, compare, click notes on the keyboard. In <em>Auto</em> mode it advances by itself after 1.4 seconds.
+    </div>
+
+    <div class="ui-block">
+        <div class="ui-label">🏆 Score</div>
+        Counts <em>first-try</em> correct answers, both via button and via keyboard. Even a single wrong note on the keyboard forfeits the point. The session score resets with the Reset button; the per-chord statistics persist (they only reset from the &#128202; panel).
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <h2>6. Mode selector</h2>
+
+    <ul>
+        <li><strong>↑ Arpeggio</strong> — the notes play in sequence from bottom to top. Easier: you hear the melodic structure of the chord.</li>
+        <li><strong>↓ Arpeggio</strong> — the notes play from top to bottom. Same structure, different feeling.</li>
+        <li><strong>⇅ Harmonic</strong> — all the notes sound together. The hardest: you only hear the overall color of the chord, with no melodic guide.</li>
+    </ul>
+
+    <div class="box box-tip">
+        <strong>💡 Tip</strong>
+        Start in <em>Arpeggio ↑</em> mode. Once you recognize the chords well, switch to <em>Harmonic</em>: it is the real-world condition in which you'll hear chords in live music.
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <h2>7. Difficulty levels</h2>
+
+    <ul>
+        <li><span class="diff-pill">1 — Basic</span> Only Major and Minor. The fundamental distinction of tonal music.</li>
+        <li><span class="diff-pill">2 — Easy</span> Adds Dom 7th, Maj 7th, Min 7th — the most common seventh chords.</li>
+        <li><span class="diff-pill">3 — Medium</span> Augmented, Diminished 7th, Maj 6th, Min 6th join in.</li>
+        <li><span class="diff-pill">4 — Expert</span> Half-Diminished, Sus 2, Sus 4 — rarer but important chords.</li>
+        <li><span class="diff-pill">5 — Jazz</span> Ninth chords: Dom 9th, Maj 9th, Min 9th.</li>
+        <li><span class="diff-pill">★ Custom</span> Your choice: tap the chords to train (minimum 2) and press ▶. Your selection is remembered.</li>
+    </ul>
+
+    <div class="box box-warning">
+        <strong>⚠️ Recommended start</strong>
+        Level 1 looks trivial but it isn't: telling major from minor in harmonic mode, with inversions and random roots, already requires a good ear. Consolidate each level before moving up.
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <h2>8. Root note selector</h2>
+
+    <ul>
+        <li><strong>Fixed note (default C4)</strong> — locks the root. Useful for learning the color of the chords without extra variables.</li>
+        <li><strong>⟳ Random</strong> — the root changes with every question. The realistic mode: in music, chords appear in any key.</li>
+    </ul>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <h2>9. Recognition strategies</h2>
+
+    <h3>The "color" of the chord</h3>
+    <p>The most effective method is to perceive the overall emotional color of the chord, not to analyze it note by note. With practice, major and minor become instinctively distinguishable — like recognizing a person by their face without counting their features.</p>
+
+    <h3>Use the statistics to find your weak spots</h3>
+    <p>Open the &#128202; panel after a few sessions: the <em>"Confused with"</em> column tells you exactly which chord pairs give you trouble. Then create a <strong>★ Custom</strong> level with just those two chords and train them, using the <strong>&#127922; Compare</strong> button on every mistake: it is the most efficient learning loop.</p>
+
+    <h3>Pairs to train</h3>
+    <ul>
+        <li><strong>Major vs Minor</strong> — the most important contrast: bright vs dark. Listen to them in sequence dozens of times until the difference is immediate.</li>
+        <li><strong>Dom 7th vs Maj 7th</strong> — both start from a major triad. The Dom 7 "wants to go somewhere", the Maj 7 already sounds arrived, dreamy.</li>
+        <li><strong>Min 7th vs Half-Diminished</strong> — very similar. The half-diminished has a lowered fifth and sounds more unstable and tense.</li>
+        <li><strong>Sus 2 vs Sus 4</strong> — both lack the third, but Sus 2 has a more open/folk character, Sus 4 is more solemn and "waiting".</li>
+        <li><strong>Dim 7th vs Augmented</strong> — both tense, but the dim7 is symmetric and dramatic, the augmented is more floating and ambiguous.</li>
+    </ul>
+
+    <h3>Use the keyboard as a study tool</h3>
+    <p>When you don't recognize a chord, <strong>don't look at the solution right away</strong>. Use the keyboard to find the notes one by one: starting from the root (yellow), look for the other chord notes. This active process reinforces memory much more than a passive answer.</p>
+
+    <div class="box box-tip">
+        <strong>💡 Short, focused sessions</strong>
+        Ten minutes a day on the ★ Custom level with your two critical chords beats a generic hour once a week. The streak and the statistics show your real progress over time.
+    </div>
+
+    <p style="text-align:center;"><a href="#" onclick="window.close(); return false;" class="play-btn">Close</a></p>
+
+</div><!-- content-box -->
+
+<div class="banner"></div>
+
+<div class="nav-links">
+    <a href="../index-en.html">&#8592; Music</a>
+    <a href="../../index-en.html">Games</a>
+    <a href="../../privacy.html" target="_blank">Privacy Policy</a> |
+    <a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)">Manage Cookies</a>
+</div>
+
+<p style="text-align:center; font-size:0.8em; color:#999; margin-top:15px;">© 2026 Luciano Manenti</p>
+
+<script>
+    (function() {
+        var nascosto = false;
+        var observer = new MutationObserver(function() {
+            if (nascosto) return;
+            var divs = document.querySelectorAll('body > div');
+            for (var i = 0; i < divs.length; i++) {
+                if (divs[i].shadowRoot && !divs[i].className && (divs[i].getAttribute('style')||'').length > 5000) {
+                    divs[i].style.setProperty('display', 'none', 'important');
+                    nascosto = true;
+                    observer.disconnect();
+                    return;
+                }
+            }
+        });
+        observer.observe(document.body, { childList: true });
+    })();
+</script>
+</body>
+</html>

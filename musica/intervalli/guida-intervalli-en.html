@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-WRBDRDQ4L8');
+        window.currentLang = 'en';
+    </script>
+    <title>Musical Intervals Guide - Ear Training - lucianomanenti.com</title>
+    <meta name="Description" content="Complete didactic guide to recognizing musical intervals: what an interval is, semitone table, famous examples and ear training strategies.">
+    <link rel="alternate" hreflang="it" href="guida-intervalli.html">
+    <link rel="alternate" hreflang="en" href="guida-intervalli-en.html">
+    <link rel="icon" type="image/png" href="../../favicon/favicon-96x96.png" sizes="96x96">
+    <link rel="icon" type="image/svg+xml" href="../../favicon/favicon.svg">
+    <link rel="shortcut icon" href="../../favicon/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../favicon/apple-touch-icon.png">
+    <style>
+        body {
+            font-family: sans-serif;
+            line-height: 1.75;
+            max-width: 820px;
+            margin: 40px auto;
+            padding: 20px;
+            color: #333;
+            background-color: #f9f9f9;
+        }
+
+        h1 { color: #2c3e50; border-bottom: 2px solid #ffd700; padding-bottom: 10px; }
+        h2 { color: #2c3e50; margin-top: 36px; border-bottom: 1px solid #ddd; padding-bottom: 5px; }
+        h3 { color: #2c3e50; margin-top: 22px; font-size: 1.05em; }
+
+        .lang-switch { text-align: right; margin-bottom: 20px; }
+        .lang-switch a {
+            display: inline-block; padding: 6px 16px; margin-left: 5px;
+            text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 14px;
+        }
+        .lang-switch a.active { background: #2c3e50; color: white; }
+        .lang-switch a:not(.active) { background: #ddd; color: #333; cursor: pointer; }
+
+        .content-box {
+            background: white; padding: 30px; border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.07);
+        }
+
+        .nav-links { text-align: center; margin-top: 30px; font-size: 14px; }
+        .nav-links a { color: #3498db; text-decoration: none; margin: 0 12px; }
+
+        ul { margin-top: 8px; }
+        li { margin-bottom: 7px; }
+
+        .box { border-radius: 8px; padding: 16px 20px; margin: 20px 0; font-size: 0.97em; }
+        .box-info    { background: #eaf4fb; border-left: 4px solid #3498db; }
+        .box-tip     { background: #eafaf1; border-left: 4px solid #2ecc71; }
+        .box-warning { background: #fef9e7; border-left: 4px solid #f1c40f; }
+        .box strong  { display: block; margin-bottom: 4px; font-size: 1em; }
+
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 0.93em; }
+        th { background: #2c3e50; color: white; padding: 10px 12px; text-align: left; }
+        td { padding: 9px 12px; border-bottom: 1px solid #eee; vertical-align: top; }
+        tr:nth-child(even) td { background: #f8f8f8; }
+        tr:hover td { background: #fff8e1; }
+
+        .semitoni {
+            display: inline-block; background: #2c3e50; color: white;
+            border-radius: 12px; padding: 2px 9px; font-size: 0.85em;
+            font-weight: bold; min-width: 28px; text-align: center;
+        }
+
+        .quality-perfect { color: #2980b9; font-weight: 600; }
+        .quality-major   { color: #27ae60; font-weight: 600; }
+        .quality-minor   { color: #8e44ad; font-weight: 600; }
+        .quality-aug     { color: #e67e22; font-weight: 600; }
+
+        .ui-block {
+            background: #f0f0f0; border-radius: 8px; padding: 14px 18px;
+            margin: 12px 0; border-left: 3px solid #95a5a6;
+        }
+        .ui-block .ui-label { font-weight: bold; color: #2c3e50; font-size: 0.95em; margin-bottom: 4px; }
+
+        .diff-pill {
+            display: inline-block; padding: 3px 12px; border-radius: 20px;
+            font-size: 0.85em; font-weight: bold; margin-right: 6px;
+            background: #2c3e50; color: white;
+        }
+
+        .play-btn {
+            display: inline-block; margin-top: 25px; padding: 12px 30px;
+            background: #27ae60; color: white; text-decoration: none;
+            border-radius: 8px; font-size: 18px; font-weight: bold;
+        }
+
+        .banner {
+            width: 100%; height: 150px;
+            background-image: url('../../images/home/castagne.jpg');
+            background-size: cover; background-position: center;
+            border-radius: 8px; margin: 20px 0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+    <a href="#" id="btn-back" onclick="window.close(); return false;"
+       style="display:inline-block; padding:6px 16px; background:#e74c3c; color:white; text-decoration:none; border-radius:5px; font-weight:bold; font-size:14px;">&#x2715; Close</a>
+    <div class="lang-switch" style="margin-bottom:0;">
+        <a href="guida-intervalli.html">Italiano</a>
+        <a href="guida-intervalli-en.html" class="active">English</a>
+    </div>
+</div>
+
+<div class="banner"></div>
+
+<div class="content-box">
+
+    <h1>&#9834; Musical Intervals Guide</h1>
+
+    <p>This guide walks you through <strong>ear training</strong> for musical intervals: you will understand what an interval is, learn to recognize its sound characteristics, and discover how to get the most out of the exercise.</p>
+
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <h2>1. What is a musical interval?</h2>
+
+    <p>An <strong>interval</strong> is the sonic distance between two notes. It is the fundamental building block of music: chords, melodies and harmonies are all constructed from intervals.</p>
+
+    <p>Distance is measured in <strong>semitones</strong> — the smallest unit of the Western chromatic scale. On a piano keyboard, one semitone is the distance between any key and the immediately adjacent key (white or black).</p>
+
+    <div class="box box-info">
+        <strong>📌 Practical example</strong>
+        From C to D♭ there is 1 semitone. From C to D there are 2. From C to E there are 4.
+    </div>
+
+    <h3>Ascending, descending and harmonic intervals</h3>
+    <ul>
+        <li><strong>Ascending:</strong> the lower note sounds first, then the higher one.</li>
+        <li><strong>Descending:</strong> the higher note sounds first, then the lower one.</li>
+        <li><strong>Harmonic:</strong> both notes sound simultaneously, as in a chord.</li>
+    </ul>
+
+    <p>The same distance sounds different in each case: training your ear across all three modes is essential for developing a complete musical hearing ability.</p>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <h2>2. Interval qualities</h2>
+
+    <p>Intervals are not just numerical distances: they have a <strong>quality</strong> that describes their sonic character.</p>
+
+    <ul>
+        <li><span class="quality-perfect">Perfect</span> — stable, open, neutral sound. Examples: 4th, 5th, octave.</li>
+        <li><span class="quality-major">Major</span> — bright, open sound. Examples: major 2nd, 3rd, 6th, 7th.</li>
+        <li><span class="quality-minor">Minor</span> — darker, more melancholic sound. One semitone less than the corresponding major interval.</li>
+        <li><span class="quality-aug">Tritone (Augmented/Diminished)</span> — the most unstable and tense interval, exactly halfway through the octave. In the Middle Ages it was called <em>diabolus in musica</em>.</li>
+    </ul>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <h2>3. Interval table</h2>
+
+    <p>Below are all the intervals in the exercise, from smallest to largest, with the number of semitones, the sonic character, and a famous musical example to help you remember each one.</p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Interval</th>
+                <th>Semitones</th>
+                <th>Character</th>
+                <th>Famous example</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><span class="quality-minor">Minor 2nd</span></td>
+                <td><span class="semitoni">1</span></td>
+                <td>Maximum tension, dissonant</td>
+                <td><em>Jaws</em> — the two notes of the main theme</td>
+            </tr>
+            <tr>
+                <td><span class="quality-major">Major 2nd</span></td>
+                <td><span class="semitoni">2</span></td>
+                <td>Natural melodic step</td>
+                <td><em>Happy Birthday</em> — the first two notes</td>
+            </tr>
+            <tr>
+                <td><span class="quality-minor">Minor 3rd</span></td>
+                <td><span class="semitoni">3</span></td>
+                <td>Melancholic, introspective</td>
+                <td><em>Smoke on the Water</em> (Deep Purple) — opening riff</td>
+            </tr>
+            <tr>
+                <td><span class="quality-major">Major 3rd</span></td>
+                <td><span class="semitoni">4</span></td>
+                <td>Bright, joyful</td>
+                <td><em>When the Saints Go Marching In</em> — opening</td>
+            </tr>
+            <tr>
+                <td><span class="quality-perfect">Perfect 4th</span></td>
+                <td><span class="semitoni">5</span></td>
+                <td>Solemn, stable</td>
+                <td><em>Here Comes the Bride</em> — the first two notes</td>
+            </tr>
+            <tr>
+                <td><span class="quality-aug">Tritone</span></td>
+                <td><span class="semitoni">6</span></td>
+                <td>Unstable, unsettling, tense</td>
+                <td><em>The Simpsons</em> theme opening; <em>Black Sabbath</em></td>
+            </tr>
+            <tr>
+                <td><span class="quality-perfect">Perfect 5th</span></td>
+                <td><span class="semitoni">7</span></td>
+                <td>Powerful, hollow, heroic</td>
+                <td><em>Star Wars</em> main theme; <em>Twinkle Twinkle</em></td>
+            </tr>
+            <tr>
+                <td><span class="quality-minor">Minor 6th</span></td>
+                <td><span class="semitoni">8</span></td>
+                <td>Expressive, bittersweet</td>
+                <td><em>The Entertainer</em> (Scott Joplin) — opening</td>
+            </tr>
+            <tr>
+                <td><span class="quality-major">Major 6th</span></td>
+                <td><span class="semitoni">9</span></td>
+                <td>Warm, open, nostalgic</td>
+                <td><em>My Way</em> (Frank Sinatra) — «And now…»</td>
+            </tr>
+            <tr>
+                <td><span class="quality-minor">Minor 7th</span></td>
+                <td><span class="semitoni">10</span></td>
+                <td>Bluesy, suspended</td>
+                <td><em>Somewhere</em> (West Side Story) — «There's a place»</td>
+            </tr>
+            <tr>
+                <td><span class="quality-major">Major 7th</span></td>
+                <td><span class="semitoni">11</span></td>
+                <td>Tense, brilliant, almost dissonant</td>
+                <td><em>Take On Me</em> (A-ha) — opening keyboard riff</td>
+            </tr>
+            <tr>
+                <td><span class="quality-perfect">Octave</span></td>
+                <td><span class="semitoni">12</span></td>
+                <td>Full, conclusive, resolved</td>
+                <td><em>Somewhere Over the Rainbow</em> — the first two notes</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>Extended intervals (level 5)</h3>
+
+    <p>Extended intervals are compound intervals: they exceed the octave and correspond to the basic intervals transposed one octave higher.</p>
+
+    <table>
+        <thead>
+            <tr><th>Interval</th><th>Semitones</th><th>Compound equivalent</th></tr>
+        </thead>
+        <tbody>
+            <tr><td><span class="quality-minor">Minor 9th</span></td><td><span class="semitoni">13</span></td><td>Octave + Minor 2nd</td></tr>
+            <tr><td><span class="quality-major">Major 9th</span></td><td><span class="semitoni">14</span></td><td>Octave + Major 2nd</td></tr>
+            <tr><td><span class="quality-minor">Minor 10th</span></td><td><span class="semitoni">15</span></td><td>Octave + Minor 3rd</td></tr>
+            <tr><td><span class="quality-major">Major 10th</span></td><td><span class="semitoni">16</span></td><td>Octave + Major 3rd</td></tr>
+            <tr><td><span class="quality-perfect">Perfect 11th</span></td><td><span class="semitoni">17</span></td><td>Octave + Perfect 4th</td></tr>
+        </tbody>
+    </table>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <h2>4. How the exercise works</h2>
+
+    <p>The concept is simple: the program randomly picks an interval, plays it, and you must identify it by clicking the corresponding button in the grid.</p>
+
+    <h3>Interface walkthrough</h3>
+
+    <div class="ui-block">
+        <div class="ui-label">▶ Play button</div>
+        Press to hear the current interval. Once you have answered, press again to move to the next interval.
+    </div>
+
+    <div class="ui-block">
+        <div class="ui-label">&#9834; Staff</div>
+        Shows the root note (in yellow) before you answer. After a correct answer, the second note also appears (in green), so you can read the interval on the staff.
+    </div>
+
+    <div class="ui-block">
+        <div class="ui-label">&#127929; Piano keyboard</div>
+        The root note is highlighted in yellow. You can click the keys to hear individual notes while searching for the interval. You can also answer directly by clicking the key you think is the upper note: if correct it turns green, otherwise red.
+    </div>
+
+    <div class="ui-block">
+        <div class="ui-label">&#9632; Interval grid</div>
+        Buttons available for the current level are lit up; those not included in the level appear dark. Click the one you think matches the interval you heard. If wrong, the button turns red — click it again to hear that interval and compare it with the correct one.
+    </div>
+
+    <div class="ui-block">
+        <div class="ui-label">🏆 Score</div>
+        The score in the top right shows <em>correct first-attempt answers</em> / <em>total questions</em>. If you answer correctly on the first try you get the point; if you miss even once, the question counts as wrong even if you eventually find the right answer.
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <h2>5. MIDI Input (Physical Keyboard)</h2>
+
+    <p>You can connect a real <strong>USB MIDI keyboard</strong> to your computer to perform the exercises naturally.</p>
+
+    <ul>
+        <li>The MIDI input is always active (no configuration needed). It supports hot-plugging: you can plug in the USB cable before or after opening the browser.</li>
+        <li><strong>Exact octave matching</strong>: you must play the second note of the interval in the exact octave shown on the screen (calculated from the root note displayed in yellow). Notes played in different octaves will be ignored.</li>
+        <li>All notes pressed on the physical keyboard are immediately reflected on the virtual keyboard on screen, turning green (if correct) or red (if wrong) and submitting the corresponding answer.</li>
+    </ul>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <h2>6. Mode selector</h2>
+
+    <p>You can choose how to hear the intervals:</p>
+
+    <ul>
+        <li><strong>↑ Ascending</strong> — the lower note sounds first, then the higher one. The most common form and the ideal starting point.</li>
+        <li><strong>↓ Descending</strong> — the higher note sounds first, then the lower one. The same interval sounds very different in descending form!</li>
+        <li><strong>⇅ Harmonic</strong> — both notes sound together. The hardest mode because you have no melodic contour as a reference.</li>
+    </ul>
+
+    <div class="box box-tip">
+        <strong>💡 Tip</strong>
+        Always start in <em>Ascending</em> mode. Once you know the intervals well, switch to <em>Descending</em> then <em>Harmonic</em> — you'll find they are three distinct training challenges even for the same intervals.
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <h2>7. Difficulty levels</h2>
+
+    <p>The exercise has 5 levels that progressively add more intervals to the grid:</p>
+
+    <ul>
+        <li><span class="diff-pill">1 — Basic</span> Only Perfect 4th, Perfect 5th and Octave — the three most recognisable intervals. Perfect for beginners.</li>
+        <li><span class="diff-pill">2 — Easy</span> Minor 3rd and Major 3rd are added — the intervals of triads.</li>
+        <li><span class="diff-pill">3 — Medium</span> Major 2nd, Minor 6th and Major 6th also join.</li>
+        <li><span class="diff-pill">4 — Expert</span> All 12 chromatic intervals, including the hardest ones such as Minor 2nd, Tritone and Major 7th.</li>
+        <li><span class="diff-pill">5 — Extended</span> Five compound intervals beyond the octave are added (Minor 9th through Perfect 11th).</li>
+    </ul>
+
+    <div class="box box-warning">
+        <strong>⚠️ Don't rush to the next level</strong>
+        It is better to reach a good score at the current level (at least 80% first-attempt) before increasing the difficulty.
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <h2>8. Root note selector</h2>
+
+    <p>You can choose which note to use as the starting point for intervals:</p>
+
+    <ul>
+        <li><strong>⟳ Random</strong> — the root note changes with every question, from C3 to C5. The most realistic and complete mode.</li>
+        <li><strong>Fixed note</strong> — click one of the ◀ ▶ arrows or the note itself to lock a specific note. Useful in the early learning stages to eliminate one variable and focus purely on the distance.</li>
+    </ul>
+
+    <div class="box box-tip">
+        <strong>💡 Learning strategy</strong>
+        Start with <strong>root fixed on C4</strong> (middle C). Once you can recognise intervals from C reliably, switch to <em>Random</em> mode to generalise the skill to any key.
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <h2>9. Recognition strategies</h2>
+
+    <p>The most effective method for learning to recognise intervals is to associate each one with a <strong>reference melody</strong> you know well. When you hear an interval, the melody "fires" automatically in memory.</p>
+
+    <h3>Building your interval vocabulary</h3>
+    <ol>
+        <li><strong>Listen to the interval</strong> in the exercise.</li>
+        <li><strong>Mentally sing</strong> the reference melody that begins with that interval.</li>
+        <li><strong>Compare</strong> the feeling with the melodies of the other intervals.</li>
+        <li><strong>Repeat</strong> until the association becomes immediate.</li>
+    </ol>
+
+    <h3>Recognition by contrast</h3>
+    <p>Another very effective method is learning to distinguish intervals <em>in pairs</em>:</p>
+    <ul>
+        <li><strong>Minor 2nd vs Major 2nd</strong> — both are "steps", but the minor is harsher and closer, the major is natural and melodic.</li>
+        <li><strong>Minor 3rd vs Major 3rd</strong> — the minor has a dark/sad colour, the major is open/bright.</li>
+        <li><strong>Perfect 4th vs Tritone</strong> — the 4th is stable, the tritone is unstable and "wants" to resolve.</li>
+        <li><strong>Perfect 5th vs Minor 6th</strong> — the 5th is powerful and hollow, the 6th is more "singable" and expressive.</li>
+        <li><strong>Minor 7th vs Major 7th</strong> — the minor is "bluesy", the major is tense and almost dissonant.</li>
+    </ul>
+
+    <h3>Direction matters</h3>
+    <p>An ascending interval and the same interval descending evoke different emotional responses. The <strong>ascending 5th</strong> (C→G) sounds heroic; the <strong>descending 5th</strong> (G→C) sounds conclusive. Train both directions separately.</p>
+
+    <div class="box box-tip">
+        <strong>💡 Short, frequent sessions</strong>
+        Ear training works best with <strong>10–15 minutes a day</strong> rather than occasional long sessions. Regularity is the key to consolidating the neural connections that enable automatic recognition.
+    </div>
+
+    <p style="text-align:center;"><a href="#" onclick="window.close(); return false;" class="play-btn">Close</a></p>
+
+</div><!-- content-box -->
+
+<div class="banner"></div>
+
+<div class="nav-links">
+    <a href="../index-en.html">&#8592; Music</a>
+    <a href="../../index-en.html">Games</a>
+    <a href="../../privacy.html" target="_blank">Privacy Policy</a> |
+    <a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)">Manage Cookies</a>
+</div>
+
+<p style="text-align:center; font-size:0.8em; color:#999; margin-top:15px;">© 2026 Luciano Manenti</p>
+
+<script>
+    function goBack() {
+        if (document.referrer) window.history.back();
+        else window.location.href = 'index-en.html';
+    }
+    (function() {
+        var nascosto = false;
+        var observer = new MutationObserver(function() {
+            if (nascosto) return;
+            var divs = document.querySelectorAll('body > div');
+            for (var i = 0; i < divs.length; i++) {
+                if (divs[i].shadowRoot && !divs[i].className && (divs[i].getAttribute('style')||'').length > 5000) {
+                    divs[i].style.setProperty('display', 'none', 'important');
+                    nascosto = true;
+                    observer.disconnect();
+                    return;
+                }
+            }
+        });
+        observer.observe(document.body, { childList: true });
+    })();
+</script>
+</body>
+</html>

@@ -1,7 +1,11 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
+    <script>
+        // Security fix for cross-origin window.opener exceptions
+        (function() { try { if (!window.opener) return; var test = window.opener.document; if (!window.opener.game) { window.opener = null; } } catch(e) { window.opener = null; } })();
+    </script>
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9335537153013492"
         crossorigin="anonymous"></script>
     <meta charset="UTF-8">
@@ -21,7 +25,7 @@
     <meta http-Equiv="Pragma" Content="no-cache">
     <meta http-Equiv="Expires" Content="0">
 
-    <link rel="stylesheet" href="burraco.css?v=4.12" />
+    <link rel="stylesheet" href="burraco.css?v=4.13" />
 
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
@@ -304,9 +308,9 @@
 
     <!-- JS Files -->
     <script src="site.js?v=1.1"></script>
-    <script src="burraco-core.js?v=9.39"></script>
-    <script src="burraco-game.js?v=8.31"></script>
-    <script src="burraco-ui.js?v=11.0"></script>
+    <script src="burraco-core.js?v=9.40"></script>
+    <script src="burraco-game.js?v=8.32"></script>
+    <script src="burraco-ui.js?v=11.1"></script>
     <script>
         (function () {
             var nascosto = false;
@@ -329,3 +333,6 @@
 </body>
 
 </html>
+
+
+

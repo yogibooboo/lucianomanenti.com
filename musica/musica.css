@@ -1,4 +1,4 @@
-/* musica.css v1.0 — stili base condivisi per tutte le pagine musicali */
+/* musica.css v1.1 — stili base condivisi per tutte le pagine musicali */
 
 html, body {
     margin: 0;
@@ -40,6 +40,57 @@ html, body {
 
 #sidebar-left  { left: 0; }
 #sidebar-right { right: 0; }
+
+.lang-switch-game {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 10001;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.lang-switch-game a {
+    display: inline-block;
+    padding: 4px 10px;
+    text-decoration: none;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 12px;
+    background: rgba(255,255,255,0.2);
+    color: white;
+    border: 1px solid rgba(255,255,255,0.3);
+}
+.lang-switch-game a.active {
+    background: #ffd700;
+    color: #2c3e50;
+    border-color: #ffd700;
+}
+
+/* ── Bottom nav ── */
+#bottom-nav {
+    position: absolute; bottom: 10px; left: 0; width: 1024px;
+    display: flex; flex-direction: row; align-items: center;
+    justify-content: space-between; padding: 0 20px; box-sizing: border-box;
+}
+
+/* ── Nav buttons (stile Klondike) ── */
+.btn-nav-group { display: flex; gap: 10px; align-items: center; }
+.btn-nav {
+    display: inline-block; width: 118px; height: 28px;
+    border: 1px solid rgba(255,255,255,0.3); border-radius: 6px;
+    color: white; font-size: 12px; font-family: sans-serif;
+    text-align: center; line-height: 28px; text-decoration: none;
+    cursor: pointer; transition: transform 0.12s;
+    box-shadow: 1px 1px 4px rgba(0,0,0,0.5);
+}
+.btn-nav:hover { transform: scale(1.07); }
+.btn-nav-music   { background-color: #1a5468; }
+.btn-nav-help    { background-color: #1e6b3a; }
+.btn-nav-home    { background-color: #2c3e50; }
+.btn-nav-contact { background-color: #7a3a10; }
+.nav-links-small a { color: rgba(255,210,120,0.5); font-size: 11px; text-decoration: none; margin: 0 10px; }
+.nav-links-small a:hover { color: #ffd090; }
 
 .ad-banner {
     background-color: rgba(60,20,5,0.4);

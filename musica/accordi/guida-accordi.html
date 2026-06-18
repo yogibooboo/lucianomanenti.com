@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-WRBDRDQ4L8');
+        window.currentLang = 'it';
+    </script>
+    <title>Guida agli Accordi Musicali - Ear Training - lucianomanenti.com</title>
+    <meta name="Description" content="Guida didattica completa al riconoscimento degli accordi musicali: triadi, settima, inversioni, esempi e strategie di ear training.">
+    <link rel="alternate" hreflang="it" href="guida-accordi.html">
+    <link rel="alternate" hreflang="en" href="guida-accordi-en.html">
+    <link rel="icon" type="image/png" href="../../favicon/favicon-96x96.png" sizes="96x96">
+    <link rel="icon" type="image/svg+xml" href="../../favicon/favicon.svg">
+    <link rel="shortcut icon" href="../../favicon/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../favicon/apple-touch-icon.png">
+    <style>
+        body {
+            font-family: sans-serif;
+            line-height: 1.75;
+            max-width: 820px;
+            margin: 40px auto;
+            padding: 20px;
+            color: #333;
+            background-color: #f9f9f9;
+        }
+
+        h1 { color: #2c3e50; border-bottom: 2px solid #ffd700; padding-bottom: 10px; }
+        h2 { color: #2c3e50; margin-top: 36px; border-bottom: 1px solid #ddd; padding-bottom: 5px; }
+        h3 { color: #2c3e50; margin-top: 22px; font-size: 1.05em; }
+
+        .lang-switch { text-align: right; margin-bottom: 20px; }
+        .lang-switch a {
+            display: inline-block; padding: 6px 16px; margin-left: 5px;
+            text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 14px;
+        }
+        .lang-switch a.active { background: #2c3e50; color: white; }
+        .lang-switch a:not(.active) { background: #ddd; color: #333; cursor: pointer; }
+
+        .content-box {
+            background: white; padding: 30px; border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.07);
+        }
+
+        .nav-links { text-align: center; margin-top: 30px; font-size: 14px; }
+        .nav-links a { color: #3498db; text-decoration: none; margin: 0 12px; }
+
+        ul, ol { margin-top: 8px; }
+        li { margin-bottom: 7px; }
+
+        .box { border-radius: 8px; padding: 16px 20px; margin: 20px 0; font-size: 0.97em; }
+        .box-info    { background: #eaf4fb; border-left: 4px solid #3498db; }
+        .box-tip     { background: #eafaf1; border-left: 4px solid #2ecc71; }
+        .box-warning { background: #fef9e7; border-left: 4px solid #f1c40f; }
+        .box strong  { display: block; margin-bottom: 4px; font-size: 1em; }
+
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 0.93em; }
+        th { background: #2c3e50; color: white; padding: 10px 12px; text-align: left; }
+        td { padding: 9px 12px; border-bottom: 1px solid #eee; vertical-align: top; }
+        tr:nth-child(even) td { background: #f8f8f8; }
+        tr:hover td { background: #fff8e1; }
+
+        .semitoni {
+            display: inline-block; background: #2c3e50; color: white;
+            border-radius: 12px; padding: 2px 9px; font-size: 0.85em;
+            font-weight: bold; min-width: 28px; text-align: center;
+        }
+
+        .quality-major   { color: #27ae60; font-weight: 600; }
+        .quality-minor   { color: #8e44ad; font-weight: 600; }
+        .quality-dom     { color: #2980b9; font-weight: 600; }
+        .quality-aug     { color: #e67e22; font-weight: 600; }
+        .quality-dim     { color: #c0392b; font-weight: 600; }
+        .quality-sus     { color: #7f8c8d; font-weight: 600; }
+        .quality-jazz    { color: #16a085; font-weight: 600; }
+
+        .ui-block {
+            background: #f0f0f0; border-radius: 8px; padding: 14px 18px;
+            margin: 12px 0; border-left: 3px solid #95a5a6;
+        }
+        .ui-block .ui-label { font-weight: bold; color: #2c3e50; font-size: 0.95em; margin-bottom: 4px; }
+
+        .diff-pill {
+            display: inline-block; padding: 3px 12px; border-radius: 20px;
+            font-size: 0.85em; font-weight: bold; margin-right: 6px;
+            background: #2c3e50; color: white;
+        }
+
+        .play-btn {
+            display: inline-block; margin-top: 25px; padding: 12px 30px;
+            background: #27ae60; color: white; text-decoration: none;
+            border-radius: 8px; font-size: 18px; font-weight: bold;
+        }
+
+        .banner {
+            width: 100%; height: 150px;
+            background-image: url('../../images/home/castagne.jpg');
+            background-size: cover; background-position: center;
+            border-radius: 8px; margin: 20px 0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .chord-example {
+            font-style: italic; color: #555; font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+    <a href="#" id="btn-back" onclick="window.close(); return false;"
+       style="display:inline-block; padding:6px 16px; background:#e74c3c; color:white; text-decoration:none; border-radius:5px; font-weight:bold; font-size:14px;">&#x2715; Chiudi</a>
+    <div class="lang-switch" style="margin-bottom:0;">
+        <a href="guida-accordi.html" class="active">Italiano</a>
+        <a href="guida-accordi-en.html">English</a>
+    </div>
+</div>
+
+<div class="banner"></div>
+
+<div class="content-box">
+
+    <h1>&#9834; Guida agli Accordi Musicali</h1>
+
+    <p>Questa guida ti introduce al <strong>riconoscimento degli accordi</strong> per via uditiva. Imparerai cos'è un accordo, le differenze tra i vari tipi, come usare l'esercizio e le strategie per sviluppare un orecchio armonico.</p>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <h2>1. Cos'è un accordo?</h2>
+
+    <p>Un <strong>accordo</strong> è una combinazione di tre o più note suonate insieme (o in sequenza). La distanza tra le note — misurata in <strong>semitoni</strong> — determina la qualità dell'accordo: se suona allegro o triste, stabile o teso, classico o jazzistico.</p>
+
+    <p>Ogni accordo si costruisce a partire da una <strong>nota di base</strong> (la radice), aggiungendo note a distanze precise. Ad esempio, un accordo di Do maggiore è formato da Do + Mi + Sol: la terza maggiore (4 semitoni) e la quinta giusta (7 semitoni) sopra il Do.</p>
+
+    <div class="box box-info">
+        <strong>📌 Accordo vs Intervallo</strong>
+        Un intervallo è la distanza tra <em>due</em> note. Un accordo combina <em>tre o più</em> note simultaneamente, creando un colore armonico complesso. Riconoscere gli accordi richiede un orecchio più allenato rispetto agli intervalli.
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <h2>2. Le qualità degli accordi</h2>
+
+    <ul>
+        <li><span class="quality-major">Maggiore</span> — brillante, gioioso, stabile. La triade fondamentale della musica tonale.</li>
+        <li><span class="quality-minor">Minore</span> — scuro, malinconico, introspettivo. Un semitono in meno nella terza rispetto al maggiore.</li>
+        <li><span class="quality-dom">Dominante 7ª</span> — teso, "vuole risolvere", tipico del blues e del jazz. Aggiunge la settima minore alla triade maggiore.</li>
+        <li><span class="quality-aug">Aumentato</span> — instabile, sospeso, misterioso. La quinta è alzata di un semitono.</li>
+        <li><span class="quality-dim">Diminuito</span> — cupo, angoscioso, dissonante. Tutte le terze sono minori.</li>
+        <li><span class="quality-sus">Sospeso (Sus)</span> — aperto, ambiguo, non risolto. Sostituisce la terza con la seconda o la quarta.</li>
+        <li><span class="quality-jazz">Jazz (9ª, maj7, ecc.)</span> — ricco, sofisticato, colorato. Aggiunge note estese oltre la settima.</li>
+    </ul>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <h2>3. Tabella degli accordi</h2>
+
+    <p>Gli accordi dell'esercizio, raggruppati per livello, con la struttura in semitoni e il carattere sonoro.</p>
+
+    <h3>Livello 1 — Base (triadi fondamentali)</h3>
+    <table>
+        <thead><tr><th>Accordo</th><th>Struttura (semitoni)</th><th>Carattere</th></tr></thead>
+        <tbody>
+            <tr><td><span class="quality-major">Maggiore</span></td><td><span class="semitoni">4</span> + <span class="semitoni">3</span></td><td>Luminoso, stabile, gioioso</td></tr>
+            <tr><td><span class="quality-minor">Minore</span></td><td><span class="semitoni">3</span> + <span class="semitoni">4</span></td><td>Scuro, malinconico, intimo</td></tr>
+        </tbody>
+    </table>
+
+    <h3>Livello 2 — Accordi di settima</h3>
+    <table>
+        <thead><tr><th>Accordo</th><th>Struttura (semitoni)</th><th>Carattere</th></tr></thead>
+        <tbody>
+            <tr><td><span class="quality-dom">Dom 7ª</span></td><td><span class="semitoni">4</span>+<span class="semitoni">3</span>+<span class="semitoni">3</span></td><td>Teso, bluesy, vuole risolvere</td></tr>
+            <tr><td><span class="quality-major">Maj 7ª</span></td><td><span class="semitoni">4</span>+<span class="semitoni">3</span>+<span class="semitoni">4</span></td><td>Sognante, romantico, sofisticato</td></tr>
+            <tr><td><span class="quality-minor">Min 7ª</span></td><td><span class="semitoni">3</span>+<span class="semitoni">4</span>+<span class="semitoni">3</span></td><td>Malinconico con dolcezza, tipico jazz</td></tr>
+        </tbody>
+    </table>
+
+    <h3>Livello 3 — Accordi alterati e di sesta</h3>
+    <table>
+        <thead><tr><th>Accordo</th><th>Struttura (semitoni)</th><th>Carattere</th></tr></thead>
+        <tbody>
+            <tr><td><span class="quality-aug">Aumentato</span></td><td><span class="semitoni">4</span>+<span class="semitoni">4</span></td><td>Sospeso, enigmatico, instabile</td></tr>
+            <tr><td><span class="quality-dim">Diminuito 7ª</span></td><td><span class="semitoni">3</span>+<span class="semitoni">3</span>+<span class="semitoni">3</span></td><td>Angoscioso, drammatico, simmetrico</td></tr>
+            <tr><td><span class="quality-major">Mag 6ª</span></td><td><span class="semitoni">4</span>+<span class="semitoni">3</span>+<span class="semitoni">2</span></td><td>Caldo, nostalgico, retrò</td></tr>
+            <tr><td><span class="quality-minor">Min 6ª</span></td><td><span class="semitoni">3</span>+<span class="semitoni">4</span>+<span class="semitoni">2</span></td><td>Malinconico con amarezza, tango</td></tr>
+        </tbody>
+    </table>
+
+    <h3>Livello 4 — Accordi avanzati</h3>
+    <table>
+        <thead><tr><th>Accordo</th><th>Struttura (semitoni)</th><th>Carattere</th></tr></thead>
+        <tbody>
+            <tr><td><span class="quality-dim">Semidiminuito</span></td><td><span class="semitoni">3</span>+<span class="semitoni">3</span>+<span class="semitoni">4</span></td><td>Teso ma meno cupo del dim7, tipico del jazz</td></tr>
+            <tr><td><span class="quality-sus">Sus 2</span></td><td><span class="semitoni">2</span>+<span class="semitoni">5</span></td><td>Aperto, sospeso, senza terza</td></tr>
+            <tr><td><span class="quality-sus">Sus 4</span></td><td><span class="semitoni">5</span>+<span class="semitoni">2</span></td><td>Solenne, sospeso, vuole risolvere sulla terza</td></tr>
+        </tbody>
+    </table>
+
+    <h3>Livello 5 — Jazz</h3>
+    <table>
+        <thead><tr><th>Accordo</th><th>Struttura</th><th>Carattere</th></tr></thead>
+        <tbody>
+            <tr><td><span class="quality-jazz">Dom 9ª</span></td><td>Dom 7ª + nona maggiore</td><td>Ricco, pieno, blues-jazz</td></tr>
+            <tr><td><span class="quality-jazz">Maj 9ª</span></td><td>Maj 7ª + nona maggiore</td><td>Luminoso, sognante, pop sofisticato</td></tr>
+            <tr><td><span class="quality-jazz">Min 9ª</span></td><td>Min 7ª + nona maggiore</td><td>Profondo, meditativo, jazz modale</td></tr>
+        </tbody>
+    </table>
+
+    <div class="box box-info">
+        <strong>📌 Come leggere la struttura</strong>
+        I numeri indicano i semitoni tra una nota e la successiva dell'accordo. Maggiore = 4+3 significa: terza maggiore (4 semitoni) + terza minore (3 semitoni) sopra. Do maggiore = Do (0) + Mi (4) + Sol (7).
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <h2>4. Le inversioni</h2>
+
+    <p>Un accordo si dice <strong>in posizione fondamentale</strong> quando la nota di base è la più bassa. Nelle <strong>inversioni</strong>, una delle altre note dell'accordo scende in basso:</p>
+
+    <ul>
+        <li><strong>Fondamentale</strong> (Do-Mi-Sol): il Do è il basso.</li>
+        <li><strong>1ª inversione</strong> (Mi-Sol-Do): il Mi è il basso — l'accordo suona più leggero.</li>
+        <li><strong>2ª inversione</strong> (Sol-Do-Mi): il Sol è il basso — sensazione più instabile.</li>
+    </ul>
+
+    <p>Lo stesso accordo riconosciuto in posizione fondamentale può risultare molto più difficile da identificare in inversione, perché il colore cambia notevolmente. Attiva le inversioni solo quando conosci bene gli accordi in fondamentale.</p>
+
+    <div class="box box-warning">
+        <strong>⚠️ Inversioni e nota di base</strong>
+        Nell'esercizio, la nota di base rimane sempre evidenziata in giallo sulla tastiera e sul pentagramma — anche nelle inversioni. È un riferimento teorico, non la nota più grave suonata. Non cliccarla per sbaglio credendo sia parte dell'inversione!
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <h2>5. Come funziona l'esercizio</h2>
+
+    <p>Il programma sceglie casualmente un accordo, lo suona, e tu devi identificarlo cliccando il pulsante corrispondente nella griglia — oppure trovando le note sulla tastiera.</p>
+
+    <h3>Interfaccia passo per passo</h3>
+
+    <div class="ui-block">
+        <div class="ui-label">▶ Pulsante Play</div>
+        Suona l'accordo corrente. Se hai già risposto, passa all'accordo successivo (in modalità Auto) o rimane in ascolto (in modalità Manuale).
+    </div>
+
+    <div class="ui-block">
+        <div class="ui-label">&#9834; Pentagramma</div>
+        Prima della risposta mostra solo la nota di base (in giallo). Dopo la risposta corretta, appare l'accordo completo in posizione fondamentale: le note dell'accordo in verde, la radice sempre in giallo.
+    </div>
+
+    <div class="ui-block">
+        <div class="ui-label">&#127929; Tastiera del pianoforte</div>
+        La nota di base è in giallo. Puoi cliccare i tasti per sentire le singole note come riferimento. In alternativa, puoi rispondere trovando tutte le note dell'accordo sulla tastiera: le note corrette diventano verdi, quelle sbagliate rosse. Quando hai trovato tutte le note dell'accordo viene assegnato il punto (solo se non hai cliccato note sbagliate).
+    </div>
+
+    <div class="ui-block">
+        <div class="ui-label">&#9632; Griglia accordi</div>
+        I pulsanti del livello corrente sono illuminati. Clicca quello che pensi sia l'accordo. Se sbagli diventa rosso — puoi ricliccare per risentirlo e confrontarlo. Dopo la risposta, cliccando qualsiasi pulsante senti l'accordo corrispondente.
+    </div>
+
+    <div class="ui-block">
+        <div class="ui-label">⏸ Avanzamento Manuale / ▶▶ Auto</div>
+        In modalità <em>Manuale</em> (default) l'esercizio si ferma sulla risposta: puoi riascoltare, confrontare, cliccare le note sulla tastiera. In modalità <em>Auto</em> avanza da solo dopo 1.4 secondi.
+    </div>
+
+    <div class="ui-block">
+        <div class="ui-label">🏆 Punteggio</div>
+        Conta le risposte corrette al <em>primo tentativo</em>, sia via pulsante che via tastiera. Un errore anche solo su una nota della tastiera preclude il punto.
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <h2>6. Ingresso MIDI (Tastiera Fisica)</h2>
+
+    <p>Puoi collegare una vera <strong>tastiera MIDI USB</strong> al tuo computer per svolgere l'esercizio in modo naturale e immediato.</p>
+
+    <ul>
+        <li>L'ingresso MIDI è sempre attivo (non occorre configurarlo). Supporta anche il collegamento a caldo: puoi inserire il cavo USB prima o dopo aver aperto il browser.</li>
+        <li><strong>Corrispondenza esatta dell'ottava</strong>: devi suonare le note dell'accordo esattamente nell'ottava indicata a schermo (calcolata a partire dalla nota di base visualizzata in giallo). Le note suonate su altre ottave verranno ignorate.</li>
+        <li>Tutte le note premute sulla tastiera fisica si riflettono istantaneamente sulla tastiera virtuale a schermo diventando verdi (se giuste) o rosse (se errate).</li>
+    </ul>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <h2>7. Selettore modalità</h2>
+
+    <ul>
+        <li><strong>↑ Arpeggio</strong> — le note suonano in sequenza dal basso verso l'alto. Più facile: senti la struttura melodica dell'accordo.</li>
+        <li><strong>↓ Arpeggio</strong> — le note suonano dall'alto verso il basso. Stessa struttura, sensazione diversa.</li>
+        <li><strong>⇅ Armonico</strong> — tutte le note suonano insieme. Il più difficile: senti solo il colore globale dell'accordo, senza guida melodica.</li>
+    </ul>
+
+    <div class="box box-tip">
+        <strong>💡 Consiglio</strong>
+        Inizia in modalità <em>Arpeggio ↑</em>. Una volta che riconosci bene gli accordi, passa ad <em>Armonico</em>: è la condizione reale in cui sentirai gli accordi nella musica dal vivo.
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <h2>8. Livelli di difficoltà</h2>
+
+    <ul>
+        <li><span class="diff-pill">1 — Base</span> Solo Maggiore e Minore. La distinzione fondamentale della musica tonale.</li>
+        <li><span class="diff-pill">2 — Facile</span> Si aggiungono Dom 7ª, Maj 7ª, Min 7ª — gli accordi di settima più comuni.</li>
+        <li><span class="diff-pill">3 — Medio</span> Entrano Aumentato, Diminuito 7ª, Mag 6ª, Min 6ª.</li>
+        <li><span class="diff-pill">4 — Esperto</span> Semidiminuito, Sus 2, Sus 4 — accordi più rari ma importanti.</li>
+        <li><span class="diff-pill">5 — Jazz</span> Accordi di nona: Dom 9ª, Maj 9ª, Min 9ª.</li>
+    </ul>
+
+    <div class="box box-warning">
+        <strong>⚠️ Partenza consigliata</strong>
+        Il livello 1 sembra banale ma non lo è: distinguere maggiore e minore in armonico, con inversioni e radici casuali, richiede già un buon orecchio. Consolida ogni livello prima di salire.
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <h2>9. Selettore nota di base</h2>
+
+    <ul>
+        <li><strong>Nota fissa (default C4)</strong> — fissa la radice. Utile per imparare il colore degli accordi senza variabili aggiuntive.</li>
+        <li><strong>⟳ Casuale</strong> — la radice cambia ad ogni domanda. È la modalità realistica: nella musica gli accordi si presentano in qualsiasi tonalità.</li>
+    </ul>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <h2>10. Strategie di riconoscimento</h2>
+
+    <h3>Il "colore" dell'accordo</h3>
+    <p>Il metodo più efficace è percepire il colore emotivo globale dell'accordo, non analizzarlo nota per nota. Con la pratica, maggiore e minore si distinguono istintivamente — come riconoscere una persona dal volto senza contare i suoi tratti.</p>
+
+    <h3>Coppie da allenare</h3>
+    <ul>
+        <li><strong>Maggiore vs Minore</strong> — il contrasto più importante: luminoso vs scuro. Ascoltali in sequenza decine di volte finché la differenza è immediata.</li>
+        <li><strong>Dom 7ª vs Maj 7ª</strong> — entrambi partono da una triade maggiore. Il Dom 7 "vuole andare da qualche parte", il Maj 7 suona già arrivato, sognante.</li>
+        <li><strong>Min 7ª vs Semidiminuito</strong> — molto simili. Il semidiminuito ha la quinta abbassata, suona più instabile e teso.</li>
+        <li><strong>Sus 2 vs Sus 4</strong> — entrambi privi di terza, ma Sus 2 ha un carattere più aperto/folk, Sus 4 è più solenne e "in attesa".</li>
+        <li><strong>Dim 7ª vs Aumentato</strong> — entrambi tesi, ma il dim7 è simmetrico e drammatico, l'aumentato è più fluttuante e ambiguo.</li>
+    </ul>
+
+    <h3>Usa la tastiera come strumento di studio</h3>
+    <p>Quando non riconosci un accordo, <strong>non guardare subito la soluzione</strong>. Usa la tastiera per trovare le note ad una ad una: partendo dalla radice (gialla), cerca le altre note dell'accordo. Questo processo attivo rinforza la memoria molto più della risposta passiva.</p>
+
+    <div class="box box-tip">
+        <strong>💡 Sessioni brevi e focus su un accordo alla volta</strong>
+        Se fai fatica a distinguere due accordi specifici (es. Dom 7ª e Maj 7ª), crea una "sessione di confronto": suonali in alternanza decine di volte, concentrandoti solo sulla differenza. Questo approccio mirato è molto più efficace dell'allenamento generico.
+    </div>
+
+    <p style="text-align:center;"><a href="#" onclick="window.close(); return false;" class="play-btn">Chiudi</a></p>
+
+</div><!-- content-box -->
+
+<div class="banner"></div>
+
+<div class="nav-links">
+    <a href="../">&#8592; Musica</a>
+    <a href="../../index.html">Home Giochi</a>
+    <a href="../../privacy.html" target="_blank">Privacy Policy</a> |
+    <a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)">Gestisci Cookie</a>
+</div>
+
+<p style="text-align:center; font-size:0.8em; color:#999; margin-top:15px;">© 2026 Luciano Manenti</p>
+
+<script>
+    (function() {
+        var nascosto = false;
+        var observer = new MutationObserver(function() {
+            if (nascosto) return;
+            var divs = document.querySelectorAll('body > div');
+            for (var i = 0; i < divs.length; i++) {
+                if (divs[i].shadowRoot && !divs[i].className && (divs[i].getAttribute('style')||'').length > 5000) {
+                    divs[i].style.setProperty('display', 'none', 'important');
+                    nascosto = true;
+                    observer.disconnect();
+                    return;
+                }
+            }
+        });
+        observer.observe(document.body, { childList: true });
+    })();
+</script>
+</body>
+</html>

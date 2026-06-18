@@ -1,4 +1,4 @@
-// rummy-core.js v1.0
+// rummy-core.js v1.2
 // Gin Rummy — card definitions, meld detection, deadwood calculation
 
 'use strict';
@@ -360,6 +360,9 @@ var TRANSLATIONS = {
         'label-punteggio-finale-p':'Punteggio finale:',
         'btn-nuova-s':             'NUOVA PARTITA',
 
+        'meld-esito-vinto':        'HAI VINTO!',
+        'meld-esito-perso':        'HAI PERSO',
+        'btn-prossima-mano-lbl':   'PROSSIMA MANO',
         'label-layoff-istr':       'Puoi scaricare le tue carte sui meld dell\'avversario',
         'btn-conferma-layoff':     'CONFERMA',
 
@@ -458,6 +461,9 @@ var TRANSLATIONS = {
         'label-punteggio-finale-p':'Final score:',
         'btn-nuova-s':             'NEW GAME',
 
+        'meld-esito-vinto':        'YOU WON!',
+        'meld-esito-perso':        'YOU LOST',
+        'btn-prossima-mano-lbl':   'NEXT HAND',
         'label-layoff-istr':       'You can lay off your cards onto the opponent\'s melds',
         'btn-conferma-layoff':     'CONFIRM',
 

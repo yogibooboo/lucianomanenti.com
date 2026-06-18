@@ -1,0 +1,853 @@
+/* ============================================================================
+   SCOPA - Stili CSS
+   Stile feltro verde Burraco con layout 1024x750px
+   ============================================================================ */
+
+/* === BASE & LAYOUT === */
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #1a5f2a;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.main-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+/* === SIDEBARS (per AdSense e layout) === */
+.sidebar {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    background: linear-gradient(135deg, #1a6b30 0%, #145524 50%, #0f4a1c 100%);
+    overflow-y: auto;
+    box-sizing: border-box;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    z-index: 1;
+    transition: opacity 0.3s ease;
+}
+#sidebar-left { left: 0; }
+#sidebar-right { right: 0; }
+
+/* === CAMPO DI GIOCO === */
+#campogioco {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 1024px;
+    height: 750px;
+    background: linear-gradient(135deg, #1a6b30 0%, #145524 50%, #0f4a1c 100%);
+    background-image: url(images/scala40/tappetoverde.png);
+    transform-origin: center center;
+    border-radius: 10px;
+    box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.4), 0 10px 30px rgba(0,0,0,0.5);
+    overflow: hidden;
+}
+
+/* === SCHERMO OVERLAY === */
+#schermo {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1024px;
+    height: 750px;
+    background-color: rgba(0, 0, 0, 0.65);
+    z-index: 30000;
+    display: none;
+}
+
+/* === BARRA DI NAVIGAZIONE E AUDIO === */
+.lang-switch-game {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 10001;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.btn-audio-game {
+    width: 32px;
+    height: 32px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 20px;
+    background-color: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+.btn-audio-game:hover {
+    background-color: rgba(255, 255, 255, 0.25);
+}
+.btn-audio-game.muted {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.21.05-.42.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z'/%3E%3C/svg%3E");
+}
+
+/* === INFO E TITOLO === */
+#titolo-gioco {
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #ffd700;
+    font-size: 26px;
+    font-family: 'Slackey', 'Outfit', sans-serif;
+    font-weight: bold;
+    z-index: 1000;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+    white-space: nowrap;
+}
+
+#messaggio-stato {
+    position: absolute;
+    top: 50px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #fff;
+    font-size: 16px;
+    font-weight: bold;
+    text-align: center;
+    background: rgba(0, 40, 10, 0.6);
+    padding: 6px 20px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    z-index: 100;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    transition: opacity 0.3s;
+}
+
+/* === PANNELLO TORNEO (PUNTEGGI CUMULATIVI) === */
+#pannello-torneo {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 16px;
+    background: rgba(0, 50, 15, 0.7);
+    border: 2px solid rgba(100, 180, 120, 0.4);
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    z-index: 200;
+}
+#punteggi {
+    display: flex;
+    align-items: center;
+    font-size: 18px;
+    color: #ffd700;
+    font-weight: bold;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.6);
+}
+.punteggio-separator {
+    margin: 0 8px;
+    color: #fff;
+}
+#punti-noi { color: #7fff7f; }
+#punti-loro { color: #ff7f7f; }
+#torneo-info {
+    font-size: 11px;
+    color: #ddd;
+    text-align: center;
+}
+
+/* === AREE GIOCATORI === */
+.area-giocatore {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    background: rgba(0, 40, 10, 0.45);
+    border: 2px solid rgba(100, 160, 110, 0.35);
+    border-radius: 10px;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+#area-computer {
+    top: 90px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 600px;
+    height: 160px;
+    justify-content: flex-start;
+}
+
+#area-giocatore {
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 600px;
+    height: 180px;
+    justify-content: flex-start;
+}
+
+/* Dettagli giocatore */
+.avatar-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 90px;
+    gap: 6px;
+    margin-right: 15px;
+    flex-shrink: 0;
+}
+.avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: 2px solid #ffd700;
+    background-color: #2c3e50;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+.nome-giocatore {
+    font-size: 13px;
+    color: #ffd700;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px #000;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 90px;
+}
+.ncarte-mano {
+    display: none;
+    font-size: 11px;
+    color: #fff;
+    background: rgba(0,0,0,0.4);
+    padding: 2px 6px;
+    border-radius: 8px;
+    margin-top: 2px;
+}
+
+.carte-container {
+    display: flex;
+    position: relative;
+    width: 100%;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+}
+
+/* === TAVOLO DI GIOCO (CENTRO) === */
+#tavolo {
+    position: absolute;
+    top: 260px;
+    bottom: 230px;
+    left: 150px;
+    right: 150px;
+    background: rgba(0, 30, 5, 0.25);
+    border: 2px dashed rgba(100, 160, 110, 0.2);
+    border-radius: 12px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    padding: 15px;
+    box-sizing: border-box;
+    flex-wrap: wrap;
+}
+
+/* === MAZZO (DECK) === */
+#mazzo-blocco {
+    position: absolute;
+    left: 30px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 89px;
+    height: 120px;
+    z-index: 100;
+}
+.mazzo-back {
+    position: absolute;
+    width: 89px;
+    height: 120px;
+    background-image: url(images/scala40/conjollyplus.png);
+    background-size: 1541px 480px;
+    background-position: -1420px -120px; /* dorso blu */
+    border-radius: 6px;
+    box-shadow: 3px 3px 5px rgba(0,0,0,0.4);
+}
+.mazzo-back-shadow {
+    position: absolute;
+    width: 89px;
+    height: 120px;
+    background-image: url(images/scala40/conjollyplus.png);
+    background-size: 1541px 480px;
+    background-position: -1420px -120px;
+    border-radius: 6px;
+    left: -3px;
+    top: -3px;
+    box-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+.mazzo-count {
+    position: absolute;
+    bottom: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #fff;
+    font-size: 12px;
+    font-weight: bold;
+    background: rgba(0,0,0,0.5);
+    padding: 2px 8px;
+    border-radius: 10px;
+    white-space: nowrap;
+    text-shadow: 1px 1px 1px #000;
+}
+
+/* === PILA DELLE PRESE (CARTE CATTURATE) === */
+.presa-blocco {
+    position: absolute;
+    right: 30px;
+    width: 89px;
+    height: 120px;
+    border: 2px dashed rgba(255,255,255,0.15);
+    border-radius: 6px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+#presa-computer { top: 110px; }
+#presa-giocatore { bottom: 80px; }
+
+.presa-count {
+    position: absolute;
+    bottom: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #ffd700;
+    font-size: 11px;
+    font-weight: bold;
+    background: rgba(0,0,0,0.5);
+    padding: 2px 6px;
+    border-radius: 10px;
+    white-space: nowrap;
+}
+
+/* === CARTE === */
+.carta {
+    position: absolute;
+    width: 89px;
+    height: 120px;
+    background-image: url(images/scala40/conjollyplus.png);
+    background-size: 1541px 480px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+/* Solo le carte in mano al giocatore hanno hover */
+#carte-giocatore .carta:hover {
+    transform: translateY(-20px);
+    box-shadow: 3px 6px 12px rgba(0, 0, 0, 0.4);
+}
+
+#carte-giocatore .carta.selezionata {
+    transform: translateY(-30px);
+    box-shadow: 0 0 15px #ffd700;
+    border: 2px solid #ffd700;
+    box-sizing: border-box;
+}
+
+/* Carte a terra nel tavolo: layout relativo all'interno di flex */
+#tavolo .carta {
+    position: relative;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+
+#tavolo .carta:hover {
+    transform: scale(1.05);
+    box-shadow: 3px 5px 10px rgba(0, 0, 0, 0.4);
+}
+
+#tavolo .carta.selezionata {
+    transform: translateY(-8px) scale(1.05);
+    box-shadow: 0 0 12px #ffd700;
+    border: 2px solid #ffd700;
+    box-sizing: border-box;
+}
+
+.carta.coperta {
+    background-position: -1420px 0; /* dorso rosso default */
+}
+.carta.coperta-blu {
+    background-position: -1420px -120px; /* dorso blu */
+}
+
+/* Carte volanti per animazioni */
+.carta.carta-volante {
+    position: absolute !important;
+    z-index: 50000;
+    pointer-events: none;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 5px 8px 15px rgba(0,0,0,0.4);
+}
+
+/* === BOTTONI DI AZIONE === */
+.pulsante-azione {
+    position: absolute;
+    left: 50%;
+    bottom: 230px;
+    transform: translateX(-50%);
+    display: none;
+    padding: 10px 24px;
+    font-size: 16px;
+    font-weight: bold;
+    color: white;
+    background: linear-gradient(180deg, #ffd700 0%, #b8860b 100%);
+    border: 2px solid #ffd700;
+    border-radius: 8px;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.6);
+    z-index: 500;
+    transition: transform 0.2s, filter 0.2s;
+}
+.pulsante-azione:hover {
+    filter: brightness(1.1);
+    transform: translateX(-50%) scale(1.05);
+}
+.pulsante-azione:active {
+    transform: translateX(-50%) scale(0.95);
+}
+
+/* Pulsante Scrivetemi e Regole a fondo pagina */
+.pulsante-link-bottom {
+    position: absolute;
+    bottom: 10px;
+    background-color: rgba(0, 40, 10, 0.5);
+    color: #ccc;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    font-size: 11px;
+    padding: 4px 10px;
+    text-decoration: none;
+    z-index: 100;
+    transition: all 0.2s;
+}
+.pulsante-link-bottom:hover {
+    color: #fff;
+    background-color: rgba(0, 60, 20, 0.7);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+#btn-scrivetemi-scopa { left: 10px; }
+#btn-regole-scopa { left: 90px; }
+
+/* Link altri giochi a piè pagina */
+.link-giochi-scopa {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    display: flex;
+    gap: 6px;
+    z-index: 100;
+}
+.pulsante-link-scopa {
+    background-color: rgba(0, 40, 10, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    color: #ccc;
+    font-size: 11px;
+    padding: 4px 10px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+.pulsante-link-scopa:hover {
+    color: #fff;
+    background-color: rgba(0, 60, 20, 0.7);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+/* === MODALI E DIALOGHI === */
+.form-scopa {
+    z-index: 40000;
+    position: absolute;
+    width: 500px;
+    height: 520px;
+    left: 262px;
+    top: 115px;
+    background-color: #1a4224;
+    background-image: url(images/scala40/tappetoverde.png);
+    border: 4px solid #b8860b;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+    box-sizing: border-box;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    padding: 25px;
+    color: white;
+    overflow: hidden;
+}
+
+.form-scopa-title {
+    font-family: 'Slackey', 'Outfit', sans-serif;
+    font-size: 26px;
+    color: #ffd700;
+    margin-bottom: 20px;
+    text-shadow: 2px 2px 4px #000;
+    text-align: center;
+}
+
+/* Modale Inizio Gioco */
+#modale-inizio {
+    justify-content: center;
+}
+.opzioni-punteggio {
+    display: flex;
+    gap: 25px;
+    margin: 30px 0;
+}
+.btn-opzione {
+    padding: 15px 30px;
+    font-size: 18px;
+    font-weight: bold;
+    color: white;
+    background: linear-gradient(180deg, #4a7c59 0%, #2d5a3d 100%);
+    border: 2px solid #6b9b7a;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+.btn-opzione:hover {
+    background: linear-gradient(180deg, #5a8c69 0%, #3d6a4d 100%);
+    transform: scale(1.05);
+    border-color: #ffd700;
+}
+
+/* Modale fine round (Tabella Punteggi) */
+#modale-punteggi {
+    height: 540px;
+    top: 105px;
+}
+.tabella-punti {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+    font-size: 14px;
+}
+.tabella-punti th, .tabella-punti td {
+    padding: 8px 10px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+.tabella-punti th {
+    color: #ffd700;
+    font-weight: bold;
+}
+.tabella-punti tr.totale-row {
+    font-size: 16px;
+    font-weight: bold;
+    background: rgba(0,0,0,0.25);
+    border-top: 2px solid #ffd700;
+}
+.tabella-punti tr.totale-row td {
+    color: #fff;
+    border-bottom: none;
+}
+.tabella-punti tr.totale-partita td {
+    font-size: 18px;
+    color: #ffd700;
+    font-weight: bold;
+    border-bottom: none;
+    padding-top: 12px;
+}
+.btn-continua {
+    padding: 10px 30px;
+    font-size: 15px;
+    font-weight: bold;
+    color: #2c3e50;
+    background: #ffd700;
+    border: 2px solid #b8860b;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+.btn-continua:hover {
+    background: #fff;
+    transform: scale(1.05);
+}
+
+/* Modale fine partita (Haivinto / Haiperso) */
+.modale-fine-sfondo {
+    width: 500px;
+    height: 520px;
+    background-size: 500px 280px;
+    background-repeat: no-repeat;
+    background-position: top;
+    background-color: #2d5a4a;
+    border: 4px solid #b8860b;
+    border-radius: 12px;
+    z-index: 40000;
+    position: absolute;
+    left: 262px;
+    top: 115px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+    display: none;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+    padding-bottom: 50px;
+    box-sizing: border-box;
+}
+
+.confirm-message {
+    font-family: 'Slackey', 'Outfit', sans-serif;
+    font-size: 24px;
+    color: white;
+    text-align: center;
+    margin-bottom: 40px;
+    text-shadow: 2px 2px 4px #000;
+    padding: 0 20px;
+}
+
+/* === NOTIFICHE ANIMATE (SCOPA!) === */
+.notifica-scopa {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.3);
+    font-family: 'Slackey', 'Outfit', sans-serif;
+    font-size: 64px;
+    color: #ffd700;
+    text-shadow: 3px 3px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 0 0 20px #ff0000;
+    z-index: 60000;
+    opacity: 0;
+    pointer-events: none;
+    animation: zoom-fade-scopa 1.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes zoom-fade-scopa {
+    0% {
+        transform: translate(-50%, -50%) scale(0.3);
+        opacity: 0;
+    }
+    15% {
+        transform: translate(-50%, -50%) scale(1.1);
+        opacity: 1;
+    }
+    30% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+    80% {
+        transform: translate(-50%, -100%) scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(-50%, -150%) scale(0.8);
+        opacity: 0;
+    }
+}
+
+.punti-floating {
+    position: absolute;
+    color: #ffd700;
+    font-size: 24px;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px #000, 0 0 8px #ffd700;
+    pointer-events: none;
+    z-index: 55000;
+    animation: float-up-fade 1.2s ease-out forwards;
+}
+
+@keyframes float-up-fade {
+    0% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(-80px);
+        opacity: 0;
+    }
+}
+
+/* === TEMA CARTE NAPOLETANE === */
+#campogioco.napoletane .carta,
+#campogioco.napoletane .mazzo-back,
+#campogioco.napoletane .mazzo-back-shadow {
+    background-image: url(images/scala40/carte_napoletane.png);
+    background-size: 1509px 480px;
+}
+
+/* === MODALE INIZIO: SELETTORI === */
+.btn-opzione-sel {
+    background: #1f4068;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.6);
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: bold;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-width: 120px;
+    text-transform: uppercase;
+    opacity: 0.55;
+    filter: blur(0.5px);
+}
+.btn-opzione-sel.attiva {
+    background: linear-gradient(180deg, #ffd700 0%, #b8860b 100%);
+    border: 2px solid #ffd700;
+    color: #1a1a2e;
+    box-shadow: 0 0 12px rgba(255, 215, 0, 0.5);
+    opacity: 1;
+    filter: none;
+}
+.btn-opzione-sel:hover {
+    opacity: 0.85;
+    filter: none;
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.4);
+}
+.btn-opzione-sel.attiva:hover {
+    filter: brightness(1.1);
+    opacity: 1;
+}
+
+/* === PLAYERS LATERALI (4 GIOCATORI) === */
+.area-giocatore-verticale {
+    position: absolute;
+    background: rgba(0, 40, 10, 0.45);
+    border: 2px solid rgba(100, 160, 110, 0.35);
+    border-radius: 10px;
+    box-sizing: border-box;
+    width: 150px;
+    height: 430px;
+    z-index: 50;
+}
+
+#area-sinistra {
+    left: 35px;
+    top: 410px;
+    transform: translateY(-50%);
+}
+
+#area-destra {
+    right: 35px;
+    top: 410px;
+    transform: translateY(-50%);
+}
+
+#area-sinistra .carta {
+    transform: rotate(90deg);
+}
+
+#area-destra .carta {
+    transform: rotate(-90deg);
+}
+
+.avatar-container-verticale {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 110px;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+/* Disposizione verticale per le carte degli avversari di lato */
+.area-giocatore-verticale .carte-container {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    width: 130px;
+    height: 310px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+/* Regolazioni layout 4 giocatori */
+#campogioco.quattro-giocatori #tavolo {
+    left: 185px;
+    right: 185px;
+}
+
+#campogioco.quattro-giocatori #area-computer,
+#campogioco.quattro-giocatori #area-giocatore {
+    width: 420px;
+}
+
+#campogioco.quattro-giocatori #carte-computer,
+#campogioco.quattro-giocatori #carte-giocatore {
+    justify-content: center;
+}
+
+#campogioco.quattro-giocatori #mazzo-blocco {
+    left: 30px;
+    top: 50px;
+    transform: none;
+}
+
+#campogioco.quattro-giocatori #presa-computer {
+    right: 40px;
+    top: 50px;
+    transform: rotate(90deg);
+}
+
+#campogioco.quattro-giocatori #presa-computer .presa-count {
+    bottom: auto;
+    left: -30px;
+    top: 50%;
+    transform: translateY(-50%) rotate(-90deg);
+}
+
+#campogioco.quattro-giocatori #presa-giocatore {
+    right: 195px;
+    bottom: 85px;
+}
+
+#label-noi {
+    margin-right: 6px;
+}
+
+#label-loro {
+    margin-left: 6px;
+}
+
+/* Evidenziazione per le carte durante una presa/scarto */
+.carta.evidenziata-presa {
+    box-shadow: 0 0 25px #ffd700, 0 0 10px #ff0000 !important;
+    border: 3px solid #ffd700 !important;
+    transform: scale(1.1) !important;
+    z-index: 10000 !important;
+    box-sizing: border-box;
+}
+
+/* Mantieni la corretta rotazione delle carte avversarie laterali durante l'evidenziazione */
+#area-sinistra .carta.evidenziata-presa {
+    transform: rotate(90deg) scale(1.1) !important;
+}
+
+#area-destra .carta.evidenziata-presa {
+    transform: rotate(-90deg) scale(1.1) !important;
+}

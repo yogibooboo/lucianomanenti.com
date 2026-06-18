@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-WRBDRDQ4L8');
+        window.currentLang = 'it';
+    </script>
+    <title>Guida agli Intervalli Musicali - Ear Training - lucianomanenti.com</title>
+    <meta name="Description" content="Guida didattica completa al riconoscimento degli intervalli musicali: cos'è un intervallo, tabella semitoni, esempi musicali e strategie di allenamento.">
+    <link rel="alternate" hreflang="it" href="guida-intervalli.html">
+    <link rel="alternate" hreflang="en" href="guida-intervalli-en.html">
+    <link rel="icon" type="image/png" href="../../favicon/favicon-96x96.png" sizes="96x96">
+    <link rel="icon" type="image/svg+xml" href="../../favicon/favicon.svg">
+    <link rel="shortcut icon" href="../../favicon/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../favicon/apple-touch-icon.png">
+    <style>
+        body {
+            font-family: sans-serif;
+            line-height: 1.75;
+            max-width: 820px;
+            margin: 40px auto;
+            padding: 20px;
+            color: #333;
+            background-color: #f9f9f9;
+        }
+
+        h1 { color: #2c3e50; border-bottom: 2px solid #ffd700; padding-bottom: 10px; }
+        h2 { color: #2c3e50; margin-top: 36px; border-bottom: 1px solid #ddd; padding-bottom: 5px; }
+        h3 { color: #2c3e50; margin-top: 22px; font-size: 1.05em; }
+
+        .lang-switch { text-align: right; margin-bottom: 20px; }
+        .lang-switch a {
+            display: inline-block; padding: 6px 16px; margin-left: 5px;
+            text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 14px;
+        }
+        .lang-switch a.active { background: #2c3e50; color: white; }
+        .lang-switch a:not(.active) { background: #ddd; color: #333; cursor: pointer; }
+
+        .content-box {
+            background: white; padding: 30px; border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.07);
+        }
+
+        .nav-links { text-align: center; margin-top: 30px; font-size: 14px; }
+        .nav-links a { color: #3498db; text-decoration: none; margin: 0 12px; }
+
+        ul { margin-top: 8px; }
+        li { margin-bottom: 7px; }
+
+        .box {
+            border-radius: 8px; padding: 16px 20px; margin: 20px 0; font-size: 0.97em;
+        }
+        .box-info    { background: #eaf4fb; border-left: 4px solid #3498db; }
+        .box-tip     { background: #eafaf1; border-left: 4px solid #2ecc71; }
+        .box-warning { background: #fef9e7; border-left: 4px solid #f1c40f; }
+        .box strong  { display: block; margin-bottom: 4px; font-size: 1em; }
+
+        table {
+            width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 0.93em;
+        }
+        th { background: #2c3e50; color: white; padding: 10px 12px; text-align: left; }
+        td { padding: 9px 12px; border-bottom: 1px solid #eee; vertical-align: top; }
+        tr:nth-child(even) td { background: #f8f8f8; }
+        tr:hover td { background: #fff8e1; }
+
+        .semitoni {
+            display: inline-block; background: #2c3e50; color: white;
+            border-radius: 12px; padding: 2px 9px; font-size: 0.85em;
+            font-weight: bold; min-width: 28px; text-align: center;
+        }
+
+        .quality-perfect { color: #2980b9; font-weight: 600; }
+        .quality-major   { color: #27ae60; font-weight: 600; }
+        .quality-minor   { color: #8e44ad; font-weight: 600; }
+        .quality-aug     { color: #e67e22; font-weight: 600; }
+
+        .ui-block {
+            background: #f0f0f0; border-radius: 8px; padding: 14px 18px;
+            margin: 12px 0; border-left: 3px solid #95a5a6;
+        }
+        .ui-block .ui-label {
+            font-weight: bold; color: #2c3e50; font-size: 0.95em; margin-bottom: 4px;
+        }
+
+        .diff-pill {
+            display: inline-block; padding: 3px 12px; border-radius: 20px;
+            font-size: 0.85em; font-weight: bold; margin-right: 6px;
+            background: #2c3e50; color: white;
+        }
+
+        .play-btn {
+            display: inline-block; margin-top: 25px; padding: 12px 30px;
+            background: #27ae60; color: white; text-decoration: none;
+            border-radius: 8px; font-size: 18px; font-weight: bold;
+        }
+
+        .banner {
+            width: 100%; height: 150px;
+            background-image: url('../../images/home/castagne.jpg');
+            background-size: cover; background-position: center;
+            border-radius: 8px; margin: 20px 0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+    <a href="#" id="btn-back" onclick="window.close(); return false;"
+       style="display:inline-block; padding:6px 16px; background:#e74c3c; color:white; text-decoration:none; border-radius:5px; font-weight:bold; font-size:14px;">&#x2715; Chiudi</a>
+    <div class="lang-switch" style="margin-bottom:0;">
+        <a href="guida-intervalli.html" class="active">Italiano</a>
+        <a href="guida-intervalli-en.html">English</a>
+    </div>
+</div>
+
+<div class="banner"></div>
+
+<div class="content-box">
+
+    <h1>&#9834; Guida agli Intervalli Musicali</h1>
+
+    <p>Questa guida ti accompagna nel percorso di <strong>ear training</strong> sugli intervalli musicali: capirai cos'è un intervallo, imparerai a riconoscerne le caratteristiche sonore e scoprirai come usare l'esercizio al meglio.</p>
+
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <h2>1. Cos'è un intervallo musicale?</h2>
+
+    <p>Un <strong>intervallo</strong> è la distanza sonora tra due note. È il mattone fondamentale della musica: gli accordi, le melodie e le armonie sono tutti costruiti partendo dagli intervalli.</p>
+
+    <p>La distanza si misura in <strong>semitoni</strong> — l'unità minima della scala cromatica occidentale. Sulla tastiera del pianoforte, un semitono è la distanza tra un tasto e quello immediatamente adiacente (bianco o nero).</p>
+
+    <div class="box box-info">
+        <strong>📌 Esempio pratico</strong>
+        Da Do (C) a Re♭ (D♭) c'è 1 semitono. Da Do (C) a Re (D) ce ne sono 2. Da Do (C) a Mi (E) ce ne sono 4.
+    </div>
+
+    <h3>Intervalli ascendenti, discendenti e armonici</h3>
+    <ul>
+        <li><strong>Ascendente:</strong> la nota più bassa suona prima, poi la più alta.</li>
+        <li><strong>Discendente:</strong> la nota più alta suona prima, poi la più bassa.</li>
+        <li><strong>Armonico:</strong> entrambe le note vengono suonate simultaneamente, come in un accordo.</li>
+    </ul>
+
+    <p>La stessa distanza suona diversamente nei tre casi: allenare l'orecchio su tutti e tre i modi è fondamentale per sviluppare un'udizione musicale completa.</p>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <h2>2. Le qualità degli intervalli</h2>
+
+    <p>Gli intervalli non sono solo distanze numeriche: hanno una <strong>qualità</strong> che ne descrive il carattere sonoro.</p>
+
+    <ul>
+        <li><span class="quality-perfect">Giusto (Perfetto)</span> — suono stabile, aperto, neutro. Esempi: 4ª, 5ª, ottava.</li>
+        <li><span class="quality-major">Maggiore</span> — suono luminoso, aperto. Esempi: 2ª, 3ª, 6ª, 7ª maggiori.</li>
+        <li><span class="quality-minor">Minore</span> — suono più scuro, malinconico. Un semitono in meno rispetto al corrispondente maggiore.</li>
+        <li><span class="quality-aug">Tritono (Aumentato/Diminuito)</span> — l'intervallo più instabile e teso, esattamente a metà tra l'ottava. Era chiamato nel Medioevo <em>diabolus in musica</em>.</li>
+    </ul>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <h2>3. Tabella degli intervalli</h2>
+
+    <p>Di seguito tutti gli intervalli dell'esercizio, dal più piccolo al più grande, con il numero di semitoni, il carattere sonoro e un esempio musicale celebre per memorizzarli.</p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Intervallo</th>
+                <th>Semitoni</th>
+                <th>Carattere</th>
+                <th>Esempio celebre</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><span class="quality-minor">2ª minore</span></td>
+                <td><span class="semitoni">1</span></td>
+                <td>Tensione massima, stridore</td>
+                <td><em>Jaws</em> (Lo squalo) — le due note del tema principale</td>
+            </tr>
+            <tr>
+                <td><span class="quality-major">2ª maggiore</span></td>
+                <td><span class="semitoni">2</span></td>
+                <td>Passo melodico naturale</td>
+                <td><em>Happy Birthday</em> — le prime due note</td>
+            </tr>
+            <tr>
+                <td><span class="quality-minor">3ª minore</span></td>
+                <td><span class="semitoni">3</span></td>
+                <td>Malinconico, introspettivo</td>
+                <td><em>Smoke on the Water</em> (Deep Purple) — inizio del riff</td>
+            </tr>
+            <tr>
+                <td><span class="quality-major">3ª maggiore</span></td>
+                <td><span class="semitoni">4</span></td>
+                <td>Luminoso, gioioso</td>
+                <td><em>When the Saints Go Marching In</em> — inizio</td>
+            </tr>
+            <tr>
+                <td><span class="quality-perfect">4ª giusta</span></td>
+                <td><span class="semitoni">5</span></td>
+                <td>Solenne, stabile</td>
+                <td><em>Here Comes the Bride</em> — le prime due note</td>
+            </tr>
+            <tr>
+                <td><span class="quality-aug">Tritono</span></td>
+                <td><span class="semitoni">6</span></td>
+                <td>Instabile, inquietante, teso</td>
+                <td><em>The Simpsons</em> — inizio del tema; <em>Black Sabbath</em></td>
+            </tr>
+            <tr>
+                <td><span class="quality-perfect">5ª giusta</span></td>
+                <td><span class="semitoni">7</span></td>
+                <td>Potente, vuoto, eroico</td>
+                <td><em>Star Wars</em> — tema principale; <em>Twinkle Twinkle</em></td>
+            </tr>
+            <tr>
+                <td><span class="quality-minor">6ª minore</span></td>
+                <td><span class="semitoni">8</span></td>
+                <td>Espressivo, dolce-malinconico</td>
+                <td><em>The Entertainer</em> (Scott Joplin) — inizio</td>
+            </tr>
+            <tr>
+                <td><span class="quality-major">6ª maggiore</span></td>
+                <td><span class="semitoni">9</span></td>
+                <td>Caldo, aperto, nostalgico</td>
+                <td><em>My Way</em> (Frank Sinatra) — «And now…»</td>
+            </tr>
+            <tr>
+                <td><span class="quality-minor">7ª minore</span></td>
+                <td><span class="semitoni">10</span></td>
+                <td>Bluesy, sospeso</td>
+                <td><em>Somewhere</em> (West Side Story) — «There's a place»</td>
+            </tr>
+            <tr>
+                <td><span class="quality-major">7ª maggiore</span></td>
+                <td><span class="semitoni">11</span></td>
+                <td>Teso, brillante, quasi dissonante</td>
+                <td><em>Take On Me</em> (A-ha) — inizio del riff di tastiera</td>
+            </tr>
+            <tr>
+                <td><span class="quality-perfect">Ottava</span></td>
+                <td><span class="semitoni">12</span></td>
+                <td>Pieno, conclusivo, risolto</td>
+                <td><em>Somewhere Over the Rainbow</em> — le prime due note</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>Intervalli estesi (livello 5)</h3>
+
+    <p>Gli intervalli estesi sono intervalli composti: superano l'ottava e corrispondono agli intervalli base trasportati un'ottava sopra.</p>
+
+    <table>
+        <thead>
+            <tr><th>Intervallo</th><th>Semitoni</th><th>Equivalente composto</th></tr>
+        </thead>
+        <tbody>
+            <tr><td><span class="quality-minor">9ª minore</span></td><td><span class="semitoni">13</span></td><td>Ottava + 2ª minore</td></tr>
+            <tr><td><span class="quality-major">9ª maggiore</span></td><td><span class="semitoni">14</span></td><td>Ottava + 2ª maggiore</td></tr>
+            <tr><td><span class="quality-minor">10ª minore</span></td><td><span class="semitoni">15</span></td><td>Ottava + 3ª minore</td></tr>
+            <tr><td><span class="quality-major">10ª maggiore</span></td><td><span class="semitoni">16</span></td><td>Ottava + 3ª maggiore</td></tr>
+            <tr><td><span class="quality-perfect">11ª giusta</span></td><td><span class="semitoni">17</span></td><td>Ottava + 4ª giusta</td></tr>
+        </tbody>
+    </table>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <h2>4. Come funziona l'esercizio</h2>
+
+    <p>Il funzionamento è semplice: il programma sceglie casualmente un intervallo, lo suona, e tu devi identificarlo cliccando il pulsante corrispondente nella griglia.</p>
+
+    <h3>Interfaccia passo per passo</h3>
+
+    <div class="ui-block">
+        <div class="ui-label">▶ Pulsante Play</div>
+        Premi per ascoltare l'intervallo corrente. Se hai già risposto, premi di nuovo per passare all'intervallo successivo.
+    </div>
+
+    <div class="ui-block">
+        <div class="ui-label">&#9834; Pentagramma</div>
+        Mostra la nota di base (in giallo) prima che tu risponda. Dopo la risposta corretta, appare anche la seconda nota (in verde), così puoi leggere l'intervallo sul pentagramma.
+    </div>
+
+    <div class="ui-block">
+        <div class="ui-label">&#127929; Tastiera del pianoforte</div>
+        La nota di base è evidenziata in giallo. Puoi cliccare i tasti per riprodurre le singole note mentre cerchi di identificare l'intervallo. Puoi anche rispondere direttamente cliccando il tasto che pensi sia la nota superiore: se è corretto diventa verde, altrimenti rosso.
+    </div>
+
+    <div class="ui-block">
+        <div class="ui-label">&#9632; Griglia intervalli</div>
+        I pulsanti disponibili per il livello corrente sono illuminati; quelli non inclusi nel livello appaiono scuri. Clicca quello che pensi sia l'intervallo ascoltato. Se sbagli, il pulsante diventa rosso: puoi cliccarlo di nuovo per risentire quell'intervallo e confrontarlo con quello corretto.
+    </div>
+
+    <div class="ui-block">
+        <div class="ui-label">🏆 Punteggio</div>
+        Il punteggio in alto a destra mostra <em>risposte corrette al primo tentativo</em> / <em>totale domande</em>. Se rispondi correttamente al primo tentativo ottieni il punto; se sbagli anche una volta, la domanda conta come errata anche se poi trovi la risposta giusta.
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <h2>5. Ingresso MIDI (Tastiera Fisica)</h2>
+
+    <p>Puoi collegare una vera <strong>tastiera MIDI USB</strong> al tuo computer per svolgere l'esercizio in modo naturale e immediato.</p>
+
+    <ul>
+        <li>L'ingresso MIDI è sempre attivo (non occorre configurarlo). Supporta anche il collegamento a caldo: puoi inserire il cavo USB prima o dopo aver aperto il browser.</li>
+        <li><strong>Corrispondenza esatta dell'ottava</strong>: devi suonare la seconda nota dell'intervallo esattamente nell'ottava indicata a schermo (calcolata a partire dalla nota di base visualizzata in giallo). Le note suonate su altre ottave verranno ignorate.</li>
+        <li>Tutte le note premute sulla tastiera fisica si riflettono istantaneamente sulla tastiera virtuale a schermo diventando verdi (se giuste) o rosse (se errate) e registrando la risposta.</li>
+    </ul>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <h2>6. Selettore modalità</h2>
+
+    <p>Puoi scegliere in quale forma ascoltare gli intervalli:</p>
+
+    <ul>
+        <li><strong>↑ Ascendente</strong> — la nota più bassa suona prima, poi la più alta. È la forma più comune e il punto di partenza ideale.</li>
+        <li><strong>↓ Discendente</strong> — la nota più alta suona prima, poi la più bassa. Lo stesso intervallo suona molto diversamente in senso discendente!</li>
+        <li><strong>⇅ Armonico</strong> — entrambe le note suonano insieme. È la modalità più difficile perché non hai il contorno melodico come riferimento.</li>
+    </ul>
+
+    <div class="box box-tip">
+        <strong>💡 Consiglio</strong>
+        Inizia sempre in modalità <em>Ascendente</em>. Quando hai imparato bene gli intervalli, passa a <em>Discendente</em> e poi ad <em>Armonico</em>: scoprirai che sono tre allenamenti diversi anche per gli stessi intervalli.
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <h2>7. Livelli di difficoltà</h2>
+
+    <p>L'esercizio ha 5 livelli che aggiungono progressivamente più intervalli alla griglia:</p>
+
+    <ul>
+        <li><span class="diff-pill">1 — Base</span> Solo 4ª giusta, 5ª giusta e Ottava — i tre intervalli più riconoscibili. Perfetto per iniziare.</li>
+        <li><span class="diff-pill">2 — Facile</span> Si aggiungono la 3ª minore e la 3ª maggiore — gli intervalli delle triadi.</li>
+        <li><span class="diff-pill">3 — Medio</span> Entra anche la 2ª maggiore, la 6ª minore e la 6ª maggiore.</li>
+        <li><span class="diff-pill">4 — Esperto</span> Tutti i 12 intervalli cromatici base, inclusi i più difficili come la 2ª minore, il tritono e la 7ª maggiore.</li>
+        <li><span class="diff-pill">5 — Estesi</span> Si aggiungono i cinque intervalli composti oltre l'ottava (dalla 9ª minore all'11ª giusta).</li>
+    </ul>
+
+    <div class="box box-warning">
+        <strong>⚠️ Attenzione al salto di livello</strong>
+        Non avere fretta di passare al livello successivo. È meglio raggiungere un buon punteggio al livello corrente (almeno 80% al primo tentativo) prima di aumentare la difficoltà.
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <h2>8. Selettore nota di base</h2>
+
+    <p>Puoi scegliere quale nota usare come punto di partenza degli intervalli:</p>
+
+    <ul>
+        <li><strong>⟳ Casuale</strong> — la nota di base cambia ad ogni domanda, da C3 a C5. È la modalità più realistica e completa.</li>
+        <li><strong>Nota fissa</strong> — clicca una delle frecce ◀ ▶ o la nota stessa per fissare una nota specifica. Utile nelle prime fasi di apprendimento per eliminare una variabile e concentrarsi solo sulla distanza.</li>
+    </ul>
+
+    <div class="box box-tip">
+        <strong>💡 Strategia di apprendimento</strong>
+        Inizia con <strong>nota fissa su C4</strong> (il Do centrale). Una volta che riconosci bene gli intervalli dal Do, passa alla modalità <em>Casuale</em> per generalizzare l'abilità a qualsiasi tonalità.
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <h2>9. Strategie di riconoscimento</h2>
+
+    <p>Il metodo più efficace per imparare a riconoscere gli intervalli è associare ciascuno a una <strong>melodia di riferimento</strong> che conosci bene. Quando ascolti un intervallo, la melodia "scatta" automaticamente nella memoria.</p>
+
+    <h3>Come costruire il tuo vocabolario di intervalli</h3>
+    <ol>
+        <li><strong>Ascolta l'intervallo</strong> nell'esercizio.</li>
+        <li><strong>Canticchia mentalmente</strong> la melodia di riferimento che inizia con quell'intervallo.</li>
+        <li><strong>Confronta</strong> la sensazione con le melodie degli altri intervalli.</li>
+        <li><strong>Ripeti</strong> finché l'associazione diventa immediata.</li>
+    </ol>
+
+    <h3>Riconoscimento per contrasto</h3>
+    <p>Un altro metodo molto efficace è imparare a distinguere gli intervalli <em>a coppie</em>:</p>
+    <ul>
+        <li><strong>2ª minore vs 2ª maggiore</strong> — entrambe sono "passi", ma la minore è più stridente e vicina, la maggiore è naturale e melodica.</li>
+        <li><strong>3ª minore vs 3ª maggiore</strong> — la minore ha un colore scuro/triste, la maggiore è aperta/luminosa.</li>
+        <li><strong>4ª giusta vs Tritono</strong> — la 4ª è stabile, il tritono è instabile e "vuole" risolvere.</li>
+        <li><strong>5ª giusta vs 6ª minore</strong> — la 5ª è potente e vuota, la 6ª è più "cantabile" ed espressiva.</li>
+        <li><strong>7ª minore vs 7ª maggiore</strong> — la minore è "blues", la maggiore è tesa e quasi dissonante.</li>
+    </ul>
+
+    <h3>La direzione conta</h3>
+    <p>Un intervallo ascendente e lo stesso intervallo discendente attivano risposte emotive diverse. La <strong>5ª ascendente</strong> (do→sol) suona eroica; la <strong>5ª discendente</strong> (sol→do) suona conclusiva. Allena entrambe le direzioni separatamente.</p>
+
+    <div class="box box-tip">
+        <strong>💡 Sessioni brevi e frequenti</strong>
+        L'ear training funziona meglio con sessioni da <strong>10-15 minuti al giorno</strong> piuttosto che con ore sporadiche. La regolarità è la chiave per consolidare le connessioni neurali che permettono il riconoscimento automatico.
+    </div>
+
+    <p style="text-align:center;"><a href="#" onclick="window.close(); return false;" class="play-btn">Chiudi</a></p>
+
+</div><!-- content-box -->
+
+<div class="banner"></div>
+
+<div class="nav-links">
+    <a href="../">&#8592; Musica</a>
+    <a href="../../index.html">Home Giochi</a>
+    <a href="../../privacy.html" target="_blank">Privacy Policy</a> |
+    <a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)">Gestisci Cookie</a>
+</div>
+
+<p style="text-align:center; font-size:0.8em; color:#999; margin-top:15px;">© 2026 Luciano Manenti</p>
+
+<script>
+    function goBack() {
+        if (document.referrer) window.history.back();
+        else window.location.href = 'index.html';
+    }
+    (function() {
+        var nascosto = false;
+        var observer = new MutationObserver(function() {
+            if (nascosto) return;
+            var divs = document.querySelectorAll('body > div');
+            for (var i = 0; i < divs.length; i++) {
+                if (divs[i].shadowRoot && !divs[i].className && (divs[i].getAttribute('style')||'').length > 5000) {
+                    divs[i].style.setProperty('display', 'none', 'important');
+                    nascosto = true;
+                    observer.disconnect();
+                    return;
+                }
+            }
+        });
+        observer.observe(document.body, { childList: true });
+    })();
+</script>
+</body>
+</html>

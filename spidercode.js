@@ -249,7 +249,7 @@ var scala = {
 		scala.besttime = 0;
 		scala.bestscore = 0;
 		scala.compresse = [];
-		scala.limitecompresse = 24;
+		scala.limitecompresse = 18;
 
 		scala.fautocomplete = false;
 		scala.dirty = true;

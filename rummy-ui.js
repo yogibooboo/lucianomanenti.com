@@ -1,4 +1,4 @@
-// rummy-ui.js v1.0
+// rummy-ui.js v2.7
 // Gin Rummy — rendering, event handling, language, modals
 
 'use strict';
@@ -51,6 +51,10 @@
             if (el) el.textContent = linkMap[id];
         });
 
+        // Reset "prossima mano" label (solo se non siamo in attesa del click finale)
+        var lblProssima = document.getElementById('btn-prossima-mano-lbl');
+        if (lblProssima && !_pendingFinePartita) lblProssima.textContent = Core.t('btn-prossima-mano-lbl');
+
         // Active lang button
         ['it', 'en'].forEach(function (l) {
             var btn = document.getElementById('btn-lang-' + l);
@@ -102,6 +106,7 @@
     var _forcedDraw   = false; // giocatore deve pescare dal mazzo (entrambi hanno passato upcard)
     var _pendingKnock = false; // KNOCK premuto: la prossima selezione carta esegue il knock
     var _pendingGin   = false; // GIN premuto: la prossima selezione carta esegue il gin
+    var _pendingFinePartita = null; // 'giocatore'|'avversario' se stiamo mostrando le carte dell'ultima mano
     var _suoni        = {};
 
     function _playSound(nome) {
@@ -497,6 +502,9 @@
             risEl.innerHTML = lines.join('<br>');
         }
 
+        var esitoEl = document.getElementById('meld-esito-finale');
+        if (esitoEl) esitoEl.style.display = 'none';
+
         var layoffHint = document.getElementById('label-layoff-istr');
         var btnConferma = document.getElementById('btn-conferma-layoff');
         var btnProssima = document.getElementById('btn-prossima-mano');
@@ -584,19 +592,23 @@
     }
 
     function mostraModalFine(partitaFinita, vincitorePartita, risultato) {
-        var puntiTesto = game.puntiGiocatore + ' - ' + game.puntiAvversario;
         if (partitaFinita) {
-            if (vincitorePartita === 'giocatore') {
-                document.getElementById('punteggio-finale-vinto').textContent = puntiTesto;
-                nascondiModal('modal-nuova');
-                mostraModal('modal-vittoria');
-            } else {
-                document.getElementById('punteggio-finale-perso').textContent = puntiTesto;
-                nascondiModal('modal-nuova');
-                mostraModal('modal-sconfitta');
+            nascondiModal('modal-nuova');
+            _pendingFinePartita = vincitorePartita;
+            var lblNext = document.getElementById('btn-prossima-mano-lbl');
+            if (lblNext) lblNext.textContent = Core.t('btn-nuova-v');
+            var infoMazziere = document.getElementById('info-prossimo-mazziere');
+            if (infoMazziere) infoMazziere.style.display = 'none';
+            mostraKnockPanel(risultato);
+            // Mostra HAI VINTO / HAI PERSO nel pannello carte
+            var esitoEl = document.getElementById('meld-esito-finale');
+            if (esitoEl) {
+                var vinto = vincitorePartita === 'giocatore';
+                esitoEl.textContent = Core.t(vinto ? 'meld-esito-vinto' : 'meld-esito-perso');
+                esitoEl.className = vinto ? 'vinto' : 'perso';
+                esitoEl.style.display = '';
             }
         } else {
-            // Show knock panel and continue to next hand
             mostraKnockPanel(risultato);
         }
     }
@@ -747,12 +759,17 @@
             btnNext.addEventListener('click', function () {
                 btnNext.style.display = 'none';
                 nascondiKnockPanel();
-                Game.nuovaMano();
-                selectedCardId = null;
-                _pendingKnock = false; _pendingGin = false;
-                layoffSelected.clear();
-                render();
-                _animaDeal(function () { _avviaFaseUpcard(); });
+                if (_pendingFinePartita !== null) {
+                    _pendingFinePartita = null;
+                    mostraModalNuova();
+                } else {
+                    Game.nuovaMano();
+                    selectedCardId = null;
+                    _pendingKnock = false; _pendingGin = false;
+                    layoffSelected.clear();
+                    render();
+                    _animaDeal(function () { _avviaFaseUpcard(); });
+                }
             });
         }
 
@@ -786,6 +803,9 @@
                 _pendingKnock = false; _pendingGin = false;
                 layoffSelected.clear();
                 _forcedDraw = false;
+                _scoperte = false;
+                var btnSc = document.getElementById('btn-scoperte');
+                if (btnSc) btnSc.classList.remove('attivo');
                 nascondiKnockPanel();
                 render();
                 _animaDeal(function () { _avviaFaseUpcard(); });
@@ -817,7 +837,11 @@
         ['btn-nuova-v', 'btn-nuova-s'].forEach(function (id) {
             var btn = document.getElementById(id);
             if (btn) btn.addEventListener('click', function () {
-                location.reload();
+                nascondiModal('modal-vittoria');
+                nascondiModal('modal-sconfitta');
+                nascondiKnockPanel();
+                _pendingFinePartita = null;
+                mostraModalNuova(); // ripristina variante/tipo/limite della partita appena finita
             });
         });
 

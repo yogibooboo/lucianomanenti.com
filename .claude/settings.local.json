@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(python -c \":*)",
-      "Bash(grep -v \"//\")"
+      "Bash(grep -v \"//\")",
+      "PowerShell(Start-Process -WindowStyle Hidden python -ArgumentList '-m','http.server','8741' -WorkingDirectory '.'; Start-Sleep -Seconds 1; \\(Invoke-WebRequest -UseBasicParsing http://localhost:8741/musica/index-en.html\\).StatusCode)"
     ]
   }
 }

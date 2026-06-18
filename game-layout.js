@@ -35,7 +35,17 @@ var ENABLE_AMAZON_ON_FINISH = true;   // se true, abilita l'affiancamento del ba
 // Al termine, rimettilo a true. Lo Shield ti proteggerà automaticamente dai click futuri.
 var ADSENSE_GLOBAL_ENABLED = true;  // Interruttore di sicurezza principale
 var ADSENSE_ONLY_LEFT = true;       // Se true, AdSense carica solo a sinistra
-var ADSENSE_SHIELD_DURATION = 12 * 60 * 60 * 1000; // 12 ore di blocco dopo un click
+
+// Controllo attivazione blocco annunci su richiesta
+var adsDisabled = localStorage.getItem('ads_disabled') === '1';
+if (adsDisabled) {
+    AMAZON_BANNERS_ENABLED = false;
+    AMAZON_BANNERS_RIGHT = false;
+    ENABLE_AMAZON_ON_FINISH = false;
+    ADSENSE_GLOBAL_ENABLED = false;
+}
+
+var ADSENSE_SHIELD_DURATION = 20 * 60 * 1000; // 20 minuti di blocco dopo un click
 var _isMouseOverAdSense = false;
 
 function getInternalUserId() {
@@ -473,8 +483,8 @@ function adjustLayout() {
             }
         } else if (amazonEnabled && width === 300 && height === 250) {
             amazonGeneric = true;
-            amazonGenericImg = '/banner/galleryamazon300x250.jpg';
-            amazonGenericLink = '/view_gallery.html';
+            amazonGenericImg = (window.currentLang === 'en') ? '/banner/provamusica-en.jpg' : '/banner/provamusica.jpg';
+            amazonGenericLink = (window.currentLang === 'en') ? '/musica/index-en.html' : '/musica/';
         }
 
         // Map fixed sizes to provided AdSense Slot IDs
@@ -1126,6 +1136,10 @@ function setupAmazonFinishBanner(formId, options) {
                     'format': 'finish',
                     'asin': deal.asin || '',
                     'page_location': window.location.href,
+                    'game_scale': window.gameScale !== undefined ? Math.round(window.gameScale * 100) / 100 : null,
+                    'viewport_w': window.innerWidth,
+                    'viewport_h': window.innerHeight,
+                    'device_pixel_ratio': window.devicePixelRatio || 1,
                     'non_interaction': true
                 });
             }
@@ -1144,6 +1158,10 @@ function setupAmazonFinishBanner(formId, options) {
                     'asin': deal.asin || '',
                     'tempo_esposizione': exposureSeconds,
                     'page_location': window.location.href,
+                    'game_scale': window.gameScale !== undefined ? Math.round(window.gameScale * 100) / 100 : null,
+                    'viewport_w': window.innerWidth,
+                    'viewport_h': window.innerHeight,
+                    'device_pixel_ratio': window.devicePixelRatio || 1,
                     'non_interaction': false
                 });
             }

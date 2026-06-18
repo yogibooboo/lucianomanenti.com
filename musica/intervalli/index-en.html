@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9335537153013492" crossorigin="anonymous"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-WRBDRDQ4L8');
+        window.currentLang = 'en';
+    </script>
+
+    <title>Musical Intervals - Ear Training - lucianomanenti.com</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="alternate" hreflang="it" href="index.html">
+    <link rel="alternate" hreflang="en" href="index-en.html">
+    <link rel="icon" type="image/png" href="../../favicon/favicon-96x96.png" sizes="96x96">
+    <link rel="icon" type="image/svg+xml" href="../../favicon/favicon.svg">
+    <link rel="shortcut icon" href="../../favicon/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="../../favicon/apple-touch-icon.png">
+    <link rel="manifest" href="../../favicon/site.webmanifest">
+    <link rel="stylesheet" href="../musica.css?v=1.1">
+    <link rel="stylesheet" href="intervalli.css?v=2.3">
+    <meta name="Description" content="Train your musical ear by identifying intervals: minor 2nd, major 3rd, perfect 5th and more. Free online ear training.">
+
+    <script>
+        window.gameConfig = {
+            gaPrefix: 'MUSINT_',
+            hideLegalFooter: true,
+            adsenseActive: true,
+            adsenseSlots: {
+                '300x600': '5266697442',
+                '160x600': '1167670336',
+                '300x250': '8471445288',
+                '160x250': '8663016975'
+            }
+        };
+    </script>
+    <script src="../../game-layout.js?v=4.6"></script>
+</head>
+<body>
+
+<div class="main-container">
+    <div id="sidebar-left" class="sidebar"></div>
+    <div id="sidebar-right" class="sidebar"></div>
+
+    <div id="campogioco">
+
+        <div class="lang-switch-game">
+            <a href="index.html">IT</a>
+            <a href="index-en.html" class="active">EN</a>
+        </div>
+
+        <!-- Top bar -->
+        <div id="topbar">
+            <a href="../index-en.html" class="back-link">&#8592; Music</a>
+            <span class="title">&#9834; Intervals</span>
+            <div id="score-area">
+                <span id="score">0 / 0</span>
+                <button id="btn-reset">Reset</button>
+            </div>
+        </div>
+
+        <!-- Mode selector -->
+        <div id="mode-selector">
+            <button class="btn-mode active" data-mode="ascendente">&#8679; Ascending</button>
+            <button class="btn-mode" data-mode="discendente">&#8681; Descending</button>
+            <button class="btn-mode" data-mode="armonico">&#8645; Harmonic</button>
+        </div>
+
+        <!-- Difficulty selector -->
+        <div id="diff-selector">
+            <button class="btn-diff active" data-diff="1">1 &mdash; Basic</button>
+            <button class="btn-diff" data-diff="2">2 &mdash; Easy</button>
+            <button class="btn-diff" data-diff="3">3 &mdash; Medium</button>
+            <button class="btn-diff" data-diff="4">4 &mdash; Expert</button>
+            <button class="btn-diff" data-diff="5">5 &mdash; Extended</button>
+        </div>
+
+        <!-- Note selector -->
+        <div id="note-selector">
+            <span class="nota-label">Root note:</span>
+            <button id="btn-root-random" class="active">&#x21BA; Random</button>
+            <button id="btn-root-prev" class="btn-root-nav">&#9664;</button>
+            <span id="root-note-display">C4</span>
+            <button id="btn-root-next" class="btn-root-nav">&#9654;</button>
+        </div>
+
+        <!-- Play area + Staff -->
+        <div id="play-area">
+            <div id="staff-bg"></div>
+            <div id="play-col">
+                <button id="btn-play" disabled title="Loading samples...">&#9654;</button>
+                <div id="feedback"></div>
+            </div>
+            <svg id="staff-svg" xmlns="http://www.w3.org/2000/svg"
+                 viewBox="0 0 220 130" preserveAspectRatio="xMidYMid meet"></svg>
+        </div>
+
+        <!-- Piano keyboard -->
+        <div id="piano-keyboard"></div>
+
+        <!-- Label -->
+        <div id="label-scegli">Choose the interval</div>
+
+        <!-- Interval grid -->
+        <div id="grid-intervalli">
+            <button class="btn-interval" data-id="min2" disabled>Minor 2nd</button>
+            <button class="btn-interval" data-id="mag2" disabled>Major 2nd</button>
+            <button class="btn-interval" data-id="min3" disabled>Minor 3rd</button>
+            <button class="btn-interval" data-id="mag3" disabled>Major 3rd</button>
+            <button class="btn-interval" data-id="qua4" disabled>Perfect 4th</button>
+            <button class="btn-interval" data-id="tri"  disabled>Tritone</button>
+            <button class="btn-interval" data-id="qua5" disabled>Perfect 5th</button>
+            <button class="btn-interval" data-id="min6" disabled>Minor 6th</button>
+            <button class="btn-interval" data-id="mag6" disabled>Major 6th</button>
+            <button class="btn-interval" data-id="min7" disabled>Minor 7th</button>
+            <button class="btn-interval" data-id="mag7" disabled>Major 7th</button>
+            <button class="btn-interval" data-id="ott"  disabled>Octave</button>
+        </div>
+
+        <!-- Extended intervals grid -->
+        <div id="grid-estesi">
+            <button class="btn-interval btn-ext" data-id="min9"  disabled>Minor 9th</button>
+            <button class="btn-interval btn-ext" data-id="mag9"  disabled>Major 9th</button>
+            <button class="btn-interval btn-ext" data-id="min10" disabled>Minor 10th</button>
+            <button class="btn-interval btn-ext" data-id="mag10" disabled>Major 10th</button>
+            <button class="btn-interval btn-ext" data-id="qua11" disabled>Perfect 11th</button>
+        </div>
+
+        <!-- Bottom nav -->
+        <div id="bottom-nav">
+            <div class="btn-nav-group">
+                <a href="../index-en.html" class="btn-nav btn-nav-music">&#8592; Music</a>
+                <a href="guida-intervalli-en.html" target="_blank" class="btn-nav btn-nav-help">Instructions</a>
+                <a href="../../index-en.html" class="btn-nav btn-nav-home">Games</a>
+                <a href="../../aboutme-en.html" target="_blank" class="btn-nav btn-nav-contact">Write to us</a>
+            </div>
+            <div class="nav-links-small">
+                <a href="../../privacy.html" target="_blank">Privacy</a>
+                <a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)">Manage Cookies</a>
+            </div>
+        </div>
+
+    </div><!-- campogioco -->
+</div>
+
+<script src="../../site.js?v=1.1"></script>
+<script src="../lib/tone.js"></script>
+<script src="intervalli.js?v=1.0"></script>
+<script>
+    (function() {
+        var nascosto = false;
+        var observer = new MutationObserver(function() {
+            if (nascosto) return;
+            var divs = document.querySelectorAll('body > div');
+            for (var i = 0; i < divs.length; i++) {
+                if (divs[i].shadowRoot && !divs[i].className && (divs[i].getAttribute('style')||'').length > 5000) {
+                    divs[i].style.setProperty('display', 'none', 'important');
+                    nascosto = true;
+                    observer.disconnect();
+                    return;
+                }
+            }
+        });
+        observer.observe(document.body, { childList: true });
+    })();
+</script>
+</body>
+</html>

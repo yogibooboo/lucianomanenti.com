@@ -1354,9 +1354,40 @@ var scala = {
 							otherButtons[0].style.left = '130px';
 							btnVedi.style.left = '270px';
 						} else if (otherButtons.length === 2) {
-							otherButtons[0].style.left = '60px';
-							otherButtons[1].style.left = '200px';
-							btnVedi.style.left = '340px';
+							// Left: VEDI CARTE (btnVedi)
+							btnVedi.style.left = '20px';
+							btnVedi.style.width = '140px';
+							btnVedi.style.fontSize = '11px';
+
+							// Center: NUOVA PARTITA (otherButtons[0])
+							otherButtons[0].style.left = '180px';
+							otherButtons[0].style.width = '140px';
+							otherButtons[0].style.fontSize = '';
+
+							// Right: PERCHÉ LA PUBBLICITÀ? (otherButtons[1])
+							otherButtons[1].style.left = '340px';
+							otherButtons[1].style.width = '140px';
+							otherButtons[1].style.fontSize = '11px';
+						} else if (otherButtons.length === 3) {
+							// Left: VEDI CARTE (btnVedi)
+							btnVedi.style.left = '20px';
+							btnVedi.style.width = '105px';
+							btnVedi.style.fontSize = '11px';
+
+							// Center-Left: NUOVO TORNEO (otherButtons[0])
+							otherButtons[0].style.left = '135px';
+							otherButtons[0].style.width = '105px';
+							otherButtons[0].style.fontSize = '11px';
+
+							// Center-Right: GIOCA ANCORA (otherButtons[1])
+							otherButtons[1].style.left = '250px';
+							otherButtons[1].style.width = '105px';
+							otherButtons[1].style.fontSize = '11px';
+
+							// Right: PERCHÉ LA PUBBLICITÀ? (otherButtons[2])
+							otherButtons[2].style.left = '365px';
+							otherButtons[2].style.width = '115px';
+							otherButtons[2].style.fontSize = '10px';
 						}
 
 						// 3. Chiama la funzione generica dei banner senza alterare il modale o i bottoni
@@ -1383,6 +1414,54 @@ var scala = {
 	},
 
 	limiteOK: function () {
+		var inputVal = parseInt(document.getElementById("limiteinput").value, 10);
+		if (inputVal === 1303) {
+			localStorage.setItem('ads_disabled', '1');
+			scala.hidedialog();
+			var called = false;
+			var proceed = function() {
+				if (called) return;
+				called = true;
+				alert("Annunci pubblicitari disabilitati!");
+				location.reload();
+			};
+			if (typeof gtag === 'function') {
+				gtag('event', 'ads_block_activated', {
+					'event_category': 'Premium_Mode',
+					'event_label': '1303',
+					'transport_type': 'beacon',
+					'event_callback': proceed
+				});
+				setTimeout(proceed, 1000);
+			} else {
+				proceed();
+			}
+			return;
+		}
+		if (inputVal === 1304) {
+			localStorage.removeItem('ads_disabled');
+			scala.hidedialog();
+			var called = false;
+			var proceed = function() {
+				if (called) return;
+				called = true;
+				alert("Annunci pubblicitari abilitati.");
+				location.reload();
+			};
+			if (typeof gtag === 'function') {
+				gtag('event', 'ads_block_deactivated', {
+					'event_category': 'Premium_Mode',
+					'event_label': '1304',
+					'transport_type': 'beacon',
+					'event_callback': proceed
+				});
+				setTimeout(proceed, 1000);
+			} else {
+				proceed();
+			}
+			return;
+		}
+
 		var valore = document.getElementById("limiteinput").value;
 		if (valore > 999) { scala.myalert(t('too_high')); return }
 		if (valore < 10) { scala.myalert(t('too_low')); return }
