@@ -458,7 +458,7 @@ function fmtTime(secs) {
 }
 
 function buildWinRecordHtml(newFlags) {
-    var isAmazon = window.ENABLE_AMAZON_ON_FINISH;
+    var isAmazon = window.ENABLE_BANNER_ON_FINISH;
     var isEn = document.documentElement.lang === 'en';
     var rec = cachedRecords;
     var movesWord = isEn ? 'moves' : 'mosse';
@@ -514,7 +514,7 @@ function checkWin() {
         if (existing) existing.remove();
         box.insertAdjacentHTML('beforeend', buildWinRecordHtml(newFlags));
 
-        if (window.ENABLE_AMAZON_ON_FINISH) {
+        if (window.ENABLE_BANNER_ON_FINISH) {
             if (typeof setupAmazonFinishBanner === 'function') {
                 setupAmazonFinishBanner('haivinto', {
                     modalStyle: {
@@ -572,7 +572,7 @@ function confirmNewGame() {
     var box = document.getElementById('confermatermina');
     if (!box) return;
 
-    if (window.ENABLE_AMAZON_ON_FINISH) {
+    if (window.ENABLE_BANNER_ON_FINISH) {
         if (typeof setupAmazonFinishBanner === 'function') {
             setupAmazonFinishBanner('confermatermina', {
                 modalStyle: {
@@ -583,8 +583,8 @@ function confirmNewGame() {
                     overflow: 'visible'
                 },
                 targetTop: 470,
-                bannerHeight: 460,
-                bannerTopOffset: 465,
+                bannerHeight: 300,
+                bannerTopOffset: 325,
                 leftOffset: 0,
                 showVediCarte: false,
                 onSetupButtons: function (modal) {
@@ -1029,7 +1029,7 @@ document.addEventListener('DOMContentLoaded', function() {
             box.style.left = '';
             box.style.background = '';
             box.style.overflow = '';
-            var oldBanner = box.querySelector('.amazon-finish-banner');
+            var oldBanner = box.querySelector('.finish-banner');
             if (oldBanner) oldBanner.remove();
         });
     }

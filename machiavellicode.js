@@ -693,7 +693,7 @@ var scala = {
 					box.style.left = '';
 					box.style.background = '';
 					box.style.overflow = '';
-					var oldBanner = box.querySelector('.amazon-finish-banner');
+					var oldBanner = box.querySelector('.finish-banner');
 					if (oldBanner) oldBanner.remove();
 				}
 			});
@@ -1167,7 +1167,7 @@ var scala = {
 		this.fmodale = true;
 
 		// Gestione Amazon Finish Banner per Machiavelli
-		if (window.ENABLE_AMAZON_ON_FINISH && typeof setupAmazonFinishBanner === 'function') {
+		if (window.ENABLE_BANNER_ON_FINISH && typeof setupAmazonFinishBanner === 'function') {
 			var id = dialogo.replace('#', '');
 			if (id === 'haivinto' || id === 'haiperso' || id === 'haivintotorneo' || id === 'haipersotorneo') {
 				try {
@@ -1321,18 +1321,21 @@ var scala = {
 		var box = document.getElementById('confermatermina');
 		if (!box) return;
 
-		if (window.ENABLE_AMAZON_ON_FINISH && typeof setupAmazonFinishBanner === 'function') {
+		scala.formtohide = '#confermatermina';
+		scala.mostradialogo('confermatermina');
+
+		if (window.ENABLE_BANNER_ON_FINISH && typeof setupAmazonFinishBanner === 'function') {
 			setupAmazonFinishBanner('confermatermina', {
 				modalStyle: {
 					width: '700px',
 					height: '180px',
-					left: '450px',
+					left: '162px',
 					background: '#2d5a4a',
 					overflow: 'visible'
 				},
 				targetTop: 470,
-				bannerHeight: 460,
-				bannerTopOffset: 465,
+				bannerHeight: 390,
+				bannerTopOffset: 415,
 				leftOffset: 0,
 				showVediCarte: false,
 				onSetupButtons: function (modal) {
@@ -1382,8 +1385,6 @@ var scala = {
 				msg.style.marginTop = '';
 			}
 		}
-		scala.formtohide = '#confermatermina';
-		scala.mostradialogo('confermatermina');
 	},
 
 	nuovo2: function () {

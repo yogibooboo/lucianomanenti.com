@@ -27,7 +27,9 @@ var AMAZON_BANNERS_RIGHT = true;   // if true, Amazon banners load on right side
 var AMAZON_FALLBACK_ON_SHIELD = true; // se true, Amazon subentra a sinistra quando AdSense viene bloccato dallo scudo
 var AMAZON_USE_NEW_DEALS = true;      // se true, usa newdeals.json e i pesi. Se false, usa il deals.json tradizionale
 var AMAZON_DEALS_PULSE_THRESHOLD = 35; // Soglia di sconto oltre la quale il badge pulsa (default 35%)
-var ENABLE_AMAZON_ON_FINISH = true;   // se true, abilita l'affiancamento del banner Amazon e la gestione del fine partita
+var ENABLE_BANNER_ON_FINISH = true;   // se true, abilita il banner di fine partita (AdSense o Amazon)
+var ENABLE_ADSENSE_ON_FINISH = true;  // se true, usa AdSense sul finish (se condizioni ok); altrimenti Amazon
+var ADSENSE_FINISH_SCALE_THRESHOLD = 1.0; // gameScale minimo per usare AdSense sul finish (sotto soglia → Amazon)
 // ─────────────────────────────────────────────────────────────────────────────
 
 // ─── ADSENSE CONFIG & SHIELD ─────────────────────────────────────────────────
@@ -41,7 +43,7 @@ var adsDisabled = localStorage.getItem('ads_disabled') === '1';
 if (adsDisabled) {
     AMAZON_BANNERS_ENABLED = false;
     AMAZON_BANNERS_RIGHT = false;
-    ENABLE_AMAZON_ON_FINISH = false;
+    ENABLE_BANNER_ON_FINISH = false;
     ADSENSE_GLOBAL_ENABLED = false;
 }
 
@@ -960,10 +962,16 @@ window.addEventListener('resize', adjustLayout);
 
 // ─── INTEGRATION AMAZON BANNER ON GAME FINISH (GENERIC) ────────────────────
 function setupAmazonFinishBanner(formId, options) {
-    if (!ENABLE_AMAZON_ON_FINISH) return;
+    if (!ENABLE_BANNER_ON_FINISH) {
+        console.log('[setupAmazonFinishBanner] Aborted: ENABLE_BANNER_ON_FINISH is false');
+        return;
+    }
 
     var modal = document.getElementById(formId);
-    if (!modal) return;
+    if (!modal) {
+        console.log('[setupAmazonFinishBanner] Aborted: Modal element not found for ID: ' + formId);
+        return;
+    }
 
     options = options || {};
 
@@ -996,7 +1004,96 @@ function setupAmazonFinishBanner(formId, options) {
 
     var isEnglish = (window.currentLang === 'en');
 
-    // 3. Dimensionamento del Banner Amazon
+    // 3. Scelta AdSense vs Amazon
+    var scaleOk = (window.gameScale === undefined || window.gameScale >= ADSENSE_FINISH_SCALE_THRESHOLD);
+    var shieldActive = isAdSenseShieldActive();
+    var useAdSense = ENABLE_ADSENSE_ON_FINISH &&
+                     ADSENSE_GLOBAL_ENABLED &&
+                     !devMode &&
+                     !shieldActive &&
+                     window.gameConfig && window.gameConfig.adsenseActive &&
+                     scaleOk;
+
+    console.log('[setupAmazonFinishBanner] Decision logic for ' + formId + ':', {
+        useAdSense: useAdSense,
+        ENABLE_ADSENSE_ON_FINISH: ENABLE_ADSENSE_ON_FINISH,
+        ADSENSE_GLOBAL_ENABLED: ADSENSE_GLOBAL_ENABLED,
+        notDevMode: !devMode,
+        isAdSenseShieldActive: shieldActive,
+        gameConfigActive: !!(window.gameConfig && window.gameConfig.adsenseActive),
+        gameScale: window.gameScale,
+        scaleOk: scaleOk,
+        threshold: ADSENSE_FINISH_SCALE_THRESHOLD
+    });
+
+    // Rimuovi vecchio banner se esistente
+    var oldBanner = modal.querySelector('.finish-banner');
+    if (oldBanner) {
+        console.log('[setupAmazonFinishBanner] Removing old banner from modal ' + formId);
+        oldBanner.remove();
+    }
+
+    if (useAdSense || (devMode && ENABLE_ADSENSE_ON_FINISH && window.gameConfig && window.gameConfig.adsenseActive)) {
+        var adContainer = document.createElement('div');
+        adContainer.className = 'finish-banner';
+
+        var bannerHeight = options.bannerHeight !== undefined ? options.bannerHeight : (targetTop - 15);
+        if (bannerHeight < 150) bannerHeight = 150;
+        var bannerWidth = options.bannerWidth !== undefined ? options.bannerWidth : 700;
+        var bannerTopOffset = options.bannerTopOffset !== undefined ? options.bannerTopOffset : (targetTop - 5);
+        var leftOffset = options.leftOffset !== undefined ? options.leftOffset : -200;
+
+        adContainer.style.cssText = 'position:absolute; top:-' + bannerTopOffset + 'px; left:' + leftOffset + 'px; width:' + bannerWidth + 'px; height:' + bannerHeight + 'px; z-index:50000; overflow:hidden; border-radius:8px; box-shadow:0 4px 15px rgba(0,0,0,0.3);';
+
+        if (devMode) {
+            console.log('[setupAmazonFinishBanner] Rendering AdSense simulation (devMode) inside ' + formId);
+            adContainer.innerHTML = '<div style="width:100%;height:100%;background:#222;border:2px dashed #ffee00;display:flex;flex-direction:column;align-items:center;justify-content:center;box-sizing:border-box;padding:15px;text-align:center;">' +
+                '<span style="color:#ffee00;font-weight:bold;font-size:14px;">SIMULAZIONE ADSENSE FINISH</span>' +
+                '<span style="font-size:11px;color:#aaa;margin-top:10px;">' + bannerWidth + 'x' + bannerHeight + 'px (interni) | scale: ' + (window.gameScale !== undefined ? window.gameScale.toFixed(2) : 'n/a') + '</span>' +
+                '</div>';
+        } else {
+            console.log('[setupAmazonFinishBanner] Rendering real AdSense banner inside ' + formId + ' and calling push()');
+            var ins = document.createElement('ins');
+            ins.className = 'adsbygoogle';
+            ins.style.cssText = 'display:block;width:' + bannerWidth + 'px;height:' + bannerHeight + 'px;';
+            ins.setAttribute('data-ad-client', 'ca-pub-9335537153013492');
+            ins.setAttribute('data-ad-slot', '6538837230');
+            ins.setAttribute('onmouseenter', 'window._isMouseOverAdSense = true;');
+            ins.setAttribute('onmouseleave', 'window._isMouseOverAdSense = false;');
+            adContainer.appendChild(ins);
+            modal.appendChild(adContainer);
+            (window.adsbygoogle = window.adsbygoogle || []).push({});
+            console.log('AdSense Push (Finish): Slot 6538837230 in ' + formId + ' (' + bannerWidth + 'x' + bannerHeight + ')');
+            
+            // Diagnostics to check if the ad unit is filled, blocked, or invisible after 2 seconds
+            setTimeout(function() {
+                var checkedIns = modal.querySelector('.finish-banner ins');
+                if (checkedIns) {
+                    console.log('[setupAmazonFinishBanner] AdSense element diagnostics (after 2s):', {
+                        className: checkedIns.className,
+                        width: checkedIns.offsetWidth,
+                        height: checkedIns.offsetHeight,
+                        display: checkedIns.style.display || getComputedStyle(checkedIns).display,
+                        visibility: checkedIns.style.visibility || getComputedStyle(checkedIns).visibility,
+                        status: checkedIns.getAttribute('data-ad-status') || 'pending/no-status',
+                        hasIframe: checkedIns.getElementsByTagName('iframe').length > 0,
+                        iframeCount: checkedIns.getElementsByTagName('iframe').length
+                    });
+                } else {
+                    console.log('[setupAmazonFinishBanner] AdSense element diagnostics (after 2s): ins element not found!');
+                }
+            }, 2000);
+        }
+
+        if (devMode) modal.appendChild(adContainer);
+
+        if (typeof options.onSetupButtons === 'function') options.onSetupButtons(modal);
+        return;
+    }
+
+    console.log('[setupAmazonFinishBanner] Falling back to Amazon banner for ' + formId);
+
+    // 4. Dimensionamento del Banner Amazon
     var bannerHeight = options.bannerHeight;
     if (bannerHeight === undefined) {
         bannerHeight = targetTop - 15;
@@ -1011,11 +1108,7 @@ function setupAmazonFinishBanner(formId, options) {
     var bannerTopOffset = options.bannerTopOffset !== undefined ? options.bannerTopOffset : (targetTop - 5);
     var leftOffset = options.leftOffset !== undefined ? options.leftOffset : -200;
 
-    // Rimuovi vecchio banner se esistente
-    var oldBanner = modal.querySelector('.amazon-finish-banner');
-    if (oldBanner) {
-        oldBanner.remove();
-    }
+    // (rimozione già gestita sopra con .finish-banner)
 
     // Selezione del deal
     var deal = null;
@@ -1032,7 +1125,7 @@ function setupAmazonFinishBanner(formId, options) {
         var dealId = titleText.length > 60 ? titleText.substring(0, 60) + '...' : titleText;
 
         var aLink = document.createElement('a');
-        aLink.className = 'amazon-finish-banner';
+        aLink.className = 'finish-banner amazon-finish-banner';
         aLink.href = linkUrl;
         aLink.target = '_blank';
         aLink.rel = 'sponsored noopener';

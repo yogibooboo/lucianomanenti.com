@@ -1040,7 +1040,7 @@ var scala = {
 					box.style.left = '';
 					box.style.background = '';
 					box.style.overflow = '';
-					var oldBanner = box.querySelector('.amazon-finish-banner');
+					var oldBanner = box.querySelector('.finish-banner');
 					if (oldBanner) oldBanner.remove();
 				}
 			});
@@ -1190,7 +1190,7 @@ var scala = {
 		scala.dirty = true;
 
 		// Gestione Amazon Finish Banner per Spider
-		if (window.ENABLE_AMAZON_ON_FINISH && typeof setupAmazonFinishBanner === 'function') {
+		if (window.ENABLE_BANNER_ON_FINISH && typeof setupAmazonFinishBanner === 'function') {
 			var id = dialogo.replace('#', '');
 			if (id === 'haivinto' || id === 'haiperso' || id === 'haivintotorneo' || id === 'haipersotorneo') {
 				try {
@@ -1318,7 +1318,10 @@ var scala = {
 		var box = document.getElementById('confermatermina');
 		if (!box) return;
 
-		if (window.ENABLE_AMAZON_ON_FINISH && typeof setupAmazonFinishBanner === 'function') {
+		scala.formtohide = '#confermatermina';
+		scala.mostradialogo('confermatermina');
+
+		if (window.ENABLE_BANNER_ON_FINISH && typeof setupAmazonFinishBanner === 'function') {
 			setupAmazonFinishBanner('confermatermina', {
 				modalStyle: {
 					width: '700px',
@@ -1328,8 +1331,8 @@ var scala = {
 					overflow: 'visible'
 				},
 				targetTop: 470,
-				bannerHeight: 460,
-				bannerTopOffset: 465,
+				bannerHeight: 390,
+				bannerTopOffset: 415,
 				leftOffset: 0,
 				showVediCarte: false,
 				onSetupButtons: function (modal) {
@@ -1379,8 +1382,6 @@ var scala = {
 				msg.style.marginTop = '';
 			}
 		}
-		scala.formtohide = '#confermatermina';
-		scala.mostradialogo('confermatermina');
 	},
 
 

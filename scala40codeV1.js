@@ -1263,7 +1263,7 @@ var scala = {
 		this.fmodale = true;
 
 		// Gestione Amazon Finish Banner per Scala 40
-		if (window.ENABLE_AMAZON_ON_FINISH && typeof setupAmazonFinishBanner === 'function') {
+		if (window.ENABLE_BANNER_ON_FINISH && typeof setupAmazonFinishBanner === 'function') {
 			var id = dialogo.replace('#', '');
 			if (id === 'haivinto' || id === 'haiperso' || id === 'haivintotorneo' || id === 'haipersotorneo') {
 				try {
