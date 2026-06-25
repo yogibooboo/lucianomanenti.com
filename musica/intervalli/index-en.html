@@ -22,7 +22,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="../../favicon/apple-touch-icon.png">
     <link rel="manifest" href="../../favicon/site.webmanifest">
     <link rel="stylesheet" href="../musica.css?v=1.1">
-    <link rel="stylesheet" href="intervalli.css?v=2.3">
+    <link rel="stylesheet" href="intervalli.css?v=1.9">
     <meta name="Description" content="Train your musical ear by identifying intervals: minor 2nd, major 3rd, perfect 5th and more. Free online ear training.">
 
     <script>
@@ -88,6 +88,14 @@
             <button id="btn-root-next" class="btn-root-nav">&#9654;</button>
         </div>
 
+        <!-- Volume slider -->
+        <div id="volume-container">
+            <div id="volume-slider-wrap">
+                <input type="range" id="volume-control" min="-20" max="20" step="1" value="0">
+            </div>
+            <div class="volume-label">Volume</div>
+        </div>
+
         <!-- Play area + Staff -->
         <div id="play-area">
             <div id="staff-bg"></div>
@@ -136,7 +144,7 @@
                 <a href="../index-en.html" class="btn-nav btn-nav-music">&#8592; Music</a>
                 <a href="guida-intervalli-en.html" target="_blank" class="btn-nav btn-nav-help">Instructions</a>
                 <a href="../../index-en.html" class="btn-nav btn-nav-home">Games</a>
-                <a href="../../aboutme-en.html" target="_blank" class="btn-nav btn-nav-contact">Write to us</a>
+                <a href="../../aboutme-en.html" target="_blank" class="btn-nav btn-nav-contact">Write to me</a>
             </div>
             <div class="nav-links-small">
                 <a href="../../privacy.html" target="_blank">Privacy</a>

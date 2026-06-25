@@ -458,8 +458,6 @@
                 key.classList.add('wrong');
             } else if (state.answered && state.currentInterval && state.currentInterval.id === interval.id) {
                 key.classList.add('correct');
-            } else {
-                key.classList.add('answer');
             }
         }
     }
@@ -532,6 +530,7 @@
             state.mode = this.getAttribute('data-mode');
             document.querySelectorAll('.btn-mode').forEach(function (b) { b.classList.remove('active'); });
             this.classList.add('active');
+            if (sampler.loaded && sampler2.loaded && state.currentInterval) playCurrentInterval();
         });
     });
 
@@ -582,11 +581,25 @@
             if (this.classList.contains('inactive')) return;
             var id = this.getAttribute('data-id');
             if (this.classList.contains('wrong')) {
-                playIntervalById(id); // ri-click su errato: suona per confronto
+                playIntervalById(id);
             } else {
+                playIntervalById(id);
                 answer(id);
             }
         });
     });
+
+    var volCtrl = document.getElementById('volume-control');
+    if (volCtrl) {
+        var savedVol = localStorage.getItem('lm_volume');
+        if (savedVol !== null) volCtrl.value = savedVol;
+        sampler.volume.value = parseFloat(volCtrl.value);
+        sampler2.volume.value = parseFloat(volCtrl.value);
+        volCtrl.addEventListener('input', function () {
+            sampler.volume.value = parseFloat(this.value);
+            sampler2.volume.value = parseFloat(this.value);
+            localStorage.setItem('lm_volume', this.value);
+        });
+    }
 
 })();

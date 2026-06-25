@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rail Rush</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="ui">
+    <div id="header">
+      <span id="title">RAIL RUSH</span>
+      <div id="stats">
+        <span>SCORE: <b id="score">0</b></span>
+        <span>LEVEL: <b id="level">1</b></span>
+        <span>TRAINS: <b id="goal">0/0</b></span>
+        <span>LIVES: <b id="lives">3</b></span>
+      </div>
+    </div>
+
+    <div id="toolbar">
+      <span class="hint-text">Click orange/green <b>switches</b> to change route</span>
+      <div id="speed-ctrl">
+        <span class="tool-label">SPEED:</span>
+        <button id="btn-slow">1x</button>
+        <button id="btn-fast">2x</button>
+      </div>
+      <button id="btn-start">START</button>
+    </div>
+
+    <div id="canvas-wrap">
+      <canvas id="gameCanvas"></canvas>
+      <div id="message-overlay" class="hidden">
+        <div id="message-box">
+          <div id="message-title"></div>
+          <div id="message-body"></div>
+          <button id="message-btn">NEXT LEVEL</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>

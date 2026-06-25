@@ -1,4 +1,4 @@
-/* Scale Exercise CSS */
+/* scale.css v1.4 */
 
 .lang-switch-game { right: 160px; }
 
@@ -32,6 +32,39 @@
 #note-selector.fixed .btn-root-nav { background: #16a085; border-color: #2ecc71; color: white; }
 #note-selector.fixed .btn-root-nav:hover { background: #1abc9c; }
 #note-selector.fixed #root-note-display { color: #2ecc71; }
+
+/* ── Volume slider ───────────────────────────────────────────────────────── */
+#volume-container {
+    position: absolute; top: 125px; right: 100px;
+    width: 30px; height: 220px; z-index: 100;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 8px;
+}
+#volume-slider-wrap {
+    width: 30px; height: 160px;
+    display: flex; align-items: center; justify-content: center;
+    overflow: visible;
+}
+#volume-control {
+    -webkit-appearance: none; appearance: none;
+    width: 160px; height: 10px;
+    background: #d3d3d3; outline: none; opacity: 0.7;
+    border-radius: 5px;
+    transform: rotate(-90deg);
+    cursor: pointer;
+    flex-shrink: 0;
+}
+#volume-control:hover { opacity: 1; }
+#volume-control::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 25px; height: 25px;
+    background: #FF8C00; cursor: pointer; border-radius: 50%;
+}
+#volume-control::-moz-range-thumb {
+    width: 25px; height: 25px;
+    background: #FF8C00; cursor: pointer; border-radius: 50%; border: none;
+}
+.volume-label { font-size: 14px; color: white; font-family: sans-serif; }
 
 #play-area { position: absolute; top: 192px; left: 0; width: 1024px; display: flex; flex-direction: row; align-items: flex-start; justify-content: center; gap: 24px; height: 140px; }
 #play-col { display: flex; flex-direction: column; align-items: center; gap: 12px; flex-shrink: 0; width: 92px; margin-top: 8px; }

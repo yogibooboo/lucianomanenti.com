@@ -1,4 +1,4 @@
-/* intervalli.css v1.8 */
+/* intervalli.css v1.9 */
 
 .lang-switch-game { right: 160px; }
 
@@ -78,6 +78,39 @@
 #note-selector.fixed .btn-root-nav:hover { background: #d8a828; }
 #note-selector.fixed #root-note-display { color: #ffd700; }
 
+/* ── Volume slider ───────────────────────────────────────────────────────── */
+#volume-container {
+    position: absolute; top: 100px; right: 100px;
+    width: 30px; height: 220px; z-index: 100;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 8px;
+}
+#volume-slider-wrap {
+    width: 30px; height: 160px;
+    display: flex; align-items: center; justify-content: center;
+    overflow: visible;
+}
+#volume-control {
+    -webkit-appearance: none; appearance: none;
+    width: 160px; height: 10px;
+    background: #d3d3d3; outline: none; opacity: 0.7;
+    border-radius: 5px;
+    transform: rotate(-90deg);
+    cursor: pointer;
+    flex-shrink: 0;
+}
+#volume-control:hover { opacity: 1; }
+#volume-control::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 25px; height: 25px;
+    background: #FF8C00; cursor: pointer; border-radius: 50%;
+}
+#volume-control::-moz-range-thumb {
+    width: 25px; height: 25px;
+    background: #FF8C00; cursor: pointer; border-radius: 50%; border: none;
+}
+.volume-label { font-size: 14px; color: white; font-family: sans-serif; }
+
 /* ── Play area + Pentagramma ─────────────────────────────────────────────── */
 #play-area {
     position: absolute; top: 196px; left: 0; width: 1024px;
@@ -151,10 +184,6 @@
 }
 .piano-key.root       { background: #ffd700 !important; cursor: default; }
 .piano-key.black.root { background: #e6c200 !important; }
-.piano-key.answer       { background: rgba(90,160,230,0.55)  !important; cursor: pointer; }
-.piano-key.black.answer { background: rgba(50,120,210,0.85)  !important; cursor: pointer; }
-.piano-key.answer:hover       { background: rgba(90,160,230,0.8)  !important; }
-.piano-key.black.answer:hover { background: rgba(50,120,210,1)    !important; }
 .piano-key.correct       { background: rgba(46,204,113,0.65) !important; }
 .piano-key.black.correct { background: rgba(46,204,113,0.9)  !important; }
 .piano-key.wrong       { background: rgba(231,76,60,0.55)  !important; cursor: pointer; }

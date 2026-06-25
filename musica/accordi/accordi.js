@@ -549,6 +549,7 @@
             state.mode = this.getAttribute('data-mode');
             document.querySelectorAll('.btn-mode').forEach(function (b) { b.classList.remove('active'); });
             this.classList.add('active');
+            if (sampler.loaded && state.currentChord) playCurrentChord();
         });
     });
 
@@ -600,6 +601,17 @@
         if (sampler.loaded) newQuestion(true);
     });
 
+    var volCtrl = document.getElementById('volume-control');
+    if (volCtrl) {
+        var savedVol = localStorage.getItem('lm_volume');
+        if (savedVol !== null) volCtrl.value = savedVol;
+        sampler.volume.value = parseFloat(volCtrl.value);
+        volCtrl.addEventListener('input', function () {
+            sampler.volume.value = parseFloat(this.value);
+            localStorage.setItem('lm_volume', this.value);
+        });
+    }
+
     document.querySelectorAll('.btn-accord').forEach(function (btn) {
         btn.addEventListener('click', function () {
             if (this.classList.contains('inactive')) return;
@@ -608,6 +620,7 @@
                 if (state.currentChord && id === state.currentChord.id) playCurrentChord();
                 else playChordById(id);
             } else {
+                playChordById(id);
                 answer(id);
             }
         });

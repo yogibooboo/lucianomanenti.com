@@ -419,8 +419,18 @@
     function aggiornaPunteggi() {
         var gEl = document.getElementById('punti-giocatore');
         var aEl = document.getElementById('punti-avversario');
+        var lEl = document.getElementById('punti-limite');
         if (gEl) gEl.textContent = game.puntiGiocatore;
         if (aEl) aEl.textContent = game.puntiAvversario;
+        if (lEl) {
+            var limDiv = document.getElementById('punteggio-limite');
+            if (game.tipoPartita === 'torneo') {
+                if (lEl) lEl.textContent = game.limitePartita;
+                if (limDiv) limDiv.style.display = 'block';
+            } else {
+                if (limDiv) limDiv.style.display = 'none';
+            }
+        }
     }
 
     // ─── KNOCK/GIN PANEL ─────────────────────────────────────────────────────
@@ -496,8 +506,9 @@
 
             // Totale partita
             var ptG = game.puntiGiocatore, ptA = game.puntiAvversario;
+            var limiteStr = game.tipoPartita === 'torneo' ? ' (fino a ' + game.limitePartita + ')' : '';
             lines.push(Core.t('label-totale-partita') + ' <b>' +
-                Core.t('label-tu') + ' ' + ptG + ' — ' + Core.t('label-amico') + ' ' + ptA + '</b>');
+                Core.t('label-tu') + ' ' + ptG + ' — ' + Core.t('label-amico') + ' ' + ptA + '</b>' + limiteStr);
 
             risEl.innerHTML = lines.join('<br>');
         }
@@ -588,7 +599,19 @@
         var radioTipo = document.querySelector('input[name="tipo-partita"][value="' + game.tipoPartita + '"]');
         if (radioTipo) radioTipo.checked = true;
         var selLimite = document.getElementById('sel-limite-partita');
-        if (selLimite) selLimite.value = String(game.limitePartita);
+        if (selLimite) {
+            var limStr = String(game.limitePartita);
+            var opt = selLimite.querySelector('option[value="' + limStr + '"]');
+            if (opt) {
+                selLimite.value = limStr;
+            } else {
+                selLimite.value = 'custom';
+                var inpCustom = document.getElementById('inp-limite-custom');
+                if (inpCustom) inpCustom.value = limStr;
+                var divCustom = document.getElementById('div-limite-custom');
+                if (divCustom) divCustom.style.display = '';
+            }
+        }
     }
 
     function mostraModalFine(partitaFinita, vincitorePartita, risultato) {
@@ -757,25 +780,27 @@
         var btnNext = document.getElementById('btn-prossima-mano');
         if (btnNext) {
             btnNext.addEventListener('click', function () {
-                btnNext.style.display = 'none';
-                nascondiKnockPanel();
-                if (_pendingFinePartita !== null) {
-                    _pendingFinePartita = null;
-                    mostraModalNuova();
-                } else {
-                    Game.nuovaMano();
-                    selectedCardId = null;
-                    _pendingKnock = false; _pendingGin = false;
-                    layoffSelected.clear();
-                    render();
-                    _animaDeal(function () { _avviaFaseUpcard(); });
-                }
+                localStorage.setItem('_rummy_resume', JSON.stringify({
+                    variante: game.variante,
+                    tipoPartita: game.tipoPartita,
+                    limitePartita: game.limitePartita,
+                    puntiGiocatore: game.puntiGiocatore,
+                    puntiAvversario: game.puntiAvversario
+                }));
+                location.reload();
             });
         }
 
         // New game button
         var btnNuova = document.getElementById('btn-nuova');
-        if (btnNuova) btnNuova.addEventListener('click', function () { location.reload(); });
+        if (btnNuova) btnNuova.addEventListener('click', function () {
+            localStorage.setItem('_rummy_prefs', JSON.stringify({
+                variante: game.variante,
+                tipoPartita: game.tipoPartita,
+                limitePartita: game.limitePartita
+            }));
+            location.reload();
+        });
 
         // Scoperte toggle
         var btnScoperte = document.getElementById('btn-scoperte');
@@ -796,7 +821,17 @@
                 var selLimite = document.getElementById('sel-limite-partita');
                 var variante = varianteEl ? varianteEl.value : 'classico';
                 var tipo = tipoEl ? tipoEl.value : 'torneo';
-                var limite = selLimite ? parseInt(selLimite.value, 10) : Core.GAME_TARGET;
+                var limite = Core.GAME_TARGET;
+                if (selLimite) {
+                    if (selLimite.value === 'custom') {
+                        var inpCustom = document.getElementById('inp-limite-custom');
+                        limite = inpCustom ? parseInt(inpCustom.value, 10) : Core.GAME_TARGET;
+                        if (isNaN(limite) || limite < 10) limite = Core.GAME_TARGET;
+                    } else {
+                        limite = parseInt(selLimite.value, 10);
+                        if (isNaN(limite)) limite = Core.GAME_TARGET;
+                    }
+                }
                 nascondiModal('modal-nuova');
                 Game.nuovaPartita(variante, tipo, limite);
                 selectedCardId = null;
@@ -837,11 +872,14 @@
         ['btn-nuova-v', 'btn-nuova-s'].forEach(function (id) {
             var btn = document.getElementById(id);
             if (btn) btn.addEventListener('click', function () {
-                nascondiModal('modal-vittoria');
-                nascondiModal('modal-sconfitta');
-                nascondiKnockPanel();
-                _pendingFinePartita = null;
-                mostraModalNuova(); // ripristina variante/tipo/limite della partita appena finita
+                localStorage.setItem('_rummy_resume', JSON.stringify({
+                    variante: game.variante,
+                    tipoPartita: game.tipoPartita,
+                    limitePartita: game.limitePartita,
+                    puntiGiocatore: game.puntiGiocatore,
+                    puntiAvversario: game.puntiAvversario
+                }));
+                location.reload();
             });
         });
 
@@ -1387,7 +1425,34 @@
         };
         setupEventi();
         updateUILabels();
-        mostraModalNuova();
+
+        var resumeStr = localStorage.getItem('_rummy_resume');
+        if (resumeStr) {
+            localStorage.removeItem('_rummy_resume');
+            try {
+                var resume = JSON.parse(resumeStr);
+                Game.nuovaPartita(resume.variante, resume.tipoPartita, resume.limitePartita);
+                game.puntiGiocatore = resume.puntiGiocatore || 0;
+                game.puntiAvversario = resume.puntiAvversario || 0;
+                aggiornaPunteggi();
+                render();
+                _animaDeal(function () { _avviaFaseUpcard(); });
+            } catch (e) {
+                mostraModalNuova();
+            }
+        } else {
+            var prefsStr = localStorage.getItem('_rummy_prefs');
+            if (prefsStr) {
+                localStorage.removeItem('_rummy_prefs');
+                try {
+                    var prefs = JSON.parse(prefsStr);
+                    game.variante = prefs.variante || 'classico';
+                    game.tipoPartita = prefs.tipoPartita || 'torneo';
+                    game.limitePartita = prefs.limitePartita || 100;
+                } catch (e) {}
+            }
+            mostraModalNuova();
+        }
     }
 
     document.addEventListener('DOMContentLoaded', function () {
@@ -1401,7 +1466,11 @@
         }
         if (!lang) lang = 'en';
         window.currentLang = lang;
-        init();
+        if (typeof window.waitForInterstitial === 'function') {
+            window.waitForInterstitial(init);
+        } else {
+            init();
+        }
     });
 
     window.addEventListener('load', function () {
@@ -1409,6 +1478,6 @@
     });
 
     // Expose for debugging
-    window._rummyUI = { render: render, setLanguage: setLanguage };
+    window._rummyUI = { render: render, setLanguage: setLanguage, getGame: function() { return game; } };
 
 })();

@@ -136,8 +136,8 @@ html, body {
 /* === PANNELLO TORNEO (PUNTEGGI CUMULATIVI) === */
 #pannello-torneo {
     position: absolute;
-    top: 10px;
-    right: 15px;
+    bottom: 50px;
+    left: 20px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -201,6 +201,7 @@ html, body {
 
 /* Dettagli giocatore */
 .avatar-container {
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -208,6 +209,27 @@ html, body {
     gap: 6px;
     margin-right: 15px;
     flex-shrink: 0;
+}
+
+/* === DEALER BADGE (MAZZIERE) === */
+.dealer-badge {
+    position: absolute;
+    bottom: -22px; /* posizionato sotto il nome dell'avatar, adattandosi a 1 o 2 righe */
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 10px;
+    font-weight: bold;
+    color: #fff;
+    background: #c06020;
+    border: 1px solid #ffd700;
+    border-radius: 4px;
+    padding: 2px 6px;
+    z-index: 10;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    white-space: nowrap;
+    pointer-events: none;
 }
 .avatar {
     width: 60px;
@@ -816,7 +838,7 @@ html, body {
 
 #campogioco.quattro-giocatori #presa-computer .presa-count {
     bottom: auto;
-    left: -30px;
+    left: -50px;
     top: 50%;
     transform: translateY(-50%) rotate(-90deg);
 }
@@ -843,6 +865,15 @@ html, body {
     box-sizing: border-box;
 }
 
+/* Mantieni lo spostamento verso l'alto (translateY) per le carte del giocatore e del tavolo */
+#carte-giocatore .carta.evidenziata-presa {
+    transform: translateY(-30px) scale(1.1) !important;
+}
+
+#tavolo .carta.evidenziata-presa {
+    transform: translateY(-8px) scale(1.1) !important;
+}
+
 /* Mantieni la corretta rotazione delle carte avversarie laterali durante l'evidenziazione */
 #area-sinistra .carta.evidenziata-presa {
     transform: rotate(90deg) scale(1.1) !important;
@@ -850,4 +881,15 @@ html, body {
 
 #area-destra .carta.evidenziata-presa {
     transform: rotate(-90deg) scale(1.1) !important;
+}
+
+/* Transizione per i bordi delle aree dei giocatori */
+.area-giocatore, .area-giocatore-verticale {
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Bordo giallo luminoso per il giocatore attivo del turno */
+.area-giocatore.attivo, .area-giocatore-verticale.attivo {
+    border-color: #ffd700 !important;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.6) !important;
 }

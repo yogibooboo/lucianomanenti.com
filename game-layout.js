@@ -22,14 +22,20 @@ window.registerLayoutResizeListener = function (callback) {
 };
 
 // ─── AMAZON BANNER CONFIG ───────────────────────────────────────────────────
-var AMAZON_BANNERS_ENABLED = false;  // set to false to disable Amazon banners globally
-var AMAZON_BANNERS_RIGHT = true;   // if true, Amazon banners load on right sidebar only
+var AMAZON_BANNERS_ENABLED = false;  // se false, disabilita Amazon a sinistra (ma non a destra se AMAZON_BANNERS_RIGHT = true)
+var AMAZON_BANNERS_RIGHT = true;   // se true, carica Amazon a destra indipendentemente da AMAZON_BANNERS_ENABLED
 var AMAZON_FALLBACK_ON_SHIELD = true; // se true, Amazon subentra a sinistra quando AdSense viene bloccato dallo scudo
 var AMAZON_USE_NEW_DEALS = true;      // se true, usa newdeals.json e i pesi. Se false, usa il deals.json tradizionale
 var AMAZON_DEALS_PULSE_THRESHOLD = 35; // Soglia di sconto oltre la quale il badge pulsa (default 35%)
 var ENABLE_BANNER_ON_FINISH = true;   // se true, abilita il banner di fine partita (AdSense o Amazon)
 var ENABLE_ADSENSE_ON_FINISH = true;  // se true, usa AdSense sul finish (se condizioni ok); altrimenti Amazon
 var ADSENSE_FINISH_SCALE_THRESHOLD = 1.0; // gameScale minimo per usare AdSense sul finish (sotto soglia → Amazon)
+
+// ─── INTERSTITIAL CONFIG ─────────────────────────────────────────────────────
+var ENABLE_INTERSTITIAL = true;                   // abilita il banner interstitial
+var INTERSTITIAL_MIN_SESSION_MINUTES = 10;        // minuti di sessione prima della prima esposizione
+var INTERSTITIAL_COOLDOWN_MINUTES = 30;           // minuti tra un'esposizione e la successiva
+var INTERSTITIAL_CLOSE_DELAY_SECONDS = 0;        // secondi prima che appaia il pulsante X
 // ─────────────────────────────────────────────────────────────────────────────
 
 // ─── ADSENSE CONFIG & SHIELD ─────────────────────────────────────────────────
@@ -44,11 +50,57 @@ if (adsDisabled) {
     AMAZON_BANNERS_ENABLED = false;
     AMAZON_BANNERS_RIGHT = false;
     ENABLE_BANNER_ON_FINISH = false;
+    ENABLE_INTERSTITIAL = false;
     ADSENSE_GLOBAL_ENABLED = false;
 }
 
 var ADSENSE_SHIELD_DURATION = 20 * 60 * 1000; // 20 minuti di blocco dopo un click
 var _isMouseOverAdSense = false;
+
+// ─── INTERSTITIAL RELOAD INTERCEPT ───────────────────────────────────────────
+// Monkey-patch di location.reload: se l'interstitial è abilitato e dovuto,
+// scrive il flag e poi esegue il reload originale.
+// I game code chiamano location.reload() normalmente — nessuna modifica necessaria.
+// window.waitForInterstitial(callback): i game code chiamano questa funzione
+// invece di init() direttamente — se il flag è presente aspetta l'interstitial.
+(function () {
+    var _origReload = location.reload.bind(location);
+
+    window.reloadWithInterstitial = function () {
+        if (ENABLE_INTERSTITIAL) {
+            localStorage.setItem('_interstitial_pending', '1');
+        }
+        _origReload();
+    };
+
+    // Monkey-patch location.reload
+    try {
+        Object.defineProperty(location, 'reload', {
+            configurable: true,
+            writable: true,
+            value: function () {
+                window.reloadWithInterstitial();
+            }
+        });
+    } catch (e) {
+        // Su alcuni browser non è sovrascrivibile — reload avviene normalmente senza interstitial
+    }
+
+    // I game code chiamano questa funzione al posto di init() diretto
+    window.waitForInterstitial = function (callback) {
+        var pending = localStorage.getItem('_interstitial_pending') === '1';
+        localStorage.removeItem('_interstitial_pending'); // cancella SUBITO, incondizionatamente
+        if (pending) {
+            // Mostra subito l'interstitial — non aspetta l'XHR.
+            // Se i deals non sono ancora pronti, showInterstitialIfDue userà il placeholder/AdSense.
+            // Il callback XHR non deve più mostrare l'interstitial (flag già consumato).
+            showInterstitialIfDue(callback);
+        } else {
+            callback();
+        }
+    };
+})();
+// ─────────────────────────────────────────────────────────────────────────────
 
 function getInternalUserId() {
     var id = localStorage.getItem('internal_user_id');
@@ -208,6 +260,337 @@ function injectLegalLinks() {
         footer.onmouseout = function () { this.style.color = 'rgba(255,255,255,0.6)'; };
     }
 }
+
+// ─── INTERSTITIAL ────────────────────────────────────────────────────────────
+function showInterstitialIfDue(onClose) {
+    if (!ENABLE_INTERSTITIAL) { if (onClose) onClose(); return; }
+    if (window._blockAutoInterstitial) { if (onClose) onClose(); return; }
+    var _allowedPrefixes = ['RUM_', 'RUM_en_', 'KLO_', 'SPI_', 'SPI_en_', 'MAC_', 'MAC_en_', 'SCOPA_'];
+    if (!window.gameConfig || _allowedPrefixes.indexOf(window.gameConfig.gaPrefix) === -1) { if (onClose) onClose(); return; }
+
+    var now = Date.now();
+
+    // Sessione: inizia al primo caricamento, si azzera dopo 60 minuti di inattività
+    var SESSION_RESET_MINUTES = 60;
+    var sessionStart = parseInt(localStorage.getItem('_interstitial_session_start') || '0', 10);
+    var lastActivity = parseInt(localStorage.getItem('_interstitial_last_activity') || '0', 10);
+    if (!sessionStart || (lastActivity > 0 && (now - lastActivity) > SESSION_RESET_MINUTES * 60000)) {
+        sessionStart = now;
+        localStorage.setItem('_interstitial_session_start', sessionStart);
+    }
+    localStorage.setItem('_interstitial_last_activity', now);
+
+    var sessionMinutes = (now - sessionStart) / 60000;
+    if (sessionMinutes < INTERSTITIAL_MIN_SESSION_MINUTES) { if (onClose) onClose(); return; }
+
+    var lastShown = parseInt(localStorage.getItem('_interstitial_last_shown') || '0', 10);
+    var cooldownMinutes = (now - lastShown) / 60000;
+    if (lastShown > 0 && cooldownMinutes < INTERSTITIAL_COOLDOWN_MINUTES) { if (onClose) onClose(); return; }
+
+    localStorage.setItem('_interstitial_last_shown', now);
+
+    // Crea overlay — usa pixel reali per compatibilità con giochi a body fisso (es. Machiavelli)
+    var _vw = window.innerWidth;
+    var _vh = window.innerHeight;
+    var overlay = document.createElement('div');
+    overlay.id = 'interstitial-overlay';
+    overlay.style.cssText = 'position:fixed;top:0;left:0;width:' + _vw + 'px;height:' + _vh + 'px;background:#000;z-index:999999;';
+
+    // Area annuncio — occupa tutto lo spazio sopra il footer
+    var adArea = document.createElement('div');
+    adArea.style.cssText = 'position:absolute;top:0;left:0;right:0;bottom:50px;overflow:hidden;display:flex;align-items:flex-start;justify-content:center;';
+
+    if (devMode) {
+        var adPlaceholder = document.createElement('div');
+        adPlaceholder.style.cssText = 'width:100%;height:100%;border:2px dashed #ffcc00;box-sizing:border-box;display:flex;align-items:center;justify-content:center;color:#ffcc00;font-family:monospace;font-size:16px;text-align:center;';
+        adPlaceholder.textContent = '[DEV] Interstitial — verrebbe mostrato qui';
+        adArea.appendChild(adPlaceholder);
+    } else {
+        var isEnglish = (window.currentLang === 'en');
+        var useAdSense = ENABLE_ADSENSE_ON_FINISH &&
+                         ADSENSE_GLOBAL_ENABLED &&
+                         !isAdSenseShieldActive() &&
+                         window.gameConfig && window.gameConfig.adsenseActive;
+
+        if (useAdSense) {
+            var ins = document.createElement('ins');
+            ins.className = 'adsbygoogle';
+            ins.style.cssText = 'display:block;width:100%;height:100%;';
+            ins.setAttribute('data-ad-client', 'ca-pub-9335537153013492');
+            ins.setAttribute('data-ad-slot', '7155310138');
+            ins.setAttribute('data-ad-format', 'auto');
+            ins.setAttribute('data-full-width-responsive', 'true');
+            ins.setAttribute('onmouseenter', 'window._isMouseOverAdSense = true;');
+            ins.setAttribute('onmouseleave', 'window._isMouseOverAdSense = false;');
+            adArea.appendChild(ins);
+            // push() viene chiamato dopo body.appendChild(overlay) più sotto
+            if (typeof gtag === 'function') {
+                gtag('event', 'AdSense_Interstitial_Impression', {
+                    'event_category': 'AdSense',
+                    'page_location': window.location.href,
+                    'viewport_w': window.innerWidth,
+                    'viewport_h': window.innerHeight,
+                    'device_pixel_ratio': window.devicePixelRatio || 1,
+                    'non_interaction': true
+                });
+            }
+        } else {
+            // Fallback Amazon — struttura identica a setupAmazonFinishBanner
+            var deal = selectWeightedAmazonDeal(window._amazonDealsList) || window._amazonDeal600;
+            if (deal) {
+                var imgUrl = (deal.active_images && deal.active_images.length > 0) ? deal.active_images[0] : (deal.img || 'banner/galleryamazon300x250.jpg');
+                var linkUrl = deal.link || 'view_gallery.html';
+                var titleText = deal.title || 'generic';
+                var dealId = titleText.length > 60 ? titleText.substring(0, 60) + '...' : titleText;
+
+                var viewH = window.innerHeight;
+                var footerH = 50;
+                var bannerH = viewH - footerH;
+                var infoColW = 260;
+                var bannerW = Math.min(window.innerWidth, 1200);
+                var imgColW = bannerW - infoColW - 4;
+
+                var aLink = document.createElement('a');
+                aLink.href = linkUrl;
+                aLink.target = '_blank';
+                aLink.rel = 'sponsored noopener';
+                aLink.style.cssText = 'display:flex;width:' + bannerW + 'px;height:' + bannerH + 'px;text-decoration:none;border-radius:0;overflow:hidden;background:#fff;box-sizing:border-box;';
+
+                // Colonna info
+                var infoCol = document.createElement('div');
+                infoCol.style.cssText = 'width:' + infoColW + 'px;height:100%;background:#131921;color:#fff;display:flex;flex-direction:column;box-sizing:border-box;font-family:Segoe UI,Roboto,Helvetica,Arial,sans-serif;';
+
+                var headerDiv = document.createElement('div');
+                var headerText = (AMAZON_USE_NEW_DEALS && deal.custom_message) ? deal.custom_message : (isEnglish ? 'LIMITED TIME DEAL' : 'OFFERTA A TEMPO');
+                headerDiv.style.cssText = 'background:#cc0c39;color:#fff;padding:12px;text-align:center;font-weight:bold;font-size:14px;text-transform:uppercase;letter-spacing:0.5px;box-sizing:border-box;width:100%;';
+                headerDiv.textContent = headerText;
+                infoCol.appendChild(headerDiv);
+
+                var contentDiv = document.createElement('div');
+                contentDiv.style.cssText = 'padding:16px;display:flex;flex-direction:column;flex-grow:1;min-height:0;box-sizing:border-box;';
+
+                var descDiv = document.createElement('div');
+                descDiv.style.cssText = 'font-size:15px;line-height:1.4;overflow:hidden;display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;margin-bottom:12px;font-weight:500;text-align:center;';
+                descDiv.textContent = deal.title || '';
+                contentDiv.appendChild(descDiv);
+
+                var priceRow = document.createElement('div');
+                priceRow.style.cssText = 'display:flex;justify-content:center;align-items:center;gap:10px;margin-top:auto;margin-bottom:12px;';
+
+                if (deal.price && deal.price.trim() !== '') {
+                    var priceSpan = document.createElement('span');
+                    priceSpan.style.cssText = 'font-size:28px;font-weight:bold;color:#ff5252;';
+                    priceSpan.textContent = deal.price;
+                    priceRow.appendChild(priceSpan);
+                }
+
+                if (deal.badge && deal.badge.trim() !== '') {
+                    var match = deal.badge.match(/(\d+)%/);
+                    var isHighDiscount = match && parseInt(match[1], 10) > AMAZON_DEALS_PULSE_THRESHOLD;
+                    var badgeSpan = document.createElement('span');
+                    badgeSpan.className = 'amazon-badge' + (isHighDiscount ? ' amazon-badge-pulse' : '');
+                    badgeSpan.style.cssText = 'font-size:14px;padding:4px 10px;';
+                    badgeSpan.textContent = deal.badge;
+                    priceRow.appendChild(badgeSpan);
+                }
+                contentDiv.appendChild(priceRow);
+
+                var ctaDiv = document.createElement('div');
+                ctaDiv.style.cssText = 'display:block;width:100%;box-sizing:border-box;background:linear-gradient(180deg,#ff9900 0%,#e68a00 100%);color:#000;padding:12px;border-radius:20px;font-weight:bold;text-align:center;font-size:14px;margin-bottom:10px;';
+                ctaDiv.textContent = isEnglish ? 'View offer on Amazon.it' : 'Vedi offerta su Amazon.it';
+                contentDiv.appendChild(ctaDiv);
+
+                var disclaimerDiv = document.createElement('div');
+                disclaimerDiv.style.cssText = 'font-size:10px;color:#94a3b8;line-height:1.2;text-align:center;';
+                disclaimerDiv.innerHTML = isEnglish ? 'As an Amazon affiliate,<br>I earn from qualifying purchases.' : 'Come affiliato Amazon,<br>guadagno dagli acquisti idonei.';
+                contentDiv.appendChild(disclaimerDiv);
+
+                infoCol.appendChild(contentDiv);
+
+                // Colonna immagine
+                var imgCol = document.createElement('div');
+                imgCol.style.cssText = 'width:' + imgColW + 'px;height:100%;background:#fff;display:flex;justify-content:center;align-items:center;padding:10px;box-sizing:border-box;';
+
+                var img = document.createElement('img');
+                img.src = imgUrl;
+                img.style.cssText = 'max-width:100%;max-height:100%;object-fit:contain;';
+                img.alt = 'Amazon Deal';
+                imgCol.appendChild(img);
+
+                aLink.appendChild(infoCol);
+                aLink.appendChild(imgCol);
+                adArea.appendChild(aLink);
+
+                // GA4 impression
+                var startTime = Date.now();
+                if (!window._amazonDealsImpressionTracked[deal.id]) {
+                    window._amazonDealsImpressionTracked[deal.id] = true;
+                    if (typeof gtag === 'function') {
+                        gtag('event', 'Amazon_Banner_Impression', {
+                            'event_category': 'Affiliate',
+                            'amazon_deal_id': dealId,
+                            'format': 'interstitial',
+                            'asin': deal.asin || '',
+                            'page_location': window.location.href,
+                            'non_interaction': true
+                        });
+                    }
+                }
+
+                // GA4 click
+                aLink.onclick = function () {
+                    var exposureSeconds = Math.round((Date.now() - startTime) / 1000);
+                    if (typeof gtag === 'function') {
+                        gtag('event', 'Amazon_Banner_Click', {
+                            'event_category': 'Affiliate',
+                            'amazon_deal_id': dealId,
+                            'format': 'interstitial',
+                            'asin': deal.asin || '',
+                            'tempo_esposizione': exposureSeconds,
+                            'page_location': window.location.href,
+                            'non_interaction': false
+                        });
+                    }
+                };
+            }
+        }
+    }
+
+    // Banda inferiore
+    var footer = document.createElement('div');
+    footer.style.cssText = 'position:absolute;bottom:0;left:0;right:0;height:50px;display:flex;align-items:center;justify-content:center;gap:16px;padding:0 20px;background:#1a1a1a;border-top:1px solid #333;';
+
+    var label = document.createElement('span');
+    label.style.cssText = 'color:#aaa;font-family:sans-serif;font-size:13px;';
+    label.textContent = 'Pubblicità sperimentale — compare al massimo ogni ' + INTERSTITIAL_COOLDOWN_MINUTES + ' minuti';
+
+    var btnPerche = document.createElement('button');
+    btnPerche.textContent = 'Perché la pubblicità?';
+    btnPerche.style.cssText = 'background:transparent;border:1px solid #666;color:#ccc;padding:4px 10px;border-radius:4px;cursor:pointer;font-size:13px;font-family:sans-serif;';
+    btnPerche.onclick = function () {
+        var lang = (window.currentLang === 'en') ? 'aboutme-en.html' : 'aboutme.html';
+        window.open(lang + '#pubblicita', '_blank');
+    };
+
+    var btnClose = document.createElement('button');
+    btnClose.textContent = '✕ Chiudi';
+    btnClose.style.cssText = 'background:#cc3333;border:none;color:#fff;padding:6px 16px;border-radius:4px;cursor:pointer;font-size:14px;font-weight:bold;font-family:sans-serif;';
+    btnClose.onclick = function () {
+        overlay.remove();
+        if (onClose) onClose();
+    };
+
+    if (INTERSTITIAL_CLOSE_DELAY_SECONDS > 0) {
+        btnClose.disabled = true;
+        btnClose.style.opacity = '0.4';
+        var remaining = INTERSTITIAL_CLOSE_DELAY_SECONDS;
+        btnClose.textContent = '✕ Chiudi (' + remaining + ')';
+        var timer = setInterval(function () {
+            remaining--;
+            if (remaining <= 0) {
+                clearInterval(timer);
+                btnClose.disabled = false;
+                btnClose.style.opacity = '1';
+                btnClose.textContent = '✕ Chiudi';
+            } else {
+                btnClose.textContent = '✕ Chiudi (' + remaining + ')';
+            }
+        }, 1000);
+    }
+
+    footer.appendChild(label);
+    footer.appendChild(btnPerche);
+    footer.appendChild(btnClose);
+    overlay.appendChild(adArea);
+    overlay.appendChild(footer);
+    // Se il body ha transform (es. Machiavelli scala il body), position:fixed si ancora al body
+    // invece che al viewport — in quel caso appendiamo all'elemento html per uscire dallo stacking context
+    var bodyTransform = getComputedStyle(document.body).transform;
+    var hasBodyTransform = bodyTransform && bodyTransform !== 'none';
+    var overlayParent = hasBodyTransform ? document.documentElement : document.body;
+    overlayParent.appendChild(overlay);
+    // AdSense push dopo che l'ins è nel DOM reale
+    if (overlay.querySelector('ins.adsbygoogle')) {
+        (window.adsbygoogle = window.adsbygoogle || []).push({});
+    }
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
+// ─── DEBUG INTERSTITIAL (Ctrl+Alt+P) ─────────────────────────────────────────
+(function () {
+    document.addEventListener('keydown', function (e) {
+        if (!e.ctrlKey || !e.altKey || e.key !== 'p') return;
+        e.preventDefault();
+
+        var existing = document.getElementById('_interstitial_debug_panel');
+        if (existing) { existing.remove(); return; }
+
+        var now = Date.now();
+        var session = parseInt(localStorage.getItem('_interstitial_session_start') || '0', 10);
+        var last = parseInt(localStorage.getItem('_interstitial_last_shown') || '0', 10);
+        var pending = localStorage.getItem('_interstitial_pending');
+        var sessionMin = session ? ((now - session) / 60000).toFixed(1) : null;
+        var lastMin = last ? ((now - last) / 60000).toFixed(1) : null;
+        var sessionOk = session && ((now - session) / 60000) >= INTERSTITIAL_MIN_SESSION_MINUTES;
+        var cooldownOk = !last || ((now - last) / 60000) >= INTERSTITIAL_COOLDOWN_MINUTES;
+        var pronto = ENABLE_INTERSTITIAL && sessionOk && cooldownOk;
+
+        function row(label, value, ok) {
+            var col = ok === true ? '#6f6' : ok === false ? '#f66' : '#ccc';
+            return '<tr><td style="padding:2px 12px 2px 0;color:#999;white-space:nowrap">' + label + '</td>' +
+                   '<td style="color:' + col + ';font-weight:bold">' + value + '</td></tr>';
+        }
+
+        var panel = document.createElement('div');
+        panel.id = '_interstitial_debug_panel';
+        panel.style.cssText = 'position:fixed;top:20px;right:20px;background:rgba(0,0,0,0.9);border:1px solid #555;border-radius:8px;padding:14px;z-index:9999999;font-family:monospace;font-size:12px;min-width:280px;';
+
+        var html = '<div style="color:#e8d870;font-weight:bold;margin-bottom:8px">Interstitial Debug <span style="color:#555;font-size:10px">Ctrl+Alt+P per chiudere</span></div>';
+        html += '<table style="border-collapse:collapse;width:100%">';
+        html += row('ENABLE_INTERSTITIAL', ENABLE_INTERSTITIAL, ENABLE_INTERSTITIAL);
+        html += row('devMode', devMode, null);
+        html += row('pending', pending || 'no', null);
+        html += row('inizio sessione', session ? new Date(session).toLocaleTimeString() : 'nessuna', !!session);
+        html += row('durata sessione', sessionMin !== null ? sessionMin + ' min' : '—', sessionOk);
+        html += row('minimo richiesto', INTERSTITIAL_MIN_SESSION_MINUTES + ' min', null);
+        html += row('ultima visualizz.', last ? new Date(last).toLocaleTimeString() : 'mai', null);
+        html += row('tempo trascorso', lastMin !== null ? lastMin + ' min' : '—', cooldownOk);
+        html += row('cooldown richiesto', INTERSTITIAL_COOLDOWN_MINUTES + ' min', null);
+        html += row('▶ PRONTO?', pronto ? 'SÌ' : 'NO', pronto);
+        html += '</table>';
+        html += '<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">';
+        html += '<button id="_idbtn_now" style="flex:1;background:#2a6a4a;color:#fff;border:none;border-radius:4px;padding:6px;cursor:pointer;font-size:11px">Forza ora</button>';
+        html += '<button id="_idbtn_force" style="flex:1;background:#2a6a2a;color:#fff;border:none;border-radius:4px;padding:6px;cursor:pointer;font-size:11px">Forza prossima</button>';
+        html += '<button id="_idbtn_reset" style="flex:1;background:#6a2a2a;color:#fff;border:none;border-radius:4px;padding:6px;cursor:pointer;font-size:11px">Reset tutto</button>';
+        html += '<button id="_idbtn_close" style="background:#333;color:#aaa;border:none;border-radius:4px;padding:6px 10px;cursor:pointer;font-size:11px">✕</button>';
+        html += '</div>';
+
+        panel.innerHTML = html;
+        document.body.appendChild(panel);
+
+        document.getElementById('_idbtn_now').onclick = function () {
+            // Imposta sessione a 20 minuti fa e azzera cooldown → interstitial pronto subito
+            var ago20 = Date.now() - 20 * 60000;
+            localStorage.setItem('_interstitial_session_start', ago20);
+            localStorage.setItem('_interstitial_last_activity', ago20);
+            localStorage.removeItem('_interstitial_last_shown');
+            panel.remove();
+        };
+        document.getElementById('_idbtn_force').onclick = function () {
+            localStorage.removeItem('_interstitial_last_shown');
+            panel.remove();
+        };
+        document.getElementById('_idbtn_reset').onclick = function () {
+            localStorage.removeItem('_interstitial_last_shown');
+            localStorage.removeItem('_interstitial_session_start');
+            localStorage.removeItem('_interstitial_last_activity');
+            localStorage.removeItem('_interstitial_pending');
+            panel.remove();
+        };
+        document.getElementById('_idbtn_close').onclick = function () { panel.remove(); };
+    });
+})();
+// ─────────────────────────────────────────────────────────────────────────────
 
 function adjustLayout() {
     // Badge STATISTICHE & SHIELD
@@ -864,7 +1247,13 @@ window._amazonImpressionSent = {}; // chiave: bannerId → true se impression gi
                     window._amazonDealsList = [];
                     window._amazonDeal600 = false;
                 }
-                adjustLayout();
+                var pending = localStorage.getItem('_interstitial_pending') === '1';
+                if (ENABLE_INTERSTITIAL && pending) {
+                    showInterstitialIfDue(function() { adjustLayout(); });
+                } else {
+                    adjustLayout();
+                    showInterstitialIfDue();
+                }
             }
         };
         xhr.send();
@@ -1064,6 +1453,18 @@ function setupAmazonFinishBanner(formId, options) {
             modal.appendChild(adContainer);
             (window.adsbygoogle = window.adsbygoogle || []).push({});
             console.log('AdSense Push (Finish): Slot 6538837230 in ' + formId + ' (' + bannerWidth + 'x' + bannerHeight + ')');
+            if (typeof gtag === 'function') {
+                gtag('event', 'AdSense_Banner_Finish_Impression', {
+                    'event_category': 'AdSense',
+                    'form_id': formId,
+                    'page_location': window.location.href,
+                    'game_scale': window.gameScale !== undefined ? Math.round(window.gameScale * 100) / 100 : null,
+                    'viewport_w': window.innerWidth,
+                    'viewport_h': window.innerHeight,
+                    'device_pixel_ratio': window.devicePixelRatio || 1,
+                    'non_interaction': true
+                });
+            }
             
             // Diagnostics to check if the ad unit is filled, blocked, or invisible after 2 seconds
             setTimeout(function() {

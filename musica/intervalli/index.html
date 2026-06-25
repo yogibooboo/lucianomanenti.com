@@ -22,7 +22,7 @@
     <link rel="alternate" hreflang="it" href="index.html">
     <link rel="alternate" hreflang="en" href="index-en.html">
     <link rel="stylesheet" href="../musica.css?v=1.1">
-    <link rel="stylesheet" href="intervalli.css?v=2.3">
+    <link rel="stylesheet" href="intervalli.css?v=1.9">
     <meta name="Description" content="Allena l'orecchio musicale riconoscendo gli intervalli: 2ª minore, 3ª maggiore, 5ª giusta e tutti gli altri. Gratis online.">
 
     <script>
@@ -86,6 +86,14 @@
             <button id="btn-root-prev" class="btn-root-nav">&#9664;</button>
             <span id="root-note-display">C4</span>
             <button id="btn-root-next" class="btn-root-nav">&#9654;</button>
+        </div>
+
+        <!-- Volume slider -->
+        <div id="volume-container">
+            <div id="volume-slider-wrap">
+                <input type="range" id="volume-control" min="-20" max="20" step="1" value="0">
+            </div>
+            <div class="volume-label">Volume</div>
         </div>
 
         <!-- Play area + Pentagramma -->

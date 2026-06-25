@@ -1,4 +1,4 @@
-/* accordi.css v1.0 */
+/* accordi.css v1.1 */
 
 .lang-switch-game { right: 160px; }
 
@@ -92,6 +92,37 @@
 #note-selector.fixed .btn-root-nav { background: #c89018; border-color: #a07010; color: #1a0800; }
 #note-selector.fixed .btn-root-nav:hover { background: #d8a828; }
 #note-selector.fixed #root-note-display { color: #ffd700; }
+#volume-container {
+    position: absolute; top: 150px; right: 100px;
+    width: 30px; height: 220px; z-index: 100;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 8px;
+}
+#volume-slider-wrap {
+    width: 30px; height: 160px;
+    display: flex; align-items: center; justify-content: center;
+    overflow: visible;
+}
+#volume-control {
+    -webkit-appearance: none; appearance: none;
+    width: 160px; height: 10px;
+    background: #d3d3d3; outline: none; opacity: 0.7;
+    border-radius: 5px;
+    transform: rotate(-90deg);
+    cursor: pointer;
+    flex-shrink: 0;
+}
+#volume-control:hover { opacity: 1; }
+#volume-control::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 25px; height: 25px;
+    background: #FF8C00; cursor: pointer; border-radius: 50%;
+}
+#volume-control::-moz-range-thumb {
+    width: 25px; height: 25px;
+    background: #FF8C00; cursor: pointer; border-radius: 50%; border: none;
+}
+.volume-label { font-size: 14px; color: white; font-family: sans-serif; }
 
 /* ── Play area + Pentagramma ─────────────────────────────────────────────── */
 #play-area {

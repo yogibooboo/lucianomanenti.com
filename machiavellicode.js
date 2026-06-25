@@ -171,58 +171,8 @@ var scala = {
 
 
 		//this.start();
-		var stp = location.search;
-		var indice, valore;
-
-		indice = stp.indexOf("ta");
-		if (indice > 0) {
-			stp = stp.slice(indice + 2)
-			valore = (parseInt(stp));
-			if (valore != "NaN") this.totaleavversario1 = valore;
-		}
-
-		indice = stp.indexOf("tb");
-		if (indice > 0) {
-			stp = stp.slice(indice + 2)
-			valore = (parseInt(stp));
-			if (valore != "NaN") this.totaleavversario2 = valore;
-		}
-		indice = stp.indexOf("tc");
-		if (indice > 0) {
-			stp = stp.slice(indice + 2)
-			valore = (parseInt(stp));
-			if (valore != "NaN") this.totaleavversario3 = valore;
-		}
-
-
-
-		indice = stp.indexOf("tg");
-		if (indice > 0) {
-			stp = stp.slice(indice + 2)
-			valore = (parseInt(stp));
-			if (valore != "NaN") this.totalegiocatore = valore;
-		}
-
-		indice = stp.indexOf("tl");
-		if (indice > 0) {
-			stp = stp.slice(indice + 2)
-			valore = (parseInt(stp));
-			if (valore != "NaN") this.totalelimite = valore;
-		}
-
-		indice = stp.indexOf("tp");
-		if (indice > 0) {
-			stp = stp.slice(indice + 2)
-			valore = (parseInt(stp));
-			if (valore != "NaN") this.totalepartite = valore;
-		}
-
-		indice = stp.indexOf("na");
-		if (indice > 0) {
-			stp = stp.slice(indice + 2)
-			valore = (parseInt(stp));
-			if ((valore > 0) && (valore < 4)) this.numeroavversari = valore;
-		}
+		var savedAvversari = parseInt(localStorage.getItem('machiavelli_numeroavversari') || '0', 10);
+		if (savedAvversari > 0 && savedAvversari < 4) this.numeroavversari = savedAvversari;
 		this.fautosort = true;
 		this.fpassopasso = false;
 		$("#autosort").css({ "border-color": "yellow" });
@@ -1402,8 +1352,8 @@ var scala = {
 	},
 
 	nuovo: function () {
-		location.search = ("ta" + this.totaleavversario1 + "tb" + this.totaleavversario2 + "tc" + this.totaleavversario3 +
-			"tg" + this.totalegiocatore + "tl" + this.totalelimite + "tp" + this.totalepartite + "na" + this.numeroavversari);
+		localStorage.setItem('machiavelli_numeroavversari', this.numeroavversari);
+		location.reload();
 	},
 
 	azzeratotale: function () {
@@ -3395,9 +3345,15 @@ var scala = {
 
 
 $(document).ready(function () {
-
-	scala.start();
-	scala.collegaeventi();
+	function initMachiavelli() {
+		scala.start();
+		scala.collegaeventi();
+	}
+	if (typeof window.waitForInterstitial === 'function') {
+		window.waitForInterstitial(initMachiavelli);
+	} else {
+		initMachiavelli();
+	}
 });
 
 if (window.registerLayoutResizeListener) {

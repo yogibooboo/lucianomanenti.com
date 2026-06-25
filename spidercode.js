@@ -256,58 +256,7 @@ var scala = {
 
 
 		//this.start();
-		var stp = location.search;
-		var indice, valore;
-
-		/*		indice=stp.indexOf("ta");
-				if (indice>0) {
-					stp=stp.slice(indice+2)
-					valore=(parseInt(stp));
-					if (valore!="NaN") scala.moves=valore;
-				}  */
-
-		indice = stp.indexOf("tb");
-		if (indice > 0) {
-			stp = stp.slice(indice + 2)
-			valore = (parseInt(stp));
-			if (valore != "NaN") scala.bestscore = valore;
-		}
-		indice = stp.indexOf("tc");
-		if (indice > 0) {
-			stp = stp.slice(indice + 2)
-			valore = (parseInt(stp));
-			if (valore != "NaN") scala.besttime = valore;
-		}
-
-
-
-		indice = stp.indexOf("tg");
-		if (indice > 0) {
-			stp = stp.slice(indice + 2)
-			valore = (parseInt(stp));
-			if (valore != "NaN") scala.games = valore;
-		}
-
-		/*		indice=stp.indexOf("tl");
-				if (indice>0) {
-					stp=stp.slice(indice+2)
-					valore=(parseInt(stp));
-					if (valore!="NaN") this.totalelimite=valore;
-				}
-		
-				indice=stp.indexOf("tp");
-				if (indice>0) {
-					stp=stp.slice(indice+2)
-					valore=(parseInt(stp));
-					if (valore!="NaN") this.totalepartite=valore;
-				}
-		
-				indice=stp.indexOf("na");
-				if (indice>0) {
-					stp=stp.slice(indice+2)
-					valore=(parseInt(stp));
-					if ((valore>0)&&(valore<4)) this.numeroavversari=valore;
-				}   */
+		scala.games = parseInt(localStorage.getItem('spider_games') || '0', 10);
 
 
 		this.fscalauptouch = false;
@@ -1307,8 +1256,8 @@ var scala = {
 
 	nuovo: function () {
 		scala.games++;
-		location.search = ("ta" + scala.moves + "tb" + scala.bestscore + "tc" + scala.besttime +
-			"tg" + scala.games + "tl" + 5 + "tp" + 6 + "na" + 7);
+		localStorage.setItem('spider_games', scala.games);
+		location.reload();
 	},
 	confirmNuovo: function () {
 		if (scala.moves === 0) {
@@ -1424,9 +1373,15 @@ var scala = {
 
 
 $(document).ready(function () {
-
-	scala.start();
-	scala.collegaeventi();
+	function initSpider() {
+		scala.start();
+		scala.collegaeventi();
+	}
+	if (typeof window.waitForInterstitial === 'function') {
+		window.waitForInterstitial(initSpider);
+	} else {
+		initSpider();
+	}
 });
 
 

@@ -485,6 +485,7 @@
                 if (state.triedIds.indexOf(scaleId) !== -1) {
                     playScale(scaleId);
                 } else if (!state.answered) {
+                    playScale(scaleId);
                     answer(scaleId);
                 } else {
                     playScale(scaleId);
@@ -589,5 +590,16 @@
         updateRootNoteDisplay();
         if (sampler.loaded) newQuestion(true);
     });
+
+    var volCtrl = document.getElementById('volume-control');
+    if (volCtrl) {
+        var savedVol = localStorage.getItem('lm_volume');
+        if (savedVol !== null) volCtrl.value = savedVol;
+        sampler.volume.value = parseFloat(volCtrl.value);
+        volCtrl.addEventListener('input', function () {
+            sampler.volume.value = parseFloat(this.value);
+            localStorage.setItem('lm_volume', this.value);
+        });
+    }
 
 })();

@@ -976,6 +976,14 @@ function smartClick(tgt) {
 
 // --- Bootstrap ---
 document.addEventListener('DOMContentLoaded', function() {
+    if (typeof window.waitForInterstitial === 'function') {
+        window.waitForInterstitial(initKlondike);
+    } else {
+        initKlondike();
+    }
+});
+
+function initKlondike() {
     canvas = document.getElementById('canvasgioco');
     ctx = canvas.getContext('2d');
 
@@ -1043,4 +1051,4 @@ document.addEventListener('DOMContentLoaded', function() {
 
     var winBtn = document.querySelector('#haivinto .bottone1');
     if (winBtn) winBtn.addEventListener('click', function() { location.reload(); });
-});
+}

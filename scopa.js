@@ -26,9 +26,12 @@ let giocatoreAttivo = 0; // Indice del giocatore attivo (0..3)
 let mazziere = 2; // Indice del mazziere (0..3)
 let carteScoperteAttive = false; // Stato pulsante "Scopri Carte"
 
+let timerMossaGiocatore = null; // Timer per scarto o presa automatica del giocatore
 let cartaSelezionata = null; // Carta selezionata nella mano del giocatore (Tu)
 let tavoloSelezionate = []; // Carte selezionate sul tavolo per la presa
 let combinazioniPresaDisponibili = []; // Tutte le combinazioni valide per la carta selezionata
+let giocatoriSessione = null; // Giocatori della sessione (nome e avatar)
+let confirmModalOpen = false; // Stato della modale di conferma reset (per sospendere l'IA)
 
 // Costanti dei semi e dei loro valori di riga nello sprite
 const SEMI = ['F', 'Q', 'C', 'P']; // Fiori (riga 0), Quadri (riga 1), Cuori (riga 2), Picche (riga 3)
@@ -84,8 +87,105 @@ class Carta {
     }
 }
 
+function inizializzaGiocatoriSessione() {
+    const saved = sessionStorage.getItem('scopa-giocatori-sessione');
+    if (saved) {
+        giocatoriSessione = JSON.parse(saved);
+        // Forza "Tu" se per caso era stato salvato "Yoghi" in precedenza
+        if (giocatoriSessione[0] && giocatoriSessione[0].nome !== "Tu") {
+            giocatoriSessione[0].nome = "Tu";
+            sessionStorage.setItem('scopa-giocatori-sessione', JSON.stringify(giocatoriSessione));
+        }
+        return;
+    }
+    
+    const listaAvversari = [
+        { nome: "Anna", avatar: "images/avatar/Anna.jpg" },
+        { nome: "Antonio", avatar: "images/avatar/Antonio.jpg" },
+        { nome: "Carla", avatar: "images/avatar/Carla.jpg" },
+        { nome: "Francesca", avatar: "images/avatar/Francesca.jpg" },
+        { nome: "Giuseppe", avatar: "images/avatar/Giuseppe.jpg" },
+        { nome: "Lucia", avatar: "images/avatar/Lucia.jpg" },
+        { nome: "Marco", avatar: "images/avatar/Marco.jpg" },
+        { nome: "Maria", avatar: "images/avatar/Maria.jpg" },
+        { nome: "Paolo", avatar: "images/avatar/Paolo.jpg" },
+        { nome: "Rocco", avatar: "images/avatar/Rocco.jpg" },
+        { nome: "Sergio", avatar: "images/avatar/Sergio.jpg" },
+        { nome: "Teresa", avatar: "images/avatar/Teresa.jpg" }
+    ];
+    
+    // Scegli 3 avversari casuali e distinti
+    const shuffled = [...listaAvversari].sort(() => Math.random() - 0.5);
+    
+    giocatoriSessione = {
+        0: { nome: "Tu", avatar: "favicon/apple-touch-icon.png" },
+        1: shuffled[0],
+        2: shuffled[1],
+        3: shuffled[2]
+    };
+    
+    sessionStorage.setItem('scopa-giocatori-sessione', JSON.stringify(giocatoriSessione));
+}
+
+function applicaGiocatoriUI() {
+    if (!giocatoriSessione) return;
+    
+    for (let i = 0; i < 4; i++) {
+        const giocatore = giocatoriSessione[i];
+        let nomeEl = null;
+        let avatarEl = null;
+        
+        if (i === 0) {
+            nomeEl = document.querySelector('#area-giocatore .nome-giocatore');
+            avatarEl = document.querySelector('#area-giocatore .avatar');
+        } else if (i === 1) {
+            nomeEl = document.querySelector('#area-sinistra .nome-giocatore');
+            avatarEl = document.querySelector('#area-sinistra .avatar');
+        } else if (i === 2) {
+            nomeEl = document.getElementById('nome-top');
+            avatarEl = document.getElementById('avatar-top');
+        } else if (i === 3) {
+            nomeEl = document.querySelector('#area-destra .nome-giocatore');
+            avatarEl = document.querySelector('#area-destra .avatar');
+        }
+        
+        if (nomeEl) {
+            if (i === 2) {
+                if (modalitaGioco === '2P') {
+                    nomeEl.textContent = giocatore.nome;
+                    nomeEl.style.whiteSpace = 'nowrap';
+                } else {
+                    nomeEl.style.whiteSpace = 'normal';
+                    nomeEl.innerHTML = `${giocatore.nome}<br>(compagno)`;
+                }
+            } else if (i === 1) {
+                nomeEl.textContent = `${giocatore.nome} (Sx)`;
+            } else if (i === 3) {
+                nomeEl.textContent = `${giocatore.nome} (Dx)`;
+            } else {
+                nomeEl.textContent = giocatore.nome;
+            }
+        }
+        if (avatarEl) {
+            avatarEl.src = giocatore.avatar;
+            avatarEl.alt = giocatore.nome;
+        }
+    }
+}
+
 // === INIZIALIZZAZIONE DELLA PAGINA ===
 document.addEventListener('DOMContentLoaded', () => {
+    if (typeof window.waitForInterstitial === 'function') {
+        window.waitForInterstitial(initScopa);
+    } else {
+        initScopa();
+    }
+});
+
+function initScopa() {
+    // Inizializzazione giocatori per la sessione
+    inizializzaGiocatoriSessione();
+
     // Inizializzazione impostazioni salvate da localStorage
     modalitaGioco = localStorage.getItem('scopa-game-mode') || '2P';
     puntiTarget = parseInt(localStorage.getItem('scopa-score-target')) || 11;
@@ -151,6 +251,129 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+
+    // Gestione Nuova Partita
+    const btnNuova = document.getElementById('btn-nuova-partita');
+    if (btnNuova) {
+        btnNuova.addEventListener('click', () => {
+            if (timerMossaGiocatore) {
+                clearTimeout(timerMossaGiocatore);
+                timerMossaGiocatore = null;
+            }
+            if (statoGioco === 'inizio' || statoGioco === 'finito') {
+                resetPartitaCompleto();
+            } else {
+                confirmModalOpen = true;
+                if (window.ENABLE_BANNER_ON_FINISH && typeof setupAmazonFinishBanner === 'function') {
+                    setupAmazonFinishBanner('confermatermina', {
+                        modalStyle: {
+                            width: '700px',
+                            height: '180px',
+                            left: '162px',
+                            top: '450px',
+                            background: '#1a4224 url(images/scala40/tappetoverde.png)',
+                            border: '4px solid #b8860b',
+                            borderRadius: '12px',
+                            boxShadow: '0 10px 30px rgba(0,0,0,0.6)',
+                            overflow: 'visible',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            padding: '25px',
+                            color: 'white',
+                            boxSizing: 'border-box'
+                        },
+                        targetTop: 450,
+                        bannerHeight: 300,
+                        bannerTopOffset: 325,
+                        leftOffset: 0,
+                        showVediCarte: false,
+                        onSetupButtons: function (modal) {
+                            var btnNo = modal.querySelector('.btn-no-continua');
+                            var btnSi = modal.querySelector('.btn-si-termina');
+                            if (btnNo) {
+                                btnNo.style.position = 'absolute';
+                                btnNo.style.top = '110px';
+                                btnNo.style.width = '240px';
+                                btnNo.style.left = '80px';
+                                btnNo.style.fontSize = '20px';
+                                btnNo.style.margin = '0';
+                            }
+                            if (btnSi) {
+                                btnSi.style.position = 'absolute';
+                                btnSi.style.top = '110px';
+                                btnSi.style.width = '240px';
+                                btnSi.style.left = '380px';
+                                btnSi.style.fontSize = '20px';
+                                btnSi.style.margin = '0';
+                            }
+                            var msg = modal.querySelector('.confirm-message');
+                            if (msg) {
+                                msg.style.marginTop = '20px';
+                                msg.style.marginBottom = '20px';
+                                msg.style.fontSize = '24px';
+                            }
+                        }
+                    });
+                } else {
+                    // Stile fallback default (centrato standard 500x520)
+                    const modal = document.getElementById('confermatermina');
+                    modal.style.width = '500px';
+                    modal.style.height = '520px';
+                    modal.style.left = '262px';
+                    modal.style.top = '115px';
+                    modal.style.background = '#1a4224 url(images/scala40/tappetoverde.png)';
+                    modal.style.overflow = 'hidden';
+                    
+                    var btnNo = modal.querySelector('.btn-no-continua');
+                    var btnSi = modal.querySelector('.btn-si-termina');
+                    if (btnNo) {
+                        btnNo.style.position = '';
+                        btnNo.style.top = '';
+                        btnNo.style.width = '280px';
+                        btnNo.style.left = '';
+                        btnNo.style.fontSize = '16px';
+                        btnNo.style.margin = '0 auto 10px auto';
+                    }
+                    if (btnSi) {
+                        btnSi.style.position = '';
+                        btnSi.style.top = '';
+                        btnSi.style.width = '280px';
+                        btnSi.style.left = '';
+                        btnSi.style.fontSize = '16px';
+                        btnSi.style.margin = '0 auto';
+                    }
+                    var msg = modal.querySelector('.confirm-message');
+                    if (msg) {
+                        msg.style.marginTop = '40px';
+                        msg.style.marginBottom = '40px';
+                        msg.style.fontSize = '24px';
+                    }
+                }
+                document.getElementById('confermatermina').style.display = 'flex';
+                document.getElementById('schermo').style.display = 'block';
+            }
+        });
+    }
+
+    // Bottoni della modale di conferma abbandono
+    const btnNoContinua = document.getElementById('btn-no-continua');
+    if (btnNoContinua) {
+        btnNoContinua.addEventListener('click', () => {
+            confirmModalOpen = false;
+            document.getElementById('confermatermina').style.display = 'none';
+            document.getElementById('schermo').style.display = 'none';
+        });
+    }
+
+    const btnSiTermina = document.getElementById('btn-si-termina');
+    if (btnSiTermina) {
+        btnSiTermina.addEventListener('click', () => {
+            confirmModalOpen = false;
+            document.getElementById('confermatermina').style.display = 'none';
+            resetPartitaCompleto();
+        });
+    }
     
     // Gestione del click sul tavolo per deselezionare o depositare
     document.getElementById('tavolo').addEventListener('click', (e) => {
@@ -169,7 +392,9 @@ document.addEventListener('DOMContentLoaded', () => {
             eseguiPresaGiocatore();
         }
     });
-});
+
+    applicaGiocatoriUI();
+}
 
 // === FUNZIONI DEL FLUSSO DI GIOCO ===
 
@@ -188,6 +413,46 @@ function mostraInizioPartita() {
     // Inizializza pulsanti attivi nel modale
     selezionaModalita(modalitaGioco);
     selezionaTarget(puntiTarget);
+}
+
+function resetPartitaCompleto() {
+    confirmModalOpen = false;
+    if (timerMossaGiocatore) {
+        clearTimeout(timerMossaGiocatore);
+        timerMossaGiocatore = null;
+    }
+    deselezionaTutto();
+    
+    // Pulisci le mani e il tavolo per evitare che si vedano carte residue sotto l'overlay
+    mani = [[], [], [], []];
+    carteTavolo = [];
+    renderManoGiocatore();
+    renderManoAvversario(2, 'carte-computer');
+    if (modalitaGioco === '4P') {
+        renderManoAvversario(1, 'carte-sinistra');
+        renderManoAvversario(3, 'carte-destra');
+    }
+    renderTavolo();
+    
+    // Resetta i punteggi cumulativi
+    puntiPartitaTu = 0;
+    puntiPartitaPC = 0;
+    aggiornaPannelloPunteggio();
+    
+    // Pulisci pile prese e i contatori
+    cartePreseTu = [];
+    cartePresePC = [];
+    aggiornaInterfacciaPrese();
+    
+    // Nascondi i badge mazziere e i bordi attivi
+    document.querySelectorAll('.area-giocatore, .area-giocatore-verticale').forEach(el => el.classList.remove('attivo'));
+    for (let i = 0; i < 4; i++) {
+        const badge = document.getElementById(`dealer-badge-${i}`);
+        if (badge) badge.style.display = 'none';
+    }
+    
+    // Mostra il modale iniziale
+    mostraInizioPartita();
 }
 
 function selezionaModalita(mode) {
@@ -226,7 +491,6 @@ function confermaEAvviaPartita() {
     const areaDestra = document.getElementById('area-destra');
     const labelNoi = document.getElementById('label-noi');
     const labelLoro = document.getElementById('label-loro');
-    const nomeTop = document.getElementById('nome-top');
     const thNoi = document.getElementById('header-punti-noi');
     const thLoro = document.getElementById('header-punti-loro');
     
@@ -236,7 +500,6 @@ function confermaEAvviaPartita() {
         areaDestra.style.display = 'flex';
         labelNoi.textContent = "NOI";
         labelLoro.textContent = " LORO";
-        nomeTop.textContent = "Compagno";
         if (thNoi) thNoi.textContent = "Noi";
         if (thLoro) thLoro.textContent = "Loro";
     } else {
@@ -244,11 +507,13 @@ function confermaEAvviaPartita() {
         areaSinistra.style.display = 'none';
         areaDestra.style.display = 'none';
         labelNoi.textContent = "TU";
-        labelLoro.textContent = " PC";
-        nomeTop.textContent = "Computer";
+        const oppNome = (giocatoriSessione && giocatoriSessione[2]) ? giocatoriSessione[2].nome : "PC";
+        labelLoro.textContent = " " + oppNome.toUpperCase();
         if (thNoi) thNoi.textContent = "Tu";
-        if (thLoro) thLoro.textContent = "PC";
+        if (thLoro) thLoro.textContent = oppNome;
     }
+    
+    applicaGiocatoriUI();
     
     document.getElementById('torneo-info').textContent = `Target: ${puntiTarget} punti`;
     
@@ -261,9 +526,13 @@ function confermaEAvviaPartita() {
     document.getElementById('modale-inizio').style.display = 'none';
     document.getElementById('schermo').style.display = 'none';
     
-    // Determina primo di mano e dealer
-    chiIniziaQuestoRound = 0; // Il giocatore 0 gioca per primo
-    mazziere = modalitaGioco === '2P' ? 2 : 3; // PC (2) o Bruno (3) fanno il mazziere
+    // Determina il dealer iniziale in modo casuale
+    if (modalitaGioco === '2P') {
+        mazziere = Math.random() < 0.5 ? 0 : 2; // Scegli a caso tra Tu (0) e PC (2)
+    } else {
+        mazziere = Math.floor(Math.random() * 4); // Scegli a caso tra i 4 giocatori (0..3)
+    }
+    chiIniziaQuestoRound = prossimoGiocatore(mazziere); // Il giocatore a destra (antiorario) del mazziere gioca per primo
     
     avviaRound();
 }
@@ -278,6 +547,8 @@ function avviaRound() {
     ultimoCatturato = null;
     deselezionaTutto();
     aggiornaInterfacciaPrese();
+    aggiornaMazziereUI();
+    document.querySelectorAll('.area-giocatore, .area-giocatore-verticale').forEach(el => el.classList.remove('attivo'));
     
     // Svuota e resetta i contenitori DOM laterali se siamo a 2P
     if (modalitaGioco === '2P') {
@@ -323,14 +594,17 @@ function prossimoGiocatore(idx) {
     if (modalitaGioco === '2P') {
         return idx === 0 ? 2 : 0;
     } else {
-        return (idx + 1) % 4;
+        return (idx - 1 + 4) % 4; // Tradizione classica: senso antiorario
     }
 }
 
 function ottieniNomeGiocatore(idx) {
+    if (giocatoriSessione && giocatoriSessione[idx]) {
+        return giocatoriSessione[idx].nome;
+    }
     if (idx === 0) return "Tu";
     if (idx === 1) return "Carlo";
-    if (idx === 2) return modalitaGioco === '2P' ? "Il Computer" : "Il tuo Partner";
+    if (idx === 2) return modalitaGioco === '2P' ? "Computer" : "Partner";
     if (idx === 3) return "Bruno";
     return "";
 }
@@ -371,6 +645,7 @@ function distribuisciIniziale() {
     
     eseguiCodaDistribuzione(coda, () => {
         giocatoreAttivo = chiIniziaQuestoRound;
+        aggiornaGiocatoreAttivoUI();
         if (giocatoreAttivo === 0) {
             statoGioco = 'turno-giocatore';
             aggiornaMessaggioStato("È il tuo turno! Gioca una carta.");
@@ -491,6 +766,7 @@ function distribuisciNuoveMani() {
     eseguiCodaDistribuzione(coda, () => {
         // Ripristina l'indice di gioco
         giocatoreAttivo = chiIniziaQuestoRound;
+        aggiornaGiocatoreAttivoUI();
         if (giocatoreAttivo === 0) {
             statoGioco = 'turno-giocatore';
             aggiornaMessaggioStato("È il tuo turno! Gioca una carta.");
@@ -655,9 +931,42 @@ function aggiornaPannelloPunteggio() {
     document.getElementById('punti-loro').textContent = puntiPartitaPC;
 }
 
+function aggiornaMazziereUI() {
+    for (let i = 0; i < 4; i++) {
+        const badge = document.getElementById(`dealer-badge-${i}`);
+        if (badge) {
+            badge.style.display = (i === mazziere) ? 'block' : 'none';
+        }
+    }
+}
+
+function aggiornaGiocatoreAttivoUI() {
+    // Rimuovi la classe 'attivo' da tutte le aree dei giocatori
+    document.querySelectorAll('.area-giocatore, .area-giocatore-verticale').forEach(el => {
+        el.classList.remove('attivo');
+    });
+    
+    // Aggiungi la classe 'attivo' solo all'area del giocatore attivo corrente
+    let areaId = '';
+    if (giocatoreAttivo === 0) areaId = 'area-giocatore';
+    else if (giocatoreAttivo === 1) areaId = 'area-sinistra';
+    else if (giocatoreAttivo === 2) areaId = 'area-computer';
+    else if (giocatoreAttivo === 3) areaId = 'area-destra';
+    
+    const activeArea = document.getElementById(areaId);
+    if (activeArea) {
+        activeArea.classList.add('attivo');
+    }
+}
+
 // === LOGICA PRESE E SELEZIONE GIOCATORE ===
 
 function selezionaCartaGiocatore(card) {
+    if (timerMossaGiocatore) {
+        clearTimeout(timerMossaGiocatore);
+        timerMossaGiocatore = null;
+    }
+
     // Se è la stessa carta, la deseleziona
     if (cartaSelezionata && cartaSelezionata.id === card.id) {
         deselezionaTutto();
@@ -676,14 +985,23 @@ function selezionaCartaGiocatore(card) {
     renderManoGiocatore();
     
     if (combinazioniPresaDisponibili.length === 0) {
-        aggiornaMessaggioStato("Nessuna presa. Clicca sul tavolo da gioco per depositarla.");
+        aggiornaMessaggioStato("Nessuna presa. Calo in corso...");
         renderTavolo(); // Rendi normale
+        timerMossaGiocatore = setTimeout(() => {
+            if (statoGioco === 'turno-giocatore' && cartaSelezionata && cartaSelezionata.id === card.id) {
+                eseguiScartoGiocatore();
+            }
+        }, 400);
     } else if (combinazioniPresaDisponibili.length === 1) {
         // Presa automatica immediata per accelerare il gioco se c'è solo un'opzione!
         aggiornaMessaggioStato("Presa automatica!");
         tavoloSelezionate = [...combinazioniPresaDisponibili[0]];
         renderTavolo();
-        setTimeout(eseguiPresaGiocatore, 400);
+        timerMossaGiocatore = setTimeout(() => {
+            if (statoGioco === 'turno-giocatore' && cartaSelezionata && cartaSelezionata.id === card.id) {
+                eseguiPresaGiocatore();
+            }
+        }, 400);
     } else {
         // Scelte multiple disponibili (es. gioca 6, a terra ci sono 6, e anche 4+2 | oppure gioca 5 con 4+1 e 3+2)
         // Nota: se c'è la carta singola dello stesso valore, calcolaSceltePresa restituisce SOLO quella (regola ufficiale).
@@ -753,6 +1071,10 @@ function evidenziaCarteTavoloEleggibili() {
 }
 
 function deselezionaTutto() {
+    if (timerMossaGiocatore) {
+        clearTimeout(timerMossaGiocatore);
+        timerMossaGiocatore = null;
+    }
     cartaSelezionata = null;
     tavoloSelezionate = [];
     combinazioniPresaDisponibili = [];
@@ -809,32 +1131,39 @@ function eseguiScartoGiocatore() {
     
     const card = cartaSelezionata;
     const startEl = document.getElementById(`card-player-0-${card.id}`);
-    const posHand = ottieniCoordinateElemento(startEl);
     
-    // Crea carta temporanea a terra per calcolare coordinate prima di animare
-    const dummyCard = new Carta(card.suit, card.number);
-    dummyCard.id = card.id;
-    carteTavolo.push(dummyCard);
-    renderTavolo();
+    // Evidenzia immediatamente la carta in mano
+    if (startEl) startEl.classList.add('evidenziata-presa');
     
-    const targetEl = document.getElementById(`card-tavolo-${card.id}`);
-    const posDest = ottieniCoordinateElemento(targetEl);
-    
-    // Rimuovi dalla mano e dal tavolo temporaneo
-    mani[0] = mani[0].filter(c => c.id !== card.id);
-    carteTavolo = carteTavolo.filter(c => c.id !== card.id);
-    renderManoGiocatore();
-    renderTavolo();
-    deselezionaTutto();
-    
-    animaCarta(card, posHand, posDest, () => {
-        // Aggiungi a terra definitivamente
-        carteTavolo.push(card);
-        renderTavolo();
-        riproduciAudio("sounds/scala40/cardplace1.mp3");
+    // Attendi lo stesso tempo (2 secondi) prima che voli, per coerenza con la presa
+    setTimeout(() => {
+        const posHand = ottieniCoordinateElemento(startEl);
         
-        passaAlProssimoTurno();
-    });
+        // Crea carta temporanea a terra per calcolare coordinate prima di animare
+        const dummyCard = new Carta(card.suit, card.number);
+        dummyCard.id = card.id;
+        carteTavolo.push(dummyCard);
+        renderTavolo();
+        
+        const targetEl = document.getElementById(`card-tavolo-${card.id}`);
+        const posDest = ottieniCoordinateElemento(targetEl);
+        
+        // Rimuovi dalla mano e dal tavolo temporaneo
+        mani[0] = mani[0].filter(c => c.id !== card.id);
+        carteTavolo = carteTavolo.filter(c => c.id !== card.id);
+        renderManoGiocatore();
+        renderTavolo();
+        deselezionaTutto();
+        
+        animaCarta(card, posHand, posDest, () => {
+            // Aggiungi a terra definitivamente
+            carteTavolo.push(card);
+            renderTavolo();
+            riproduciAudio("sounds/scala40/cardplace1.mp3");
+            
+            passaAlProssimoTurno();
+        });
+    }, 2000);
 }
 
 function eseguiPresaGiocatore() {
@@ -961,6 +1290,7 @@ function passaAlProssimoTurno() {
     } else {
         // Passa al prossimo giocatore attivo
         giocatoreAttivo = prossimoGiocatore(giocatoreAttivo);
+        aggiornaGiocatoreAttivoUI();
         
         if (giocatoreAttivo === 0) {
             statoGioco = 'turno-giocatore';
@@ -1132,6 +1462,11 @@ function continuaProssimoRound() {
 // === INTELLIGENZA ARTIFICIALE (MOSSA DEL COMPUTER) ===
 
 function eseguiMossaComputer(giocatoreIdx) {
+    if (confirmModalOpen) {
+        // Se la modale di conferma abbandono è aperta, rimanda la mossa
+        setTimeout(() => eseguiMossaComputer(giocatoreIdx), 1000);
+        return;
+    }
     if (statoGioco !== 'turno-computer') return;
     
     if (giocatoreIdx === undefined) giocatoreIdx = giocatoreAttivo;
@@ -1303,7 +1638,7 @@ function eseguiMossaComputer(giocatoreIdx) {
 
 // Calcola un peso per una mossa di presa
 function calcolaPunteggioPresaIA(card, captureSet) {
-    let score = 0;
+    let score = 100; // Baseline di 100 punti per garantire che qualsiasi presa sia preferita a qualsiasi scarto
     
     // 1. Controlla se fa Scopa (Priorità massima!)
     // Ma attenzione: non si fa scopa all'ultima mano del round
