@@ -287,10 +287,9 @@ body {
 	left: auto;
 	width: 1024px;
 	height: 750px;
-	/* background-image:url(images/wood2.png); */
+	background-color: #1a4224;
+	background-image: url(images/scala40/tappetoverde.png);
 	margin: 0px auto 0px;
-
-
 }
 
 #campoesamina {

@@ -32,6 +32,11 @@ let tavoloSelezionate = []; // Carte selezionate sul tavolo per la presa
 let combinazioniPresaDisponibili = []; // Tutte le combinazioni valide per la carta selezionata
 let giocatoriSessione = null; // Giocatori della sessione (nome e avatar)
 let confirmModalOpen = false; // Stato della modale di conferma reset (per sospendere l'IA)
+let cronologiaMosse = []; // Storico degli snapshot di gioco per l'Undo
+let notificaCarteTuFatta = false;
+let notificaCartePCFatta = false;
+let notificaQuadriTuFatta = false;
+let notificaQuadriPCFatta = false;
 
 // Costanti dei semi e dei loro valori di riga nello sprite
 const SEMI = ['F', 'Q', 'C', 'P']; // Fiori (riga 0), Quadri (riga 1), Cuori (riga 2), Picche (riga 3)
@@ -91,9 +96,10 @@ function inizializzaGiocatoriSessione() {
     const saved = sessionStorage.getItem('scopa-giocatori-sessione');
     if (saved) {
         giocatoriSessione = JSON.parse(saved);
-        // Forza "Tu" se per caso era stato salvato "Yoghi" in precedenza
-        if (giocatoriSessione[0] && giocatoriSessione[0].nome !== "Tu") {
-            giocatoriSessione[0].nome = "Tu";
+        // Forza "Tu" / "You" a seconda della lingua corrente
+        const nomeUmano = (window.currentLang === 'en') ? "You" : "Tu";
+        if (giocatoriSessione[0] && giocatoriSessione[0].nome !== nomeUmano) {
+            giocatoriSessione[0].nome = nomeUmano;
             sessionStorage.setItem('scopa-giocatori-sessione', JSON.stringify(giocatoriSessione));
         }
         return;
@@ -118,7 +124,7 @@ function inizializzaGiocatoriSessione() {
     const shuffled = [...listaAvversari].sort(() => Math.random() - 0.5);
     
     giocatoriSessione = {
-        0: { nome: "Tu", avatar: "favicon/apple-touch-icon.png" },
+        0: { nome: (window.currentLang === 'en') ? "You" : "Tu", avatar: "favicon/apple-touch-icon.png" },
         1: shuffled[0],
         2: shuffled[1],
         3: shuffled[2]
@@ -156,12 +162,12 @@ function applicaGiocatoriUI() {
                     nomeEl.style.whiteSpace = 'nowrap';
                 } else {
                     nomeEl.style.whiteSpace = 'normal';
-                    nomeEl.innerHTML = `${giocatore.nome}<br>(compagno)`;
+                    nomeEl.innerHTML = `${giocatore.nome}<br>${(window.currentLang === 'en') ? '(partner)' : '(compagno)'}`;
                 }
             } else if (i === 1) {
-                nomeEl.textContent = `${giocatore.nome} (Sx)`;
+                nomeEl.textContent = (window.currentLang === 'en') ? `${giocatore.nome} (L)` : `${giocatore.nome} (Sx)`;
             } else if (i === 3) {
-                nomeEl.textContent = `${giocatore.nome} (Dx)`;
+                nomeEl.textContent = (window.currentLang === 'en') ? `${giocatore.nome} (R)` : `${giocatore.nome} (Dx)`;
             } else {
                 nomeEl.textContent = giocatore.nome;
             }
@@ -213,18 +219,18 @@ function initScopa() {
     let temaCorrente = localStorage.getItem('scopa-deck-theme') || 'francesi';
     if (temaCorrente === 'napoletane') {
         campogioco.classList.add('napoletane');
-        btnMazzo.textContent = "Usa Carte Francesi";
+        btnMazzo.textContent = (window.currentLang === 'en') ? "Use French Cards" : "Usa Carte Francesi";
     }
     
     if (btnMazzo) {
         btnMazzo.addEventListener('click', () => {
             if (campogioco.classList.contains('napoletane')) {
                 campogioco.classList.remove('napoletane');
-                btnMazzo.textContent = "Usa Carte Napoletane";
+                btnMazzo.textContent = (window.currentLang === 'en') ? "Use Neapolitan Cards" : "Usa Carte Napoletane";
                 localStorage.setItem('scopa-deck-theme', 'francesi');
             } else {
                 campogioco.classList.add('napoletane');
-                btnMazzo.textContent = "Usa Carte Francesi";
+                btnMazzo.textContent = (window.currentLang === 'en') ? "Use French Cards" : "Usa Carte Francesi";
                 localStorage.setItem('scopa-deck-theme', 'napoletane');
             }
             // Rinfresca il rendering di tutte le carte attive per aggiornare lo sfondo
@@ -243,7 +249,7 @@ function initScopa() {
     if (btnScopri) {
         btnScopri.addEventListener('click', () => {
             carteScoperteAttive = !carteScoperteAttive;
-            btnScopri.textContent = carteScoperteAttive ? "Copri Carte" : "Scopri Carte";
+            btnScopri.textContent = carteScoperteAttive ? ((window.currentLang === 'en') ? "Hide Cards" : "Copri Carte") : ((window.currentLang === 'en') ? "Reveal Cards" : "Scopri Carte");
             renderManoAvversario(2, 'carte-computer');
             if (modalitaGioco === '4P') {
                 renderManoAvversario(1, 'carte-sinistra');
@@ -268,9 +274,9 @@ function initScopa() {
                     setupAmazonFinishBanner('confermatermina', {
                         modalStyle: {
                             width: '700px',
-                            height: '180px',
+                            height: '300px',
                             left: '162px',
-                            top: '450px',
+                            top: '380px',
                             background: '#1a4224 url(images/scala40/tappetoverde.png)',
                             border: '4px solid #b8860b',
                             borderRadius: '12px',
@@ -283,9 +289,9 @@ function initScopa() {
                             color: 'white',
                             boxSizing: 'border-box'
                         },
-                        targetTop: 450,
+                        targetTop: 380,
                         bannerHeight: 300,
-                        bannerTopOffset: 325,
+                        bannerTopOffset: 310,
                         leftOffset: 0,
                         showVediCarte: false,
                         onSetupButtons: function (modal) {
@@ -293,7 +299,7 @@ function initScopa() {
                             var btnSi = modal.querySelector('.btn-si-termina');
                             if (btnNo) {
                                 btnNo.style.position = 'absolute';
-                                btnNo.style.top = '110px';
+                                btnNo.style.top = '190px';
                                 btnNo.style.width = '240px';
                                 btnNo.style.left = '80px';
                                 btnNo.style.fontSize = '20px';
@@ -301,7 +307,7 @@ function initScopa() {
                             }
                             if (btnSi) {
                                 btnSi.style.position = 'absolute';
-                                btnSi.style.top = '110px';
+                                btnSi.style.top = '190px';
                                 btnSi.style.width = '240px';
                                 btnSi.style.left = '380px';
                                 btnSi.style.fontSize = '20px';
@@ -309,7 +315,7 @@ function initScopa() {
                             }
                             var msg = modal.querySelector('.confirm-message');
                             if (msg) {
-                                msg.style.marginTop = '20px';
+                                msg.style.marginTop = '60px';
                                 msg.style.marginBottom = '20px';
                                 msg.style.fontSize = '24px';
                             }
@@ -393,6 +399,14 @@ function initScopa() {
         }
     });
 
+    // Gestione click sul bottone Annulla (Undo)
+    const btnUndo = document.getElementById('btn-undo');
+    if (btnUndo) {
+        btnUndo.addEventListener('click', () => {
+            eseguiUndo();
+        });
+    }
+
     applicaGiocatoriUI();
 }
 
@@ -451,6 +465,10 @@ function resetPartitaCompleto() {
         if (badge) badge.style.display = 'none';
     }
     
+    // Resetta lo storico dell'Undo
+    cronologiaMosse = [];
+    aggiornaStatoUndoUI();
+
     // Mostra il modale iniziale
     mostraInizioPartita();
 }
@@ -493,34 +511,43 @@ function confermaEAvviaPartita() {
     const labelLoro = document.getElementById('label-loro');
     const thNoi = document.getElementById('header-punti-noi');
     const thLoro = document.getElementById('header-punti-loro');
+    const progHeaderNoi = document.getElementById('prog-header-noi');
+    const progHeaderLoro = document.getElementById('prog-header-loro');
     
     if (modalitaGioco === '4P') {
         campogioco.classList.add('quattro-giocatori');
         areaSinistra.style.display = 'flex';
         areaDestra.style.display = 'flex';
-        labelNoi.textContent = "NOI";
-        labelLoro.textContent = " LORO";
-        if (thNoi) thNoi.textContent = "Noi";
-        if (thLoro) thLoro.textContent = "Loro";
+        labelNoi.textContent = (window.currentLang === 'en') ? "US" : "NOI";
+        labelLoro.textContent = (window.currentLang === 'en') ? " THEM" : " LORO";
+        if (thNoi) thNoi.textContent = (window.currentLang === 'en') ? "Us" : "Noi";
+        if (thLoro) thLoro.textContent = (window.currentLang === 'en') ? "Them" : "Loro";
+        if (progHeaderNoi) progHeaderNoi.textContent = (window.currentLang === 'en') ? "Us" : "Noi";
+        if (progHeaderLoro) progHeaderLoro.textContent = (window.currentLang === 'en') ? "Them" : "Loro";
     } else {
         campogioco.classList.remove('quattro-giocatori');
         areaSinistra.style.display = 'none';
         areaDestra.style.display = 'none';
-        labelNoi.textContent = "TU";
+        labelNoi.textContent = (window.currentLang === 'en') ? "YOU" : "TU";
         const oppNome = (giocatoriSessione && giocatoriSessione[2]) ? giocatoriSessione[2].nome : "PC";
         labelLoro.textContent = " " + oppNome.toUpperCase();
-        if (thNoi) thNoi.textContent = "Tu";
+        if (thNoi) thNoi.textContent = (window.currentLang === 'en') ? "You" : "Tu";
         if (thLoro) thLoro.textContent = oppNome;
+        if (progHeaderNoi) progHeaderNoi.textContent = (window.currentLang === 'en') ? "You" : "Tu";
+        if (progHeaderLoro) progHeaderLoro.textContent = oppNome;
     }
     
     applicaGiocatoriUI();
     
-    document.getElementById('torneo-info').textContent = `Target: ${puntiTarget} punti`;
+    document.getElementById('torneo-info').textContent = (window.currentLang === 'en') ? `Target: ${puntiTarget} points` : `Target: ${puntiTarget} punti`;
     
     // Reset punteggi
     puntiPartitaTu = 0;
     puntiPartitaPC = 0;
     aggiornaPannelloPunteggio();
+    if (typeof aggiornaDettaglioProgressivo === 'function') {
+        aggiornaDettaglioProgressivo();
+    }
     
     // Chiudi modale
     document.getElementById('modale-inizio').style.display = 'none';
@@ -538,10 +565,17 @@ function confermaEAvviaPartita() {
 }
 
 function avviaRound() {
+    cronologiaMosse = [];
+    aggiornaStatoUndoUI();
+    
     scopeRoundTu = 0;
     scopeRoundPC = 0;
     cartePreseTu = [];
     cartePresePC = [];
+    notificaCarteTuFatta = false;
+    notificaCartePCFatta = false;
+    notificaQuadriTuFatta = false;
+    notificaQuadriPCFatta = false;
     mani = [[], [], [], []];
     carteTavolo = [];
     ultimoCatturato = null;
@@ -554,8 +588,8 @@ function avviaRound() {
     if (modalitaGioco === '2P') {
         document.getElementById('carte-sinistra').innerHTML = '';
         document.getElementById('carte-destra').innerHTML = '';
-        document.getElementById('ncarte-sinistra').textContent = 'Carte: 0';
-        document.getElementById('ncarte-destra').textContent = 'Carte: 0';
+        document.getElementById('ncarte-sinistra').textContent = (window.currentLang === 'en') ? 'Cards: 0' : 'Carte: 0';
+        document.getElementById('ncarte-destra').textContent = (window.currentLang === 'en') ? 'Cards: 0' : 'Carte: 0';
     }
     
     creaMazzo();
@@ -785,7 +819,7 @@ function renderManoGiocatore() {
     const container = document.getElementById('carte-giocatore');
     container.innerHTML = '';
     
-    document.getElementById('ncarte-giocatore').textContent = `Carte: ${mani[0].length}`;
+    document.getElementById('ncarte-giocatore').textContent = (window.currentLang === 'en') ? `Cards: ${mani[0].length}` : `Carte: ${mani[0].length}`;
     
     mani[0].forEach(card => {
         const el = document.createElement('div');
@@ -819,7 +853,7 @@ function renderManoAvversario(idx, containerId) {
     else if (idx === 2) labelId = 'ncarte-computer';
     else if (idx === 3) labelId = 'ncarte-destra';
     
-    document.getElementById(labelId).textContent = `Carte: ${mani[idx].length}`;
+    document.getElementById(labelId).textContent = (window.currentLang === 'en') ? `Cards: ${mani[idx].length}` : `Carte: ${mani[idx].length}`;
     
     const scopriSempre = (carteScoperteAttive === true);
     
@@ -868,6 +902,32 @@ function renderTavolo() {
     });
 }
 
+function aggiornaGraficaSelezioneMano() {
+    mani[0].forEach(card => {
+        const el = document.getElementById(`card-player-0-${card.id}`);
+        if (el) {
+            if (cartaSelezionata && cartaSelezionata.id === card.id) {
+                el.classList.add('selezionata');
+            } else {
+                el.classList.remove('selezionata');
+            }
+        }
+    });
+}
+
+function aggiornaGraficaSelezioneTavolo() {
+    carteTavolo.forEach(card => {
+        const el = document.getElementById(`card-tavolo-${card.id}`);
+        if (el) {
+            if (tavoloSelezionate.some(c => c.id === card.id)) {
+                el.classList.add('selezionata');
+            } else {
+                el.classList.remove('selezionata');
+            }
+        }
+    });
+}
+
 function posizionaManoVentaglio(container, count) {
     const cards = container.children;
     if (cards.length === 0) return;
@@ -897,8 +957,8 @@ function aggiornaInterfacciaPrese() {
     const presaTu = document.getElementById('presa-giocatore');
     const presaPC = document.getElementById('presa-computer');
     
-    document.getElementById('presa-count-player').textContent = `Prese: ${cartePreseTu.length}`;
-    document.getElementById('presa-count-pc').textContent = `Prese: ${cartePresePC.length}`;
+    document.getElementById('presa-count-player').textContent = (window.currentLang === 'en') ? `Tricks: ${cartePreseTu.length}` : `Prese: ${cartePreseTu.length}`;
+    document.getElementById('presa-count-pc').textContent = (window.currentLang === 'en') ? `Tricks: ${cartePresePC.length}` : `Prese: ${cartePresePC.length}`;
     
     // Rimuove carte precedenti all'interno del blocco
     const vecchieCarteTu = presaTu.querySelectorAll('.carta');
@@ -920,10 +980,134 @@ function aggiornaInterfacciaPrese() {
         dorso.style.cursor = 'default';
         presaPC.appendChild(dorso);
     }
+    
+    aggiornaDettaglioProgressivo();
+}
+
+function aggiornaDettaglioProgressivo() {
+    const scopeTu = scopeRoundTu;
+    const scopePC = scopeRoundPC;
+    const nCarteTu = cartePreseTu.length;
+    const nCartePC = cartePresePC.length;
+    const nQuadriTu = cartePreseTu.filter(c => c.suit === 'Q').length;
+    const nQuadriPC = cartePresePC.filter(c => c.suit === 'Q').length;
+    const settebelloTu = cartePreseTu.some(c => c.suit === 'Q' && c.number === 7);
+    const settebelloPC = cartePresePC.some(c => c.suit === 'Q' && c.number === 7);
+    
+    let primTu = 0;
+    let primPC = 0;
+    if (typeof calcolaPrimiera === 'function') {
+        primTu = calcolaPrimiera(cartePreseTu);
+        primPC = calcolaPrimiera(cartePresePC);
+    }
+
+    const elScopeTu = document.getElementById('prog-scope-tu');
+    const elScopePC = document.getElementById('prog-scope-pc');
+    const elCarteTu = document.getElementById('prog-carte-tu');
+    const elCartePC = document.getElementById('prog-carte-pc');
+    const elQuadriTu = document.getElementById('prog-quadri-tu');
+    const elQuadriPC = document.getElementById('prog-quadri-pc');
+    const elSettebelloTu = document.getElementById('prog-settebello-tu');
+    const elSettebelloPC = document.getElementById('prog-settebello-pc');
+    const elPrimieraTu = document.getElementById('prog-primiera-tu');
+    const elPrimieraPC = document.getElementById('prog-primiera-pc');
+
+    if (elScopeTu) elScopeTu.textContent = scopeTu;
+    if (elScopePC) elScopePC.textContent = scopePC;
+    
+    if (elCarteTu) {
+        elCarteTu.textContent = nCarteTu;
+        elCarteTu.style.color = (nCarteTu >= 21) ? '#ffd700' : '';
+        elCarteTu.style.fontWeight = (nCarteTu >= 21) ? 'bold' : 'normal';
+    }
+    if (elCartePC) {
+        elCartePC.textContent = nCartePC;
+        elCartePC.style.color = (nCartePC >= 21) ? '#ffd700' : '';
+        elCartePC.style.fontWeight = (nCartePC >= 21) ? 'bold' : 'normal';
+    }
+    
+    if (elQuadriTu) {
+        elQuadriTu.textContent = nQuadriTu;
+        elQuadriTu.style.color = (nQuadriTu >= 6) ? '#ffd700' : '';
+        elQuadriTu.style.fontWeight = (nQuadriTu >= 6) ? 'bold' : 'normal';
+    }
+    if (elQuadriPC) {
+        elQuadriPC.textContent = nQuadriPC;
+        elQuadriPC.style.color = (nQuadriPC >= 6) ? '#ffd700' : '';
+        elQuadriPC.style.fontWeight = (nQuadriPC >= 6) ? 'bold' : 'normal';
+    }
+    
+    if (elSettebelloTu) {
+        elSettebelloTu.textContent = settebelloTu ? ((window.currentLang === 'en') ? "Yes" : "Sì") : "No";
+        elSettebelloTu.style.color = settebelloTu ? "#ffd700" : "#aaa";
+        elSettebelloTu.style.fontWeight = settebelloTu ? "bold" : "normal";
+    }
+    if (elSettebelloPC) {
+        elSettebelloPC.textContent = settebelloPC ? ((window.currentLang === 'en') ? "Yes" : "Sì") : "No";
+        elSettebelloPC.style.color = settebelloPC ? "#ffd700" : "#aaa";
+        elSettebelloPC.style.fontWeight = settebelloPC ? "bold" : "normal";
+    }
+    
+    if (elPrimieraTu) elPrimieraTu.textContent = primTu;
+    if (elPrimieraPC) elPrimieraPC.textContent = primPC;
+    
+    // Notifiche di superamento soglia metà + 1 (21 per Carte, 6 per Quadri)
+    if (nCarteTu >= 21 && !notificaCarteTuFatta) {
+        notificaCarteTuFatta = true;
+        creaNotificaPuntoSicuro('Noi', 'Carte');
+    }
+    if (nCartePC >= 21 && !notificaCartePCFatta) {
+        notificaCartePCFatta = true;
+        creaNotificaPuntoSicuro('Loro', 'Carte');
+    }
+    
+    if (nQuadriTu >= 6 && !notificaQuadriTuFatta) {
+        notificaQuadriTuFatta = true;
+        creaNotificaPuntoSicuro('Noi', 'Quadri');
+    }
+    if (nQuadriPC >= 6 && !notificaQuadriPCFatta) {
+        notificaQuadriPCFatta = true;
+        creaNotificaPuntoSicuro('Loro', 'Quadri');
+    }
 }
 
 function aggiornaMessaggioStato(msg) {
-    document.getElementById('messaggio-stato').textContent = msg;
+    let finalMsg = msg;
+    if (window.currentLang === 'en') {
+        const translations = {
+            "Distribuzione carte...": "Dealing cards...",
+            "È il tuo turno! Gioca una carta.": "It's your turn! Play a card.",
+            "Distribuzione nuove carte...": "Dealing new cards...",
+            "Nessuna presa. Calo in corso...": "No capture possible. Discarding...",
+            "Presa automatica!": "Automatic capture!",
+            "Scegli le carte sul tavolo per fare somma.": "Choose cards on the table to sum up.",
+            "Calo carta...": "Discarding card...",
+            "Hai fatto una presa!": "You made a capture!",
+            "Calcolo dei punteggi...": "Calculating scores...",
+            "Mossa annullata! È di nuovo il tuo turno.": "Move undone! It's your turn again."
+        };
+        
+        if (translations[msg]) {
+            finalMsg = translations[msg];
+        } else {
+            if (msg.includes(" sta pensando...")) {
+                const nome = msg.replace(" sta pensando...", "");
+                finalMsg = `${nome} is thinking...`;
+            }
+            else if (msg.includes(" scarta il ")) {
+                const parti = msg.split(" scarta il ");
+                finalMsg = `${parti[0]} discards the ${parti[1]}`;
+            }
+            else if (msg.includes(" gioca il ") && msg.includes(" e prende!")) {
+                const nome = msg.split(" gioca il ")[0];
+                const resto = msg.split(" gioca il ")[1];
+                const cardNum = resto.split(" e prende!")[0];
+                finalMsg = `${nome} plays the ${cardNum} and captures!`;
+            }
+        }
+    }
+    const el = document.getElementById('messaggio-stato');
+    if (el) el.textContent = finalMsg;
 }
 
 function aggiornaPannelloPunteggio() {
@@ -957,6 +1141,17 @@ function aggiornaGiocatoreAttivoUI() {
     if (activeArea) {
         activeArea.classList.add('attivo');
     }
+    
+    // Gestisci la classe 'turno-giocatore' su #campogioco per attivare hover ed effetti cursore
+    const campogioco = document.getElementById('campogioco');
+    if (campogioco) {
+        if (giocatoreAttivo === 0 && statoGioco === 'turno-giocatore') {
+            campogioco.classList.add('turno-giocatore');
+        } else {
+            campogioco.classList.remove('turno-giocatore');
+        }
+    }
+    aggiornaStatoUndoUI();
 }
 
 // === LOGICA PRESE E SELEZIONE GIOCATORE ===
@@ -982,11 +1177,11 @@ function selezionaCartaGiocatore(card) {
     combinazioniPresaDisponibili = calcolaSceltePresa(card.valore, carteTavolo);
     
     // Aggiorna grafica
-    renderManoGiocatore();
+    aggiornaGraficaSelezioneMano();
     
     if (combinazioniPresaDisponibili.length === 0) {
         aggiornaMessaggioStato("Nessuna presa. Calo in corso...");
-        renderTavolo(); // Rendi normale
+        aggiornaGraficaSelezioneTavolo(); // Rendi normale
         timerMossaGiocatore = setTimeout(() => {
             if (statoGioco === 'turno-giocatore' && cartaSelezionata && cartaSelezionata.id === card.id) {
                 eseguiScartoGiocatore();
@@ -996,7 +1191,7 @@ function selezionaCartaGiocatore(card) {
         // Presa automatica immediata per accelerare il gioco se c'è solo un'opzione!
         aggiornaMessaggioStato("Presa automatica!");
         tavoloSelezionate = [...combinazioniPresaDisponibili[0]];
-        renderTavolo();
+        aggiornaGraficaSelezioneTavolo();
         timerMossaGiocatore = setTimeout(() => {
             if (statoGioco === 'turno-giocatore' && cartaSelezionata && cartaSelezionata.id === card.id) {
                 eseguiPresaGiocatore();
@@ -1026,7 +1221,7 @@ function selezionaCartaTavolo(card) {
         tavoloSelezionate.push(card); // Seleziona
     }
     
-    renderTavolo();
+    aggiornaGraficaSelezioneTavolo();
     evidenziaCarteTavoloEleggibili();
     
     // Controlla se la selezione corrente del tavolo corrisponde esattamente ad una delle combinazioni valide
@@ -1080,8 +1275,8 @@ function deselezionaTutto() {
     combinazioniPresaDisponibili = [];
     document.getElementById('btn-prendi').style.display = 'none';
     
-    renderManoGiocatore();
-    renderTavolo();
+    aggiornaGraficaSelezioneMano();
+    aggiornaGraficaSelezioneTavolo();
     
     // Ripristina opacità carte tavolo
     carteTavolo.forEach(card => {
@@ -1126,7 +1321,9 @@ function trovaCombinazioniSomma(cards, target, startIndex, combinazioneCorrente,
 // === AZIONI DI GIOCO GIOCATORE ===
 
 function eseguiScartoGiocatore() {
+    salvaStatoCronologia();
     statoGioco = 'animazione';
+    aggiornaGiocatoreAttivoUI();
     aggiornaMessaggioStato("Calo carta...");
     
     const card = cartaSelezionata;
@@ -1167,7 +1364,9 @@ function eseguiScartoGiocatore() {
 }
 
 function eseguiPresaGiocatore() {
+    salvaStatoCronologia();
     statoGioco = 'animazione';
+    aggiornaGiocatoreAttivoUI();
     
     const card = cartaSelezionata;
     const preseTavolo = [...tavoloSelezionate];
@@ -1203,26 +1402,39 @@ function eseguiPresaGiocatore() {
         
         riproduciAudio("sounds/scala40/cardslide1.mp3");
         
+        // Salva carte prese logiche e aggiorna interfaccia prima che inizi l'animazione per sovrapporre i banner
+        const cartePreseQuestaMossa = [card, ...preseTavolo];
+        cartePreseTu.push(card);
+        preseTavolo.forEach(p => cartePreseTu.push(p));
+        ultimoCatturato = 'giocatore';
+        
+        aggiornaInterfacciaPrese();
+        
+        // Verifica Settebello!
+        const haPresoSettebello = cartePreseQuestaMossa.some(c => c.suit === 'Q' && c.number === 7);
+        if (haPresoSettebello) {
+            creaNotificaSettebello('giocatore');
+        }
+        
+        // Verifica Quadri!
+        const nQuadriPresi = cartePreseQuestaMossa.filter(c => c.suit === 'Q').length;
+        if (nQuadriPresi > 0) {
+            creaNotificaQuadri('giocatore', nQuadriPresi, haPresoSettebello);
+        }
+        
+        // Verifica Scopa!
+        const tuttiSenzaCarte = mani.every(h => h.length === 0);
+        const ultimaManoDelRound = (mazzo.length === 0 && tuttiSenzaCarte);
+        if (carteTavolo.length === 0 && !ultimaManoDelRound) {
+            creaNotificaScopa('giocatore');
+        }
+        
         let animateCount = 0;
         const totaleCarteInPresa = preseTavolo.length + 1;
         
         function completedAnimation() {
             animateCount++;
             if (animateCount === totaleCarteInPresa) {
-                // Salva carte prese
-                cartePreseTu.push(card);
-                preseTavolo.forEach(p => cartePreseTu.push(p));
-                ultimoCatturato = 'giocatore';
-                
-                aggiornaInterfacciaPrese();
-                
-                // Verifica Scopa!
-                const tuttiSenzaCarte = mani.every(h => h.length === 0);
-                const ultimaManoDelRound = (mazzo.length === 0 && tuttiSenzaCarte);
-                if (carteTavolo.length === 0 && !ultimaManoDelRound) {
-                    creaNotificaScopa('giocatore');
-                }
-                
                 passaAlProssimoTurno();
             }
         }
@@ -1256,6 +1468,8 @@ function creaNotificaScopa(chi) {
     }
     container.appendChild(floatText);
     
+    aggiornaDettaglioProgressivo();
+    
     // Banner gigante "SCOPA!"
     const banner = document.createElement('div');
     banner.className = 'notifica-scopa';
@@ -1266,6 +1480,113 @@ function creaNotificaScopa(chi) {
         floatText.remove();
         banner.remove();
     }, 2000);
+}
+
+function creaNotificaSettebello(chi) {
+    riproduciAudio("sounds/scala40/chimes.mp3");
+    
+    const container = document.getElementById('campogioco');
+    
+    // Floating "+1 Settebello 7♦"
+    const floatText = document.createElement('div');
+    floatText.className = 'punti-floating';
+    floatText.style.color = '#ffd700';
+    floatText.style.textShadow = '1px 1px 2px #000, 0 0 8px #ffd700';
+    floatText.textContent = '+1 Settebello 7♦';
+    
+    // Floating position
+    if (chi === 'giocatore') {
+        floatText.style.bottom = '180px';
+        floatText.style.left = '48%';
+    } else {
+        floatText.style.top = '180px';
+        floatText.style.left = '48%';
+    }
+    container.appendChild(floatText);
+    
+    // Banner gigante "SETTEBELLO 7♦"
+    const banner = document.createElement('div');
+    banner.className = 'notifica-settebello';
+    banner.textContent = 'SETTEBELLO 7♦';
+    container.appendChild(banner);
+    
+    setTimeout(() => {
+        floatText.remove();
+        banner.remove();
+    }, 2000);
+}
+
+function creaNotificaQuadri(chi, quanti, silenziato) {
+    if (!silenziato) {
+        riproduciAudio("sounds/scala40/ding.mp3");
+    }
+    const container = document.getElementById('campogioco');
+    
+    // Wrapper per posizionarlo grossomodo al centro dello schermo (orizzontalmente 50%)
+    // senza rompere il transform dell'animazione di salita.
+    const wrapper = document.createElement('div');
+    wrapper.style.position = 'absolute';
+    wrapper.style.left = '50%';
+    if (chi === 'giocatore') {
+        wrapper.style.top = '56%'; // Centro-basso (Noi)
+    } else {
+        wrapper.style.top = '40%'; // Centro-alto (Loro)
+    }
+    wrapper.style.transform = 'translate(-50%, -50%)';
+    wrapper.style.pointerEvents = 'none';
+    wrapper.style.zIndex = '55000';
+    
+    // Floating "+nQ"
+    const floatText = document.createElement('div');
+    floatText.className = 'punti-floating';
+    floatText.style.position = 'relative';
+    floatText.style.fontSize = '38px'; // Ancora più grande e visibile
+    floatText.style.color = '#ff3344'; // Rosso neon
+    floatText.style.textShadow = '2px 2px 2px #000, 0 0 10px #ff3344, 0 0 20px #ff0000, 0 0 30px #ff0000';
+    floatText.textContent = `+${quanti}Q`;
+    
+    wrapper.appendChild(floatText);
+    container.appendChild(wrapper);
+    
+    setTimeout(() => {
+        wrapper.remove();
+    }, 1500);
+}
+
+function creaNotificaPuntoSicuro(chi, tipo) {
+    const container = document.getElementById('campogioco');
+    const existing = container.querySelector('.notifica-punto-sicuro');
+    
+    const delayedCall = () => {
+        riproduciAudio("sounds/scala40/dindon.mp3");
+        
+        const banner = document.createElement('div');
+        banner.className = 'notifica-punto-sicuro';
+        
+        let testo = '';
+        if (window.currentLang === 'en') {
+            const engTipo = (tipo === 'Carte') ? 'Cards' : 'Diamonds';
+            const engChi = (chi === 'Noi') ? 'Us' : 'Them';
+            testo = `${engTipo} point to ${engChi}!`;
+        } else {
+            testo = `Punto ${tipo} a ${chi}!`;
+        }
+        
+        banner.textContent = testo;
+        container.appendChild(banner);
+        
+        setTimeout(() => {
+            banner.remove();
+        }, 2000);
+    };
+    
+    if (existing) {
+        // Se c'è già una notifica attiva (es. Carte e Quadri fatti contemporaneamente),
+        // ritarda la seconda notifica per farle apparire in sequenza pulita.
+        setTimeout(delayedCall, 1800);
+    } else {
+        delayedCall();
+    }
 }
 
 // === CONTROLLO TURNI E LOGICA DI FINE ROUND ===
@@ -1290,7 +1611,6 @@ function passaAlProssimoTurno() {
     } else {
         // Passa al prossimo giocatore attivo
         giocatoreAttivo = prossimoGiocatore(giocatoreAttivo);
-        aggiornaGiocatoreAttivoUI();
         
         if (giocatoreAttivo === 0) {
             statoGioco = 'turno-giocatore';
@@ -1301,6 +1621,7 @@ function passaAlProssimoTurno() {
             aggiornaMessaggioStato(`${nomeIA} sta pensando...`);
             setTimeout(() => eseguiMossaComputer(giocatoreAttivo), 1800);
         }
+        aggiornaGiocatoreAttivoUI();
     }
 }
 
@@ -1328,6 +1649,18 @@ function risolviFineRound() {
         
         riproduciAudio("sounds/scala40/cardslide1.mp3");
         
+        // Verifica Settebello ed avvia notifica immediatamente all'avvio della pulizia tavolo
+        const haSettebello = tavoloCarteCopie.some(c => c.suit === 'Q' && c.number === 7);
+        if (haSettebello) {
+            creaNotificaSettebello(ultimoCatturato === 'computer' ? 'computer' : 'giocatore');
+        }
+        
+        // Verifica Quadri ed avvia notifica all'avvio della pulizia tavolo
+        const nQuadriPresi = tavoloCarteCopie.filter(c => c.suit === 'Q').length;
+        if (nQuadriPresi > 0) {
+            creaNotificaQuadri(ultimoCatturato === 'computer' ? 'computer' : 'giocatore', nQuadriPresi, haSettebello);
+        }
+        
         let animateCount = 0;
         tavoloCarteCopie.forEach(card => {
             animaCarta(card, posMap[card.id], posDest, () => {
@@ -1340,7 +1673,12 @@ function risolviFineRound() {
                 
                 if (animateCount === tavoloCarteCopie.length) {
                     aggiornaInterfacciaPrese();
-                    calcolaPunteggiRound();
+                    
+                    if (haSettebello || nQuadriPresi > 0) {
+                        setTimeout(calcolaPunteggiRound, 1500);
+                    } else {
+                        calcolaPunteggiRound();
+                    }
                 }
             });
         });
@@ -1398,8 +1736,8 @@ function calcolaPunteggiRound() {
     document.getElementById('dettaglio-quadri-tu').textContent = `${nQuadriTu} (${ptQuadriTu})`;
     document.getElementById('dettaglio-quadri-pc').textContent = `${nQuadriPC} (${ptQuadriPC})`;
     
-    document.getElementById('dettaglio-settebello-tu').textContent = settebelloTu ? "Sì (1)" : "No (0)";
-    document.getElementById('dettaglio-settebello-pc').textContent = settebelloPC ? "Sì (1)" : "No (0)";
+    document.getElementById('dettaglio-settebello-tu').textContent = settebelloTu ? ((window.currentLang === 'en') ? "Yes (1)" : "Sì (1)") : "No (0)";
+    document.getElementById('dettaglio-settebello-pc').textContent = settebelloPC ? ((window.currentLang === 'en') ? "Yes (1)" : "Sì (1)") : "No (0)";
     
     document.getElementById('dettaglio-primiera-tu').textContent = `${primValTu} (${ptPrimieraTu})`;
     document.getElementById('dettaglio-primiera-pc').textContent = `${primValPC} (${ptPrimieraPC})`;
@@ -1411,12 +1749,526 @@ function calcolaPunteggiRound() {
     document.getElementById('match-punti-pc').textContent = puntiPartitaPC;
     
     // Mostra modale dei punteggi
-    document.getElementById('modale-punteggi').style.display = 'flex';
+    const modal = document.getElementById('modale-punteggi');
+    
+    // Verifica se la partita è finita
+    const isPartitaFinita = (puntiPartitaTu >= puntiTarget || puntiPartitaPC >= puntiTarget) && puntiPartitaTu !== puntiPartitaPC;
+    let finePartitaStato = '';
+    
+    const titleEl = modal.querySelector('.form-scopa-title');
+    const btnEl = modal.querySelector('.btn-continua');
+    
+    if (isPartitaFinita) {
+        statoGioco = 'finito';
+        if (puntiPartitaTu > puntiPartitaPC) {
+            finePartitaStato = 'vinto';
+            if (titleEl) {
+                titleEl.textContent = (window.currentLang === 'en') ? 'YOU WON!' : 'HAI VINTO!';
+                titleEl.style.color = '#ffd700';
+            }
+            if (btnEl) btnEl.textContent = (window.currentLang === 'en') ? 'NEW GAME' : 'NUOVA PARTITA';
+        } else {
+            finePartitaStato = 'perso';
+            if (titleEl) {
+                titleEl.textContent = (window.currentLang === 'en') ? 'YOU LOST!' : 'HAI PERSO!';
+                titleEl.style.color = '#ff5555';
+            }
+            if (btnEl) btnEl.textContent = (window.currentLang === 'en') ? 'TRY AGAIN' : 'RIPROVA';
+        }
+    } else {
+        if (titleEl) {
+            titleEl.textContent = (window.currentLang === 'en') ? 'Round Score' : 'Punteggio del Round';
+            titleEl.style.color = '#ffffff';
+        }
+        if (btnEl) btnEl.textContent = (window.currentLang === 'en') ? 'CONTINUE' : 'CONTINUA';
+    }
+
+    if (window.ENABLE_BANNER_ON_FINISH && typeof setupAmazonFinishBanner === 'function') {
+        setupAmazonFinishBanner('modale-punteggi', {
+            modalStyle: {
+                width: '700px',
+                height: '300px',
+                left: '162px',
+                top: '380px',
+                background: '#1a4224 url(images/scala40/tappetoverde.png)',
+                border: '4px solid #b8860b',
+                borderRadius: '12px',
+                boxShadow: '0 10px 30px rgba(0,0,0,0.6)',
+                overflow: 'visible',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'flex-start',
+                alignItems: 'center',
+                padding: '25px',
+                color: 'white',
+                boxSizing: 'border-box'
+            },
+            targetTop: 380,
+            bannerHeight: 300,
+            bannerTopOffset: 310,
+            leftOffset: 0,
+            showVediCarte: false,
+            onSetupButtons: function (m) {
+                var btn = m.querySelector('.btn-continua');
+                if (btn) {
+                    btn.style.position = 'absolute';
+                    btn.style.top = '190px';
+                    btn.style.width = '240px';
+                    btn.style.left = '35px';
+                    btn.style.fontSize = '20px';
+                    btn.style.margin = '0';
+                }
+                var title = m.querySelector('.form-scopa-title');
+                if (title) {
+                    title.style.position = 'absolute';
+                    title.style.top = '50px';
+                    title.style.left = '35px';
+                    title.style.width = '240px';
+                    title.style.fontSize = '26px';
+                    title.style.margin = '0';
+                    title.style.textAlign = 'center';
+                    title.style.lineHeight = '1.3';
+                }
+                var table = m.querySelector('.tabella-punti');
+                if (table) {
+                    table.style.position = 'absolute';
+                    table.style.top = '25px';
+                    table.style.right = '35px';
+                    table.style.width = '370px';
+                    table.style.margin = '0';
+                    table.style.fontSize = '13px';
+                    var cells = table.querySelectorAll('th, td');
+                    for (var i = 0; i < cells.length; i++) {
+                        cells[i].style.padding = '5px 8px';
+                    }
+                    var totalRow = table.querySelector('.totale-partita');
+                    if (totalRow) {
+                        var totalCells = totalRow.querySelectorAll('td');
+                        for (var j = 0; j < totalCells.length; j++) {
+                            totalCells[j].style.fontSize = '16px';
+                            totalCells[j].style.paddingTop = '6px';
+                            totalCells[j].style.paddingBottom = '4px';
+                        }
+                    }
+                }
+            }
+        });
+    } else {
+        // Ripristina layout originale se Amazon non è attivo
+        modal.style.width = '500px';
+        modal.style.height = '540px';
+        modal.style.left = '262px';
+        modal.style.top = '105px';
+        modal.style.background = '#1a4224 url(images/scala40/tappetoverde.png)';
+        modal.style.border = '4px solid #b8860b';
+        modal.style.borderRadius = '12px';
+        modal.style.boxShadow = '0 10px 30px rgba(0,0,0,0.6)';
+        modal.style.overflow = 'hidden';
+        modal.style.display = 'flex';
+        modal.style.flexDirection = 'column';
+        modal.style.alignItems = 'center';
+        modal.style.padding = '25px';
+        modal.style.color = 'white';
+        modal.style.boxSizing = 'border-box';
+        
+        var btn = modal.querySelector('.btn-continua');
+        if (btn) {
+            btn.style.position = '';
+            btn.style.top = '';
+            btn.style.width = '';
+            btn.style.left = '';
+            btn.style.fontSize = '';
+            btn.style.margin = '';
+        }
+        var title = modal.querySelector('.form-scopa-title');
+        if (title) {
+            title.style.position = '';
+            title.style.top = '';
+            title.style.left = '';
+            title.style.width = '';
+            title.style.fontSize = '';
+            title.style.margin = '';
+            title.style.textAlign = '';
+            title.style.lineHeight = '';
+        }
+        var table = modal.querySelector('.tabella-punti');
+        if (table) {
+            table.style.position = '';
+            table.style.top = '';
+            table.style.right = '';
+            table.style.width = '';
+            table.style.margin = '';
+            table.style.fontSize = '';
+            var cells = table.querySelectorAll('th, td');
+            for (var i = 0; i < cells.length; i++) {
+                cells[i].style.padding = '';
+            }
+        }
+    }
+    
+    // Aggiorna subito il pannello laterale del punteggio
+    aggiornaPannelloPunteggio();
+    
+    modal.style.display = 'flex';
     document.getElementById('schermo').style.display = 'block';
     
     // Suono di riepilogo
-    riproduciAudio("sounds/scala40/tada.mp3");
+    if (isPartitaFinita) {
+        if (finePartitaStato === 'vinto') {
+            riproduciAudio("sounds/scala40/applause.mp3");
+        } else {
+            riproduciAudio("sounds/scala40/haiperso.mp3");
+        }
+    } else {
+        riproduciAudio("sounds/scala40/tada.mp3");
+    }
 }
+
+// Funzione helper per testare le modali di fine partita (vittoria/sconfitta) da console
+window.testModaleFinePartita = function(esito) {
+    puntiPartitaTu = (esito === 'vittoria') ? 21 : 10;
+    puntiPartitaPC = (esito === 'vittoria') ? 10 : 21;
+    puntiTarget = 11;
+    
+    // Inizializza dei valori fittizi per la tabella se vuoti
+    document.getElementById('dettaglio-scope-tu').textContent = "1";
+    document.getElementById('dettaglio-scope-pc').textContent = "0";
+    document.getElementById('dettaglio-carte-tu').textContent = "22 (1)";
+    document.getElementById('dettaglio-carte-pc').textContent = "18 (0)";
+    document.getElementById('dettaglio-quadri-tu').textContent = "6 (1)";
+    document.getElementById('dettaglio-quadri-pc').textContent = "4 (0)";
+    document.getElementById('dettaglio-settebello-tu').textContent = (window.currentLang === 'en') ? "Yes (1)" : "Sì (1)";
+    document.getElementById('dettaglio-settebello-pc').textContent = "No (0)";
+    document.getElementById('dettaglio-primiera-tu').textContent = "70 (1)";
+    document.getElementById('dettaglio-primiera-pc').textContent = "50 (0)";
+    document.getElementById('round-punti-tu').textContent = "5";
+    document.getElementById('round-punti-pc').textContent = "0";
+    
+    document.getElementById('match-punti-tu').textContent = puntiPartitaTu;
+    document.getElementById('match-punti-pc').textContent = puntiPartitaPC;
+    
+    // Chiama la logica per mostrare la modale con lo stato aggiornato
+    const modal = document.getElementById('modale-punteggi');
+    
+    // Verifica se la partita è finita
+    const isPartitaFinita = true;
+    let finePartitaStato = (esito === 'vittoria') ? 'vinto' : 'perso';
+    
+    const titleEl = modal.querySelector('.form-scopa-title');
+    const btnEl = modal.querySelector('.btn-continua');
+    
+    statoGioco = 'finito';
+    if (finePartitaStato === 'vinto') {
+        if (titleEl) {
+            titleEl.textContent = (window.currentLang === 'en') ? 'YOU WON!' : 'HAI VINTO!';
+            titleEl.style.color = '#ffd700';
+        }
+        if (btnEl) btnEl.textContent = (window.currentLang === 'en') ? 'NEW GAME' : 'NUOVA PARTITA';
+    } else {
+        if (titleEl) {
+            titleEl.textContent = (window.currentLang === 'en') ? 'YOU LOST!' : 'HAI PERSO!';
+            titleEl.style.color = '#ff5555';
+        }
+        if (btnEl) btnEl.textContent = (window.currentLang === 'en') ? 'TRY AGAIN' : 'RIPROVA';
+    }
+
+    if (window.ENABLE_BANNER_ON_FINISH && typeof setupAmazonFinishBanner === 'function') {
+        setupAmazonFinishBanner('modale-punteggi', {
+            modalStyle: {
+                width: '700px',
+                height: '300px',
+                left: '162px',
+                top: '380px',
+                background: '#1a4224 url(images/scala40/tappetoverde.png)',
+                border: '4px solid #b8860b',
+                borderRadius: '12px',
+                boxShadow: '0 10px 30px rgba(0,0,0,0.6)',
+                overflow: 'visible',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'flex-start',
+                alignItems: 'center',
+                padding: '25px',
+                color: 'white',
+                boxSizing: 'border-box'
+            },
+            targetTop: 380,
+            bannerHeight: 300,
+            bannerTopOffset: 310,
+            leftOffset: 0,
+            showVediCarte: false,
+            onSetupButtons: function (m) {
+                var btn = m.querySelector('.btn-continua');
+                if (btn) {
+                    btn.style.position = 'absolute';
+                    btn.style.top = '190px';
+                    btn.style.width = '240px';
+                    btn.style.left = '35px';
+                    btn.style.fontSize = '20px';
+                    btn.style.margin = '0';
+                }
+                var title = m.querySelector('.form-scopa-title');
+                if (title) {
+                    title.style.position = 'absolute';
+                    title.style.top = '50px';
+                    title.style.left = '35px';
+                    title.style.width = '240px';
+                    title.style.fontSize = '26px';
+                    title.style.margin = '0';
+                    title.style.textAlign = 'center';
+                    title.style.lineHeight = '1.3';
+                }
+                var table = m.querySelector('.tabella-punti');
+                if (table) {
+                    table.style.position = 'absolute';
+                    table.style.top = '25px';
+                    table.style.right = '35px';
+                    table.style.width = '370px';
+                    table.style.margin = '0';
+                    table.style.fontSize = '13px';
+                    var cells = table.querySelectorAll('th, td');
+                    for (var i = 0; i < cells.length; i++) {
+                        cells[i].style.padding = '5px 8px';
+                    }
+                    var totalRow = table.querySelector('.totale-partita');
+                    if (totalRow) {
+                        var totalCells = totalRow.querySelectorAll('td');
+                        for (var j = 0; j < totalCells.length; j++) {
+                            totalCells[j].style.fontSize = '16px';
+                            totalCells[j].style.paddingTop = '6px';
+                            totalCells[j].style.paddingBottom = '4px';
+                        }
+                    }
+                }
+            }
+        });
+    } else {
+        modal.style.width = '500px';
+        modal.style.height = '540px';
+        modal.style.left = '262px';
+        modal.style.top = '105px';
+        modal.style.background = '#1a4224 url(images/scala40/tappetoverde.png)';
+        modal.style.border = '4px solid #b8860b';
+        modal.style.borderRadius = '12px';
+        modal.style.boxShadow = '0 10px 30px rgba(0,0,0,0.6)';
+        modal.style.overflow = 'hidden';
+        modal.style.display = 'flex';
+        modal.style.flexDirection = 'column';
+        modal.style.alignItems = 'center';
+        modal.style.padding = '25px';
+        modal.style.color = 'white';
+        modal.style.boxSizing = 'border-box';
+        
+        var btn = modal.querySelector('.btn-continua');
+        if (btn) {
+            btn.style.position = '';
+            btn.style.top = '';
+            btn.style.width = '';
+            btn.style.left = '';
+            btn.style.fontSize = '';
+            btn.style.margin = '';
+        }
+        var title = modal.querySelector('.form-scopa-title');
+        if (title) {
+            title.style.position = '';
+            title.style.top = '';
+            title.style.left = '';
+            title.style.width = '';
+            title.style.fontSize = '';
+            title.style.margin = '';
+            title.style.textAlign = '';
+            title.style.lineHeight = '';
+        }
+        var table = modal.querySelector('.tabella-punti');
+        if (table) {
+            table.style.position = '';
+            table.style.top = '';
+            table.style.right = '';
+            table.style.width = '';
+            table.style.margin = '';
+            table.style.fontSize = '';
+            var cells = table.querySelectorAll('th, td');
+            for (var i = 0; i < cells.length; i++) {
+                cells[i].style.padding = '';
+            }
+        }
+    }
+    
+    aggiornaPannelloPunteggio();
+    modal.style.display = 'flex';
+    document.getElementById('schermo').style.display = 'block';
+    
+    if (finePartitaStato === 'vinto') {
+        riproduciAudio("sounds/scala40/applause.mp3");
+    } else {
+        riproduciAudio("sounds/scala40/haiperso.mp3");
+    }
+    console.log(`[Test] Visualizzazione modale di fine partita (${esito}) avviata.`);
+};
+
+// Funzione helper per testare la modale di fine mano (punteggio del round) da console
+window.testModaleFineRound = function() {
+    puntiPartitaTu = 5;
+    puntiPartitaPC = 3;
+    puntiTarget = 11;
+    
+    // Inizializza dei valori fittizi per la tabella
+    document.getElementById('dettaglio-scope-tu').textContent = "1";
+    document.getElementById('dettaglio-scope-pc').textContent = "0";
+    document.getElementById('dettaglio-carte-tu').textContent = "22 (1)";
+    document.getElementById('dettaglio-carte-pc').textContent = "18 (0)";
+    document.getElementById('dettaglio-quadri-tu').textContent = "6 (1)";
+    document.getElementById('dettaglio-quadri-pc').textContent = "4 (0)";
+    document.getElementById('dettaglio-settebello-tu').textContent = (window.currentLang === 'en') ? "Yes (1)" : "Sì (1)";
+    document.getElementById('dettaglio-settebello-pc').textContent = "No (0)";
+    document.getElementById('dettaglio-primiera-tu').textContent = "70 (1)";
+    document.getElementById('dettaglio-primiera-pc').textContent = "50 (0)";
+    document.getElementById('round-punti-tu').textContent = "4";
+    document.getElementById('round-punti-pc').textContent = "0";
+    
+    document.getElementById('match-punti-tu').textContent = puntiPartitaTu;
+    document.getElementById('match-punti-pc').textContent = puntiPartitaPC;
+    
+    const modal = document.getElementById('modale-punteggi');
+    const titleEl = modal.querySelector('.form-scopa-title');
+    const btnEl = modal.querySelector('.btn-continua');
+    
+    statoGioco = 'giocando';
+    if (titleEl) {
+        titleEl.textContent = 'Punteggio del Round';
+        titleEl.style.color = '#ffffff';
+    }
+    if (btnEl) btnEl.textContent = 'CONTINUA';
+
+    if (window.ENABLE_BANNER_ON_FINISH && typeof setupAmazonFinishBanner === 'function') {
+        setupAmazonFinishBanner('modale-punteggi', {
+            modalStyle: {
+                width: '700px',
+                height: '300px',
+                left: '162px',
+                top: '380px',
+                background: '#1a4224 url(images/scala40/tappetoverde.png)',
+                border: '4px solid #b8860b',
+                borderRadius: '12px',
+                boxShadow: '0 10px 30px rgba(0,0,0,0.6)',
+                overflow: 'visible',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'flex-start',
+                alignItems: 'center',
+                padding: '25px',
+                color: 'white',
+                boxSizing: 'border-box'
+            },
+            targetTop: 380,
+            bannerHeight: 300,
+            bannerTopOffset: 310,
+            leftOffset: 0,
+            showVediCarte: false,
+            onSetupButtons: function (m) {
+                var btn = m.querySelector('.btn-continua');
+                if (btn) {
+                    btn.style.position = 'absolute';
+                    btn.style.top = '190px';
+                    btn.style.width = '240px';
+                    btn.style.left = '35px';
+                    btn.style.fontSize = '20px';
+                    btn.style.margin = '0';
+                }
+                var title = m.querySelector('.form-scopa-title');
+                if (title) {
+                    title.style.position = 'absolute';
+                    title.style.top = '50px';
+                    title.style.left = '35px';
+                    title.style.width = '240px';
+                    title.style.fontSize = '26px';
+                    title.style.margin = '0';
+                    title.style.textAlign = 'center';
+                    title.style.lineHeight = '1.3';
+                }
+                var table = m.querySelector('.tabella-punti');
+                if (table) {
+                    table.style.position = 'absolute';
+                    table.style.top = '25px';
+                    table.style.right = '35px';
+                    table.style.width = '370px';
+                    table.style.margin = '0';
+                    table.style.fontSize = '13px';
+                    var cells = table.querySelectorAll('th, td');
+                    for (var i = 0; i < cells.length; i++) {
+                        cells[i].style.padding = '5px 8px';
+                    }
+                    var totalRow = table.querySelector('.totale-partita');
+                    if (totalRow) {
+                        var totalCells = totalRow.querySelectorAll('td');
+                        for (var j = 0; j < totalCells.length; j++) {
+                            totalCells[j].style.fontSize = '16px';
+                            totalCells[j].style.paddingTop = '6px';
+                            totalCells[j].style.paddingBottom = '4px';
+                        }
+                    }
+                }
+            }
+        });
+    } else {
+        modal.style.width = '500px';
+        modal.style.height = '540px';
+        modal.style.left = '262px';
+        modal.style.top = '105px';
+        modal.style.background = '#1a4224 url(images/scala40/tappetoverde.png)';
+        modal.style.border = '4px solid #b8860b';
+        modal.style.borderRadius = '12px';
+        modal.style.boxShadow = '0 10px 30px rgba(0,0,0,0.6)';
+        modal.style.overflow = 'hidden';
+        modal.style.display = 'flex';
+        modal.style.flexDirection = 'column';
+        modal.style.alignItems = 'center';
+        modal.style.padding = '25px';
+        modal.style.color = 'white';
+        modal.style.boxSizing = 'border-box';
+        
+        var btn = modal.querySelector('.btn-continua');
+        if (btn) {
+            btn.style.position = '';
+            btn.style.top = '';
+            btn.style.width = '';
+            btn.style.left = '';
+            btn.style.fontSize = '';
+            btn.style.margin = '';
+        }
+        var title = modal.querySelector('.form-scopa-title');
+        if (title) {
+            title.style.position = '';
+            title.style.top = '';
+            title.style.left = '';
+            title.style.width = '';
+            title.style.fontSize = '';
+            title.style.margin = '';
+            title.style.textAlign = '';
+            title.style.lineHeight = '';
+        }
+        var table = modal.querySelector('.tabella-punti');
+        if (table) {
+            table.style.position = '';
+            table.style.top = '';
+            table.style.right = '';
+            table.style.width = '';
+            table.style.margin = '';
+            table.style.fontSize = '';
+            var cells = table.querySelectorAll('th, td');
+            for (var i = 0; i < cells.length; i++) {
+                cells[i].style.padding = '';
+            }
+        }
+    }
+    
+    aggiornaPannelloPunteggio();
+    modal.style.display = 'flex';
+    document.getElementById('schermo').style.display = 'block';
+    
+    riproduciAudio("sounds/scala40/tada.mp3");
+    console.log("[Test] Visualizzazione modale di fine mano (punteggio del round) avviata.");
+};
 
 function calcolaPrimiera(prese) {
     const maxValPerSeme = { C: 0, Q: 0, F: 0, P: 0 };
@@ -1433,30 +2285,18 @@ function continuaProssimoRound() {
     document.getElementById('modale-punteggi').style.display = 'none';
     document.getElementById('schermo').style.display = 'none';
     
-    // Verifica se la partita è finita
-    // La partita finisce se almeno uno supera puntiTarget (11 o 21) ed i punteggi sono differenti.
-    // In caso di pareggio, si prosegue ad oltranza.
-    if ((puntiPartitaTu >= puntiTarget || puntiPartitaPC >= puntiTarget) && puntiPartitaTu !== puntiPartitaPC) {
-        aggiornaPannelloPunteggio();
-        if (puntiPartitaTu > puntiPartitaPC) {
-            riproduciAudio("sounds/scala40/applause.mp3");
-            document.getElementById('haivinto').style.display = 'flex';
-            document.getElementById('schermo').style.display = 'block';
-        } else {
-            riproduciAudio("sounds/scala40/haiperso.mp3");
-            document.getElementById('haiperso').style.display = 'flex';
-            document.getElementById('schermo').style.display = 'block';
-        }
-        statoGioco = 'finito';
-    } else {
-        // Altrimenti, continua con un nuovo round alternando il mazziere
-        aggiornaPannelloPunteggio();
-        
-        // Il mazziere passa al prossimo
-        mazziere = prossimoGiocatore(mazziere);
-        chiIniziaQuestoRound = prossimoGiocatore(mazziere);
-        avviaRound();
+    if (statoGioco === 'finito') {
+        mostraInizioPartita();
+        return;
     }
+    
+    // Altrimenti, continua con un nuovo round alternando il mazziere
+    aggiornaPannelloPunteggio();
+    
+    // Il mazziere passa al prossimo
+    mazziere = prossimoGiocatore(mazziere);
+    chiIniziaQuestoRound = prossimoGiocatore(mazziere);
+    avviaRound();
 }
 
 // === INTELLIGENZA ARTIFICIALE (MOSSA DEL COMPUTER) ===
@@ -1596,32 +2436,45 @@ function eseguiMossaComputer(giocatoreIdx) {
             
             riproduciAudio("sounds/scala40/cardslide1.mp3");
             
+            // Salva presa logicamente e aggiorna interfaccia prima dell'inizio dell'animazione
+            const cartePreseQuestaMossa = [cardPC, ...preseTavolo];
+            if (isNoi) {
+                cartePreseTu.push(cardPC);
+                preseTavolo.forEach(p => cartePreseTu.push(p));
+                ultimoCatturato = 'giocatore';
+            } else {
+                cartePresePC.push(cardPC);
+                preseTavolo.forEach(p => cartePresePC.push(p));
+                ultimoCatturato = 'computer';
+            }
+            
+            aggiornaInterfacciaPrese();
+            
+            // Verifica Settebello!
+            const haPresoSettebello = cartePreseQuestaMossa.some(c => c.suit === 'Q' && c.number === 7);
+            if (haPresoSettebello) {
+                creaNotificaSettebello(isNoi ? 'giocatore' : 'computer');
+            }
+            
+            // Verifica Quadri!
+            const nQuadriPresi = cartePreseQuestaMossa.filter(c => c.suit === 'Q').length;
+            if (nQuadriPresi > 0) {
+                creaNotificaQuadri(isNoi ? 'giocatore' : 'computer', nQuadriPresi, haPresoSettebello);
+            }
+            
+            // Verifica Scopa
+            const tuttiSenzaCarte = mani.every(h => h.length === 0);
+            const ultimaManoDelRound = (mazzo.length === 0 && tuttiSenzaCarte);
+            if (carteTavolo.length === 0 && !ultimaManoDelRound) {
+                creaNotificaScopa(isNoi ? 'giocatore' : 'computer');
+            }
+            
             let animateCount = 0;
             const totaleCarteInPresa = preseTavolo.length + 1;
             
             function completedAnimation() {
                 animateCount++;
                 if (animateCount === totaleCarteInPresa) {
-                    // Salva presa
-                    if (isNoi) {
-                        cartePreseTu.push(cardPC);
-                        preseTavolo.forEach(p => cartePreseTu.push(p));
-                        ultimoCatturato = 'giocatore';
-                    } else {
-                        cartePresePC.push(cardPC);
-                        preseTavolo.forEach(p => cartePresePC.push(p));
-                        ultimoCatturato = 'computer';
-                    }
-                    
-                    aggiornaInterfacciaPrese();
-                    
-                    // Verifica Scopa
-                    const tuttiSenzaCarte = mani.every(h => h.length === 0);
-                    const ultimaManoDelRound = (mazzo.length === 0 && tuttiSenzaCarte);
-                    if (carteTavolo.length === 0 && !ultimaManoDelRound) {
-                        creaNotificaScopa(isNoi ? 'giocatore' : 'computer');
-                    }
-                    
                     passaAlProssimoTurno();
                 }
             }
@@ -1713,18 +2566,149 @@ function calcolaPunteggioScartoIA(card) {
     return score;
 }
 
+// === FUNZIONI DI ANNULLA (UNDO) ===
+function clonaCarta(c) {
+    if (!c) return null;
+    const nuova = new Carta(c.suit, c.number);
+    nuova.id = c.id;
+    return nuova;
+}
+
+function clonaListaCarte(lista) {
+    if (!lista) return [];
+    return lista.map(c => clonaCarta(c));
+}
+
+function clonaMani(maniOriginali) {
+    if (!maniOriginali) return [[], [], [], []];
+    return maniOriginali.map(mano => clonaListaCarte(mano));
+}
+
+function salvaStatoCronologia() {
+    const snapshot = {
+        mani: clonaMani(mani),
+        carteTavolo: clonaListaCarte(carteTavolo),
+        cartePreseTu: clonaListaCarte(cartePreseTu),
+        cartePresePC: clonaListaCarte(cartePresePC),
+        scopeRoundTu: scopeRoundTu,
+        scopeRoundPC: scopeRoundPC,
+        mazzo: clonaListaCarte(mazzo),
+        ultimoCatturato: ultimoCatturato,
+        giocatoreAttivo: giocatoreAttivo,
+        mazziere: mazziere,
+        chiIniziaQuestoRound: chiIniziaQuestoRound,
+        notificaCarteTuFatta: notificaCarteTuFatta,
+        notificaCartePCFatta: notificaCartePCFatta,
+        notificaQuadriTuFatta: notificaQuadriTuFatta,
+        notificaQuadriPCFatta: notificaQuadriPCFatta
+    };
+    cronologiaMosse.push(snapshot);
+    aggiornaStatoUndoUI();
+}
+
+function eseguiUndo() {
+    if (statoGioco !== 'turno-giocatore' || giocatoreAttivo !== 0) {
+        return;
+    }
+    if (cronologiaMosse.length === 0) {
+        return;
+    }
+    
+    // Rimuovi eventuali timer residui del giocatore
+    if (timerMossaGiocatore) {
+        clearTimeout(timerMossaGiocatore);
+        timerMossaGiocatore = null;
+    }
+    
+    // Ripristina l'ultimo snapshot salvato
+    const snapshot = cronologiaMosse.pop();
+    
+    // Ripristina le variabili di stato globale
+    mani = clonaMani(snapshot.mani);
+    carteTavolo = clonaListaCarte(snapshot.carteTavolo);
+    cartePreseTu = clonaListaCarte(snapshot.cartePreseTu);
+    cartePresePC = clonaListaCarte(snapshot.cartePresePC);
+    scopeRoundTu = snapshot.scopeRoundTu;
+    scopeRoundPC = snapshot.scopeRoundPC;
+    mazzo = clonaListaCarte(snapshot.mazzo);
+    ultimoCatturato = snapshot.ultimoCatturato;
+    giocatoreAttivo = snapshot.giocatoreAttivo;
+    mazziere = snapshot.mazziere;
+    chiIniziaQuestoRound = snapshot.chiIniziaQuestoRound;
+    notificaCarteTuFatta = snapshot.notificaCarteTuFatta;
+    notificaCartePCFatta = snapshot.notificaCartePCFatta;
+    notificaQuadriTuFatta = snapshot.notificaQuadriTuFatta;
+    notificaQuadriPCFatta = snapshot.notificaQuadriPCFatta;
+    
+    // Imposta lo stato del gioco come turno giocatore
+    statoGioco = 'turno-giocatore';
+    
+    // Pulisci selezioni ed evidenziazioni correnti
+    deselezionaTutto();
+    
+    // Rinfresca l'interfaccia eliminando le notifiche DOM fluttuanti o carte volanti
+    document.querySelectorAll('.punti-floating, .notifica-scopa, .notifica-settebello, .notifica-punto-sicuro, .carta-volante').forEach(el => el.remove());
+    
+    // Re-renderizza tutto
+    renderManoGiocatore();
+    renderManoAvversario(2, 'carte-computer');
+    if (modalitaGioco === '4P') {
+        renderManoAvversario(1, 'carte-sinistra');
+        renderManoAvversario(3, 'carte-destra');
+    }
+    renderTavolo();
+    aggiornaInterfacciaPrese();
+    
+    const mazzoCountEl = document.getElementById('mazzo-count');
+    if (mazzoCountEl) {
+        mazzoCountEl.textContent = mazzo.length;
+    }
+    const mazzoBlocco = document.getElementById('mazzo-blocco');
+    if (mazzoBlocco) {
+        mazzoBlocco.style.display = (mazzo.length === 0) ? 'none' : 'block';
+    }
+    
+    if (typeof aggiornaDettaglioProgressivo === 'function') {
+        aggiornaDettaglioProgressivo();
+    }
+    aggiornaMazziereUI();
+    aggiornaGiocatoreAttivoUI();
+    aggiornaMessaggioStato("Mossa annullata! È di nuovo il tuo turno.");
+    
+    // Riproduci un effetto sonoro per l'undo
+    riproduciAudio("sounds/scala40/cardplace1.mp3");
+}
+
+function aggiornaStatoUndoUI() {
+    const btnUndo = document.getElementById('btn-undo');
+    if (!btnUndo) return;
+    
+    const abilitato = (giocatoreAttivo === 0 && statoGioco === 'turno-giocatore' && cronologiaMosse.length > 0 && !confirmModalOpen);
+    
+    if (abilitato) {
+        btnUndo.style.opacity = '1';
+        btnUndo.style.cursor = 'pointer';
+        btnUndo.style.pointerEvents = 'auto';
+    } else {
+        btnUndo.style.opacity = '0.4';
+        btnUndo.style.cursor = 'not-allowed';
+        btnUndo.style.pointerEvents = 'none';
+    }
+}
+
 // === FUNZIONE UTILITY PER ANIMAZIONE ===
 function ottieniCoordinateElemento(el) {
-    if (!el) return { x: 0, y: 0, id: '' };
+    if (!el) return { x: 0, y: 0, id: '', evidenziata: false };
     const scale = window.gameScale || 1;
     const cg = document.getElementById('campogioco');
-    if (!cg) return { x: 0, y: 0, id: '' };
+    if (!cg) return { x: 0, y: 0, id: '', evidenziata: false };
     const cgRect = cg.getBoundingClientRect();
     const rect = el.getBoundingClientRect();
     return {
         x: (rect.left - cgRect.left) / scale,
         y: (rect.top - cgRect.top) / scale,
-        id: el.id
+        id: el.id,
+        evidenziata: el.classList.contains('evidenziata-presa') || el.classList.contains('selezionata')
     };
 }
 
@@ -1736,13 +2720,13 @@ function animaCarta(card, startEl, endEl, callback) {
     
     const scale = window.gameScale || 1;
     const cg = document.getElementById('campogioco');
-    const cgRect = cg.getBoundingClientRect();
     
     let startX, startY;
     if (startEl && typeof startEl.x === 'number') {
         startX = startEl.x;
         startY = startEl.y;
     } else if (startEl && typeof startEl.getBoundingClientRect === 'function') {
+        const cgRect = cg.getBoundingClientRect();
         const startRect = startEl.getBoundingClientRect();
         startX = (startRect.left - cgRect.left) / scale;
         startY = (startRect.top - cgRect.top) / scale;
@@ -1756,6 +2740,7 @@ function animaCarta(card, startEl, endEl, callback) {
         endX = endEl.x;
         endY = endEl.y;
     } else if (endEl && typeof endEl.getBoundingClientRect === 'function') {
+        const cgRect = cg.getBoundingClientRect();
         const endRect = endEl.getBoundingClientRect();
         endX = (endRect.left - cgRect.left) / scale;
         endY = (endRect.top - cgRect.top) / scale;
@@ -1773,14 +2758,40 @@ function animaCarta(card, startEl, endEl, callback) {
     
     flying.style.left = `${startX}px`;
     flying.style.top = `${startY}px`;
+    
+    // Configura aspetto e scala iniziale in modo che corrispondano perfettamente allo stato selezionato/evidenziato
+    if (startEl && startEl.evidenziata) {
+        flying.style.boxShadow = '0 0 25px #ffd700, 0 0 10px #ff0000, inset 0 0 0 3px #ffd700';
+        
+        const startId = startEl.id || '';
+        if (startId.includes('card-player-1-')) {
+            flying.style.transform = 'rotate(90deg) scale(1.1)';
+        } else if (startId.includes('card-player-3-')) {
+            flying.style.transform = 'rotate(-90deg) scale(1.1)';
+        } else {
+            flying.style.transform = 'scale(1.1)';
+        }
+    } else {
+        // Se non evidenziata ma avversario laterale, mantieni comunque la rotazione iniziale
+        const startId = startEl.id || '';
+        if (startId.includes('card-player-1-')) {
+            flying.style.transform = 'rotate(90deg) scale(1.0)';
+        } else if (startId.includes('card-player-3-')) {
+            flying.style.transform = 'rotate(-90deg) scale(1.0)';
+        }
+    }
+    
     cg.appendChild(flying);
     
     // Forza reflow
     flying.offsetHeight;
     
-    // Applica transizione
+    // Applica coordinate di arrivo
     flying.style.left = `${endX}px`;
     flying.style.top = `${endY}px`;
+    
+    // Ripristina l'ombra predefinita per la carta in volo (sfuma il bagliore dorato)
+    flying.style.boxShadow = '';
     
     // Applica rotazione se vola alla pila delle prese avversarie a 4P, altrimenti nessuna scala
     const endId = endEl.id || '';
@@ -1790,6 +2801,8 @@ function animaCarta(card, startEl, endEl, callback) {
         } else {
             flying.style.transform = 'none';
         }
+    } else {
+        flying.style.transform = 'none';
     }
     
     setTimeout(() => {

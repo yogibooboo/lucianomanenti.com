@@ -1,16 +1,16 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="en">
 
 <head>
     <script>
-        // Fix sicurezza per evitare crash da cross-origin su window.opener
+        // Security fix to prevent cross-origin crashes on window.opener
         (function() { try { if (!window.opener) return; var test = window.opener.document; if (!window.opener.game) { window.opener = null; } } catch(e) { window.opener = null; } })();
     </script>
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9335537153013492"
         crossorigin="anonymous"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scopa Luciano Online Gratis - lucianomanenti.com</title>
+    <title>Scopa Luciano Online Free - lucianomanenti.com</title>
     <link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
     <link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
     <link rel="shortcut icon" href="favicon/favicon.ico">
@@ -18,7 +18,7 @@
     <link rel="manifest" href="favicon/site.webmanifest">
 
     <meta name="Description"
-        content="Gioca a Scopa gratis online contro il computer. Regole ufficiali italiane, calcolo Primiera, Settebello e Scope. Gioca gratis senza registrazione.">
+        content="Play Scopa free online against the computer. Official Italian rules, Primiera, Settebello and Scope calculation. Play free without registration.">
     <meta http-Equiv="Cache-Control" Content="no-cache">
     <meta http-Equiv="Pragma" Content="no-cache">
     <meta http-Equiv="Expires" Content="0">
@@ -45,7 +45,7 @@
                 '160x250': '8663016975'
             }
         };
-        window.currentLang = 'it';
+        window.currentLang = 'en';
     </script>
 </head>
 
@@ -63,38 +63,38 @@
 
             <!-- Titolo del gioco -->
             <div class="lang-switch-header">
-                <a href="scopa.html" class="active">IT</a>
-                <a href="scopa-en.html">EN</a>
+                <a href="scopa.html">IT</a>
+                <a href="scopa-en.html" class="active">EN</a>
                 <div id="btn-audio" class="btn-audio-game" aria-label="Audio"></div>
             </div>
             <div id="titolo-gioco">Scopa Luciano</div>
 
             <!-- Audio switch e selettore lingua (Bottoni di controllo in alto a destra) -->
             <div class="lang-switch-game">
-                <button id="btn-undo" class="pulsante-link-scopa" aria-label="Annulla"></button>
-                <button id="btn-mazzo" class="pulsante-link-scopa" style="height: 32px; line-height: 32px; background: rgba(0,0,0,0.4); border: 1px solid #6b9b7a; color: white; border-radius: 4px; padding: 0 10px; cursor: pointer; font-size: 12px; font-weight: bold; transition: all 0.2s;">Usa Carte Napoletane</button>
-                <button id="btn-scopri" class="pulsante-link-scopa" style="height: 32px; line-height: 32px; background: rgba(0,0,0,0.4); border: 1px solid #6b9b7a; color: white; border-radius: 4px; padding: 0 10px; cursor: pointer; font-size: 12px; font-weight: bold; transition: all 0.2s;">Scopri Carte</button>
-                <button id="btn-nuova-partita" class="pulsante-link-scopa" style="height: 32px; line-height: 32px; background: rgba(0,0,0,0.4); border: 1px solid #6b9b7a; color: white; border-radius: 4px; padding: 0 10px; cursor: pointer; font-size: 12px; font-weight: bold; transition: all 0.2s;">Nuova</button>
+                <button id="btn-undo" class="pulsante-link-scopa" aria-label="Undo"></button>
+                <button id="btn-mazzo" class="pulsante-link-scopa" style="height: 32px; line-height: 32px; background: rgba(0,0,0,0.4); border: 1px solid #6b9b7a; color: white; border-radius: 4px; padding: 0 10px; cursor: pointer; font-size: 12px; font-weight: bold; transition: all 0.2s;">Use Neapolitan Cards</button>
+                <button id="btn-scopri" class="pulsante-link-scopa" style="height: 32px; line-height: 32px; background: rgba(0,0,0,0.4); border: 1px solid #6b9b7a; color: white; border-radius: 4px; padding: 0 10px; cursor: pointer; font-size: 12px; font-weight: bold; transition: all 0.2s;">Reveal Cards</button>
+                <button id="btn-nuova-partita" class="pulsante-link-scopa" style="height: 32px; line-height: 32px; background: rgba(0,0,0,0.4); border: 1px solid #6b9b7a; color: white; border-radius: 4px; padding: 0 10px; cursor: pointer; font-size: 12px; font-weight: bold; transition: all 0.2s;">New Game</button>
             </div>
 
             <!-- Pannello di match (punteggi del torneo) -->
             <div id="pannello-torneo">
                 <div id="punteggi">
-                    <span id="label-noi">TU</span> 
+                    <span id="label-noi">YOU</span> 
                     <span id="punti-noi">0</span>
                     <span class="punteggio-separator">|</span>
                     <span id="punti-loro">0</span>
                     <span id="label-loro"> PC</span>
                 </div>
-                <div id="torneo-info">Target: -- punti</div>
+                <div id="torneo-info">Target: -- points</div>
                 
                 <!-- Dettaglio progressivo round -->
                 <div id="dettaglio-progressivo" style="margin-top: 6px; width: 100%; border-top: 1px solid rgba(255,255,255,0.15); padding-top: 6px; display: block;">
                     <table style="width: 100%; font-size: 11px; color: #eee; border-collapse: collapse; text-align: center;">
                         <thead>
                             <tr style="color: #aaa; font-weight: bold; border-bottom: 1px solid rgba(255,255,255,0.08);">
-                                <th style="padding: 3px 4px; text-align: left; font-size: 10px;">Voce</th>
-                                <th style="padding: 3px 4px; color: #7fff7f; font-size: 10px;" id="prog-header-noi">Tu</th>
+                                <th style="padding: 3px 4px; text-align: left; font-size: 10px;">Item</th>
+                                <th style="padding: 3px 4px; color: #7fff7f; font-size: 10px;" id="prog-header-noi">You</th>
                                 <th style="padding: 3px 4px; color: #ff7f7f; font-size: 10px;" id="prog-header-loro">PC</th>
                             </tr>
                         </thead>
@@ -105,12 +105,12 @@
                                 <td style="padding: 3px 2px; font-weight: bold;" id="prog-scope-pc">0</td>
                             </tr>
                             <tr>
-                                <td style="padding: 3px 2px; text-align: left; color: #ccc; font-size: 10px;">Carte</td>
+                                <td style="padding: 3px 2px; text-align: left; color: #ccc; font-size: 10px;">Cards</td>
                                 <td style="padding: 3px 2px; font-weight: bold;" id="prog-carte-tu">0</td>
                                 <td style="padding: 3px 2px; font-weight: bold;" id="prog-carte-pc">0</td>
                             </tr>
                             <tr>
-                                <td style="padding: 3px 2px; text-align: left; color: #ccc; font-size: 10px;">Quadri</td>
+                                <td style="padding: 3px 2px; text-align: left; color: #ccc; font-size: 10px;">Diamonds</td>
                                 <td style="padding: 3px 2px; font-weight: bold;" id="prog-quadri-tu">0</td>
                                 <td style="padding: 3px 2px; font-weight: bold;" id="prog-quadri-pc">0</td>
                             </tr>
@@ -130,15 +130,15 @@
             </div>
 
             <!-- Banner o messaggio di stato del turno -->
-            <div id="messaggio-stato">Caricamento...</div>
+            <div id="messaggio-stato">Loading...</div>
 
             <!-- ================= AVVERSARIO (COMPUTER / PARTNER) ================= -->
             <div id="area-computer" class="area-giocatore">
                 <div class="avatar-container">
                     <img class="avatar" src="favicon/favicon-96x96.png" alt="PC Avatar" id="avatar-top">
                     <div class="nome-giocatore" id="nome-top">Computer</div>
-                    <div class="dealer-badge" id="dealer-badge-2" style="display: none;">Mazziere</div>
-                    <div id="ncarte-computer" class="ncarte-mano">Carte: 3</div>
+                    <div class="dealer-badge" id="dealer-badge-2" style="display: none;">Dealer</div>
+                    <div id="ncarte-computer" class="ncarte-mano">Cards: 3</div>
                 </div>
                 <div id="carte-computer" class="carte-container"></div>
             </div>
@@ -147,9 +147,9 @@
             <div id="area-sinistra" class="area-giocatore-verticale" style="display: none;">
                 <div class="avatar-container-verticale">
                     <img class="avatar" src="favicon/favicon-96x96.png" alt="Carlo Avatar">
-                    <div class="nome-giocatore">Carlo (Sx)</div>
-                    <div class="dealer-badge" id="dealer-badge-1" style="display: none;">Mazziere</div>
-                    <div id="ncarte-sinistra" class="ncarte-mano">Carte: 3</div>
+                    <div class="nome-giocatore">Carlo (L)</div>
+                    <div class="dealer-badge" id="dealer-badge-1" style="display: none;">Dealer</div>
+                    <div id="ncarte-sinistra" class="ncarte-mano">Cards: 3</div>
                 </div>
                 <div id="carte-sinistra" class="carte-container"></div>
             </div>
@@ -158,9 +158,9 @@
             <div id="area-destra" class="area-giocatore-verticale" style="display: none;">
                 <div class="avatar-container-verticale">
                     <img class="avatar" src="favicon/favicon-96x96.png" alt="Bruno Avatar">
-                    <div class="nome-giocatore">Bruno (Dx)</div>
-                    <div class="dealer-badge" id="dealer-badge-3" style="display: none;">Mazziere</div>
-                    <div id="ncarte-destra" class="ncarte-mano">Carte: 3</div>
+                    <div class="nome-giocatore">Bruno (R)</div>
+                    <div class="dealer-badge" id="dealer-badge-3" style="display: none;">Dealer</div>
+                    <div id="ncarte-destra" class="ncarte-mano">Cards: 3</div>
                 </div>
                 <div id="carte-destra" class="carte-container"></div>
             </div>
@@ -178,26 +178,26 @@
             </div>
 
             <!-- Bottone per confermare presa complessa -->
-            <button id="btn-prendi" class="pulsante-azione">PRENDI</button>
+            <button id="btn-prendi" class="pulsante-azione">TAKE</button>
 
             <!-- ================= PILA DELLE PRESE ================= -->
             <div id="presa-computer" class="presa-blocco">
                 <!-- Mostra un dorso di carta se non vuoto -->
-                <span id="presa-count-pc" class="presa-count">Prese: 0</span>
+                <span id="presa-count-pc" class="presa-count">Tricks: 0</span>
             </div>
 
             <div id="presa-giocatore" class="presa-blocco">
                 <!-- Mostra un dorso di carta se non vuoto -->
-                <span id="presa-count-player" class="presa-count">Prese: 0</span>
+                <span id="presa-count-player" class="presa-count">Tricks: 0</span>
             </div>
 
             <!-- ================= GIOCATORE (TU) ================= -->
             <div id="area-giocatore" class="area-giocatore">
                 <div class="avatar-container">
                     <img class="avatar" src="favicon/apple-touch-icon.png" alt="Player Avatar">
-                    <div class="nome-giocatore">Tu</div>
-                    <div class="dealer-badge" id="dealer-badge-0" style="display: none;">Mazziere</div>
-                    <div id="ncarte-giocatore" class="ncarte-mano">Carte: 3</div>
+                    <div class="nome-giocatore">You</div>
+                    <div class="dealer-badge" id="dealer-badge-0" style="display: none;">Dealer</div>
+                    <div id="ncarte-giocatore" class="ncarte-mano">Cards: 3</div>
                 </div>
                 <div id="carte-giocatore" class="carte-container"></div>
             </div>
@@ -206,39 +206,39 @@
 
             <!-- 1. Modale Inizio Gioco -->
             <div id="modale-inizio" class="form-scopa" style="display: flex;">
-                <div class="form-scopa-title">Nuova Partita a Scopa</div>
+                <div class="form-scopa-title">New Scopa Game</div>
                 
                 <div class="opzione-gruppo" style="margin-bottom: 20px; text-align: center;">
-                    <div style="font-size: 13px; font-weight: bold; margin-bottom: 8px; color: #ffd700; text-transform: uppercase;">Modalità di Gioco:</div>
+                    <div style="font-size: 13px; font-weight: bold; margin-bottom: 8px; color: #ffd700; text-transform: uppercase;">Game Mode:</div>
                     <div style="display: flex; justify-content: center; gap: 10px;">
-                        <button id="btn-mode-2p" onclick="selezionaModalita('2P')" class="btn-opzione-sel attiva">2 GIOCATORI</button>
-                        <button id="btn-mode-4p" onclick="selezionaModalita('4P')" class="btn-opzione-sel">4 GIOCATORI</button>
+                        <button id="btn-mode-2p" onclick="selezionaModalita('2P')" class="btn-opzione-sel attiva">2 PLAYERS</button>
+                        <button id="btn-mode-4p" onclick="selezionaModalita('4P')" class="btn-opzione-sel">4 PLAYERS</button>
                     </div>
                 </div>
 
                 <div class="opzione-gruppo" style="margin-bottom: 25px; text-align: center;">
-                    <div style="font-size: 13px; font-weight: bold; margin-bottom: 8px; color: #ffd700; text-transform: uppercase;">Punteggio Target:</div>
+                    <div style="font-size: 13px; font-weight: bold; margin-bottom: 8px; color: #ffd700; text-transform: uppercase;">Target Score:</div>
                     <div style="display: flex; justify-content: center; gap: 10px;">
-                        <button id="btn-target-11" onclick="selezionaTarget(11)" class="btn-opzione-sel attiva">11 PUNTI</button>
-                        <button id="btn-target-21" onclick="selezionaTarget(21)" class="btn-opzione-sel">21 PUNTI</button>
+                        <button id="btn-target-11" onclick="selezionaTarget(11)" class="btn-opzione-sel attiva">11 POINTS</button>
+                        <button id="btn-target-21" onclick="selezionaTarget(21)" class="btn-opzione-sel">21 POINTS</button>
                     </div>
                 </div>
                 
-                <button onclick="confermaEAvviaPartita()" class="btn-continua" style="width: 100%; max-width: 250px; margin: 0 auto 15px auto; display: block;">INIZIA A GIOCARE</button>
+                <button onclick="confermaEAvviaPartita()" class="btn-continua" style="width: 100%; max-width: 250px; margin: 0 auto 15px auto; display: block;">START GAME</button>
                 
                 <p style="font-size: 11px; color: #aaa; text-align: center; margin: 0;">
-                    Regole: 40 carte, semi francesi (Quadri = Denari), Primiera Scopa classica.
+                    Rules: 40 cards, French suits (Diamonds = Gold), classic Primiera and Scopa.
                 </p>
             </div>
 
             <!-- 2. Modale fine round (Tabella Punteggi) -->
             <div id="modale-punteggi" class="form-scopa">
-                <div class="form-scopa-title">Punteggio del Round</div>
+                <div class="form-scopa-title">Round Score</div>
                 <table class="tabella-punti">
                     <thead>
                         <tr>
-                            <th>Categoria</th>
-                            <th id="header-punti-noi">Tu</th>
+                            <th>Category</th>
+                            <th id="header-punti-noi">You</th>
                             <th id="header-punti-loro">PC</th>
                         </tr>
                     </thead>
@@ -249,12 +249,12 @@
                             <td id="dettaglio-scope-pc">0</td>
                         </tr>
                         <tr>
-                            <td>Carte (Totale)</td>
+                            <td>Cards (Total)</td>
                             <td id="dettaglio-carte-tu">0</td>
                             <td id="dettaglio-carte-pc">0</td>
                         </tr>
                         <tr>
-                            <td>Quadri (Totale)</td>
+                            <td>Diamonds (Total)</td>
                             <td id="dettaglio-quadri-tu">0</td>
                             <td id="dettaglio-quadri-pc">0</td>
                         </tr>
@@ -264,55 +264,55 @@
                             <td id="dettaglio-settebello-pc">No</td>
                         </tr>
                         <tr>
-                            <td>Primiera (Valore)</td>
+                            <td>Primiera (Value)</td>
                             <td id="dettaglio-primiera-tu">0</td>
                             <td id="dettaglio-primiera-pc">0</td>
                         </tr>
                         <tr class="totale-row">
-                            <td>Punti Guadagnati</td>
+                            <td>Points Earned</td>
                             <td id="round-punti-tu">0</td>
                             <td id="round-punti-pc">0</td>
                         </tr>
                         <tr class="totale-partita">
-                            <td>Punteggio Totale</td>
+                            <td>Total Score</td>
                             <td id="match-punti-tu">0</td>
                             <td id="match-punti-pc">0</td>
                         </tr>
                     </tbody>
                 </table>
-                <button onclick="continuaProssimoRound()" class="btn-continua">CONTINUA</button>
+                <button onclick="continuaProssimoRound()" class="btn-continua">CONTINUE</button>
             </div>
 
             <!-- 3. Modali Vittoria / Sconfitta Finale (Stesso stile Klondike/Burraco) -->
             <div id="haivinto" class="modale-fine-sfondo" style="background-image:url(images/scala40/haivinto.jpg)">
-                <div class="confirm-message">COMPLIMENTI!<br>Hai vinto la partita!</div>
-                <button onclick="mostraInizioPartita()" class="btn-continua" style="width: 280px; height: 44px; font-size: 16px;">NUOVA PARTITA</button>
+                <div class="confirm-message">CONGRATULATIONS!<br>You won the game!</div>
+                <button onclick="mostraInizioPartita()" class="btn-continua" style="width: 280px; height: 44px; font-size: 16px;">NEW GAME</button>
             </div>
 
             <div id="haiperso" class="modale-fine-sfondo" style="background-image:url(images/scala40/haiperso.jpg)">
-                <div class="confirm-message">PARTITA FINITA<br>Il computer ha vinto.</div>
-                <button onclick="mostraInizioPartita()" class="btn-continua" style="width: 280px; height: 44px; font-size: 16px; background-color: #ffd700;">RIPROVA</button>
+                <div class="confirm-message">GAME OVER<br>The computer won.</div>
+                <button onclick="mostraInizioPartita()" class="btn-continua" style="width: 280px; height: 44px; font-size: 16px; background-color: #ffd700;">TRY AGAIN</button>
             </div>
 
             <!-- 4. Modale di Conferma Abbandono Partita (Stile Klondike) -->
             <div id="confermatermina" class="form-scopa" style="display: none; justify-content: center; gap: 20px; padding: 40px 25px;">
-                <div class="confirm-message" style="margin-top: 40px; margin-bottom: 40px; line-height: 1.5; font-size: 24px;">Vuoi davvero terminare la partita in corso?</div>
-                <button id="btn-no-continua" class="btn-continua btn-no-continua" style="width: 280px; height: 44px; font-size: 16px; margin: 0 auto 10px auto;">NO, CONTINUA</button>
-                <button id="btn-si-termina" class="btn-continua btn-si-termina" style="width: 280px; height: 44px; font-size: 16px; background-color: #cc0c39; color: white; border-color: #990022; margin: 0 auto;">SÌ, TERMINA</button>
+                <div class="confirm-message" style="margin-top: 40px; margin-bottom: 40px; line-height: 1.5; font-size: 24px;">Do you really want to end the current game?</div>
+                <button id="btn-no-continua" class="btn-continua btn-no-continua" style="width: 280px; height: 44px; font-size: 16px; margin: 0 auto 10px auto;">NO, CONTINUE</button>
+                <button id="btn-si-termina" class="btn-continua btn-si-termina" style="width: 280px; height: 44px; font-size: 16px; background-color: #cc0c39; color: white; border-color: #990022; margin: 0 auto;">YES, END GAME</button>
             </div>
 
             <!-- Link di navigazione ed utilità a fondo pagina -->
-            <a href="aboutme.html" target="_blank" id="btn-scrivetemi-scopa" class="pulsante-link-bottom">Scrivetemi</a>
-            <a href="regole-scopa.html" target="_blank" id="btn-regole-scopa" class="pulsante-link-bottom">Regole</a>
+            <a href="aboutme-en.html" target="_blank" id="btn-scrivetemi-scopa" class="pulsante-link-bottom">Contact Me</a>
+            <a href="regole-scopa-en.html" target="_blank" id="btn-regole-scopa" class="pulsante-link-bottom">Rules</a>
 
             <div class="link-giochi-scopa">
-                <a href="rummy.html" class="pulsante-link-scopa">Gin Rummy</a>
-                <a href="burraco.html" class="pulsante-link-scopa">Burraco</a>
-                <a href="scala40.html" class="pulsante-link-scopa">Scala 40</a>
-                <a href="machiavelli.html" class="pulsante-link-scopa">Machiavelli</a>
-                <a href="spider.html" class="pulsante-link-scopa">Spider</a>
-                <a href="klondike.html" class="pulsante-link-scopa">Klondike</a>
-                <a href="index.html" class="pulsante-link-scopa">Home</a>
+                <a href="rummy-en.html" class="pulsante-link-scopa">Gin Rummy</a>
+                <a href="burraco-en.html" class="pulsante-link-scopa">Burraco</a>
+                <a href="scala40-en.html" class="pulsante-link-scopa">Scala 40</a>
+                <a href="machiavelli-en.html" class="pulsante-link-scopa">Machiavelli</a>
+                <a href="spider-en.html" class="pulsante-link-scopa">Spider</a>
+                <a href="klondike-en.html" class="pulsante-link-scopa">Klondike</a>
+                <a href="index-en.html" class="pulsante-link-scopa">Home</a>
             </div>
 
         </div><!-- /campogioco -->

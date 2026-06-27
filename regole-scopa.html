@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
+	<script>
+		window.dataLayer = window.dataLayer || [];
+		function gtag() { dataLayer.push(arguments); }
+		gtag('js', new Date());
+		gtag('config', 'G-WRBDRDQ4L8');
+		window.currentLang = 'it';
+	</script>
+	<title>Regole Scopa - Come giocare</title>
+	<meta name="Description"
+		content="Regole, punteggi della Primiera, Scope e strategie per giocare a Scopa online. Guida completa al tradizionale gioco di carte italiano.">
+	<link rel="alternate" hreflang="it" href="regole-scopa.html">
+	<link rel="alternate" hreflang="en" href="regole-scopa-en.html">
+	<link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
+	<link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
+	<link rel="shortcut icon" href="favicon/favicon.ico">
+	<link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+	<style>
+		body {
+			font-family: sans-serif;
+			line-height: 1.7;
+			max-width: 800px;
+			margin: 40px auto;
+			padding: 20px;
+			color: #333;
+			background-color: #f9f9f9;
+		}
+
+		h1 {
+			color: #2c3e50;
+			border-bottom: 2px solid #ffd700;
+			padding-bottom: 10px;
+		}
+
+		h2 {
+			color: #2c3e50;
+			margin-top: 30px;
+		}
+
+		h3 {
+			color: #2c3e50;
+			font-size: 1.1em;
+			margin-top: 20px;
+		}
+
+		.lang-switch {
+			text-align: right;
+			margin-bottom: 20px;
+		}
+
+		.lang-switch a {
+			display: inline-block;
+			padding: 6px 16px;
+			margin-left: 5px;
+			text-decoration: none;
+			border-radius: 5px;
+			font-weight: bold;
+			font-size: 14px;
+		}
+
+		.lang-switch a.active {
+			background: #2c3e50;
+			color: white;
+		}
+
+		.lang-switch a:not(.active) {
+			background: #ddd;
+			color: #333;
+			cursor: pointer;
+		}
+
+		.content-box {
+			background: white;
+			padding: 30px;
+			border-radius: 8px;
+			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+		}
+
+		.play-btn {
+			display: inline-block;
+			margin-top: 25px;
+			padding: 12px 30px;
+			background: #27ae60;
+			color: white;
+			text-decoration: none;
+			border-radius: 8px;
+			font-size: 18px;
+			font-weight: bold;
+		}
+
+		.nav-links {
+			text-align: center;
+			margin-top: 30px;
+			font-size: 14px;
+		}
+
+		.nav-links a {
+			color: #3498db;
+			text-decoration: none;
+			margin: 0 10px;
+		}
+
+		.banner {
+			width: 100%;
+			height: 150px;
+			background-image: url('images/home/castagne.jpg');
+			background-size: cover;
+			background-position: center;
+			border-radius: 8px;
+			margin: 20px 0;
+			box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+		}
+
+		.score-table {
+			width: 100%;
+			border-collapse: collapse;
+			margin-top: 10px;
+			margin-bottom: 20px;
+		}
+
+		.score-table th,
+		.score-table td {
+			border: 1px solid #ddd;
+			padding: 8px;
+			text-align: left;
+		}
+
+		.score-table th {
+			background-color: #f2f2f2;
+			font-weight: bold;
+		}
+
+		.highlight {
+			background-color: #fff9c4;
+			padding: 0 4px;
+		}
+	</style>
+</head>
+
+<body>
+	<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+		<a href="#" id="btn-back" onclick="goBack(); return false;"
+			style="display: inline-block; padding: 6px 16px; background: #e74c3c; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 14px;">&#x2190;
+			Indietro</a>
+		<div class="lang-switch" style="margin-bottom: 0;">
+			<a href="regole-scopa.html" id="btn-it" class="active">Italiano</a>
+			<a href="regole-scopa-en.html" id="btn-en">English</a>
+		</div>
+	</div>
+
+	<div class="banner"></div>
+
+	<div class="content-box">
+		<div id="lang-it">
+			<h1>Regole della Scopa</h1>
+
+			<p>La <strong>Scopa</strong> &egrave; uno dei giochi di carte pi&ugrave; famosi, tradizionali e amati in Italia. Si gioca con un mazzo di <strong>40 carte</strong> (napoletane o francesi ridotte, con valori da Asso a Re, dove l'Asso vale 1, le carte da 2 a 7 mantengono il loro valore nominale e le figure Jack, Donna e Re valgono rispettivamente 8, 9 e 10).</p>
+
+			<p>Pu&ograve; essere giocato in 2 giocatori (singolo testa a testa) o in 4 giocatori (due coppie fisse). In questa versione online puoi sfidare l'intelligenza artificiale sia in modalit&agrave; 1 contro 1 sia in modalit&agrave; 2 contro 2 (a squadre).</p>
+
+			<p style="background: #fff9c4; padding: 12px 16px; border-radius: 6px; border-left: 4px solid #ffd700;">
+				Questo gioco &egrave; in continua evoluzione: nuove funzionalit&agrave; e miglioramenti vengono aggiunti regolarmente. In questa versione online, gli avatar dei tuoi avversari e del tuo compagno vengono scelti a caso all'avvio della partita e rimangono persistenti per tutta la sessione. Se riscontri qualcosa che non funziona come previsto o hai suggerimenti, scrivici a
+				<a href="mailto:postmaster@lucianomanenti.com" style="color: #3498db;">postmaster@lucianomanenti.com</a>
+				— il tuo feedback &egrave; prezioso!
+			</p>
+
+			<h2>1. Scopo del Gioco</h2>
+			<p>L'obiettivo &egrave; raggiungere o superare il punteggio target stabilito all'inizio della partita (solitamente <strong>11 o 21 punti</strong>) prima degli avversari. Per farlo, i giocatori o le coppie accumulano punti alla fine di ogni smazzata (round) attraverso le prese, le Scope e le combinazioni di carte raccolte.</p>
+
+			<h2>2. Preparazione e Distribuzione</h2>
+			<ul>
+				<li>Viene scelto a caso il primo mazziere, che cambier&agrave; in senso antiorario a ogni smazzata.</li>
+				<li>Il mazziere mescola il mazzo e distribuisce <strong>3 carte coperte</strong> a ciascun giocatore.</li>
+				<li>Vengono posizionate <strong>4 carte scoperte</strong> al centro del tavolo.</li>
+				<li>Il resto del mazzo viene posto coperto di fianco per le successive distribuzioni (3 carte a testa ogni volta che quelle in mano si esauriscono, fino al termine del mazzo).</li>
+			</ul>
+
+			<h2>3. Svolgimento del Gioco</h2>
+			<p>Il gioco si sviluppa in senso <strong>antiorario</strong> partendo dal giocatore alla destra del mazziere. Al proprio turno, ciascun giocatore &egrave; obbligato a giocare una carta della propria mano sul tavolo, potendo effettuare una presa o calare la carta.</p>
+
+			<h3>La Presa</h3>
+			<p>Ci sono due modi per catturare carte dal tavolo:</p>
+			<ul>
+				<li><strong>Presa Diretta (Semplice):</strong> Se la carta giocata ha lo stesso valore nominale di una carta presente sul tavolo (es. giochi un 5 e a terra c'&egrave; un 5), il giocatore le raccoglie entrambe.</li>
+				<li><strong>Presa per Somma:</strong> Se la carta giocata ha valore pari alla somma di due o pi&ugrave; carte scoperte sul tavolo, il giocatore le raccoglie tutte (es. giochi un 7 e prendi un 4 e un 3, oppure un 5 e un 2).</li>
+			</ul>
+			
+			<p style="background: #eef7fa; padding: 10px 14px; border-radius: 6px; border-left: 4px solid #3498db;">
+				<strong>Regola Ufficiale della Presa Singola:</strong> Se sul tavolo sono presenti sia una carta dello stesso valore della carta giocata (es. un 6) sia una combinazione di pi&ugrave; carte che sommano quel valore (es. un 4 e un 2), il giocatore &egrave; <strong>obbligato</strong> a prendere la carta singola (il 6). La presa per somma &egrave; consentita solo se non &egrave; presente sul tavolo la carta di pari valore singolo.
+			</p>
+
+			<p>Se la carta giocata non corrisponde a nessuna carta o somma valida sul tavolo, il giocatore non effettua alcuna presa e la carta rimane scoperta sul tavolo, aggiungendosi a quelle calate.</p>
+
+			<h2>4. La Scopa</h2>
+			<p>Se un giocatore riesce a prendere con una giocata <strong>tutte le carte presenti sul tavolo</strong>, lasciandolo completamente vuoto, realizza una <strong>Scopa</strong>.</p>
+			<ul>
+				<li>La Scopa vale <strong>1 punto</strong> immediato.</li>
+				<li>La carta che ha effettuato la Scopa viene messa di traverso o scoperta nella pila delle prese della squadra come promemoria del punto ottenuto.</li>
+				<li><strong>Eccezione:</strong> Non &egrave; possibile fare Scopa durante l'ultima giocata dell'ultima mano del round (lo scarto finale raccoglie le carte residue sul tavolo per l'ultimo che ha preso, senza segnare Scopa).</li>
+			</ul>
+
+			<h2>5. Fine del Round (Smazzata)</h2>
+			<p>Quando le carte in mano si esauriscono e il mazzo &egrave; finito, il round termina. L'ultimo giocatore che ha effettuato una presa valida sul tavolo si aggiudica le eventuali carte residue rimaste a terra, che vengono sommate alla sua pila delle prese per il conteggio finale dei punti (quest'ultima cattura non costituisce mai una Scopa).</p>
+
+			<h2>6. Calcolo del Punteggio</h2>
+			<p>Al termine di ogni smazzata si procede al conteggio dei punti per ogni squadra o giocatore:</p>
+
+			<table class="score-table">
+				<tr>
+					<th>Punto</th>
+					<th>Descrizione</th>
+					<th>Punti</th>
+				</tr>
+				<tr>
+					<td><strong>Scope</strong></td>
+					<td>1 punto per ogni Scopa effettuata durante il round.</td>
+					<td>+1 cad.</td>
+				</tr>
+				<tr>
+					<td><strong>Carte</strong></td>
+					<td>Assegnato a chi ha raccolto pi&ugrave; di met&agrave; delle carte del mazzo (almeno <strong>21 carte</strong> su 40). In caso di parit&agrave; (20 a 20) il punto non viene assegnato.</td>
+					<td>+1</td>
+				</tr>
+				<tr>
+					<td><strong>Quadri (Denari)</strong></td>
+					<td>Assegnato a chi ha preso pi&ugrave; di met&agrave; delle carte del seme di Quadri/Denari (almeno <strong>6 carte</strong> su 10). In caso di parit&agrave; (5 a 5) il punto non viene assegnato.</td>
+					<td>+1</td>
+				</tr>
+				<tr>
+					<td><strong>Settebello</strong></td>
+					<td>Assegnato a chi ha catturato il <strong>7 di Quadri</strong> (7♦).</td>
+					<td>+1</td>
+				</tr>
+				<tr>
+					<td><strong>Primiera</strong></td>
+					<td>Assegnato a chi ottiene il punteggio pi&ugrave; alto sommando i valori di Primiera della carta migliore raccolta per ciascuno dei 4 semi. In caso di parit&agrave; il punto non viene assegnato.</td>
+					<td>+1</td>
+				</tr>
+			</table>
+
+			<h3>Valori Ufficiali della Primiera</h3>
+			<p>I valori delle carte per il calcolo della Primiera sono diversi dai loro normali valori di gioco:</p>
+			<table class="score-table" style="max-width: 400px;">
+				<tr>
+					<th>Carta</th>
+					<th>Punti Primiera</th>
+				</tr>
+				<tr>
+					<td><strong>7</strong></td>
+					<td>21</td>
+				</tr>
+				<tr>
+					<td><strong>6</strong></td>
+					<td>18</td>
+				</tr>
+				<tr>
+					<td><strong>Asso (1)</strong></td>
+					<td>16</td>
+				</tr>
+				<tr>
+					<td><strong>5</strong></td>
+					<td>15</td>
+				</tr>
+				<tr>
+					<td><strong>4</strong></td>
+					<td>14</td>
+				</tr>
+				<tr>
+					<td><strong>3</strong></td>
+					<td>13</td>
+				</tr>
+				<tr>
+					<td><strong>2</strong></td>
+					<td>12</td>
+				</tr>
+				<tr>
+					<td><strong>Re, Donna, Fante (Figure)</strong></td>
+					<td>10</td>
+				</tr>
+			</table>
+
+			<hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;">
+
+			<h2>Come giocare a "Scopa Luciano"</h2>
+			<ul>
+				<li><strong>Selezionare una carta:</strong> clicca su una delle tue tre carte in mano per selezionarla.</li>
+				<li><strong>Calo e Presa automatica:</strong>
+					<ul>
+						<li>Se non sono possibili prese con la carta selezionata, dopo un piccolo ritardo la carta viene calata (scartata) automaticamente a terra.</li>
+						<li>Se c'&egrave; un'unica presa possibile sul tavolo (es. giochi un 5 e a terra c'&egrave; solo un 5), la presa viene eseguita automaticamente dopo un piccolo ritardo.</li>
+					</ul>
+				</li>
+				<li><strong>Prese a scelta multipla:</strong> Se la carta selezionata pu&ograve; effettuare pi&ugrave; prese diverse (es. giochi un 7 e a terra ci sono un 7, un 5 e un 2), il gioco attende che tu scelga la combinazione che preferisci cliccando sulle carte a terra. Una volta selezionate le carte desiderate sul tavolo, clicca sul pulsante dorato <strong>PRENDI</strong> che comparir&agrave; al centro dello schermo.</li>
+				<li><strong>Bordo Giallo Luminoso:</strong> L'area del giocatore di turno &egrave; contornata da un bordo giallo neon lampeggiante, che ti aiuta a identificare immediatamente chi sta giocando.</li>
+				<li><strong>Punto Sicuro in tempo reale:</strong> Nel pannello dei punteggi a sinistra, i contatori di Carte e Quadri della mano corrente diventano gialli e in grassetto non appena una squadra supera la soglia di maggioranza matematica (21 per le carte, 6 per i quadri), accompagnati da un avviso acustico.</li>
+			</ul>
+
+			<h2>Pulsanti di Controllo</h2>
+			<ul>
+				<li><strong>NUOVA:</strong> Interrompe la partita corrente, azzera i punteggi e riapre il pannello iniziale per scegliere la modalit&agrave; (2P o 4P) e il punteggio target.</li>
+				<li><strong>SCOPRI CARTE / COPRI CARTE:</strong> Mostra o nasconde le carte degli avversari e del compagno gestiti dal computer (funzionalit&agrave; ideale per scopi di debug o di allenamento).</li>
+				<li><strong>&#x1F50A; / &#x1F507; (Audio):</strong> Abilita o disabilita gli effetti sonori e i toni acustici del gioco. La tua preferenza &egrave; globale e sar&agrave; ricordata dal browser su tutte le pagine del sito.</li>
+			</ul>
+
+			<p style="text-align: center;"><a href="#" onclick="goBack(); return false;" class="play-btn">Chiudi</a></p>
+		</div>
+	</div>
+
+	<div class="banner"></div>
+
+	<div class="nav-links">
+		<a href="index.html">Home</a> |
+		<a href="scopa.html">Scopa</a> |
+		<a href="regole-burraco.html">Burraco</a> |
+		<a href="regole-scala40.html">Scala 40</a> |
+		<a href="regole-machiavelli.html">Machiavelli</a> |
+		<a href="regole-spider.html">Spider</a> |
+		<a href="regole-rummy.html">Gin Rummy</a> |
+		<a href="guida-metronomo.html">Metronomo</a> |
+		<a href="privacy.html">Privacy</a> |
+		<a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)">Gestisci Cookie</a>
+	</div>
+
+	<p style="text-align: center; font-size: 0.8em; color: #999; margin-top: 15px;">
+		© 2026 Luciano Manenti
+	</p>
+
+	<script>
+		function goBack() {
+			window.close();
+		}
+		(function() {
+			var nascosto = false;
+			var observer = new MutationObserver(function() {
+				if (nascosto) return;
+				var divs = document.querySelectorAll('body > div');
+				for (var i = 0; i < divs.length; i++) {
+					if (divs[i].shadowRoot && !divs[i].className && (divs[i].getAttribute('style')||'').length > 5000) {
+						divs[i].style.setProperty('display', 'none', 'important');
+						nascosto = true;
+						observer.disconnect();
+						return;
+					}
+				}
+			});
+			observer.observe(document.body, { childList: true });
+		})();
+	</script>
+</body>
+
+</html>

@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
+	<script>
+		window.dataLayer = window.dataLayer || [];
+		function gtag() { dataLayer.push(arguments); }
+		gtag('js', new Date());
+		gtag('config', 'G-WRBDRDQ4L8');
+		window.currentLang = 'en';
+	</script>
+	<title>Scopa Rules - How to Play</title>
+	<meta name="Description"
+		content="Rules, Primiera scores, Scope points, and strategies to play Scopa online. Complete guide to the traditional Italian card game.">
+	<link rel="alternate" hreflang="it" href="regole-scopa.html">
+	<link rel="alternate" hreflang="en" href="regole-scopa-en.html">
+	<link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
+	<link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
+	<link rel="shortcut icon" href="favicon/favicon.ico">
+	<link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+	<style>
+		body {
+			font-family: sans-serif;
+			line-height: 1.7;
+			max-width: 800px;
+			margin: 40px auto;
+			padding: 20px;
+			color: #333;
+			background-color: #f9f9f9;
+		}
+
+		h1 {
+			color: #2c3e50;
+			border-bottom: 2px solid #ffd700;
+			padding-bottom: 10px;
+		}
+
+		h2 {
+			color: #2c3e50;
+			margin-top: 30px;
+		}
+
+		h3 {
+			color: #2c3e50;
+			font-size: 1.1em;
+			margin-top: 20px;
+		}
+
+		.lang-switch {
+			text-align: right;
+			margin-bottom: 20px;
+		}
+
+		.lang-switch a {
+			display: inline-block;
+			padding: 6px 16px;
+			margin-left: 5px;
+			text-decoration: none;
+			border-radius: 5px;
+			font-weight: bold;
+			font-size: 14px;
+		}
+
+		.lang-switch a.active {
+			background: #2c3e50;
+			color: white;
+		}
+
+		.lang-switch a:not(.active) {
+			background: #ddd;
+			color: #333;
+			cursor: pointer;
+		}
+
+		.content-box {
+			background: white;
+			padding: 30px;
+			border-radius: 8px;
+			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+		}
+
+		.play-btn {
+			display: inline-block;
+			margin-top: 25px;
+			padding: 12px 30px;
+			background: #27ae60;
+			color: white;
+			text-decoration: none;
+			border-radius: 8px;
+			font-size: 18px;
+			font-weight: bold;
+		}
+
+		.nav-links {
+			text-align: center;
+			margin-top: 30px;
+			font-size: 14px;
+		}
+
+		.nav-links a {
+			color: #3498db;
+			text-decoration: none;
+			margin: 0 10px;
+		}
+
+		.banner {
+			width: 100%;
+			height: 150px;
+			background-image: url('images/home/castagne.jpg');
+			background-size: cover;
+			background-position: center;
+			border-radius: 8px;
+			margin: 20px 0;
+			box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+		}
+
+		.score-table {
+			width: 100%;
+			border-collapse: collapse;
+			margin-top: 10px;
+			margin-bottom: 20px;
+		}
+
+		.score-table th,
+		.score-table td {
+			border: 1px solid #ddd;
+			padding: 8px;
+			text-align: left;
+		}
+
+		.score-table th {
+			background-color: #f2f2f2;
+			font-weight: bold;
+		}
+
+		.highlight {
+			background-color: #fff9c4;
+			padding: 0 4px;
+		}
+	</style>
+</head>
+
+<body>
+	<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+		<a href="#" id="btn-back" onclick="goBack(); return false;"
+			style="display: inline-block; padding: 6px 16px; background: #e74c3c; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 14px;">&#x2190;
+			Back</a>
+		<div class="lang-switch" style="margin-bottom: 0;">
+			<a href="regole-scopa.html" id="btn-it">Italiano</a>
+			<a href="regole-scopa-en.html" id="btn-en" class="active">English</a>
+		</div>
+	</div>
+
+	<div class="banner"></div>
+
+	<div class="content-box">
+		<div id="lang-en">
+			<h1>Scopa Rules</h1>
+
+			<p><strong>Scopa</strong> is one of the most famous, traditional, and beloved card games in Italy. It is played with a deck of <strong>40 cards</strong> (traditionally Neapolitan, or a reduced French deck, with values from Ace to King, where the Ace is worth 1, cards 2 to 7 keep their face value, and the Jack, Queen, and King are worth 8, 9, and 10 respectively).</p>
+
+			<p>It can be played by 2 players (heads-up) or 4 players (two fixed partnerships). In this online version, you can challenge the AI in both 1v1 and 2v2 (team-based) modes.</p>
+
+			<p style="background: #fff9c4; padding: 12px 16px; border-radius: 6px; border-left: 4px solid #ffd700;">
+				This game is continuously evolving: new features and improvements are added regularly. In this online version, the avatars of your opponents and your partner are chosen randomly at the start of the game and remain persistent throughout your browser session. If you notice anything not working as expected or have suggestions, please write to us at
+				<a href="mailto:postmaster@lucianomanenti.com" style="color: #3498db;">postmaster@lucianomanenti.com</a>
+				— your feedback is highly appreciated!
+			</p>
+
+			<h2>1. Objective of the Game</h2>
+			<p>The goal is to reach or exceed the target score established at the beginning of the match (usually <strong>11 or 21 points</strong>) before the opponents. To do this, players or teams accumulate points at the end of each round (smazzata) through captures, Scope, and card counts.</p>
+
+			<h2>2. Setup and Deal</h2>
+			<ul>
+				<li>A starting dealer is chosen randomly and rotates counter-clockwise after each round.</li>
+				<li>The dealer shuffles the deck and deals <strong>3 face-down cards</strong> to each player.</li>
+				<li><strong>4 face-up cards</strong> are placed in the center of the table.</li>
+				<li>The rest of the deck is placed face down to the side for subsequent deals (3 cards to each player every time they run out of cards in hand, until the deck is exhausted).</li>
+			</ul>
+
+			<h2>3. Svolgimento del Gioco (Gameplay)</h2>
+			<p>The game flows in a <strong>counter-clockwise</strong> direction starting from the player to the dealer's right. On their turn, each player is required to play one card from their hand onto the table, either to make a capture or to discard it.</p>
+
+			<h3>The Capture (La Presa)</h3>
+			<p>There are two ways to capture cards from the table:</p>
+			<ul>
+				<li><strong>Direct Capture (Semplice):</strong> If the played card matches the rank of a card on the table (e.g., playing a 5 when there is a 5 on the table), the player captures both.</li>
+				<li><strong>Sum Capture:</strong> If the played card matches the sum of two or more cards on the table, the player captures them all (e.g., playing a 7 to capture a 4 and a 3, or a 5 and a 2).</li>
+			</ul>
+			
+			<p style="background: #eef7fa; padding: 10px 14px; border-radius: 6px; border-left: 4px solid #3498db;">
+				<strong>Official Single Card Capture Rule:</strong> If there is a single card matching the rank of the played card (e.g., a 6) AND a combination of cards summing to that value (e.g., a 4 and a 2), the player is <strong>obligated</strong> to capture the single card (the 6). A sum capture is only allowed if no single card of the same rank is present on the table.
+			</p>
+
+			<p>If the played card does not match any card or sum on the table, the player makes no capture and the card remains face up on the table, joining the other discarded cards.</p>
+
+			<h2>4. The Scopa</h2>
+			<p>If a player manages to capture <strong>all cards present on the table</strong> with a single play, leaving it completely empty, they score a <strong>Scopa</strong>.</p>
+			<ul>
+				<li>A Scopa is worth <strong>1 point</strong> immediately.</li>
+				<li>The card that scored the Scopa is placed sideways or face up in the player's taking pile as a reminder of the point.</li>
+				<li><strong>Exception:</strong> It is not possible to score a Scopa on the last play of the last hand of the round (the final play gathers the remaining cards on the table for the player who made the last capture, but does not score a Scopa).</li>
+			</ul>
+
+			<h2>5. End of the Round</h2>
+			<p>When the cards in hand run out and the deck is exhausted, the round ends. The last player who made a valid capture on the table gathers any remaining cards on the table and adds them to their team's taking pile for the final count (this final capture does not score a Scopa).</p>
+
+			<h2>6. Scoring</h2>
+			<p>At the end of each round, points are calculated for each team or player:</p>
+
+			<table class="score-table">
+				<tr>
+					<th>Point</th>
+					<th>Description</th>
+					<th>Points</th>
+				</tr>
+				<tr>
+					<td><strong>Scope</strong></td>
+					<td>1 point for each Scopa scored during the round.</td>
+					<td>+1 each</td>
+				</tr>
+				<tr>
+					<td><strong>Cards (Carte)</strong></td>
+					<td>Awarded to whoever captured the majority of the cards (at least <strong>21 cards</strong> out of 40). In case of a tie (20-20), the point is not awarded.</td>
+					<td>+1</td>
+				</tr>
+				<tr>
+					<td><strong>Diamonds (Quadri)</strong></td>
+					<td>Awarded to whoever captured the majority of Diamonds/Denari (at least <strong>6 cards</strong> out of 10). In case of a tie (5-5), the point is not awarded.</td>
+					<td>+1</td>
+				</tr>
+				<tr>
+					<td><strong>Settebello</strong></td>
+					<td>Awarded to whoever captured the <strong>7 of Diamonds</strong> (7♦).</td>
+					<td>+1</td>
+				</tr>
+				<tr>
+					<td><strong>Primiera</strong></td>
+					<td>Awarded to whoever achieves the highest Primiera score, calculated by summing the Primiera values of the best card in each of the 4 suits. In case of a tie, the point is not awarded.</td>
+					<td>+1</td>
+				</tr>
+			</table>
+
+			<h3>Official Primiera Values</h3>
+			<p>The values of the cards for the Primiera calculation are different from their normal game values:</p>
+			<table class="score-table" style="max-width: 400px;">
+				<tr>
+					<th>Card</th>
+					<th>Primiera Points</th>
+				</tr>
+				<tr>
+					<td><strong>7</strong></td>
+					<td>21</td>
+				</tr>
+				<tr>
+					<td><strong>6</strong></td>
+					<td>18</td>
+				</tr>
+				<tr>
+					<td><strong>Ace (1)</strong></td>
+					<td>16</td>
+				</tr>
+				<tr>
+					<td><strong>5</strong></td>
+					<td>15</td>
+				</tr>
+				<tr>
+					<td><strong>4</strong></td>
+					<td>14</td>
+				</tr>
+				<tr>
+					<td><strong>3</strong></td>
+					<td>13</td>
+				</tr>
+				<tr>
+					<td><strong>2</strong></td>
+					<td>12</td>
+				</tr>
+				<tr>
+					<td><strong>King, Queen, Jack (Face cards)</strong></td>
+					<td>10</td>
+				</tr>
+			</table>
+
+			<hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;">
+
+			<h2>How to Play "Scopa Luciano"</h2>
+			<ul>
+				<li><strong>Select a card:</strong> click on one of the three cards in your hand to select it.</li>
+				<li><strong>Automatic Discard and Capture:</strong>
+					<ul>
+						<li>If no captures are possible with the selected card, it is automatically discarded onto the table after a short delay.</li>
+						<li>If there is only one possible capture on the table (e.g., playing a 5 with only a 5 on the board), the capture is executed automatically after a short delay.</li>
+					</ul>
+				</li>
+				<li><strong>Multiple Captures:</strong> If the selected card can make multiple different captures (e.g., playing a 7 when there is a 7, a 5, and a 2 on the table), the game waits for you to choose your preferred combination by clicking on the cards on the board. Once you have selected the desired cards on the table, click the golden <strong>PRENDI</strong> (Capture) button that appears in the center of the screen.</li>
+				<li><strong>Glowing Yellow Border:</strong> The active player's area is surrounded by a flashing neon yellow border, helping you instantly identify whose turn it is.</li>
+				<li><strong>Real-Time Threshold Alerts:</strong> In the score panel on the left, the current hand's Card and Diamond counters turn bold yellow as soon as a team passes the mathematical majority threshold (21 for cards, 6 for diamonds), accompanied by a chime sound.</li>
+			</ul>
+
+			<h2>Control Buttons</h2>
+			<ul>
+				<li><strong>NUOVA (New):</strong> Interrupts the current game, resets the scores, and reopens the starting panel to choose the game mode (2P or 4P) and target score.</li>
+				<li><strong>SCOPRI CARTE / COPRI CARTE (Reveal/Hide Cards):</strong> Shows or hides the cards of the opponents and partner managed by the computer (ideal for training or debugging purposes).</li>
+				<li><strong>&#x1F50A; / &#x1F507; (Audio):</strong> Enables or disables the game's sound effects. Your preference is global and will be remembered by the browser across all pages on the site.</li>
+			</ul>
+
+			<p style="text-align: center;"><a href="#" onclick="goBack(); return false;" class="play-btn">Close</a></p>
+		</div>
+	</div>
+
+	<div class="banner"></div>
+
+	<div class="nav-links">
+		<a href="index-en.html">Home</a> |
+		<a href="scopa-en.html">Scopa</a> |
+		<a href="regole-burraco-en.html">Burraco</a> |
+		<a href="regole-scala40-en.html">Scala 40</a> |
+		<a href="regole-machiavelli-en.html">Machiavelli</a> |
+		<a href="regole-spider-en.html">Spider</a> |
+		<a href="regole-rummy-en.html">Gin Rummy</a> |
+		<a href="guida-metronomo-en.html">Metronome Guide</a> |
+		<a href="privacy-en.html">Privacy</a> |
+		<a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)">Manage Cookies</a>
+	</div>
+
+	<p style="text-align: center; font-size: 0.8em; color: #999; margin-top: 15px;">
+		© 2026 Luciano Manenti
+	</p>
+
+	<script>
+		function goBack() {
+			window.close();
+		}
+		(function() {
+			var nascosto = false;
+			var observer = new MutationObserver(function() {
+				if (nascosto) return;
+				var divs = document.querySelectorAll('body > div');
+				for (var i = 0; i < divs.length; i++) {
+					if (divs[i].shadowRoot && !divs[i].className && (divs[i].getAttribute('style')||'').length > 5000) {
+						divs[i].style.setProperty('display', 'none', 'important');
+						nascosto = true;
+						observer.disconnect();
+						return;
+					}
+				}
+			});
+			observer.observe(document.body, { childList: true });
+		})();
+	</script>
+</body>
+
+</html>
