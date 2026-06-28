@@ -727,6 +727,22 @@ function adjustLayout() {
     sidebarRight.style.display = 'none';
 
     var getAmazonRichHtml = function (deal, amazonGenericLink, amazonGenericImg, side) {
+        var isMusicBanner = amazonGenericLink && amazonGenericLink.indexOf('musica') !== -1;
+        if (isMusicBanner) {
+            var scopaUrl = (window.currentLang === 'en') ? 'scopa-en.html' : 'scopa.html';
+            var scopaText = (window.currentLang === 'en') ? 'Try the new game<br><span style="font-size:16px;color:#ffd700;">SCOPA Luciano</span>' : 'Prova il nuovo gioco<br><span style="font-size:16px;color:#ffd700;">SCOPA Luciano</span>';
+            var musicText = (window.currentLang === 'en') ? 'Luciano<br><span style="font-size:16px;color:#ffd700;">Music Ear Training</span>' : 'Luciano<br><span style="font-size:16px;color:#ffd700;">Music Ear Training</span>';
+            
+            return '<div style="display:flex;flex-direction:column;justify-content:space-evenly;align-items:center;width:300px;height:250px;padding:12px;box-sizing:border-box;background:linear-gradient(135deg, #14532d, #022c22);border:3px solid #ffdb4d;border-radius:12px;box-shadow:inset 0 0 20px rgba(0,0,0,0.6), 0 4px 15px rgba(0,0,0,0.5);font-family:\'Outfit\',\'Open Sans\',sans-serif;z-index:100;overflow:hidden;">' +
+                '<a href="' + amazonGenericLink + '" target="_blank" rel="noopener" style="display:flex;flex-direction:column;align-items:center;justify-content:center;width:256px;height:94px;background:linear-gradient(180deg,#1d4ed8 0%,#1e40af 100%);border:2px solid #60a5fa;border-radius:10px;color:#ffffff;font-size:13px;font-weight:bold;text-align:center;text-decoration:none;box-shadow:0 4px 8px rgba(0,0,0,0.3);transition:transform 0.2s;cursor:pointer;box-sizing:border-box;line-height:1.4;" onmouseover="this.style.transform=\'scale(1.03)\';this.style.filter=\'brightness(1.15)\';" onmouseout="this.style.transform=\'scale(1)\';this.style.filter=\'none\';">' +
+                '🎵 ' + musicText +
+                '</a>' +
+                '<a href="' + scopaUrl + '" target="_self" style="display:flex;flex-direction:column;align-items:center;justify-content:center;width:256px;height:94px;background:linear-gradient(180deg,#b91c1c 0%,#991b1b 100%);border:2px solid #f87171;border-radius:10px;color:#ffffff;font-size:13px;font-weight:bold;text-align:center;text-decoration:none;box-shadow:0 4px 8px rgba(0,0,0,0.3);transition:transform 0.2s;cursor:pointer;box-sizing:border-box;line-height:1.4;" onmouseover="this.style.transform=\'scale(1.03)\';this.style.filter=\'brightness(1.15)\';" onmouseout="this.style.transform=\'scale(1)\';this.style.filter=\'none\';">' +
+                '🃏 ' + scopaText +
+                '</a>' +
+                '</div>';
+        }
+
         if (!deal) {
             return '<a href="' + amazonGenericLink + '" target="_blank" rel="noopener" style="display:block;width:100%;height:100%;"><img src="' + amazonGenericImg + '" style="width:100%;height:100%;object-fit:cover;" alt="Offerte Amazon"></a>';
         }

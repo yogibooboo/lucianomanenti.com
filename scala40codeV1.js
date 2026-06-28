@@ -1176,7 +1176,8 @@ var scala = {
 		$(scala.formtohide).hide();
 		$("#schermo").hide();
 		this.fmodale = false;
-
+		var minPanel = document.getElementById('scala-minimal-win-panel');
+		if (minPanel) minPanel.style.display = 'none';
 	},
 
 	scarta: function (carta) {
@@ -1294,48 +1295,88 @@ var scala = {
 							btnVedi.style.position = 'absolute';
 							btnVedi.style.cursor = 'pointer';
 
-							var isToggled = false;
-							var originalBg = '';
-							var originalBorder = '';
-							var originalBoxShadow = '';
-
 							btnVedi.onclick = function (e) {
 								if (e) e.stopPropagation();
-								isToggled = !isToggled;
-								var otherChildren = modal.children;
-								var schermo = document.getElementById('schermo');
+								
+								// 1. Chiudi definitivamente la modale principale (nascondendo l'ad AdSense)
+								scala.hidedialog();
 
-								if (isToggled) {
-									originalBg = modal.style.backgroundImage || getComputedStyle(modal).backgroundImage;
-									originalBorder = modal.style.border || getComputedStyle(modal).border;
-									originalBoxShadow = modal.style.boxShadow || getComputedStyle(modal).boxShadow;
+								// 2. Determina se siamo in modalita torneo
+								var isTorneo = (id === 'haivintotorneo' || id === 'haipersotorneo');
 
-									if (schermo) schermo.style.display = 'none';
-									modal.style.backgroundImage = 'none';
-									modal.style.border = 'none';
-									modal.style.boxShadow = 'none';
-									modal.style.backgroundColor = 'transparent';
-
-									for (var i = 0; i < otherChildren.length; i++) {
-										var child = otherChildren[i];
-										if (child !== btnVedi) {
-											child.style.visibility = 'hidden';
-										}
+								// 3. Crea o mostra il pannellino minimale
+								var minimalPanel = document.getElementById('scala-minimal-win-panel');
+								if (!minimalPanel) {
+									minimalPanel = document.createElement('div');
+									minimalPanel.id = 'scala-minimal-win-panel';
+									minimalPanel.style.cssText = 'position: absolute; bottom: 12px; left: 430px; z-index: 10000; display: flex; gap: 15px;';
+									
+									var btn1 = document.createElement('button');
+									btn1.type = 'button';
+									btn1.className = 'btn-min-1';
+									btn1.style.cssText = 'width: 140px; height: 36px; background-color: #ffd700; color: #000; font-weight: bold; border: 2px solid #cca300; border-radius: 10px; cursor: pointer; font-family: sans-serif; font-size: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); transition: transform 0.1s;';
+									
+									btn1.onmouseenter = function() { btn1.style.backgroundColor = '#ffea00'; };
+									btn1.onmouseleave = function() { btn1.style.backgroundColor = '#ffd700'; };
+									btn1.onmousedown = function() { btn1.style.transform = 'scale(0.95)'; };
+									btn1.onmouseup = function() { btn1.style.transform = 'scale(1)'; };
+									
+									var btn2 = document.createElement('button');
+									btn2.type = 'button';
+									btn2.className = 'btn-min-2';
+									btn2.style.cssText = 'width: 140px; height: 36px; background-color: #f0f0f0; color: #333; font-weight: bold; border: 2px solid #bbb; border-radius: 10px; cursor: pointer; font-family: sans-serif; font-size: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); transition: transform 0.1s;';
+									
+									btn2.onmouseenter = function() { btn2.style.backgroundColor = '#ffffff'; };
+									btn2.onmouseleave = function() { btn2.style.backgroundColor = '#f0f0f0'; };
+									btn2.onmousedown = function() { btn2.style.transform = 'scale(0.95)'; };
+									btn2.onmouseup = function() { btn2.style.transform = 'scale(1)'; };
+									
+									minimalPanel.appendChild(btn1);
+									minimalPanel.appendChild(btn2);
+									
+									var campogioco = document.getElementById('campogioco');
+									if (campogioco) {
+										campogioco.appendChild(minimalPanel);
+									} else {
+										document.body.appendChild(minimalPanel);
 									}
-									btnVedi.textContent = isEnglish ? 'BACK' : 'INDIETRO';
-								} else {
-									if (schermo) schermo.style.display = 'block';
-									modal.style.backgroundImage = originalBg;
-									modal.style.border = originalBorder;
-									modal.style.boxShadow = originalBoxShadow;
-									modal.style.backgroundColor = '';
-
-									for (var i = 0; i < otherChildren.length; i++) {
-										var child = otherChildren[i];
-										child.style.visibility = 'visible';
-									}
-									btnVedi.textContent = isEnglish ? 'VIEW CARDS' : 'VEDI CARTE';
 								}
+								
+								var btn1 = minimalPanel.querySelector('.btn-min-1');
+								var btn2 = minimalPanel.querySelector('.btn-min-2');
+								
+								if (isTorneo) {
+									// Torneo: Nuovo Torneo & Gioca Ancora
+									btn1.textContent = isEnglish ? 'NEW TOURNAMENT' : 'NUOVO TORNEO';
+									btn1.onclick = function() {
+										minimalPanel.style.display = 'none';
+										scala.funzbottone1();
+									};
+									
+									btn2.textContent = isEnglish ? 'PLAY AGAIN' : 'GIOCA ANCORA';
+									btn2.style.display = 'block';
+									btn2.onclick = function() {
+										minimalPanel.style.display = 'none';
+										scala.funzbottone2();
+									};
+									
+									// Posizione centrata con 2 bottoni: (1000 - (140 * 2 + 15)) / 2 = 352.5px
+									minimalPanel.style.left = '352px';
+								} else {
+									// Partita Singola: Nuova Partita
+									btn1.textContent = isEnglish ? 'NEW GAME' : 'NUOVA PARTITA';
+									btn1.onclick = function() {
+										minimalPanel.style.display = 'none';
+										scala.nuovo();
+									};
+									
+									btn2.style.display = 'none';
+									
+									// Posizione centrata con 1 bottone: (1000 - 140) / 2 = 430px
+									minimalPanel.style.left = '430px';
+								}
+								
+								minimalPanel.style.display = 'block';
 							};
 							modal.appendChild(btnVedi);
 						} else {

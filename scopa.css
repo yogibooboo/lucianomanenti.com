@@ -561,6 +561,31 @@ html, body {
 #btn-scrivetemi-scopa { left: 212px; }
 #btn-regole-scopa { left: 292px; }
 
+/* Link Legali a piè pagina (stile classico/bianco come Burraco) */
+.legal-links-scopa {
+    position: absolute;
+    bottom: 38px;
+    right: 15px;
+    display: flex;
+    gap: 8px;
+    z-index: 100;
+    align-items: center;
+}
+.legal-links-scopa a {
+    color: rgba(255, 255, 255, 0.6);
+    text-decoration: none;
+    font-size: 11px;
+    font-family: sans-serif;
+    transition: color 0.2s;
+}
+.legal-links-scopa a:hover {
+    color: #ffd700;
+}
+.legal-links-scopa .sep {
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 11px;
+}
+
 /* Link altri giochi a piè pagina */
 .link-giochi-scopa {
     position: absolute;

@@ -19,7 +19,7 @@
 
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<link rel="stylesheet" href="home.css?v=1.2" />
+	<link rel="stylesheet" href="home.css?v=1.8" />
 
 	<meta name="google-site-verification" content="HczGE3blChW6QEkClRXFQMJc3Z_9fl8feUwWl6LpX6I" />
 	<link rel="alternate" hreflang="it" href="index.html">
@@ -31,7 +31,12 @@
 	<link rel="manifest" href="favicon/site.webmanifest">
 
 	<meta name="Description"
-		content="Gioca gratis online a Scala 40, Gin Rummy, Machiavelli, Burraco, Solitari Spider e Klondike. Include ear training musicale (intervalli e accordi) e un metronomo avanzato.">
+		content="Gioca gratis online a Scopa, Scala 40, Gin Rummy, Machiavelli, Burraco, Solitari Spider e Klondike. Include ear training musicale (intervalli e accordi) e un metronomo avanzato.">
+
+	<!-- Google Fonts -->
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Slackey&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 </head>
 
@@ -51,38 +56,26 @@
 
 		<div id="intestazione"></div>
 
-		<a href="scala40.html">
-			<div id="icoscala"><img src="images/home/scala40.png"></div>
-		</a>
-		<a href="burraco.html">
-			<div id="icoburraco"><img src="images/home/burraco.png"></div>
-		</a>
-		<a href="machiavelli.html">
-			<div id="icomachia"><img src="images/home/machiavelli.png"></div>
-		</a>
-		<a href="rummy.html">
-			<div id="icorummy"><img src="images/home/rummy.png"></div>
-		</a>
-		<a id="link-spider" href="spider.html">
-			<div id="icospider"><img src="images/home/spiderhome.png"></div>
-		</a>
-
-		<a href="klondike.html">
-			<div id="icoklondike"><img src="images/home/klondike.png"></div>
-		</a>
+		<!-- Menu dei giochi -->
+		<div class="game-menu-container">
+			<div class="menu-title">Giochi di Carte</div>
+			<a href="scala40.html" class="game-btn" id="btn-scala40">Scala 40</a>
+			<a href="burraco.html" class="game-btn" id="btn-burraco">Burraco</a>
+			<a href="scopa.html" class="game-btn" id="btn-scopa">Scopa <span class="new-tag">NUOVO</span></a>
+			<a href="machiavelli.html" class="game-btn" id="btn-machiavelli">Machiavelli</a>
+			<a href="rummy.html" class="game-btn" id="btn-rummy">Gin Rummy</a>
+			<a href="spider.html" class="game-btn" id="btn-spider">Solitario Spider</a>
+			<a href="klondike.html" class="game-btn" id="btn-klondike">Solitario Klondike</a>
+		</div>
 
 		<!-- Musica / Ear Training -->
-		<a href="musica/" style="position:absolute; top:185px; right:94px; width:225px; height:200px; z-index:1000; border-radius:10px; box-shadow:0 6px 20px rgba(0,0,0,0.7); border:1px solid rgba(255,215,0,0.4); display:block; text-decoration:none; overflow:hidden; background-color:#5a2e0a; background-image:url('images/wood2.png'); background-repeat:repeat; cursor:pointer;"
-		   onmouseover="this.style.borderColor='rgba(255,215,0,0.9)'; this.style.boxShadow='0 6px 30px rgba(255,215,0,0.25)';"
-		   onmouseout="this.style.borderColor='rgba(255,215,0,0.4)'; this.style.boxShadow='0 6px 20px rgba(0,0,0,0.7)';">
-			<div style="position:absolute; inset:0; background:linear-gradient(180deg,rgba(0,0,0,0.25) 0%,rgba(0,0,0,0.55) 100%);"></div>
-			<div style="position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:7px;">
-				<div style="font-family:'Segoe UI Symbol','Apple Symbols',serif; font-size:56px; color:#ffd700; line-height:1; text-shadow:0 0 28px rgba(255,215,0,0.7), 0 2px 8px rgba(0,0,0,0.9);">&#9835;&#xFE0E;</div>
-				<div style="font-family:Georgia,serif; font-size:30px; color:#ffd700; letter-spacing:5px; text-shadow:0 2px 8px rgba(0,0,0,0.9), 0 0 15px rgba(255,215,0,0.3);">Musica</div>
-				<div style="width:60px; height:1px; background:rgba(255,215,0,0.45);"></div>
-				<div style="font-family:sans-serif; font-size:11px; color:rgba(255,215,0,0.6); letter-spacing:3px; text-transform:uppercase;">Ear Training &amp; Utilità</div>
-			</div>
-		</a>
+		<div class="music-menu-container">
+			<div class="menu-title-music">Ear Training Musicale</div>
+			<a href="musica/intervalli/" class="music-btn" id="btn-intervalli">🎵 Intervalli</a>
+			<a href="musica/accordi/" class="music-btn" id="btn-accordi">🎹 Accordi</a>
+			<a href="musica/scale/" class="music-btn" id="btn-scale">🎶 Scale</a>
+			<a href="metronome.html" class="music-btn" id="btn-metronomo">⏱️ Metronomo</a>
+		</div>
 
 		<div id="footer"
 			style="position: absolute; bottom: 20px; left: 0; width: 100%; text-align: center; color: white; font-family: sans-serif; font-size: 14px; text-shadow: 1px 1px 2px black;">
@@ -97,11 +90,7 @@
 			</div>
 		</div>
 
-		<a href="info.html" style="position: absolute; bottom: 30px; left: 150px; z-index: 1000;">
-			<div id="icoinfo"
-				style="width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,0.85); color: #2c3e50; font-family: serif; font-size: 28px; font-weight: bold; text-align: center; line-height: 40px; cursor: pointer; text-shadow: none; border: 2px solid #ffd700;">
-				i</div>
-		</a>
+		<a href="info.html" class="info-btn" id="btn-info"><span class="info-icon">ⓘ</span> Info</a>
 
 		<!-- Amazon Banner (Bottom Right) -->
 		<a href="https://www.amazon.it/deals?&linkCode=ll2&tag=lucianomane0f-21&linkId=d542031952a47db9f26b8cc6c38762cb&ref_=as_li_ss_tl" target="_blank" rel="sponsored noopener"

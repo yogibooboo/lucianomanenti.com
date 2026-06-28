@@ -632,12 +632,12 @@ h6 {
 	bottom: 8px;
 	right: 15px;
 	display: flex;
-	gap: 6px;
+	gap: 5px;
 	z-index: 200;
 }
 
 .pulsante-link {
-width: 80px;
+width: 74px;
 height: 30px;
 border: 2px solid #888;
 border-radius: 8px;
@@ -652,10 +652,50 @@ line-height: 30px;
 text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
 text-decoration: none;
 display: block;
+position: relative;
 }
 
 .pulsante-link:hover {
 transform: scale(1.1);
+}
+
+/* Badge NEW stile homepage per bottoni piccoli */
+.new-badge {
+	position: absolute;
+	top: -6px;
+	right: -6px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	background: linear-gradient(135deg, #ff3b30, #ff9500);
+	color: #ffffff;
+	font-family: Arial, sans-serif;
+	font-size: 8px;
+	font-weight: bold;
+	height: 13px;
+	padding: 0 5px;
+	border-radius: 8px;
+	line-height: 1;
+	text-shadow: none;
+	box-shadow: 0 0 5px rgba(255, 60, 0, 0.6);
+	animation: pulse-glow-badge 1.5s infinite ease-in-out;
+	z-index: 1000;
+	box-sizing: border-box;
+}
+
+@keyframes pulse-glow-badge {
+	0% {
+		transform: scale(1);
+		box-shadow: 0 0 4px rgba(255, 60, 0, 0.5);
+	}
+	50% {
+		transform: scale(1.08);
+		box-shadow: 0 0 10px rgba(255, 60, 0, 0.8);
+	}
+	100% {
+		transform: scale(1);
+		box-shadow: 0 0 4px rgba(255, 60, 0, 0.5);
+	}
 }
 
 .pulsante-scala40 { background-color: #3a5a3a; }
@@ -665,4 +705,5 @@ transform: scale(1.1);
 .pulsante-burraco { background-color: #7a2a7a; }
 .pulsante-rummy { background-color: #2a7a7a; }
 .pulsante-klondike { background-color: #7a5a2a; }
+.pulsante-scopa { background-color: #8a3a1a; }
 

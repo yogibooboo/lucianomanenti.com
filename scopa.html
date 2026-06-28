@@ -23,7 +23,7 @@
     <meta http-Equiv="Pragma" Content="no-cache">
     <meta http-Equiv="Expires" Content="0">
 
-    <link rel="stylesheet" href="scopa.css?v=1.6" />
+    <link rel="stylesheet" href="scopa.css?v=1.8" />
 
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
@@ -305,6 +305,13 @@
             <a href="aboutme.html" target="_blank" id="btn-scrivetemi-scopa" class="pulsante-link-bottom">Scrivetemi</a>
             <a href="regole-scopa.html" target="_blank" id="btn-regole-scopa" class="pulsante-link-bottom">Regole</a>
 
+            <!-- Link Legali (Privacy e Cookie) come in Burraco -->
+            <div class="legal-links-scopa">
+                <a href="privacy.html" target="_blank" id="btn-privacy-scopa">Privacy Policy</a>
+                <span class="sep">•</span>
+                <a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)" id="btn-cookie-scopa">Gestisci Cookie</a>
+            </div>
+
             <div class="link-giochi-scopa">
                 <a href="rummy.html" class="pulsante-link-scopa">Gin Rummy</a>
                 <a href="burraco.html" class="pulsante-link-scopa">Burraco</a>
@@ -325,6 +332,24 @@
     <script src="game-layout.js?v=4.6"></script>
     <!-- Logica di Scopa -->
     <script src="scopa.js?v=1.4"></script>
+    <script>
+        (function () {
+            var nascosto = false;
+            var observer = new MutationObserver(function () {
+                if (nascosto) return;
+                var divs = document.querySelectorAll('body > div');
+                for (var i = 0; i < divs.length; i++) {
+                    if (divs[i].shadowRoot && !divs[i].className && (divs[i].getAttribute('style') || '').length > 5000) {
+                        divs[i].style.setProperty('display', 'none', 'important');
+                        nascosto = true;
+                        observer.disconnect();
+                        return;
+                    }
+                }
+            });
+            observer.observe(document.body, { childList: true });
+        })();
+    </script>
 </body>
 
 </html>
