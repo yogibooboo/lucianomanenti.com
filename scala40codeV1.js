@@ -1270,14 +1270,38 @@ var scala = {
 				try {
 					var modal = document.getElementById(id);
 					if (modal) {
+						// Imposta dimensioni e stile integrato stile Scopa (700px di larghezza, 300px altezza)
+						modal.style.width = '700px';
+						modal.style.height = '300px';
+						modal.style.left = '150px'; // Centrato su campogioco (1000px)
+						modal.style.backgroundColor = '#1a4224';
+						modal.style.boxSizing = 'border-box';
+						modal.style.border = '4px solid #b8860b';
+						modal.style.borderRadius = '12px';
+						modal.style.boxShadow = '0 10px 30px rgba(0,0,0,0.6)';
+						
+						// Sovrapponi l'immagine di vittoria/sconfitta stretchata per coprire l'intera modale
+						var sfondovittoria = '';
+						if (id === 'haivinto') sfondovittoria = 'url(images/scala40/haivinto.jpg)';
+						else if (id === 'haiperso') sfondovittoria = 'url(images/scala40/haiperso.jpg)';
+						else if (id === 'haivintotorneo') sfondovittoria = 'url(images/scala40/haivintotorneo.jpg)';
+						else if (id === 'haipersotorneo') sfondovittoria = 'url(images/scala40/haipersotorneo.jpg)';
+						
+						if (sfondovittoria) {
+							modal.style.backgroundImage = sfondovittoria;
+							modal.style.backgroundRepeat = 'no-repeat';
+							modal.style.backgroundPosition = 'center center';
+							modal.style.backgroundSize = '100% 100%';
+						}
+
 						var giocatore = document.getElementById('giocatore');
 						var targetTop;
 						if (giocatore) {
-							targetTop = giocatore.offsetTop - (modal.offsetHeight || 280) - 5;
+							targetTop = giocatore.offsetTop - (modal.offsetHeight || 300) - 5;
 						} else {
 							var campogioco = document.getElementById('campogioco');
 							var campogiocoHeight = campogioco ? (campogioco.offsetHeight || 750) : 750;
-							targetTop = campogiocoHeight - (modal.offsetHeight || 280) - 5;
+							targetTop = campogiocoHeight - (modal.offsetHeight || 300) - 5;
 						}
 						modal.style.top = targetTop + 'px';
 						modal.style.overflow = 'visible';
@@ -1383,7 +1407,7 @@ var scala = {
 							btnVedi.textContent = btnText;
 						}
 
-						// 2. Riposiziona i pulsanti presenti
+						// 2. Riposiziona i pulsanti presenti (ottimizzati per larghezza 700px)
 						var buttons = modal.querySelectorAll('button');
 						var otherButtons = [];
 						for (var i = 0; i < buttons.length; i++) {
@@ -1392,50 +1416,70 @@ var scala = {
 							}
 						}
 						if (otherButtons.length === 1) {
-							otherButtons[0].style.left = '130px';
-							btnVedi.style.left = '270px';
+							// 2 bottoni totali: otherButtons[0] (NUOVA PARTITA) e btnVedi (VEDI CARTE)
+							// Centrati: (700 - (140 * 2 + 40)) / 2 = 190px
+							otherButtons[0].style.left = '190px';
+							otherButtons[0].style.width = '140px';
+							otherButtons[0].style.top = '245px';
+							otherButtons[0].style.position = 'absolute';
+							
+							btnVedi.style.left = '370px';
+							btnVedi.style.width = '140px';
+							btnVedi.style.top = '245px';
+							btnVedi.style.position = 'absolute';
 						} else if (otherButtons.length === 2) {
-							// Left: VEDI CARTE (btnVedi)
-							btnVedi.style.left = '20px';
+							// 3 bottoni totali: btnVedi, otherButtons[0] (NUOVA PARTITA), otherButtons[1] (PERCHÉ LA PUBBLICITÀ?)
+							// Centrati: margini a 60px, gap 80px
+							btnVedi.style.left = '60px';
 							btnVedi.style.width = '140px';
 							btnVedi.style.fontSize = '11px';
+							btnVedi.style.top = '245px';
+							btnVedi.style.position = 'absolute';
 
-							// Center: NUOVA PARTITA (otherButtons[0])
-							otherButtons[0].style.left = '180px';
+							otherButtons[0].style.left = '280px';
 							otherButtons[0].style.width = '140px';
 							otherButtons[0].style.fontSize = '';
+							otherButtons[0].style.top = '245px';
+							otherButtons[0].style.position = 'absolute';
 
-							// Right: PERCHÉ LA PUBBLICITÀ? (otherButtons[1])
-							otherButtons[1].style.left = '340px';
+							otherButtons[1].style.left = '500px';
 							otherButtons[1].style.width = '140px';
 							otherButtons[1].style.fontSize = '11px';
+							otherButtons[1].style.top = '245px';
+							otherButtons[1].style.position = 'absolute';
 						} else if (otherButtons.length === 3) {
-							// Left: VEDI CARTE (btnVedi)
-							btnVedi.style.left = '20px';
-							btnVedi.style.width = '105px';
+							// 4 bottoni totali: btnVedi, otherButtons[0] (NUOVO TORNEO), otherButtons[1] (GIOCA ANCORA), otherButtons[2] (PERCHÉ LA PUBBLICITÀ?)
+							// Centrati: margini a 30px, gap 40px, larghezza bottoni 130px
+							btnVedi.style.left = '30px';
+							btnVedi.style.width = '130px';
 							btnVedi.style.fontSize = '11px';
+							btnVedi.style.top = '245px';
+							btnVedi.style.position = 'absolute';
 
-							// Center-Left: NUOVO TORNEO (otherButtons[0])
-							otherButtons[0].style.left = '135px';
-							otherButtons[0].style.width = '105px';
+							otherButtons[0].style.left = '200px';
+							otherButtons[0].style.width = '130px';
 							otherButtons[0].style.fontSize = '11px';
+							otherButtons[0].style.top = '245px';
+							otherButtons[0].style.position = 'absolute';
 
-							// Center-Right: GIOCA ANCORA (otherButtons[1])
-							otherButtons[1].style.left = '250px';
-							otherButtons[1].style.width = '105px';
+							otherButtons[1].style.left = '370px';
+							otherButtons[1].style.width = '130px';
 							otherButtons[1].style.fontSize = '11px';
+							otherButtons[1].style.top = '245px';
+							otherButtons[1].style.position = 'absolute';
 
-							// Right: PERCHÉ LA PUBBLICITÀ? (otherButtons[2])
-							otherButtons[2].style.left = '365px';
-							otherButtons[2].style.width = '115px';
+							otherButtons[2].style.left = '540px';
+							otherButtons[2].style.width = '130px';
 							otherButtons[2].style.fontSize = '10px';
+							otherButtons[2].style.top = '245px';
+							otherButtons[2].style.position = 'absolute';
 						}
 
-						// 3. Chiama la funzione generica dei banner senza alterare il modale o i bottoni
+						// 3. Chiama la funzione generica dei banner perfettamente centrata (leftOffset: 0)
 						setupAmazonFinishBanner(id, {
 							applyModalTop: false,
 							targetTop: targetTop,
-							leftOffset: -200,
+							leftOffset: 0,
 							bannerHeight: targetTop - 15,
 							bannerTopOffset: targetTop - 5
 						});

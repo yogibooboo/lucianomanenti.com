@@ -570,18 +570,8 @@ var scala = {
 
 	},
 
-	mazzoclick: function (ev) {
+	pescaDalMazzo: function() {
 		var carta, pos;
-		scala.deselect();
-		scala.dirty = true;
-		if (scala.mazzo.carte.length == 0) return;
-		for (var i = 0; i < 10; i++) {
-			if (scala.stecche[i].length == 0) {  // non ci devono essere stecche vuote
-				scala.mydialog("steccavuota");
-				return
-			}
-		}
-
 		scala.moves++;
 		scala.pushstato();
 		for (var i = 0; i < 10; i++) {
@@ -591,8 +581,32 @@ var scala = {
 		}
 		scala.calcolacompresse();
 		suona(pesca);
+	},
 
-
+	mazzoclick: function (ev) {
+		scala.deselect();
+		scala.dirty = true;
+		if (scala.mazzo.carte.length == 0) return;
+		
+		var haColonneVuote = false;
+		for (var i = 0; i < 10; i++) {
+			if (scala.stecche[i].length == 0) {
+				haColonneVuote = true;
+				break;
+			}
+		}
+		
+		if (haColonneVuote) {
+			scala.mydialog("steccavuota", function() {
+				scala.hidedialog();
+				scala.pescaDalMazzo();
+			}, function() {
+				scala.hidedialog();
+			});
+			return;
+		}
+		
+		scala.pescaDalMazzo();
 	},
 
 	//se move=true msposta la posizione posizione di riferimento in base ai delta di movimento
@@ -884,19 +898,45 @@ var scala = {
 
 		}
 		var maxj = 6;
+		var dealIndex = 0;
+		var startTime = performance.now() + 200; // Inizia la distribuzione dopo 200ms
 		for (i = 0; i < 10; i++) {
 			for (var j = 0; j < maxj; j++) {
 				carta = this.stock[ncarta];
 				this.stecche[i][j] = carta;
 				carta.contenitore = scala.stecche[i];
-				carta.posrefx = scala.steccaoffsetx + scala.steccastepx * i;
-				carta.posrefy = scala.steccaoffsety + scala.steccastepy * j;
-				ncarta++
+				
+				// Salva destinazione
+				var destX = scala.steccaoffsetx + scala.steccastepx * i;
+				var destY = scala.steccaoffsety + scala.steccastepy * j;
+				
+				// Imposta stato di animazione partendo dal mazzo (802, 620)
+				carta.posrefx = 802;
+				carta.posrefy = 620;
+				carta.posdestx = destX;
+				carta.posdesty = destY;
+				carta.moving = true;
+				carta.timemove = 400;
+				carta.startmove = startTime + (dealIndex * 83); // Una carta ogni 83ms
+				
+				dealIndex++;
+				ncarta++;
 			}
-			this.stecche[i][j - 1].faceUp = true;
+			// Gira la carta finale solo dopo che è atterrata
+			(function(c, delayTime) {
+				c.faceUp = false;
+				setTimeout(function() {
+					c.faceUp = true;
+					scala.dirty = true;
+				}, delayTime);
+			})(this.stecche[i][j - 1], Math.max(0, (startTime + (dealIndex - 1) * 83 + 400) - performance.now()));
+
 			if (i == 3) maxj = 5;
 		}
 		scala.calcolacompresse();
+
+		// Suono di distribuzione unico per l'intera smazzata
+		suona(distribuisci);
 
 	},
 
@@ -1127,6 +1167,10 @@ var scala = {
 		$("#schermo").hide();
 		this.fmodale = false;
 		scala.dirty = true;
+		
+		// Nascondi anche il pannello minimale di fine partita
+		var minPanel = document.getElementById('spider-minimal-win-panel');
+		if (minPanel) minPanel.style.display = 'none';
 	},
 
 
@@ -1145,101 +1189,90 @@ var scala = {
 				try {
 					var modal = document.getElementById(id);
 					if (modal) {
+						// Imposta dimensioni e stile integrato stile Scopa (700px di larghezza, 300px altezza)
+						modal.style.width = '700px';
+						modal.style.height = '300px';
+						modal.style.left = '162px'; // Centrato su campogioco (1024px)
+						modal.style.backgroundColor = '#1a4224';
+						modal.style.boxSizing = 'border-box';
+						modal.style.border = '4px solid #b8860b';
+						modal.style.borderRadius = '12px';
+						modal.style.boxShadow = '0 10px 30px rgba(0,0,0,0.6)';
+						
+						// Sovrapponi l'immagine di vittoria/sconfitta stretchata per coprire l'intera modale
+						var sfondovittoria = '';
+						if (id === 'haivinto') sfondovittoria = 'url(images/scala40/haivinto.jpg)';
+						else if (id === 'haiperso') sfondovittoria = 'url(images/scala40/haiperso.jpg)';
+						else if (id === 'haivintotorneo') sfondovittoria = 'url(images/scala40/haivintotorneo.jpg)';
+						else if (id === 'haipersotorneo') sfondovittoria = 'url(images/scala40/haipersotorneo.jpg)';
+						
+						if (sfondovittoria) {
+							modal.style.backgroundImage = sfondovittoria;
+							modal.style.backgroundRepeat = 'no-repeat';
+							modal.style.backgroundPosition = 'center center';
+							modal.style.backgroundSize = '100% 100%';
+						}
+
 						var giocatore = document.getElementById('giocatore');
 						var targetTop;
 						if (giocatore) {
-							targetTop = giocatore.offsetTop - (modal.offsetHeight || 280) - 5;
+							targetTop = giocatore.offsetTop - (modal.offsetHeight || 300) - 5;
 						} else {
-							var campogioco = document.getElementById('campogioco');
-							var campogiocoHeight = campogioco ? (campogioco.offsetHeight || 750) : 750;
-							targetTop = campogiocoHeight - (modal.offsetHeight || 280) - 5;
+							// Imposta targetTop fisso a 255 (come in Scala 40) per garantire omogeneità di dimensioni e posizionamento
+							targetTop = 255;
 						}
 						modal.style.top = targetTop + 'px';
 						modal.style.overflow = 'visible';
 
-						var isEnglish = (window.currentLang === 'en');
-						var btnText = isEnglish ? 'VIEW CARDS' : 'VEDI CARTE';
+						// Rimuovi vecchio pulsante "VEDI CARTE" se presente da vecchi test
+						var oldBtnVedi = modal.querySelector('.btn-vedi-carte');
+						if (oldBtnVedi) oldBtnVedi.remove();
 
-						// 1. Crea il pulsante "VEDI CARTE"
-						var btnVedi = modal.querySelector('.btn-vedi-carte');
-						if (!btnVedi) {
-							btnVedi = document.createElement('button');
-							btnVedi.className = 'btn-vedi-carte';
-							btnVedi.type = 'button';
-							btnVedi.textContent = btnText;
-							btnVedi.style.position = 'absolute';
-							btnVedi.style.cursor = 'pointer';
-
-							var isToggled = false;
-							var originalBg = '';
-							var originalBorder = '';
-							var originalBoxShadow = '';
-
-							btnVedi.onclick = function (e) {
-								if (e) e.stopPropagation();
-								isToggled = !isToggled;
-								var otherChildren = modal.children;
-								var schermo = document.getElementById('schermo');
-
-								if (isToggled) {
-									originalBg = modal.style.backgroundImage || getComputedStyle(modal).backgroundImage;
-									originalBorder = modal.style.border || getComputedStyle(modal).border;
-									originalBoxShadow = modal.style.boxShadow || getComputedStyle(modal).boxShadow;
-
-									if (schermo) schermo.style.display = 'none';
-									modal.style.backgroundImage = 'none';
-									modal.style.border = 'none';
-									modal.style.boxShadow = 'none';
-									modal.style.backgroundColor = 'transparent';
-
-									for (var i = 0; i < otherChildren.length; i++) {
-										var child = otherChildren[i];
-										if (child !== btnVedi) {
-											child.style.visibility = 'hidden';
-										}
-									}
-									btnVedi.textContent = isEnglish ? 'BACK' : 'INDIETRO';
-								} else {
-									if (schermo) schermo.style.display = 'block';
-									modal.style.backgroundImage = originalBg;
-									modal.style.border = originalBorder;
-									modal.style.boxShadow = originalBoxShadow;
-									modal.style.backgroundColor = '';
-
-									for (var i = 0; i < otherChildren.length; i++) {
-										var child = otherChildren[i];
-										child.style.visibility = 'visible';
-									}
-									btnVedi.textContent = isEnglish ? 'VIEW CARDS' : 'VEDI CARTE';
-								}
-							};
-							modal.appendChild(btnVedi);
-						} else {
-							btnVedi.textContent = btnText;
-						}
-
-						// 2. Riposiziona i pulsanti presenti
+						// 1. Riposiziona i pulsanti presenti (ottimizzati per larghezza 700px, senza VEDI CARTE)
 						var buttons = modal.querySelectorAll('button');
-						var otherButtons = [];
-						for (var i = 0; i < buttons.length; i++) {
-							if (buttons[i] !== btnVedi) {
-								otherButtons.push(buttons[i]);
-							}
-						}
-						if (otherButtons.length === 1) {
-							otherButtons[0].style.left = '130px';
-							btnVedi.style.left = '270px';
-						} else if (otherButtons.length === 2) {
-							otherButtons[0].style.left = '60px';
-							otherButtons[1].style.left = '200px';
-							btnVedi.style.left = '340px';
+						if (buttons.length === 1) {
+							// 1 bottone totale (es. NUOVA PARTITA)
+							// Centrato: (700 - 140) / 2 = 280px
+							buttons[0].style.left = '280px';
+							buttons[0].style.width = '140px';
+							buttons[0].style.top = '245px';
+							buttons[0].style.position = 'absolute';
+						} else if (buttons.length === 2) {
+							// 2 bottoni totali
+							// Centrati: margini a 180px, gap 60px
+							buttons[0].style.left = '180px';
+							buttons[0].style.width = '140px';
+							buttons[0].style.top = '245px';
+							buttons[0].style.position = 'absolute';
+
+							buttons[1].style.left = '380px';
+							buttons[1].style.width = '140px';
+							buttons[1].style.top = '245px';
+							buttons[1].style.position = 'absolute';
+						} else if (buttons.length === 3) {
+							// 3 bottoni totali
+							// Centrati: margini a 105px, gap 50px, larghezza bottoni 130px
+							buttons[0].style.left = '105px';
+							buttons[0].style.width = '130px';
+							buttons[0].style.top = '245px';
+							buttons[0].style.position = 'absolute';
+
+							buttons[1].style.left = '285px';
+							buttons[1].style.width = '130px';
+							buttons[1].style.top = '245px';
+							buttons[1].style.position = 'absolute';
+
+							buttons[2].style.left = '465px';
+							buttons[2].style.width = '130px';
+							buttons[2].style.top = '245px';
+							buttons[2].style.position = 'absolute';
 						}
 
-						// 3. Chiama la funzione generica dei banner senza alterare il modale o i bottoni
+						// 2. Chiama la funzione generica dei banner perfettamente centrata (leftOffset: 0)
 						setupAmazonFinishBanner(id, {
 							applyModalTop: false,
 							targetTop: targetTop,
-							leftOffset: -200,
+							leftOffset: 0,
 							bannerHeight: targetTop - 15,
 							bannerTopOffset: targetTop - 5
 						});
@@ -1374,6 +1407,17 @@ var scala = {
 
 $(document).ready(function () {
 	function initSpider() {
+		// Se l'overlay dell'interstitial è presente a schermo, aspetta la sua chiusura prima di avviare il gioco ed il relativo audio
+		if (document.getElementById('interstitial-overlay')) {
+			var checkOverlay = setInterval(function() {
+				if (!document.getElementById('interstitial-overlay')) {
+					clearInterval(checkOverlay);
+					scala.start();
+					scala.collegaeventi();
+				}
+			}, 100);
+			return;
+		}
 		scala.start();
 		scala.collegaeventi();
 	}

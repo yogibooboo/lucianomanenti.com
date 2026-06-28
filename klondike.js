@@ -192,8 +192,35 @@ function doUndo() {
 }
 
 // --- Init ---
+// --- Init ---
+var isInitialDealing = false;
+function initialDealStep(ts) {
+    if (!isInitialDealing) return;
+    var now = performance.now();
+    var stillMoving = false;
+    for (var col = 0; col < 7; col++) {
+        for (var ci = 0; ci < tableau[col].length; ci++) {
+            var c = tableau[col][ci];
+            if (c.moving) {
+                if (now < c.t0 + c.dur) {
+                    stillMoving = true;
+                } else {
+                    c.moving = false;
+                }
+            }
+        }
+    }
+    renderAll();
+    if (stillMoving) {
+        requestAnimationFrame(initialDealStep);
+    } else {
+        isInitialDealing = false;
+    }
+}
+
 function initGame() {
     anim = null; autoCompleting = false; acDrawsSincePlay = 0;
+    isInitialDealing = false; // Interrompe eventuale smazzata precedente in corso
     var deck = [];
     for (var si = 0; si < SEMI.length; si++)
         for (var n = 1; n <= 13; n++) deck.push(new Card(n, SEMI[si]));
@@ -201,20 +228,67 @@ function initGame() {
         var j = Math.floor(Math.random() * (i + 1));
         var t = deck[i]; deck[i] = deck[j]; deck[j] = t;
     }
+    
+    // Inizializza colonne vuote del tableau
     tableau = [];
     for (var col = 0; col < 7; col++) {
         tableau.push([]);
-        for (var row = 0; row <= col; row++) {
-            var c = deck.pop(); c.faceUp = (row === col);
+    }
+    
+    // Distribuzione con animazione a cascata
+    var dealIndex = 0;
+    var startTime = performance.now() + 200; // inizia la distribuzione dopo 200ms
+    
+    for (var row = 0; row < 7; row++) {
+        for (var col = row; col < 7; col++) {
+            var c = deck.pop();
+            c.faceUp = false; // Coperta durante il volo
+            
+            c.moving = true;
+            c.sx = STOCK_X;
+            c.sy = STOCK_Y;
+            c.tx = COL_X[col];
+            c.ty = TAB_Y + row * FD_PITCH;
+            c.t0 = startTime + (dealIndex * 83); // una carta ogni 83ms (sincronizzato a 4-5 secondi totali per 28 carte)
+            c.dur = 400; // durata volo 400ms
+            
             tableau[col].push(c);
+            
+            // Gira la carta finale all'atterraggio
+            var isFinalCard = (row === col);
+            if (isFinalCard) {
+                (function(card, delay) {
+                    setTimeout(function() {
+                        card.faceUp = true;
+                        renderAll();
+                    }, delay);
+                })(c, Math.max(0, (c.t0 + c.dur) - performance.now()));
+            }
+            
+            dealIndex++;
         }
     }
+    
     stock = deck; waste = []; foundations = [[], [], [], []];
     moves = 0; seconds = 0; gameWon = false; dragging = null; dragStart = null; undoStack = [];
     cachedRecords = loadRecords();
     if (timerInterval) clearInterval(timerInterval);
     timerInterval = setInterval(function() { if (!gameWon) { seconds++; renderAll(); } }, 1000);
-    renderAll();
+    
+    // Avvia l'animazione di smazzata
+    isInitialDealing = true;
+    requestAnimationFrame(initialDealStep);
+    
+    // Suono di smazzata cadenzato carta per carta
+    var soundCount = 0;
+    var soundInterval = setInterval(function() {
+        if (soundCount < 15 && isInitialDealing) {
+            playSound('ordina');
+            soundCount++;
+        } else {
+            clearInterval(soundInterval);
+        }
+    }, 150);
 }
 
 // --- Drawing ---
@@ -312,8 +386,26 @@ function renderAll() {
         for (var ci = 0; ci < tableau[col].length; ci++) {
             if (ci >= tSkipFrom) continue;
             // also skip dragged cards (solo se il drag è davvero iniziato)
-            if (dragging && dragging.started && dragging.source === 'tab' && dragging.tabCol === col && ci >= dragging.cardIdx) continue;
-            drawCard(COL_X[col], getTabCardY(col, ci), tableau[col][ci], false);
+            var c = tableau[col][ci];
+            var finalX = COL_X[col];
+            var finalY = getTabCardY(col, ci);
+            if (c.moving) {
+                var now = performance.now();
+                if (now < c.t0) {
+                    drawCard(c.sx, c.sy, c, false);
+                } else if (now < c.t0 + c.dur) {
+                    var pct = (now - c.t0) / c.dur;
+                    var ease = 1 - Math.pow(1 - pct, 3);
+                    var cx = c.sx + (c.tx - c.sx) * ease;
+                    var cy = c.sy + (c.ty - c.sy) * ease;
+                    drawCard(cx, cy, c, false);
+                } else {
+                    c.moving = false;
+                    drawCard(finalX, finalY, c, false);
+                }
+            } else {
+                drawCard(finalX, finalY, c, false);
+            }
             drawn = true;
         }
         // If entire column is skipped (flying) and nothing drawn, show empty slot
@@ -984,6 +1076,17 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function initKlondike() {
+    // Se l'overlay dell'interstitial è presente a schermo, aspetta la sua chiusura prima di avviare il gioco ed il relativo audio
+    if (document.getElementById('interstitial-overlay')) {
+        var checkOverlay = setInterval(function() {
+            if (!document.getElementById('interstitial-overlay')) {
+                clearInterval(checkOverlay);
+                initKlondike();
+            }
+        }, 100);
+        return;
+    }
+
     canvas = document.getElementById('canvasgioco');
     ctx = canvas.getContext('2d');
 

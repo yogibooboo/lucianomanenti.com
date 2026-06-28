@@ -1517,9 +1517,12 @@ function creaNotificaSettebello(chi) {
 }
 
 function creaNotificaQuadri(chi, quanti, silenziato) {
+    // Disattivato l'audio ding per la cattura delle quadri (mantenendo solo la notifica visiva)
+    /*
     if (!silenziato) {
         riproduciAudio("sounds/scala40/ding.mp3");
     }
+    */
     const container = document.getElementById('campogioco');
     
     // Wrapper per posizionarlo grossomodo al centro dello schermo (orizzontalmente 50%)
