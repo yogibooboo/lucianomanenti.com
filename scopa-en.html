@@ -23,7 +23,7 @@
     <meta http-Equiv="Pragma" Content="no-cache">
     <meta http-Equiv="Expires" Content="0">
 
-    <link rel="stylesheet" href="scopa.css?v=1.8" />
+    <link rel="stylesheet" href="scopa.css?v=2.3" />
 
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
@@ -72,7 +72,7 @@
             <!-- Audio switch e selettore lingua (Bottoni di controllo in alto a destra) -->
             <div class="lang-switch-game">
                 <button id="btn-undo" class="pulsante-link-scopa" aria-label="Undo"></button>
-                <button id="btn-mazzo" class="pulsante-link-scopa" style="height: 32px; line-height: 32px; background: rgba(0,0,0,0.4); border: 1px solid #6b9b7a; color: white; border-radius: 4px; padding: 0 10px; cursor: pointer; font-size: 12px; font-weight: bold; transition: all 0.2s;">Use Neapolitan Cards</button>
+                <button id="btn-mazzo" class="pulsante-link-scopa" style="height: 32px; line-height: 32px; background: rgba(0,0,0,0.4); border: 1px solid #6b9b7a; color: white; border-radius: 4px; padding: 0 10px; cursor: pointer; font-size: 12px; font-weight: bold; transition: all 0.2s;">Deck: French</button>
                 <button id="btn-scopri" class="pulsante-link-scopa" style="height: 32px; line-height: 32px; background: rgba(0,0,0,0.4); border: 1px solid #6b9b7a; color: white; border-radius: 4px; padding: 0 10px; cursor: pointer; font-size: 12px; font-weight: bold; transition: all 0.2s;">Reveal Cards</button>
                 <button id="btn-nuova-partita" class="pulsante-link-scopa" style="height: 32px; line-height: 32px; background: rgba(0,0,0,0.4); border: 1px solid #6b9b7a; color: white; border-radius: 4px; padding: 0 10px; cursor: pointer; font-size: 12px; font-weight: bold; transition: all 0.2s;">New Game</button>
             </div>
@@ -286,12 +286,12 @@
             <!-- 3. Modali Vittoria / Sconfitta Finale (Stesso stile Klondike/Burraco) -->
             <div id="haivinto" class="modale-fine-sfondo" style="background-image:url(images/scala40/haivinto.jpg)">
                 <div class="confirm-message">CONGRATULATIONS!<br>You won the game!</div>
-                <button onclick="mostraInizioPartita()" class="btn-continua" style="width: 280px; height: 44px; font-size: 16px;">NEW GAME</button>
+                <button onclick="location.reload()" class="btn-continua" style="width: 280px; height: 44px; font-size: 16px;">NEW GAME</button>
             </div>
 
             <div id="haiperso" class="modale-fine-sfondo" style="background-image:url(images/scala40/haiperso.jpg)">
                 <div class="confirm-message">GAME OVER<br>The computer won.</div>
-                <button onclick="mostraInizioPartita()" class="btn-continua" style="width: 280px; height: 44px; font-size: 16px; background-color: #ffd700;">TRY AGAIN</button>
+                <button onclick="location.reload()" class="btn-continua" style="width: 280px; height: 44px; font-size: 16px; background-color: #ffd700;">TRY AGAIN</button>
             </div>
 
             <!-- 4. Modale di Conferma Abbandono Partita (Stile Klondike) -->
@@ -299,6 +299,19 @@
                 <div class="confirm-message" style="margin-top: 40px; margin-bottom: 40px; line-height: 1.5; font-size: 24px;">Do you really want to end the current game?</div>
                 <button id="btn-no-continua" class="btn-continua btn-no-continua" style="width: 280px; height: 44px; font-size: 16px; margin: 0 auto 10px auto;">NO, CONTINUE</button>
                 <button id="btn-si-termina" class="btn-continua btn-si-termina" style="width: 280px; height: 44px; font-size: 16px; background-color: #cc0c39; color: white; border-color: #990022; margin: 0 auto;">YES, END GAME</button>
+            </div>
+
+            <!-- 5. Card Deck Selection Modal -->
+            <div id="modale-mazzo" class="form-scopa" style="display: none; flex-direction: column; justify-content: center; align-items: center; padding: 30px 25px;">
+                <div class="form-scopa-title" id="titolo-modale-mazzo">Select Card Deck</div>
+                <div class="opzione-gruppo" style="margin-bottom: 20px; text-align: center; width: 100%;">
+                    <div style="display: flex; flex-direction: column; gap: 12px; align-items: center; width: 100%;">
+                        <button id="btn-mazzo-francesi" onclick="selezionaMazzo('francesi')" class="btn-opzione-sel" style="width: 100%; max-width: 250px;">FRENCH CARDS</button>
+                        <button id="btn-mazzo-napoletane" onclick="selezionaMazzo('napoletane')" class="btn-opzione-sel" style="width: 100%; max-width: 250px;">NEAPOLITAN CARDS</button>
+                        <button id="btn-mazzo-bresciane" onclick="selezionaMazzo('bresciane')" class="btn-opzione-sel" style="width: 100%; max-width: 250px;">BRESCIAN CARDS</button>
+                    </div>
+                </div>
+                <button onclick="chiudiModaleMazzo()" class="btn-continua" id="btn-chiudi-mazzo" style="width: 100%; max-width: 150px; margin-top: 10px;">CLOSE</button>
             </div>
 
             <!-- Link di navigazione ed utilità a fondo pagina -->
@@ -331,7 +344,7 @@
     <!-- Layout engine per ridimensionare la finestra del gioco -->
     <script src="game-layout.js?v=4.6"></script>
     <!-- Logica di Scopa -->
-    <script src="scopa.js?v=1.5"></script>
+    <script src="scopa.js?v=2.3"></script>
     <script>
         (function () {
             var nascosto = false;

@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Generatore Sprite Sheet Carte Bresciane</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #1a1a2e;
+            color: #ffffff;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            max-width: 1000px;
+            width: 100%;
+            background: #162447;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+            text-align: center;
+        }
+        h1 { color: #ffd700; margin-top: 0; }
+        .status {
+            font-size: 16px;
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+            white-space: pre-wrap;
+            text-align: left;
+            max-height: 250px;
+            overflow-y: auto;
+            border: 1px solid #1f4068;
+            font-family: monospace;
+        }
+        button {
+            background: linear-gradient(180deg, #ffd700 0%, #b8860b 100%);
+            border: 2px solid #ffd700;
+            color: #1a1a2e;
+            font-size: 18px;
+            font-weight: bold;
+            padding: 12px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            transition: transform 0.2s, filter 0.2s;
+            margin: 10px;
+        }
+        button:hover { filter: brightness(1.1); transform: scale(1.03); }
+        .preview-container {
+            margin-top: 30px;
+            overflow-x: auto;
+            border: 2px solid #1f4068;
+            border-radius: 8px;
+            padding: 15px;
+            background: #121b2d;
+        }
+        canvas {
+            display: block;
+            margin: 0 auto;
+            background: #0f172a;
+            border: 1px dashed #334155;
+        }
+        #svg-container {
+            display: block;
+            position: absolute;
+            left: -99999px;
+            top: -99999px;
+            visibility: hidden;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Generatore Sprite Sheet Carte Bresciane</h1>
+    <p>Questo strumento carica l'SVG, esegue il rendering completo ad alta definizione in memoria e ritaglia ciascuna carta centrandola con trasparenza in celle standard da <strong>284x384px (HD 4x)</strong>.</p>
+    
+    <div id="status" class="status">In attesa del caricamento dell'SVG...</div>
+    
+    <button id="btn-start" onclick="generate()">Avvia Generazione e Scarica PNG</button>
+    
+    <div class="preview-container">
+        <h3 style="color: #ffd700; margin-top: 0;">Anteprima dello Sprite Sheet (4828x1536px - 17 colonne da 284px)</h3>
+        <canvas id="canvas" width="4828" height="1536"></canvas>
+    </div>
+</div>
+
+<!-- Contenitore nel DOM per consentire il calcolo dei BBox e dei CTM tramite il browser -->
+<div id="svg-container"></div>
+
+<script>
+    const statusEl = document.getElementById('status');
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    function log(msg) {
+        statusEl.textContent += msg + "\n";
+        statusEl.scrollTop = statusEl.scrollHeight;
+        console.log(msg);
+    }
+
+    async function generate() {
+        document.getElementById('btn-start').disabled = true;
+        statusEl.textContent = "";
+        log("1. Caricamento del file SVG...");
+        
+        try {
+            const response = await fetch('../doc/Carte_bresciane_al_completo.svg');
+            if (!response.ok) throw new Error("Impossibile caricare il file doc/Carte_bresciane_al_completo.svg");
+            const svgText = await response.text();
+            log("2. SVG caricato. Inserimento nel DOM per il calcolo delle coordinate...");
+            
+            // Inseriamo l'SVG nel DOM per fare in modo che getCTM() e getBBox() funzionino correttamente
+            const container = document.getElementById('svg-container');
+            container.innerHTML = svgText;
+            
+            const svgEl = container.querySelector('svg');
+            if (!svgEl) throw new Error("File SVG non valido.");
+            
+            // Impostiamo IMMEDIATAMENTE viewBox, larghezza e altezza in pixel per disattivare
+            // la conversione dei millimetri (mm) del browser ed ottenere coordinate getCTM() in scala 1:1
+            svgEl.setAttribute('viewBox', '0 0 2232.3 2200');
+            svgEl.setAttribute('width', '2232.3');
+            svgEl.setAttribute('height', '2200');
+            
+            // Troviamo i rettangoli delle carte (base 223.23 x 311.81) che sono visibili
+            const rects = Array.from(svgEl.querySelectorAll('rect')).filter(r => {
+                const w = r.width.baseVal.value;
+                const h = r.height.baseVal.value;
+                const isCardSize = Math.abs(w - 223.23) < 1 && Math.abs(h - 311.81) < 1;
+                if (!isCardSize) return false;
+                
+                // Esclude le carte presenti in livelli nascosti (display="none" o style="display:none")
+                let current = r;
+                while (current && current !== svgEl) {
+                    if (current.getAttribute) {
+                        const styleAttr = current.getAttribute('style') || '';
+                        const displayAttr = current.getAttribute('display');
+                        if (displayAttr === 'none' || styleAttr.replace(/\s/g, '').includes('display:none')) {
+                            return false;
+                        }
+                    }
+                    current = current.parentNode;
+                }
+                return true;
+            });
+            
+            log(`Rilevati ${rects.length} rettangoli di dimensione carta.`);
+            
+            if (rects.length === 0) {
+                throw new Error("Nessun rettangolo di dimensione 223.23x311.81 trovato.");
+            }
+            
+            // Per ciascun rettangolo, calcoliamo le coordinate globali finali nell'SVG
+            const cards = [];
+            rects.forEach((rect, idx) => {
+                // getCTM() calcola automaticamente l'intera catena di trasformazioni fino al root <svg>
+                const ctm = rect.getCTM();
+                if (!ctm) {
+                    log(`Attenzione: getCTM() nullo per il rettangolo ${idx}.`);
+                    return;
+                }
+                
+                const x_base = rect.x.baseVal.value;
+                const y_base = rect.y.baseVal.value;
+                const w_base = rect.width.baseVal.value;
+                const h_base = rect.height.baseVal.value;
+                
+                // Angoli trasformati
+                const pt1 = svgEl.createSVGPoint();
+                pt1.x = x_base; pt1.y = y_base;
+                const p1 = pt1.matrixTransform(ctm);
+                
+                const pt2 = svgEl.createSVGPoint();
+                pt2.x = x_base + w_base; pt2.y = y_base + h_base;
+                const p2 = pt2.matrixTransform(ctm);
+                
+                const xf = Math.min(p1.x, p2.x);
+                const yf = Math.min(p1.y, p2.y);
+                const wf = Math.abs(p2.x - p1.x);
+                const hf = Math.abs(p2.y - p1.y);
+                
+                cards.push({ x: xf, y: yf, w: wf, h: hf, id: idx });
+            });
+            
+            // Filtriamo le posizioni duplicate ( fill e stroke ) tenendo l'ingombro massimo combinato
+            const uniqueCards = [];
+            cards.forEach(c => {
+                const existing = uniqueCards.find(uc => Math.abs(uc.x - c.x) < 30 && Math.abs(uc.y - c.y) < 30);
+                if (existing) {
+                    // Calcoliamo i limiti combinati (minimo X/Y e massimo X2/Y2)
+                    const x2_old = existing.x + existing.w;
+                    const y2_old = existing.y + existing.h;
+                    const x2_new = c.x + c.w;
+                    const y2_new = c.y + c.h;
+                    
+                    existing.x = Math.min(existing.x, c.x);
+                    existing.y = Math.min(existing.y, c.y);
+                    existing.w = Math.max(x2_old, x2_new) - existing.x;
+                    existing.h = Math.max(y2_old, y2_new) - existing.y;
+                } else {
+                    uniqueCards.push({ ...c });
+                }
+            });
+            
+            log(`Identificate ${uniqueCards.length} posizioni di carte uniche.`);
+            
+            if (uniqueCards.length === 0) {
+                throw new Error("Nessuna coordinata carta unica calcolata.");
+            }
+            
+            // Raggruppa in colonne (X simili)
+            const columns = [];
+            uniqueCards.forEach(card => {
+                let col = columns.find(c => Math.abs(c.avgX - card.x) < 40);
+                if (!col) {
+                    col = { avgX: card.x, cards: [] };
+                    columns.push(col);
+                }
+                col.cards.push(card);
+                col.avgX = col.cards.reduce((sum, c) => sum + c.x, 0) / col.cards.length;
+            });
+            
+            // Ordina le colonne da sinistra a destra
+            columns.sort((a, b) => a.avgX - b.avgX);
+            
+            // Ordina le carte di ciascuna colonna dall'alto in basso
+            columns.forEach((col, colIdx) => {
+                col.cards.sort((a, b) => a.y - b.y);
+                log(`Colonna ${colIdx + 1}: X = ${Math.round(col.avgX)}, contiene ${col.cards.length} carte.`);
+            });
+            // Convertiamo l'SVG modificato in Blob URL
+            log("3. Rendering dell'intero foglio SVG ad alta definizione...");
+            const svgString = new XMLSerializer().serializeToString(svgEl);
+            const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+            const svgUrl = URL.createObjectURL(svgBlob);
+            
+            const svgImage = new Image();
+            await new Promise((resolve, reject) => {
+                svgImage.onload = resolve;
+                svgImage.onerror = (e) => reject(new Error("Errore durante il caricamento dell'immagine SVG."));
+                svgImage.src = svgUrl;
+            });
+            
+            log("Foglio SVG caricato. Creazione del canvas temporaneo...");
+            
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = 2232.3;
+            tempCanvas.height = 2200;
+            const tempCtx = tempCanvas.getContext('2d');
+            tempCtx.drawImage(svgImage, 0, 0);
+            
+            URL.revokeObjectURL(svgUrl);
+            
+            // Disegniamo sul canvas finale dello sprite sheet (4828x1536)
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            const destW = 284;
+            const destH = 384;
+            const cardRatio = 156.36 / 311.93; // Rapporto Bresciane
+            const brescianaW = Math.round(destH * cardRatio); // 192px
+            const offsetX = Math.round((destW - brescianaW) / 2); // 46px
+            
+            log("4. Ritaglio e posizionamento delle 52 carte...");
+            
+            // Disegniamo le 52 carte (13 colonne da 4 semi)
+            for (let colIdx = 0; colIdx < columns.length; colIdx++) {
+                const col = columns[colIdx];
+                if (col.cards.length !== 4) {
+                    log(`Saltata colonna extra ${colIdx + 1} (contiene solo ${col.cards.length} elementi)`);
+                    continue;
+                }
+                
+                for (let rowIdx = 0; rowIdx < 4; rowIdx++) {
+                    const card = col.cards[rowIdx];
+                    
+                    // Semi per righe:
+                    // Ordine originale SVG: 0:Denari, 1:Bastoni, 2:Coppe, 3:Spade
+                    let targetRow = 0;
+                    if (rowIdx === 0) targetRow = 1;      // Denari -> Quadri (Riga 1)
+                    else if (rowIdx === 1) targetRow = 3; // Bastoni -> Picche (Riga 3)
+                    else if (rowIdx === 2) targetRow = 2; // Coppe -> Cuori (Riga 2)
+                    else if (rowIdx === 3) targetRow = 0; // Spade -> Fiori (Riga 0)
+                    
+                    const dx = colIdx * destW + offsetX;
+                    const dy = targetRow * destH;
+                    
+                    ctx.drawImage(
+                        tempCanvas, 
+                        card.x - 0.5, card.y - 0.5, card.w + 1, card.h + 1, 
+                        dx, dy, brescianaW, destH
+                    );
+                }
+            }
+            
+            // 8. Disegniamo i dorsi delle carte (Colonna 16, riga 0 dorso rosso, riga 1 dorso blu)
+            log("5. Rendering dei dorsi (rosso e blu) alla colonna 16...");
+            
+            const drawDorso = (patternId, targetRow) => {
+                return new Promise((resolve) => {
+                    const defs = svgEl.querySelector('defs').cloneNode(true);
+                    
+                    const svgD = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                    svgD.setAttribute('width', brescianaW);
+                    svgD.setAttribute('height', destH);
+                    svgD.setAttribute('viewBox', `0 0 156.36 311.93`);
+                    svgD.appendChild(defs);
+                    
+                    const bgRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                    bgRect.setAttribute('x', '0'); bgRect.setAttribute('y', '0');
+                    bgRect.setAttribute('width', '156.36'); bgRect.setAttribute('height', '311.93');
+                    bgRect.setAttribute('rx', '10.63'); bgRect.setAttribute('ry', '10.63');
+                    bgRect.setAttribute('fill', '#f4f2ef');
+                    bgRect.setAttribute('stroke', '#000000'); bgRect.setAttribute('stroke-width', '2');
+                    svgD.appendChild(bgRect);
+                    
+                    const patternRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                    patternRect.setAttribute('x', '7'); patternRect.setAttribute('y', '7');
+                    patternRect.setAttribute('width', '142.36'); patternRect.setAttribute('height', '297.93');
+                    patternRect.setAttribute('rx', '4'); patternRect.setAttribute('ry', '4');
+                    patternRect.setAttribute('fill', `url(#${patternId})`);
+                    patternRect.setAttribute('stroke', '#000000'); patternRect.setAttribute('stroke-width', '1');
+                    svgD.appendChild(patternRect);
+                    
+                    const svgString = new XMLSerializer().serializeToString(svgD);
+                    const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+                    const url = URL.createObjectURL(svgBlob);
+                    
+                    const img = new Image();
+                    img.onload = () => {
+                        const dx = 16 * destW + offsetX; // Colonna 17 (indice 16)
+                        const dy = targetRow * destH;
+                        ctx.drawImage(img, dx, dy, brescianaW, destH);
+                        URL.revokeObjectURL(url);
+                        resolve();
+                    };
+                    img.src = url;
+                });
+            };
+            
+            await drawDorso('q', 0); // Pattern rosso
+            await drawDorso('o', 1); // Pattern blu
+            
+            log("6. Sprite sheet generato con successo! Invio al server locale...");
+            
+            const dataUrl = canvas.toDataURL('image/png');
+            console.log("SPRITE_BASE64:" + dataUrl);
+            
+            try {
+                const saveResponse = await fetch('http://localhost:8080/save', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain' },
+                    body: dataUrl
+                });
+                if (saveResponse.ok) {
+                    log("Salvato sul server in 'images/scala40/carte_bresciane.png'!");
+                }
+            } catch (e) {
+                log("Salvataggio automatico sul server 8080 non attivo.");
+            }
+            
+            const link = document.createElement('a');
+            link.download = 'carte_bresciane.png';
+            link.href = dataUrl;
+            link.click();
+            
+            log("\n[OPERAZIONE COMPLETATA]");
+            log("Il file 'carte_bresciane.png' è stato scaricato correttamente.");
+            
+        } catch (error) {
+            log("ERRORE: " + error.message);
+            console.error(error);
+        }
+        document.getElementById('btn-start').disabled = false;
+    }
+    
+    // Avvia la generazione automaticamente dopo il caricamento della pagina, gestendo la race condition
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+        setTimeout(generate, 500);
+    } else {
+        window.addEventListener('load', () => {
+            setTimeout(generate, 500);
+        });
+    }
+</script>
+
+</body>
+</html>

@@ -386,7 +386,7 @@ html, body {
     position: absolute;
     width: 89px;
     height: 120px;
-    background-image: url(images/scala40/conjollyplus.png);
+    background-image: url(images/scala40/conjollyplus.png?v=2);
     background-size: 1541px 480px;
     background-position: -1420px -120px; /* dorso blu */
     border-radius: 6px;
@@ -396,7 +396,7 @@ html, body {
     position: absolute;
     width: 89px;
     height: 120px;
-    background-image: url(images/scala40/conjollyplus.png);
+    background-image: url(images/scala40/conjollyplus.png?v=2);
     background-size: 1541px 480px;
     background-position: -1420px -120px;
     border-radius: 6px;
@@ -453,7 +453,7 @@ html, body {
     position: absolute;
     width: 89px;
     height: 120px;
-    background-image: url(images/scala40/conjollyplus.png);
+    background-image: url(images/scala40/conjollyplus.png?v=2);
     background-size: 1541px 480px;
     border-radius: 6px;
     cursor: pointer;
@@ -850,8 +850,28 @@ html, body {
 #campogioco.napoletane .carta,
 #campogioco.napoletane .mazzo-back,
 #campogioco.napoletane .mazzo-back-shadow {
-    background-image: url(images/scala40/carte_napoletane.png);
+    background-image: url(images/scala40/carte_napoletane.png?v=2);
     background-size: 1509px 480px;
+}
+
+/* === TEMA CARTE BRESCIANE === (+20% rispetto alle altre) */
+#campogioco.bresciane .carta,
+#campogioco.bresciane .mazzo-back,
+#campogioco.bresciane .mazzo-back-shadow {
+    background-image: url(images/scala40/carte_bresciane.png?v=2);
+    background-size: 1811px 576px; /* 1509*1.2 x 480*1.2 */
+    width: 72px;  /* 60*1.2 */
+    height: 144px; /* 120*1.2 */
+}
+
+/* Spostamento dei dorsi Bresciani scalati */
+#campogioco.bresciane .carta.coperta {
+    background-position: -1721.25px 0; /* -1434.375*1.2 */
+}
+#campogioco.bresciane .carta.coperta-blu,
+#campogioco.bresciane .mazzo-back,
+#campogioco.bresciane .mazzo-back-shadow {
+    background-position: -1721.25px -144px; /* -1434.375*1.2, -120*1.2 */
 }
 
 /* === MODALE INIZIO: SELETTORI === */

@@ -191,67 +191,30 @@ var scala = {
 		scala.avvsalvalog = 0;
 		scala.salvasuono = 0;
 
-		this.totalelimite = 150;
+		// Preferenze persistenti (default: 3 avversari, limite 150)
+		var _na = parseInt(localStorage.getItem('scala40_numeroavversari') || '3', 10);
+		var _tl = parseInt(localStorage.getItem('scala40_totalelimite') || '150', 10);
+		this.numeroavversari = (_na > 0 && _na < 4) ? _na : 3;
+		this.totalelimite = (!isNaN(_tl) && _tl > 0) ? _tl : 150;
+
 		this.totalepartite = 0;
 		this.totaleavversario1 = 0;
 		this.totaleavversario2 = 0;
 		this.totaleavversario3 = 0;
 		this.totalegiocatore = 0;
-		this.numeroavversari = 3;
-
 
 		//this.start();
-		var stp = location.search;
-		var indice, valore;
-
-		indice = stp.indexOf("ta");
-		if (indice > 0) {
-			stp = stp.slice(indice + 2)
-			valore = (parseInt(stp));
-			if (valore != "NaN") this.totaleavversario1 = valore;
-		}
-
-		indice = stp.indexOf("tb");
-		if (indice > 0) {
-			stp = stp.slice(indice + 2)
-			valore = (parseInt(stp));
-			if (valore != "NaN") this.totaleavversario2 = valore;
-		}
-		indice = stp.indexOf("tc");
-		if (indice > 0) {
-			stp = stp.slice(indice + 2)
-			valore = (parseInt(stp));
-			if (valore != "NaN") this.totaleavversario3 = valore;
-		}
-
-
-
-		indice = stp.indexOf("tg");
-		if (indice > 0) {
-			stp = stp.slice(indice + 2)
-			valore = (parseInt(stp));
-			if (valore != "NaN") this.totalegiocatore = valore;
-		}
-
-		indice = stp.indexOf("tl");
-		if (indice > 0) {
-			stp = stp.slice(indice + 2)
-			valore = (parseInt(stp));
-			if (valore != "NaN") this.totalelimite = valore;
-		}
-
-		indice = stp.indexOf("tp");
-		if (indice > 0) {
-			stp = stp.slice(indice + 2)
-			valore = (parseInt(stp));
-			if (valore != "NaN") this.totalepartite = valore;
-		}
-
-		indice = stp.indexOf("na");
-		if (indice > 0) {
-			stp = stp.slice(indice + 2)
-			valore = (parseInt(stp));
-			if ((valore > 0) && (valore < 4)) this.numeroavversari = valore;
+		var _stato = null;
+		try { _stato = JSON.parse(localStorage.getItem('scala40_stato') || 'null'); } catch(e) {}
+		localStorage.removeItem('scala40_stato');
+		if (_stato) {
+			if (!isNaN(_stato.ta)) this.totaleavversario1 = _stato.ta;
+			if (!isNaN(_stato.tb)) this.totaleavversario2 = _stato.tb;
+			if (!isNaN(_stato.tc)) this.totaleavversario3 = _stato.tc;
+			if (!isNaN(_stato.tg)) this.totalegiocatore   = _stato.tg;
+			if (!isNaN(_stato.tl)) this.totalelimite      = _stato.tl;
+			if (!isNaN(_stato.tp)) this.totalepartite     = _stato.tp;
+			if (_stato.na > 0 && _stato.na < 4) this.numeroavversari = _stato.na;
 		}
 
 
@@ -1257,7 +1220,7 @@ var scala = {
 
 	mostradialogo: function (dialogo) {
 		var selector = (dialogo.indexOf('#') === 0) ? dialogo : '#' + dialogo;
-		$(selector).show();
+		$(selector).css({ "z-index": "50000" }).show();
 
 		$("#schermo").css({ "width": $(window).width() / window.gameScale });
 		$("#schermo").show();
@@ -1273,7 +1236,7 @@ var scala = {
 						// Imposta dimensioni e stile integrato stile Scopa (700px di larghezza, 300px altezza)
 						modal.style.width = '700px';
 						modal.style.height = '300px';
-						modal.style.left = '150px'; // Centrato su campogioco (1000px)
+						modal.style.left = '50px';
 						modal.style.backgroundColor = '#1a4224';
 						modal.style.boxSizing = 'border-box';
 						modal.style.border = '4px solid #b8860b';
@@ -1551,6 +1514,7 @@ var scala = {
 		if (valore > 999) { scala.myalert(t('too_high')); return }
 		if (valore < 10) { scala.myalert(t('too_low')); return }
 		scala.totalelimite = valore;
+		localStorage.setItem('scala40_totalelimite', valore);
 		scala.hidedialog();
 		scala.render();
 	},
@@ -1583,12 +1547,21 @@ var scala = {
 		var tempavversari = $('input[name="avversari"]:checked').val();
 		if (tempavversari != scala.salvaavversari) scala.azzeratotale();
 		this.numeroavversari = tempavversari;
+		localStorage.setItem('scala40_numeroavversari', tempavversari);
 		scala.nuovo();
 	},
 
 	nuovo: function () {
-		location.search = ("ta" + this.totaleavversario1 + "tb" + this.totaleavversario2 + "tc" + this.totaleavversario3 +
-			"tg" + this.totalegiocatore + "tl" + this.totalelimite + "tp" + this.totalepartite + "na" + this.numeroavversari);
+		localStorage.setItem('scala40_stato', JSON.stringify({
+			ta: this.totaleavversario1,
+			tb: this.totaleavversario2,
+			tc: this.totaleavversario3,
+			tg: this.totalegiocatore,
+			tl: this.totalelimite,
+			tp: this.totalepartite,
+			na: this.numeroavversari
+		}));
+		location.reload();
 	},
 
 	azzeratotale: function () {

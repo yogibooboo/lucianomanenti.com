@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { background: #333; color: white; font-family: sans-serif; margin: 20px; }
+        .grid { display: flex; flex-wrap: wrap; gap: 10px; }
+        .card-container { display: flex; flex-direction: column; align-items: center; background: #444; padding: 10px; border-radius: 5px; }
+        .card-img { width: 89px; height: 120px; background-image: url(../images/scala40/conjollyplus.png); background-size: 1541px 480px; border: 1px solid #777; }
+        .index-label { margin-top: 5px; font-weight: bold; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <h1>Slicing conjollyplus.png (background-size: 1541px 480px)</h1>
+    <div class="grid" id="grid"></div>
+
+    <script>
+        const grid = document.getElementById('grid');
+        // Let's render 18 columns (indices 0 to 17) for Row 0 and Row 1
+        for (let row = 0; row < 2; row++) {
+            for (let col = 0; col < 18; col++) {
+                const container = document.createElement('div');
+                container.className = 'card-container';
+                
+                const card = document.createElement('div');
+                card.className = 'card-img';
+                
+                // Position using stepX = -88.75px, stepY = -120px
+                const x = col * -88.75;
+                const y = row * -120;
+                card.style.backgroundPosition = `${x}px ${y}px`;
+                
+                const label = document.createElement('div');
+                label.className = 'index-label';
+                label.textContent = `R${row} C${col} (${x}px)`;
+                
+                container.appendChild(card);
+                container.appendChild(label);
+                grid.appendChild(container);
+            }
+        }
+    </script>
+</body>
+</html>
