@@ -993,7 +993,9 @@ function posizionaManoVentaglio(container, count) {
     
     if (isVerticale) {
         // Disposizione verticale per Carlo (1) e Bruno (3) con carte ruotate e distanziate
-        const gap = -19; // Margine negativo per lasciare esattamente 12px di spazio come per il giocatore
+        // Le carte bresciane sono più alte (144px vs 120px) quindi ruotate occupano più spazio orizzontale
+        const temaCorrente = localStorage.getItem('scopa-deck-theme') || 'francesi';
+        const gap = (temaCorrente === 'bresciane') ? -43 : -19;
         for (let i = 0; i < cards.length; i++) {
             cards[i].style.position = 'relative';
             cards[i].style.flexShrink = '0';
