@@ -744,7 +744,7 @@ function distribuisciIniziale() {
             statoGioco = 'turno-computer';
             const nomeIA = ottieniNomeGiocatore(giocatoreAttivo);
             aggiornaMessaggioStato(`${nomeIA} sta pensando...`);
-            setTimeout(() => eseguiMossaComputer(giocatoreAttivo), 1800);
+            setTimeout(() => eseguiMossaComputer(giocatoreAttivo), 450);
         }
     });
 }
@@ -865,7 +865,7 @@ function distribuisciNuoveMani() {
             statoGioco = 'turno-computer';
             const nomeIA = ottieniNomeGiocatore(giocatoreAttivo);
             aggiornaMessaggioStato(`${nomeIA} sta pensando...`);
-            setTimeout(() => eseguiMossaComputer(giocatoreAttivo), 1800);
+            setTimeout(() => eseguiMossaComputer(giocatoreAttivo), 450);
         }
     });
 }
@@ -1245,7 +1245,7 @@ function selezionaCartaGiocatore(card) {
             if (statoGioco === 'turno-giocatore' && cartaSelezionata && cartaSelezionata.id === card.id) {
                 eseguiScartoGiocatore();
             }
-        }, 400);
+        }, 0);
     } else if (combinazioniPresaDisponibili.length === 1) {
         // Presa automatica immediata per accelerare il gioco se c'è solo un'opzione!
         aggiornaMessaggioStato("Presa automatica!");
@@ -1388,10 +1388,7 @@ function eseguiScartoGiocatore() {
     const card = cartaSelezionata;
     const startEl = document.getElementById(`card-player-0-${card.id}`);
     
-    // Evidenzia immediatamente la carta in mano
-    if (startEl) startEl.classList.add('evidenziata-presa');
-    
-    // Attendi lo stesso tempo (2 secondi) prima che voli, per coerenza con la presa
+    // Avvia immediatamente il volo della carta
     setTimeout(() => {
         const posHand = ottieniCoordinateElemento(startEl);
         
@@ -1416,10 +1413,10 @@ function eseguiScartoGiocatore() {
             carteTavolo.push(card);
             renderTavolo();
             riproduciAudio("sounds/scala40/cardplace1.mp3");
-            
+
             passaAlProssimoTurno();
         });
-    }, 2000);
+    }, 0);
 }
 
 function eseguiPresaGiocatore() {
@@ -1435,15 +1432,8 @@ function eseguiPresaGiocatore() {
     const startTableEls = preseTavolo.map(p => document.getElementById(`card-tavolo-${p.id}`));
     const destEl = document.getElementById('presa-giocatore');
     
-    // Evidenzia immediatamente le carte
-    if (startHandEl) startHandEl.classList.add('evidenziata-presa');
-    startTableEls.forEach(el => {
-        if (el) el.classList.add('evidenziata-presa');
-    });
-    
     aggiornaMessaggioStato("Hai fatto una presa!");
-    
-    // Attendi 2 secondi prima che volino
+
     setTimeout(() => {
         // Pre-calcola le posizioni prima di rimuovere gli elementi dal DOM
         const posHand = ottieniCoordinateElemento(startHandEl);
@@ -1503,7 +1493,7 @@ function eseguiPresaGiocatore() {
         preseTavolo.forEach((p, idx) => {
             animaCarta(p, posTable[idx], posDest, completedAnimation);
         });
-    }, 2000);
+    }, 0);
 }
 
 function creaNotificaScopa(chi) {
@@ -1688,7 +1678,7 @@ function passaAlProssimoTurno() {
             statoGioco = 'turno-computer';
             const nomeIA = ottieniNomeGiocatore(giocatoreAttivo);
             aggiornaMessaggioStato(`${nomeIA} sta pensando...`);
-            setTimeout(() => eseguiMossaComputer(giocatoreAttivo), 1800);
+            setTimeout(() => eseguiMossaComputer(giocatoreAttivo), 450);
         }
         aggiornaGiocatoreAttivoUI();
     }
@@ -2264,7 +2254,7 @@ function eseguiMossaComputer(giocatoreIdx) {
                 
                 passaAlProssimoTurno();
             });
-        }, 1200);
+        }, 300);
     } else {
         // Esegui una Presa
         statoGioco = 'animazione';
