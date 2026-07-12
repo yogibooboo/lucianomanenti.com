@@ -378,6 +378,8 @@ function renderAll() {
     // Tableau
     for (var col = 0; col < 7; col++) {
         var tSkipFrom = (sk && sk.type === 'tab' && sk.col === col) ? sk.ci : Infinity;
+        var tDragFrom = (dragging && dragging.started && dragging.source === 'tab' && dragging.tabCol === col) ? dragging.cardIdx : Infinity;
+        tSkipFrom = Math.min(tSkipFrom, tDragFrom);
         if (tableau[col].length === 0) {
             drawEmptySlot(COL_X[col], TAB_Y, 'K');
             continue;

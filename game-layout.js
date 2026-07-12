@@ -22,7 +22,7 @@ window.registerLayoutResizeListener = function (callback) {
 };
 
 // ─── AMAZON BANNER CONFIG ───────────────────────────────────────────────────
-var AMAZON_BANNERS_ENABLED = false;  // se false, disabilita Amazon a sinistra (ma non a destra se AMAZON_BANNERS_RIGHT = true)
+var AMAZON_BANNERS_ENABLED = true;  // se false, disabilita Amazon a sinistra (ma non a destra se AMAZON_BANNERS_RIGHT = true)
 var AMAZON_BANNERS_RIGHT = true;   // se true, carica Amazon a destra indipendentemente da AMAZON_BANNERS_ENABLED
 var AMAZON_FALLBACK_ON_SHIELD = true; // se true, Amazon subentra a sinistra quando AdSense viene bloccato dallo scudo
 var AMAZON_USE_NEW_DEALS = true;      // se true, usa newdeals.json e i pesi. Se false, usa il deals.json tradizionale
@@ -39,10 +39,10 @@ var INTERSTITIAL_CLOSE_DELAY_SECONDS = 0;        // secondi prima che appaia il 
 // ─────────────────────────────────────────────────────────────────────────────
 
 // ─── ADSENSE CONFIG & SHIELD ─────────────────────────────────────────────────
-// NOTA PER L'UTENTE: Durante il bando di 29 giorni, imposta ADSENSE_GLOBAL_ENABLED = false.
+// NOTA PER L'UTENTE: Durante il bando di 29 giorni, imposta ADSENSE_GLOBAL_ENABLED = false e var AMAZON_BANNERS_ENABLED = true; 
 // Al termine, rimettilo a true. Lo Shield ti proteggerà automaticamente dai click futuri.
-var ADSENSE_GLOBAL_ENABLED = true;  // Interruttore di sicurezza principale
-var ADSENSE_ONLY_LEFT = true;       // Se true, AdSense carica solo a sinistra
+var ADSENSE_GLOBAL_ENABLED = false;  // Interruttore di sicurezza principale
+var ADSENSE_ONLY_LEFT = false;       // Se true, AdSense carica solo a sinistra
 
 // Controllo attivazione blocco annunci su richiesta
 var adsDisabled = localStorage.getItem('ads_disabled') === '1';
@@ -265,8 +265,8 @@ function injectLegalLinks() {
 function showInterstitialIfDue(onClose) {
     if (!ENABLE_INTERSTITIAL) { if (onClose) onClose(); return; }
     if (window._blockAutoInterstitial) { if (onClose) onClose(); return; }
-    var _allowedPrefixes = ['RUM_', 'RUM_en_', 'KLO_', 'SPI_', 'SPI_en_', 'MAC_', 'MAC_en_', 'SCOPA_'];
-    if (!window.gameConfig || _allowedPrefixes.indexOf(window.gameConfig.gaPrefix) === -1) { if (onClose) onClose(); return; }
+    var _excludedPrefixes = ['BUR_', 'BUR_en_'];
+    if (window.gameConfig && _excludedPrefixes.indexOf(window.gameConfig.gaPrefix) !== -1) { if (onClose) onClose(); return; }
 
     var now = Date.now();
 
@@ -728,6 +728,9 @@ function adjustLayout() {
 
     var getAmazonRichHtml = function (deal, amazonGenericLink, amazonGenericImg, side) {
         var isMusicBanner = amazonGenericLink && amazonGenericLink.indexOf('musica') !== -1;
+        if (isMusicBanner && side === 'right') {
+            return '<a href="view_gallery.html" target="_blank" rel="noopener" style="display:block;width:300px;height:250px;overflow:hidden;"><img src="banner/galleryamazon300x250.jpg" style="width:300px;height:250px;object-fit:cover;" alt="Gallery"></a>';
+        }
         if (isMusicBanner) {
             var scopaUrl = (window.currentLang === 'en') ? 'scopa-en.html' : 'scopa.html';
             var scopaText = (window.currentLang === 'en') ? 'Try the new game<br><span style="font-size:16px;color:#ffd700;">SCOPA Luciano</span>' : 'Prova il nuovo gioco<br><span style="font-size:16px;color:#ffd700;">SCOPA Luciano</span>';

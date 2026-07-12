@@ -18,12 +18,12 @@
     <link rel="manifest" href="favicon/site.webmanifest">
 
     <meta name="Description"
-        content="Play Scopa free online against the computer. Official Italian rules, Primiera, Settebello and Scope calculation. Play free without registration.">
+        content="Play Scopa free online against the computer without registration. Official Italian rules. Try also the intriguing Brescian variant (Cicera Bigia).">
     <meta http-Equiv="Cache-Control" Content="no-cache">
     <meta http-Equiv="Pragma" Content="no-cache">
     <meta http-Equiv="Expires" Content="0">
 
-    <link rel="stylesheet" href="scopa.css?v=2.9" />
+    <link rel="stylesheet" href="scopa.css?v=3.0" />
 
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
@@ -99,30 +99,57 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
+                            <!-- Classic rows -->
+                            <tr class="prog-row-classica">
                                 <td style="padding: 3px 2px; text-align: left; color: #ccc; font-size: 10px;">Scope</td>
                                 <td style="padding: 3px 2px; font-weight: bold;" id="prog-scope-tu">0</td>
                                 <td style="padding: 3px 2px; font-weight: bold;" id="prog-scope-pc">0</td>
                             </tr>
-                            <tr>
+                            <tr class="prog-row-classica">
                                 <td style="padding: 3px 2px; text-align: left; color: #ccc; font-size: 10px;">Cards</td>
                                 <td style="padding: 3px 2px; font-weight: bold;" id="prog-carte-tu">0</td>
                                 <td style="padding: 3px 2px; font-weight: bold;" id="prog-carte-pc">0</td>
                             </tr>
-                            <tr>
-                                <td style="padding: 3px 2px; text-align: left; color: #ccc; font-size: 10px;">Diamonds</td>
+                            <tr class="prog-row-classica">
+                                <td style="padding: 3px 2px; text-align: left; color: #ccc; font-size: 10px;" data-voce="quadri">Diamonds</td>
                                 <td style="padding: 3px 2px; font-weight: bold;" id="prog-quadri-tu">0</td>
                                 <td style="padding: 3px 2px; font-weight: bold;" id="prog-quadri-pc">0</td>
                             </tr>
-                            <tr>
+                            <tr class="prog-row-classica">
                                 <td style="padding: 3px 2px; text-align: left; color: #ccc; font-size: 10px;">7bello</td>
                                 <td style="padding: 3px 2px; font-weight: bold;" id="prog-settebello-tu">No</td>
                                 <td style="padding: 3px 2px; font-weight: bold;" id="prog-settebello-pc">No</td>
                             </tr>
-                            <tr>
+                            <tr class="prog-row-classica">
                                 <td style="padding: 3px 2px; text-align: left; color: #ccc; font-size: 10px;">Primiera</td>
                                 <td style="padding: 3px 2px; font-weight: bold;" id="prog-primiera-tu">0</td>
                                 <td style="padding: 3px 2px; font-weight: bold;" id="prog-primiera-pc">0</td>
+                            </tr>
+                            <!-- Bresciana rows -->
+                            <tr class="prog-row-bresciana" style="display:none;">
+                                <td style="padding: 3px 2px; text-align: left; color: #ccc; font-size: 10px;">Scope/Piccate...</td>
+                                <td style="padding: 3px 2px; font-weight: bold;" id="prog-b-scope-tu">0</td>
+                                <td style="padding: 3px 2px; font-weight: bold;" id="prog-b-scope-pc">0</td>
+                            </tr>
+                            <tr class="prog-row-bresciana" style="display:none;">
+                                <td style="padding: 3px 2px; text-align: left; color: #ccc; font-size: 10px;">Cards</td>
+                                <td style="padding: 3px 2px; font-weight: bold;" id="prog-b-carte-tu">0</td>
+                                <td style="padding: 3px 2px; font-weight: bold;" id="prog-b-carte-pc">0</td>
+                            </tr>
+                            <tr class="prog-row-bresciana" style="display:none;">
+                                <td style="padding: 3px 2px; text-align: left; color: #ccc; font-size: 10px;">Spades</td>
+                                <td style="padding: 3px 2px; font-weight: bold;" id="prog-b-spade-tu">0</td>
+                                <td style="padding: 3px 2px; font-weight: bold;" id="prog-b-spade-pc">0</td>
+                            </tr>
+                            <tr class="prog-row-bresciana" style="display:none;">
+                                <td style="padding: 3px 2px; text-align: left; color: #ccc; font-size: 10px;">Sp. Cards</td>
+                                <td style="padding: 3px 2px; font-weight: bold;" id="prog-b-speciali-tu">0</td>
+                                <td style="padding: 3px 2px; font-weight: bold;" id="prog-b-speciali-pc">0</td>
+                            </tr>
+                            <tr class="prog-row-bresciana" style="display:none;">
+                                <td colspan="3" style="padding: 3px 2px; text-align: center;" id="prog-b-napola-seq">
+                                    <span style="color:#ccc; font-size:10px;">Napola&nbsp;</span><span id="prog-b-napola-carta-1" style="font-size:11px;font-weight:bold;color:#555;">1</span><span style="color:#555;font-size:11px;">·</span><span id="prog-b-napola-carta-2" style="font-size:11px;font-weight:bold;color:#555;">2</span><span style="color:#555;font-size:11px;">·</span><span id="prog-b-napola-carta-3" style="font-size:11px;font-weight:bold;color:#555;">3</span><span style="color:#555;font-size:11px;">·</span><span id="prog-b-napola-carta-4" style="font-size:11px;font-weight:bold;color:#555;">4</span><span style="color:#555;font-size:11px;">·</span><span id="prog-b-napola-carta-5" style="font-size:11px;font-weight:bold;color:#555;">5</span><span style="color:#555;font-size:11px;">·</span><span id="prog-b-napola-carta-6" style="font-size:11px;font-weight:bold;color:#555;">6</span><span style="color:#555;font-size:11px;">·</span><span id="prog-b-napola-carta-7" style="font-size:11px;font-weight:bold;color:#555;">7</span><span style="color:#555;font-size:11px;">·</span><span id="prog-b-napola-carta-8" style="font-size:11px;font-weight:bold;color:#555;">8</span><span style="color:#555;font-size:11px;">·</span><span id="prog-b-napola-carta-9" style="font-size:11px;font-weight:bold;color:#555;">9</span><span style="color:#555;font-size:11px;">·</span><span id="prog-b-napola-carta-10" style="font-size:11px;font-weight:bold;color:#555;">10</span><span style="color:#555;font-size:11px;">·</span><span id="prog-b-napola-carta-11" style="font-size:11px;font-weight:bold;color:#555;">J</span><span style="color:#555;font-size:11px;">·</span><span id="prog-b-napola-carta-12" style="font-size:11px;font-weight:bold;color:#555;">Q</span><span style="color:#555;font-size:11px;">·</span><span id="prog-b-napola-carta-13" style="font-size:11px;font-weight:bold;color:#555;">K</span>
+                                </td>
                             </tr>
                         </tbody>
                     </table>
@@ -207,8 +234,16 @@
             <!-- 1. Modale Inizio Gioco -->
             <div id="modale-inizio" class="form-scopa" style="display: flex;">
                 <div class="form-scopa-title">New Scopa Game</div>
-                
-                <div class="opzione-gruppo" style="margin-bottom: 20px; text-align: center;">
+
+                <div class="opzione-gruppo" style="margin-bottom: 16px; text-align: center;">
+                    <div style="font-size: 13px; font-weight: bold; margin-bottom: 8px; color: #ffd700; text-transform: uppercase;">Variant:</div>
+                    <div style="display: flex; justify-content: center; gap: 10px;">
+                        <button id="btn-var-classica" onclick="selezionaVariante('classica')" class="btn-opzione-sel attiva">CLASSIC</button>
+                        <button id="btn-var-bresciana" onclick="selezionaVariante('bresciana')" class="btn-opzione-sel">BRESCIANA</button>
+                    </div>
+                </div>
+
+                <div class="opzione-gruppo" style="margin-bottom: 16px; text-align: center;">
                     <div style="font-size: 13px; font-weight: bold; margin-bottom: 8px; color: #ffd700; text-transform: uppercase;">Game Mode:</div>
                     <div style="display: flex; justify-content: center; gap: 10px;">
                         <button id="btn-mode-2p" onclick="selezionaModalita('2P')" class="btn-opzione-sel attiva">2 PLAYERS</button>
@@ -216,19 +251,27 @@
                     </div>
                 </div>
 
-                <div class="opzione-gruppo" style="margin-bottom: 25px; text-align: center;">
+                <div class="opzione-gruppo" style="margin-bottom: 20px; text-align: center;">
                     <div style="font-size: 13px; font-weight: bold; margin-bottom: 8px; color: #ffd700; text-transform: uppercase;">Target Score:</div>
                     <div style="display: flex; justify-content: center; gap: 10px;">
                         <button id="btn-target-11" onclick="selezionaTarget(11)" class="btn-opzione-sel attiva">11 POINTS</button>
                         <button id="btn-target-21" onclick="selezionaTarget(21)" class="btn-opzione-sel">21 POINTS</button>
+                        <button id="btn-target-31" onclick="selezionaTarget(31)" class="btn-opzione-sel">31 POINTS</button>
                     </div>
                 </div>
-                
+
                 <button onclick="confermaEAvviaPartita()" class="btn-continua" style="width: 100%; max-width: 250px; margin: 0 auto 15px auto; display: block;">START GAME</button>
-                
-                <p style="font-size: 11px; color: #aaa; text-align: center; margin: 0;">
+
+                <p id="nota-variante" style="font-size: 11px; color: #aaa; text-align: center; margin: 0;">
                     Rules: 40 cards, French suits (Diamonds = Gold), classic Primiera and Scopa.
                 </p>
+
+                <div style="margin-top: 16px; padding: 12px 14px; background: #1a2a1a; border: 1px solid #3a5a3a; border-radius: 8px; display: flex; align-items: center; justify-content: center; gap: 12px; text-align: left;">
+                    <p style="margin: 0; font-size: 12px; color: #aed6ae; line-height: 1.5;">
+                        Try the Brescian variant: it's intriguing and packed with scoring opportunities!
+                    </p>
+                    <a href="regole-scopa-en.html#bresciana-intro" target="_blank" style="display: inline-block; padding: 6px 14px; background: #3a5a3a; color: #aed6ae; text-decoration: none; border-radius: 5px; font-size: 11px; font-weight: bold; flex-shrink: 0;">INFO</a>
+                </div>
             </div>
 
             <!-- 2. Modale fine round (Tabella Punteggi) -->
@@ -243,31 +286,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td>Scope</td>
-                            <td id="dettaglio-scope-tu">0</td>
-                            <td id="dettaglio-scope-pc">0</td>
-                        </tr>
-                        <tr>
-                            <td>Cards (Total)</td>
-                            <td id="dettaglio-carte-tu">0</td>
-                            <td id="dettaglio-carte-pc">0</td>
-                        </tr>
-                        <tr>
-                            <td>Diamonds (Total)</td>
-                            <td id="dettaglio-quadri-tu">0</td>
-                            <td id="dettaglio-quadri-pc">0</td>
-                        </tr>
-                        <tr>
-                            <td>Settebello (7♦)</td>
-                            <td id="dettaglio-settebello-tu">No</td>
-                            <td id="dettaglio-settebello-pc">No</td>
-                        </tr>
-                        <tr>
-                            <td>Primiera (Value)</td>
-                            <td id="dettaglio-primiera-tu">0</td>
-                            <td id="dettaglio-primiera-pc">0</td>
-                        </tr>
+                        <!-- rows populated dynamically by mostraModalePunteggiGenerica() -->
                         <tr class="totale-row">
                             <td>Points Earned</td>
                             <td id="round-punti-tu">0</td>
@@ -281,6 +300,7 @@
                     </tbody>
                 </table>
                 <button onclick="continuaProssimoRound()" class="btn-continua">CONTINUE</button>
+                <div id="modale-target-label" style="font-size: 13px; color: #ffffff; text-align: center; margin-top: 6px;"></div>
             </div>
 
             <!-- 3. Modali Vittoria / Sconfitta Finale (Stesso stile Klondike/Burraco) -->
@@ -344,7 +364,7 @@
     <!-- Layout engine per ridimensionare la finestra del gioco -->
     <script src="game-layout.js?v=4.6"></script>
     <!-- Logica di Scopa -->
-    <script src="scopa.js?v=2.7"></script>
+    <script src="scopa.js?v=3.3"></script>
     <script>
         (function () {
             var nascosto = false;

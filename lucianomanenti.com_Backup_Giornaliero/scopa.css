@@ -845,7 +845,7 @@ html, body {
 #campogioco.bresciane .carta,
 #campogioco.bresciane .mazzo-back,
 #campogioco.bresciane .mazzo-back-shadow {
-    background-image: url(images/scala40/carte_bresciane.png?v=3);
+    background-image: url(images/scala40/carte_bresciane.png?v=2);
     background-size: 1811px 576px; /* 1509*1.2 x 480*1.2 */
     width: 72px;  /* 60*1.2 */
     height: 144px; /* 120*1.2 */

@@ -288,7 +288,7 @@
     <div class="page-container">
         
         <!-- Pulsante di uscita superiore -->
-        <a href="index.html" class="back-button">← Torna ai Giochi</a>
+        <a href="index.html" class="back-button" onclick="if(window.opener||window.history.length<=1){window.close();return false;}">← Torna ai Giochi</a>
 
         <header>
             <h1>Offerte Amazon in Evidenza</h1>

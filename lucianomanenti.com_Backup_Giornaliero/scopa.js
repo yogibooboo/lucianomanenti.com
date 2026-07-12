@@ -587,19 +587,9 @@ function selezionaTarget(target) {
 
 let tempVariante = 'classica';
 function selezionaVariante(v) {
-    const isChanging = (tempVariante !== v);
     tempVariante = v;
     document.getElementById('btn-var-classica').classList.toggle('attiva', v === 'classica');
     document.getElementById('btn-var-bresciana').classList.toggle('attiva', v === 'bresciana');
-    
-    if (isChanging) {
-        if (v === 'bresciana') {
-            selezionaTarget(31);
-        } else if (v === 'classica') {
-            selezionaTarget(11);
-        }
-    }
-    
     const nota = document.getElementById('nota-variante');
     if (nota) {
         const isEn = window.currentLang === 'en';
@@ -623,12 +613,6 @@ function confermaEAvviaPartita() {
     // Con variante bresciana forziamo il mazzo bresciane
     if (variante === 'bresciana') {
         localStorage.setItem('scopa-deck-theme', 'bresciane');
-        if (typeof gtag === 'function') {
-            gtag('event', 'start_game_bresciana', {
-                'game_mode': modalitaGioco,
-                'target_score': puntiTarget
-            });
-        }
     }
 
     // Salva le selezioni in localStorage
@@ -1699,8 +1683,7 @@ function eseguiPresaGiocatore() {
         const eScopa = carteTavolo.length === 0 && !ultimaManoDelRound;
         if (variante === 'bresciana' && preseTavolo.length === 1 && ultimaCartaCalataTavolo && preseTavolo[0].id === ultimaCartaCalataTavolo.id) {
             creaNotificaPicca('giocatore', eScopa);
-            piccateRoundTu++;
-            if (eScopa) scopeRoundTu++;
+            if (eScopa) scopeRoundTu++; // scopa già conteggiata dentro picca+scopa
         } else if (eScopa) {
             creaNotificaScopa('giocatore');
         }
@@ -2589,7 +2572,7 @@ function eseguiMossaComputer(giocatoreIdx) {
             mossePossibili.push({
                 card: card,
                 captureSet: [],
-                score: calcolaPunteggioScartoIA(card, giocatoreIdx)
+                score: calcolaPunteggioScartoIA(card)
             });
         } else {
             // Capture play(s)
@@ -2597,7 +2580,7 @@ function eseguiMossaComputer(giocatoreIdx) {
                 mossePossibili.push({
                     card: card,
                     captureSet: subset,
-                    score: calcolaPunteggioPresaIA(card, subset, giocatoreIdx)
+                    score: calcolaPunteggioPresaIA(card, subset)
                 });
             });
         }
@@ -2750,7 +2733,6 @@ function eseguiMossaComputer(giocatoreIdx) {
             const eScopa = carteTavolo.length === 0 && !ultimaManoDelRound;
             if (variante === 'bresciana' && preseTavolo.length === 1 && ultimaCartaCalataTavolo && preseTavolo[0].id === ultimaCartaCalataTavolo.id) {
                 creaNotificaPicca(chiIA, eScopa);
-                if (isNoi) piccateRoundTu++; else piccateRoundPC++;
                 if (eScopa) (isNoi ? (scopeRoundTu++) : (scopeRoundPC++));
             } else if (eScopa) {
                 creaNotificaScopa(chiIA);
@@ -2778,151 +2760,49 @@ function eseguiMossaComputer(giocatoreIdx) {
 }
 
 // Dispatcher IA
-function calcolaPunteggioPresaIA(card, captureSet, giocatoreIdx) {
-    if (variante === 'bresciana') return calcolaPunteggioPresaIABresciana(card, captureSet, giocatoreIdx);
+function calcolaPunteggioPresaIA(card, captureSet) {
+    if (variante === 'bresciana') return calcolaPunteggioPresaIABresciana(card, captureSet);
     return calcolaPunteggioPresaIAClassica(card, captureSet);
 }
 
-function calcolaPunteggioScartoIA(card, giocatoreIdx) {
-    if (variante === 'bresciana') return calcolaPunteggioScartoIABresciana(card, giocatoreIdx);
+function calcolaPunteggioScartoIA(card) {
+    if (variante === 'bresciana') return calcolaPunteggioScartoIABresciana(card);
     return calcolaPunteggioScartoIAClassica(card);
 }
 
-// Calcola il valore positivo individuale di una singola carta per una determinata squadra
-function calcolaValorePositivoCarta(card, isTeamTu) {
-    let val = 0;
-
-    // Determina miePrese e oppPrese
-    const miePrese = isTeamTu ? cartePreseTu : cartePresePC;
-    const oppPrese = isTeamTu ? cartePresePC : cartePreseTu;
-
-    // 1. Carte speciali bresciane: 10 di Denari, Fante di Coppe, 2 di Spade (matta)
-    // Ciascuna vale 100 punti
-    if (card.suit === 'Q' && card.number === 10) val += 100;          // Dieci Denari
-    else if (card.suit === SEME_COPPE_BRESCIANE && card.number === 11) val += 100; // Fante Coppe
-    else if (card.suit === SEME_SPADE_BRESCIANE && card.number === 2) val += 100;  // 2 di Spade (matta)
-
-    // 2. Punto Spade: 30 punti per ogni spada, a meno che il punto spade non sia già stato assegnato (7+ spade da uno dei due team)
-    const spadeDeciso = (cartePreseTu.filter(c => c.suit === SEME_SPADE_BRESCIANE).length >= 7 || 
-                         cartePresePC.filter(c => c.suit === SEME_SPADE_BRESCIANE).length >= 7);
-    if (!spadeDeciso && card.suit === SEME_SPADE_BRESCIANE) {
-        val += 30;
-    }
-
-    // 3. Napola
-    if (card.suit === SEME_SPADE_BRESCIANE) {
-        const cimaMia = calcolaCimaNapola(miePrese);
-        const cimaOpp = calcolaCimaNapola(oppPrese);
-        const X = card.number;
-
-        if (cimaMia < 3 && cimaOpp < 3) {
-            // Caso A: Napola non ancora assegnata a nessuno dei due team
-            // a meno che non ci sia una spada di numero inferiore già conquistata dagli avversari
-            const hasOppLowerSpade = oppPrese.some(c => c.suit === SEME_SPADE_BRESCIANE && c.number < X);
-            if (!hasOppLowerSpade) {
-                if (X <= 3) val += 60;
-                else if (X === 4) val += 40;
-                else if (X === 5) val += 30;
-                else if (X === 6) val += 20;
-                else if (X === 7) val += 10;
-            }
-        } else if (cimaMia >= 3) {
-            // Caso B: Napola già conquistata da noi
-            // 50 punti per ogni spada di valore inferiore a quella più bassa conquistata dall'avversario
-            const minOppSpade = oppPrese.filter(c => c.suit === SEME_SPADE_BRESCIANE).reduce((min, c) => Math.min(min, c.number), 14);
-            if (X < minOppSpade) {
-                val += 50;
-            }
-            // Nota: I 100 punti per ogni spada che allunga la napola sono calcolati a livello di presa
-        } else if (cimaOpp >= 3) {
-            // Caso C: Napola già conquistata dall'avversario
-            // 80 punti per ogni spada che allungherebbe la napola dell'avversario (cioè oppCimaNapola + 1)
-            if (X === cimaOpp + 1) {
-                val += 80;
-            }
-            // 40 punti per ogni spada comunque inferiore alla più bassa conquistata da noi
-            const minMiaSpade = miePrese.filter(c => c.suit === SEME_SPADE_BRESCIANE).reduce((min, c) => Math.min(min, c.number), 14);
-            if (X < minMiaSpade) {
-                val += 40;
-            }
-        }
-    }
-
-    return val;
-}
-
 // IA Bresciana — presa
-function calcolaPunteggioPresaIABresciana(card, captureSet, giocatoreIdx) {
-    let score = 100; // Baseline per qualsiasi presa
+function calcolaPunteggioPresaIABresciana(card, captureSet) {
+    let score = 100;
     const totalCardsInHands = mani.reduce((sum, h) => sum + h.length, 0);
     const ultimaManoRound = (mazzo.length === 0 && totalCardsInHands === 1);
-    const allCards = [card, ...captureSet];
+    if (captureSet.length === carteTavolo.length && !ultimaManoRound) score += 500; // Scopa
 
-    // Determina la pila delle carte già prese dal proprio team
-    const isTeamTu = (giocatoreIdx === 0 || giocatoreIdx === 2);
-    const miePrese = isTeamTu ? cartePreseTu : cartePresePC;
-
-    // Scopa: 100 punti
-    if (captureSet.length === carteTavolo.length && !ultimaManoRound) score += 100;
-
-    // Picca: 100 punti
-    if (ultimaCartaCalataTavolo && captureSet.length === 1 && captureSet[0].id === ultimaCartaCalataTavolo.id) {
-        score += 100;
-    }
-
-    // Simili: 100 punti (richiede almeno 2 carte dal tavolo)
-    if (captureSet.length >= 2) {
-        const primoSeme = allCards[0].suit;
-        if (allCards.every(c => c.suit === primoSeme)) score += 100;
-    }
-
-    // Quadriglia/Cinquina: +120 se 3 carte dal tavolo (Quadriglia), +140 se >= 4 dal tavolo (Cinquina)
-    if (captureSet.length === 3) {
-        score += 120;
-    } else if (captureSet.length >= 4) {
-        score += 140;
-    }
-
-    // Aggiungi valore positivo per ciascuna carta coinvolta nella presa
-    allCards.forEach(c => {
-        score += calcolaValorePositivoCarta(c, isTeamTu);
+    // Premia cattura Napola (Asso/2/3 di Picche)
+    captureSet.forEach(c => {
+        if (c.suit === SEME_SPADE_BRESCIANE && c.number <= 3) score += 40;
+        if (c.suit === SEME_SPADE_BRESCIANE) score += 15;
+        if (c.suit === 'Q' && c.number === 10) score += 60; // Dieci Denari
+        if (c.suit === SEME_COPPE_BRESCIANE && c.number === 11) score += 60; // Fante Coppe
     });
+    if (card.suit === SEME_SPADE_BRESCIANE && card.number <= 3) score += 40;
+    if (card.suit === SEME_SPADE_BRESCIANE) score += 15;
+    if (card.suit === 'Q' && card.number === 10) score += 60;
+    if (card.suit === SEME_COPPE_BRESCIANE && card.number === 11) score += 60;
 
-    // Se la Napola è già nostra, aggiungi 100 punti per ogni spada che allunga la Napola
-    const cimaMia = calcolaCimaNapola(miePrese);
-    if (cimaMia >= 3) {
-        const allSpades = allCards.filter(c => c.suit === SEME_SPADE_BRESCIANE);
-        const cimaFutura = calcolaCimaNapola([...miePrese, ...allSpades]);
-        if (cimaFutura > cimaMia) {
-            score += (cimaFutura - cimaMia) * 100;
-        }
-    }
-
-    // Bonus generico per quantità carte
     score += (captureSet.length + 1) * 3;
     return score;
 }
 
 // IA Bresciana — scarto
-function calcolaPunteggioScartoIABresciana(card, giocatoreIdx) {
+function calcolaPunteggioScartoIABresciana(card) {
     let score = 0;
-    const isTeamTu = (giocatoreIdx === 0 || giocatoreIdx === 2);
-
-    // Difesa anti-scopa: se scartando questa carta la somma totale tavolo supera 10,
-    // l'avversario non può fare scopa al prossimo turno con una singola carta
-    const sommaTavolo = carteTavolo.reduce((s, c) => s + c.valore, 0);
-    if (sommaTavolo + card.valore > 10) score += 60;
-
-    // Valorizzazione negativa dello scarto: la metà del valore positivo che la carta avrebbe per l'avversario
-    const valorePositivoPerAvversario = calcolaValorePositivoCarta(card, !isTeamTu);
-    score -= (valorePositivoPerAvversario / 2);
-
-    // Penalizza lo scarto di figure (sebbene valgano 0 nelle somme, possono essere prese dall'avversario)
-    if (card.isFigura) score -= 5;
-    
-    // Penalizza leggermente le carte con valore numerico alto per evitare prese facili
+    // Evita di scartare onori chiave
+    if (card.suit === SEME_SPADE_BRESCIANE && card.number <= 3) score -= 60; // Napola
+    if (card.suit === SEME_SPADE_BRESCIANE) score -= 20; // Spade
+    if (card.suit === 'Q' && card.number === 10) score -= 80; // Dieci Denari
+    if (card.suit === SEME_COPPE_BRESCIANE && card.number === 11) score -= 80; // Fante Coppe
+    if (card.isFigura) score -= 5; // Figure hanno valore onorifico
     score -= card.valore * 1.5;
-    
     return score;
 }
 

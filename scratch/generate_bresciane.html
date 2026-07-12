@@ -301,7 +301,7 @@
             // 8. Disegniamo i dorsi delle carte (Colonna 16, riga 0 dorso rosso, riga 1 dorso blu)
             log("5. Rendering dei dorsi (rosso e blu) alla colonna 16...");
             
-            const drawDorso = (patternId, targetRow) => {
+            const drawDorso = (groupSelector, yOffset, targetRow) => {
                 return new Promise((resolve) => {
                     const defs = svgEl.querySelector('defs').cloneNode(true);
                     
@@ -311,21 +311,25 @@
                     svgD.setAttribute('viewBox', `0 0 156.36 311.93`);
                     svgD.appendChild(defs);
                     
-                    const bgRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-                    bgRect.setAttribute('x', '0'); bgRect.setAttribute('y', '0');
-                    bgRect.setAttribute('width', '156.36'); bgRect.setAttribute('height', '311.93');
-                    bgRect.setAttribute('rx', '10.63'); bgRect.setAttribute('ry', '10.63');
-                    bgRect.setAttribute('fill', '#f4f2ef');
-                    bgRect.setAttribute('stroke', '#000000'); bgRect.setAttribute('stroke-width', '2');
-                    svgD.appendChild(bgRect);
+                    // Selezioniamo il gruppo del dorso nel DOM dell'SVG
+                    const group = svgEl.querySelector(groupSelector);
+                    if (!group) {
+                        log(`Errore: gruppo dorso non trovato con selettore ${groupSelector}`);
+                        resolve();
+                        return;
+                    }
                     
-                    const patternRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-                    patternRect.setAttribute('x', '7'); patternRect.setAttribute('y', '7');
-                    patternRect.setAttribute('width', '142.36'); patternRect.setAttribute('height', '297.93');
-                    patternRect.setAttribute('rx', '4'); patternRect.setAttribute('ry', '4');
-                    patternRect.setAttribute('fill', `url(#${patternId})`);
-                    patternRect.setAttribute('stroke', '#000000'); patternRect.setAttribute('stroke-width', '1');
-                    svgD.appendChild(patternRect);
+                    // Cloniamo il gruppo
+                    const groupClone = group.cloneNode(true);
+                    
+                    // Creiamo un gruppo contenitore per resettare la traslazione
+                    // Poiché il dorso originale è posizionato a x=2076.5 e y=yOffset,
+                    // lo trasliamo indietro a (0, 0)
+                    const wrapper = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                    wrapper.setAttribute('transform', `translate(-2076.5, ${-yOffset})`);
+                    wrapper.appendChild(groupClone);
+                    
+                    svgD.appendChild(wrapper);
                     
                     const svgString = new XMLSerializer().serializeToString(svgD);
                     const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
@@ -343,8 +347,8 @@
                 });
             };
             
-            await drawDorso('q', 0); // Pattern rosso
-            await drawDorso('o', 1); // Pattern blu
+            await drawDorso('g[transform="translate(2076.5 -102.78)"]', 638.27, 0); // Rosso (terzo dall'alto)
+            await drawDorso('g[transform="translate(2076.5 -418.05)"]', 323.00, 1); // Blu (secondo dall'alto)
             
             log("6. Sprite sheet generato con successo! Invio al server locale...");
             

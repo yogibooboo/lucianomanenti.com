@@ -7,8 +7,6 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Gioca a Scala 40 Gratis Online - lucianomanenti.com</title>
-	<link rel="alternate" hreflang="it" href="scala40.html">
-	<link rel="alternate" hreflang="en" href="scala40-en.html">
 	<link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
 	<link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
 	<link rel="shortcut icon" href="favicon/favicon.ico">
@@ -22,7 +20,7 @@
 	<meta http-Equiv="Pragma" Content="no-cache">
 	<meta http-Equiv="Expires" Content="0">
 
-	<link rel="stylesheet" href="scala40V1.css?v=2.5" />
+	<link rel="stylesheet" href="scala40new.css?v=1.0" />
 
 	<!-- Google tag (gtag.js) -->
 	<script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
@@ -69,8 +67,7 @@
 
 			<!-- Selettore Lingua -->
 			<div class="lang-switch-game" style="position: absolute; top: 10px; left: 10px; z-index: 10001; display: flex; align-items: center; gap: 6px;">
-				<a href="scala40.html" class="active" style="display: inline-block; padding: 4px 10px; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 12px; background: #ffd700; color: #2c3e50; border: 1px solid #ffd700;">IT</a>
-				<a href="scala40-en.html" style="display: inline-block; padding: 4px 10px; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 12px; background: rgba(255, 255, 255, 0.2); color: white; border: 1px solid rgba(255, 255, 255, 0.3);">EN</a>
+				<a href="scala40bis.html" class="active" style="display: inline-block; padding: 4px 10px; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 12px; background: #ffd700; color: #2c3e50; border: 1px solid #ffd700;">IT</a>
 				<div id="btn-audio" class="btn-audio-game" aria-label="Audio"></div>
 			</div>
 
@@ -182,10 +179,9 @@
 	<audio id="applause" src="sounds/scala40/applause.mp3"></audio>
 	<audio id="distribuisci" src="sounds/scala40/distribuisci.mp3"></audio>
 
-	<!-- Scripts for game logic -->
+	<!-- Scripts for game logic (no jQuery) -->
 	<script src="site.js?v=1.1"></script>
-	<script src="jquery-2.1.1.js"></script>
-	<script src="scala40codeV1.js?v=3.16"></script>
+	<script src="scala40bis.js?v=1.0"></script>
 	<script>
 		function setLanguage(lang) {
 			localStorage.setItem('userLanguage', lang);
