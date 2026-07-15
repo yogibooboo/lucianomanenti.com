@@ -24,10 +24,16 @@ var translations = {
 		too_high: "valore troppo alto",
 		too_low: "valore troppo basso",
 		cannot_empty: "non è possibile rimanere senza carte",
+		jolly_first: "devi giocare il jolly che hai recuperato prima di scartare",
+		scarti_first: "devi giocare la carta pescata dagli scarti prima di scartare. Per annullare la pescata usa ↩ (annulla)",
+		attacca_first: "non puoi scartare una carta che attacca a un tris o una scala in tavola",
 		game_saved: "partita salvata",
 		turn: "TURNO DI: ",
 		player: "giocatore",
-		opponent: "avversario"
+		opponent: "avversario",
+		draw_card: "PESCA UNA CARTA!",
+		dealer: "MAZZIERE",
+		excluded: "FUORI"
 	},
 	en: {
 		undo: "UNDO",
@@ -40,10 +46,16 @@ var translations = {
 		too_high: "value too high",
 		too_low: "value too low",
 		cannot_empty: "you cannot remain without cards",
+		jolly_first: "you must play the recovered joker before discarding",
+		scarti_first: "you must play the card drawn from the discards before discarding. To undo the draw use ↩ (undo)",
+		attacca_first: "you cannot discard a card that attaches to a combination on the table",
 		game_saved: "game saved",
 		turn: "TURN OF: ",
 		player: "player",
-		opponent: "opponent"
+		opponent: "opponent",
+		draw_card: "DRAW A CARD!",
+		dealer: "DEALER",
+		excluded: "OUT"
 	}
 };
 
@@ -159,6 +171,15 @@ function animateEl(el, props, duration, opts) {
 		return;
 	}
 
+	/* Ogni moveTo può interrompere un'animazione precedente ancora in corso
+	   sullo stesso elemento (es. un riordino del giocatore durante il replay
+	   IA): senza invalidare il tween vecchio, i due step() concorrenti si
+	   contendono style.left/top e la carta "torna indietro" a scatti verso
+	   il bersaglio ormai superato. Un token per elemento fa sì che solo
+	   l'ultimo tween avviato continui a scrivere sullo stile. */
+	var mioToken = (el._animToken || 0) + 1;
+	el._animToken = mioToken;
+
 	var startTime = null;
 	var start = {};
 	var startCustom = null;
@@ -170,6 +191,7 @@ function animateEl(el, props, duration, opts) {
 		var endCustom = parseFloat(props[key]);
 
 		function stepCustom(ts) {
+			if (el._animToken !== mioToken) return;
 			if (startTime === null) startTime = ts;
 			var progress = Math.min(1, (ts - startTime) / duration);
 			var now = startCustom + (endCustom - startCustom) * progress;
@@ -184,6 +206,7 @@ function animateEl(el, props, duration, opts) {
 	if ('left' in props) start.left = parseFloat(el.style.left) || 0;
 
 	function step(ts) {
+		if (el._animToken !== mioToken) return;
 		if (startTime === null) startTime = ts;
 		var progress = Math.min(1, (ts - startTime) / duration);
 		if ('top' in props) el.style.top = (start.top + (parseFloat(props.top) - start.top) * progress) + 'px';
@@ -198,12 +221,23 @@ function animateEl(el, props, duration, opts) {
 	requestAnimationFrame(step);
 }
 
+/* Animazione di lampeggio per il banner "pesca una carta". */
+(function () {
+	var st = document.createElement('style');
+	st.textContent = '@keyframes pulsapesca { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }';
+	document.head.appendChild(st);
+})();
+
 function applyImmediate(el, props, opts) {
 	if (opts && opts.step) {
 		var key = Object.keys(props)[0];
 		opts.step(parseFloat(props[key]), { pos: 1 });
 		return;
 	}
+	/* Invalida un eventuale tween animato ancora in corso su questo
+	   elemento, altrimenti il suo step() continuerebbe a sovrascrivere
+	   la posizione impostata qui. */
+	el._animToken = (el._animToken || 0) + 1;
 	if ('top' in props) el.style.top = props.top + 'px';
 	if ('left' in props) el.style.left = props.left + 'px';
 	if ('z-index' in props) el.style.zIndex = props['z-index'];
@@ -213,7 +247,14 @@ var CUORI = "C", QUADRI = "Q", FIORI = "F", PICCHE = "P", JOLLY = "J";
 var valoreseme = { "F": 0, "Q": 1, "C": 2, "P": 3, "J": 4 };
 var semevalore = ["F", "Q", "C", "P", "J"];
 var RETROROSSO = 0, RETROBLU = 1;
+/* Dimensione unica delle carte per tutte le modalità (il vecchio formato
+   "grande" 71x96 ingrandito di un ulteriore 10%). Lo sprite in showcard si
+   scala proporzionalmente a queste costanti. */
+var CARTAW = 94, CARTAH = 127;
 var TRIS = 1, SCALA = 2;
+/* Margine di cattura orizzontale attorno all'impronta reale delle carte di un
+   gruppo: entro questa distanza un drag "vede" il gruppo (cercamatch). */
+var MARGINECATTURA = 40;
 
 /* Stati della macchina a stati del turno IA (alavorastato). Sostituiscono
    le stringhe magiche "nextavv"/"playrender"/"fineturno"/"abortito". */
@@ -248,6 +289,11 @@ var dascarti = document.getElementById("dascarti");
 var slitta = document.getElementById("slitta");
 var ding = document.getElementById("ding");
 var thunder = document.getElementById("thunder");
+var lacrimosa = document.getElementById("lacrimosa");
+if (localStorage.getItem('scala40tris_audiotorneo') === 'thunder') {
+	var radiothunder = document.getElementById('audiotorneothunder');
+	if (radiothunder) radiothunder.checked = true;
+}
 var applause = document.getElementById("applause");
 var distribuisci = document.getElementById("distribuisci");
 
@@ -320,6 +366,13 @@ function CardGroup(selector, layout) {
 	this.deltax = layout.deltax;
 	this.deltay = layout.deltay;
 	this.xtris = layout.xtris;
+	this.larghezza = layout.larghezza || 0;
+	/* ancoradx: le carte si allineano al margine destro del contenitore e
+	   crescono verso sinistra (usato per i tris, che possono invadere lo
+	   spazio della mano man mano che questa si svuota). margindx riserva
+	   spazio a destra dell'ancora (es. la colonna del contatore verticale). */
+	this.ancoradx = layout.ancoradx || false;
+	this.destra = this.left + $$.getCssInt(el, "width") - (layout.margindx || 10);
 }
 
 CardGroup.prototype = {
@@ -354,12 +407,79 @@ CardGroup.prototype = {
 		destinazione.add(carta, indice);
 	},
 
-	/* Posizione (top/left) della carta i-esima secondo il layout del gruppo. */
+	/* Posizione (top/left) della carta i-esima secondo il layout del gruppo.
+	   Se larghezza è impostata e il contenuto nominale eccede lo spazio,
+	   comprime proporzionalmente la spaziatura carte e la distanza tra i tris.
+	   Con ancoradx il PRIMO tris resta fisso al margine destro e ogni nuovo
+	   tris si accumula alla sua sinistra (i tris esistenti non si muovono,
+	   salvo compressione). */
 	posizione: function (indice, carta) {
-		return {
-			top: this.top + this.offsety + Math.floor(indice * this.deltay),
-			left: this.left + this.offsetx + Math.floor(indice * this.deltax) + this.xtris * (carta ? carta.ntris : 0)
-		};
+		var deltax = this.deltax;
+		var xtris = this.xtris;
+		var n = this.carte.length;
+		var top = this.top + this.offsety + Math.floor(indice * this.deltay);
+
+		if (!this.ancoradx) {
+			if ((this.larghezza > 0) && (n > 1)) {
+				var maxntris = 0;
+				for (var k = 0; k < n; k++) { if (this.carte[k].ntris > maxntris) maxntris = this.carte[k].ntris; }
+				var estensione = (n - 1) * deltax + xtris * maxntris;
+				var disponibile = this.larghezza - this.offsetx - CARTAW;
+				if ((estensione > disponibile) && (estensione > 0)) {
+					var fattore = disponibile / estensione;
+					deltax *= fattore;
+					xtris *= fattore;
+				}
+			}
+			return {
+				top: top,
+				left: this.left + this.offsetx + Math.floor(indice * deltax) + Math.floor(xtris * (carta ? carta.ntris : 0))
+			};
+		}
+
+		/* Gruppo ancorato a destra: raggruppa le carte in blocchi contigui
+		   per ntris (un blocco = un tris, nell'ordine di deposito). */
+		var blocchi = [];
+		var corrente = null;
+		for (var k = 0; k < n; k++) {
+			if ((corrente === null) || (this.carte[k].ntris !== corrente.ntris)) {
+				corrente = { ntris: this.carte[k].ntris, inizio: k, len: 0 };
+				blocchi.push(corrente);
+			}
+			corrente.len++;
+		}
+
+		var passi = 0;
+		for (var m = 0; m < blocchi.length; m++) passi += (blocchi[m].len - 1);
+		var estensione = passi * deltax + (blocchi.length - 1) * (deltax + xtris);
+		var disponibile = this.larghezza - CARTAW;
+		/* Se il gruppo mano associato (stessa fascia) si estende troppo verso
+		   destra, riduce ulteriormente lo spazio disponibile per i tris, così
+		   il passo orizzontale si comprime prima che le due zone si tocchino. */
+		if (this.manogruppo && (this.manogruppo.carte.length > 0)) {
+			var finemano = this.manogruppo.posizione(this.manogruppo.carte.length - 1).left + CARTAW;
+			var margine = finemano + 10 - (this.destra - this.larghezza);
+			if (margine > 0) disponibile -= margine;
+		}
+		if ((estensione > disponibile) && (estensione > 0)) {
+			var fattore = Math.max(0, disponibile / estensione);
+			deltax *= fattore;
+			xtris *= fattore;
+		}
+
+		/* Scorre i blocchi: il primo al margine destro, i successivi a sinistra. */
+		var ultima = this.destra - CARTAW;
+		for (var m = 0; m < blocchi.length; m++) {
+			var prima = ultima - (blocchi[m].len - 1) * deltax;
+			if ((indice >= blocchi[m].inizio) && (indice < blocchi[m].inizio + blocchi[m].len)) {
+				return {
+					top: top,
+					left: Math.floor(prima + (indice - blocchi[m].inizio) * deltax)
+				};
+			}
+			ultima = prima - (deltax + xtris);
+		}
+		return { top: top, left: this.destra - CARTAW };
 	}
 };
 
@@ -378,6 +498,10 @@ function Snapshot(commento) {
 	this.pescato = scala.pescato;
 	this.f40giocatore = scala.f40giocatore;
 	this.f40avversario = scala.f40avversario.slice();
+	/* Regole jolly/scarto immediato: i vincoli seguono l'undo (giocare la
+	   carta vincolata e poi annullare la mossa li ripristina). */
+	this.jollydarigiocare = scala.jollydarigiocare;
+	this.cartascartidagiocare = scala.cartascartidagiocare;
 
 	this.gruppi = {};
 	for (var j = 0; j < Snapshot.NOMIGRUPPI.length; j++) {
@@ -419,6 +543,23 @@ Snapshot.prototype.restore = function () {
 		var nome = Snapshot.NOMIGRUPPI[j];
 		var gruppo = scala[nome];
 		var salvate = this.gruppi[nome];
+
+		/* Durante il replay del turno IA il giocatore può riordinare la
+		   mano: il contenuto della mano non cambia negli stati del turno,
+		   quindi si ripristina il contenuto salvato preservando l'ordine
+		   corrente (eventuali carte solo nello snapshot vanno in coda).
+		   Si lavora su una copia: lo snapshot resta intatto. */
+		if ((nome === "giocatore") && (scala.astato === TurnState.PLAYRENDER)) {
+			var ordinate = [];
+			for (var k = 0; k < gruppo.carte.length; k++) {
+				if (salvate.indexOf(gruppo.carte[k]) !== -1) ordinate.push(gruppo.carte[k]);
+			}
+			for (var k = 0; k < salvate.length; k++) {
+				if (ordinate.indexOf(salvate[k]) === -1) ordinate.push(salvate[k]);
+			}
+			salvate = ordinate;
+		}
+
 		gruppo.carte.splice(0, gruppo.carte.length);
 		for (var k = 0; k < salvate.length; k++) {
 			gruppo.carte.push(salvate[k]);
@@ -435,6 +576,13 @@ Snapshot.prototype.restore = function () {
 
 	scala.carteselezionate.splice(0, scala.carteselezionate.length);
 	$$.removeClassAll(".card", "cardselected");
+
+	/* I vincoli (jolly recuperato, carta dagli scarti) tornano com'erano al
+	   momento dello stato: render() poi riapplica l'evidenziazione se la
+	   carta vincolata è in mano. */
+	scala.jollydarigiocare = this.jollydarigiocare || null;
+	scala.cartascartidagiocare = this.cartascartidagiocare || null;
+	$$.removeClassAll(".card", "jollypending");
 };
 
 //carte: 1-13   = 1 - RE,  50=jolly rosso, 51=jolly nero
@@ -475,6 +623,39 @@ var scala = {
 		this.numeroavversari = (_na > 0 && _na < 4) ? _na : 3;
 		this.totalelimite = (!isNaN(_tl) && _tl > 0) ? _tl : 150;
 
+		/* Opzioni di gioco (pannello OPZIONI, persistite sul dispositivo).
+		   jollyimmediato: obbligo di giocare il jolly recuperato nello stesso
+		   turno. jollydarigiocare: il jolly appena recuperato dal giocatore,
+		   evidenziato finché resta in mano; blocca lo scarto se la regola è
+		   attiva. */
+		this.jollyimmediato = (localStorage.getItem('scala40tris_jollyimmediato') === '1');
+		this.jollydarigiocare = null;
+		/* scartoimmediato: obbligo di giocare nello stesso turno la carta
+		   pescata dagli scarti (stessa meccanica del jolly recuperato).
+		   L'IA non è coinvolta: pesca dagli scarti solo se usa la carta. */
+		this.scartoimmediato = (localStorage.getItem('scala40tris_scartoimmediato') === '1');
+		this.cartascartidagiocare = null;
+		/* nonscartareattaccanti: vietato scartare una carta che attacca a un
+		   tris/scala in tavola, a meno che sia l'unica rimasta in mano. */
+		this.nonscartareattaccanti = (localStorage.getItem('scala40tris_nonscartareattaccanti') === '1');
+		/* unacartabasta: se true (default, comportamento storico) un tris o
+		   una scala può contenere anche una sola carta reale (il resto
+		   jolly); se false richiede almeno 2 carte reali nel blocco.
+		   Sostituisce il vecchio "duejolly", che valeva solo per i tris di 3
+		   carte e non era mai stato esteso alle scale. */
+		this.unacartabasta = (localStorage.getItem('scala40tris_unacartabasta') !== '0');
+		/* assosingolo: variante non ufficiale (non FISCA) per cui l'asso,
+		   se rimasto da solo in mano a fine smazzata, vale 1 punto anziché
+		   11. Default off: la regola federale (sempre 11) resta invariata. */
+		this.assosingolo = (localStorage.getItem('scala40tris_assosingolo') === '1');
+
+		/* escludiavversariesuperano: variante non ufficiale, default off. Un
+		   avversario che ha già raggiunto/superato il limite non riceve più
+		   carte e salta il turno nelle mani successive: il suo punteggio
+		   resta congelato mentre gli altri continuano. Non si applica mai al
+		   giocatore umano, che ha già la propria gestione di fine torneo. */
+		this.escludiavversariesuperano = (localStorage.getItem('scala40tris_escludiavversariesuperano') === '1');
+
 		this.totalepartite = 0;
 		this.totaleavversario1 = 0;
 		this.totaleavversario2 = 0;
@@ -499,7 +680,6 @@ var scala = {
 		this.turno = -1;
 
 		this.cartescoperte = false;
-		this.duejolly = true;
 		this.fscartiprima40 = true;
 
 		this.carteselezionate = [];
@@ -508,14 +688,39 @@ var scala = {
 		this.fscartipesca = false;
 		this.modale = false;
 
-		this.altezzacampo = 600 / (2 + this.numeroavversari * 2);
+		/* Mazziere: -1 = giocatore, 0..N-1 = avversario. Casuale alla
+		   primissima partita, poi ruota a ogni mano conclusa (la rotazione
+		   viene scritta in localStorage da calcolatotali). Il primo a giocare
+		   è il successivo al mazziere. */
+		var _mz = localStorage.getItem('scala40tris_mazziere');
+		this.mazziere = (_mz === null) ? (Math.floor(Math.random() * (this.numeroavversari + 1)) - 1) : parseInt(_mz, 10);
+		if (isNaN(this.mazziere) || this.mazziere < -1 || this.mazziere >= this.numeroavversari) this.mazziere = -1;
+		localStorage.setItem('scala40tris_mazziere', this.mazziere);
+
+		/* Layout fisso: 4 fasce da 150px (una per giocatore), mano a sinistra
+		   e tris a destra nella stessa fascia. Con meno di 3 avversari le
+		   fasce centrali restano semplicemente vuote, senza riscalare nulla. */
+		this.altezzacampo = 150;
 
 		for (var i = 1; i <= this.numeroavversari; i++) {
-			this.creacampo("avversario" + i, 2 * i - 2, true);
-			this.creacampo("trisavversario" + i, 2 * i - 1);
+			this.creacampo("avversario" + i, i - 1, "trisavversario" + i);
 		}
-		this.creacampo("trisgiocatore", 2 * this.numeroavversari);
-		this.creacampo("giocatore", 2 * this.numeroavversari + 1, true);
+		this.creacampo("giocatore", 3, "trisgiocatore");
+
+		/* Mostra l'etichetta MAZZIERE sopra il contatore del giocatore giusto. */
+		var campomazziere = (this.mazziere == -1) ? "trisgiocatore" : ("trisavversario" + (this.mazziere + 1));
+		$$.show("#mazziere" + campomazziere);
+
+		/* Banner lampeggiante sotto le carte del giocatore: invita a pescare
+		   all'inizio del turno. Visibilità gestita da render(). */
+		this.distribuendo = false;
+		this.iaimminente = false;
+		$$.append("#campogioco", '<div id="bannerpesca" style="position:absolute; display:none;' +
+			' top: ' + (100 + this.altezzacampo * 3 + 126) + 'px; left: 110px; width: 240px; height: 22px;' +
+			' background-color: rgba(0,0,0,0.6); border: 1px solid #ffd700; border-radius: 11px;' +
+			' color: #ffd700; font-family: sans-serif; font-weight: bold; font-size: 14px;' +
+			' line-height: 22px; text-align: center; z-index: 600;' +
+			' animation: pulsapesca 1.2s infinite;">' + t('draw_card') + '</div>');
 
 		var campo = $$.one("#campogioco");
 		this.offsetxx = this.offsetxx || $$.offset(campo).left;
@@ -563,7 +768,7 @@ var scala = {
 		var offsetx = Math.round(1 + larghezza / 50);
 		var offsety = Math.round(1 + altezza / 50);
 
-		$$.append("#" + contenitore, '<div id="' + nome + '" style="top: ' + posy + 'px; left: ' + posx + 'px;" class="contatore">' +
+		$$.append("#" + contenitore, '<div id="' + nome + '" style="top: ' + posy + 'px; left: ' + posx + 'px; z-index:500;" class="contatore">' +
 			'<img src="images/scala40/vassoiod.png" height="' + altezza + 'px" width="' + larghezza + 'px">'
 
 			+ '<div id="digit3" class="digitx" style="top: ' + offsety + 'px; left: ' + offsetx + 'px; width:' + wdigit + 'px; height:' + hdigit + 'px;' +
@@ -575,45 +780,124 @@ var scala = {
 		);
 	},
 
-	creacampo: function (nome, posizione, parnomecampo) {
+	/* Contatore a 3 cifre impilate in verticale. Sfondo provvisorio
+	   (rettangolo scuro con bordo dorato) in attesa della grafica definitiva.
+	   Le cifre hanno id vdigit3/2/1 e sono aggiornate da displaypunti insieme
+	   a quelle del contatore orizzontale. Se etichetta è indicata, in testa
+	   viene aggiunta una cella (delle stesse dimensioni di una cifra) con la
+	   sigla del giocatore (A1/A2/A3/G). */
+	creacontatoreverticale: function (nome, contenitore, posx, posy, etichetta) {
+		var wdigit = 22, hdigit = 26, gap = 3, pad = 4;
+		var celle = etichetta ? 4 : 3;
+		var larghezza = wdigit + pad * 2;
+		var altezza = hdigit * celle + gap * (celle - 1) + pad * 2;
 
+		var topcella = function (cella) { return pad + (hdigit + gap) * cella; };
+
+		var stiledigit = function (cella, cifra) {
+			return '<div id="vdigit' + cifra + '" class="digitx" style="top: ' + topcella(cella) + 'px; left: ' + pad + 'px;' +
+				' width:' + wdigit + 'px; height:' + hdigit + 'px;' +
+				' background-size: ' + wdigit + 'px ' + (hdigit * 10) + 'px; background-position: -0px 0px;"> </div>';
+		};
+
+		var html = '<div id="' + nome + '" style="top: ' + posy + 'px; left: ' + posx + 'px;' +
+			' width:' + larghezza + 'px; height:' + altezza + 'px; z-index:500;' +
+			' background-image: url(images/wood2.png);' +
+			' border: 1px solid #b8860b; border-radius: 6px;" class="contatore">';
+
+		var prima = 0;
+		if (etichetta) {
+			/* La sigla a un solo carattere (G) viene allargata per riempire la
+			   cella come le sigle a due caratteri (A1/A2/A3). */
+			var stiletichetta = (etichetta.length == 1) ?
+				' font-size: 21px; transform: scaleX(1.35);' : ' font-size: 17px;';
+			html += '<div style="position:absolute; top: ' + topcella(0) + 'px; left: ' + pad + 'px;' +
+				' width:' + wdigit + 'px; height:' + hdigit + 'px; line-height:' + hdigit + 'px;' +
+				' color:#ffd700; font-family: sans-serif; font-weight: bold; text-align:center;' +
+				stiletichetta + '">' +
+				etichetta + '</div>';
+			prima = 1;
+		}
+		html += stiledigit(prima, 3) + stiledigit(prima + 1, 2) + stiledigit(prima + 2, 1) + '</div>';
+
+		$$.append("#" + contenitore, html);
+	},
+
+	/* Crea il contenitore visivo di un gruppo nella fascia indicata:
+	   parnomecampo=true -> mano (metà sinistra),
+	   altrimenti tris (metà destra della stessa fascia). */
+
+	creacampo: function (nome, banda, nometris) {
+
+		/* Un solo contenitore per fascia: la mano occupa la parte sinistra, i
+		   tris sono ancorati al margine destro e crescono verso sinistra nello
+		   spazio condiviso. Niente confine interno: il "chi vince" tra riordino
+		   e attacco lo decide la posizione reale delle carte (cercamatch), non
+		   la geometria dei rettangoli. Larghezza 860 = 12..872, la stessa somma
+		   dei due vecchi contenitori (420+434 con gap). */
 		$$.append("#campogioco", '<div id="' +
 			nome + '" class="campo" style="top:' +
-			(100 + this.altezzacampo * (posizione)) + 'px; left: 12px; width:854px;height:' +
+			(100 + this.altezzacampo * banda) + 'px; left: 12px; width: 860px; height:' +
 			this.altezzacampo + 'px;">');
 
-		this.creacontatore("punti" + nome, 100, 40, nome, 754, 2);
-
-		var labelText = nome;
-		if (labelText.indexOf('avversario') === 0) {
-			labelText = t('opponent') + labelText.replace('avversario', ' ');
-		} else if (labelText === 'giocatore') {
-			labelText = t('player');
+		/* Contatori verticali: mano a sinistra delle carte, tris sul bordo
+		   destro con la sigla del giocatore in testa. Gli id restano
+		   "punti<nome>"/"punti<nometris>" così la logica esistente (SCOPERTE,
+		   fine partita) funziona invariata. */
+		this.creacontatoreverticale("punti" + nome, nome, 4, 30);
+		var sigla = (nometris === "trisgiocatore") ? "G" : "A" + nometris.replace("trisavversario", "");
+		this.creacontatoreverticale("punti" + nometris, nome, 860 - 36, 15, sigla);
+		/* Etichetta MAZZIERE sopra il contatore, mostrata solo per il
+		   mazziere della mano corrente. */
+		$$.append("#" + nome, '<div id="mazziere' + nometris + '" style="position:absolute; display:none;' +
+			' top: 1px; left: ' + (860 - 92) + 'px; width: 88px; text-align: right;' +
+			' color:#ffd700; font-family: sans-serif; font-weight: bold; font-size: 11px;' +
+			' text-shadow: 1px 1px 2px #000; z-index:600;">' + t('dealer') + '</div>');
+		/* Etichetta FUORI: solo per gli avversari (mai per il giocatore),
+		   mostrata quando l'opzione "escludiavversariesuperano" è attiva e
+		   l'avversario ha superato il limite (vedi avvescluso()/render()).
+		   Grande e centrata su tutta la fascia, ben visibile sopra le carte
+		   (z-index alto) dato che segnala che il campo è inattivo. */
+		if (nometris !== "trisgiocatore") {
+			$$.append("#" + nome, '<div id="fuori' + nometris + '" style="position:absolute; display:none;' +
+				' top: ' + Math.floor((this.altezzacampo - 50) / 2) + 'px; left: 0px; width: 860px; height: 50px;' +
+				' text-align: center; line-height: 50px;' +
+				' color:#ff3030; font-family: sans-serif; font-weight: bold; font-size: 34px;' +
+				' letter-spacing: 4px; text-shadow: 2px 2px 4px #000, 0 0 12px #000;' +
+				' background-color: rgba(0,0,0,0.45); z-index:900;">' + t('excluded') + '</div>');
 		}
-
-		if (parnomecampo) $$.append("#campogioco", '<div id="et' + nome + '" class="etichetta" style="top:' +
-			(60 + this.altezzacampo * (posizione + 0.5)) + 'px; left: 350px; height:50px;">&nbsp' +
-			labelText + '</div>');
 	},
 
 	creamazzi: function () {
 
 		this.stock = [];
 
-		var offy = 25, moffx = 25, moffy = 22;
-		if (this.numeroavversari > 1) offy = 4;
-		if (this.numeroavversari > 2) { moffx = 35, moffy = 35 };
+		/* Offset unici per tutte le modalità. Le mani partono a destra del
+		   contatore verticale (offsetx 40) e NON si comprimono mai: se la mano
+		   è molto lunga può sbordare a destra, per scelta. I tris sono ancorati
+		   al margine destro (arretrato di margindx per la colonna del
+		   contatore) e crescono verso sinistra invadendo lo spazio della mano;
+		   oltre larghezza si comprimono. */
+		var offy = Math.floor((150 - CARTAH) / 2), moffx = Math.floor((120 - CARTAW) / 2), moffy = 150 - CARTAH - 6;
+		var LTRIS = 795;
 
 		this.mazzo = new CardGroup("#mazzo", { offsetx: moffx, offsety: moffy, deltax: 0.1, deltay: 0.1, xtris: 0 });
 		this.scarti = new CardGroup("#scarti", { offsetx: moffx, offsety: moffy, deltax: 0.1, deltay: 0.1, xtris: 0 });
-		this.giocatore = new CardGroup("#giocatore", { offsetx: 25, offsety: offy, deltax: 20, deltay: 0, xtris: 80 });
-		this.trisgiocatore = new CardGroup("#trisgiocatore", { offsetx: 25, offsety: offy, deltax: 20, deltay: 0, xtris: 80 });
-		this.avversario1 = new CardGroup("#avversario1", { offsetx: 25, offsety: offy, deltax: 20, deltay: 0, xtris: 0 });
-		this.trisavversario1 = new CardGroup("#trisavversario1", { offsetx: 25, offsety: offy, deltax: 20, deltay: 0, xtris: 80 });
-		this.avversario2 = new CardGroup("#avversario2", { offsetx: 25, offsety: offy, deltax: 20, deltay: 0, xtris: 0 });
-		this.trisavversario2 = new CardGroup("#trisavversario2", { offsetx: 25, offsety: offy, deltax: 20, deltay: 0, xtris: 80 });
-		this.avversario3 = new CardGroup("#avversario3", { offsetx: 25, offsety: offy, deltax: 20, deltay: 0, xtris: 0 });
-		this.trisavversario3 = new CardGroup("#trisavversario3", { offsetx: 25, offsety: offy, deltax: 20, deltay: 0, xtris: 80 });
+		/* Mano e tris condividono lo stesso div di fascia: la mano parte da
+		   sinistra, i tris si ancorano a destra (destra = 12+860-40 = 832,
+		   identica al vecchio contenitore separato). */
+		this.giocatore = new CardGroup("#giocatore", { offsetx: 46, offsety: offy, deltax: 24, deltay: 0, xtris: 80 });
+		this.trisgiocatore = new CardGroup("#giocatore", { offsetx: 25, offsety: offy, deltax: 24, deltay: 0, xtris: 80, larghezza: LTRIS, ancoradx: true, margindx: 40 });
+		this.trisgiocatore.manogruppo = this.giocatore;
+		this.avversario1 = new CardGroup("#avversario1", { offsetx: 46, offsety: offy, deltax: 24, deltay: 0, xtris: 0 });
+		this.trisavversario1 = new CardGroup("#avversario1", { offsetx: 25, offsety: offy, deltax: 24, deltay: 0, xtris: 80, larghezza: LTRIS, ancoradx: true, margindx: 40 });
+		this.trisavversario1.manogruppo = this.avversario1;
+		this.avversario2 = new CardGroup("#avversario2", { offsetx: 46, offsety: offy, deltax: 24, deltay: 0, xtris: 0 });
+		this.trisavversario2 = new CardGroup("#avversario2", { offsetx: 25, offsety: offy, deltax: 24, deltay: 0, xtris: 80, larghezza: LTRIS, ancoradx: true, margindx: 40 });
+		this.trisavversario2.manogruppo = this.avversario2;
+		this.avversario3 = new CardGroup("#avversario3", { offsetx: 46, offsety: offy, deltax: 24, deltay: 0, xtris: 0 });
+		this.trisavversario3 = new CardGroup("#avversario3", { offsetx: 25, offsety: offy, deltax: 24, deltay: 0, xtris: 80, larghezza: LTRIS, ancoradx: true, margindx: 40 });
+		this.trisavversario3.manogruppo = this.avversario3;
 
 		this.campiavversario = [this.avversario1, this.avversario2, this.avversario3];
 		this.campitrisavversario = [this.trisavversario1, this.trisavversario2, this.trisavversario3];
@@ -671,6 +955,7 @@ var scala = {
 
 	givecards: function () {
 
+		this.distribuendo = true;
 		this.muovicarta(this.mazzo, this.scarti, "faceUp", "nopush");
 		this.render();
 
@@ -682,6 +967,7 @@ var scala = {
 			}, i * 400);
 			window.setTimeout(function () {
 				for (var j = 0; j < scala.numeroavversari; j++) {
+					if (scala.avvescluso(j)) continue;
 					scala.muovicarta(scala.mazzo, scala.campiavversario[j], "faceDown", "nopush");
 					scala.rendicontenitore(scala.campiavversario[j], 180);
 				}
@@ -694,6 +980,20 @@ var scala = {
 			for (var j = 0; j < scala.numeroavversari; j++) {
 				scala.ordinacarte(scala.campiavversario[j]);
 			}
+			scala.distribuendo = false;
+
+			/* Il primo a giocare è il successivo al mazziere: se è un
+			   avversario, il turno IA parte da lui e prosegue fino
+			   all'ultimo avversario, poi tocca al giocatore. Gli avversari
+			   esclusi (limite superato) vengono saltati. */
+			var primo = scala.mazziere + 1;
+			while ((primo >= 0) && (primo < scala.numeroavversari) && scala.avvescluso(primo)) primo++;
+			if (primo >= scala.numeroavversari) primo = -1;
+			if (primo >= 0) {
+				scala.iaimminente = true;
+				window.setTimeout(function () { scala.mossaavversario(primo); }, 800);
+			}
+
 			scala.render();
 			ordina.play();
 		}, 5500);
@@ -771,7 +1071,12 @@ var scala = {
 		$$.on(document, "mousedown", function (ev) {
 			var cardEl = ev.target.closest && ev.target.closest('.card');
 			if (!cardEl) return;
-			if ((ev.button == 0) && (!scala.fmodale) && (scala.astato != TurnState.PLAYRENDER)) return scala.scalamousedown(cardEl, ev);
+			/* Il drag è permesso anche durante il replay del turno IA: i rami
+			   pericolosi del mouseup sono già protetti (attacco/deposito da
+			   pescato, pesca/scarto da turno) e resta attivo solo il riordino
+			   della mano; Snapshot.restore preserva l'ordine durante il
+			   replay. */
+			if ((ev.button == 0) && (!scala.fmodale)) return scala.scalamousedown(cardEl, ev);
 		});
 
 		$$.on(document, "touchend", function (ev) {
@@ -820,8 +1125,42 @@ var scala = {
 			window.open('regole-scala40' + langSuffix, '_blank');
 		});
 
-		$$.on('#nuovo', 'click', function () {
-			scala.nuovo2();
+		$$.on('#opzioni', 'click', function () {
+			scala.apriopzioni();
+		});
+		$$.on('#optjollyimmediato', 'change', function (ev) {
+			scala.jollyimmediato = ev.target.checked;
+			localStorage.setItem('scala40tris_jollyimmediato', ev.target.checked ? '1' : '0');
+		});
+		$$.on('#optscartoimmediato', 'change', function (ev) {
+			scala.scartoimmediato = ev.target.checked;
+			localStorage.setItem('scala40tris_scartoimmediato', ev.target.checked ? '1' : '0');
+		});
+		$$.on('#optnonscartareattaccanti', 'change', function (ev) {
+			scala.nonscartareattaccanti = ev.target.checked;
+			localStorage.setItem('scala40tris_nonscartareattaccanti', ev.target.checked ? '1' : '0');
+		});
+		$$.on('#optunacartabasta', 'change', function (ev) {
+			scala.unacartabasta = ev.target.checked;
+			localStorage.setItem('scala40tris_unacartabasta', ev.target.checked ? '1' : '0');
+		});
+		$$.on('#optassosingolo', 'change', function (ev) {
+			scala.assosingolo = ev.target.checked;
+			localStorage.setItem('scala40tris_assosingolo', ev.target.checked ? '1' : '0');
+		});
+		$$.on('#optescludiavversariesuperano', 'change', function (ev) {
+			scala.escludiavversariesuperano = ev.target.checked;
+			localStorage.setItem('scala40tris_escludiavversariesuperano', ev.target.checked ? '1' : '0');
+		});
+		$$.on('input[name="audiotorneo"]', 'change', function (ev) {
+			if (!ev.target.checked) return;
+			localStorage.setItem('scala40tris_audiotorneo', ev.target.value);
+			/* pause() ferma anche i suoni Web Audio (patch in site.js) */
+			thunder.pause();
+			lacrimosa.pause();
+			var anteprima = (ev.target.value === 'thunder') ? thunder : lacrimosa;
+			anteprima.currentTime = 0;
+			anteprima.play();
 		});
 		$$.on('#azzeratotale', 'click', function () {
 			scala.azzeratotale();
@@ -869,7 +1208,8 @@ var scala = {
 	   - popstato(-1, true): ripristina l'ultimo stato lasciandolo sullo stack. */
 	popstato: function (numerostato, lasciacopia) {
 
-		var miostato = numerostato || -1;
+		/* 0 è un indice valido: il default -1 vale solo se l'argomento manca. */
+		var miostato = (numerostato === undefined || numerostato === null) ? -1 : numerostato;
 
 		var miacopia = lasciacopia || false;
 		if (this.statostack.length == 0) return;
@@ -915,7 +1255,10 @@ var scala = {
 			}
 		}
 
-		if (!this.pointerinelement(ev, "#giocatore")) return;
+		/* Si possono trascinare solo le carte della propria mano. Il criterio
+		   è l'appartenenza al gruppo, non l'area: con la mano lunga le ultime
+		   carte sbordano a destra del contenitore e devono restare prendibili. */
+		if (divCard.card.gruppo != this.giocatore) return;
 
 		this.scaladown = true;
 		this.scalamove = false;
@@ -935,18 +1278,22 @@ var scala = {
 		$$.css(divCard, { "z-index": 1000 });
 		$$.css(this.cartadown, { "top": this.cartadown.card.top + deltay, "left": this.cartadown.card.left + deltax });
 		this.scalamove = true;
-		if ((this.pointerinelement(ev, "#trisgiocatore")) && (this.pescato) && (this.trisgiocatore.carte.length > 0)) {
-			this.tgon();
-			this.cercamatch(this.trisgiocatore, NOESEGUI);
-		}
-		else this.tgoff();
 
+		/* Anteprima degli agganci: la fascia sotto il puntatore individua il
+		   bersaglio, cercamatch decide sull'impronta reale delle carte e
+		   sulla validità della combinazione. Il bordo arancione si accende
+		   solo se il rilascio in questo punto attaccherebbe davvero. */
+		var puoattaccare = (this.pescato) && (this.giocatore.carte.length != 1);
+
+		if (puoattaccare && this.pointerinelement(ev, "#giocatore")
+			&& this.cercamatch(this.trisgiocatore, NOESEGUI)) this.tgon();
+		else { this.tgoff(); this.togliselezione(this.trisgiocatore); }
+
+		var apertura = (this.calcolapuntitris(this.trisgiocatore.carte) > 39);
 		for (var j = 0; j < scala.numeroavversari; j++) {
-			if ((this.pointerinelement(ev, ("#trisavversario" + (j + 1)))) && (this.pescato) && (this.campitrisavversario[j].carte.length > 0)) {
-				this.taon(j);
-				this.cercamatch(this.campitrisavversario[j], NOESEGUI);
-			}
-			else this.taoff(j);
+			if (puoattaccare && apertura && this.pointerinelement(ev, "#avversario" + (j + 1))
+				&& this.cercamatch(this.campitrisavversario[j], NOESEGUI)) this.taon(j);
+			else { this.taoff(j); this.togliselezione(this.campitrisavversario[j]); }
 		}
 
 		return;
@@ -956,9 +1303,11 @@ var scala = {
 
 		if (!scala.scaladown) {
 			if (this.pointerinelement(ev, "#mazzo") && (!this.pescato)) return this.cartapesca();
+			/* per pescare vale l'intera fascia del giocatore */
 			if (this.pointerinelement(ev, "#giocatore") && (!this.pescato)) return this.cartapesca();
 			if (this.pointerinelement(ev, "#scarti")) return this.scartipesca();
-			if (this.pointerinelement(ev, "#trisgiocatore") && (this.pescato)) return this.scartatrisgiocatore();
+			/* a pesca fatta, il click sulla fascia deposita le carte selezionate */
+			if (this.pointerinelement(ev, "#giocatore") && (this.pescato)) return this.scartatrisgiocatore();
 			return;
 		}
 		this.scaladown = false;
@@ -968,10 +1317,34 @@ var scala = {
 
 		if ((!scala.scalamove) && (this.pescato)) { this.selezionacartagiocatore(divCard); return; }
 
-		var newindex = 0;
-		var currentindex = (carta.left - (this.giocatore.left + this.giocatore.offsetx)) / this.giocatore.deltax;
+		if (this.pointerinelement(ev, "#scarti") && (this.pescato)) return this.scarta(carta);
 
-		if (this.pointerinelement(ev, "#giocatore") && (carta.left > 0) && (this.scalamove) && (carta.gruppo == scala.giocatore)) {
+		/* Priorità del rilascio nella fascia: prima l'attacco (proprio tris,
+		   poi tris avversari se il giocatore ha aperto), altrimenti riordino
+		   della mano. cercamatch dice se l'attacco è avvenuto: decide in base
+		   all'impronta reale delle carte e alla validità della combinazione,
+		   quindi il riordino resta possibile anche vicino ai blocchi quando
+		   la carta non si attacca. */
+		var attaccata = false;
+		if ((this.pescato) && (this.giocatore.carte.length != 1)) {
+			if (this.pointerinelement(ev, "#giocatore")) {
+				attaccata = this.cercamatch(this.trisgiocatore, ESEGUI);
+			}
+			if (!attaccata && (this.calcolapuntitris(this.trisgiocatore.carte) > 39)) {
+				for (var j = 0; j < scala.numeroavversari; j++) {
+					if (this.pointerinelement(ev, "#avversario" + (j + 1))) {
+						attaccata = this.cercamatch(this.campitrisavversario[j], ESEGUI);
+						break;
+					}
+				}
+			}
+		}
+
+		if (!attaccata && this.pointerinelement(ev, "#giocatore")
+			&& (carta.left > 0) && (this.scalamove) && (carta.gruppo == scala.giocatore)
+			&& this.inimpronta(this.giocatore, parseInt(divCard.style.left, 10))) {
+			var newindex = 0;
+			var currentindex = (carta.left - (this.giocatore.left + this.giocatore.offsetx)) / this.giocatore.deltax;
 			var currentleft = parseInt(divCard.style.left, 10);
 			if (currentleft > (this.giocatore.left + this.giocatore.offsetx)) {
 				newindex = Math.floor((currentleft - (this.giocatore.left + this.giocatore.offsetx)) / this.giocatore.deltax) + 1;
@@ -984,51 +1357,61 @@ var scala = {
 				ordina.play();
 			}
 		}
-		else {
-			if (this.pointerinelement(ev, "#scarti") && (this.pescato)) return this.scarta(carta);
-			if ((this.pointerinelement(ev, "#trisgiocatore"))
-				&& (this.pescato)
-				&& (this.trisgiocatore.carte.length > 0)
-				&& (this.giocatore.carte.length != 1)) {
-				this.tgon();
-				this.cercamatch(this.trisgiocatore, ESEGUI);
-			}
-			else this.tgoff();
 
-			for (var j = 0; j < scala.numeroavversari; j++) {
-
-				if ((this.pointerinelement(ev, ("#trisavversario" + (j + 1))))
-					&& (this.pescato)
-					&& (this.campitrisavversario[j].carte.length > 0)
-					&& (this.giocatore.carte.length != 1)
-					&& (this.calcolapuntitris(this.trisgiocatore.carte) > 39)) {
-					this.taon(j);
-					this.cercamatch(this.campitrisavversario[j], ESEGUI);
-				}
-				this.taoff(j);
-				$$.removeClassAll(".card", "cardselected");
-			}
-		}
-
+		this.tgoff();
+		for (var j = 0; j < scala.numeroavversari; j++) this.taoff(j);
+		$$.removeClassAll(".card", "cardselected");
 		this.scalamove = false;
 		this.render();
 		return;
 	},
 
+	/* Toglie l'evidenziazione di anteprima dalle carte del gruppo. */
+	togliselezione: function (cont) {
+		for (var i = 0; i < cont.carte.length; i++) $$.removeClass(cont.carte[i].gui, "cardselected");
+	},
+
+	/* True se la carta trascinata (bordo sinistro cartaleft) si sovrappone
+	   all'impronta orizzontale reale delle carte del gruppo, estesa di
+	   MARGINECATTURA. Con i tris ancorati a destra che invadono lo spazio
+	   della mano è la posizione delle carte, non un rettangolo contenitore,
+	   a dire dove ha senso agganciare. */
+	inimpronta: function (cont, cartaleft) {
+		var n = cont.carte.length;
+		if (n == 0) return false;
+		var minx = cont.carte[0].left, maxx = cont.carte[0].left;
+		for (var i = 1; i < n; i++) {
+			if (cont.carte[i].left < minx) minx = cont.carte[i].left;
+			if (cont.carte[i].left > maxx) maxx = cont.carte[i].left;
+		}
+		if (cartaleft + CARTAW < minx - MARGINECATTURA) return false;
+		if (cartaleft > maxx + CARTAW + MARGINECATTURA) return false;
+		return true;
+	},
+
+	/* Cerca un aggancio per la carta trascinata nel gruppo tris indicato.
+	   Restituisce true se ha trovato (ed eventualmente eseguito, con ESEGUI)
+	   una combinazione valida; con NOESEGUI si limita ad evidenziare la carta
+	   bersaglio. */
 	cercamatch: function (cont, esegui) {
 		var SINISTRA = true;
 		var DESTRA = false;
 		var ncarte = cont.carte.length;
-		for (var i = 0; i < ncarte; i++) $$.removeClass(cont.carte[i].gui, "cardselected");
+		this.togliselezione(cont);
+		if (ncarte == 0) return false;
 		var cartaleft = parseInt(this.cartadown.style.left, 10);
+		if (!this.inimpronta(cont, cartaleft)) return false;
 
+		/* L'ordine visivo non coincide più con l'ordine dell'array (i tris
+		   ancorati a destra si accumulano verso sinistra): si cerca quindi la
+		   carta più vicina in orizzontale alla carta trascinata. */
+		var indice = 0, distanzamin = 1000000;
 		for (var i = 0; i < ncarte; i++) {
-			if (cont.carte[i].left > cartaleft) break;
+			var distanza = Math.abs(cont.carte[i].left - cartaleft);
+			if (distanza < distanzamin) { distanzamin = distanza; indice = i; }
 		}
-		if (i == 0) return this.checkcarta(cont, 0, SINISTRA, esegui);
-		if (i == ncarte) return this.checkcarta(cont, ncarte - 1, DESTRA, esegui);
-		if ((cartaleft - cont.carte[i - 1].left) > (2 * cont.deltax)) return this.checkcarta(cont, i, SINISTRA, esegui);
-		else return this.checkcarta(cont, i - 1, DESTRA, esegui);
+		if (cartaleft <= cont.carte[indice].left) return this.checkcarta(cont, indice, SINISTRA, esegui);
+		return this.checkcarta(cont, indice, DESTRA, esegui);
 	},
 
 	checkcarta: function (cont, indice, left, esegui) {
@@ -1047,48 +1430,74 @@ var scala = {
 			}
 		}
 
+		/* Recupero jolly con priorità sull'attacco e su TUTTO il blocco,
+		   indipendentemente dal punto di contatto: se la carta trascinata è
+		   quella rappresentata da un jolly del blocco, l'unica mossa
+		   ammissibile è lo scambio (il jolly vale la carta che sostituisce:
+		   attaccare il suo doppione lasciandolo nel blocco creerebbe un seme
+		   duplicato nel tris o una carta duplicata nella scala). */
 		var esito;
-		if ((cartasel.numero > 49) && (carta.numero < 49)) {
-			var salvacarta = tris[indicetris];
-			if (tipotris == SCALA) {
-				tris[indicetris] = carta;
-				if (this.analizzatris(tris).valido) this.scambiacarte(carta, cartasel, esegui);
-				else {
-					tris[indicetris] = salvacarta;
-					if (indicetris == 0) {
-						tris.splice(0, 0, carta);
-						esito = this.analizzatris(tris);
-						if (esito.valido) this.aggiungitris(cont, indice, carta, cartasel, esegui, esito);
-					}
-					else {
-						if (indicetris == tris.length - 1) {
-							tris.splice(tris.length, 0, carta);
-							esito = this.analizzatris(tris);
-							if (esito.valido) this.aggiungitris(cont, indice + 1, carta, cartasel, esegui, esito);
-						}
+		if (carta.numero < 49) {
+			for (var j = 0; j < tris.length; j++) {
+				var cartajolly = tris[j];
+				if (cartajolly.numero < 49) continue;
+				if (tipotris == TRIS) {
+					if ((carta.seme == cartajolly.tipojolly) && (carta.numero == cartajolly.numerojolly)) {
+						this.scambiacarte(carta, cartajolly, esegui);
+						return true;
 					}
 				}
-				return;
-			}
-			else {
-				if ((carta.seme == tris[indicetris].tipojolly) &&
-					(carta.numero == tris[indicetris].numerojolly)) {
-					{ this.scambiacarte(carta, cartasel, esegui); return; }
+				else {
+					tris[j] = carta;
+					var scambiovalido = this.analizzatris(tris).valido;
+					tris[j] = cartajolly;
+					if (scambiovalido) { this.scambiacarte(carta, cartajolly, esegui); return true; }
 				}
 			}
 		}
 
+		/* La carta più vicina è un jolly di scala ma lo scambio (già tentato
+		   sopra su tutto il blocco) non è valido: se il jolly è a un'estremità
+		   prova ad allungare la scala oltre il jolly. */
+		if ((cartasel.numero > 49) && (carta.numero < 49) && (tipotris == SCALA)) {
+			if (indicetris == 0) {
+				tris.splice(0, 0, carta);
+				esito = this.analizzatris(tris);
+				if (esito.valido) { this.aggiungitris(cont, indice, carta, cartasel, esegui, esito); return true; }
+			}
+			else if (indicetris == tris.length - 1) {
+				tris.splice(tris.length, 0, carta);
+				esito = this.analizzatris(tris);
+				if (esito.valido) { this.aggiungitris(cont, indice + 1, carta, cartasel, esegui, esito); return true; }
+			}
+			return false;
+		}
+
+		/* Prova il lato indicato dalla posizione della carta trascinata; se la
+		   combinazione non è valida prova l'altro lato della stessa carta. In
+		   una scala i due lati non sono equivalenti (es. il 6 si attacca solo
+		   a sinistra del 7): senza il tentativo simmetrico, bastava superare
+		   di un pixel il bordo della prima carta del blocco perché l'attacco
+		   fallisse silenziosamente. */
 		if (left) {
 			tris.splice(indicetris, 0, carta);
 			esito = this.analizzatris(tris);
-			if (esito.valido) this.aggiungitris(cont, indice, carta, cartasel, esegui, esito);
+			if (esito.valido) { this.aggiungitris(cont, indice, carta, cartasel, esegui, esito); return true; }
+			tris.splice(indicetris, 1);
+			tris.splice(indicetris + 1, 0, carta);
+			esito = this.analizzatris(tris);
+			if (esito.valido) { this.aggiungitris(cont, indice + 1, carta, cartasel, esegui, esito); return true; }
 		}
 		else {
 			tris.splice(indicetris + 1, 0, carta);
 			esito = this.analizzatris(tris);
-			if (esito.valido) this.aggiungitris(cont, indice + 1, carta, cartasel, esegui, esito);
+			if (esito.valido) { this.aggiungitris(cont, indice + 1, carta, cartasel, esegui, esito); return true; }
+			tris.splice(indicetris + 1, 1);
+			tris.splice(indicetris, 0, carta);
+			esito = this.analizzatris(tris);
+			if (esito.valido) { this.aggiungitris(cont, indice, carta, cartasel, esegui, esito); return true; }
 		}
-		return;
+		return false;
 	},
 
 	scambiacarte: function (carta, cartasel, esegui) {
@@ -1110,6 +1519,9 @@ var scala = {
 			contenitore1.replaceAt(posizione1, cartasel);
 			contenitore2.replaceAt(posizione2, carta);
 			cartasel.tipojolly = "J";
+			/* Regola opzionale: il jolly recuperato dal giocatore va giocato
+			   nello stesso turno (render lo evidenzia, scarta lo pretende). */
+			if (scala.jollyimmediato && (contenitore1 === scala.giocatore)) scala.jollydarigiocare = cartasel;
 			this.render();
 			suona(perjolly);
 			scala.pushstato("scambiajolly");
@@ -1181,6 +1593,25 @@ var scala = {
 
 	scarta: function (carta) {
 
+		/* Regola opzionale "jolly immediato": non si può scartare (chiudere
+		   il turno) finché il jolly recuperato è ancora in mano. */
+		if (this.jollyimmediato && this.jollydarigiocare && (this.jollydarigiocare.gruppo === this.giocatore)) {
+			return this.myalert(t('jolly_first'));
+		}
+
+		/* Regola opzionale "scarto immediato": idem per la carta pescata
+		   dagli scarti. */
+		if (this.scartoimmediato && this.cartascartidagiocare && (this.cartascartidagiocare.gruppo === this.giocatore)) {
+			return this.myalert(t('scarti_first'));
+		}
+
+		/* Regola opzionale "non scartare carte che attaccano": vietato
+		   scartare una carta che si aggancerebbe a un tris/scala in tavola,
+		   a meno che sia l'unica carta rimasta in mano. */
+		if (this.nonscartareattaccanti && (this.giocatore.carte.length > 1) && this.cartaattaccatavolo(carta)) {
+			return this.myalert(t('attacca_first'));
+		}
+
 		var annulla40 = (function () {
 			while (scala.trisgiocatore.carte.length > 0) { scala.undo(); }
 			while ((scala.fscartipesca) && (scala.pescato)) { scala.undo(); }
@@ -1231,6 +1662,7 @@ var scala = {
 			}
 		}
 		else {
+			this.iaimminente = true;
 			window.setTimeout(function () { scala.mossaavversario(0); }, 1000);
 		}
 		this.render();
@@ -1241,6 +1673,12 @@ var scala = {
 		var el = $$.one(selector);
 		$$.css(el, { "z-index": "50000" });
 		$$.show(el);
+
+		/* Un drag eventualmente in corso muore qui: il mouseup verrà ignorato
+		   dal gate fmodale, quindi lo stato va ripulito subito (il prossimo
+		   render riporterà la carta al suo posto). */
+		this.scaladown = false;
+		this.scalamove = false;
 
 		$$.css($$.one("#schermo"), { "width": window.innerWidth / window.gameScale });
 		$$.show("#schermo");
@@ -1520,11 +1958,25 @@ var scala = {
 		scala.render();
 	},
 
-	nuovo2: function () {
+	/* Apre il pannello OPZIONI sincronizzando i controlli con lo stato
+	   corrente. Bottone1 = NUOVA PARTITA (nuovo3), bottone2 = CHIUDI. */
+	apriopzioni: function () {
 		scala.salvaavversari = scala.numeroavversari;
 		var radio = document.querySelector('input[name="avversari"][value="' + scala.numeroavversari + '"]');
-		if (radio) radio.click();
-		scala.mydialog("formnuovo", scala.nuovo3);
+		if (radio) radio.checked = true;
+		var check = document.getElementById('optjollyimmediato');
+		if (check) check.checked = scala.jollyimmediato;
+		var check2 = document.getElementById('optscartoimmediato');
+		if (check2) check2.checked = scala.scartoimmediato;
+		var check3 = document.getElementById('optnonscartareattaccanti');
+		if (check3) check3.checked = scala.nonscartareattaccanti;
+		var check4 = document.getElementById('optunacartabasta');
+		if (check4) check4.checked = scala.unacartabasta;
+		var check5 = document.getElementById('optassosingolo');
+		if (check5) check5.checked = scala.assosingolo;
+		var check6 = document.getElementById('optescludiavversariesuperano');
+		if (check6) check6.checked = scala.escludiavversariesuperano;
+		scala.mydialog("formopzioni", scala.nuovo3);
 	},
 
 	nuovo3: function () {
@@ -1670,6 +2122,13 @@ var scala = {
 		this.displaypunti(this.totalelimite, "totalelimite");
 		this.displaypunti(this.totalepartite, "totalepartite");
 
+		/* Etichetta FUORI: un avversario escluso (vedi avvescluso()) resta
+		   visibile ma segnalato come uscito dal gioco. */
+		for (var jf = 0; jf < this.numeroavversari; jf++) {
+			if (this.avvescluso(jf)) $$.show("#fuoritrisavversario" + (jf + 1));
+			else $$.hide("#fuoritrisavversario" + (jf + 1));
+		}
+
 		this.rendicontenitore(this.mazzo);
 		this.rendicontenitore(this.scarti);
 		this.rendicontenitore(this.giocatore);
@@ -1680,13 +2139,43 @@ var scala = {
 			this.rendicontenitore(this.campitrisavversario[j]);
 		}
 
-		if (this.pescato) $$.css($$.one("#giocatore"), { "border-color": "yellow" });
-		else $$.css($$.one("#giocatore"), { "border-color": "grey" });
-		if (this.turno == -1) $$.css($$.one("#etgiocatore"), { "color": "yellow" });
-		else $$.css($$.one("#etgiocatore"), { "color": "#888888" });
+		/* Regola jolly immediato: il jolly recuperato pulsa finché resta in
+		   mano al giocatore; appena viene giocato (o l'undo lo restituisce
+		   al tavolo) evidenziazione e vincolo decadono. */
+		if (this.jollydarigiocare) {
+			if (this.jollydarigiocare.gruppo === this.giocatore) $$.addClass(this.jollydarigiocare.gui, "jollypending");
+			else {
+				$$.removeClass(this.jollydarigiocare.gui, "jollypending");
+				this.jollydarigiocare = null;
+			}
+		}
+
+		/* Regola scarto immediato: stessa meccanica per la carta pescata
+		   dagli scarti. */
+		if (this.cartascartidagiocare) {
+			if (this.cartascartidagiocare.gruppo === this.giocatore) $$.addClass(this.cartascartidagiocare.gui, "jollypending");
+			else {
+				$$.removeClass(this.cartascartidagiocare.gui, "jollypending");
+				this.cartascartidagiocare = null;
+			}
+		}
+
+		/* Banner "pesca una carta": visibile solo quando tocca al giocatore,
+		   non ha ancora pescato e non ci sono transizioni in corso. */
+		var banner = $$.one("#bannerpesca");
+		if (banner) {
+			var mostrabanner = (this.turno == -1) && (!this.pescato) && (!this.cartescoperte)
+				&& (!this.distribuendo) && (!this.iaimminente) && (!this.fmodale);
+			if (mostrabanner) $$.show(banner); else $$.hide(banner);
+		}
+
+		/* Indicazione del turno: bordo giallo sulla fascia del giocatore di
+		   turno (un solo contenitore per fascia: mano + tris). */
+		var colore = (this.turno == -1) ? "yellow" : "#888888";
+		$$.css($$.one("#giocatore"), { "border-color": colore });
 		for (var j = 0; j < this.numeroavversari; j++) {
-			if (j == this.turno) $$.css($$.one("#etavversario" + (j + 1)), { "color": "yellow" });
-			else $$.css($$.one("#etavversario" + (j + 1)), { "color": "#888888" });
+			colore = (j == this.turno) ? "yellow" : "#888888";
+			$$.css($$.one("#avversario" + (j + 1)), { "border-color": colore });
 		}
 	},
 
@@ -1694,6 +2183,9 @@ var scala = {
 		var velocita = speed || 400;
 		for (var i = 0; i < cont.carte.length; i++) {
 			var carta = cont.carte[i];
+			/* La carta in trascinamento segue il mouse: i render intermedi
+			   (es. i frame del replay IA) non devono strapparla dal cursore. */
+			if (this.scaladown && this.cartadown && (this.cartadown.card === carta)) continue;
 			var pos = cont.posizione(i, carta);
 			carta.moveTo(pos.top, pos.left, i, velocita);
 			this.showcard(carta);
@@ -1703,6 +2195,7 @@ var scala = {
 	cartapesca: function () {
 
 		if (this.turno != -1) return;
+		if (this.iaimminente || this.distribuendo) return;
 		this.fscartipesca = false;
 
 		if (scala.statostack.length == 0) this.pushstato("iniziale");
@@ -1716,6 +2209,7 @@ var scala = {
 
 	scartipesca: function () {
 		if (this.turno != -1) return;
+		if (this.iaimminente || this.distribuendo) return;
 		if (scala.statostack.length == 0) this.pushstato("iniziale");
 		if (this.pescato) {
 			if (this.carteselezionate.length == 1) {
@@ -1730,7 +2224,11 @@ var scala = {
 		this.fscartipesca = true;
 		this.pescato = true;
 		dascarti.play();
-		this.muovicarta(this.scarti, this.giocatore, "faceUp", "scartipesca");
+		var presa = this.muovicarta(this.scarti, this.giocatore, "faceUp", "scartipesca");
+
+		/* Regola opzionale: la carta pescata dagli scarti va giocata nello
+		   stesso turno (render la evidenzia, scarta lo pretende). */
+		if (this.scartoimmediato) this.cartascartidagiocare = presa;
 
 		this.render();
 		return;
@@ -1764,11 +2262,10 @@ var scala = {
 	check1: function (divCard) {
 		var k = this.carteselezionate[0];
 		var n = divCard.card;
-		if (k.seme == "J") {
-			if (n.seme != "J") return true;
-			if (this.duejolly) return true;
-			return false;
-		}
+		/* Due jolly di seguito: la validità reale (minimo di carte reali nel
+		   blocco) si decide solo con analizzatris alla terza carta, qui si
+		   lascia proseguire la selezione. */
+		if (k.seme == "J") return true;
 		if (n.seme == "J") return true;
 		if (n.seme == k.seme) {
 			if (Math.abs(n.numero - k.numero) == 1) return true;
@@ -1819,7 +2316,12 @@ var scala = {
 				if (!semidausare[carte[i].seme]) { trovatotris = false; break; }
 				semidausare[carte[i].seme] = false;
 			}
-			if ((trovatotris) && (ncarte != numerojolly) && (this.duejolly || (numerojolly < 2))) {
+			/* Regola opzionale "una carta reale basta" (ex duejolly, ora
+			   uniformata a tris e scala): con l'opzione attiva (default)
+			   basta 1 sola carta reale nel blocco; disattivata, ne servono
+			   almeno 2. */
+			var minimocarte = this.unacartabasta ? 1 : 2;
+			if ((trovatotris) && ((ncarte - numerojolly) >= minimocarte)) {
 				esito.valido = true;
 				esito.tipotris = TRIS;
 				esito.primonumero = primonumero;
@@ -1852,6 +2354,12 @@ var scala = {
 			if (carte[i].seme != primoseme) { trovatotris = false; break; }
 			if (primonumero2 == 13) { primonumero2 = 0, oltrekappa = true; }
 		}
+		/* Stessa regola opzionale "una carta reale basta" applicata alla
+		   scala (prima non c'era alcun limite qui). numerojolly2 non conta
+		   carte[0] (il ciclo parte da i=1): va sommato a parte. */
+		var numerojollytotale = numerojolly2 + ((carte[0].numero > 49) ? 1 : 0);
+		var minimocartescala = this.unacartabasta ? 1 : 2;
+		if (trovatotris && ((ncarte - numerojollytotale) < minimocartescala)) trovatotris = false;
 		if (trovatotris) {
 			if (primonumero2 < 3) primonumero2 += 13;
 			esito.valido = true;
@@ -1888,8 +2396,8 @@ var scala = {
 
 	showcard: function (carta) {
 
-		var backx, backy, stepx = -71, stepy = -96, bsx = 1233, bsy = 384;
-		if (this.numeroavversari > 2) { stepx = -52, stepy = -70, bsx = 903, bsy = 280; }
+		var backx, backy, stepx = -CARTAW, stepy = -CARTAH;
+		var bsx = Math.round(CARTAW * 1233 / 71), bsy = CARTAH * 4;
 		if ((carta.faceUp == true) || (this.cartescoperte)) {
 			if (carta.numero < 50) {
 				backx = stepx * (carta.numero - 1);
@@ -1928,18 +2436,22 @@ var scala = {
 		return true;
 	},
 
+	/* Evidenziazione della fascia durante il trascinamento: arancione quando
+	   il rilascio in questo punto produrrebbe un attacco valido, per
+	   distinguerla dal giallo che indica il turno. Allo spegnimento si
+	   ripristina il colore coerente con il turno corrente. */
 	tgon: function (ev) {
-		$$.css($$.one("#trisgiocatore"), { "border-color": "yellow" });
+		$$.css($$.one("#giocatore"), { "border-color": "orange" });
 	},
 	tgoff: function (ev) {
-		$$.css($$.one("#trisgiocatore"), { "border-color": "gray" });
+		$$.css($$.one("#giocatore"), { "border-color": (scala.turno == -1) ? "yellow" : "#888888" });
 	},
 
 	taon: function (avv) {
-		$$.css($$.one("#trisavversario" + (avv + 1)), { "border-color": "yellow" });
+		$$.css($$.one("#avversario" + (avv + 1)), { "border-color": "orange" });
 	},
 	taoff: function (avv) {
-		$$.css($$.one("#trisavversario" + (avv + 1)), { "border-color": "gray" });
+		$$.css($$.one("#avversario" + (avv + 1)), { "border-color": (avv == scala.turno) ? "yellow" : "#888888" });
 	},
 
 	aggiornapunti: function (carta) {
@@ -2130,6 +2642,7 @@ var scala = {
 			scala.astato = TurnState.ABORTITO;
 			scala.turno = -1;
 		}
+		scala.iaimminente = false;
 		scala.jollymodificabili = [];
 		this.render();
 	},
@@ -2140,7 +2653,10 @@ var scala = {
 		this.render();
 	},
 
-	mossaavversario: function () {
+	/* Avvia il turno IA dall'avversario indicato (0 = avversario1). */
+	mossaavversario: function (start) {
+		scala.iaimminente = false;
+		scala.avvinizio = start || 0;
 		scala.astato = TurnState.INIZIO;
 		return scala.alavorastato();
 	},
@@ -2152,12 +2668,26 @@ var scala = {
 		switch (scala.astato) {
 
 			case TurnState.INIZIO:
-				scala.turno = 0;
-				avv = 0;
+				scala.turno = scala.avvinizio || 0;
+				avv = scala.turno;
 				scala.astato = TurnState.NEXTAVV;
 
 			case TurnState.NEXTAVV:
 
+				/* Avversari esclusi (limite superato, opzione attiva): niente
+				   turno, si passa oltre senza toccare lo stack né chiudere la
+				   mano (a differenza di carte.length==0, che significa invece
+				   "sceso, mano finita"). */
+				while ((avv < scala.numeroavversari) && scala.avvescluso(avv)) {
+					avv++;
+					scala.turno = avv;
+				}
+				if (avv >= scala.numeroavversari) { scala.turno = -1; scala.render(); return; }
+
+				/* A inizio mano (quando parte un avversario) lo stack è vuoto:
+				   si salva lo stato iniziale, come fa la pesca del giocatore,
+				   così il replay animato parte dal punto giusto. */
+				if (scala.statostack.length == 0) scala.pushstato("iniziale");
 				scala.avvsalvalog = scala.statostack.length;
 				if (scala.campiavversario[avv].carte.length == 0) { scala.astato = TurnState.FINETURNO; break; }
 				scala.apesca(avv);
@@ -2207,8 +2737,9 @@ var scala = {
 					}
 
 					if ((scala.totalegiocatore >= scala.totalelimite) && (salvapunti < scala.totalelimite)) {
-						thunder.currentTime = 0;
-						thunder.play();
+						var suonotorneo = (localStorage.getItem('scala40tris_audiotorneo') === 'thunder') ? thunder : lacrimosa;
+						suonotorneo.currentTime = 0;
+						suonotorneo.play();
 						scala.mydialog("haipersotorneo", function () { scala.azzeratotale(); scala.nuovo(); }, scala.nuovo);
 						return;
 					}
@@ -2249,6 +2780,10 @@ var scala = {
 
 	calcolapunti: function (gruppo) {
 		var punti = 0, valore;
+		/* Regola opzionale "asso singolo": se l'asso è l'unica carta
+		   rimasta in mano a fine smazzata, vale 1 punto anziché 11
+		   (variante diffusa, non FISCA: l'asso da solo vale sempre 11). */
+		if (this.assosingolo && (gruppo.length == 1) && (gruppo[0].numero == 1)) return 1;
 		for (var i = 0; i < gruppo.length; i++) {
 			valore = gruppo[i].numero;
 			if (valore == 1) { punti += 11; continue; }
@@ -2291,41 +2826,38 @@ var scala = {
 	},
 
 	displaypunti: function (punti, display) {
-		var centinaia, decine, unita, altezza;
+		var centinaia, decine, unita;
 		if (punti > 999) punti = 999;
 		centinaia = Math.floor(punti / 100); punti -= (centinaia * 100);
 		decine = Math.floor(punti / 10); punti -= (decine * 10);
 		unita = punti;
 
-		var digit3 = $$.one("#" + display + " #digit3");
-		var digit2 = $$.one("#" + display + " #digit2");
-		var digit1 = $$.one("#" + display + " #digit1");
+		/* Fa scorrere il rullo di una cifra fino al valore indicato; usato sia
+		   per il contatore orizzontale (digit3/2/1) sia, se presente, per
+		   quello verticale (vdigit3/2/1). */
+		var aggiornadigit = function (digit, cifra) {
+			if (!digit) return;
+			var altezza = parseInt(digit.style.height, 10) || 0;
+			var attuale = parseInt((digit.style.backgroundPosition || "0px 0px").split(" ")[1], 10) || 0;
+			animateEl(digit, { "posizione": ((-altezza * cifra) + "px") }, 400, {
+				customStart: attuale,
+				step: function (now) {
+					digit.style.backgroundPosition = "0px " + now + "px";
+				}
+			});
+		};
 
-		altezza = parseInt(digit3.style.height, 10) || 0;
-
-		var pippocentinaia = parseInt((digit3.style.backgroundPosition || "0px 0px").split(" ")[1], 10) || 0;
-		animateEl(digit3, { "pippocentinaia": ((-altezza * centinaia) + "px") }, 400, {
-			customStart: pippocentinaia,
-			step: function (now) {
-				digit3.style.backgroundPosition = "0px " + now + "px";
-			}
-		});
-
-		var pippodecine = parseInt((digit2.style.backgroundPosition || "0px 0px").split(" ")[1], 10) || 0;
-		animateEl(digit2, { "pippodecine": ((-altezza * decine) + "px") }, 400, {
-			customStart: pippodecine,
-			step: function (now) {
-				digit2.style.backgroundPosition = "0px " + now + "px";
-			}
-		});
-
-		var pippounita = parseInt((digit1.style.backgroundPosition || "0px 0px").split(" ")[1], 10) || 0;
-		animateEl(digit1, { "pippounita": ((-altezza * unita) + "px") }, 400, {
-			customStart: pippounita,
-			step: function (now) {
-				digit1.style.backgroundPosition = "0px " + now + "px";
-			}
-		});
+		/* I contatori di campo hanno id "punti<display>" (mano e tris vivono
+		   nello stesso div di fascia, quindi non si può più scopare per
+		   contenitore); i totalizzatori hanno direttamente id <display>. */
+		var contatore = $$.one("#punti" + display) || $$.one("#" + display);
+		if (!contatore) return;
+		aggiornadigit(contatore.querySelector("#digit3"), centinaia);
+		aggiornadigit(contatore.querySelector("#digit2"), decine);
+		aggiornadigit(contatore.querySelector("#digit1"), unita);
+		aggiornadigit(contatore.querySelector("#vdigit3"), centinaia);
+		aggiornadigit(contatore.querySelector("#vdigit2"), decine);
+		aggiornadigit(contatore.querySelector("#vdigit1"), unita);
 	},
 
 	calcolacarteattaccabili: function (avv) {
@@ -2733,10 +3265,18 @@ var scala = {
 		}
 		this.cercajollyrecuperabili(this.campiavversario[avv]);
 
+		/* Regola jolly immediato: l'IA recupera un jolly solo se ha già
+		   verificato che potrà giocarlo in questo turno (esiste almeno una
+		   combinazione del tavolo disposta ad accoglierlo). I jolly
+		   recuperati vengono tracciati: se il flusso normale non li usa in
+		   nuove calate, la rete di sicurezza in fondo al turno li attacca. */
+		var jollyrecuperati = [];
 		var coppia;
 		while (this.f40avversario[avv] && (this.jollyrecuperabili.length > 0)) {
 			coppia = this.jollyrecuperabili.pop();
+			if (scala.jollyimmediato && !this.piazzajolly(coppia["jolly"], coppia["cartagruppo"], NOESEGUI)) continue;
 			this.scambiacarte(coppia["cartagruppo"], coppia["jolly"], ESEGUI);
+			jollyrecuperati.push(coppia["jolly"]);
 			this.cercajollyrecuperabili(this.campiavversario[avv]);
 		}
 		this.gestisciattaccabili(avv);
@@ -2837,6 +3377,19 @@ var scala = {
 			}
 			log(stringone);
 
+			/* Rete di sicurezza della regola jolly immediato: un jolly
+			   recuperato in questo turno e non ancora usato va attaccato ora
+			   (la possibilità era stata verificata prima del recupero; si
+			   tiene almeno una carta in mano per lo scarto). */
+			if (scala.jollyimmediato) {
+				for (var i = 0; i < jollyrecuperati.length; i++) {
+					var jr = jollyrecuperati[i];
+					if (jr.gruppo !== this.campiavversario[avv]) continue;
+					if (this.campiavversario[avv].carte.length < 2) break;
+					if (!this.piazzajolly(jr, null, ESEGUI)) log("jolly immediato: nessun posto per " + jr.shortName);
+				}
+			}
+
 			this.render();
 		}
 	},
@@ -2879,6 +3432,73 @@ var scala = {
 			}
 		}
 		log("totaletris= " + totaletris + " ,con " + this.jollydausare + " jolly= " + totaletrisconjolly);
+		return false;
+	},
+
+	/* Regola jolly immediato (IA): cerca una combinazione del tavolo a cui il
+	   jolly può attaccarsi, validando con analizzatris (a differenza di
+	   attaccajolly, che usa euristiche non controllate ai bordi).
+	   - esegui=NOESEGUI: dice solo se un posto esiste (verifica preventiva
+	     prima di recuperare); con "sostituta" valorizzata, nel blocco di
+	     provenienza il jolly si considera già scambiato con quella carta.
+	   - esegui=ESEGUI: attacca davvero il jolly nel primo posto valido
+	     (rete di sicurezza a fine turno). */
+	piazzajolly: function (jolly, sostituta, esegui) {
+		var gruppi = [this.trisgiocatore];
+		for (var j = 0; j < this.numeroavversari; j++) gruppi.push(this.campitrisavversario[j]);
+		for (var g = 0; g < gruppi.length; g++) {
+			var carte = gruppi[g].carte;
+			var visti = {};
+			for (var i = 0; i < carte.length; i++) {
+				var nt = carte[i].ntris;
+				if (visti[nt]) continue;
+				visti[nt] = true;
+				var blocco = [], posizioni = [];
+				for (var k = 0; k < carte.length; k++) {
+					if (carte[k].ntris !== nt) continue;
+					blocco.push((carte[k] === jolly && sostituta) ? sostituta : carte[k]);
+					posizioni.push(k);
+				}
+				/* in coda (tris: quarto seme; scala: numero successivo) */
+				var esito = this.analizzatris(blocco.concat([jolly]));
+				if (esito.valido) {
+					if (esegui) this.aggiungitris(gruppi[g], posizioni[posizioni.length - 1] + 1, jolly, carte[posizioni[posizioni.length - 1]], ESEGUI, esito);
+					return true;
+				}
+				/* in testa (scala: numero precedente) */
+				esito = this.analizzatris([jolly].concat(blocco));
+				if (esito.valido) {
+					if (esegui) this.aggiungitris(gruppi[g], posizioni[0], jolly, carte[posizioni[0]], ESEGUI, esito);
+					return true;
+				}
+			}
+		}
+		return false;
+	},
+
+	/* Regola opzionale "non scartare carte che attaccano": vero se "carta"
+	   si potrebbe attaccare (in testa o in coda) a un tris/scala qualsiasi
+	   in tavola (trisgiocatore o campi avversari). Stessa logica di
+	   verifica di piazzajolly, ma su una carta normale invece che su un
+	   jolly: sola lettura, nessuna modifica allo stato. */
+	cartaattaccatavolo: function (carta) {
+		var gruppi = [this.trisgiocatore];
+		for (var j = 0; j < this.numeroavversari; j++) gruppi.push(this.campitrisavversario[j]);
+		for (var g = 0; g < gruppi.length; g++) {
+			var carte = gruppi[g].carte;
+			var visti = {};
+			for (var i = 0; i < carte.length; i++) {
+				var nt = carte[i].ntris;
+				if (visti[nt]) continue;
+				visti[nt] = true;
+				var blocco = [];
+				for (var k = 0; k < carte.length; k++) {
+					if (carte[k].ntris === nt) blocco.push(carte[k]);
+				}
+				if (this.analizzatris(blocco.concat([carta])).valido) return true;
+				if (this.analizzatris([carta].concat(blocco)).valido) return true;
+			}
+		}
 		return false;
 	},
 
@@ -2942,7 +3562,16 @@ var scala = {
 			}
 		}
 		else {
+			/* Regola opzionale "non scartare carte che attaccano", applicata
+			   anche prima dei 40 punti: qui l'IA non può ancora calare, quindi
+			   l'unica difesa è evitare di scegliere per lo scarto una carta
+			   che regalerebbe punti attaccandosi a un tris/scala altrui.
+			   Si esclude dal confronto di rischio minimo ogni carta attaccabile
+			   (a meno che l'intera mano sia fatta solo di carte attaccabili). */
+			var soloNonAttaccanti = this.nonscartareattaccanti
+				&& this.campiavversario[avv].carte.some(function (c) { return !scala.cartaattaccatavolo(c); });
 			for (var i = 0; i < this.campiavversario[avv].carte.length; i++) {
+				if (soloNonAttaccanti && this.cartaattaccatavolo(this.campiavversario[avv].carte[i])) continue;
 				if ((this.campiavversario[avv].carte[i].punteggio < minimo)
 					|| ((this.campiavversario[avv].carte[i].punteggio == minimo) && (this.campiavversario[avv].carte[indiceminimo].numero == 1))) {
 					minimo = this.campiavversario[avv].carte[i].punteggio;
@@ -2954,7 +3583,22 @@ var scala = {
 		this.muovicarta(this.campiavversario[avv].carte[indiceminimo], this.scarti, "faceUp", "ascarta");
 	},
 
+	/* True se l'avversario j (0-based) va escluso dalle mani successive
+	   perché ha già raggiunto/superato il limite e l'opzione è attiva.
+	   Il punteggio resta quello raggiunto: nessun altro stato da tracciare. */
+	avvescluso: function (j) {
+		if (!this.escludiavversariesuperano) return false;
+		var totale = [this.totaleavversario1, this.totaleavversario2, this.totaleavversario3][j];
+		return totale >= this.totalelimite;
+	},
+
 	calcolatotali: function () {
+
+		/* Mano conclusa: il mazziere ruota al giocatore successivo
+		   (varrà dalla prossima mano). */
+		var prossimomazziere = this.mazziere + 1;
+		if (prossimomazziere >= this.numeroavversari) prossimomazziere = -1;
+		localStorage.setItem('scala40tris_mazziere', prossimomazziere);
 
 		this.totalepartite++;
 

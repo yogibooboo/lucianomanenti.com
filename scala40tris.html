@@ -20,7 +20,7 @@
 	<meta http-Equiv="Pragma" Content="no-cache">
 	<meta http-Equiv="Expires" Content="0">
 
-	<link rel="stylesheet" href="scala40tris.css?v=1.0" />
+	<link rel="stylesheet" href="scala40tris.css?v=1.9" />
 
 	<!-- Google tag (gtag.js) -->
 	<script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
@@ -72,12 +72,49 @@
 			</div>
 
 			<!-- CONTENT FROM scala40V1.html's #campogioco DIV -->
-			<div id="formnuovo" class="formistruzioni">
-				<h2>Quanti avversari vuoi avere?<br></h2>
-				<input type="radio" name="avversari" value="1" checked>1<br>
-				<input type="radio" name="avversari" value="2">2<br>
-				<input type="radio" name="avversari" value="3">3<br>
-				<button class="bottone1" type="button">OK</button>
+			<div id="formopzioni" class="formistruzioni">
+				<h2 class="opzioni-titolo">Opzioni</h2>
+				<div class="opzioni-sezione">
+					<div class="opzioni-etichetta">Avversari</div>
+					<div class="opzioni-radio">
+						<label><input type="radio" name="avversari" value="1"><span>1</span></label>
+						<label><input type="radio" name="avversari" value="2"><span>2</span></label>
+						<label><input type="radio" name="avversari" value="3" checked><span>3</span></label>
+					</div>
+					<div class="opzioni-nota">Il numero di avversari vale dalla prossima partita; se cambia, i totali si azzerano.</div>
+				</div>
+				<div class="opzioni-sezione">
+					<div class="opzioni-etichetta">Regole</div>
+					<label class="opzioni-check">
+						<input type="checkbox" id="optjollyimmediato">
+						<span>Il jolly recuperato va giocato subito, nello stesso turno <em class="opzioni-badge opzioni-badge-fisca">regola FISCA</em></span>
+					</label>
+					<label class="opzioni-check">
+						<input type="checkbox" id="optscartoimmediato">
+						<span>La carta pescata dagli scarti va giocata subito, nello stesso turno <em class="opzioni-badge opzioni-badge-fisca">regola FISCA</em></span>
+					</label>
+					<label class="opzioni-check">
+						<input type="checkbox" id="optnonscartareattaccanti">
+						<span>Non si pu&ograve; scartare una carta che attacca a un tris o una scala in tavola (a meno che sia l'unica in mano) <em class="opzioni-badge opzioni-badge-fisca">regola FISCA</em></span>
+					</label>
+					<label class="opzioni-check">
+						<input type="checkbox" id="optunacartabasta" checked>
+						<span>Un tris o una scala pu&ograve; contenere anche una sola carta non jolly (se disattivata, ne servono almeno due, come da regolamento) <em class="opzioni-badge opzioni-badge-variante">variante non ufficiale</em></span>
+					</label>
+					<label class="opzioni-check">
+						<input type="checkbox" id="optassosingolo">
+						<span>L'asso rimasto da solo in mano a fine partita vale 1 punto anzich&eacute; 11 <em class="opzioni-badge opzioni-badge-variante">variante non ufficiale</em></span>
+					</label>
+					<label class="opzioni-check">
+						<input type="checkbox" id="optescludiavversariesuperano">
+						<span>Un avversario che ha superato il limite non gioca pi&ugrave; le mani successive (punteggio congelato) <em class="opzioni-badge opzioni-badge-fisca">regola FISCA</em></span>
+					</label>
+					<div class="opzioni-nota">Salvate sul dispositivo, valgono da subito.</div>
+				</div>
+				<div class="opzioni-bottoni">
+					<button class="bottone2" type="button">CHIUDI</button>
+					<button class="bottone1" type="button">NUOVA PARTITA</button>
+				</div>
 			</div>
 
 			<div id="haivinto" class="form" style="background-image:url(images/scala40/haivinto.jpg)">
@@ -91,6 +128,10 @@
 			</div>
 
 			<div id="haipersotorneo" class="form" style="background-image:url(images/scala40/haipersotorneo.jpg)">
+				<div class="audiotorneo-select" style="position:absolute; top:6px; left:6px; z-index:100; font-family: sans-serif; font-size:10px; color:#fff; background:rgba(0,0,0,0.5); border-radius:6px; padding:4px 6px; line-height:1.5;">
+					<label style="display:block; cursor:pointer;"><input type="radio" name="audiotorneo" id="audiotorneothunder" value="thunder"> Tuono</label>
+					<label style="display:block; cursor:pointer;"><input type="radio" name="audiotorneo" id="audiotorneolacrimosa" value="lacrimosa" checked> Mozart: Lacrimosa</label>
+				</div>
 				<button class="bottone1" type="button" style="left: 20px; width: 120px; font-size: 11px; background-color: #ffd700; color: #000; font-weight: bold; border-color: #cca300;">NUOVO TORNEO</button>
 				<button class="bottone2" type="button" style="left: 150px; width: 120px; font-size: 11px;">GIOCA ANCORA</button>
 				<button class="bottone3" type="button" style="left: 290px; width: 190px; font-size: 11px;" onclick="window.open('aboutme.html#pubblicita', '_blank')">PERCHÉ LA PUBBLICITÀ?</button>
@@ -117,7 +158,9 @@
 			</div>
 
 			<div id="nonpertest">
-				<div id="nuovo" class="pulsante2" style="top: 53px; left: 10px; z-index:1000">AVVERSARI</div>
+				<div id="opzioni" class="pulsante2" style="top: 53px; left: 10px; z-index:1000">NUOVO /
+					<svg class="icona-opzioni" viewBox="0 0 24 24" width="19" height="19" fill="white" aria-hidden="true"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>
+				</div>
 			</div>
 			<div id="pulsante2" class="pulsante2" style="top: 5px; left: 878px; z-index:1000;"></div>
 			<div id="scoperte" class="pulsante2" style="top: 53px; left: 878px; z-index:1000">SCOPERTE</div>
@@ -176,12 +219,13 @@
 	<audio id="slitta" src="sounds/scala40/slitta.mp3"></audio>
 	<audio id="ding" src="sounds/scala40/ding.mp3"></audio>
 	<audio id="thunder" src="sounds/scala40/thunder.mp3"></audio>
+	<audio id="lacrimosa" src="sounds/scala40/lacrimosa.mp3"></audio>
 	<audio id="applause" src="sounds/scala40/applause.mp3"></audio>
 	<audio id="distribuisci" src="sounds/scala40/distribuisci.mp3"></audio>
 
 	<!-- Scripts for game logic (no jQuery) -->
-	<script src="site.js?v=1.1"></script>
-	<script src="scala40tris.js?v=1.0"></script>
+	<script src="site.js?v=1.2"></script>
+	<script src="scala40tris.js?v=1.31"></script>
 	<script>
 		function setLanguage(lang) {
 			localStorage.setItem('userLanguage', lang);

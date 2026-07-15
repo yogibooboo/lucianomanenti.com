@@ -28,7 +28,7 @@
         }, { capture: true, passive: true });
     });
 
-    function playBuffer(src, vol) {
+    function playBuffer(src, vol, el) {
         var ctx = getCtx();
         var gain = (typeof vol === 'number' && vol >= 0 && vol !== 1) ? vol : 1;
         var startTime = Date.now();
@@ -45,6 +45,17 @@
                 source.connect(ctx.destination);
             }
             source.start();
+            /* Traccia i source attivi sull'elemento <audio> di provenienza,
+               così pause() (patchata sotto) può fermarli davvero: il suono
+               è un AudioBufferSourceNode, non l'elemento. */
+            if (el) {
+                if (!el._waSources) el._waSources = [];
+                el._waSources.push(source);
+                source.onended = function () {
+                    var i = el._waSources ? el._waSources.indexOf(source) : -1;
+                    if (i >= 0) el._waSources.splice(i, 1);
+                };
+            }
         }
 
         if (_cache[src]) {
@@ -77,7 +88,7 @@
         var self = this;
 
         if (src && (window.AudioContext || window.webkitAudioContext)) {
-            return playBuffer(src, self.volume).catch(function () {
+            return playBuffer(src, self.volume, self).catch(function () {
                 return _origPlay.call(self);
             });
         }
@@ -91,6 +102,23 @@
             }, { once: true });
         }
         return _origPlay.call(self);
+    };
+
+    // ── Monkey-patch HTMLAudioElement.pause() ─────────────────────────────
+    // Il play() patchato suona via Web Audio: l'elemento resta "paused" e la
+    // pause() nativa non fermerebbe nulla. Qui si stoppano i source attivi
+    // registrati da playBuffer, poi si delega comunque alla pause() nativa
+    // (copre il percorso di fallback HTML Audio).
+    var _origPause = HTMLAudioElement.prototype.pause;
+    HTMLAudioElement.prototype.pause = function () {
+        if (this._waSources) {
+            var attivi = this._waSources;
+            this._waSources = [];
+            for (var i = 0; i < attivi.length; i++) {
+                try { attivi[i].stop(); } catch (e) { }
+            }
+        }
+        return _origPause.call(this);
     };
 
     // ── Fix navigazione: replace() evita accumulo history su mobile ───────
