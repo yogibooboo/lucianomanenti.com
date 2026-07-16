@@ -23,7 +23,7 @@
     <meta http-Equiv="Pragma" Content="no-cache">
     <meta http-Equiv="Expires" Content="0">
 
-    <link rel="stylesheet" href="scopa.css?v=3.0" />
+    <link rel="stylesheet" href="scopa.css?v=3.1" />
 
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
@@ -244,6 +244,15 @@
                 </div>
 
                 <div class="opzione-gruppo" style="margin-bottom: 16px; text-align: center;">
+                    <div style="font-size: 13px; font-weight: bold; margin-bottom: 8px; color: #ffd700; text-transform: uppercase;">Mazzo di Carte:</div>
+                    <div style="display: flex; justify-content: center; gap: 10px;">
+                        <button id="btn-deck-francesi" onclick="selezionaMazzoStart('francesi')" class="btn-opzione-sel attiva">FRANCESI</button>
+                        <button id="btn-deck-napoletane" onclick="selezionaMazzoStart('napoletane')" class="btn-opzione-sel">NAPOLETANE</button>
+                        <button id="btn-deck-bresciane" onclick="selezionaMazzoStart('bresciane')" class="btn-opzione-sel">BRESCIANE</button>
+                    </div>
+                </div>
+
+                <div class="opzione-gruppo" style="margin-bottom: 16px; text-align: center;">
                     <div style="font-size: 13px; font-weight: bold; margin-bottom: 8px; color: #ffd700; text-transform: uppercase;">Modalità di Gioco:</div>
                     <div style="display: flex; justify-content: center; gap: 10px;">
                         <button id="btn-mode-2p" onclick="selezionaModalita('2P')" class="btn-opzione-sel attiva">2 GIOCATORI</button>
@@ -364,7 +373,7 @@
     <!-- Layout engine per ridimensionare la finestra del gioco -->
     <script src="game-layout.js?v=4.6"></script>
     <!-- Logica di Scopa -->
-    <script src="scopa.js?v=3.3"></script>
+    <script src="scopa.js?v=3.8"></script>
     <script>
         (function () {
             var nascosto = false;

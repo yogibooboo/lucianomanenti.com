@@ -22,7 +22,24 @@
 	<meta http-Equiv="Pragma" Content="no-cache">
 	<meta http-Equiv="Expires" Content="0">
 
-	<link rel="stylesheet" href="scala40V1.css?v=2.5" />
+	<!-- Caricamento condizionale versione classica/nuova: la preferenza è in
+	     localStorage ('scala40_versione'); default e QUALSIASI errore =>
+	     classica, identica a prima. Googlebot e i nuovi visitatori (senza
+	     preferenza salvata) vedono sempre la classica. -->
+	<script>
+		window.scala40versione = 'classica';
+		try {
+			if (localStorage.getItem('scala40_versione') === 'nuova') window.scala40versione = 'nuova';
+		} catch (e) { }
+		if (window.scala40versione === 'nuova') {
+			document.write('<link rel="stylesheet" href="scala40tris.css?v=1.9" />');
+		} else {
+			document.write('<link rel="stylesheet" href="scala40V1.css?v=2.5" />');
+		}
+	</script>
+	<noscript>
+		<link rel="stylesheet" href="scala40V1.css?v=2.5" />
+	</noscript>
 
 	<!-- Google tag (gtag.js) -->
 	<script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
@@ -31,6 +48,19 @@
 		function gtag() { dataLayer.push(arguments); }
 		gtag('js', new Date());
 		gtag('config', 'G-WRBDRDQ4L8');
+		if (window.scala40versione === 'nuova') {
+			var lg = function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } };
+			gtag('event', 'scala40_versione_nuova', {
+				opt_jolly_immediato: lg('scala40tris_jollyimmediato') === '1',
+				opt_scarto_immediato: lg('scala40tris_scartoimmediato') === '1',
+				opt_non_scartare_attaccanti: lg('scala40tris_nonscartareattaccanti') === '1',
+				opt_una_carta_basta: lg('scala40tris_unacartabasta') !== '0',
+				opt_asso_singolo: lg('scala40tris_assosingolo') === '1',
+				opt_escludi_avversari_limite: lg('scala40tris_escludiavversariesuperano') === '1'
+			});
+		} else {
+			gtag('event', 'scala40_versione_classica');
+		}
 	</script>
 	<script>
 		window.gameConfig = {
@@ -67,11 +97,47 @@
 			<!-- Schermo overlay per modali -->
 			<div id="schermo"></div>
 
-			<!-- Selettore Lingua -->
+			<!-- Overlay scelta versione al primo accesso (mostrato via JS solo se
+			     non esiste ancora una preferenza salvata in localStorage). -->
+			<div id="overlay-benvenuto" style="display:none; position:absolute; top:0; left:0; right:0; bottom:0; z-index:20000; background:rgba(0,0,0,0.75); align-items:center; justify-content:center;">
+				<div style="background:#1b2a38; border-radius: 14px; padding: 30px; max-width: 640px; width: 90%; box-shadow: 0 10px 40px rgba(0,0,0,0.5); text-align:center; font-family: sans-serif; color: white; position: relative;">
+					<div style="position: absolute; top: 12px; right: 12px; display: flex; gap: 6px;">
+						<a href="scala40.html" class="active" style="display: inline-block; padding: 4px 10px; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 12px; background: #ffd700; color: #2c3e50; border: 1px solid #ffd700;">IT</a>
+						<a href="scala40-en.html" style="display: inline-block; padding: 4px 10px; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 12px; background: rgba(255, 255, 255, 0.2); color: white; border: 1px solid rgba(255, 255, 255, 0.3);">EN</a>
+					</div>
+					<h2 style="margin-top:0; color:#ffd700;">Benvenuto a Scala 40!</h2>
+					<p style="margin-bottom: 25px;">Questo gioco è disponibile in due versioni. Puoi cambiare in qualsiasi momento dal selettore in cima alla pagina.</p>
+					<div style="display:flex; gap: 16px; justify-content:center; flex-wrap: wrap;">
+						<div style="flex: 1; min-width: 220px; max-width: 260px; background: rgba(255,255,255,0.08); border: 2px solid rgba(255,255,255,0.2); border-radius: 10px; padding: 18px;">
+							<h3 style="margin-top:0;">Classica</h3>
+							<p style="font-size: 13px; line-height: 1.5;">L'esperienza di gioco classica, a cui siete affezionati.</p>
+							<button type="button" id="btn-benvenuto-classica" style="margin-top: 10px; width: 100%; padding: 10px; border-radius: 6px; border: none; font-weight: bold; cursor: pointer; background: rgba(255,255,255,0.2); color: white;">Scegli Classica</button>
+						</div>
+						<div style="flex: 1; min-width: 220px; max-width: 260px; background: rgba(255,215,0,0.12); border: 2px solid #ffd700; border-radius: 10px; padding: 18px;">
+							<h3 style="margin-top:0; color:#ffd700;">Nuova</h3>
+							<p style="font-size: 13px; line-height: 1.5;">Carte più grandi, nuove regole opzionali e un software più stabile.</p>
+							<button type="button" id="btn-benvenuto-nuova" style="margin-top: 10px; width: 100%; padding: 10px; border-radius: 6px; border: none; font-weight: bold; cursor: pointer; background: #ffd700; color: #2c3e50;">Scegli Nuova</button>
+						</div>
+					</div>
+					<p style="margin-top: 22px; margin-bottom: 0; font-size: 13px;"><a href="scala40-novita.html" target="_blank" style="color:#9ecbff;">Vedi le differenze nel dettaglio &rarr;</a></p>
+				</div>
+			</div>
+
+			<!-- Selettore Lingua + Versione -->
 			<div class="lang-switch-game" style="position: absolute; top: 10px; left: 10px; z-index: 10001; display: flex; align-items: center; gap: 6px;">
 				<a href="scala40.html" class="active" style="display: inline-block; padding: 4px 10px; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 12px; background: #ffd700; color: #2c3e50; border: 1px solid #ffd700;">IT</a>
 				<a href="scala40-en.html" style="display: inline-block; padding: 4px 10px; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 12px; background: rgba(255, 255, 255, 0.2); color: white; border: 1px solid rgba(255, 255, 255, 0.3);">EN</a>
 				<div id="btn-audio" class="btn-audio-game" aria-label="Audio"></div>
+			</div>
+
+			<!-- Selettore versione: impilato a destra della scritta dorata,
+			     cornice oro per metterlo in evidenza -->
+			<div id="selettore-versione" style="position: absolute; top: 20px; left: 750px; z-index: 10001; display: flex; align-items: center; gap: 6px;">
+				<div style="display: flex; flex-direction: column; gap: 6px; padding: 6px; border: 2px solid #ffd700; border-radius: 10px; background: rgba(0,0,0,0.35);">
+					<div id="btn-vclassica" style="width: 62px; text-align: center; padding: 4px; border-radius: 4px; font-weight: bold; font-size: 11px; font-family: sans-serif; background: rgba(255, 255, 255, 0.2); color: white; border: 1px solid rgba(255, 255, 255, 0.3); cursor: pointer;">CLASSICA</div>
+					<div id="btn-vnuova" style="width: 62px; text-align: center; padding: 4px; border-radius: 4px; font-weight: bold; font-size: 11px; font-family: sans-serif; background: rgba(255, 255, 255, 0.2); color: white; border: 1px solid rgba(255, 255, 255, 0.3); cursor: pointer;">NUOVA</div>
+				</div>
+				<a href="scala40-novita.html" target="_blank" title="Novità della versione nuova" style="width: 22px; height: 22px; border-radius: 50%; background: #ffd700; color: #2c3e50; font-weight: bold; font-size: 13px; font-family: sans-serif; display: flex; align-items: center; justify-content: center; text-decoration: none; border: 1px solid #cca300; flex-shrink: 0;">?</a>
 			</div>
 
 			<!-- CONTENT FROM scala40V1.html's #campogioco DIV -->
@@ -162,7 +228,7 @@
 				</a>
 			</div>
 
-			<div style="position:absolute; top: 00px; left: 210px;"><img src="images/scala40/dorata.png" height="150px"
+			<div style="position:absolute; top: 00px; left: 130px;"><img src="images/scala40/dorata.png" height="150px"
 					width="650px"></div>
 		</div>
 	</div>
@@ -182,14 +248,62 @@
 	<audio id="applause" src="sounds/scala40/applause.mp3"></audio>
 	<audio id="distribuisci" src="sounds/scala40/distribuisci.mp3"></audio>
 
-	<!-- Scripts for game logic -->
-	<script src="site.js?v=1.1"></script>
-	<script src="jquery-2.1.1.js"></script>
-	<script src="scala40codeV1.js?v=3.16"></script>
+	<!-- Scripts for game logic: il motore viene scelto dal bootstrap in head
+	     (window.scala40versione); il ramo classico carica ESATTAMENTE gli
+	     stessi file di prima. -->
+	<script src="site.js?v=1.2"></script>
+	<script>
+		if (window.scala40versione === 'nuova') {
+			document.write('<script src="scala40tris.js?v=1.33"><\/script>');
+		} else {
+			document.write('<script src="jquery-2.1.1.js"><\/script>');
+			document.write('<script src="scala40codeV1.js?v=3.16"><\/script>');
+		}
+	</script>
 	<script>
 		function setLanguage(lang) {
 			localStorage.setItem('userLanguage', lang);
 		}
+
+		/* Selettore versione: evidenzia la versione attiva e al click salva
+		   la preferenza e ricarica la stessa pagina (nessun cambio di URL).
+		   Se localStorage non è disponibile il selettore viene nascosto. */
+		(function () {
+			var bc = document.getElementById('btn-vclassica');
+			var bn = document.getElementById('btn-vnuova');
+			if (!bc || !bn) return;
+			try {
+				localStorage.setItem('scala40_versione_test', '1');
+				localStorage.removeItem('scala40_versione_test');
+			} catch (e) {
+				var box = document.getElementById('selettore-versione');
+				if (box) box.style.display = 'none';
+				return;
+			}
+			var attivo = (window.scala40versione === 'nuova') ? bn : bc;
+			attivo.style.background = '#ffd700';
+			attivo.style.color = '#2c3e50';
+			attivo.style.borderColor = '#ffd700';
+			function scegli(v) {
+				try { localStorage.setItem('scala40_versione', v); } catch (e) { }
+				location.reload();
+			}
+			bc.addEventListener('click', function () { if (window.scala40versione !== 'classica') scegli('classica'); });
+			bn.addEventListener('click', function () { if (window.scala40versione !== 'nuova') scegli('nuova'); });
+
+			/* Overlay di benvenuto: solo al primissimo accesso, quando non
+			   esiste ancora nessuna preferenza salvata. */
+			var giaScelta = true;
+			try { giaScelta = (localStorage.getItem('scala40_versione') !== null); } catch (e) { }
+			if (!giaScelta) {
+				var overlay = document.getElementById('overlay-benvenuto');
+				if (overlay) {
+					overlay.style.display = 'flex';
+					document.getElementById('btn-benvenuto-classica').addEventListener('click', function () { scegli('classica'); });
+					document.getElementById('btn-benvenuto-nuova').addEventListener('click', function () { scegli('nuova'); });
+				}
+			}
+		})();
 
 		document.addEventListener('DOMContentLoaded', function () {
 			window.initAudioToggle('#btn-audio');

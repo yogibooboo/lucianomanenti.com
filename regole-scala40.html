@@ -69,6 +69,52 @@
 			cursor: pointer;
 		}
 
+		.ver-switch {
+			text-align: right;
+			margin-bottom: 10px;
+		}
+
+		.ver-switch button {
+			display: inline-block;
+			padding: 6px 16px;
+			margin-left: 5px;
+			text-decoration: none;
+			border-radius: 5px;
+			font-weight: bold;
+			font-size: 14px;
+			border: none;
+			cursor: pointer;
+			font-family: sans-serif;
+		}
+
+		.ver-switch button.active {
+			background: #ffd700;
+			color: #2c3e50;
+		}
+
+		.ver-switch button:not(.active) {
+			background: #ddd;
+			color: #333;
+		}
+
+		.ver-switch .btn-novita {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			width: 24px;
+			height: 24px;
+			margin-left: 8px;
+			border-radius: 50%;
+			background: #ffd700;
+			color: #2c3e50;
+			font-weight: bold;
+			font-size: 13px;
+			font-family: sans-serif;
+			text-decoration: none;
+			border: 1px solid #cca300;
+			vertical-align: middle;
+		}
+
 		.content-box {
 			background: white;
 			padding: 30px;
@@ -126,6 +172,12 @@
 
 	<div class="banner"></div>
 
+	<div class="ver-switch">
+		<button type="button" id="btn-vclassica" class="active" onclick="setVersione('classica')">Versione Classica</button>
+		<button type="button" id="btn-vnuova" onclick="setVersione('nuova')">Versione Nuova</button>
+		<a href="scala40-novita.html" target="_blank" class="btn-novita" title="Novità della versione nuova">?</a>
+	</div>
+
 	<div class="content-box">
 		<div id="lang-it">
 			<h1>Regole della Scala 40</h1>
@@ -151,36 +203,91 @@
 			<p>Per poter deporre la prima volta, la somma dei valori delle carte deposte deve raggiungere almeno 40
 				punti (da cui il nome del gioco). Le figure valgono 10 punti, l'Asso vale 11.</p>
 
-			<h2>Come giocare a "Scala40 Luciano"</h2>
-			<ul>
-				<li><strong>Pescare:</strong> clicca sul mazzo o nell'area "giocatore".</li>
-				<li><strong>Pescare dagli scarti:</strong> clicca sulla pila degli scarti.</li>
-				<li><strong>Scartare:</strong> clicca con il tasto destro su una carta, oppure trascinala negli scarti,
-					oppure selezionala e poi clicca sugli scarti.</li>
-				<li><strong>Riordinare le carte:</strong> trascina una carta a destra della carta dopo cui vuoi
-					inserirla, oppure a sinistra della prima carta.</li>
-				<li><strong>Formare un tris/scala:</strong> clicca sulle carte (che devono essere nell'ordine
-					corretto), poi clicca nell'area sopra al giocatore.</li>
-				<li><strong>Cambiare seme del Jolly:</strong> quando si deposita un tris con jolly, e' possibile
-					cambiare il seme del jolly cliccandoci sopra.</li>
-				<li><strong>Aggiungere a un tris:</strong> trascina la carta nella posizione desiderata.</li>
-				<li><strong>Sostituire un Jolly:</strong> trascina la carta corretta sulla posizione del Jolly fino a
-					quando il jolly non viene evidenziato.</li>
-				<li><strong>Modificare il limite punti:</strong> clicca sopra il campo corrispondente.</li>
-			</ul>
+			<div id="istruzioni-classica-it">
+				<h2>Come giocare a "Scala40 Luciano" (Versione Classica)</h2>
+				<ul>
+					<li><strong>Pescare:</strong> clicca sul mazzo o nell'area "giocatore".</li>
+					<li><strong>Pescare dagli scarti:</strong> clicca sulla pila degli scarti.</li>
+					<li><strong>Scartare:</strong> clicca con il tasto destro su una carta, oppure trascinala negli scarti,
+						oppure selezionala e poi clicca sugli scarti.</li>
+					<li><strong>Riordinare le carte:</strong> trascina una carta a destra della carta dopo cui vuoi
+						inserirla, oppure a sinistra della prima carta.</li>
+					<li><strong>Formare un tris/scala:</strong> clicca sulle carte (che devono essere nell'ordine
+						corretto), poi clicca nell'area sopra al giocatore.</li>
+					<li><strong>Cambiare seme del Jolly:</strong> quando si deposita un tris con jolly, e' possibile
+						cambiare il seme del jolly cliccandoci sopra.</li>
+					<li><strong>Aggiungere a un tris:</strong> trascina la carta nella posizione desiderata.</li>
+					<li><strong>Sostituire un Jolly:</strong> trascina la carta corretta sulla posizione del Jolly fino a
+						quando il jolly non viene evidenziato.</li>
+					<li><strong>Modificare il limite punti:</strong> clicca sopra il campo corrispondente.</li>
+				</ul>
 
-			<h2>Pulsanti</h2>
-			<ul>
-				<li><strong>↩ (Annulla):</strong> annulla le mosse più recenti.</li>
-				<li><strong>SCOPERTE:</strong> gioca a carte scoperte (per esercitarsi).</li>
-				<li><strong>AVVERSARI:</strong> scegli il numero di avversari (1, 2 o 3) e/o inizia una nuova partita.</li>
-				<li><strong>&#x1F50A; / &#x1F507; (Audio):</strong> abilita o disabilita gli effetti sonori del gioco.
-					La preferenza viene salvata e applicata a tutti i giochi del sito.
-					Nota: se il browser o il sistema operativo hanno disattivato l'audio per questa scheda,
-					i suoni resteranno silenziosi indipendentemente da questo pulsante, poich&eacute; quel controllo
-					&egrave; gestito dal browser al di fuori della pagina.
-				</li>
-			</ul>
+				<h2>Pulsanti</h2>
+				<ul>
+					<li><strong>↩ (Annulla):</strong> annulla le mosse più recenti.</li>
+					<li><strong>SCOPERTE:</strong> gioca a carte scoperte (per esercitarsi).</li>
+					<li><strong>AVVERSARI:</strong> scegli il numero di avversari (1, 2 o 3) e/o inizia una nuova partita.</li>
+					<li><strong>&#x1F50A; / &#x1F507; (Audio):</strong> abilita o disabilita gli effetti sonori del gioco.
+						La preferenza viene salvata e applicata a tutti i giochi del sito.
+						Nota: se il browser o il sistema operativo hanno disattivato l'audio per questa scheda,
+						i suoni resteranno silenziosi indipendentemente da questo pulsante, poich&eacute; quel controllo
+						&egrave; gestito dal browser al di fuori della pagina.
+					</li>
+				</ul>
+			</div>
+
+			<div id="istruzioni-nuova-it" style="display: none;">
+				<h2>Come giocare a "Scala40 Luciano" (Versione Nuova)</h2>
+				<ul>
+					<li><strong>Pescare:</strong> clicca sul mazzo o nell'area "giocatore".</li>
+					<li><strong>Pescare dagli scarti:</strong> clicca sulla pila degli scarti.</li>
+					<li><strong>Scartare:</strong> clicca su una carta per selezionarla, poi clicca sugli scarti
+						(oppure trascinala negli scarti).</li>
+					<li><strong>Riordinare le carte:</strong> trascina una carta nella posizione desiderata in mano.</li>
+					<li><strong>Formare un tris/scala:</strong> clicca sulle carte (nell'ordine corretto), poi clicca
+						nell'area sopra al giocatore.</li>
+					<li><strong>Cambiare seme del Jolly:</strong> quando si deposita un tris con jolly, e' possibile
+						cambiare il seme del jolly cliccandoci sopra.</li>
+					<li><strong>Aggiungere a un tris/scala:</strong> trascina la carta sul gruppo in tavola.</li>
+					<li><strong>Sostituire un Jolly:</strong> trascina la carta corretta sulla posizione del Jolly.</li>
+					<li><strong>Modificare il limite punti:</strong> clicca sopra il campo corrispondente.</li>
+				</ul>
+
+				<h2>Opzioni di gioco</h2>
+				<p>Cliccando su <strong>NUOVO</strong> (icona ingranaggio) si apre il pannello opzioni, dove si può
+					scegliere il numero di avversari e attivare/disattivare alcune regole facoltative:</p>
+				<ul>
+					<li><strong>Il jolly recuperato va giocato subito:</strong> chi si riprende un jolly deve
+						giocarlo nello stesso turno <em>(regola FISCA)</em>.</li>
+					<li><strong>La carta pescata dagli scarti va giocata subito:</strong> chi pesca dagli scarti deve
+						giocare quella carta nello stesso turno <em>(regola FISCA)</em>.</li>
+					<li><strong>Non si può scartare una carta che attacca:</strong> vietato scartare una carta che si
+						collega a un tris o una scala già in tavola, a meno che sia l'unica carta rimasta in mano
+						<em>(regola FISCA)</em>.</li>
+					<li><strong>Un tris o una scala può contenere anche una sola carta non jolly:</strong> se
+						disattivata, ne servono almeno due, come da regolamento ufficiale <em>(variante non
+						ufficiale, attiva di default)</em>.</li>
+					<li><strong>L'asso rimasto da solo in mano vale 1 punto anziché 11</strong> a fine partita
+						<em>(variante non ufficiale)</em>.</li>
+					<li><strong>Un avversario che ha superato il limite non gioca più le mani successive</strong>,
+						il punteggio resta congelato <em>(regola FISCA)</em>.</li>
+				</ul>
+				<p>Le opzioni scelte vengono salvate sul dispositivo e valgono dalla partita successiva.</p>
+
+				<h2>Pulsanti</h2>
+				<ul>
+					<li><strong>↩ (Annulla):</strong> annulla le mosse più recenti.</li>
+					<li><strong>SCOPERTE:</strong> gioca a carte scoperte (per esercitarsi).</li>
+					<li><strong>NUOVO (ingranaggio):</strong> apre il pannello opzioni (avversari e regole
+						facoltative) e permette di iniziare una nuova partita.</li>
+					<li><strong>&#x1F50A; / &#x1F507; (Audio):</strong> abilita o disabilita gli effetti sonori del gioco.
+						La preferenza viene salvata e applicata a tutti i giochi del sito.
+						Nota: se il browser o il sistema operativo hanno disattivato l'audio per questa scheda,
+						i suoni resteranno silenziosi indipendentemente da questo pulsante, poich&eacute; quel controllo
+						&egrave; gestito dal browser al di fuori della pagina.
+					</li>
+				</ul>
+			</div>
 
 			<p style="text-align: center;"><a href="#" onclick="goBack(); return false;" class="play-btn">Chiudi</a></p>
 		</div>
@@ -209,30 +316,78 @@
 			<p>To lay down combinations for the first time, the total value of the cards must be at least 40 points
 				(hence the name). Face cards are worth 10 points, Aces are worth 11.</p>
 
-			<h2>How to play "Scala40 Luciano"</h2>
-			<ul>
-				<li><strong>Draw from deck:</strong> click on the deck or in the "player" area.</li>
-				<li><strong>Draw from discard:</strong> click on the discard pile.</li>
-				<li><strong>Discard:</strong> right-click a card, drag it to the discard pile, or select it and then
-					click on the discard pile.</li>
-				<li><strong>Reorder cards:</strong> drag a card to the right of the card after which you want to place
-					it, or to the left of the first card.</li>
-				<li><strong>Form a set/run:</strong> click on the cards (which MUST BE IN THE CORRECT ORDER), then
-					click in the area above the player.</li>
-				<li><strong>Change Joker suit:</strong> when laying down a set with a joker, you can change the
-					joker's suit by clicking on it.</li>
-				<li><strong>Add to a set:</strong> drag the card to the desired position.</li>
-				<li><strong>Replace a Joker:</strong> drag the correct card onto the Joker's position until the joker
-					becomes highlighted.</li>
-				<li><strong>Change point limit:</strong> click on the corresponding field.</li>
-			</ul>
+			<div id="istruzioni-classica-en">
+				<h2>How to play "Scala40 Luciano" (Classic Version)</h2>
+				<ul>
+					<li><strong>Draw from deck:</strong> click on the deck or in the "player" area.</li>
+					<li><strong>Draw from discard:</strong> click on the discard pile.</li>
+					<li><strong>Discard:</strong> right-click a card, drag it to the discard pile, or select it and then
+						click on the discard pile.</li>
+					<li><strong>Reorder cards:</strong> drag a card to the right of the card after which you want to place
+						it, or to the left of the first card.</li>
+					<li><strong>Form a set/run:</strong> click on the cards (which MUST BE IN THE CORRECT ORDER), then
+						click in the area above the player.</li>
+					<li><strong>Change Joker suit:</strong> when laying down a set with a joker, you can change the
+						joker's suit by clicking on it.</li>
+					<li><strong>Add to a set:</strong> drag the card to the desired position.</li>
+					<li><strong>Replace a Joker:</strong> drag the correct card onto the Joker's position until the joker
+						becomes highlighted.</li>
+					<li><strong>Change point limit:</strong> click on the corresponding field.</li>
+				</ul>
 
-			<h2>Buttons</h2>
-			<ul>
-				<li><strong>↩ (Undo):</strong> undo the most recent moves.</li>
-				<li><strong>FACE UP:</strong> play with open cards (for practice).</li>
-				<li><strong>OPPONENTS:</strong> choose the number of opponents (1, 2, or 3) and/or start a new game.</li>
-			</ul>
+				<h2>Buttons</h2>
+				<ul>
+					<li><strong>↩ (Undo):</strong> undo the most recent moves.</li>
+					<li><strong>FACE UP:</strong> play with open cards (for practice).</li>
+					<li><strong>OPPONENTS:</strong> choose the number of opponents (1, 2, or 3) and/or start a new game.</li>
+				</ul>
+			</div>
+
+			<div id="istruzioni-nuova-en" style="display: none;">
+				<h2>How to play "Scala40 Luciano" (New Version)</h2>
+				<ul>
+					<li><strong>Draw from deck:</strong> click on the deck or in the "player" area.</li>
+					<li><strong>Draw from discard:</strong> click on the discard pile.</li>
+					<li><strong>Discard:</strong> click a card to select it, then click on the discard pile
+						(or drag it to the discard pile).</li>
+					<li><strong>Reorder cards:</strong> drag a card to the desired position in your hand.</li>
+					<li><strong>Form a set/run:</strong> click on the cards (in the correct order), then click in
+						the area above the player.</li>
+					<li><strong>Change Joker suit:</strong> when laying down a set with a joker, you can change the
+						joker's suit by clicking on it.</li>
+					<li><strong>Add to a set/run:</strong> drag the card onto the group on the table.</li>
+					<li><strong>Replace a Joker:</strong> drag the correct card onto the Joker's position.</li>
+					<li><strong>Change point limit:</strong> click on the corresponding field.</li>
+				</ul>
+
+				<h2>Game options</h2>
+				<p>Clicking <strong>NEW</strong> (gear icon) opens the options panel, where you can choose the
+					number of opponents and enable/disable some optional rules:</p>
+				<ul>
+					<li><strong>A recovered joker must be played immediately:</strong> whoever recovers a joker must
+						play it in the same turn <em>(FISCA rule)</em>.</li>
+					<li><strong>The card drawn from the discard pile must be played immediately:</strong> whoever
+						draws from the discards must play that card in the same turn <em>(FISCA rule)</em>.</li>
+					<li><strong>You cannot discard a card that attaches to a meld:</strong> discarding a card that
+						connects to a set or run already on the table is forbidden, unless it is the only card left
+						in hand <em>(FISCA rule)</em>.</li>
+					<li><strong>A meld may contain a single non-joker card:</strong> if disabled, at least two are
+						required, as per official rules <em>(unofficial variant, enabled by default)</em>.</li>
+					<li><strong>An ace left alone in hand scores 1 point instead of 11</strong> at the end of the
+						game <em>(unofficial variant)</em>.</li>
+					<li><strong>An opponent who exceeded the limit no longer plays the following hands</strong>,
+						their score stays frozen <em>(FISCA rule)</em>.</li>
+				</ul>
+				<p>Your chosen options are saved on this device and apply starting from the next game.</p>
+
+				<h2>Buttons</h2>
+				<ul>
+					<li><strong>↩ (Undo):</strong> undo the most recent moves.</li>
+					<li><strong>FACE UP:</strong> play with open cards (for practice).</li>
+					<li><strong>NEW (gear icon):</strong> opens the options panel (opponents and optional rules)
+						and lets you start a new game.</li>
+				</ul>
+			</div>
 
 			<p style="text-align: center;"><a href="scala40-en.html" class="play-btn">Play Scala 40</a></p>
 		</div>
@@ -259,6 +414,27 @@
 		function goBack() {
 			window.close();
 		}
+
+		function setVersione(v) {
+			try { localStorage.setItem('scala40_versione', v); } catch (e) { }
+			var classica = (v === 'classica');
+			document.getElementById('btn-vclassica').classList.toggle('active', classica);
+			document.getElementById('btn-vnuova').classList.toggle('active', !classica);
+			var itC = document.getElementById('istruzioni-classica-it');
+			var itN = document.getElementById('istruzioni-nuova-it');
+			var enC = document.getElementById('istruzioni-classica-en');
+			var enN = document.getElementById('istruzioni-nuova-en');
+			if (itC) itC.style.display = classica ? '' : 'none';
+			if (itN) itN.style.display = classica ? 'none' : '';
+			if (enC) enC.style.display = classica ? '' : 'none';
+			if (enN) enN.style.display = classica ? 'none' : '';
+		}
+
+		(function() {
+			try {
+				if (localStorage.getItem('scala40_versione') === 'nuova') setVersione('nuova');
+			} catch (e) { }
+		})();
 
 		(function() {
 			var nascosto = false;

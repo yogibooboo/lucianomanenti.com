@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
+	<script>
+		window.dataLayer = window.dataLayer || [];
+		function gtag() { dataLayer.push(arguments); }
+		gtag('js', new Date());
+		gtag('config', 'G-WRBDRDQ4L8');
+		window.currentLang = 'en';
+	</script>
+	<title>Scala 40 What's New - What changes in the new version - lucianomanenti.com</title>
+	<link rel="alternate" hreflang="it" href="scala40-novita.html">
+	<link rel="alternate" hreflang="en" href="scala40-novita-en.html">
+	<meta name="Description"
+		content="Everything new in the new version of Scala 40: bigger cards, optional FISCA rules, fixes and improvements over the classic version.">
+	<meta name="robots" content="noindex, follow">
+	<link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
+	<link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
+	<link rel="shortcut icon" href="favicon/favicon.ico">
+	<link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+	<style>
+		body {
+			font-family: sans-serif;
+			line-height: 1.7;
+			max-width: 800px;
+			margin: 40px auto;
+			padding: 20px;
+			color: #333;
+			background-color: #f9f9f9;
+		}
+
+		h1 {
+			color: #2c3e50;
+			border-bottom: 2px solid #ffd700;
+			padding-bottom: 10px;
+		}
+
+		h2 {
+			color: #2c3e50;
+			margin-top: 30px;
+		}
+
+		.lang-switch {
+			text-align: right;
+			margin-bottom: 20px;
+		}
+
+		.lang-switch a {
+			display: inline-block;
+			padding: 6px 16px;
+			margin-left: 5px;
+			text-decoration: none;
+			border-radius: 5px;
+			font-weight: bold;
+			font-size: 14px;
+		}
+
+		.lang-switch a.active {
+			background: #2c3e50;
+			color: white;
+		}
+
+		.lang-switch a:not(.active) {
+			background: #ddd;
+			color: #333;
+			cursor: pointer;
+		}
+
+		.content-box {
+			background: white;
+			padding: 30px;
+			border-radius: 8px;
+			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+		}
+
+		.play-btn {
+			display: inline-block;
+			margin-top: 25px;
+			padding: 12px 30px;
+			background: #27ae60;
+			color: white;
+			text-decoration: none;
+			border-radius: 8px;
+			font-size: 18px;
+			font-weight: bold;
+		}
+
+		.nav-links {
+			text-align: center;
+			margin-top: 30px;
+			font-size: 14px;
+		}
+
+		.nav-links a {
+			color: #3498db;
+			text-decoration: none;
+			margin: 0 10px;
+		}
+
+		.banner {
+			width: 100%;
+			height: 150px;
+			background-image: url('images/home/castagne.jpg');
+			background-size: cover;
+			background-position: center;
+			border-radius: 8px;
+			margin: 20px 0;
+			box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+		}
+
+		.novita-item {
+			display: flex;
+			gap: 14px;
+			margin-bottom: 22px;
+			align-items: flex-start;
+		}
+
+		.novita-icona {
+			flex: 0 0 auto;
+			width: 34px;
+			height: 34px;
+			border-radius: 50%;
+			background: #ffd700;
+			color: #2c3e50;
+			font-weight: bold;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-size: 15px;
+		}
+
+		.novita-testo h3 {
+			margin: 0 0 4px 0;
+			color: #2c3e50;
+		}
+
+		.novita-testo p {
+			margin: 0;
+		}
+
+		.badge {
+			display: inline-block;
+			padding: 2px 8px;
+			border-radius: 10px;
+			font-size: 10px;
+			font-weight: bold;
+			text-transform: uppercase;
+			margin-left: 6px;
+			vertical-align: middle;
+		}
+
+		.badge-fisca {
+			background: rgba(90, 200, 120, 0.2);
+			color: #1e7d3a;
+		}
+
+		.badge-variante {
+			background: rgba(255, 180, 60, 0.25);
+			color: #96650a;
+		}
+
+		.badge-fix {
+			background: rgba(52, 152, 219, 0.2);
+			color: #1c5a80;
+		}
+	</style>
+</head>
+
+<body>
+	<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+		<a href="#" id="btn-back" onclick="goBack(); return false;"
+			style="display: inline-block; padding: 6px 16px; background: #e74c3c; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 14px;">&#x2190;
+			Back</a>
+		<div class="lang-switch" style="margin-bottom: 0;">
+			<a href="scala40-novita.html">Italiano</a>
+			<a href="scala40-novita-en.html" class="active">English</a>
+		</div>
+	</div>
+
+	<div class="banner"></div>
+
+	<div class="content-box">
+		<h1>What's new in the New version of Scala 40</h1>
+
+		<p style="font-size: 13px; color: #666;">For bug reports, suggestions, or just to say hi:
+			<a href="mailto:postmaster@lucianomanenti.com">postmaster@lucianomanenti.com</a></p>
+
+		<p>Scala 40 exists in two versions: the <strong>Classic</strong> one, the original the game started with,
+			and the <strong>New</strong> one, rewritten from scratch while keeping the same game engine, but with
+			concrete improvements on several fronts. Here's what changes, point by point.</p>
+
+		<h2>Graphics and controls</h2>
+
+		<div class="novita-item">
+			<div class="novita-icona">1</div>
+			<div class="novita-testo">
+				<h3>Bigger cards</h3>
+				<p>Cards are bigger and easier to read than in the classic version, designed for anyone who finds
+					it tiring to tell suits and values apart on small screens or with a crowded hand.</p>
+			</div>
+		</div>
+
+		<div class="novita-item">
+			<div class="novita-icona">2</div>
+			<div class="novita-testo">
+				<h3>Reorder your hand even during opponents' turns</h3>
+				<p>In the classic version, while an opponent was playing their turn, you couldn't touch your own
+					cards. In the new version you can reorder your hand at any time, even while opponents are still
+					playing, without having to wait for your turn.</p>
+			</div>
+		</div>
+
+		<h2>Fixes compared to the classic version</h2>
+
+		<div class="novita-item">
+			<div class="novita-icona">3</div>
+			<div class="novita-testo">
+				<h3>Modernized code <span class="badge badge-fix">under the hood</span></h3>
+				<p>The game engine was rewritten from scratch using more modern, reliable techniques. It's not a
+					visible change on its own, but it's the foundation that made all the other fixes and new
+					options on this page possible.</p>
+			</div>
+		</div>
+
+		<div class="novita-item">
+			<div class="novita-icona">4</div>
+			<div class="novita-testo">
+				<h3>More reliable undo <span class="badge badge-fix">fix</span></h3>
+				<p>The Undo button (↩) now always restores exactly the previous situation — card order, melds on
+					the table, scores — without the occasional inconsistencies that could happen in the classic
+					version after multiple undos.</p>
+			</div>
+		</div>
+
+		<div class="novita-item">
+			<div class="novita-icona">5</div>
+			<div class="novita-testo">
+				<h3>Correct joker replacement <span class="badge badge-fix">fix</span></h3>
+				<p>When you recover a Joker by dragging the card it represents (to take it back and play it
+					elsewhere), the card now always correctly takes the Joker's place, regardless of exactly where
+					you "drop" it on the group of cards on the table. Previously, in some cases, the card could end
+					up being added as an extra card instead of replacing the Joker, leaving it in the meld.</p>
+			</div>
+		</div>
+
+		<div class="novita-item">
+			<div class="novita-icona">6</div>
+			<div class="novita-testo">
+				<h3>Correct dealer handling <span class="badge badge-fix">fix</span></h3>
+				<p>The player who deals the cards (the "dealer") now correctly changes every hand, following the
+					rule that the player after the current dealer always starts. A "DEALER" label clearly shows who
+					has this role each hand.</p>
+			</div>
+		</div>
+
+		<div class="novita-item">
+			<div class="novita-icona">7</div>
+			<div class="novita-testo">
+				<h3>Runs or sets made only of Jokers are no longer allowed <span class="badge badge-fix">fix</span></h3>
+				<p>A set or a run must always contain at least one real card: it's no longer possible to play (nor
+					can an opponent) a combination made entirely of Jokers, something the classic version allowed
+					by mistake.</p>
+			</div>
+		</div>
+
+		<h2>New optional rules</h2>
+
+		<p>Clicking <strong>NEW</strong> (gear icon, new version) opens a panel where, besides the number of
+			opponents, you can turn these additional rules on or off. They are all optional and disabled by
+			default, except where noted:</p>
+
+		<div class="novita-item">
+			<div class="novita-icona">8</div>
+			<div class="novita-testo">
+				<h3>Must play a recovered Joker immediately <span class="badge badge-fisca">FISCA rule</span></h3>
+				<p>If enabled, whoever recovers a Joker (by replacing it with the real card it represents) must
+					play it within the same turn, instead of being able to keep it in hand.</p>
+			</div>
+		</div>
+
+		<div class="novita-item">
+			<div class="novita-icona">9</div>
+			<div class="novita-testo">
+				<h3>Must play a card drawn from the discard pile immediately <span class="badge badge-fisca">FISCA rule</span></h3>
+				<p>If enabled, whoever draws from the discard pile must play that card (in a meld or as an attack)
+					within the same turn it was drawn.</p>
+			</div>
+		</div>
+
+		<div class="novita-item">
+			<div class="novita-icona">10</div>
+			<div class="novita-testo">
+				<h3>Can't discard a card that attacks the table <span class="badge badge-fisca">FISCA rule</span></h3>
+				<p>If enabled, you can't discard a card that would attach to a set or run already on the table,
+					unless it's the only card left in your hand. This rule is also applied to computer-controlled
+					opponents.</p>
+			</div>
+		</div>
+
+		<div class="novita-item">
+			<div class="novita-icona">11</div>
+			<div class="novita-testo">
+				<h3>A lone Ace is worth 1 point <span class="badge badge-variante">unofficial variant</span></h3>
+				<p>If enabled, when the Ace is the only card left in hand at the end of a hand, it's worth 1 point
+					instead of the usual 11. With any other card in hand, including a second Ace, the value stays
+					11 as per the official rules.</p>
+			</div>
+		</div>
+
+		<div class="novita-item">
+			<div class="novita-icona">12</div>
+			<div class="novita-testo">
+				<h3>Exclude players who went over the limit <span class="badge badge-fisca">FISCA rule</span></h3>
+				<p>If enabled, an opponent whose score has reached or exceeded the set point limit no longer
+					receives cards and skips subsequent hands: their score stays frozen at the value reached, while
+					the game continues among the remaining players.</p>
+			</div>
+		</div>
+
+		<h2>Other news</h2>
+
+		<div class="novita-item">
+			<div class="novita-icona">13</div>
+			<div class="novita-testo">
+				<h3>Choice of end-of-tournament sound</h3>
+				<p>When you lose a tournament, you can choose which sound to hear between the classic thunder and
+					Mozart's "Lacrimosa" (set as the default). This was added because some players found the
+					thunder too sudden and harsh (others actually like it that way 😊). The choice isn't made in
+					the options panel, but directly on the end-of-tournament screen, with an instant preview of
+					the selected sound; it's saved and stays valid for future games.</p>
+			</div>
+		</div>
+
+		<p style="margin-top: 30px;">For the full list of controls and game rules, including the point-by-point
+			differences between the two versions, see the <a href="regole-scala40-en.html">rules page</a>.</p>
+
+		<p style="text-align: center;"><a href="#" onclick="goBack(); return false;" class="play-btn">Close</a></p>
+
+		<p style="font-size: 13px; color: #666; margin-top: 25px;">For bug reports, suggestions, or just to say
+			hi: <a href="mailto:postmaster@lucianomanenti.com">postmaster@lucianomanenti.com</a></p>
+	</div>
+
+	<div class="banner"></div>
+
+	<div class="nav-links">
+		<a href="index-en.html">Home</a> |
+		<a href="regole-scala40-en.html">Scala 40 Rules</a> |
+		<a href="privacy-en.html">Privacy</a> |
+		<a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)">Manage Cookies</a>
+	</div>
+
+	<p style="text-align: center; font-size: 0.8em; color: #999; margin-top: 15px;">
+		© 2026 Luciano Manenti
+	</p>
+
+	<script>
+		function goBack() {
+			window.close();
+		}
+
+		(function() {
+			var nascosto = false;
+			var observer = new MutationObserver(function() {
+				if (nascosto) return;
+				var divs = document.querySelectorAll('body > div');
+				for (var i = 0; i < divs.length; i++) {
+					if (divs[i].shadowRoot && !divs[i].className && (divs[i].getAttribute('style')||'').length > 5000) {
+						divs[i].style.setProperty('display', 'none', 'important');
+						nascosto = true;
+						observer.disconnect();
+						return;
+					}
+				}
+			});
+			observer.observe(document.body, { childList: true });
+		})();
+	</script>
+</body>
+
+</html>

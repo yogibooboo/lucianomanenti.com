@@ -268,6 +268,11 @@ function initScopa() {
     modalitaGioco = localStorage.getItem('scopa-game-mode') || '2P';
     puntiTarget = parseInt(localStorage.getItem('scopa-score-target')) || 11;
     variante = localStorage.getItem('scopa-variante') || 'classica';
+    
+    let temaCorrente = localStorage.getItem('scopa-deck-theme') || 'francesi';
+    tempMazzo = temaCorrente;
+    ultimoMazzoScelto = temaCorrente;
+
     tempMode = modalitaGioco;
     tempTarget = puntiTarget;
     tempVariante = variante;
@@ -275,6 +280,7 @@ function initScopa() {
     // Inizializza pulsanti attivi nel modale iniziale
     selezionaModalita(modalitaGioco);
     selezionaTarget(puntiTarget);
+    selezionaMazzoStart(temaCorrente);
     selezionaVariante(variante);
 
     // Inizializzazione audio toggle
@@ -291,7 +297,7 @@ function initScopa() {
     const btnMazzo = document.getElementById('btn-mazzo');
     const campogioco = document.getElementById('campogioco');
     
-    let temaCorrente = localStorage.getItem('scopa-deck-theme') || 'francesi';
+    temaCorrente = localStorage.getItem('scopa-deck-theme') || 'francesi';
     
     // Rimuove eventuali classi residue
     campogioco.classList.remove('napoletane', 'bresciane');
@@ -504,6 +510,21 @@ function initScopa() {
 
 let tempMode = '2P';
 let tempTarget = 11;
+let tempMazzo = 'francesi';
+let ultimoMazzoScelto = 'francesi';
+
+function selezionaMazzoStart(tema) {
+    tempMazzo = tema;
+    if (tempVariante !== 'bresciana') {
+        ultimoMazzoScelto = tema;
+    }
+    ['btn-deck-francesi', 'btn-deck-napoletane', 'btn-deck-bresciane'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.remove('attiva');
+    });
+    const selEl = document.getElementById(`btn-deck-${tema}`);
+    if (selEl) selEl.classList.add('attiva');
+}
 
 function mostraInizioPartita() {
     document.getElementById('haivinto').style.display = 'none';
@@ -517,6 +538,13 @@ function mostraInizioPartita() {
     // Inizializza pulsanti attivi nel modale
     selezionaModalita(modalitaGioco);
     selezionaTarget(puntiTarget);
+    
+    const temaSaved = localStorage.getItem('scopa-deck-theme') || 'francesi';
+    tempMazzo = temaSaved;
+    ultimoMazzoScelto = temaSaved;
+    selezionaMazzoStart(temaSaved);
+    
+    selezionaVariante(variante);
 }
 
 function resetPartitaCompleto() {
@@ -592,6 +620,32 @@ function selezionaVariante(v) {
     document.getElementById('btn-var-classica').classList.toggle('attiva', v === 'classica');
     document.getElementById('btn-var-bresciana').classList.toggle('attiva', v === 'bresciana');
     
+    // Gestione abilitazione/disabilitazione mazzi nel modale start
+    if (v === 'bresciana') {
+        selezionaMazzoStart('bresciane');
+        ['btn-deck-francesi', 'btn-deck-napoletane'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.disabled = true;
+                el.style.opacity = '0.3';
+                el.style.pointerEvents = 'none';
+            }
+        });
+    } else {
+        ['btn-deck-francesi', 'btn-deck-napoletane'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.disabled = false;
+                el.style.opacity = '';
+                el.style.pointerEvents = '';
+            }
+        });
+        if (isChanging) {
+            const targetDeck = (ultimoMazzoScelto === 'bresciane') ? 'francesi' : ultimoMazzoScelto;
+            selezionaMazzoStart(targetDeck);
+        }
+    }
+    
     if (isChanging) {
         if (v === 'bresciana') {
             selezionaTarget(31);
@@ -620,9 +674,8 @@ function confermaEAvviaPartita() {
     puntiTarget = tempTarget;
     variante = tempVariante;
 
-    // Con variante bresciana forziamo il mazzo bresciane
+    // Con variante bresciana inviamo l'evento analytics
     if (variante === 'bresciana') {
-        localStorage.setItem('scopa-deck-theme', 'bresciane');
         if (typeof gtag === 'function') {
             gtag('event', 'start_game_bresciana', {
                 'game_mode': modalitaGioco,
@@ -636,15 +689,11 @@ function confermaEAvviaPartita() {
     localStorage.setItem('scopa-score-target', puntiTarget.toString());
     localStorage.setItem('scopa-variante', variante);
 
+    // Applica e salva il mazzo selezionato
+    selezionaMazzo(tempMazzo);
+
     // Configura layout UI
     const campogioco = document.getElementById('campogioco');
-
-    // Applica subito il tema corretto al DOM (sovrascrive quello letto all'avvio)
-    if (variante === 'bresciana') {
-        campogioco.classList.remove('napoletane', 'francesi');
-        campogioco.classList.add('bresciane');
-        aggiornaTestoBottoneMazzo('bresciane');
-    }
 
     // Aggiorna titolo in base alla variante
     const titoloEl = document.getElementById('titolo-gioco');
@@ -3305,6 +3354,10 @@ function selezionaMazzo(tema) {
         }
     }
     localStorage.setItem('scopa-deck-theme', tema);
+    tempMazzo = tema;
+    if (variante !== 'bresciana') {
+        ultimoMazzoScelto = tema;
+    }
     aggiornaTestoBottoneMazzo(tema);
     
     // Rinfresca il rendering di tutte le carte attive per caricare la nuova immagine

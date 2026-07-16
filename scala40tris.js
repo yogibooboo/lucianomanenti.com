@@ -33,7 +33,27 @@ var translations = {
 		opponent: "avversario",
 		draw_card: "PESCA UNA CARTA!",
 		dealer: "MAZZIERE",
-		excluded: "FUORI"
+		excluded: "FUORI",
+		opz_titolo: "Opzioni",
+		opz_avversari: "Avversari",
+		opz_nota_avversari: "Il numero di avversari vale dalla prossima partita; se cambia, i totali si azzerano.",
+		opz_regole: "Regole",
+		opz_jollyimmediato: "Il jolly recuperato va giocato subito, nello stesso turno",
+		opz_scartoimmediato: "La carta pescata dagli scarti va giocata subito, nello stesso turno",
+		opz_nonscartareattaccanti: "Non si può scartare una carta che attacca a un tris o una scala in tavola (a meno che sia l'unica in mano)",
+		opz_unacartabasta: "Un tris o una scala può contenere anche una sola carta non jolly (se disattivata, ne servono almeno due, come da regolamento)",
+		opz_assosingolo: "L'asso rimasto da solo in mano a fine partita vale 1 punto anziché 11",
+		opz_escludiavversari: "Un avversario che ha superato il limite non gioca più le mani successive (punteggio congelato)",
+		badge_fisca: "regola FISCA",
+		badge_variante: "variante non ufficiale",
+		opz_nota_salvate: "Salvate sul dispositivo, valgono da subito.",
+		btn_chiudi: "CHIUDI",
+		btn_nuovapartita: "NUOVA PARTITA",
+		btn_nuovo: "NUOVO / ",
+		audio_tuono: "Tuono",
+		audio_lacrimosa: "Mozart: Lacrimosa",
+		sigla_giocatore: "G",
+		sigla_avversario: "A"
 	},
 	en: {
 		undo: "UNDO",
@@ -55,7 +75,27 @@ var translations = {
 		opponent: "opponent",
 		draw_card: "DRAW A CARD!",
 		dealer: "DEALER",
-		excluded: "OUT"
+		excluded: "OUT",
+		opz_titolo: "Options",
+		opz_avversari: "Opponents",
+		opz_nota_avversari: "The number of opponents applies from the next game; changing it resets the totals.",
+		opz_regole: "Rules",
+		opz_jollyimmediato: "A recovered joker must be played immediately, in the same turn",
+		opz_scartoimmediato: "The card drawn from the discard pile must be played immediately, in the same turn",
+		opz_nonscartareattaccanti: "You cannot discard a card that attaches to a meld on the table (unless it is the only card in your hand)",
+		opz_unacartabasta: "A meld may contain a single non-joker card (if disabled, at least two are required, as per official rules)",
+		opz_assosingolo: "An ace left alone in your hand at the end of a game scores 1 point instead of 11",
+		opz_escludiavversari: "An opponent who exceeded the limit no longer plays the following hands (score frozen)",
+		badge_fisca: "FISCA rule",
+		badge_variante: "unofficial variant",
+		opz_nota_salvate: "Saved on this device, effective immediately.",
+		btn_chiudi: "CLOSE",
+		btn_nuovapartita: "NEW GAME",
+		btn_nuovo: "NEW / ",
+		audio_tuono: "Thunder",
+		audio_lacrimosa: "Mozart: Lacrimosa",
+		sigla_giocatore: "P",
+		sigla_avversario: "O"
 	}
 };
 
@@ -277,6 +317,85 @@ var PUNTIMEZZACOPPIA = 20;
 var PUNTICARTEUGUALI = 30;
 var PUNTIJOLLY = 200;
 var JOLLYRECUPERABILE = 150;
+
+/* ==========================================================================
+   Frammenti DOM specifici della versione nuova: il motore li crea da solo,
+   con le etichette da t() (quindi già bilingui in base al lang della pagina),
+   così può girare sia sulla pagina dedicata sia su un guscio che contiene
+   solo il markup condiviso (integrazione in scala40.html con caricamento
+   condizionale classica/nuova). Ogni blocco è iniettato solo se manca; gli
+   elementi solo-classici (#nuovo, #formnuovo) vengono nascosti se presenti.
+   Va eseguita PRIMA delle catture degli elementi audio qui sotto (crea
+   #lacrimosa) e degli event binding in collegaeventi.
+   ========================================================================== */
+function creaframmentitris() {
+	var campo = $$.one("#campogioco");
+	if (!campo) return;
+
+	if (!$$.one("#formopzioni")) {
+		var fisca = ' <em class="opzioni-badge opzioni-badge-fisca">' + t('badge_fisca') + '</em>';
+		var variante = ' <em class="opzioni-badge opzioni-badge-variante">' + t('badge_variante') + '</em>';
+		var check = function (id, chiave, badge, checked) {
+			return '<label class="opzioni-check">' +
+				'<input type="checkbox" id="' + id + '"' + (checked ? ' checked' : '') + '>' +
+				'<span>' + t(chiave) + badge + '</span></label>';
+		};
+		$$.append(campo,
+			'<div id="formopzioni" class="formistruzioni">' +
+			'<h2 class="opzioni-titolo">' + t('opz_titolo') + '</h2>' +
+			'<div class="opzioni-sezione">' +
+			'<div class="opzioni-etichetta">' + t('opz_avversari') + '</div>' +
+			'<div class="opzioni-radio">' +
+			'<label><input type="radio" name="avversari" value="1"><span>1</span></label>' +
+			'<label><input type="radio" name="avversari" value="2"><span>2</span></label>' +
+			'<label><input type="radio" name="avversari" value="3" checked><span>3</span></label>' +
+			'</div>' +
+			'<div class="opzioni-nota">' + t('opz_nota_avversari') + '</div>' +
+			'</div>' +
+			'<div class="opzioni-sezione">' +
+			'<div class="opzioni-etichetta">' + t('opz_regole') + '</div>' +
+			check('optjollyimmediato', 'opz_jollyimmediato', fisca, false) +
+			check('optscartoimmediato', 'opz_scartoimmediato', fisca, false) +
+			check('optnonscartareattaccanti', 'opz_nonscartareattaccanti', fisca, false) +
+			check('optunacartabasta', 'opz_unacartabasta', variante, true) +
+			check('optassosingolo', 'opz_assosingolo', variante, false) +
+			check('optescludiavversariesuperano', 'opz_escludiavversari', fisca, false) +
+			'<div class="opzioni-nota">' + t('opz_nota_salvate') + '</div>' +
+			'</div>' +
+			'<div class="opzioni-bottoni">' +
+			'<button class="bottone2" type="button">' + t('btn_chiudi') + '</button>' +
+			'<button class="bottone1" type="button">' + t('btn_nuovapartita') + '</button>' +
+			'</div>' +
+			'</div>');
+	}
+
+	if (!$$.one("#opzioni")) {
+		$$.append($$.one("#nonpertest") || campo,
+			'<div id="opzioni" class="pulsante2" style="top: 53px; left: 10px; z-index:1000">' + t('btn_nuovo') +
+			'<svg class="icona-opzioni" viewBox="0 0 24 24" width="19" height="19" fill="white" aria-hidden="true"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>' +
+			'</div>');
+	}
+
+	/* Elementi solo-classici del guscio condiviso: in modalità nuova non
+	   devono restare visibili (il loro posto è preso da #opzioni e
+	   #formopzioni). Sulla pagina tris dedicata non esistono: no-op. */
+	$$.hide("#nuovo");
+	$$.hide("#formnuovo");
+
+	if (!document.getElementById("lacrimosa")) {
+		$$.append(document.body, '<audio id="lacrimosa" src="sounds/scala40/lacrimosa.mp3"></audio>');
+	}
+
+	var modaletorneo = $$.one("#haipersotorneo");
+	if (modaletorneo && !document.getElementById("audiotorneolacrimosa")) {
+		modaletorneo.insertAdjacentHTML('afterbegin',
+			'<div class="audiotorneo-select" style="position:absolute; top:6px; left:6px; z-index:100; font-family: sans-serif; font-size:10px; color:#fff; background:rgba(0,0,0,0.5); border-radius:6px; padding:4px 6px; line-height:1.5;">' +
+			'<label style="display:block; cursor:pointer;"><input type="radio" name="audiotorneo" id="audiotorneothunder" value="thunder"> ' + t('audio_tuono') + '</label>' +
+			'<label style="display:block; cursor:pointer;"><input type="radio" name="audiotorneo" id="audiotorneolacrimosa" value="lacrimosa" checked> ' + t('audio_lacrimosa') + '</label>' +
+			'</div>');
+	}
+}
+creaframmentitris();
 
 var scarta = document.getElementById("scarta");
 var scartatris = document.getElementById("scartatris");
@@ -845,7 +964,9 @@ var scala = {
 		   "punti<nome>"/"punti<nometris>" così la logica esistente (SCOPERTE,
 		   fine partita) funziona invariata. */
 		this.creacontatoreverticale("punti" + nome, nome, 4, 30);
-		var sigla = (nometris === "trisgiocatore") ? "G" : "A" + nometris.replace("trisavversario", "");
+		/* Sigla localizzata come le immagini del totalizzatore (getLangImg):
+		   it G/A1..A3, en P/O1..O3. */
+		var sigla = (nometris === "trisgiocatore") ? t('sigla_giocatore') : t('sigla_avversario') + nometris.replace("trisavversario", "");
 		this.creacontatoreverticale("punti" + nometris, nome, 860 - 36, 15, sigla);
 		/* Etichetta MAZZIERE sopra il contatore, mostrata solo per il
 		   mazziere della mano corrente. */
