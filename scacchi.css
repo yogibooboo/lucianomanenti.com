@@ -1,0 +1,714 @@
+/* ============================================================================
+   SCACCHI - Stili CSS
+   Stile feltro verde Burraco/Scopa con layout 1024x750px
+   ============================================================================ */
+
+/* === BASE & LAYOUT === */
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #1a5f2a;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.main-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+/* === SIDEBARS (per AdSense e layout) === */
+.sidebar {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    background: linear-gradient(135deg, #1a6b30 0%, #145524 50%, #0f4a1c 100%);
+    overflow-y: auto;
+    box-sizing: border-box;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    z-index: 1;
+    transition: opacity 0.3s ease;
+}
+#sidebar-left { left: 0; }
+#sidebar-right { right: 0; }
+
+/* === CAMPO DI GIOCO === */
+#campogioco {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 1024px;
+    height: 750px;
+    background: linear-gradient(135deg, #1a6b30 0%, #145524 50%, #0f4a1c 100%);
+    background-image: url(images/scala40/tappetoverde.png);
+    transform-origin: center center;
+    border-radius: 10px;
+    box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.4), 0 10px 30px rgba(0,0,0,0.5);
+    overflow: hidden;
+}
+
+/* === SCHERMO OVERLAY === */
+#schermo {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1024px;
+    height: 750px;
+    background-color: rgba(0, 0, 0, 0.65);
+    z-index: 30000;
+    display: none;
+}
+
+/* === TITOLO E BARRA SUPERIORE === */
+#titolo-gioco {
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #ffd700;
+    font-size: 26px;
+    font-family: 'Slackey', 'Outfit', sans-serif;
+    font-weight: bold;
+    z-index: 1000;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+    white-space: nowrap;
+}
+
+#messaggio-stato {
+    position: absolute;
+    top: 50px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #fff;
+    font-size: 16px;
+    font-weight: bold;
+    text-align: center;
+    background: rgba(0, 40, 10, 0.6);
+    padding: 6px 20px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    z-index: 100;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    white-space: normal;
+    max-width: 560px;
+    width: max-content;
+    line-height: 1.35;
+    transition: background-color 0.2s, color 0.2s;
+}
+#messaggio-stato.msg-giallo {
+    background: #ffd700;
+    color: #1a1a2e;
+    border-color: #b8860b;
+    text-shadow: none;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+}
+#messaggio-stato.msg-rosso {
+    background: #cc0c39;
+    color: #fff;
+    border-color: #990022;
+    text-shadow: none;
+    box-shadow: 0 0 15px rgba(204, 12, 57, 0.5);
+}
+
+.lang-switch-header {
+    position: absolute;
+    top: 8px;
+    left: 230px;
+    z-index: 10001;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.lang-switch-header a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 10px;
+    height: 32px;
+    text-decoration: none;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 12px;
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    transition: all 0.2s;
+    box-sizing: border-box;
+}
+.lang-switch-header a.active {
+    background: #ffd700;
+    color: #1a1a2e;
+    border-color: #b8860b;
+}
+.lang-switch-header a:hover:not(.active) {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.btn-audio-game {
+    width: 32px;
+    height: 32px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 20px;
+    background-color: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+.btn-audio-game:hover {
+    background-color: rgba(255, 255, 255, 0.25);
+}
+.btn-audio-game.muted {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.21.05-.42.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z'/%3E%3C/svg%3E");
+}
+
+#btn-audio {
+    position: relative;
+    z-index: 10001;
+}
+
+.pulsante-top {
+    height: 32px;
+    line-height: 32px;
+    background: rgba(0,0,0,0.4);
+    border: 1px solid #6b9b7a;
+    color: white;
+    border-radius: 4px;
+    padding: 0 10px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: bold;
+    transition: all 0.2s;
+    box-sizing: border-box;
+}
+.pulsante-top:hover {
+    background: rgba(0, 60, 20, 0.7);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+a.pulsante-top {
+    display: inline-block;
+    text-decoration: none;
+}
+
+/* Scrivetemi e Come si Gioca: in alto a sinistra, prima del selettore lingua */
+.link-utility-bottom {
+    position: absolute;
+    top: 8px;
+    left: 15px;
+    display: flex;
+    gap: 6px;
+    z-index: 10001;
+}
+
+/* === PANNELLO STATISTICHE (in alto a destra) === */
+#pannello-stats {
+    position: absolute;
+    top: 10px;
+    left: 680px;
+    width: 290px;
+    z-index: 50;
+    background: rgba(0, 40, 10, 0.55);
+    border: 2px solid rgba(100, 160, 110, 0.35);
+    border-radius: 10px;
+    padding: 8px 14px 10px;
+    box-sizing: border-box;
+    color: #fff;
+}
+.stats-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    font-weight: bold;
+    color: #aed6ae;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 5px;
+}
+#btn-reset-stats {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: #ccc;
+    border-radius: 4px;
+    font-size: 11px;
+    line-height: 1;
+    padding: 2px 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-width: 32px;
+}
+#btn-reset-stats:hover {
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.5);
+}
+#btn-reset-stats.conferma {
+    background: #cc0c39;
+    color: #fff;
+    border-color: #990022;
+    font-weight: bold;
+}
+.stats-righe {
+    display: flex;
+    justify-content: space-between;
+}
+.stats-righe .info-blocco {
+    text-align: center;
+    flex: 1;
+}
+.stats-righe .info-label {
+    font-size: 11px;
+    color: #aed6ae;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.stat-valore {
+    font-size: 18px;
+    font-weight: bold;
+    color: #7fd4ff;
+    margin-top: 2px;
+}
+#stat-vinte { color: #7fe07f; }
+#stat-perse { color: #ff8f8f; }
+
+/* === SCACCHIERA === */
+#scacchiera {
+    position: absolute;
+    top: 102px;
+    left: 52px;
+    display: grid;
+    grid-template-columns: repeat(8, 72px);
+    grid-template-rows: repeat(8, 72px);
+    border: 8px solid #4a2f17;
+    background: #4a2f17;
+    border-radius: 6px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.55), inset 0 0 12px rgba(0,0,0,0.4);
+    z-index: 50;
+}
+
+.casa {
+    width: 72px;
+    height: 72px;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    cursor: pointer;
+}
+.casa.chiara { background: #f0d9b5; }
+.casa.scura { background: #b58863; }
+
+/* Evidenziazioni di gioco */
+.casa.selezionata {
+    box-shadow: inset 0 0 0 4px rgba(255, 215, 0, 0.9);
+}
+.casa.ultima-mossa {
+    background-image: linear-gradient(rgba(205, 210, 60, 0.45), rgba(205, 210, 60, 0.45));
+}
+.casa.destinazione::after {
+    content: '';
+    position: absolute;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: rgba(30, 90, 40, 0.45);
+    pointer-events: none;
+}
+.casa.cattura::after {
+    content: '';
+    position: absolute;
+    inset: 3px;
+    border-radius: 50%;
+    border: 4px solid rgba(200, 40, 40, 0.65);
+    box-sizing: border-box;
+    pointer-events: none;
+}
+.casa.scacco {
+    background-image: radial-gradient(circle, rgba(230, 30, 30, 0.75) 0%, rgba(230, 30, 30, 0.25) 60%, transparent 100%);
+}
+.casa.suggerita {
+    box-shadow: inset 0 0 16px 4px rgba(127, 212, 255, 0.9);
+}
+
+/* === PEZZI (glifi Unicode colorati) === */
+.pezzo {
+    font-size: 54px;
+    line-height: 1;
+    cursor: pointer;
+    user-select: none;
+    text-shadow: 0 3px 4px rgba(0, 0, 0, 0.35);
+}
+.pezzo.bianco {
+    color: #fdfdf8;
+    text-shadow: 0 0 2px #333, 0 0 2px #333, 0 2px 3px rgba(0,0,0,0.5);
+}
+.pezzo.nero {
+    color: #1c1c1c;
+    text-shadow: 0 0 2px #999, 0 2px 3px rgba(0,0,0,0.4);
+}
+
+/* Pulsanti di scelta della promozione */
+#scegli-promozione {
+    width: 420px;
+    height: 190px;
+    left: 302px;
+    top: 280px;
+    justify-content: center;
+}
+#scegli-promozione .promo-bottoni {
+    display: flex;
+    gap: 14px;
+    justify-content: center;
+}
+#scegli-promozione button {
+    width: 80px;
+    height: 80px;
+    font-size: 50px;
+    background: #f0d9b5;
+    border: 3px solid #b8860b;
+    border-radius: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+}
+#scegli-promozione button:hover {
+    transform: scale(1.08);
+    box-shadow: 0 0 14px rgba(255, 215, 0, 0.7);
+}
+#scegli-promozione .pezzo { font-size: 50px; cursor: pointer; }
+
+/* === PANNELLO CONTROLLI (colonna destra) === */
+#pannello-controlli {
+    position: absolute;
+    top: 108px;
+    left: 680px;
+    width: 290px;
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+#info-partita {
+    background: rgba(0, 40, 10, 0.55);
+    border: 2px solid rgba(100, 160, 110, 0.35);
+    border-radius: 10px;
+    padding: 10px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #fff;
+    font-size: 14px;
+}
+#info-partita .info-blocco {
+    text-align: center;
+    flex: 1;
+}
+#info-partita .info-label {
+    font-size: 11px;
+    color: #aed6ae;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+#info-partita .info-valore {
+    font-size: 17px;
+    font-weight: bold;
+    color: #ffd700;
+    margin-top: 2px;
+}
+
+#azioni {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+.btn-azione {
+    height: 46px;
+    font-size: 13px;
+    font-weight: bold;
+    color: white;
+    background: rgba(0, 40, 10, 0.6);
+    border: 2px solid #6b9b7a;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-transform: uppercase;
+}
+.btn-azione:hover:not(:disabled) {
+    background: rgba(0, 60, 20, 0.8);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+.btn-azione:disabled {
+    opacity: 0.4;
+    cursor: default;
+}
+
+/* Legenda breve delle regole principali */
+/* Lista delle mosse in notazione algebrica */
+#pannello-mosse {
+    background: rgba(0, 40, 10, 0.55);
+    border: 2px solid rgba(100, 160, 110, 0.35);
+    border-radius: 10px;
+    padding: 10px 14px;
+    color: #cde8cd;
+    font-size: 13px;
+    line-height: 1.7;
+}
+#pannello-mosse .mosse-titolo {
+    font-size: 11px;
+    font-weight: bold;
+    color: #aed6ae;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+}
+#lista-mosse {
+    height: 96px;
+    overflow-y: auto;
+    font-family: 'Segoe UI', sans-serif;
+    word-spacing: 2px;
+}
+#lista-mosse .num-mossa { color: #8fb89f; }
+
+/* Pezzi catturati dalle due parti: solo glifi, senza sfondo né etichette */
+#pannello-catture {
+    padding: 0 2px;
+}
+.catture-riga {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 40px;
+}
+.catture-pezzi {
+    flex: 1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    line-height: 1.05;
+}
+.pezzo-preso {
+    font-size: 34px;
+    margin-right: -4px;
+}
+.pezzo-preso.bianco {
+    color: #fdfdf8;
+    text-shadow: 0 0 2px #333, 0 1px 2px rgba(0,0,0,0.5);
+}
+.pezzo-preso.nero {
+    color: #1c1c1c;
+    text-shadow: 0 0 2px #999, 0 1px 2px rgba(0,0,0,0.4);
+}
+.vantaggio {
+    color: #ffd700;
+    font-weight: bold;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+#btn-nuova-partita {
+    height: 56px;
+    font-size: 18px;
+    font-weight: bold;
+    font-family: 'Slackey', 'Outfit', sans-serif;
+    color: #1a1a2e;
+    background: linear-gradient(180deg, #ffd700 0%, #d4af37 100%);
+    border: 3px solid #b8860b;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.15s;
+    box-shadow: 0 5px 14px rgba(0,0,0,0.4);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+#btn-nuova-partita:hover {
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+}
+
+/* === MODALI E DIALOGHI === */
+.form-scacchi {
+    z-index: 40000;
+    position: absolute;
+    width: 500px;
+    height: 540px;
+    left: 262px;
+    top: 105px;
+    background-color: #1a4224;
+    background-image: url(images/scala40/tappetoverde.png);
+    border: 4px solid #b8860b;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+    box-sizing: border-box;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    padding: 25px;
+    color: white;
+    overflow: hidden;
+}
+
+.form-scacchi-title {
+    font-family: 'Slackey', 'Outfit', sans-serif;
+    font-size: 26px;
+    color: #ffd700;
+    margin-bottom: 20px;
+    text-shadow: 2px 2px 4px #000;
+    text-align: center;
+}
+
+#modale-inizio {
+    justify-content: center;
+}
+
+.btn-opzione-sel {
+    background: #1f4068;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.6);
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: bold;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-width: 120px;
+    text-transform: uppercase;
+    opacity: 0.55;
+    filter: blur(0.5px);
+}
+.btn-opzione-sel.attiva {
+    background: linear-gradient(180deg, #ffd700 0%, #b8860b 100%);
+    border: 2px solid #ffd700;
+    color: #1a1a2e;
+    box-shadow: 0 0 12px rgba(255, 215, 0, 0.5);
+    opacity: 1;
+    filter: none;
+}
+.btn-opzione-sel:hover {
+    opacity: 0.85;
+    filter: none;
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.4);
+}
+.btn-opzione-sel.attiva:hover {
+    filter: brightness(1.1);
+    opacity: 1;
+}
+
+.btn-continua {
+    padding: 10px 30px;
+    font-size: 15px;
+    font-weight: bold;
+    color: #2c3e50;
+    background: #ffd700;
+    border: 2px solid #b8860b;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+.btn-continua:hover {
+    background: #fff;
+    transform: scale(1.05);
+}
+
+/* Modale conferma nuova partita: bassa e larga, con banner pubblicitario sopra */
+#confermatermina.modale-conferma {
+    width: 700px;
+    height: 180px;
+    left: 162px;
+    top: 470px;
+    padding: 24px 25px;
+    justify-content: center;
+    overflow: visible; /* il banner sporge sopra la modale */
+}
+.conferma-bottoni {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+}
+
+/* Modale fine partita: bassa e larga, con banner pubblicitario sopra */
+#finepartita.modale-fine {
+    width: 700px;
+    height: 210px;
+    left: 162px;
+    top: 430px;
+    padding: 20px 25px;
+    justify-content: center;
+    overflow: visible; /* il banner sporge sopra la modale */
+}
+
+.confirm-message {
+    font-family: 'Slackey', 'Outfit', sans-serif;
+    font-size: 24px;
+    color: white;
+    text-align: center;
+    margin-bottom: 40px;
+    text-shadow: 2px 2px 4px #000;
+    padding: 0 20px;
+}
+
+/* === LINK A FONDO PAGINA === */
+.legal-links-scacchi {
+    position: absolute;
+    bottom: 12px;
+    left: 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    z-index: 100;
+    font-size: 11px;
+}
+.legal-links-scacchi a {
+    color: #cde8cd;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+.legal-links-scacchi a:hover {
+    color: #ffd700;
+    text-decoration: underline;
+}
+.legal-links-scacchi .sep { color: #6b9b7a; }
+
+.link-giochi-scacchi {
+    position: absolute;
+    bottom: 8px;
+    right: 15px;
+    display: flex;
+    gap: 5px;
+    z-index: 100;
+}
+.pulsante-link-scacchi {
+    height: 26px;
+    line-height: 26px;
+    background: rgba(0,0,0,0.4);
+    border: 1px solid #6b9b7a;
+    color: white;
+    border-radius: 4px;
+    padding: 0 8px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: bold;
+    text-decoration: none;
+    transition: all 0.2s;
+    box-sizing: border-box;
+}
+.pulsante-link-scacchi:hover {
+    background: rgba(0, 60, 20, 0.7);
+    border-color: rgba(255, 255, 255, 0.5);
+}

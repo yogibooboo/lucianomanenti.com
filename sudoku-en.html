@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script>
+        // Fix sicurezza per evitare crash da cross-origin su window.opener
+        (function() { try { if (!window.opener) return; var test = window.opener.document; if (!window.opener.game) { window.opener = null; } } catch(e) { window.opener = null; } })();
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Free Online Sudoku - lucianomanenti.com</title>
+    <link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
+    <link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
+    <link rel="shortcut icon" href="favicon/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+    <link rel="manifest" href="favicon/site.webmanifest">
+
+    <meta name="Description"
+        content="Play Sudoku for free online, no registration required. Three difficulty levels, pencil notes, hints, and puzzles with a guaranteed unique solution.">
+    <meta http-Equiv="Cache-Control" Content="no-cache">
+    <meta http-Equiv="Pragma" Content="no-cache">
+    <meta http-Equiv="Expires" Content="0">
+
+    <link rel="stylesheet" href="sudoku.css?v=2.1" />
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-WRBDRDQ4L8');
+    </script>
+    <script>
+        window.gameConfig = {
+            gaPrefix: 'SUDOKU_en_',
+            hideLegalFooter: true,
+            adsenseActive: false
+        };
+        window.currentLang = 'en';
+    </script>
+</head>
+
+<body>
+
+    <div class="main-container">
+        <!-- Sidebar per annunci (gestite dal layout engine) -->
+        <div id="sidebar-left" class="sidebar"></div>
+        <div id="sidebar-right" class="sidebar"></div>
+
+        <!-- Campo di gioco principale centrato e riscalato -->
+        <div id="campogioco">
+            <!-- Schermo overlay per modali -->
+            <div id="schermo"></div>
+
+            <!-- Titolo del gioco -->
+            <div class="lang-switch-header">
+                <a href="sudoku.html">IT</a>
+                <a href="sudoku-en.html" class="active">EN</a>
+                <div id="btn-audio" class="btn-audio-game" aria-label="Audio"></div>
+            </div>
+            <div id="titolo-gioco">Sudoku Luciano</div>
+
+            <!-- Messaggio di stato -->
+            <div id="messaggio-stato">Loading...</div>
+
+            <!-- ================= PANNELLO RECORD ================= -->
+            <div id="pannello-record">
+                <div class="record-header">
+                    <span>BEST TIMES — <span id="record-diff">--</span></span>
+                </div>
+                <div class="record-righe">
+                    <div class="info-blocco">
+                        <div class="info-label">Today</div>
+                        <div class="record-valore" id="record-oggi">--:--</div>
+                        <button class="btn-reset-record" data-tipo="daily" title="Reset today's best">&#10226;</button>
+                    </div>
+                    <div class="info-blocco">
+                        <div class="info-label">Week</div>
+                        <div class="record-valore" id="record-settimana">--:--</div>
+                        <button class="btn-reset-record" data-tipo="weekly" title="Reset this week's best">&#10226;</button>
+                    </div>
+                    <div class="info-blocco">
+                        <div class="info-label">All-time</div>
+                        <div class="record-valore" id="record-assoluto">--:--</div>
+                        <button class="btn-reset-record" data-tipo="all" title="Reset the all-time best">&#10226;</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= GRIGLIA SUDOKU ================= -->
+            <div id="griglia-sudoku"></div>
+
+            <!-- ================= PANNELLO CONTROLLI ================= -->
+            <div id="pannello-controlli">
+                <div id="info-partita">
+                    <div class="info-blocco">
+                        <div class="info-label">Difficulty</div>
+                        <div class="info-valore" id="info-difficolta">--</div>
+                    </div>
+                    <div class="info-blocco">
+                        <div class="info-label">Time</div>
+                        <div class="info-valore" id="info-tempo">00:00</div>
+                    </div>
+                    <div class="info-blocco">
+                        <div class="info-label">Mistakes</div>
+                        <div class="info-valore" id="info-errori">0</div>
+                    </div>
+                </div>
+
+                <div id="numpad">
+                    <button id="btn-num-1" class="btn-num">1<span class="num-count">9</span></button>
+                    <button id="btn-num-2" class="btn-num">2<span class="num-count">9</span></button>
+                    <button id="btn-num-3" class="btn-num">3<span class="num-count">9</span></button>
+                    <button id="btn-num-4" class="btn-num">4<span class="num-count">9</span></button>
+                    <button id="btn-num-5" class="btn-num">5<span class="num-count">9</span></button>
+                    <button id="btn-num-6" class="btn-num">6<span class="num-count">9</span></button>
+                    <button id="btn-num-7" class="btn-num">7<span class="num-count">9</span></button>
+                    <button id="btn-num-8" class="btn-num">8<span class="num-count">9</span></button>
+                    <button id="btn-num-9" class="btn-num">9<span class="num-count">9</span></button>
+                </div>
+
+                <div id="azioni">
+                    <button id="btn-matita" class="btn-azione">&#9999;&#65039; Pencil</button>
+                    <button id="btn-cancella" class="btn-azione">&#10060; Erase</button>
+                    <button id="btn-annulla" class="btn-azione">&#8630; Undo</button>
+                    <button id="btn-hint" class="btn-azione">&#128161; Hint</button>
+                </div>
+
+                <div id="opzioni-errori">
+                    <label><input type="checkbox" id="chk-conflitti"> Highlight obvious mistakes (conflicts with visible numbers)</label>
+                    <label><input type="checkbox" id="chk-tutti-errori"> Highlight all mistakes (checked against the solution)</label>
+                </div>
+
+                <button id="btn-nuova-partita">NEW GAME</button>
+
+                <!-- Hint panel: covers the button column when active -->
+                <div id="pannello-hint">
+                    <div class="hint-titolo">&#128161; Hint</div>
+                    <div id="hint-testo"></div>
+                    <div id="hint-bottoni">
+                        <button id="btn-hint-spiega">EXPLANATION</button>
+                        <button id="btn-hint-applica">FILL IT IN</button>
+                        <button id="btn-hint-chiudi">CLOSE</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= MODALI ED OVERLAY ================= -->
+
+            <!-- 1. Modale Inizio Gioco -->
+            <div id="modale-inizio" class="form-sudoku">
+                <button id="btn-riprendi" class="btn-continua" style="display: none; width: 100%; max-width: 250px; margin: 0 auto 20px auto; background: #27ae60; border-color: #1e8449; color: white;">RESUME PREVIOUS GAME</button>
+
+                <div class="form-sudoku-title">New Sudoku Game</div>
+
+                <div class="opzione-gruppo" style="margin-bottom: 20px; text-align: center;">
+                    <div style="font-size: 13px; font-weight: bold; margin-bottom: 12px; color: #ffd700; text-transform: uppercase;">Difficulty:</div>
+                    <div style="display: flex; flex-direction: column; justify-content: center; gap: 12px; align-items: center;">
+                        <button id="btn-diff-facile" onclick="selezionaDifficolta('facile')" class="btn-opzione-sel attiva" style="width: 220px;">EASY</button>
+                        <button id="btn-diff-medio" onclick="selezionaDifficolta('medio')" class="btn-opzione-sel" style="width: 220px;">MEDIUM</button>
+                        <button id="btn-diff-difficile" onclick="selezionaDifficolta('difficile')" class="btn-opzione-sel" style="width: 220px;">HARD</button>
+                    </div>
+                </div>
+
+                <button onclick="confermaEAvviaPartita()" class="btn-continua" style="width: 100%; max-width: 250px; margin: 0 auto 15px auto; display: block;">START PLAYING</button>
+
+                <p style="font-size: 11px; color: #aaa; text-align: center; margin: 0;">
+                    Every generated puzzle has a guaranteed unique solution.<br>
+                    Easy and Medium can always be solved with pure logical deductions.<br>
+                    Keyboard: 1-9 to enter, arrow keys to move, N toggles pencil, Ctrl+Z undoes.
+                </p>
+            </div>
+
+            <!-- 2. Modale Vittoria (bassa e larga, banner sopra) -->
+            <div id="haivinto" class="form-sudoku modale-vittoria">
+                <div class="confirm-message" id="vittoria-messaggio" style="margin: 0 0 8px 0; line-height: 1.3;">CONGRATULATIONS!<br>Puzzle solved!</div>
+                <div id="vittoria-dettagli" style="color: #ffd700; font-size: 15px; font-weight: bold; text-align: center; margin-bottom: 16px; text-shadow: 1px 1px 2px #000;"></div>
+                <button onclick="location.reload()" class="btn-continua" style="width: 280px; height: 44px; font-size: 16px; margin: 0 auto;">NEW GAME</button>
+            </div>
+
+            <!-- 3. Modale di Conferma Abbandono Partita (bassa e larga, banner sopra) -->
+            <div id="confermatermina" class="form-sudoku modale-conferma">
+                <div class="confirm-message" style="margin: 0 0 18px 0; line-height: 1.4; font-size: 22px;">Do you really want to abandon the current puzzle?</div>
+                <div class="conferma-bottoni">
+                    <button id="btn-no-continua" class="btn-continua" style="width: 260px; height: 44px; font-size: 16px;">NO, CONTINUE</button>
+                    <button id="btn-si-termina" class="btn-continua" style="width: 260px; height: 44px; font-size: 16px; background-color: #cc0c39; color: white; border-color: #990022;">YES, NEW PUZZLE</button>
+                </div>
+            </div>
+
+            <!-- 4. Modale Regole -->
+            <div id="modale-regole" class="form-sudoku" style="justify-content: flex-start;">
+                <div class="form-sudoku-title">How to Play</div>
+                <div style="font-size: 14px; line-height: 1.7; color: #e8e8e8; text-align: left; overflow-y: auto; padding: 0 10px;">
+                    <p style="margin-top: 0;">Fill the grid so that every <b>row</b>, every <b>column</b> and every <b>3&times;3 box</b> contains all the numbers from 1 to 9, with no repetitions.</p>
+                    <p><b>Select a cell</b> and enter a number with the keyboard or with the buttons on the right. Numbers flagged as wrong are shown in red and counted as mistakes: the two options below the buttons choose whether to flag only obvious conflicts with the visible numbers (default) or every mistake against the solution.</p>
+                    <p><b>&#9999;&#65039; Pencil</b>: toggle notes to jot down possible candidates in a cell.<br>
+                    <b>&#10060; Erase</b>: clear the selected cell.<br>
+                    <b>&#8630; Undo</b>: undo the last move (also Ctrl+Z).<br>
+                    <b>&#128161; Hint</b>: highlights a cell that can be deduced from the visible numbers (or a mistake, if present) and opens a panel with three choices: <b>Explanation</b> shows the logical reasoning, <b>Fill it in</b> fills the cell, <b>Close</b> dismisses the hint without changing anything.</p>
+                    <p style="color: #aaa; font-size: 12px;">The game is saved automatically: if you close the page you can resume where you left off.</p>
+                </div>
+                <div style="display: flex; gap: 12px; margin-top: 15px; align-items: center;">
+                    <a href="regole-sudoku-en.html" target="_blank" rel="opener" class="btn-continua" style="text-decoration: none; display: inline-block; background: #27ae60; border-color: #1e8449; color: white;">FULL GUIDE</a>
+                    <button onclick="chiudiModali()" class="btn-continua">CLOSE</button>
+                </div>
+            </div>
+
+            <!-- Link di navigazione ed utilità a fondo pagina -->
+            <div class="link-utility-bottom">
+                <a href="aboutme-en.html" target="_blank" id="btn-scrivetemi-sudoku" class="pulsante-top">Write to Me</a>
+                <button id="btn-regole-top" class="pulsante-top">How to Play</button>
+            </div>
+
+            <!-- Link Legali (Privacy e Cookie) -->
+            <div class="legal-links-sudoku">
+                <a href="privacy-en.html" target="_blank" id="btn-privacy-sudoku">Privacy Policy</a>
+                <span class="sep">•</span>
+                <a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)" id="btn-cookie-sudoku">Manage Cookies</a>
+            </div>
+
+            <div class="link-giochi-sudoku">
+                <a href="scacchi-en.html" class="pulsante-link-sudoku">Chess</a>
+                <a href="dama-en.html" class="pulsante-link-sudoku">Checkers</a>
+                <a href="scopa-en.html" class="pulsante-link-sudoku">Scopa</a>
+                <a href="rummy-en.html" class="pulsante-link-sudoku">Gin Rummy</a>
+                <a href="burraco-en.html" class="pulsante-link-sudoku">Burraco</a>
+                <a href="scala40-en.html" class="pulsante-link-sudoku">Scala 40</a>
+                <a href="machiavelli-en.html" class="pulsante-link-sudoku">Machiavelli</a>
+                <a href="spider-en.html" class="pulsante-link-sudoku">Spider</a>
+                <a href="klondike-en.html" class="pulsante-link-sudoku">Klondike</a>
+                <a href="index-en.html" class="pulsante-link-sudoku">Home</a>
+            </div>
+
+        </div><!-- /campogioco -->
+    </div>
+
+    <!-- Script condivisi dal sito -->
+    <script src="site.js?v=1.1"></script>
+    <!-- Layout engine per ridimensionare la finestra del gioco -->
+    <script src="game-layout.js?v=4.6"></script>
+    <!-- Logica del Sudoku -->
+    <script src="sudoku.js?v=2.2"></script>
+    <script>
+        (function () {
+            var nascosto = false;
+            var observer = new MutationObserver(function () {
+                if (nascosto) return;
+                var divs = document.querySelectorAll('body > div');
+                for (var i = 0; i < divs.length; i++) {
+                    if (divs[i].shadowRoot && !divs[i].className && (divs[i].getAttribute('style') || '').length > 5000) {
+                        divs[i].style.setProperty('display', 'none', 'important');
+                        nascosto = true;
+                        observer.disconnect();
+                        return;
+                    }
+                }
+            });
+            observer.observe(document.body, { childList: true });
+        })();
+    </script>
+</body>
+
+</html>

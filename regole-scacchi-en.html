@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
+	<script>
+		window.dataLayer = window.dataLayer || [];
+		function gtag() { dataLayer.push(arguments); }
+		gtag('js', new Date());
+		gtag('config', 'G-WRBDRDQ4L8');
+		window.currentLang = 'en';
+	</script>
+	<title>Chess Rules - How to Play</title>
+	<meta name="Description"
+		content="Chess rules: piece movement, castling, en passant, promotion, checkmate and draws. A complete guide to playing free online against the computer.">
+	<link rel="alternate" hreflang="it" href="regole-scacchi.html">
+	<link rel="alternate" hreflang="en" href="regole-scacchi-en.html">
+	<link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
+	<link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
+	<link rel="shortcut icon" href="favicon/favicon.ico">
+	<link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+	<style>
+		body {
+			font-family: sans-serif;
+			line-height: 1.7;
+			max-width: 800px;
+			margin: 40px auto;
+			padding: 20px;
+			color: #333;
+			background-color: #f9f9f9;
+		}
+
+		h1 {
+			color: #2c3e50;
+			border-bottom: 2px solid #ffd700;
+			padding-bottom: 10px;
+		}
+
+		h2 {
+			color: #2c3e50;
+			margin-top: 30px;
+		}
+
+		h3 {
+			color: #2c3e50;
+			font-size: 1.1em;
+			margin-top: 20px;
+		}
+
+		.lang-switch {
+			text-align: right;
+			margin-bottom: 20px;
+		}
+
+		.lang-switch a {
+			display: inline-block;
+			padding: 6px 16px;
+			margin-left: 5px;
+			text-decoration: none;
+			border-radius: 5px;
+			font-weight: bold;
+			font-size: 14px;
+		}
+
+		.lang-switch a.active {
+			background: #2c3e50;
+			color: white;
+		}
+
+		.lang-switch a:not(.active) {
+			background: #ddd;
+			color: #333;
+			cursor: pointer;
+		}
+
+		.content-box {
+			background: white;
+			padding: 30px;
+			border-radius: 8px;
+			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+		}
+
+		.play-btn {
+			display: inline-block;
+			margin-top: 25px;
+			padding: 12px 30px;
+			background: #27ae60;
+			color: white;
+			text-decoration: none;
+			border-radius: 8px;
+			font-size: 18px;
+			font-weight: bold;
+		}
+
+		.nav-links {
+			text-align: center;
+			margin-top: 30px;
+			font-size: 14px;
+		}
+
+		.nav-links a {
+			color: #3498db;
+			text-decoration: none;
+			margin: 0 10px;
+		}
+
+		.banner {
+			width: 100%;
+			height: 150px;
+			background-image: url('images/home/castagne.jpg');
+			background-size: cover;
+			background-position: center;
+			border-radius: 8px;
+			margin: 20px 0;
+			box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+		}
+
+		.score-table {
+			width: 100%;
+			border-collapse: collapse;
+			margin-top: 10px;
+			margin-bottom: 20px;
+		}
+
+		.score-table th,
+		.score-table td {
+			border: 1px solid #ddd;
+			padding: 8px;
+			text-align: left;
+		}
+
+		.score-table th {
+			background-color: #f2f2f2;
+			font-weight: bold;
+		}
+
+		.score-table td:first-child {
+			font-size: 22px;
+			text-align: center;
+			width: 50px;
+		}
+
+		.highlight {
+			background-color: #fff9c4;
+			padding: 0 4px;
+		}
+	</style>
+</head>
+
+<body>
+	<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+		<a href="#" id="btn-back" onclick="goBack(); return false;"
+			style="display: inline-block; padding: 6px 16px; background: #e74c3c; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 14px;">&#x2190;
+			Back</a>
+		<div class="lang-switch" style="margin-bottom: 0;">
+			<a href="regole-scacchi.html" id="btn-it">Italiano</a>
+			<a href="regole-scacchi-en.html" id="btn-en" class="active">English</a>
+		</div>
+	</div>
+
+	<div class="banner"></div>
+
+	<div class="content-box">
+		<div id="lang-en">
+			<h1>Chess Rules</h1>
+
+			<p><strong>Chess</strong> is the strategy game par excellence, with fifteen centuries of history behind it. Two armies of 16 pieces face each other on an 8&times;8 board with a single goal: <strong>checkmate</strong> the enemy king.</p>
+
+			<p style="background: #fff9c4; padding: 12px 16px; border-radius: 6px; border-left: 4px solid #ffd700;">
+				This game is constantly evolving: new features and improvements are added regularly. If something doesn't work as expected or you have suggestions, write to
+				<a href="mailto:postmaster@lucianomanenti.com" style="color: #3498db;">postmaster@lucianomanenti.com</a>
+				— your feedback is precious!
+			</p>
+
+			<h2>1. How the Pieces Move</h2>
+			<table class="score-table">
+				<tr>
+					<th>Piece</th>
+					<th>Name</th>
+					<th>Movement</th>
+				</tr>
+				<tr>
+					<td>&#9817;</td>
+					<td><strong>Pawn</strong></td>
+					<td>Moves one square forward (two from its starting position). Captures only diagonally, one square forward.</td>
+				</tr>
+				<tr>
+					<td>&#9816;</td>
+					<td><strong>Knight</strong></td>
+					<td>Moves in an "L": two squares in one direction and one perpendicular. The only piece that can jump over others.</td>
+				</tr>
+				<tr>
+					<td>&#9815;</td>
+					<td><strong>Bishop</strong></td>
+					<td>Moves diagonally, any number of squares.</td>
+				</tr>
+				<tr>
+					<td>&#9814;</td>
+					<td><strong>Rook</strong></td>
+					<td>Moves horizontally or vertically, any number of squares.</td>
+				</tr>
+				<tr>
+					<td>&#9813;</td>
+					<td><strong>Queen</strong></td>
+					<td>Combines rook and bishop: moves in any direction, any number of squares. The strongest piece.</td>
+				</tr>
+				<tr>
+					<td>&#9812;</td>
+					<td><strong>King</strong></td>
+					<td>Moves one square in any direction. It may never move to an attacked square.</td>
+				</tr>
+			</table>
+
+			<h2>2. Special Moves</h2>
+			<h3>Castling</h3>
+			<p>Once per game, king and rook may move <em>together</em>: the king moves two squares towards the rook and the rook "jumps" to the other side of the king. It is only allowed if neither the king nor the rook has moved, the squares between them are empty, and the king is not in check nor passes through attacked squares. In the game, just click the king and then its destination square (two squares sideways).</p>
+			<h3>En passant</h3>
+			<p>If an enemy pawn advances two squares and lands <em>beside</em> one of your pawns, you may capture it as if it had advanced only one square — but only on the very next move.</p>
+			<h3>Promotion</h3>
+			<p>A pawn reaching the last rank is transformed into a piece of your choice: Queen, Rook, Bishop or Knight (the Queen is almost always best). The game opens a panel for you to choose.</p>
+
+			<h2>3. Check, Checkmate and Draws</h2>
+			<ul>
+				<li><strong>Check:</strong> the king is attacked. You must deal with it: move the king, capture the attacker or block with a piece.</li>
+				<li><strong>Checkmate:</strong> the check cannot be met in any way. The player who delivered it wins.</li>
+				<li><strong>Stalemate:</strong> the player to move has no legal moves but is <em>not</em> in check: the game is a draw.</li>
+				<li><strong>Other draws:</strong> threefold repetition of the same position, 50 moves without captures or pawn moves, insufficient mating material (e.g. king vs king). The game detects them automatically.</li>
+			</ul>
+
+			<h2>4. How to play Scacchi Luciano</h2>
+			<ul>
+				<li><strong>Your opponent:</strong> you play against <a href="https://stockfishchess.org/" target="_blank" rel="noopener" style="color:#3498db;">Stockfish</a>, one of the strongest chess engines in the world, running directly in your browser. Its strength is set with the three buttons (Easy, Medium, Hard) or with the exact-level slider: see the next section.</li>
+				<li><strong>Moving:</strong> click one of your pieces, then one of the highlighted squares (dot = move, red circle = capture). The last move stays highlighted; a king in check glows red.</li>
+				<li><strong>&#8630; Undo:</strong> retracts your last move and the computer's reply (also Ctrl+Z).</li>
+				<li><strong>&#128161; Hint:</strong> the engine at full strength shows you the move it would play.</li>
+				<li><strong>Notation:</strong> the right-hand panel lists the game's moves in algebraic notation.</li>
+				<li><strong>Record:</strong> wins, losses and draws per level, with a reset button.</li>
+				<li><strong>Automatic saving:</strong> if you close the page, you can resume the game later.</li>
+			</ul>
+
+			<h2>5. Playing Levels</h2>
+			<p>The opponent's strength corresponds to Stockfish's <strong>"Skill Level"</strong>, a scale from <strong>0 to 20</strong>. The three buttons are just shortcuts — <em>Easy</em>&nbsp;=&nbsp;0, <em>Medium</em>&nbsp;=&nbsp;8, <em>Hard</em>&nbsp;=&nbsp;20 — but with the slider on the start screen you can pick any value in between.</p>
+			<p>It helps to understand <em>how</em> the engine is weakened: at low levels Stockfish does not "think less" — it <strong>deliberately plays, with a certain probability, moves worse than the best one</strong>. At level 0 it goes as far as giving pieces away, and that is intentional: it is meant for players who are just learning the moves. As the level rises, the mistakes become rarer and subtler, disappearing entirely at 20. Thinking time also grows: from 0.2 seconds per move at level 0 up to 1.2 seconds at level 20.</p>
+			<table class="score-table">
+				<tr>
+					<th>Level</th>
+					<th>Roughly corresponds to</th>
+				</tr>
+				<tr>
+					<td>0 <em>(Easy)</em></td>
+					<td>Absolute beginner: makes deliberate serious mistakes, leaves pieces hanging.</td>
+				</tr>
+				<tr>
+					<td>1&ndash;5</td>
+					<td>A beginner who knows the rules: still errs often, but punishes the most obvious blunders.</td>
+				</tr>
+				<tr>
+					<td>6&ndash;10 <em>(Medium&nbsp;=&nbsp;8)</em></td>
+					<td>Amateur / club player (&asymp; 1600&ndash;1900 Elo): solid, only yields to real tactical mistakes.</td>
+				</tr>
+				<tr>
+					<td>11&ndash;15</td>
+					<td>Experienced / competitive player (&asymp; 2000&ndash;2300 Elo): demands a serious, clean game.</td>
+				</tr>
+				<tr>
+					<td>16&ndash;19</td>
+					<td>Master level (&asymp; 2300&ndash;2500 Elo): nearly impossible for an amateur to beat.</td>
+				</tr>
+				<tr>
+					<td>20 <em>(Hard)</em></td>
+					<td>Full-strength Stockfish (over 2600 Elo): beats practically anyone, champions included.</td>
+				</tr>
+			</table>
+			<p style="background: #f4f1e8; padding: 12px 16px; border-radius: 6px; border-left: 4px solid #3498db; font-size: 0.95em;">
+				<strong>What is Elo?</strong> It is the rating used worldwide to measure a chess player's strength (named after its inventor, professor Arpad Elo). It measures <em>relative</em> strength: with equal Elo the game is even, with a 200-point gap the stronger player wins about 3 times out of 4, and with 400 points there is almost no contest. As a guide: 1200 is a beginner, 1600 a good club amateur, 2200 a master, 2500 a Grandmaster; the human record is Magnus Carlsen's 2882 — and full-strength Stockfish is rated above 3500.
+			</p>
+			<p>A good rule of thumb: <span class="highlight">play at the level where you win about half your games</span>, and move up once you start winning consistently. The win/loss/draw record is grouped by band (0&ndash;5 Easy, 6&ndash;13 Medium, 14&ndash;20 Hard). Note: the <strong>Hint</strong> button always uses the engine at full strength, whatever the opponent's level.</p>
+
+			<h2>6. Tips for Beginners</h2>
+			<ul>
+				<li><strong>Control the centre</strong> (e4, d4, e5, d5): central pieces dominate the board.</li>
+				<li><strong>Develop your minor pieces</strong> (knights and bishops) before attacking, and castle early to keep your king safe.</li>
+				<li><strong>Don't move the same piece twice in the opening</strong> without a good reason.</li>
+				<li><strong>Before every move ask yourself:</strong> what is my opponent threatening? Does my move leave anything hanging?</li>
+				<li><strong>Use the Hint as a teacher:</strong> compare your idea with the engine's to understand what you're missing.</li>
+			</ul>
+
+			<p style="text-align: center;"><a href="#" onclick="goBack(); return false;" class="play-btn">Close</a></p>
+		</div>
+	</div>
+
+	<div class="banner"></div>
+
+	<div class="nav-links">
+		<a href="index-en.html">Home</a> |
+		<a href="info-en.html">All games</a> |
+		<a href="aboutme-en.html">About Me</a> |
+		<a href="privacy-en.html">Privacy Policy</a>
+	</div>
+
+	<p style="text-align: center; font-size: 0.8em; color: #999; margin-top: 15px;">
+		&copy; 2026 Luciano Manenti
+	</p>
+
+	<script>
+		function goBack() {
+			if (window.opener) {
+				window.close();
+			} else {
+				window.location.href = 'scacchi-en.html';
+			}
+		}
+	</script>
+</body>
+
+</html>

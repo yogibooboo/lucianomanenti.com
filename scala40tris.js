@@ -32,6 +32,9 @@ var translations = {
 		player: "giocatore",
 		opponent: "avversario",
 		draw_card: "PESCA UNA CARTA!",
+		deposit_cards: "DEPOSITA",
+		move_joker: "CLICCA SUL JOLLY PER SPOSTARLO",
+		change_joker_suit: "CLICCA SUL JOLLY PER CAMBIARE IL SEME",
 		dealer: "MAZZIERE",
 		excluded: "FUORI",
 		opz_titolo: "Opzioni",
@@ -74,6 +77,9 @@ var translations = {
 		player: "player",
 		opponent: "opponent",
 		draw_card: "DRAW A CARD!",
+		deposit_cards: "DEPOSIT",
+		move_joker: "CLICK THE JOKER TO MOVE IT",
+		change_joker_suit: "CLICK THE JOKER TO CHANGE SUIT",
 		dealer: "DEALER",
 		excluded: "OUT",
 		opz_titolo: "Options",
@@ -383,7 +389,13 @@ function creaframmentitris() {
 	$$.hide("#formnuovo");
 
 	if (!document.getElementById("lacrimosa")) {
-		$$.append(document.body, '<audio id="lacrimosa" src="sounds/scala40/lacrimosa.mp3"></audio>');
+		/* ~1.3MB contro i ~15KB di thunder.mp3: su rete reale (non
+		   localhost) può non essere ancora bufferizzato quando il torneo
+		   finisce e si chiama play() nell'istante stesso della sconfitta.
+		   preload="auto" + load() esplicito avviano il download subito,
+		   appena l'elemento esiste, invece di aspettare il primo play(). */
+		$$.append(document.body, '<audio id="lacrimosa" src="sounds/scala40/lacrimosa.mp3" preload="auto"></audio>');
+		document.getElementById("lacrimosa").load();
 	}
 
 	var modaletorneo = $$.one("#haipersotorneo");
@@ -716,6 +728,7 @@ var scala = {
 	coppie: [],
 	coppiecontris: [],
 	jollymodificabili: [],
+	jollyestremiswappabili: [],
 
 	start: function () {
 		this.inizializzazioni();
@@ -840,6 +853,40 @@ var scala = {
 			' color: #ffd700; font-family: sans-serif; font-weight: bold; font-size: 14px;' +
 			' line-height: 22px; text-align: center; z-index: 600;' +
 			' animation: pulsapesca 1.2s infinite;">' + t('draw_card') + '</div>');
+
+		/* Banner lampeggiante "deposita": compare quando la selezione
+		   corrente in mano è già una combinazione valida, invita a
+		   cliccarci sopra per calarla (stessa area di bannerpesca, i due
+		   non sono mai visibili insieme: uno prima di pescare, l'altro
+		   dopo con una selezione valida). Visibilità gestita da render(). */
+		$$.append("#campogioco", '<div id="bannerdeposita" style="position:absolute; display:none; cursor:pointer;' +
+			' top: ' + (100 + this.altezzacampo * 3 + 126) + 'px; left: 110px; width: 240px; height: 22px;' +
+			' background-color: rgba(0,0,0,0.6); border: 1px solid #ffd700; border-radius: 11px;' +
+			' color: #ffd700; font-family: sans-serif; font-weight: bold; font-size: 14px;' +
+			' line-height: 22px; text-align: center; z-index: 600;' +
+			' animation: pulsapesca 1.2s infinite;">' + t('deposit_cards') + '</div>');
+
+		/* Banner "clicca sul jolly per spostarlo": compare quando un jolly
+		   di scala è stato depositato a un'estremità ambigua e resta
+		   scambiabile con l'altra (jollyestremiswappabili). Non blocca
+		   nulla, sparisce da solo alla mossa successiva. Posizione (top/left)
+		   ricalcolata dinamicamente in aggiornabannermovejolly, centrata
+		   sotto il blocco tris interessato: qui solo i valori iniziali. */
+		$$.append("#campogioco", '<div id="bannermovejolly" style="position:absolute; display:none;' +
+			' top: 0px; left: 0px; width: 240px; height: 20px;' +
+			' background-color: rgba(0,0,0,0.6); border: 1px solid #00e5ff; border-radius: 10px;' +
+			' color: #00e5ff; font-family: sans-serif; font-weight: bold; font-size: 11px;' +
+			' line-height: 20px; text-align: center; z-index: 600;">' + t('move_joker') + '</div>');
+
+		/* Banner "clicca sul jolly per cambiare il seme": stessa meccanica
+		   di bannermovejolly ma per il jolly di un TRIS (non scala) il cui
+		   seme è ambiguo tra quelli non ancora usati (jollymodificabili).
+		   Posizione ricalcolata in aggiornabannermovejolly. */
+		$$.append("#campogioco", '<div id="bannerchangesuit" style="position:absolute; display:none;' +
+			' top: 0px; left: 0px; width: 240px; height: 20px;' +
+			' background-color: rgba(0,0,0,0.6); border: 1px solid #00e5ff; border-radius: 10px;' +
+			' color: #00e5ff; font-family: sans-serif; font-weight: bold; font-size: 11px;' +
+			' line-height: 20px; text-align: center; z-index: 600;">' + t('change_joker_suit') + '</div>');
 
 		var campo = $$.one("#campogioco");
 		this.offsetxx = this.offsetxx || $$.offset(campo).left;
@@ -1171,6 +1218,7 @@ var scala = {
 
 		this.scaladown = false;
 		this.scalamove = false;
+		this.clickattacktentato = false;
 
 		$$.on(document, "contextmenu", function (ev) {
 			var cardEl = ev.target.closest && ev.target.closest('.card');
@@ -1239,6 +1287,10 @@ var scala = {
 
 		$$.on("#totalelimite", "click", function (ev) {
 			return scala.totalelim();
+		});
+
+		$$.on("#bannerdeposita", "click", function (ev) {
+			return scala.scartatrisgiocatore();
 		});
 
 		$$.on('.pulsantehelp', 'click', function () {
@@ -1376,6 +1428,84 @@ var scala = {
 			}
 		}
 
+		for (i = 0; i < scala.jollyestremiswappabili.length; i++) {
+			if (divCard.card.id == scala.jollyestremiswappabili[i].id) {
+				this.swapestremojolly(scala.jollyestremiswappabili[i]);
+				return;
+			}
+		}
+
+		/* Click su una carta già in tavola (proprio tris o tris avversario):
+		   se in mano è selezionata esattamente una carta, è l'alternativa al
+		   trascinamento. checkcarta tenta l'aggancio solo accanto alla carta
+		   indicata: per una scala serve quindi ancorarsi a un'estremità reale
+		   del blocco (non alla carta cliccata, che può essere interna) perché
+		   la carta si estenda correttamente oltre; quale delle due estremità
+		   provare per prima dipende dal lato del blocco su cui si è cliccato
+		   (utile soprattutto per un jolly, che può stare da entrambi i lati).
+		   Per un tris la posizione è indifferente, resta solo il fallback. */
+		if ((divCard.card.gruppo != this.giocatore) && this.pescato && (this.carteselezionate.length == 1)) {
+			/* Solo i blocchi in tavola (proprio tris o tris avversari) sono
+			   bersagli validi: le carte di mazzo/scarti hanno anch'esse un
+			   gruppo diverso dal giocatore ma non vanno mai intercettate qui,
+			   altrimenti il click su di esse (es. per scartare la carta
+			   selezionata) verrebbe assorbito da un tentativo di aggancio a
+			   vuoto invece di raggiungere il ramo dedicato in scalamouseup. */
+			var cont = (divCard.card.gruppo == this.trisgiocatore) ? this.trisgiocatore : null;
+			if (!cont && (this.calcolapuntitris(this.trisgiocatore.carte) > 39)) {
+				for (var a = 0; a < scala.numeroavversari; a++) {
+					if (divCard.card.gruppo == this.campitrisavversario[a]) { cont = this.campitrisavversario[a]; break; }
+				}
+			}
+			if (cont) {
+				/* Segnala a scalamouseup (che riceverà comunque il mouseup di
+				   questo stesso click, con scaladown ancora false) di non
+				   interpretare il rilascio come "clicca per depositare una nuova
+				   combinazione": qui si è già tentato un aggancio, riuscito o no. */
+				this.clickattacktentato = true;
+				var cartasel = this.carteselezionate[0];
+				this.cartadown = cartasel.gui;
+				var ntrisclick = divCard.card.ntris;
+				var indiceinizio = -1, indicefine = -1, indiceclick = -1;
+				for (var i = 0; i < cont.carte.length; i++) {
+					if (cont.carte[i].ntris == ntrisclick) {
+						if (indiceinizio == -1) indiceinizio = i;
+						indicefine = i;
+						if (cont.carte[i] == divCard.card) indiceclick = i;
+					}
+				}
+				/* Il lato del click decide quale estremità tentare per prima:
+				   click sulla metà destra del blocco -> prima la coda, poi la
+				   testa come ripiego (e viceversa), così un jolly cliccato a
+				   destra si posiziona a destra e non salta all'altro capo. */
+				var centrotris = (indiceinizio + indicefine) / 2;
+				var primafine = (indiceclick != -1) && (indiceclick > centrotris);
+				var attaccataclick = false;
+				if (indiceinizio != -1) {
+					if (primafine) {
+						attaccataclick = this.checkcarta(cont, indicefine, false, ESEGUI);
+						if (!attaccataclick && (indicefine != indiceinizio)) {
+							attaccataclick = this.checkcarta(cont, indiceinizio, true, ESEGUI);
+						}
+					}
+					else {
+						attaccataclick = this.checkcarta(cont, indiceinizio, true, ESEGUI);
+						if (!attaccataclick && (indicefine != indiceinizio)) {
+							attaccataclick = this.checkcarta(cont, indicefine, false, ESEGUI);
+						}
+					}
+				}
+				if (attaccataclick) {
+					this.deselezionacarta(cartasel.gui);
+					this.tgoff();
+					for (var j = 0; j < scala.numeroavversari; j++) this.taoff(j);
+					$$.removeClassAll(".card", "cardselected");
+					this.render();
+				}
+				return;
+			}
+		}
+
 		/* Si possono trascinare solo le carte della propria mano. Il criterio
 		   è l'appartenenza al gruppo, non l'area: con la mano lunga le ultime
 		   carte sbordano a destra del contenitore e devono restare prendibili. */
@@ -1423,10 +1553,15 @@ var scala = {
 	scalamouseup: function (ev) {
 
 		if (!scala.scaladown) {
+			if (this.clickattacktentato) { this.clickattacktentato = false; return; }
 			if (this.pointerinelement(ev, "#mazzo") && (!this.pescato)) return this.cartapesca();
 			/* per pescare vale l'intera fascia del giocatore */
 			if (this.pointerinelement(ev, "#giocatore") && (!this.pescato)) return this.cartapesca();
 			if (this.pointerinelement(ev, "#scarti")) return this.scartipesca();
+			/* dopo la pesca il mazzo non serve più a pescare: click sul mazzo
+			   con una carta selezionata equivale a cliccare sugli scarti,
+			   comodo perché il riquadro scarti è quasi tutto coperto dalle carte */
+			if (this.pointerinelement(ev, "#mazzo") && (this.pescato)) return this.scartipesca();
 			/* a pesca fatta, il click sulla fascia deposita le carte selezionate */
 			if (this.pointerinelement(ev, "#giocatore") && (this.pescato)) return this.scartatrisgiocatore();
 			return;
@@ -1436,7 +1571,7 @@ var scala = {
 		var divCard = this.cartadown;
 		var carta = divCard.card;
 
-		if ((!scala.scalamove) && (this.pescato)) { this.selezionacartagiocatore(divCard); return; }
+		if ((!scala.scalamove) && (this.pescato)) { this.selezionacartagiocatore(divCard); this.aggiornabannerdeposita(); this.aggiornabannermovejolly(); return; }
 
 		if (this.pointerinelement(ev, "#scarti") && (this.pescato)) return this.scarta(carta);
 
@@ -1624,6 +1759,8 @@ var scala = {
 	scambiacarte: function (carta, cartasel, esegui) {
 		$$.addClass(cartasel.gui, "cardselected");
 		if (esegui) {
+			scala.jollyestremiswappabili = [];
+			scala.jollymodificabili = [];
 			var contenitore1 = carta.gruppo;
 			var posizione1 = contenitore1.carte.indexOf(carta);
 			var contenitore2 = cartasel.gruppo;
@@ -1656,6 +1793,8 @@ var scala = {
 	aggiungitris: function (cont, indice, carta, cartasel, esegui, infotris) {
 		$$.addClass(cartasel.gui, "cardselected");
 		if (esegui) {
+			scala.jollyestremiswappabili = [];
+			scala.jollymodificabili = [];
 			carta.gruppo.remove(carta);
 			carta.ntris = cartasel.ntris;
 			carta.tipotris = cartasel.tipotris;
@@ -1740,6 +1879,7 @@ var scala = {
 		});
 
 		scala.jollymodificabili = [];
+		scala.jollyestremiswappabili = [];
 		var punti = this.calcolapuntitris(this.trisgiocatore.carte);
 		if ((!this.f40giocatore) && ((punti > 0) || (this.fscartipesca)) && (punti < 40)) {
 			ding.play();
@@ -1762,6 +1902,14 @@ var scala = {
 
 		if (this.giocatore.carte.length == 0) {
 			this.cartescoperte = true;
+
+			/* La mano si chiude qui, non necessariamente a macchina a stati
+			   dell'IA "a riposo" (es. con l'opzione che esclude gli avversari
+			   oltre soglia, astato può essere rimasto su un valore intermedio):
+			   normalizza prima del render finale così la guardia in render()
+			   non sopprime l'aggiornamento del punteggio a 0 carte. */
+			this.astato = TurnState.FINETURNO;
+			this.turno = -1;
 
 			this.totalepartite++;
 
@@ -2103,7 +2251,7 @@ var scala = {
 	nuovo3: function () {
 		var checked = document.querySelector('input[name="avversari"]:checked');
 		var tempavversari = checked ? checked.value : scala.salvaavversari;
-		if (tempavversari != scala.salvaavversari) scala.azzeratotale();
+		scala.azzeratotale();
 		this.numeroavversari = tempavversari;
 		localStorage.setItem('scala40tris_numeroavversari', tempavversari);
 		scala.nuovo();
@@ -2214,6 +2362,120 @@ var scala = {
 		return;
 	},
 
+	/* Sposta un jolly ambiguo (jollyestremiswappabili) dall'estremo in cui si
+	   trova all'altro estremo della propria scala, ricalcolando tipojolly/
+	   numerojolly per l'intero blocco. Non è una mossa di gioco: nessun
+	   pushstato, nessun suono di calata (coerente col ciclo seme dei jolly
+	   di tris in jollymodificabili, che è anch'esso solo un ritocco). */
+	swapestremojolly: function (carta) {
+		var blocco = [], indiceiniziale = -1;
+		for (var i = 0; i < this.trisgiocatore.carte.length; i++) {
+			if (this.trisgiocatore.carte[i].ntris == carta.ntris) {
+				if (indiceiniziale == -1) indiceiniziale = i;
+				blocco.push(this.trisgiocatore.carte[i]);
+			}
+		}
+		var pos = blocco.indexOf(carta);
+		if (pos == 0) { blocco.splice(0, 1); blocco.push(carta); }
+		else if (pos == blocco.length - 1) { blocco.splice(pos, 1); blocco.unshift(carta); }
+		else return;
+
+		var esito = this.analizzatris(blocco);
+		if (!esito.valido) return;
+
+		for (i = 0; i < blocco.length; i++) {
+			var c = blocco[i];
+			if (c.seme != "J") continue;
+			c.tipojolly = esito.semescala;
+			c.numerojolly = esito.primonumero + i;
+			if (c.numerojolly == 14) c.numerojolly = 1;
+		}
+
+		for (i = 0; i < blocco.length; i++) this.trisgiocatore.carte[indiceiniziale + i] = blocco[i];
+
+		this.render();
+	},
+
+	/* Banner "deposita": visibile quando la selezione corrente in mano
+	   (fatta a click, indipendente dal drag) è già una combinazione valida
+	   di 3+ carte. Stessa area del banner pesca, mai insieme perché
+	   richiede pescato==true. Richiamata sia da render() sia subito dopo
+	   ogni click di selezione (che non passa da un render completo). */
+	aggiornabannerdeposita: function () {
+		var bannerdep = $$.one("#bannerdeposita");
+		if (!bannerdep) return;
+		var mostradeposita = (this.turno == -1) && this.pescato && (!this.fmodale)
+			&& (this.carteselezionate.length >= 3)
+			&& this.analizzatris(this.carteselezionate).valido;
+		if (mostradeposita) $$.show(bannerdep); else $$.hide(bannerdep);
+	},
+
+	/* Centra un banner (240px) sotto il blocco di carte indicato, leggendo
+	   la posizione dal modello (carta.left/.top, aggiornati sincronamente
+	   da moveTo) e non dallo style DOM: quest'ultimo può essere ancora a
+	   metà di un'animazione (animateEl) subito dopo un render(), dando una
+	   posizione stantia per il banner. */
+	posizionabanner: function (banner, blocco) {
+		var minleft = Infinity, maxright = -Infinity, top = 0;
+		for (var i = 0; i < blocco.length; i++) {
+			var c = blocco[i];
+			var left = c.left || 0;
+			if (left < minleft) minleft = left;
+			if (left + CARTAW > maxright) maxright = left + CARTAW;
+			top = c.top || top;
+		}
+		var centro = (minleft + maxright) / 2;
+		var bannerwidth = 240;
+		banner.style.left = Math.round(centro - bannerwidth / 2) + "px";
+		banner.style.top = Math.round(top + CARTAH + 4) + "px";
+	},
+
+	/* Banner "clicca sul jolly per spostarlo/cambiare seme": visibili solo
+	   DOPO che il tris/scala con jolly ambiguo è stato depositato sul
+	   tavolo (non durante la selezione in mano, a differenza di
+	   bannerdeposita). Riposizionati dinamicamente centrati sotto il
+	   blocco tris interessato. Le due ambiguità (estremità di scala in
+	   jollyestremiswappabili, seme di tris in jollymodificabili) sono
+	   indipendenti ma condividono la classe .jollypending sui jolly del
+	   tris giocatore, quindi la puliscono/applicano insieme qui. */
+	aggiornabannermovejolly: function () {
+		/* La classe .jollypending va tenuta allineata agli array anche
+		   quando questa funzione viene chiamata fuori da un render()
+		   completo (es. dal click di selezione carte in scalamouseup),
+		   altrimenti resta appiccicata al jolly di un tris precedente
+		   finché non arriva il prossimo render(). */
+		for (var s = 0; s < this.trisgiocatore.carte.length; s++) {
+			var cartatris = this.trisgiocatore.carte[s];
+			if (cartatris.seme != "J") continue;
+			if ((this.jollyestremiswappabili.indexOf(cartatris) == -1) &&
+				(this.jollymodificabili.indexOf(cartatris) == -1)) {
+				$$.removeClass(cartatris.gui, "jollypending");
+			}
+		}
+		for (var s = 0; s < this.jollyestremiswappabili.length; s++) {
+			$$.addClass(this.jollyestremiswappabili[s].gui, "jollypending");
+		}
+		for (var s = 0; s < this.jollymodificabili.length; s++) {
+			$$.addClass(this.jollymodificabili[s].gui, "jollypending");
+		}
+
+		var bannermj = $$.one("#bannermovejolly");
+		if (bannermj) {
+			var blocco1 = this.jollyestremiswappabili.length ?
+				this.trisgiocatore.carte.filter(function (c) { return c.ntris == scala.jollyestremiswappabili[0].ntris; }) : [];
+			if (blocco1.length == 0) $$.hide(bannermj);
+			else { this.posizionabanner(bannermj, blocco1); $$.show(bannermj); }
+		}
+
+		var bannercs = $$.one("#bannerchangesuit");
+		if (bannercs) {
+			var blocco2 = this.jollymodificabili.length ?
+				this.trisgiocatore.carte.filter(function (c) { return c.ntris == scala.jollymodificabili[0].ntris; }) : [];
+			if (blocco2.length == 0) $$.hide(bannercs);
+			else { this.posizionabanner(bannercs, blocco2); $$.show(bannercs); }
+		}
+	},
+
 	render: function () {
 
 		if ((scala.dopo) && ((scala.turno != -1) && scala.astato == TurnState.NEXTAVV)) return;
@@ -2253,10 +2515,18 @@ var scala = {
 		this.rendicontenitore(this.mazzo);
 		this.rendicontenitore(this.scarti);
 		this.rendicontenitore(this.giocatore);
+		/* Rete di sicurezza: le carte calate in tavola devono essere sempre
+		   scoperte. Qualche percorso di aggancio (in particolare lo scambio
+		   jolly, che copia faceUp dalla carta uscente invece di forzarlo)
+		   può in teoria lasciare faceUp=false su una carta di un blocco;
+		   forzarlo qui ad ogni render evita che resti visivamente a dorso
+		   coperto, indipendentemente dalla causa. */
+		this.scoprigruppo(this.trisgiocatore);
 		this.rendicontenitore(this.trisgiocatore);
 
 		for (var j = 0; j < this.numeroavversari; j++) {
 			this.rendicontenitore(this.campiavversario[j]);
+			this.scoprigruppo(this.campitrisavversario[j]);
 			this.rendicontenitore(this.campitrisavversario[j]);
 		}
 
@@ -2290,6 +2560,9 @@ var scala = {
 			if (mostrabanner) $$.show(banner); else $$.hide(banner);
 		}
 
+		this.aggiornabannerdeposita();
+		this.aggiornabannermovejolly();
+
 		/* Indicazione del turno: bordo giallo sulla fascia del giocatore di
 		   turno (un solo contenitore per fascia: mano + tris). */
 		var colore = (this.turno == -1) ? "yellow" : "#888888";
@@ -2313,11 +2586,19 @@ var scala = {
 		}
 	},
 
+	/* Forza faceUp=true su tutte le carte di un gruppo (usata per i blocchi
+	   in tavola prima del render, vedi commento in render()). */
+	scoprigruppo: function (cont) {
+		for (var i = 0; i < cont.carte.length; i++) cont.carte[i].faceUp = true;
+	},
+
 	cartapesca: function () {
 
 		if (this.turno != -1) return;
 		if (this.iaimminente || this.distribuendo) return;
 		this.fscartipesca = false;
+		this.jollyestremiswappabili = [];
+		this.jollymodificabili = [];
 
 		if (scala.statostack.length == 0) this.pushstato("iniziale");
 		this.pescato = true;
@@ -2364,6 +2645,12 @@ var scala = {
 		switch (this.carteselezionate.length) {
 
 			case 0:
+				/* Nuova selezione = nuova mossa: l'evidenziazione di un
+				   eventuale jolly ambiguo depositato in precedenza non è
+				   più pertinente (spec: sparisce alla prima operazione
+				   successiva qualsiasi). */
+				this.jollyestremiswappabili = [];
+				this.jollymodificabili = [];
 				this.selezionacarta(divCard);
 				break;
 
@@ -2375,7 +2662,24 @@ var scala = {
 				this.selezionacarta(divCard);
 
 				this.ordinaperzindex(this.carteselezionate);
-				if (!this.analizzatris(this.carteselezionate).valido) this.deselezionacarta(divCard);
+				var giavalida = this.analizzatris(this.carteselezionate).valido;
+
+				/* Prova comunque il riordino canonico: se l'ordine di click
+				   non era quello di una scala valida lo adotta (le carte
+				   potrebbero essere state scelte fuori sequenza); se lo era
+				   già, serve comunque a rilevare un jolly ambiguo a un
+				   estremo (es. jolly-7-8: valido così com'è, ma il jolly
+				   potrebbe stare anche dall'altra parte). */
+				var smart = this.ordinascalasmart(this.carteselezionate);
+				if (smart && this.analizzatris(smart.ordinata).valido) {
+					if (!giavalida) this.carteselezionate = smart.ordinata;
+					this.jollyestremiswappabili = smart.swappabili;
+					break;
+				}
+
+				if (giavalida) break;
+
+				this.deselezionacarta(divCard);
 				break;
 		}
 	},
@@ -2388,12 +2692,12 @@ var scala = {
 		   lascia proseguire la selezione. */
 		if (k.seme == "J") return true;
 		if (n.seme == "J") return true;
-		if (n.seme == k.seme) {
-			if (Math.abs(n.numero - k.numero) == 1) return true;
-			if (Math.abs(n.numero - k.numero) == 12) return true;
-			return false;
-		}
-		else if (n.numero == k.numero) return true;
+		/* Stesso seme, rank diverso: potenziale scala anche fuori ordine di
+		   click (es. clic sulla carta più bassa e poi la più alta, saltando
+		   quella di mezzo) — la validazione vera arriva con analizzatris/
+		   ordinascalasmart appena la selezione raggiunge 3 carte. */
+		if ((n.seme == k.seme) && (n.numero != k.numero)) return true;
+		if (n.numero == k.numero) return true;
 		return false;
 	},
 
@@ -2499,6 +2803,105 @@ var scala = {
 			if (a.zindex < b.zindex) return -1;
 			return 0;
 		});
+	},
+
+	/* Riordino "smart" per una selezione che potrebbe essere una scala presa
+	   fuori ordine (click in un ordine qualsiasi): separa le carte reali dai
+	   jolly, verifica che le carte reali condividano lo stesso seme e siano
+	   tutte di rank diverso, poi le dispone in ordine di rank e riempie i
+	   buchi interni con i jolly disponibili. I jolly avanzati (nessun buco
+	   interno da riempire) vanno posizionati a un estremo: se la scelta
+	   dell'estremo è libera (entrambe le disposizioni sarebbero valide),
+	   sceglie di default l'estremo più basso e restituisce quei jolly come
+	   "ambigui" (swappabili con un click, vedi jollyestremiswappabili).
+	   Ritorna null se la selezione non ha la forma di una scala (semi misti,
+	   rank duplicati, buchi più larghi dei jolly disponibili): in quel caso
+	   la selezione resta quella cliccata dal giocatore, così com'è (utile
+	   per i tris, dove l'ordine non conta già di suo). */
+	ordinascalasmart: function (carte) {
+		var i;
+		var reali = [], jolly = [];
+		for (i = 0; i < carte.length; i++) {
+			if (carte[i].seme == "J") jolly.push(carte[i]); else reali.push(carte[i]);
+		}
+		if (reali.length < 1) return null;
+
+		var seme = reali[0].seme;
+		for (i = 1; i < reali.length; i++) if (reali[i].seme != seme) return null;
+
+		/* L'asso può stare in fondo alla scala (basso, valore 1) o in cima
+		   (alto, dopo il K): un semplice sort per numero mette sempre l'asso
+		   in testa, il che spezza selezioni tipo Q-K-asso in buchi enormi
+		   (12..1) invece di riconoscerle come asso-alto. Se tra le carte
+		   reali c'è un asso e almeno una carta "alta" (>=10, J/Q/K), si
+		   prova anche l'ordinamento con l'asso trattato come 14; si sceglie
+		   quello che risulta in una scala valida (o con meno buchi da jolly
+		   se entrambi lo sono), altrimenti si ricade sull'asso basso. */
+		var haasso = false, haaltra10piu = false;
+		for (i = 0; i < reali.length; i++) {
+			if (reali[i].numero == 1) haasso = true;
+			else if (reali[i].numero >= 10) haaltra10piu = true;
+		}
+		var provaOrdine = function (assoAlto) {
+			var copia = reali.slice();
+			copia.sort(function (a, b) {
+				var na = (assoAlto && a.numero == 1) ? 14 : a.numero;
+				var nb = (assoAlto && b.numero == 1) ? 14 : b.numero;
+				return na - nb;
+			});
+			return copia;
+		};
+		reali = provaOrdine(false);
+		for (i = 1; i < reali.length; i++) if (reali[i].numero == reali[i - 1].numero) return null;
+
+		/* Valore ai soli fini del calcolo dei buchi: l'asso vale 1 se è il
+		   primo dell'array (basso), 14 se è l'ultimo (alto) — la carta resta
+		   la stessa istanza con numero reale 1, gestita da analizzatris
+		   tramite il suo wraparound K/A. */
+		var valorebuco = function (arr, indice) {
+			var carta = arr[indice];
+			if ((carta.numero == 1) && (indice == arr.length - 1) && (indice > 0)) return 14;
+			return carta.numero;
+		};
+		var contabuchi = function (arr) {
+			var tot = 0;
+			for (var j = 1; j < arr.length; j++) tot += valorebuco(arr, j) - valorebuco(arr, j - 1) - 1;
+			return tot;
+		};
+
+		if (haasso && haaltra10piu) {
+			var realiAltoTest = provaOrdine(true);
+			if (contabuchi(realiAltoTest) < contabuchi(reali)) reali = realiAltoTest;
+		}
+
+		/* Riempie i buchi tra carte reali consecutive con i jolly disponibili
+		   (consumati dall'array jolly, ordine indifferente tra loro). */
+		var ordinata = [reali[0]];
+		var usati = 0;
+		for (i = 1; i < reali.length; i++) {
+			var buco = valorebuco(reali, i) - valorebuco(reali, i - 1) - 1;
+			if (buco > jolly.length - usati) return null;
+			for (var k = 0; k < buco; k++) ordinata.push(jolly[usati++]);
+			ordinata.push(reali[i]);
+		}
+
+		var avanzati = jolly.length - usati;
+		var swappabili = [];
+		for (k = 0; k < avanzati; k++) {
+			var j = jolly[usati++];
+			/* Prova la disposizione in coda (estremo alto): se anche quella
+			   è una scala valida secondo analizzatris, l'estremo è ambiguo. */
+			var provacoda = ordinata.concat([j]);
+			var provatesta = [j].concat(ordinata);
+			var validacoda = this.analizzatris(provacoda).valido;
+			var validatesta = this.analizzatris(provatesta).valido;
+			if (validacoda && validatesta) swappabili.push(j);
+			/* Default: estremo più basso (testa) se disponibile e valido,
+			   altrimenti coda. */
+			if (validatesta) ordinata = provatesta; else ordinata = provacoda;
+		}
+
+		return { ordinata: ordinata, swappabili: swappabili };
 	},
 
 	selezionacarta: function (divCard) {
@@ -2765,11 +3168,13 @@ var scala = {
 		}
 		scala.iaimminente = false;
 		scala.jollymodificabili = [];
+		scala.jollyestremiswappabili = [];
 		this.render();
 	},
 
 	undo: function () {
 		this.jollymodificabili = [];
+		this.jollyestremiswappabili = [];
 		this.popstato();
 		this.render();
 	},
@@ -2860,7 +3265,7 @@ var scala = {
 					if ((scala.totalegiocatore >= scala.totalelimite) && (salvapunti < scala.totalelimite)) {
 						var suonotorneo = (localStorage.getItem('scala40tris_audiotorneo') === 'thunder') ? thunder : lacrimosa;
 						suonotorneo.currentTime = 0;
-						suonotorneo.play();
+						suonotorneo.play().catch(function () { });
 						scala.mydialog("haipersotorneo", function () { scala.azzeratotale(); scala.nuovo(); }, scala.nuovo);
 						return;
 					}
@@ -3599,9 +4004,13 @@ var scala = {
 
 	/* Regola opzionale "non scartare carte che attaccano": vero se "carta"
 	   si potrebbe attaccare (in testa o in coda) a un tris/scala qualsiasi
-	   in tavola (trisgiocatore o campi avversari). Stessa logica di
-	   verifica di piazzajolly, ma su una carta normale invece che su un
-	   jolly: sola lettura, nessuna modifica allo stato. */
+	   in tavola (trisgiocatore o campi avversari), oppure se potrebbe
+	   sostituire (recuperare) un jolly già presente in un blocco in tavola
+	   — il regolamento FISCA non lo specifica esplicitamente, ma "attacca"
+	   è inteso qui nel senso più ampio: anche il recupero di un jolly
+	   modifica una combinazione in tavola, non solo l'estensione fisica.
+	   Stessa logica di verifica di piazzajolly, ma su una carta normale
+	   invece che su un jolly: sola lettura, nessuna modifica allo stato. */
 	cartaattaccatavolo: function (carta) {
 		var gruppi = [this.trisgiocatore];
 		for (var j = 0; j < this.numeroavversari; j++) gruppi.push(this.campitrisavversario[j]);
@@ -3618,6 +4027,9 @@ var scala = {
 				}
 				if (this.analizzatris(blocco.concat([carta])).valido) return true;
 				if (this.analizzatris([carta].concat(blocco)).valido) return true;
+				for (var k = 0; k < blocco.length; k++) {
+					if ((blocco[k].numero > 49) && (carta.shortName == (blocco[k].tipojolly + blocco[k].numerojolly))) return true;
+				}
 			}
 		}
 		return false;

@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
+	<script>
+		window.dataLayer = window.dataLayer || [];
+		function gtag() { dataLayer.push(arguments); }
+		gtag('js', new Date());
+		gtag('config', 'G-WRBDRDQ4L8');
+		window.currentLang = 'en';
+	</script>
+	<title>Sudoku Rules - How to Play</title>
+	<meta name="Description"
+		content="Sudoku rules, solving techniques and a complete guide to play for free online. Three difficulty levels with a guaranteed unique solution.">
+	<link rel="alternate" hreflang="it" href="regole-sudoku.html">
+	<link rel="alternate" hreflang="en" href="regole-sudoku-en.html">
+	<link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
+	<link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
+	<link rel="shortcut icon" href="favicon/favicon.ico">
+	<link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+	<style>
+		body {
+			font-family: sans-serif;
+			line-height: 1.7;
+			max-width: 800px;
+			margin: 40px auto;
+			padding: 20px;
+			color: #333;
+			background-color: #f9f9f9;
+		}
+
+		h1 {
+			color: #2c3e50;
+			border-bottom: 2px solid #ffd700;
+			padding-bottom: 10px;
+		}
+
+		h2 {
+			color: #2c3e50;
+			margin-top: 30px;
+		}
+
+		h3 {
+			color: #2c3e50;
+			font-size: 1.1em;
+			margin-top: 20px;
+		}
+
+		.lang-switch {
+			text-align: right;
+			margin-bottom: 20px;
+		}
+
+		.lang-switch a {
+			display: inline-block;
+			padding: 6px 16px;
+			margin-left: 5px;
+			text-decoration: none;
+			border-radius: 5px;
+			font-weight: bold;
+			font-size: 14px;
+		}
+
+		.lang-switch a.active {
+			background: #2c3e50;
+			color: white;
+		}
+
+		.lang-switch a:not(.active) {
+			background: #ddd;
+			color: #333;
+			cursor: pointer;
+		}
+
+		.content-box {
+			background: white;
+			padding: 30px;
+			border-radius: 8px;
+			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+		}
+
+		.play-btn {
+			display: inline-block;
+			margin-top: 25px;
+			padding: 12px 30px;
+			background: #27ae60;
+			color: white;
+			text-decoration: none;
+			border-radius: 8px;
+			font-size: 18px;
+			font-weight: bold;
+		}
+
+		.nav-links {
+			text-align: center;
+			margin-top: 30px;
+			font-size: 14px;
+		}
+
+		.nav-links a {
+			color: #3498db;
+			text-decoration: none;
+			margin: 0 10px;
+		}
+
+		.banner {
+			width: 100%;
+			height: 150px;
+			background-image: url('images/home/castagne.jpg');
+			background-size: cover;
+			background-position: center;
+			border-radius: 8px;
+			margin: 20px 0;
+			box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+		}
+
+		.score-table {
+			width: 100%;
+			border-collapse: collapse;
+			margin-top: 10px;
+			margin-bottom: 20px;
+		}
+
+		.score-table th,
+		.score-table td {
+			border: 1px solid #ddd;
+			padding: 8px;
+			text-align: left;
+		}
+
+		.score-table th {
+			background-color: #f2f2f2;
+			font-weight: bold;
+		}
+
+		.highlight {
+			background-color: #fff9c4;
+			padding: 0 4px;
+		}
+
+		.mini-grid {
+			font-family: monospace;
+			font-size: 15px;
+			line-height: 1.4;
+			background: #f4f1e8;
+			border: 1px solid #ddd;
+			border-radius: 6px;
+			padding: 12px 16px;
+			display: inline-block;
+			white-space: pre;
+		}
+	</style>
+</head>
+
+<body>
+	<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+		<a href="#" id="btn-back" onclick="goBack(); return false;"
+			style="display: inline-block; padding: 6px 16px; background: #e74c3c; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 14px;">&#x2190;
+			Back</a>
+		<div class="lang-switch" style="margin-bottom: 0;">
+			<a href="regole-sudoku.html" id="btn-it">Italiano</a>
+			<a href="regole-sudoku-en.html" id="btn-en" class="active">English</a>
+		</div>
+	</div>
+
+	<div class="banner"></div>
+
+	<div class="content-box">
+		<div id="lang-en">
+			<h1>Sudoku Rules</h1>
+
+			<p><strong>Sudoku</strong> is one of the most famous logic puzzles in the world. Despite its Japanese name (from <em>s&#363;ji wa dokushin ni kagiru</em>, "the digits must remain single"), its origins go back to the Latin squares studied by the Swiss mathematician Euler in the 18th century; the modern form was born in the United States in the 1970s and later became a worldwide phenomenon through Japan.</p>
+
+			<p>No arithmetic and no luck are required: Sudoku is solved <strong>purely by logic</strong>. Every puzzle in this online version has a <strong>guaranteed unique solution</strong>, so you will never have to guess.</p>
+
+			<p style="background: #fff9c4; padding: 12px 16px; border-radius: 6px; border-left: 4px solid #ffd700;">
+				This game is constantly evolving: new features and improvements are added regularly. If you find something that doesn't work as expected or have suggestions, write to us at
+				<a href="mailto:postmaster@lucianomanenti.com" style="color: #3498db;">postmaster@lucianomanenti.com</a>
+				— your feedback is precious!
+			</p>
+
+			<h2>1. Goal of the Game</h2>
+			<p>The grid is made of <strong>81 cells</strong>, organized in 9 rows, 9 columns and 9 3&times;3 boxes. Some cells are already filled in (the <em>clues</em>). The goal is to fill every empty cell so that:</p>
+			<ul>
+				<li>every <strong>row</strong> contains all the numbers from 1 to 9, with no repetitions;</li>
+				<li>every <strong>column</strong> contains all the numbers from 1 to 9, with no repetitions;</li>
+				<li>every <strong>3&times;3 box</strong> contains all the numbers from 1 to 9, with no repetitions.</li>
+			</ul>
+			<p>That's all: three simple constraints, from which a surprising depth arises.</p>
+
+			<h2>2. Solving Techniques</h2>
+
+			<h3>Hidden Single (where can the 7 go?)</h3>
+			<p>Pick a number and a box: if there is <strong>only one cell</strong> in that box where the number can go (because the other cells are blocked by rows and columns that already contain it), then it must go there. This is the most common technique and is often enough on its own for easy puzzles.</p>
+
+			<h3>Naked Single (what can go here?)</h3>
+			<p>Pick an empty cell and list the numbers that appear neither in its row, nor in its column, nor in its box. If <strong>only one candidate</strong> remains, you have found the value of that cell.</p>
+
+			<h3>Pairs and Candidates (for hard puzzles)</h3>
+			<p>When singles are not enough, the <strong>pencil</strong> comes into play: note down the possible numbers in each cell. If two cells in the same row (or column, or box) have exactly the same <strong>two candidates</strong>, those two numbers must go in those two cells: you can remove them as candidates from every other cell of the group. This "naked pair" often unlocks a chain of deductions.</p>
+
+			<h3>A small example</h3>
+			<p>Look at this box together with its top row:</p>
+			<p class="mini-grid">5 . . | 1 2 3
+. 8 . |
+. . 9 |</p>
+			<p>The number <strong>1</strong> is missing (among others) from the left box. It cannot go in the first row of the box, because that row already contains a 1 further right. That leaves the two free cells in the rows below: if one of those columns also contains a 1 already, the cell for the number 1 is determined. Reasoning like this, repeated, leads all the way to the complete solution.</p>
+
+			<h2>3. Difficulty Levels</h2>
+			<table class="score-table">
+				<tr>
+					<th>Level</th>
+					<th>Starting clues</th>
+					<th>Recommended techniques</th>
+				</tr>
+				<tr>
+					<td><strong>Easy</strong></td>
+					<td>40 of 81</td>
+					<td>Hidden and naked singles are always enough.</td>
+				</tr>
+				<tr>
+					<td><strong>Medium</strong></td>
+					<td>32 of 81</td>
+					<td>Pencil notes and some patience are needed too.</td>
+				</tr>
+				<tr>
+					<td><strong>Hard</strong></td>
+					<td>26 of 81</td>
+					<td>Candidate pairs, chained deductions and sometimes advanced techniques.</td>
+				</tr>
+			</table>
+			<p><strong>Easy</strong> and <strong>Medium</strong> puzzles are generated so that they can always be fully solved with simple logical deductions (singles and candidate pairs), without ever having to guess. At the <strong>Hard</strong> level this guarantee does not hold: more advanced techniques may be required.</p>
+
+			<hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;">
+
+			<h2>How to play "Sudoku Luciano"</h2>
+			<ul>
+				<li><strong>Select a cell:</strong> click a cell in the grid. Its row, column and box are highlighted, and every cell with the same number is colored to help you find your bearings.</li>
+				<li><strong>Enter a number:</strong> use the number buttons on the right or the <strong>1-9</strong> keys on your keyboard. Each button shows how many copies of that number are still missing.</li>
+				<li><strong>Mistakes:</strong> numbers flagged as wrong are shown in <span style="color:#c0182b; font-weight:bold;">red</span> and counted in the top panel. You can fix them by overwriting or erasing them. Two options below the buttons (remembered by the browser) control the flagging: <em>Highlight obvious mistakes</em> (on by default) only flags conflicts with the numbers already visible in the row, column or box; <em>Highlight all mistakes</em> (off by default) checks every number against the solution. Turn both off to play "the old-fashioned way", with no help at all.</li>
+				<li><strong>&#9999;&#65039; Pencil:</strong> toggle note mode (also with the <strong>N</strong> key) to jot down the possible candidates in a cell. When you enter a final number, notes for that number in the connected cells are cleaned up automatically.</li>
+				<li><strong>&#10060; Erase:</strong> clear the selected cell (also with <strong>Del</strong> or <strong>Backspace</strong>).</li>
+				<li><strong>&#8630; Undo:</strong> undo the last move, notes included (also with <strong>Ctrl+Z</strong>).</li>
+				<li><strong>&#128161; Hint:</strong> a "didactic" helper. Pressing the button highlights a cell that can be logically deduced from the visible numbers and opens a panel with three choices: <strong>Explanation</strong> shows the reasoning behind the deduction (and therefore the number), <strong>Fill it in</strong> fills the cell, <strong>Close</strong> dismisses the hint without changing anything. If the grid contains mistakes, the hint points those out first, and the panel offers to erase the wrong number. Only when no simple deduction exists (it can happen at the Hard level) does the hint point to the cell with the fewest candidates and offer to reveal it. Only actual fills are counted in the final summary.</li>
+				<li><strong>Arrow keys:</strong> move the selection around the grid.</li>
+			</ul>
+
+			<h2>Control Buttons</h2>
+			<ul>
+				<li><strong>NEW:</strong> abandon the current puzzle (after confirmation) and open the difficulty selection panel.</li>
+				<li><strong>HOW TO PLAY:</strong> open a quick reminder of the rules directly in the game.</li>
+				<li><strong>&#x1F50A; / &#x1F507; (Audio):</strong> enable or disable sound effects. Your preference is global and will be remembered by the browser on every page of the site.</li>
+			</ul>
+
+			<h2>Automatic Saving</h2>
+			<p>The game is <strong>saved automatically</strong> in your browser after every move: if you close the page or your computer, on your next visit you will resume exactly where you left off, with time, mistakes and notes preserved.</p>
+
+			<p style="text-align: center;"><a href="#" onclick="goBack(); return false;" class="play-btn">Close</a></p>
+		</div>
+	</div>
+
+
+	<div class="banner"></div>
+
+	<div class="nav-links">
+		<a href="index-en.html">Home</a> |
+		<a href="sudoku-en.html">Sudoku</a> |
+		<a href="regole-scopa-en.html">Scopa</a> |
+		<a href="regole-burraco-en.html">Burraco</a> |
+		<a href="regole-scala40-en.html">Scala 40</a> |
+		<a href="regole-machiavelli-en.html">Machiavelli</a> |
+		<a href="regole-spider-en.html">Spider</a> |
+		<a href="regole-rummy-en.html">Gin Rummy</a> |
+		<a href="guida-metronomo-en.html">Metronome</a> |
+		<a href="privacy-en.html">Privacy</a> |
+		<a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)">Manage Cookies</a>
+	</div>
+
+	<p style="text-align: center; font-size: 0.8em; color: #999; margin-top: 10px;">
+		© 2026 Luciano Manenti
+	</p>
+
+	<script>
+		function goBack() {
+			window.close();
+		}
+		(function() {
+			var nascosto = false;
+			var observer = new MutationObserver(function() {
+				if (nascosto) return;
+				var divs = document.querySelectorAll('body > div');
+				for (var i = 0; i < divs.length; i++) {
+					if (divs[i].shadowRoot && !divs[i].className && (divs[i].getAttribute('style')||'').length > 5000) {
+						divs[i].style.setProperty('display', 'none', 'important');
+						nascosto = true;
+						observer.disconnect();
+						return;
+					}
+				}
+			});
+			observer.observe(document.body, { childList: true });
+		})();
+	</script>
+</body>
+
+</html>

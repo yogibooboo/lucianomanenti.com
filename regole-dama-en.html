@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
+	<script>
+		window.dataLayer = window.dataLayer || [];
+		function gtag() { dataLayer.push(arguments); }
+		gtag('js', new Date());
+		gtag('config', 'G-WRBDRDQ4L8');
+		window.currentLang = 'en';
+	</script>
+	<title>Italian Checkers (Dama) Rules - How to Play</title>
+	<meta name="Description"
+		content="Official Italian checkers (dama) rules: mandatory captures, capture precedence, the king, strategy tips and a complete guide to playing free online against the computer.">
+	<link rel="alternate" hreflang="it" href="regole-dama.html">
+	<link rel="alternate" hreflang="en" href="regole-dama-en.html">
+	<link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
+	<link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
+	<link rel="shortcut icon" href="favicon/favicon.ico">
+	<link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+	<style>
+		body {
+			font-family: sans-serif;
+			line-height: 1.7;
+			max-width: 800px;
+			margin: 40px auto;
+			padding: 20px;
+			color: #333;
+			background-color: #f9f9f9;
+		}
+
+		h1 {
+			color: #2c3e50;
+			border-bottom: 2px solid #ffd700;
+			padding-bottom: 10px;
+		}
+
+		h2 {
+			color: #2c3e50;
+			margin-top: 30px;
+		}
+
+		h3 {
+			color: #2c3e50;
+			font-size: 1.1em;
+			margin-top: 20px;
+		}
+
+		.lang-switch {
+			text-align: right;
+			margin-bottom: 20px;
+		}
+
+		.lang-switch a {
+			display: inline-block;
+			padding: 6px 16px;
+			margin-left: 5px;
+			text-decoration: none;
+			border-radius: 5px;
+			font-weight: bold;
+			font-size: 14px;
+		}
+
+		.lang-switch a.active {
+			background: #2c3e50;
+			color: white;
+		}
+
+		.lang-switch a:not(.active) {
+			background: #ddd;
+			color: #333;
+			cursor: pointer;
+		}
+
+		.content-box {
+			background: white;
+			padding: 30px;
+			border-radius: 8px;
+			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+		}
+
+		.play-btn {
+			display: inline-block;
+			margin-top: 25px;
+			padding: 12px 30px;
+			background: #27ae60;
+			color: white;
+			text-decoration: none;
+			border-radius: 8px;
+			font-size: 18px;
+			font-weight: bold;
+		}
+
+		.nav-links {
+			text-align: center;
+			margin-top: 30px;
+			font-size: 14px;
+		}
+
+		.nav-links a {
+			color: #3498db;
+			text-decoration: none;
+			margin: 0 10px;
+		}
+
+		.banner {
+			width: 100%;
+			height: 150px;
+			background-image: url('images/home/castagne.jpg');
+			background-size: cover;
+			background-position: center;
+			border-radius: 8px;
+			margin: 20px 0;
+			box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+		}
+
+		.score-table {
+			width: 100%;
+			border-collapse: collapse;
+			margin-top: 10px;
+			margin-bottom: 20px;
+		}
+
+		.score-table th,
+		.score-table td {
+			border: 1px solid #ddd;
+			padding: 8px;
+			text-align: left;
+		}
+
+		.score-table th {
+			background-color: #f2f2f2;
+			font-weight: bold;
+		}
+
+		.highlight {
+			background-color: #fff9c4;
+			padding: 0 4px;
+		}
+	</style>
+</head>
+
+<body>
+	<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+		<a href="#" id="btn-back" onclick="goBack(); return false;"
+			style="display: inline-block; padding: 6px 16px; background: #e74c3c; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 14px;">&#x2190;
+			Back</a>
+		<div class="lang-switch" style="margin-bottom: 0;">
+			<a href="regole-dama.html" id="btn-it">Italiano</a>
+			<a href="regole-dama-en.html" id="btn-en" class="active">English</a>
+		</div>
+	</div>
+
+	<div class="banner"></div>
+
+	<div class="content-box">
+		<div id="lang-en">
+			<h1>Italian Checkers (Dama) Rules</h1>
+
+			<p><strong>Checkers</strong> is one of the oldest and most widespread board games in the world. The <strong>Italian</strong> variant, regulated by the Italian Checkers Federation (FID), stands out for two characteristic rules: a man <em>cannot capture a king</em>, and when several captures are possible, precise <em>precedence rules</em> decide which one is mandatory. Easy to learn, remarkably hard to master.</p>
+
+			<p style="background: #fff9c4; padding: 12px 16px; border-radius: 6px; border-left: 4px solid #ffd700;">
+				This game is constantly evolving: new features and improvements are added regularly. If something doesn't work as expected or you have suggestions, write to
+				<a href="mailto:postmaster@lucianomanenti.com" style="color: #3498db;">postmaster@lucianomanenti.com</a>
+				— your feedback is precious!
+			</p>
+
+			<h2>1. Goal of the Game</h2>
+			<p>Two players face each other on an 8&times;8 board, using only the <strong>dark squares</strong>. Each player starts with <strong>12 men</strong> on the three rows closest to them. <strong>White</strong> moves first. You win by:</p>
+			<ul>
+				<li>capturing <strong>all</strong> of your opponent's pieces, or</li>
+				<li>leaving your opponent with <strong>no legal moves</strong> (blocked pieces).</li>
+			</ul>
+
+			<h2>2. Movement</h2>
+			<h3>The man</h3>
+			<p>Moves <strong>one square diagonally, forward only</strong> (towards the opponent's side), onto a free square.</p>
+			<h3>The king</h3>
+			<p>When a man reaches the <strong>last row</strong> it is promoted to <strong>king</strong> (marked with a crown in the game). The king moves one square diagonally <strong>in any direction</strong>, forwards and backwards. In Italian checkers the king does <em>not</em> "fly" as in international draughts: it always moves a single square.</p>
+
+			<h2>3. Capturing</h2>
+			<p>You capture by <strong>jumping</strong> over a diagonally adjacent enemy piece, landing on the square immediately beyond it, which must be free. Men capture <strong>forward only</strong>; kings capture in <strong>any direction</strong>.</p>
+			<p>Fundamental capture rules:</p>
+			<ul>
+				<li><span class="highlight">Capturing is <strong>mandatory</strong></span>: if you can capture, you must.</li>
+				<li><span class="highlight">A man <strong>cannot</strong> capture a king</span> — the hallmark rule of Italian checkers.</li>
+				<li>After a jump, if another jump is possible from the landing square, the capture <strong>continues with the same piece</strong> (multiple capture).</li>
+				<li>If a man reaches the last row <strong>during</strong> a multiple capture, it is promoted to king and <strong>the capture stops</strong> immediately.</li>
+				<li>A piece that has already been jumped cannot be jumped a second time in the same capture.</li>
+			</ul>
+
+			<h3>Capture precedence</h3>
+			<p>When there are several ways to capture, the rules establish which capture is mandatory, in this order:</p>
+			<table class="score-table">
+				<tr>
+					<th>Order</th>
+					<th>Rule</th>
+				</tr>
+				<tr>
+					<td>1</td>
+					<td>You must capture the <strong>greatest number of pieces</strong>.</td>
+				</tr>
+				<tr>
+					<td>2</td>
+					<td>All else being equal, you must capture <strong>with the king</strong> rather than with a man.</td>
+				</tr>
+				<tr>
+					<td>3</td>
+					<td>All else being equal, you must capture the <strong>greatest number of kings</strong>.</td>
+				</tr>
+				<tr>
+					<td>4</td>
+					<td>All else being equal, you must capture where you meet <strong>a king first</strong>.</td>
+				</tr>
+			</table>
+			<p>No need to memorise them: the game applies the precedence rules automatically and only offers you the legal captures.</p>
+
+			<h2>4. Draws</h2>
+			<p>The game is declared a <strong>draw</strong> when neither player can make progress: in this version this happens automatically after 40 moves per side without any capture or man move (king moves only).</p>
+
+			<h2>5. How to play Dama Luciano</h2>
+			<ul>
+				<li><strong>Levels:</strong> three difficulties (Easy, Medium, Hard) corresponding to the computer's calculation depth. You can choose to play White (moves first) or Black.</li>
+				<li><strong>Moving:</strong> click one of your pieces (playable ones have a gold border), then click the highlighted destination square. Multiple captures are played one jump at a time: the game highlights where you can continue.</li>
+				<li><strong>&#8630; Undo:</strong> takes the game back to before your last move, also undoing the computer's reply (also <strong>Ctrl+Z</strong>).</li>
+				<li><strong>&#128161; Hint:</strong> highlights a good move calculated by the computer.</li>
+				<li><strong>Record:</strong> the top-right panel counts wins, losses and draws for the selected level, with a reset button.</li>
+				<li><strong>Automatic saving:</strong> the game is saved at the start of each of your turns; if you close the page you can resume it later.</li>
+			</ul>
+
+			<h2>6. Strategy Tips</h2>
+			<ul>
+				<li><strong>Control the centre:</strong> central pieces have more moves and more capture opportunities.</li>
+				<li><strong>Don't empty your back row:</strong> as long as your base men stay put, your opponent cannot easily crown a king.</li>
+				<li><strong>Exploit the forced capture:</strong> offering a piece can force your opponent into a costly capture (the classic checkers "shot").</li>
+				<li><strong>Crown first:</strong> a king against men alone is often decisive, especially since men cannot capture it.</li>
+				<li><strong>Move as a group:</strong> isolated men are targets; advancing in formation lets them protect each other.</li>
+			</ul>
+
+			<p style="text-align: center;"><a href="#" onclick="goBack(); return false;" class="play-btn">Close</a></p>
+		</div>
+	</div>
+
+	<div class="banner"></div>
+
+	<div class="nav-links">
+		<a href="index-en.html">Home</a> |
+		<a href="info-en.html">All games</a> |
+		<a href="aboutme-en.html">About Me</a> |
+		<a href="privacy-en.html">Privacy Policy</a>
+	</div>
+
+	<p style="text-align: center; font-size: 0.8em; color: #999; margin-top: 15px;">
+		&copy; 2026 Luciano Manenti
+	</p>
+
+	<script>
+		function goBack() {
+			if (window.opener) {
+				window.close();
+			} else {
+				window.location.href = 'dama-en.html';
+			}
+		}
+	</script>
+</body>
+
+</html>

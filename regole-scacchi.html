@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
+	<script>
+		window.dataLayer = window.dataLayer || [];
+		function gtag() { dataLayer.push(arguments); }
+		gtag('js', new Date());
+		gtag('config', 'G-WRBDRDQ4L8');
+		window.currentLang = 'it';
+	</script>
+	<title>Regole degli Scacchi - Come giocare</title>
+	<meta name="Description"
+		content="Regole degli scacchi: movimento dei pezzi, arrocco, en passant, promozione, scacco matto e patta. Guida completa per giocare gratis online contro il computer.">
+	<link rel="alternate" hreflang="it" href="regole-scacchi.html">
+	<link rel="alternate" hreflang="en" href="regole-scacchi-en.html">
+	<link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
+	<link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
+	<link rel="shortcut icon" href="favicon/favicon.ico">
+	<link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+	<style>
+		body {
+			font-family: sans-serif;
+			line-height: 1.7;
+			max-width: 800px;
+			margin: 40px auto;
+			padding: 20px;
+			color: #333;
+			background-color: #f9f9f9;
+		}
+
+		h1 {
+			color: #2c3e50;
+			border-bottom: 2px solid #ffd700;
+			padding-bottom: 10px;
+		}
+
+		h2 {
+			color: #2c3e50;
+			margin-top: 30px;
+		}
+
+		h3 {
+			color: #2c3e50;
+			font-size: 1.1em;
+			margin-top: 20px;
+		}
+
+		.lang-switch {
+			text-align: right;
+			margin-bottom: 20px;
+		}
+
+		.lang-switch a {
+			display: inline-block;
+			padding: 6px 16px;
+			margin-left: 5px;
+			text-decoration: none;
+			border-radius: 5px;
+			font-weight: bold;
+			font-size: 14px;
+		}
+
+		.lang-switch a.active {
+			background: #2c3e50;
+			color: white;
+		}
+
+		.lang-switch a:not(.active) {
+			background: #ddd;
+			color: #333;
+			cursor: pointer;
+		}
+
+		.content-box {
+			background: white;
+			padding: 30px;
+			border-radius: 8px;
+			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+		}
+
+		.play-btn {
+			display: inline-block;
+			margin-top: 25px;
+			padding: 12px 30px;
+			background: #27ae60;
+			color: white;
+			text-decoration: none;
+			border-radius: 8px;
+			font-size: 18px;
+			font-weight: bold;
+		}
+
+		.nav-links {
+			text-align: center;
+			margin-top: 30px;
+			font-size: 14px;
+		}
+
+		.nav-links a {
+			color: #3498db;
+			text-decoration: none;
+			margin: 0 10px;
+		}
+
+		.banner {
+			width: 100%;
+			height: 150px;
+			background-image: url('images/home/castagne.jpg');
+			background-size: cover;
+			background-position: center;
+			border-radius: 8px;
+			margin: 20px 0;
+			box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+		}
+
+		.score-table {
+			width: 100%;
+			border-collapse: collapse;
+			margin-top: 10px;
+			margin-bottom: 20px;
+		}
+
+		.score-table th,
+		.score-table td {
+			border: 1px solid #ddd;
+			padding: 8px;
+			text-align: left;
+		}
+
+		.score-table th {
+			background-color: #f2f2f2;
+			font-weight: bold;
+		}
+
+		.score-table td:first-child {
+			font-size: 22px;
+			text-align: center;
+			width: 50px;
+		}
+
+		.highlight {
+			background-color: #fff9c4;
+			padding: 0 4px;
+		}
+	</style>
+</head>
+
+<body>
+	<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+		<a href="#" id="btn-back" onclick="goBack(); return false;"
+			style="display: inline-block; padding: 6px 16px; background: #e74c3c; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 14px;">&#x2190;
+			Indietro</a>
+		<div class="lang-switch" style="margin-bottom: 0;">
+			<a href="regole-scacchi.html" id="btn-it" class="active">Italiano</a>
+			<a href="regole-scacchi-en.html" id="btn-en">English</a>
+		</div>
+	</div>
+
+	<div class="banner"></div>
+
+	<div class="content-box">
+		<div id="lang-it">
+			<h1>Regole degli Scacchi</h1>
+
+			<p>Gli <strong>scacchi</strong> sono il gioco di strategia per eccellenza, con quindici secoli di storia alle spalle. Due eserciti di 16 pezzi si affrontano su una scacchiera 8&times;8 con un unico obiettivo: dare <strong>scacco matto</strong> al re avversario.</p>
+
+			<p style="background: #fff9c4; padding: 12px 16px; border-radius: 6px; border-left: 4px solid #ffd700;">
+				Questo gioco &egrave; in continua evoluzione: nuove funzionalit&agrave; e miglioramenti vengono aggiunti regolarmente. Se riscontri qualcosa che non funziona come previsto o hai suggerimenti, scrivici a
+				<a href="mailto:postmaster@lucianomanenti.com" style="color: #3498db;">postmaster@lucianomanenti.com</a>
+				— il tuo feedback &egrave; prezioso!
+			</p>
+
+			<h2>1. Il Movimento dei Pezzi</h2>
+			<table class="score-table">
+				<tr>
+					<th>Pezzo</th>
+					<th>Nome</th>
+					<th>Movimento</th>
+				</tr>
+				<tr>
+					<td>&#9817;</td>
+					<td><strong>Pedone</strong></td>
+					<td>Avanza di una casella (due dalla posizione iniziale). Cattura solo in diagonale, di una casella in avanti.</td>
+				</tr>
+				<tr>
+					<td>&#9816;</td>
+					<td><strong>Cavallo</strong></td>
+					<td>Muove a "L": due caselle in una direzione e una perpendicolare. &Egrave; l'unico pezzo che pu&ograve; scavalcare gli altri.</td>
+				</tr>
+				<tr>
+					<td>&#9815;</td>
+					<td><strong>Alfiere</strong></td>
+					<td>Muove in diagonale, di quante caselle vuole.</td>
+				</tr>
+				<tr>
+					<td>&#9814;</td>
+					<td><strong>Torre</strong></td>
+					<td>Muove in orizzontale o verticale, di quante caselle vuole.</td>
+				</tr>
+				<tr>
+					<td>&#9813;</td>
+					<td><strong>Donna</strong></td>
+					<td>Combina torre e alfiere: muove in ogni direzione, di quante caselle vuole. &Egrave; il pezzo pi&ugrave; forte.</td>
+				</tr>
+				<tr>
+					<td>&#9812;</td>
+					<td><strong>Re</strong></td>
+					<td>Muove di una sola casella in ogni direzione. Non pu&ograve; mai spostarsi su una casella attaccata.</td>
+				</tr>
+			</table>
+
+			<h2>2. Le Mosse Speciali</h2>
+			<h3>L'arrocco</h3>
+			<p>Una volta per partita, re e torre possono muovere <em>insieme</em>: il re si sposta di due caselle verso la torre e la torre "salta" dall'altra parte del re. &Egrave; permesso solo se n&eacute; il re n&eacute; la torre hanno gi&agrave; mosso, se le caselle tra loro sono libere e se il re non &egrave; sotto scacco n&eacute; attraversa caselle attaccate. Nel gioco basta cliccare il re e poi la casella di arrivo (due caselle di lato).</p>
+			<h3>La presa al varco (en passant)</h3>
+			<p>Se un pedone avversario avanza di due caselle e atterra <em>di fianco</em> a un tuo pedone, puoi catturarlo come se fosse avanzato di una sola casella — ma solo nella mossa immediatamente successiva.</p>
+			<h3>La promozione</h3>
+			<p>Un pedone che raggiunge l'ultima traversa si trasforma in un pezzo a tua scelta: Donna, Torre, Alfiere o Cavallo (quasi sempre conviene la Donna). Nel gioco si apre un pannello per la scelta.</p>
+
+			<h2>3. Scacco, Matto e Patta</h2>
+			<ul>
+				<li><strong>Scacco:</strong> il re &egrave; attaccato. Devi obbligatoriamente pararlo: spostando il re, catturando l'attaccante o interponendo un pezzo.</li>
+				<li><strong>Scacco matto:</strong> lo scacco non pu&ograve; essere parato in alcun modo. La partita &egrave; vinta da chi lo ha dato.</li>
+				<li><strong>Stallo:</strong> chi deve muovere non ha mosse legali ma <em>non</em> &egrave; sotto scacco: la partita &egrave; patta (pareggio).</li>
+				<li><strong>Altre patte:</strong> triplice ripetizione della stessa posizione, 50 mosse senza catture n&eacute; mosse di pedone, materiale insufficiente per dare matto (es. re contro re). Il gioco le rileva automaticamente.</li>
+			</ul>
+
+			<h2>4. Come giocare a Scacchi Luciano</h2>
+			<ul>
+				<li><strong>L'avversario:</strong> giochi contro <a href="https://stockfishchess.org/" target="_blank" rel="noopener" style="color:#3498db;">Stockfish</a>, uno dei motori scacchistici pi&ugrave; forti al mondo, in esecuzione direttamente nel tuo browser. La forza si regola con i tre pulsanti (Facile, Medio, Difficile) oppure con il cursore del livello esatto: vedi la sezione seguente.</li>
+				<li><strong>Muovere:</strong> clicca un tuo pezzo e poi una delle caselle evidenziate (pallino = mossa, cerchio rosso = cattura). L'ultima mossa resta evidenziata; il re sotto scacco si illumina di rosso.</li>
+				<li><strong>&#8630; Annulla:</strong> ritira la tua ultima mossa e la risposta del computer (anche Ctrl+Z).</li>
+				<li><strong>&#128161; Suggerimento:</strong> il motore a piena forza ti mostra la mossa che giocherebbe.</li>
+				<li><strong>Notazione:</strong> il pannello a destra elenca le mosse della partita in notazione algebrica.</li>
+				<li><strong>Bilancio:</strong> vittorie, sconfitte e patte per livello, con azzeramento.</li>
+				<li><strong>Salvataggio automatico:</strong> chiudendo la pagina la partita si pu&ograve; riprendere.</li>
+			</ul>
+
+			<h2>5. I Livelli di Gioco</h2>
+			<p>La forza dell'avversario corrisponde allo <strong>"Skill Level" di Stockfish</strong>, una scala da <strong>0 a 20</strong>. I tre pulsanti sono semplici scorciatoie — <em>Facile</em>&nbsp;=&nbsp;0, <em>Medio</em>&nbsp;=&nbsp;8, <em>Difficile</em>&nbsp;=&nbsp;20 — ma con il cursore nella schermata iniziale puoi scegliere qualsiasi valore intermedio.</p>
+			<p>&Egrave; importante capire <em>come</em> il motore viene indebolito: ai livelli bassi Stockfish non "pensa meno", ma <strong>sceglie deliberatamente, con una certa probabilit&agrave;, mosse peggiori della migliore</strong> — a livello 0 arriva a regalare pezzi, ed &egrave; voluto: serve a chi sta imparando a muovere. Salendo di livello gli errori diventano sempre pi&ugrave; rari e sottili, fino a sparire del tutto a 20. Cresce anche il tempo di riflessione: da 0,2 secondi per mossa a livello 0 fino a 1,2 secondi a livello 20.</p>
+			<table class="score-table">
+				<tr>
+					<th>Livello</th>
+					<th>A chi corrisponde (indicativamente)</th>
+				</tr>
+				<tr>
+					<td>0 <em>(Facile)</em></td>
+					<td>Principiante assoluto: commette errori gravi voluti, lascia pezzi in presa.</td>
+				</tr>
+				<tr>
+					<td>1&ndash;5</td>
+					<td>Principiante che conosce le regole: sbaglia ancora spesso, ma punisce le sviste pi&ugrave; evidenti.</td>
+				</tr>
+				<tr>
+					<td>6&ndash;10 <em>(Medio&nbsp;=&nbsp;8)</em></td>
+					<td>Giocatore amatoriale / di circolo (&asymp; 1600&ndash;1900 Elo): solido, cede solo su errori tattici veri.</td>
+				</tr>
+				<tr>
+					<td>11&ndash;15</td>
+					<td>Giocatore esperto / agonista (&asymp; 2000&ndash;2300 Elo): richiede una partita seria e senza sbavature.</td>
+				</tr>
+				<tr>
+					<td>16&ndash;19</td>
+					<td>Livello magistrale (&asymp; 2300&ndash;2500 Elo): quasi impossibile da battere per un amatore.</td>
+				</tr>
+				<tr>
+					<td>20 <em>(Difficile)</em></td>
+					<td>Stockfish a piena forza (oltre 2600 Elo): batte praticamente chiunque, campioni compresi.</td>
+				</tr>
+			</table>
+			<p style="background: #f4f1e8; padding: 12px 16px; border-radius: 6px; border-left: 4px solid #3498db; font-size: 0.95em;">
+				<strong>Cos'&egrave; l'Elo?</strong> &Egrave; il punteggio con cui in tutto il mondo si misura la forza di un giocatore di scacchi (dal nome del suo inventore, il professor Arpad Elo). Misura la forza <em>relativa</em>: a parit&agrave; di Elo la partita &egrave; alla pari, con 200 punti di differenza il pi&ugrave; forte vince circa 3 volte su 4, con 400 non c'&egrave; quasi storia. Per orientarsi: 1200 &egrave; un principiante, 1600 un buon amatore di circolo, 2200 un maestro, 2500 un Grande Maestro; il record umano &egrave; il 2882 di Magnus Carlsen — e Stockfish a piena forza supera quota 3500.
+			</p>
+			<p>Un buon criterio: <span class="highlight">gioca al livello in cui vinci circa met&agrave; delle partite</span> e sali quando inizi a vincere con regolarit&agrave;. Il bilancio vittorie/sconfitte/patte viene conteggiato per fascia (0&ndash;5 Facile, 6&ndash;13 Medio, 14&ndash;20 Difficile). Nota: il pulsante <strong>Suggerimento</strong> usa sempre il motore a piena forza, qualunque sia il livello dell'avversario.</p>
+
+			<h2>6. Consigli per Iniziare</h2>
+			<ul>
+				<li><strong>Controlla il centro</strong> (e4, d4, e5, d5): i pezzi centrali dominano la scacchiera.</li>
+				<li><strong>Sviluppa i pezzi leggeri</strong> (cavalli e alfieri) prima di lanciare attacchi, e arrocca presto per mettere il re al sicuro.</li>
+				<li><strong>Non muovere lo stesso pezzo due volte in apertura</strong> senza un buon motivo.</li>
+				<li><strong>Prima di ogni mossa chiediti:</strong> cosa minaccia l'avversario? La mia mossa lascia qualcosa in presa?</li>
+				<li><strong>Usa il Suggerimento come maestro:</strong> confronta la tua idea con quella del motore per capire cosa ti sfugge.</li>
+			</ul>
+
+			<p style="text-align: center;"><a href="#" onclick="goBack(); return false;" class="play-btn">Chiudi</a></p>
+		</div>
+	</div>
+
+	<div class="banner"></div>
+
+	<div class="nav-links">
+		<a href="index.html">Home</a> |
+		<a href="info.html">Tutti i giochi</a> |
+		<a href="aboutme.html">Chi Sono</a> |
+		<a href="privacy.html">Privacy Policy</a>
+	</div>
+
+	<p style="text-align: center; font-size: 0.8em; color: #999; margin-top: 15px;">
+		&copy; 2026 Luciano Manenti
+	</p>
+
+	<script>
+		function goBack() {
+			if (window.opener) {
+				window.close();
+			} else {
+				window.location.href = 'scacchi.html';
+			}
+		}
+	</script>
+</body>
+
+</html>

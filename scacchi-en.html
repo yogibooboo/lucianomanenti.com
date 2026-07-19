@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script>
+        // Fix sicurezza per evitare crash da cross-origin su window.opener
+        (function() { try { if (!window.opener) return; var test = window.opener.document; if (!window.opener.game) { window.opener = null; } } catch(e) { window.opener = null; } })();
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Free Online Chess vs Computer - lucianomanenti.com</title>
+    <link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
+    <link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
+    <link rel="shortcut icon" href="favicon/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+    <link rel="manifest" href="favicon/site.webmanifest">
+
+    <meta name="Description"
+        content="Play chess for free online against the computer (Stockfish engine). Three difficulty levels, hints, move undo and automatic game saving.">
+    <meta http-Equiv="Cache-Control" Content="no-cache">
+    <meta http-Equiv="Pragma" Content="no-cache">
+    <meta http-Equiv="Expires" Content="0">
+
+    <link rel="stylesheet" href="scacchi.css?v=1.5" />
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-WRBDRDQ4L8');
+    </script>
+    <script>
+        window.gameConfig = {
+            gaPrefix: 'SCACCHI_en_',
+            hideLegalFooter: true,
+            adsenseActive: false
+        };
+        window.currentLang = 'en';
+    </script>
+</head>
+
+<body>
+
+    <div class="main-container">
+        <!-- Sidebar per annunci (gestite dal layout engine) -->
+        <div id="sidebar-left" class="sidebar"></div>
+        <div id="sidebar-right" class="sidebar"></div>
+
+        <!-- Campo di gioco principale centrato e riscalato -->
+        <div id="campogioco">
+            <!-- Schermo overlay per modali -->
+            <div id="schermo"></div>
+
+            <!-- Titolo del gioco -->
+            <div class="lang-switch-header">
+                <a href="scacchi.html">IT</a>
+                <a href="scacchi-en.html" class="active">EN</a>
+                <div id="btn-audio" class="btn-audio-game" aria-label="Audio"></div>
+            </div>
+            <div id="titolo-gioco">Scacchi Luciano</div>
+
+            <!-- Messaggio di stato -->
+            <div id="messaggio-stato">Loading...</div>
+
+            <!-- ================= PANNELLO STATISTICHE ================= -->
+            <div id="pannello-stats">
+                <div class="stats-header">
+                    <span>RECORD — <span id="stat-diff">--</span></span>
+                    <button id="btn-reset-stats" title="Reset this level's record">&#10226;</button>
+                </div>
+                <div class="stats-righe">
+                    <div class="info-blocco">
+                        <div class="info-label">Won</div>
+                        <div class="stat-valore" id="stat-vinte">0</div>
+                    </div>
+                    <div class="info-blocco">
+                        <div class="info-label">Lost</div>
+                        <div class="stat-valore" id="stat-perse">0</div>
+                    </div>
+                    <div class="info-blocco">
+                        <div class="info-label">Draws</div>
+                        <div class="stat-valore" id="stat-patte">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= SCACCHIERA ================= -->
+            <div id="scacchiera"></div>
+
+            <!-- ================= PANNELLO CONTROLLI ================= -->
+            <div id="pannello-controlli">
+                <div id="info-partita">
+                    <div class="info-blocco">
+                        <div class="info-label">Difficulty</div>
+                        <div class="info-valore" id="info-difficolta">--</div>
+                    </div>
+                    <div class="info-blocco">
+                        <div class="info-label">Your pieces</div>
+                        <div class="info-valore" id="info-colore">--</div>
+                    </div>
+                    <div class="info-blocco">
+                        <div class="info-label">Moves</div>
+                        <div class="info-valore" id="info-mosse">0</div>
+                    </div>
+                </div>
+
+                <div id="azioni">
+                    <button id="btn-annulla" class="btn-azione">&#8630; Undo</button>
+                    <button id="btn-hint" class="btn-azione">&#128161; Hint</button>
+                </div>
+
+                <div id="pannello-mosse">
+                    <div class="mosse-titolo">Game</div>
+                    <div id="lista-mosse"></div>
+                </div>
+
+                <button id="btn-nuova-partita">NEW GAME</button>
+
+                <!-- Pezzi catturati dalle due parti -->
+                <div id="pannello-catture">
+                    <div class="catture-riga">
+                        <span id="catture-mie" class="catture-pezzi"></span>
+                        <span id="vantaggio-mio" class="vantaggio"></span>
+                    </div>
+                    <div class="catture-riga">
+                        <span id="catture-sue" class="catture-pezzi"></span>
+                        <span id="vantaggio-suo" class="vantaggio"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= MODALI ED OVERLAY ================= -->
+
+            <!-- 1. Modale Inizio Gioco -->
+            <div id="modale-inizio" class="form-scacchi">
+                <button id="btn-riprendi" class="btn-continua" style="display: none; width: 100%; max-width: 250px; margin: 0 auto 20px auto; background: #27ae60; border-color: #1e8449; color: white;">RESUME PREVIOUS GAME</button>
+
+                <div class="form-scacchi-title">New Chess Game</div>
+
+                <div class="opzione-gruppo" style="margin-bottom: 16px; text-align: center;">
+                    <div style="font-size: 13px; font-weight: bold; margin-bottom: 10px; color: #ffd700; text-transform: uppercase;">Difficulty:</div>
+                    <div style="display: flex; justify-content: center; gap: 10px; align-items: center;">
+                        <button id="btn-diff-facile" onclick="selezionaDifficolta('facile')" class="btn-opzione-sel attiva" style="min-width: 100px;">EASY</button>
+                        <button id="btn-diff-medio" onclick="selezionaDifficolta('medio')" class="btn-opzione-sel" style="min-width: 100px;">MEDIUM</button>
+                        <button id="btn-diff-difficile" onclick="selezionaDifficolta('difficile')" class="btn-opzione-sel" style="min-width: 100px;">HARD</button>
+                    </div>
+                    <div style="margin-top: 12px;">
+                        <div style="font-size: 11px; color: #aaa; margin-bottom: 4px;">Or set the engine level directly (0&ndash;20):</div>
+                        <input type="range" id="slider-skill" min="0" max="20" step="1" value="0" style="width: 240px; vertical-align: middle; accent-color: #ffd700; cursor: pointer;">
+                        <span id="skill-valore" style="display: inline-block; min-width: 28px; color: #ffd700; font-weight: bold; font-size: 16px; vertical-align: middle; text-align: right;">0</span>
+                    </div>
+                </div>
+
+                <div class="opzione-gruppo" style="margin-bottom: 20px; text-align: center;">
+                    <div style="font-size: 13px; font-weight: bold; margin-bottom: 10px; color: #ffd700; text-transform: uppercase;">You play:</div>
+                    <div style="display: flex; justify-content: center; gap: 10px; align-items: center;">
+                        <button id="btn-col-bianco" onclick="selezionaColore('w')" class="btn-opzione-sel attiva" style="min-width: 130px;">&#9898; WHITE</button>
+                        <button id="btn-col-nero" onclick="selezionaColore('b')" class="btn-opzione-sel" style="min-width: 130px;">&#9899; BLACK</button>
+                    </div>
+                    <div style="font-size: 11px; color: #aaa; margin-top: 8px;">White always moves first.</div>
+                </div>
+
+                <button onclick="confermaEAvviaPartita()" class="btn-continua" style="width: 100%; max-width: 250px; margin: 0 auto 15px auto; display: block;">START PLAYING</button>
+
+                <p style="font-size: 11px; color: #aaa; text-align: center; margin: 0;">
+                    Your opponent is the <b>Stockfish</b> engine, running in your browser.<br>
+                    Select a piece to see its legal moves highlighted.
+                </p>
+            </div>
+
+            <!-- 2. Modale Fine Partita (bassa e larga, banner sopra) -->
+            <div id="finepartita" class="form-scacchi modale-fine">
+                <div class="confirm-message" id="fine-messaggio" style="margin: 0 0 8px 0; line-height: 1.3;">YOU WIN!</div>
+                <div id="fine-dettagli" style="color: #ffd700; font-size: 15px; font-weight: bold; text-align: center; margin-bottom: 16px; text-shadow: 1px 1px 2px #000;"></div>
+                <div style="display: flex; gap: 16px; justify-content: center;">
+                    <button id="btn-vedi-scacchiera" class="btn-continua" style="width: 250px; height: 44px; font-size: 16px; background: rgba(0,40,10,0.6); color: white; border-color: #6b9b7a;">VIEW THE BOARD</button>
+                    <button onclick="location.reload()" class="btn-continua" style="width: 250px; height: 44px; font-size: 16px;">NEW GAME</button>
+                </div>
+            </div>
+
+            <!-- 3. Modale di Conferma Abbandono Partita (bassa e larga, banner sopra) -->
+            <div id="confermatermina" class="form-scacchi modale-conferma">
+                <div class="confirm-message" style="margin: 0 0 18px 0; line-height: 1.4; font-size: 22px;">Do you really want to abandon the current game?</div>
+                <div class="conferma-bottoni">
+                    <button id="btn-no-continua" class="btn-continua" style="width: 260px; height: 44px; font-size: 16px;">NO, CONTINUE</button>
+                    <button id="btn-si-termina" class="btn-continua" style="width: 260px; height: 44px; font-size: 16px; background-color: #cc0c39; color: white; border-color: #990022;">YES, NEW GAME</button>
+                </div>
+            </div>
+
+            <!-- 4. Scelta del pezzo di promozione -->
+            <div id="scegli-promozione" class="form-scacchi">
+                <div class="form-scacchi-title" style="font-size: 20px; margin-bottom: 14px;">Promotion: choose a piece</div>
+                <div class="promo-bottoni">
+                    <button onclick="scegliPromozione('q')" title="Queen"><span class="pezzo">&#9819;</span></button>
+                    <button onclick="scegliPromozione('r')" title="Rook"><span class="pezzo">&#9820;</span></button>
+                    <button onclick="scegliPromozione('b')" title="Bishop"><span class="pezzo">&#9821;</span></button>
+                    <button onclick="scegliPromozione('n')" title="Knight"><span class="pezzo">&#9822;</span></button>
+                </div>
+            </div>
+
+            <!-- 5. Modale Regole -->
+            <div id="modale-regole" class="form-scacchi" style="justify-content: flex-start;">
+                <div class="form-scacchi-title">How to Play</div>
+                <div style="font-size: 14px; line-height: 1.7; color: #e8e8e8; text-align: left; overflow-y: auto; padding: 0 10px;">
+                    <p style="margin-top: 0;">Chess with the complete rules: castling, en passant, promotion, stalemate, draw by repetition and the fifty-move rule. Win by <b>checkmate</b>.</p>
+                    <p><b>Moving:</b> click one of your pieces, then one of the highlighted squares (dot = move, red circle = capture). The last move played stays highlighted in yellow; a king in check glows red.</p>
+                    <p><b>Promotion:</b> when a pawn reaches the last rank you choose the piece (Queen, Rook, Bishop or Knight).</p>
+                    <p><b>&#8630; Undo</b>: takes the game back to before your last move, also retracting the computer's reply (also Ctrl+Z).<br>
+                    <b>&#128161; Hint</b>: the engine at full strength shows you the move it would play.</p>
+                    <p>Your opponent is <b>Stockfish</b>, one of the strongest chess engines in the world. Its strength is set from 0 to 20 with the slider on the start screen (the Easy/Medium/Hard buttons equal 0, 8 and 20): at level 0 it makes deliberate mistakes for beginners, at 20 it plays at full strength.</p>
+                    <p style="color: #aaa; font-size: 12px;">The game is saved automatically at the start of each of your turns: if you close the page you can resume where you left off.</p>
+                </div>
+                <div style="display: flex; gap: 12px; margin-top: 15px; align-items: center;">
+                    <a href="regole-scacchi-en.html" target="_blank" rel="opener" class="btn-continua" style="text-decoration: none; display: inline-block; background: #27ae60; border-color: #1e8449; color: white;">FULL GUIDE</a>
+                    <button onclick="chiudiModali()" class="btn-continua">CLOSE</button>
+                </div>
+            </div>
+
+            <!-- Link di navigazione ed utilità a fondo pagina -->
+            <div class="link-utility-bottom">
+                <a href="aboutme-en.html" target="_blank" id="btn-scrivetemi-scacchi" class="pulsante-top">Contact Me</a>
+                <button id="btn-regole-top" class="pulsante-top">How to Play</button>
+            </div>
+
+            <!-- Link Legali (Privacy e Cookie) -->
+            <div class="legal-links-scacchi">
+                <a href="privacy-en.html" target="_blank" id="btn-privacy-scacchi">Privacy Policy</a>
+                <span class="sep">&#8226;</span>
+                <a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)" id="btn-cookie-scacchi">Manage Cookies</a>
+            </div>
+
+            <div class="link-giochi-scacchi">
+                <a href="dama-en.html" class="pulsante-link-scacchi">Checkers</a>
+                <a href="sudoku-en.html" class="pulsante-link-scacchi">Sudoku</a>
+                <a href="scopa-en.html" class="pulsante-link-scacchi">Scopa</a>
+                <a href="rummy-en.html" class="pulsante-link-scacchi">Gin Rummy</a>
+                <a href="burraco-en.html" class="pulsante-link-scacchi">Burraco</a>
+                <a href="scala40-en.html" class="pulsante-link-scacchi">Scala 40</a>
+                <a href="machiavelli-en.html" class="pulsante-link-scacchi">Machiavelli</a>
+                <a href="spider-en.html" class="pulsante-link-scacchi">Spider</a>
+                <a href="klondike-en.html" class="pulsante-link-scacchi">Klondike</a>
+                <a href="index-en.html" class="pulsante-link-scacchi">Home</a>
+            </div>
+
+        </div><!-- /campogioco -->
+    </div>
+
+    <!-- Script condivisi dal sito -->
+    <script src="site.js?v=1.1"></script>
+    <!-- Layout engine per ridimensionare la finestra del gioco -->
+    <script src="game-layout.js?v=4.6"></script>
+    <!-- Regole degli scacchi (chess.js) -->
+    <script src="chess-0.10.3.min.js"></script>
+    <!-- Logica degli Scacchi (il motore Stockfish viene caricato come Web Worker) -->
+    <script src="scacchi.js?v=1.5"></script>
+    <script>
+        (function () {
+            var nascosto = false;
+            var observer = new MutationObserver(function () {
+                if (nascosto) return;
+                var divs = document.querySelectorAll('body > div');
+                for (var i = 0; i < divs.length; i++) {
+                    if (divs[i].shadowRoot && !divs[i].className && (divs[i].getAttribute('style') || '').length > 5000) {
+                        divs[i].style.setProperty('display', 'none', 'important');
+                        nascosto = true;
+                        observer.disconnect();
+                        return;
+                    }
+                }
+            });
+            observer.observe(document.body, { childList: true });
+        })();
+    </script>
+</body>
+
+</html>
