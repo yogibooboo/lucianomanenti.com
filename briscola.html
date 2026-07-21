@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <script>
+        // Fix sicurezza per evitare crash da cross-origin su window.opener
+        (function() { try { if (!window.opener) return; var test = window.opener.document; if (!window.opener.game) { window.opener = null; } } catch(e) { window.opener = null; } })();
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Briscola Online Gratis contro il Computer - lucianomanenti.com</title>
+    <link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
+    <link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
+    <link rel="shortcut icon" href="favicon/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+    <link rel="manifest" href="favicon/site.webmanifest">
+
+    <meta name="Description"
+        content="Gioca a Briscola gratis online contro il computer: 1 contro 1 oppure a coppie 2 contro 2. Carte napoletane, bresciane o francesi, tre livelli di difficoltà e salvataggio automatico.">
+    <meta http-Equiv="Cache-Control" Content="no-cache">
+    <meta http-Equiv="Pragma" Content="no-cache">
+    <meta http-Equiv="Expires" Content="0">
+
+    <link rel="stylesheet" href="briscola.css?v=2.7" />
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-WRBDRDQ4L8');
+    </script>
+    <script>
+        window.gameConfig = {
+            gaPrefix: 'BRISCOLA_',
+            hideLegalFooter: true,
+            adsenseActive: false
+        };
+        window.currentLang = 'it';
+    </script>
+</head>
+
+<body>
+
+    <div class="main-container">
+        <!-- Sidebar per annunci (gestite dal layout engine) -->
+        <div id="sidebar-left" class="sidebar"></div>
+        <div id="sidebar-right" class="sidebar"></div>
+
+        <!-- Campo di gioco principale centrato e riscalato -->
+        <div id="campogioco">
+            <!-- Schermo overlay per modali -->
+            <div id="schermo"></div>
+
+            <!-- Titolo del gioco -->
+            <div class="lang-switch-header">
+                <a href="briscola.html" class="active">IT</a>
+                <a href="briscola-en.html">EN</a>
+                <div id="btn-audio" class="btn-audio-game" aria-label="Audio"></div>
+            </div>
+            <div id="titolo-gioco">Briscola Luciano</div>
+
+            <!-- Messaggio di stato -->
+            <div id="messaggio-stato">Caricamento...</div>
+
+            <!-- ================= PANNELLO STATISTICHE ================= -->
+            <div id="pannello-stats">
+                <div class="stats-header">
+                    <span>BILANCIO — <span id="stat-diff">--</span></span>
+                    <button id="btn-reset-stats" title="Azzera il bilancio di questo livello">&#10226;</button>
+                </div>
+                <div class="stats-righe">
+                    <div class="info-blocco">
+                        <div class="info-label">Vinte</div>
+                        <div class="stat-valore" id="stat-vinte">0</div>
+                    </div>
+                    <div class="info-blocco">
+                        <div class="info-label">Perse</div>
+                        <div class="stat-valore" id="stat-perse">0</div>
+                    </div>
+                    <div class="info-blocco">
+                        <div class="info-label">Patte</div>
+                        <div class="stat-valore" id="stat-patte">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= PULSANTI IN ALTO A DESTRA ================= -->
+            <div class="pulsanti-top-destra">
+                <button id="btn-undo" class="pulsante-top" title="Annulla ultima mossa">↩ ANNULLA</button>
+                <button id="btn-scoperte" class="pulsante-top" title="Mostra/nascondi le carte in mano agli avversari">👁 SCOPERTE</button>
+                <button id="btn-mazzo" class="pulsante-top">Mazzo: Napoletane</button>
+            </div>
+
+            <button id="btn-nuova-partita">NUOVA PARTITA</button>
+
+            <!-- Mazzetto carte prese dagli avversari -->
+            <div id="mazzetto-loro" class="mazzetto-prese">
+                <span class="mazzetto-etichetta" id="mazzetto-loro-label">PC</span>
+            </div>
+
+            <!-- ================= PANNELLO PUNTI ================= -->
+            <div id="pannello-punti">
+                <div class="punti-titolo">Punti</div>
+                <div class="punti-riga"><span id="label-tu">Tu</span><span id="punti-tu">0</span></div>
+                <div class="punti-riga"><span id="label-loro">PC</span><span id="punti-loro">0</span></div>
+            </div>
+
+            <!-- Mazzetto delle tue carte prese -->
+            <div id="mazzetto-tu" class="mazzetto-prese">
+                <span class="mazzetto-etichetta" id="mazzetto-tu-label">Tu</span>
+            </div>
+
+            <!-- ================= TAVOLO ================= -->
+            <!-- Mani degli avversari (coperte) -->
+            <div id="mano-alto"></div>
+            <div id="mano-sinistra"></div>
+            <div id="mano-destra"></div>
+
+            <!-- Avatar -->
+            <div id="avatar-alto" class="avatar-blocco"><img src="" alt=""><span class="nome-avatar"></span></div>
+            <div id="avatar-sinistra" class="avatar-blocco"><img src="" alt=""><span class="nome-avatar"></span></div>
+            <div id="avatar-destra" class="avatar-blocco"><img src="" alt=""><span class="nome-avatar"></span></div>
+
+            <!-- Griglia segnali del compagno IA (briscole possedute e carichi) -->
+            <div id="griglia-segnali-compagno" class="griglia-segnali">
+                <div class="cella-briscola" data-valore="1">A</div>
+                <div class="cella-briscola cifra" data-valore="3">3</div>
+                <div class="cella-briscola" data-valore="10">R</div>
+                <div class="cella-briscola" data-valore="9">C</div>
+                <div class="cella-briscola" data-valore="8">F</div>
+                <div class="cella-briscola cella-x" id="cella-no-briscole">X</div>
+                <div class="cella-carico"></div>
+                <div class="cella-carico"></div>
+                <div class="cella-carico"></div>
+            </div>
+
+            <!-- Carte giocate nella presa corrente -->
+            <div id="tavolo-presa">
+                <div id="slot-alto" class="slot-carta"></div>
+                <div id="slot-sinistra" class="slot-carta"></div>
+                <div id="slot-destra" class="slot-carta"></div>
+                <div id="slot-basso" class="slot-carta"></div>
+            </div>
+
+            <!-- Mazzo e briscola scoperta -->
+            <div id="mazzo-blocco"></div>
+
+            <!-- Mano del giocatore -->
+            <div id="mano-basso"></div>
+
+            <!-- ================= MODALI ED OVERLAY ================= -->
+
+            <!-- 1. Modale Inizio Gioco -->
+            <div id="modale-inizio" class="form-briscola">
+                <button id="btn-riprendi" class="btn-continua" style="display: none; width: 100%; max-width: 250px; margin: 0 auto 16px auto; background: #27ae60; border-color: #1e8449; color: white;">RIPRENDI LA PARTITA PRECEDENTE</button>
+
+                <div class="form-briscola-title">Nuova Partita a Briscola</div>
+
+                <div class="opzione-gruppo" style="margin-bottom: 14px; text-align: center;">
+                    <div style="font-size: 13px; font-weight: bold; margin-bottom: 8px; color: #ffd700; text-transform: uppercase;">Difficoltà:</div>
+                    <div style="display: flex; justify-content: center; gap: 10px; align-items: center;">
+                        <button id="btn-diff-facile" onclick="selezionaDifficolta('facile')" class="btn-opzione-sel attiva">FACILE</button>
+                        <button id="btn-diff-medio" onclick="selezionaDifficolta('medio')" class="btn-opzione-sel">MEDIO</button>
+                        <button id="btn-diff-difficile" onclick="selezionaDifficolta('difficile')" class="btn-opzione-sel">DIFFICILE</button>
+                    </div>
+                </div>
+
+                <div class="opzione-gruppo" style="margin-bottom: 14px; text-align: center;">
+                    <div style="font-size: 13px; font-weight: bold; margin-bottom: 8px; color: #ffd700; text-transform: uppercase;">Modalità:</div>
+                    <div style="display: flex; justify-content: center; gap: 10px; align-items: center;">
+                        <button id="btn-mod-2" onclick="selezionaModalita(2)" class="btn-opzione-sel attiva" style="min-width: 140px;">1 CONTRO 1</button>
+                        <button id="btn-mod-4" onclick="selezionaModalita(4)" class="btn-opzione-sel" style="min-width: 140px;">2 CONTRO 2</button>
+                    </div>
+                </div>
+
+                <div class="opzione-gruppo" id="opzione-segnali" style="margin-bottom: 14px; text-align: center; display: none;">
+                    <label style="display: flex; justify-content: center; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; font-weight: bold; color: #ffd700; text-transform: uppercase;">
+                        <input type="checkbox" id="chk-segnali" onchange="toggleSegnaliOpzione(this.checked)" style="width: 16px; height: 16px; cursor: pointer;">
+                        Segnali compagno
+                    </label>
+                </div>
+
+                <div class="opzione-gruppo" style="margin-bottom: 18px; text-align: center;">
+                    <div style="font-size: 13px; font-weight: bold; margin-bottom: 8px; color: #ffd700; text-transform: uppercase;">Mazzo di carte:</div>
+                    <div style="display: flex; justify-content: center; gap: 10px; align-items: center;">
+                        <button id="btn-deck-napoletane" onclick="selezionaMazzo('napoletane')" class="btn-opzione-sel attiva">NAPOLETANE</button>
+                        <button id="btn-deck-bresciane" onclick="selezionaMazzo('bresciane')" class="btn-opzione-sel">BRESCIANE</button>
+                        <button id="btn-deck-francesi" onclick="selezionaMazzo('francesi')" class="btn-opzione-sel">FRANCESI</button>
+                    </div>
+                </div>
+
+                <button onclick="confermaEAvviaPartita()" class="btn-continua" style="width: 100%; max-width: 250px; margin: 0 auto 12px auto; display: block;">INIZIA A GIOCARE</button>
+
+                <p style="font-size: 11px; color: #aaa; text-align: center; margin: 0;">
+                    120 punti in palio: vince chi ne totalizza pi&ugrave; di 60.<br>
+                    Nella modalit&agrave; 2 contro 2 il tuo compagno &egrave; di fronte a te (&#9733;).
+                </p>
+            </div>
+
+            <!-- 2. Modale Fine Partita (bassa e larga, banner sopra) -->
+            <div id="finepartita" class="form-briscola modale-fine">
+                <div class="confirm-message" id="fine-messaggio" style="margin: 0 0 8px 0; line-height: 1.3;">HAI VINTO!</div>
+                <div id="fine-dettagli" style="color: #ffd700; font-size: 15px; font-weight: bold; text-align: center; margin-bottom: 16px; text-shadow: 1px 1px 2px #000;"></div>
+                <button onclick="location.reload()" class="btn-continua" style="width: 280px; height: 44px; font-size: 16px; margin: 0 auto;">NUOVA PARTITA</button>
+            </div>
+
+            <!-- 3. Modale di Conferma Abbandono Partita (bassa e larga, banner sopra) -->
+            <div id="confermatermina" class="form-briscola modale-conferma">
+                <div class="confirm-message" style="margin: 0 0 18px 0; line-height: 1.4; font-size: 22px;">Vuoi davvero abbandonare la partita in corso?</div>
+                <div class="conferma-bottoni">
+                    <button id="btn-no-continua" class="btn-continua" style="width: 260px; height: 44px; font-size: 16px;">NO, CONTINUA</button>
+                    <button id="btn-si-termina" class="btn-continua" style="width: 260px; height: 44px; font-size: 16px; background-color: #cc0c39; color: white; border-color: #990022;">S&Igrave;, NUOVA PARTITA</button>
+                </div>
+            </div>
+
+            <!-- 4. Modale Regole -->
+            <div id="modale-regole" class="form-briscola" style="justify-content: flex-start;">
+                <div class="form-briscola-title">Come si Gioca</div>
+                <div style="font-size: 14px; line-height: 1.7; color: #e8e8e8; text-align: left; overflow-y: auto; padding: 0 10px;">
+                    <p style="margin-top: 0;">Si gioca con 40 carte. La carta scoperta sotto il mazzo indica il seme di <b>briscola</b>. Ogni presa vale i punti delle sue carte: <b>Asso 11, Tre 10, Re 4, Cavallo 3, Fante 2</b>. Vince chi supera i 60 punti.</p>
+                    <p><b>La presa:</b> chi apre gioca una carta qualsiasi; gli altri rispondono <i>senza obbligo di seme</i>. Prende la briscola pi&ugrave; alta, o in assenza di briscole la carta pi&ugrave; alta del seme di apertura (Asso &gt; 3 &gt; Re &gt; Cavallo &gt; Fante &gt; 7...2). Chi prende apre la presa successiva.</p>
+                    <p><b>La pesca:</b> dopo ogni presa si pesca una carta a testa, a partire da chi ha preso; l'ultima carta pescata &egrave; la briscola scoperta.</p>
+                    <p><b>2 contro 2:</b> il tuo compagno (&#9733;) &egrave; di fronte a te; i punti si sommano per coppia.</p>
+                    <p style="color: #aaa; font-size: 12px;">La partita viene salvata automaticamente all'inizio di ogni tuo turno: se chiudi la pagina puoi riprendere da dove eri rimasto.</p>
+                </div>
+                <div style="display: flex; gap: 12px; margin-top: 15px; align-items: center;">
+                    <a href="regole-briscola.html" target="_blank" rel="opener" class="btn-continua" style="text-decoration: none; display: inline-block; background: #27ae60; border-color: #1e8449; color: white;">GUIDA COMPLETA</a>
+                    <button onclick="chiudiModali()" class="btn-continua">CHIUDI</button>
+                </div>
+            </div>
+
+            <!-- Link di navigazione ed utilità in alto a sinistra -->
+            <div class="link-utility-bottom">
+                <a href="aboutme.html" target="_blank" id="btn-scrivetemi-briscola" class="pulsante-top">Scrivetemi</a>
+                <button id="btn-regole-top" class="pulsante-top">Come si Gioca</button>
+            </div>
+
+            <!-- Link Legali (Privacy e Cookie) -->
+            <div class="legal-links-briscola">
+                <a href="privacy.html" target="_blank" id="btn-privacy-briscola">Privacy Policy</a>
+                <span class="sep">&#8226;</span>
+                <a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)" id="btn-cookie-briscola">Gestisci Cookie</a>
+            </div>
+
+            <div class="link-giochi-briscola">
+                <a href="scacchi.html" class="pulsante-link-briscola">Scacchi</a>
+                <a href="dama.html" class="pulsante-link-briscola">Dama</a>
+                <a href="sudoku.html" class="pulsante-link-briscola">Sudoku</a>
+                <a href="scopa.html" class="pulsante-link-briscola">Scopa</a>
+                <a href="rummy.html" class="pulsante-link-briscola">Gin Rummy</a>
+                <a href="burraco.html" class="pulsante-link-briscola">Burraco</a>
+                <a href="scala40.html" class="pulsante-link-briscola">Scala 40</a>
+                <a href="machiavelli.html" class="pulsante-link-briscola">Machiavelli</a>
+                <a href="index.html" class="pulsante-link-briscola">Home</a>
+            </div>
+
+        </div><!-- /campogioco -->
+    </div>
+
+    <!-- Script condivisi dal sito -->
+    <script src="site.js?v=1.1"></script>
+    <!-- Layout engine per ridimensionare la finestra del gioco -->
+    <script src="game-layout.js?v=4.6"></script>
+    <!-- Logica della Briscola -->
+    <script src="briscola.js?v=1.8"></script>
+    <script>
+        (function () {
+            var nascosto = false;
+            var observer = new MutationObserver(function () {
+                if (nascosto) return;
+                var divs = document.querySelectorAll('body > div');
+                for (var i = 0; i < divs.length; i++) {
+                    if (divs[i].shadowRoot && !divs[i].className && (divs[i].getAttribute('style') || '').length > 5000) {
+                        divs[i].style.setProperty('display', 'none', 'important');
+                        nascosto = true;
+                        observer.disconnect();
+                        return;
+                    }
+                }
+            });
+            observer.observe(document.body, { childList: true });
+        })();
+    </script>
+</body>
+
+</html>

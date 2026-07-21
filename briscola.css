@@ -1,0 +1,877 @@
+/* ============================================================================
+   BRISCOLA - Stili CSS (v2.7)
+   Stile feltro verde Burraco/Scopa con layout 1024x750px
+   Sprite delle carte condivisi con la Scopa (francesi/napoletane/bresciane)
+   ============================================================================ */
+
+/* === BASE & LAYOUT === */
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #1a5f2a;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.main-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+/* === SIDEBARS (per AdSense e layout) === */
+.sidebar {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    background: linear-gradient(135deg, #1a6b30 0%, #145524 50%, #0f4a1c 100%);
+    overflow-y: auto;
+    box-sizing: border-box;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    z-index: 1;
+    transition: opacity 0.3s ease;
+}
+#sidebar-left { left: 0; }
+#sidebar-right { right: 0; }
+
+/* === CAMPO DI GIOCO === */
+#campogioco {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 1024px;
+    height: 750px;
+    background: linear-gradient(135deg, #1a6b30 0%, #145524 50%, #0f4a1c 100%);
+    background-image: url(images/scala40/tappetoverde.png);
+    transform-origin: center center;
+    border-radius: 10px;
+    box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.4), 0 10px 30px rgba(0,0,0,0.5);
+    overflow: hidden;
+}
+
+/* === SCHERMO OVERLAY === */
+#schermo {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1024px;
+    height: 750px;
+    background-color: rgba(0, 0, 0, 0.65);
+    z-index: 30000;
+    display: none;
+}
+
+/* === TITOLO E BARRA SUPERIORE === */
+#titolo-gioco {
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #ffd700;
+    font-size: 26px;
+    font-family: 'Slackey', 'Outfit', sans-serif;
+    font-weight: bold;
+    z-index: 1000;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+    white-space: nowrap;
+}
+
+#messaggio-stato {
+    position: absolute;
+    top: 50px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #fff;
+    font-size: 16px;
+    font-weight: bold;
+    text-align: center;
+    background: rgba(0, 40, 10, 0.6);
+    padding: 6px 20px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    z-index: 100;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    white-space: normal;
+    max-width: 560px;
+    width: max-content;
+    line-height: 1.35;
+    transition: background-color 0.2s, color 0.2s;
+}
+#messaggio-stato.msg-giallo {
+    background: #ffd700;
+    color: #1a1a2e;
+    border-color: #b8860b;
+    text-shadow: none;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+}
+#messaggio-stato.msg-rosso {
+    background: #cc0c39;
+    color: #fff;
+    border-color: #990022;
+    text-shadow: none;
+    box-shadow: 0 0 15px rgba(204, 12, 57, 0.5);
+}
+
+.lang-switch-header {
+    position: absolute;
+    top: 8px;
+    left: 230px;
+    z-index: 10001;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.lang-switch-header a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 10px;
+    height: 32px;
+    text-decoration: none;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 12px;
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    transition: all 0.2s;
+    box-sizing: border-box;
+}
+.lang-switch-header a.active {
+    background: #ffd700;
+    color: #1a1a2e;
+    border-color: #b8860b;
+}
+.lang-switch-header a:hover:not(.active) {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.btn-audio-game {
+    width: 32px;
+    height: 32px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 20px;
+    background-color: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+.btn-audio-game:hover {
+    background-color: rgba(255, 255, 255, 0.25);
+}
+.btn-audio-game.muted {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.21.05-.42.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z'/%3E%3C/svg%3E");
+}
+
+#btn-audio {
+    position: relative;
+    z-index: 10001;
+}
+
+.pulsante-top {
+    height: 32px;
+    line-height: 32px;
+    background: rgba(0,0,0,0.4);
+    border: 1px solid #6b9b7a;
+    color: white;
+    border-radius: 4px;
+    padding: 0 10px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: bold;
+    transition: all 0.2s;
+    box-sizing: border-box;
+}
+.pulsante-top:hover {
+    background: rgba(0, 60, 20, 0.7);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+a.pulsante-top {
+    display: inline-block;
+    text-decoration: none;
+}
+
+/* Scrivetemi e Come si Gioca: in alto a sinistra, prima del selettore lingua */
+.link-utility-bottom {
+    position: absolute;
+    top: 8px;
+    left: 15px;
+    display: flex;
+    gap: 6px;
+    z-index: 10001;
+}
+
+/* === PULSANTI IN ALTO A DESTRA (Undo, Scoperte, Mazzo) === */
+.pulsanti-top-destra {
+    position: absolute;
+    top: 8px;
+    left: 645px;
+    right: 15px;
+    z-index: 10001;
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+}
+.pulsanti-top-destra .pulsante-top {
+    flex: 1;
+    padding: 0 6px;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 11px;
+}
+.pulsanti-top-destra .pulsante-top.attivo {
+    background: #ffd700;
+    color: #1a1a2e;
+    border-color: #b8860b;
+}
+.pulsanti-top-destra .pulsante-top:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* === MAZZETTI DELLE CARTE PRESE === */
+.mazzetto-prese {
+    position: absolute;
+    left: 820px;
+    width: 250px;
+    height: 62px;
+    z-index: 45;
+    box-sizing: border-box;
+}
+.mazzetto-prese .mazzetto-etichetta {
+    position: absolute;
+    left: 100px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 11px;
+    font-weight: bold;
+    color: #aed6ae;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.mazzetto-prese .carta {
+    position: absolute !important;
+    left: 15px;
+    top: 50%;
+    margin-top: -60px;
+}
+#campogioco.bresciane .mazzetto-prese .carta {
+    margin-top: -72px;
+}
+.mazzetto-prese .carta:not(:first-child) {
+    display: none;
+}
+.mazzetto-prese .mazzetto-count {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0, 40, 10, 0.85);
+    color: #ffd700;
+    font-weight: bold;
+    font-size: 12px;
+    padding: 1px 8px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    z-index: 2;
+}
+#mazzetto-loro { top: 120px; }
+#mazzetto-tu { bottom: 165px; }
+
+/* === PANNELLO STATISTICHE (in basso a destra) === */
+#pannello-stats {
+    position: absolute;
+    bottom: 45px;
+    left: 760px;
+    width: 250px;
+    z-index: 50;
+    background: rgba(0, 40, 10, 0.55);
+    border: 2px solid rgba(100, 160, 110, 0.35);
+    border-radius: 10px;
+    padding: 8px 14px 10px;
+    box-sizing: border-box;
+    color: #fff;
+}
+.stats-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    font-weight: bold;
+    color: #aed6ae;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 5px;
+}
+#btn-reset-stats {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: #ccc;
+    border-radius: 4px;
+    font-size: 11px;
+    line-height: 1;
+    padding: 2px 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-width: 32px;
+}
+#btn-reset-stats:hover {
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.5);
+}
+#btn-reset-stats.conferma {
+    background: #cc0c39;
+    color: #fff;
+    border-color: #990022;
+    font-weight: bold;
+}
+.stats-righe {
+    display: flex;
+    justify-content: space-between;
+}
+.stats-righe .info-blocco {
+    text-align: center;
+    flex: 1;
+}
+.stats-righe .info-label {
+    font-size: 11px;
+    color: #aed6ae;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.stat-valore {
+    font-size: 18px;
+    font-weight: bold;
+    color: #7fd4ff;
+    margin-top: 2px;
+}
+#stat-vinte { color: #7fe07f; }
+#stat-perse { color: #ff8f8f; }
+
+/* === PANNELLO PUNTI (in alto a sinistra) === */
+#pannello-punti {
+    position: absolute;
+    top: 52px;
+    left: 15px;
+    width: 150px;
+    z-index: 50;
+    background: rgba(0, 40, 10, 0.55);
+    border: 2px solid rgba(100, 160, 110, 0.35);
+    border-radius: 10px;
+    padding: 8px 14px 10px;
+    box-sizing: border-box;
+    color: #fff;
+}
+#pannello-punti .punti-titolo {
+    font-size: 11px;
+    font-weight: bold;
+    color: #aed6ae;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+    text-align: center;
+}
+#pannello-punti .punti-riga {
+    display: flex;
+    justify-content: space-between;
+    font-size: 15px;
+    font-weight: bold;
+    line-height: 1.6;
+}
+#pannello-punti .punti-riga span:last-child { color: #ffd700; }
+
+/* === PULSANTE NUOVA PARTITA (sotto i pulsanti in alto a destra) === */
+#btn-nuova-partita {
+    position: absolute;
+    top: 48px;
+    left: 760px;
+    width: 250px;
+    height: 42px;
+    font-size: 15px;
+    font-weight: bold;
+    font-family: 'Slackey', 'Outfit', sans-serif;
+    color: #1a1a2e;
+    background: linear-gradient(180deg, #ffd700 0%, #d4af37 100%);
+    border: 3px solid #b8860b;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.15s;
+    box-shadow: 0 5px 14px rgba(0,0,0,0.4);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    z-index: 50;
+}
+#btn-nuova-partita:hover {
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+}
+
+/* === CARTE (sprite condivisi con la Scopa) === */
+.carta {
+    position: relative;
+    width: 89px;
+    height: 120px;
+    background-image: url(images/scala40/conjollyplus.png?v=2);
+    background-size: 1541px 480px;
+    border-radius: 6px;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+    flex-shrink: 0;
+}
+.carta.coperta {
+    background-position: -1420px 0; /* dorso rosso */
+}
+.carta.orizzontale {
+    transform: rotate(90deg);
+}
+
+/* Temi carte */
+#campogioco.napoletane .carta {
+    background-image: url(images/scala40/carte_napoletane.png?v=2);
+    background-size: 1509px 480px;
+}
+#campogioco.bresciane .carta {
+    background-image: url(images/scala40/carte_bresciane.png?v=3);
+    background-size: 1811px 576px;
+    width: 72px;
+    height: 144px;
+}
+#campogioco.bresciane .carta.coperta {
+    background-position: -1721.25px 0;
+}
+
+/* === MANI === */
+#mano-basso, #mano-alto, #mano-sinistra, #mano-destra {
+    border: 2px solid rgba(100, 160, 110, 0.35);
+    border-radius: 10px;
+    padding: 8px;
+    box-sizing: border-box;
+    background: rgba(0, 40, 10, 0.45);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+#mano-basso.turno-attivo, #mano-alto.turno-attivo,
+#mano-sinistra.turno-attivo, #mano-destra.turno-attivo {
+    border-color: #ffd700;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.6);
+}
+
+#mano-basso {
+    position: absolute;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 14px;
+    width: 311px;
+    height: 136px;
+    z-index: 60;
+}
+#campogioco.bresciane #mano-basso {
+    width: 260px;
+    height: 160px;
+}
+#campogioco.turno-giocatore #mano-basso .carta {
+    cursor: pointer;
+}
+#campogioco.mani-scoperte #mano-alto .carta,
+#campogioco.mani-scoperte #mano-sinistra .carta,
+#campogioco.mani-scoperte #mano-destra .carta {
+    box-shadow: 0 0 0 2px #ffd700, 2px 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+#campogioco.turno-giocatore #mano-basso .carta:hover {
+    transform: translateY(-14px);
+    box-shadow: 0 0 0 3px #ffd700, 0 6px 14px rgba(0, 0, 0, 0.5);
+    transition: transform 0.12s;
+}
+
+#mano-alto {
+    position: absolute;
+    top: 92px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 14px;
+    width: 311px;
+    height: 136px;
+    z-index: 60;
+}
+#campogioco.bresciane #mano-alto {
+    width: 260px;
+    height: 160px;
+}
+
+#mano-sinistra, #mano-destra {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 136px;
+    height: 220px;
+    gap: -60px;
+    z-index: 60;
+}
+#campogioco.bresciane #mano-sinistra,
+#campogioco.bresciane #mano-destra {
+    width: 160px;
+    height: 292px;
+}
+#mano-sinistra { left: 55px; }
+#mano-destra { right: 55px; }
+#campogioco.quattro #mano-sinistra,
+#campogioco.quattro #mano-destra { display: flex; }
+#mano-sinistra .carta, #mano-destra .carta {
+    margin-top: -78px;
+}
+#mano-sinistra .carta:first-child, #mano-destra .carta:first-child {
+    margin-top: 0;
+}
+
+/* Nella modalità a 4 la mano in alto è il compagno */
+#campogioco.quattro #mano-alto { top: 92px; }
+
+/* === AVATAR === */
+.avatar-blocco {
+    position: absolute;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    z-index: 70;
+}
+.avatar-blocco img {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    border: 2px solid #ffd700;
+    object-fit: cover;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.5);
+}
+.avatar-blocco .nome-avatar {
+    font-size: 12px;
+    font-weight: bold;
+    color: #fff;
+    text-shadow: 1px 1px 2px #000;
+    background: rgba(0, 40, 10, 0.6);
+    padding: 1px 8px;
+    border-radius: 8px;
+}
+#avatar-alto { top: 95px; left: calc(50% + 175px); }
+#avatar-sinistra { top: 190px; left: 30px; }
+#avatar-destra { top: 190px; right: 30px; }
+
+/* === GRIGLIA SEGNALI COMPAGNO (briscole possedute e carichi) === */
+#griglia-segnali-compagno {
+    display: none;
+    position: absolute;
+    top: 95px;
+    left: calc(50% - 175px - 84px);
+    grid-template-columns: repeat(3, 22px);
+    grid-template-rows: repeat(3, 22px);
+    gap: 4px;
+    background: rgba(0, 20, 5, 0.6);
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    border-radius: 6px;
+    padding: 5px;
+    z-index: 70;
+}
+#campogioco.quattro.segnali-attivi #griglia-segnali-compagno {
+    display: grid;
+}
+
+.cella-briscola {
+    width: 22px;
+    height: 22px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    font-size: 16px;
+    font-weight: bold;
+    font-family: Georgia, serif;
+    box-sizing: border-box;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: rgba(255, 255, 255, 0.2);
+}
+.cella-briscola.on {
+    background: #ffd700;
+    border: 1px solid #fff3c4;
+    color: #3a2400;
+}
+.cella-briscola.cifra {
+    padding-bottom: 3px;
+}
+.cella-briscola.cella-x {
+    color: rgba(255, 120, 120, 0.2);
+}
+.cella-briscola.cella-x.on {
+    background: #b03030;
+    border: 1px solid #ff9c9c;
+    color: #fff;
+}
+
+.cella-carico {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    box-sizing: border-box;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+.cella-carico.on {
+    background: #d4791e;
+    border: 1px solid #ffcf9c;
+}
+
+/* === TAVOLO CENTRALE (carte giocate) === */
+#tavolo-presa {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 320px;
+    height: 330px;
+    z-index: 55;
+}
+.slot-carta {
+    position: absolute;
+    width: 89px;
+    height: 120px;
+}
+#campogioco.bresciane .slot-carta { width: 72px; height: 144px; }
+#slot-basso { bottom: 40px; left: 50%; transform: translateX(-50%); }
+#slot-alto { top: 40px; left: 50%; transform: translateX(-50%); }
+#campogioco.bresciane #slot-basso { bottom: 0px; }
+#slot-sinistra { top: 50%; left: 0; transform: translateY(-50%); }
+#slot-destra { top: 50%; right: 0; transform: translateY(-50%); }
+
+/* === MAZZO E BRISCOLA === */
+#mazzo-blocco {
+    position: absolute;
+    top: 300px;
+    left: 55px;
+    width: 150px;
+    height: 160px;
+    z-index: 50;
+}
+#campogioco.quattro #mazzo-blocco {
+    top: 570px;
+    left: 30px;
+}
+.carta-briscola {
+    position: absolute !important;
+    top: 18px;
+    left: 62px;
+}
+.mazzo-dorso {
+    position: absolute !important;
+    top: 0;
+    left: 0;
+}
+.mazzo-count {
+    position: absolute;
+    bottom: -8px;
+    left: 30px;
+    background: rgba(0, 40, 10, 0.85);
+    color: #ffd700;
+    font-weight: bold;
+    font-size: 14px;
+    padding: 2px 10px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* === MODALI E DIALOGHI === */
+.form-briscola {
+    z-index: 40000;
+    position: absolute;
+    width: 500px;
+    height: 560px;
+    left: 262px;
+    top: 95px;
+    background-color: #1a4224;
+    background-image: url(images/scala40/tappetoverde.png);
+    border: 4px solid #b8860b;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+    box-sizing: border-box;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    padding: 25px;
+    color: white;
+    overflow: hidden;
+}
+
+.form-briscola-title {
+    font-family: 'Slackey', 'Outfit', sans-serif;
+    font-size: 26px;
+    color: #ffd700;
+    margin-bottom: 20px;
+    text-shadow: 2px 2px 4px #000;
+    text-align: center;
+}
+
+#modale-inizio {
+    justify-content: center;
+}
+
+.btn-opzione-sel {
+    background: #1f4068;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.6);
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: bold;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-width: 100px;
+    text-transform: uppercase;
+    opacity: 0.55;
+    filter: blur(0.5px);
+}
+.btn-opzione-sel.attiva {
+    background: linear-gradient(180deg, #ffd700 0%, #b8860b 100%);
+    border: 2px solid #ffd700;
+    color: #1a1a2e;
+    box-shadow: 0 0 12px rgba(255, 215, 0, 0.5);
+    opacity: 1;
+    filter: none;
+}
+.btn-opzione-sel:hover {
+    opacity: 0.85;
+    filter: none;
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.4);
+}
+.btn-opzione-sel.attiva:hover {
+    filter: brightness(1.1);
+    opacity: 1;
+}
+
+.btn-continua {
+    padding: 10px 30px;
+    font-size: 15px;
+    font-weight: bold;
+    color: #2c3e50;
+    background: #ffd700;
+    border: 2px solid #b8860b;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+.btn-continua:hover {
+    background: #fff;
+    transform: scale(1.05);
+}
+
+/* Modale conferma nuova partita: bassa e larga, con banner pubblicitario sopra */
+#confermatermina.modale-conferma {
+    width: 700px;
+    height: 180px;
+    left: 162px;
+    top: 470px;
+    padding: 24px 25px;
+    justify-content: center;
+    overflow: visible;
+}
+.conferma-bottoni {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+}
+
+/* Modale fine partita: bassa e larga, con banner pubblicitario sopra */
+#finepartita.modale-fine {
+    width: 700px;
+    height: 210px;
+    left: 162px;
+    top: 430px;
+    padding: 20px 25px;
+    justify-content: center;
+    overflow: visible;
+}
+
+.confirm-message {
+    font-family: 'Slackey', 'Outfit', sans-serif;
+    font-size: 24px;
+    color: white;
+    text-align: center;
+    margin-bottom: 40px;
+    text-shadow: 2px 2px 4px #000;
+    padding: 0 20px;
+}
+
+/* === LINK A FONDO PAGINA === */
+.legal-links-briscola {
+    position: absolute;
+    bottom: 12px;
+    left: 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    z-index: 100;
+    font-size: 11px;
+}
+.legal-links-briscola a {
+    color: #cde8cd;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+.legal-links-briscola a:hover {
+    color: #ffd700;
+    text-decoration: underline;
+}
+.legal-links-briscola .sep { color: #6b9b7a; }
+
+.link-giochi-briscola {
+    position: absolute;
+    bottom: 8px;
+    right: 15px;
+    display: flex;
+    gap: 5px;
+    z-index: 100;
+}
+.pulsante-link-briscola {
+    height: 26px;
+    line-height: 26px;
+    background: rgba(0,0,0,0.4);
+    border: 1px solid #6b9b7a;
+    color: white;
+    border-radius: 4px;
+    padding: 0 8px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: bold;
+    text-decoration: none;
+    transition: all 0.2s;
+    box-sizing: border-box;
+}
+.pulsante-link-briscola:hover {
+    background: rgba(0, 60, 20, 0.7);
+    border-color: rgba(255, 255, 255, 0.5);
+}
