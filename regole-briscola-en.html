@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
+	<script>
+		window.dataLayer = window.dataLayer || [];
+		function gtag() { dataLayer.push(arguments); }
+		gtag('js', new Date());
+		gtag('config', 'G-WRBDRDQ4L8');
+		window.currentLang = 'en';
+	</script>
+	<title>Briscola Rules - How to Play - lucianomanenti.com</title>
+	<link rel="alternate" hreflang="it" href="regole-briscola.html">
+	<link rel="alternate" hreflang="en" href="regole-briscola-en.html">
+	<meta name="Description"
+		content="Rules and instructions to play Briscola online for free: scoring, tricks, partner signals, and how to play head-to-head or 2 vs 2.">
+	<link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
+	<link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
+	<link rel="shortcut icon" href="favicon/favicon.ico">
+	<link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+	<style>
+		body {
+			font-family: sans-serif;
+			line-height: 1.7;
+			max-width: 800px;
+			margin: 40px auto;
+			padding: 20px;
+			color: #333;
+			background-color: #f9f9f9;
+		}
+
+		h1 {
+			color: #2c3e50;
+			border-bottom: 2px solid #ffd700;
+			padding-bottom: 10px;
+		}
+
+		h2 {
+			color: #2c3e50;
+			margin-top: 30px;
+		}
+
+		h3 {
+			color: #2c3e50;
+			font-size: 1.1em;
+			margin-top: 20px;
+		}
+
+		.lang-switch {
+			text-align: right;
+			margin-bottom: 20px;
+		}
+
+		.lang-switch a {
+			display: inline-block;
+			padding: 6px 16px;
+			margin-left: 5px;
+			text-decoration: none;
+			border-radius: 5px;
+			font-weight: bold;
+			font-size: 14px;
+		}
+
+		.lang-switch a.active {
+			background: #2c3e50;
+			color: white;
+		}
+
+		.lang-switch a:not(.active) {
+			background: #ddd;
+			color: #333;
+			cursor: pointer;
+		}
+
+		.content-box {
+			background: white;
+			padding: 30px;
+			border-radius: 8px;
+			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+		}
+
+		.play-btn {
+			display: inline-block;
+			margin-top: 25px;
+			padding: 12px 30px;
+			background: #27ae60;
+			color: white;
+			text-decoration: none;
+			border-radius: 8px;
+			font-size: 18px;
+			font-weight: bold;
+		}
+
+		.nav-links {
+			text-align: center;
+			margin-top: 30px;
+			font-size: 14px;
+		}
+
+		.nav-links a {
+			color: #3498db;
+			text-decoration: none;
+			margin: 0 10px;
+		}
+
+		.banner {
+			width: 100%;
+			height: 150px;
+			background-image: url('images/home/castagne.jpg');
+			background-size: cover;
+			background-position: center;
+			border-radius: 8px;
+			margin: 20px 0;
+			box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+		}
+
+		.score-table {
+			width: 100%;
+			border-collapse: collapse;
+			margin-top: 10px;
+			margin-bottom: 20px;
+		}
+
+		.score-table th,
+		.score-table td {
+			border: 1px solid #ddd;
+			padding: 8px;
+			text-align: left;
+		}
+
+		.score-table th {
+			background-color: #f2f2f2;
+			font-weight: bold;
+		}
+	</style>
+</head>
+
+<body>
+	<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+		<a href="#" id="btn-back" onclick="goBack(); return false;"
+			style="display: inline-block; padding: 6px 16px; background: #e74c3c; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 14px;">&#x2190;
+			Back</a>
+		<div class="lang-switch" style="margin-bottom: 0;">
+			<a href="regole-briscola.html" id="btn-it">Italiano</a>
+			<a href="regole-briscola-en.html" id="btn-en" class="active">English</a>
+		</div>
+	</div>
+
+	<div class="banner"></div>
+
+	<div class="content-box">
+		<h1>Briscola Rules</h1>
+
+		<p><strong>Briscola</strong> is one of the most popular card games played in Italy. It is played with a deck of <strong>40 cards</strong> (Neapolitan, Brescian or French) and the goal is to score more points than your opponent (or the opposing team) by winning tricks containing the highest-value cards.</p>
+
+		<p>It can be played <strong>head-to-head</strong> or <strong>2 vs 2</strong> (two fixed pairs, with your partner sitting opposite you). In this online version you can challenge the computer in both modes.</p>
+
+		<p style="background: #fff8e1; border-left: 4px solid #ffd700; padding: 10px 15px; border-radius: 0 8px 8px 0;"><em>Note: the playing algorithms of the computer-controlled players are being continuously optimized, also thanks to player feedback. If you spot a questionable play, chances are it won't happen again in future versions: the game gets better match after match.</em></p>
+
+		<h2>1. The Cards and Their Points</h2>
+		<p>The deck has 4 suits of 10 cards each. Only some cards are worth points; the others (from 7 down to 2) are never worth points, but still count in the trick according to their strength.</p>
+		<table class="score-table">
+			<tr><th>Card</th><th>Points</th><th>Strength in the trick</th></tr>
+			<tr><td><strong>Ace</strong></td><td>11</td><td>1st (strongest)</td></tr>
+			<tr><td><strong>3</strong></td><td>10</td><td>2nd</td></tr>
+			<tr><td><strong>King</strong></td><td>4</td><td>3rd</td></tr>
+			<tr><td><strong>Knight</strong></td><td>3</td><td>4th</td></tr>
+			<tr><td><strong>Jack</strong></td><td>2</td><td>5th</td></tr>
+			<tr><td><strong>7, 6, 5, 4, 2</strong></td><td>0</td><td>descending, in this order</td></tr>
+		</table>
+		<p>A total of <strong>120 points</strong> are at stake: whoever (or whichever team) scores more than 60 wins. A 60-to-60 result is a <strong>draw</strong>.</p>
+
+		<h2>2. The Briscola (Trump Suit)</h2>
+		<p>Before play begins, one card is turned face up from the deck and stays visible under the deck itself: its suit is the <strong>briscola</strong> (trump) suit for the whole game. Cards of this suit always beat cards of any other suit, regardless of their value.</p>
+
+		<h2>3. The Trick</h2>
+		<p>On each turn, the leader plays any card; the other players respond <strong>with no obligation to follow suit</strong>, playing whichever card they prefer from their hand. The trick is won by:</p>
+		<ul>
+			<li>the highest trump card played, if at least one trump was played;</li>
+			<li>otherwise, the highest card of the suit led (cards of other suits don't count).</li>
+		</ul>
+		<p>Whoever wins the trick collects all the cards played (their points are added to that player's or team's tally) and leads the next trick.</p>
+
+		<h2>4. Drawing Cards</h2>
+		<p>After each trick, every player draws one card from the deck, starting with the trick winner. The last card drawn from the deck is the trump card that had been left face up. Once the deck runs out, play continues with the cards remaining in hand until they are used up.</p>
+
+		<h2>5. The 2 vs 2 Mode</h2>
+		<p>In this mode four players play in fixed pairs: your partner sits opposite you. Trick points are added up per team, not per individual player: even if you are not the one winning a points-rich trick, if your partner wins it the points still go to your team.</p>
+
+		<h3>Partner Signals (option)</h3>
+		<p>Available only in 2 vs 2 mode, this option shows in real time, for your partner, which of the 5 main trump cards (Ace, 3, King, Knight, Jack) they hold and how many point cards (Aces or 3s not in the trump suit) they have in hand; they see the same information about you. An <strong>X</strong> in place of the trump cards means that player has no trump cards at all.</p>
+		<p>The opposing pair exchanges the same signals too: if you enable this option, the computer-controlled players take it into account in their own choices (for example, leading with a point card when they know their partner holds the trump Ace ready to win it), just like a genuinely coordinated pair of human players would.</p>
+
+		<h2>6. The Card Deck</h2>
+		<p>You can choose between three deck graphics, interchangeable at any time: <strong>Neapolitan</strong>, <strong>Brescian</strong> and <strong>French</strong>. Changing the graphics does not affect the rules of the game in any way.</p>
+
+		<h2>7. Difficulty Levels</h2>
+		<ul>
+			<li><strong>Beginner:</strong> the opponent plays reasonably but not optimally.</li>
+			<li><strong>Medium:</strong> the opponent applies sharper heuristics about when to risk or hold back trump cards.</li>
+			<li><strong>Expert:</strong> the opponent keeps track of the cards already played and, in the endgame when few known cards remain, calculates the best possible move.</li>
+		</ul>
+
+		<hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;">
+
+		<h2>How to Play "Briscola Luciano"</h2>
+		<ul>
+			<li><strong>Play a card:</strong> click one of the cards in your hand to play it on the table.</li>
+			<li><strong>End of a trick:</strong> once the table is full, the cards stay visible until you click anywhere on the game field: this gives you time to see who won and with what, before the cards are collected and play continues.</li>
+			<li><strong>Golden border on the winning card:</strong> while the table is paused at the end of a trick, the card currently winning it is highlighted with an animated cyan/black border, and the first card played gets a lighter golden border, so you can spot both at a glance.</li>
+			<li><strong>Undo:</strong> you can undo your last move and reconsider, as long as the next trick hasn't started yet.</li>
+		</ul>
+
+		<h2>Buttons</h2>
+		<ul>
+			<li><strong>NEW GAME:</strong> ends the current game and reopens the starting panel to choose difficulty, mode, partner signals, and deck.</li>
+			<li><strong>&#8617; UNDO:</strong> undoes the last move played.</li>
+			<li><strong>&#128065; FACE UP:</strong> shows or hides the cards in the opponents' hands (useful for practice or debugging).</li>
+			<li><strong>Deck:</strong> changes the graphics of the deck in use (Neapolitan / Brescian / French).</li>
+			<li><strong>&#x1F50A; / &#x1F507; (Audio):</strong> enables or disables the game's sound effects. Your preference is saved and applied across all games on the site.</li>
+		</ul>
+
+		<p style="background: #fff9c4; padding: 12px 16px; border-radius: 6px; border-left: 4px solid #ffd700;">
+			The game is saved automatically at the start of each of your turns: if you close the page you can resume where you left off. If you notice something not working as expected or have suggestions, write to us at
+			<a href="mailto:postmaster@lucianomanenti.com" style="color: #3498db;">postmaster@lucianomanenti.com</a>
+			&mdash; your feedback is valuable!
+		</p>
+
+		<p style="text-align: center;"><a href="#" onclick="goBack(); return false;" class="play-btn">Close</a></p>
+	</div>
+
+	<div class="banner"></div>
+
+	<div class="nav-links">
+		<a href="index-en.html">Home</a> |
+		<a href="scopa-en.html">Scopa</a> |
+		<a href="regole-scopa-en.html">Scopa Rules</a> |
+		<a href="regole-burraco-en.html">Burraco</a> |
+		<a href="regole-scala40-en.html">Scala 40</a> |
+		<a href="regole-machiavelli-en.html">Machiavelli</a> |
+		<a href="regole-rummy-en.html">Gin Rummy</a> |
+		<a href="privacy.html">Privacy</a> |
+		<a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)">Manage Cookies</a>
+	</div>
+
+	<p style="text-align: center; font-size: 0.8em; color: #888; max-width: 600px; margin: 20px auto 10px; line-height: 1.5;">
+		The Brescian card images are based on the work <a href="https://commons.wikimedia.org/wiki/File:Carte_bresciane_al_completo.svg" target="_blank" style="color: #3498db; text-decoration: none;">Carte bresciane al completo.svg</a> by <strong>ZZandro</strong> (Wikimedia Commons), modified and used under the <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" style="color: #3498db; text-decoration: none;">CC BY-SA 4.0</a> license.<br>
+		The Neapolitan card images are based on vector drawings by <strong>Florixc</strong> (Wikimedia Commons), modified and used under the <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" style="color: #3498db; text-decoration: none;">CC BY-SA 4.0</a> license.
+	</p>
+
+	<p style="text-align: center; font-size: 0.8em; color: #999; margin-top: 10px;">
+		© 2026 Luciano Manenti
+	</p>
+
+	<script>
+		function goBack() {
+			window.close();
+		}
+		(function() {
+			var nascosto = false;
+			var observer = new MutationObserver(function() {
+				if (nascosto) return;
+				var divs = document.querySelectorAll('body > div');
+				for (var i = 0; i < divs.length; i++) {
+					if (divs[i].shadowRoot && !divs[i].className && (divs[i].getAttribute('style')||'').length > 5000) {
+						divs[i].style.setProperty('display', 'none', 'important');
+						nascosto = true;
+						observer.disconnect();
+						return;
+					}
+				}
+			});
+			observer.observe(document.body, { childList: true });
+		})();
+	</script>
+</body>
+
+</html>

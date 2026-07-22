@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
+	<script>
+		window.dataLayer = window.dataLayer || [];
+		function gtag() { dataLayer.push(arguments); }
+		gtag('js', new Date());
+		gtag('config', 'G-WRBDRDQ4L8');
+		window.currentLang = 'it';
+	</script>
+	<title>Regole Briscola - Come giocare - lucianomanenti.com</title>
+	<link rel="alternate" hreflang="it" href="regole-briscola.html">
+	<link rel="alternate" hreflang="en" href="regole-briscola-en.html">
+	<meta name="Description"
+		content="Regole e istruzioni per giocare a Briscola online gratis: punteggi, la presa, i segnali del compagno e come giocare in 1 contro 1 o 2 contro 2.">
+	<link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
+	<link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
+	<link rel="shortcut icon" href="favicon/favicon.ico">
+	<link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+	<style>
+		body {
+			font-family: sans-serif;
+			line-height: 1.7;
+			max-width: 800px;
+			margin: 40px auto;
+			padding: 20px;
+			color: #333;
+			background-color: #f9f9f9;
+		}
+
+		h1 {
+			color: #2c3e50;
+			border-bottom: 2px solid #ffd700;
+			padding-bottom: 10px;
+		}
+
+		h2 {
+			color: #2c3e50;
+			margin-top: 30px;
+		}
+
+		h3 {
+			color: #2c3e50;
+			font-size: 1.1em;
+			margin-top: 20px;
+		}
+
+		.lang-switch {
+			text-align: right;
+			margin-bottom: 20px;
+		}
+
+		.lang-switch a {
+			display: inline-block;
+			padding: 6px 16px;
+			margin-left: 5px;
+			text-decoration: none;
+			border-radius: 5px;
+			font-weight: bold;
+			font-size: 14px;
+		}
+
+		.lang-switch a.active {
+			background: #2c3e50;
+			color: white;
+		}
+
+		.lang-switch a:not(.active) {
+			background: #ddd;
+			color: #333;
+			cursor: pointer;
+		}
+
+		.content-box {
+			background: white;
+			padding: 30px;
+			border-radius: 8px;
+			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+		}
+
+		.play-btn {
+			display: inline-block;
+			margin-top: 25px;
+			padding: 12px 30px;
+			background: #27ae60;
+			color: white;
+			text-decoration: none;
+			border-radius: 8px;
+			font-size: 18px;
+			font-weight: bold;
+		}
+
+		.nav-links {
+			text-align: center;
+			margin-top: 30px;
+			font-size: 14px;
+		}
+
+		.nav-links a {
+			color: #3498db;
+			text-decoration: none;
+			margin: 0 10px;
+		}
+
+		.banner {
+			width: 100%;
+			height: 150px;
+			background-image: url('images/home/castagne.jpg');
+			background-size: cover;
+			background-position: center;
+			border-radius: 8px;
+			margin: 20px 0;
+			box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+		}
+
+		.score-table {
+			width: 100%;
+			border-collapse: collapse;
+			margin-top: 10px;
+			margin-bottom: 20px;
+		}
+
+		.score-table th,
+		.score-table td {
+			border: 1px solid #ddd;
+			padding: 8px;
+			text-align: left;
+		}
+
+		.score-table th {
+			background-color: #f2f2f2;
+			font-weight: bold;
+		}
+	</style>
+</head>
+
+<body>
+	<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+		<a href="#" id="btn-back" onclick="goBack(); return false;"
+			style="display: inline-block; padding: 6px 16px; background: #e74c3c; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 14px;">&#x2190;
+			Indietro</a>
+		<div class="lang-switch" style="margin-bottom: 0;">
+			<a href="regole-briscola.html" id="btn-it" class="active">Italiano</a>
+			<a href="regole-briscola-en.html" id="btn-en">English</a>
+		</div>
+	</div>
+
+	<div class="banner"></div>
+
+	<div class="content-box">
+		<div id="lang-it">
+			<h1>Regole della Briscola</h1>
+
+			<p>La <strong>Briscola</strong> &egrave; uno dei giochi di carte pi&ugrave; popolari e giocati in Italia. Si gioca con un mazzo di <strong>40 carte</strong> (napoletane, bresciane o francesi) e l'obiettivo &egrave; totalizzare pi&ugrave; punti dell'avversario (o della coppia avversaria) raccogliendo le carte di maggior valore nelle prese.</p>
+
+			<p>Pu&ograve; essere giocata in <strong>1 contro 1</strong> oppure in <strong>2 contro 2</strong> (due coppie fisse, con il compagno seduto di fronte). In questa versione online puoi sfidare l'intelligenza artificiale in entrambe le modalit&agrave;.</p>
+
+			<p style="background: #fff8e1; border-left: 4px solid #ffd700; padding: 10px 15px; border-radius: 0 8px 8px 0;"><em>Nota: gli algoritmi di gioco dei giocatori controllati dal computer sono in continua ottimizzazione, anche grazie alle segnalazioni di chi gioca. Se noti una giocata discutibile, &egrave; probabile che nelle versioni successive non si ripeta: il gioco migliora partita dopo partita.</em></p>
+
+			<h2>1. Le Carte e i Punti</h2>
+			<p>Il mazzo &egrave; composto da 4 semi con 10 carte ciascuno. Solo alcune carte valgono punti; le altre (dal 7 al 2) non ne valgono mai, ma contano comunque nella presa in base alla loro forza.</p>
+			<table class="score-table">
+				<tr><th>Carta</th><th>Punti</th><th>Forza nella presa</th></tr>
+				<tr><td><strong>Asso</strong></td><td>11</td><td>1&ordm; (la pi&ugrave; forte)</td></tr>
+				<tr><td><strong>3</strong></td><td>10</td><td>2&ordm;</td></tr>
+				<tr><td><strong>Re</strong></td><td>4</td><td>3&ordm;</td></tr>
+				<tr><td><strong>Cavallo</strong></td><td>3</td><td>4&ordm;</td></tr>
+				<tr><td><strong>Fante</strong></td><td>2</td><td>5&ordm;</td></tr>
+				<tr><td><strong>7, 6, 5, 4, 2</strong></td><td>0</td><td>a scalare, in quest'ordine</td></tr>
+			</table>
+			<p>In totale sono in palio <strong>120 punti</strong>: vince chi (o la cui coppia) ne totalizza pi&ugrave; di 60. Con 60 a 60 la partita &egrave; in <strong>patta</strong>.</p>
+
+			<h2>2. La Briscola</h2>
+			<p>Prima di iniziare, dal mazzo viene scoperta una carta che resta visibile sotto il mazzo stesso: il suo seme &egrave; il seme di <strong>briscola</strong> per tutta la partita. Le carte di questo seme battono sempre le carte di ogni altro seme, indipendentemente dal loro valore.</p>
+
+			<h2>3. La Presa</h2>
+			<p>Ad ogni turno, chi apre gioca una carta qualsiasi; gli altri giocatori rispondono <strong>senza obbligo di seguire il seme</strong> giocando la carta che preferiscono dalla propria mano. Vince la presa:</p>
+			<ul>
+				<li>la briscola pi&ugrave; alta giocata, se almeno una briscola &egrave; stata giocata;</li>
+				<li>altrimenti, la carta pi&ugrave; alta del seme di chi ha aperto (le carte degli altri semi non contano).</li>
+			</ul>
+			<p>Chi vince la presa raccoglie tutte le carte giocate (i punti si sommano al proprio bottino) e apre la presa successiva.</p>
+
+			<h2>4. La Pesca</h2>
+			<p>Dopo ogni presa, tutti i giocatori pescano una carta dal mazzo, a partire da chi ha vinto la presa. L'ultima carta del mazzo a essere pescata &egrave; proprio la briscola che era rimasta scoperta. Quando il mazzo si esaurisce, si continua a giocare con le carte rimaste in mano, fino a smaltirle tutte.</p>
+
+			<h2>5. La Modalit&agrave; 2 contro 2</h2>
+			<p>In questa modalit&agrave; si gioca in quattro, a coppie fisse: il tuo compagno di squadra &egrave; seduto di fronte a te. I punti delle prese si sommano per coppia, non per singolo giocatore: anche se non sei tu a vincere una presa ricca di punti, se la vince il tuo compagno il punteggio va comunque alla tua squadra.</p>
+
+			<h3>Segnali Compagno (opzione)</h3>
+			<p>Attivabile solo in modalit&agrave; 2 contro 2, questa opzione mostra in tempo reale, per il tuo compagno, quali delle 5 briscole principali (Asso, 3, Re, Cavallo, Fante) possiede e quanti carichi (Assi o 3 non di briscola) ha in mano; lui vede le stesse informazioni su di te. Una <strong>X</strong> al posto delle briscole indica che il giocatore non ne ha nessuna in mano.</p>
+			<p>Anche la coppia avversaria si scambia gli stessi segnali: se attivi l'opzione, i giocatori gestiti dal computer ne tengono conto nelle proprie scelte (ad esempio aprendo con un carico quando sanno che il compagno ha l'Asso di briscola pronto a incassarlo), proprio come farebbe una coppia di giocatori umani realmente d'accordo.</p>
+
+			<h2>6. Il Mazzo di Carte</h2>
+			<p>Puoi scegliere tra tre grafiche di mazzo, intercambiabili in ogni momento: <strong>Napoletane</strong>, <strong>Bresciane</strong> e <strong>Francesi</strong>. Il cambio di grafica non modifica in alcun modo le regole del gioco.</p>
+
+			<h2>7. Livelli di Difficolt&agrave;</h2>
+			<ul>
+				<li><strong>Principiante:</strong> l'avversario gioca in modo ragionevole ma non ottimale.</li>
+				<li><strong>Medio:</strong> l'avversario applica euristiche pi&ugrave; accorte su quando rischiare o tenere le briscole.</li>
+				<li><strong>Esperto:</strong> l'avversario tiene il conto delle carte gi&agrave; uscite e, nel finale di partita quando le carte rimaste sono poche e note, calcola la mossa migliore possibile.</li>
+			</ul>
+
+			<hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;">
+
+			<h2>Come giocare a "Briscola Luciano"</h2>
+			<ul>
+				<li><strong>Giocare una carta:</strong> clicca su una delle carte nella tua mano per giocarla sul tavolo.</li>
+				<li><strong>Fine di una presa:</strong> a tavolo pieno, le carte restano visibili finch&eacute; non clicchi in un punto qualsiasi del campo di gioco: questo ti d&agrave; il tempo di capire chi ha preso e con cosa, prima che le carte vengano raccolte e si prosegua.</li>
+				<li><strong>Bordo dorato sulla carta vincente:</strong> mentre il tavolo &egrave; in pausa a fine presa, la carta che sta vincendo la presa &egrave; evidenziata con un bordo animato ciano/nero, e la prima carta giocata ha un bordino dorato pi&ugrave; leggero, per riconoscerle a colpo d'occhio.</li>
+				<li><strong>Annulla:</strong> puoi annullare l'ultima mossa e tornare a decidere, finch&eacute; non &egrave; iniziata la presa successiva.</li>
+			</ul>
+
+			<h2>Pulsanti di Controllo</h2>
+			<ul>
+				<li><strong>NUOVA PARTITA:</strong> interrompe la partita corrente e riapre il pannello iniziale per scegliere difficolt&agrave;, modalit&agrave;, segnali compagno e mazzo di carte.</li>
+				<li><strong>&#8617; ANNULLA:</strong> annulla l'ultima mossa giocata.</li>
+				<li><strong>&#128065; SCOPERTE:</strong> mostra o nasconde le carte in mano agli avversari (utile per esercitarsi o per debug).</li>
+				<li><strong>Mazzo:</strong> cambia la grafica del mazzo di carte in uso (Napoletane / Bresciane / Francesi).</li>
+				<li><strong>&#x1F50A; / &#x1F507; (Audio):</strong> abilita o disabilita gli effetti sonori del gioco. La preferenza viene salvata e applicata a tutti i giochi del sito.</li>
+			</ul>
+
+			<p style="background: #fff9c4; padding: 12px 16px; border-radius: 6px; border-left: 4px solid #ffd700;">
+				La partita viene salvata automaticamente all'inizio di ogni tuo turno: se chiudi la pagina puoi riprendere da dove eri rimasto. Se riscontri qualcosa che non funziona come previsto o hai suggerimenti, scrivici a
+				<a href="mailto:postmaster@lucianomanenti.com" style="color: #3498db;">postmaster@lucianomanenti.com</a>
+				&mdash; il tuo feedback &egrave; prezioso!
+			</p>
+
+			<p style="text-align: center;"><a href="#" onclick="goBack(); return false;" class="play-btn">Chiudi</a></p>
+		</div>
+
+	</div>
+
+	<div class="banner"></div>
+
+	<div class="nav-links">
+		<a href="index.html">Home</a> |
+		<a href="scopa.html">Scopa</a> |
+		<a href="regole-scopa.html">Regole Scopa</a> |
+		<a href="regole-burraco.html">Burraco</a> |
+		<a href="regole-scala40.html">Scala 40</a> |
+		<a href="regole-machiavelli.html">Machiavelli</a> |
+		<a href="regole-rummy.html">Gin Rummy</a> |
+		<a href="privacy.html">Privacy</a> |
+		<a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)">Gestisci Cookie</a>
+	</div>
+
+	<p style="text-align: center; font-size: 0.8em; color: #888; max-width: 600px; margin: 20px auto 10px; line-height: 1.5;">
+		Le immagini delle carte Bresciane sono basate sull'opera <a href="https://commons.wikimedia.org/wiki/File:Carte_bresciane_al_completo.svg" target="_blank" style="color: #3498db; text-decoration: none;">Carte bresciane al completo.svg</a> di <strong>ZZandro</strong> (Wikimedia Commons), modificate e utilizzate sotto licenza <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.it" target="_blank" style="color: #3498db; text-decoration: none;">CC BY-SA 4.0</a>.<br>
+		Le immagini delle carte Napoletane sono basate sui disegni vettoriali di <strong>Florixc</strong> (Wikimedia Commons), modificate e utilizzate sotto licenza <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.it" target="_blank" style="color: #3498db; text-decoration: none;">CC BY-SA 4.0</a>.
+	</p>
+
+	<p style="text-align: center; font-size: 0.8em; color: #999; margin-top: 10px;">
+		© 2026 Luciano Manenti
+	</p>
+
+	<script>
+		function goBack() {
+			window.close();
+		}
+		(function() {
+			var nascosto = false;
+			var observer = new MutationObserver(function() {
+				if (nascosto) return;
+				var divs = document.querySelectorAll('body > div');
+				for (var i = 0; i < divs.length; i++) {
+					if (divs[i].shadowRoot && !divs[i].className && (divs[i].getAttribute('style')||'').length > 5000) {
+						divs[i].style.setProperty('display', 'none', 'important');
+						nascosto = true;
+						observer.disconnect();
+						return;
+					}
+				}
+			});
+			observer.observe(document.body, { childList: true });
+		})();
+	</script>
+</body>
+
+</html>

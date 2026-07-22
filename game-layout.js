@@ -740,24 +740,36 @@ function adjustLayout() {
         if (isMusicBanner) {
             var en = (window.currentLang === 'en');
             var newLabel = en ? 'NEW' : 'NUOVO';
-            // Stile comune dei 4 pulsanti sottili (il colore viene passato a parte)
-            var stileBase = 'display:flex;align-items:center;justify-content:center;width:262px;height:46px;border-radius:9px;color:#ffffff;font-size:13px;font-weight:bold;text-align:center;text-decoration:none;position:relative;transition:transform 0.2s;cursor:pointer;box-sizing:border-box;line-height:1.3;box-shadow:0 3px 6px rgba(0,0,0,0.3);';
+            // Stile comune dei 6 pulsanti in griglia 2x3 (il colore viene passato a parte)
+            var stilePiccolo = 'display:flex;flex-direction:column;align-items:center;justify-content:center;width:125px;height:60px;border-radius:9px;color:#ffffff;font-size:12px;font-weight:bold;text-align:center;text-decoration:none;position:relative;transition:transform 0.2s;cursor:pointer;box-sizing:border-box;line-height:1.25;box-shadow:0 3px 6px rgba(0,0,0,0.3);';
             var hover = ' onmouseover="this.style.transform=\'scale(1.03)\';this.style.filter=\'brightness(1.15)\';" onmouseout="this.style.transform=\'scale(1)\';this.style.filter=\'none\';"';
-            var badge = '<span class="amazon-badge amazon-badge-pulse" style="position:absolute;top:-8px;right:-6px;font-size:10px;padding:1px 7px;">' + newLabel + '</span>';
+            var badgeSmall = '<span class="amazon-badge amazon-badge-pulse" style="position:absolute;top:-7px;right:-5px;font-size:9px;padding:1px 5px;">' + newLabel + '</span>';
 
             return '<div style="display:flex;flex-direction:column;justify-content:space-evenly;align-items:center;width:300px;height:250px;padding:10px;box-sizing:border-box;background:linear-gradient(135deg, #14532d, #022c22);border:3px solid #ffdb4d;border-radius:12px;box-shadow:inset 0 0 20px rgba(0,0,0,0.6), 0 4px 15px rgba(0,0,0,0.5);font-family:\'Outfit\',\'Open Sans\',sans-serif;z-index:100;overflow:hidden;">' +
-                '<a href="' + amazonGenericLink + '" target="_self" style="' + stileBase + 'background:linear-gradient(180deg,#1d4ed8 0%,#1e40af 100%);border:2px solid #60a5fa;"' + hover + '>' +
-                '🎵&nbsp;<span style="color:#ffd700;">Music Ear Training</span>' +
+                '<div style="display:flex;justify-content:space-between;width:262px;gap:12px;">' +
+                '<a href="' + amazonGenericLink + '" target="_self" style="' + stilePiccolo + 'background:linear-gradient(180deg,#1d4ed8 0%,#1e40af 100%);border:2px solid #60a5fa;"' + hover + '>' +
+                '🎵<span style="color:#ffd700;">Music Ear Training</span>' +
                 '</a>' +
-                '<a href="' + (en ? '/sudoku-en.html' : '/sudoku.html') + '" target="_self" class="sudoku-promo-btn" style="' + stileBase + 'background:linear-gradient(180deg,#b91c1c 0%,#991b1b 100%);border:2px solid #ffd700;"' + hover + '>' +
-                badge + '🔢&nbsp;<span style="color:#ffd700;">SUDOKU Luciano</span>' +
+                '<a href="' + (en ? '/sudoku-en.html' : '/sudoku.html') + '" target="_self" class="sudoku-promo-btn" style="' + stilePiccolo + 'background:linear-gradient(180deg,#b91c1c 0%,#991b1b 100%);border:2px solid #ffd700;"' + hover + '>' +
+                badgeSmall + '🔢<span style="color:#ffd700;">SUDOKU Luciano</span>' +
                 '</a>' +
-                '<a href="' + (en ? '/dama-en.html' : '/dama.html') + '" target="_self" class="sudoku-promo-btn" style="' + stileBase + 'background:linear-gradient(180deg,#92400e 0%,#78350f 100%);border:2px solid #f59e0b;"' + hover + '>' +
-                badge + '⚫&nbsp;<span style="color:#ffd700;">' + (en ? 'CHECKERS Luciano' : 'DAMA Luciano') + '</span>' +
+                '</div>' +
+                '<div style="display:flex;justify-content:space-between;width:262px;gap:12px;">' +
+                '<a href="' + (en ? '/dama-en.html' : '/dama.html') + '" target="_self" class="sudoku-promo-btn" style="' + stilePiccolo + 'background:linear-gradient(180deg,#92400e 0%,#78350f 100%);border:2px solid #f59e0b;"' + hover + '>' +
+                badgeSmall + '⚫<span style="color:#ffd700;">' + (en ? 'CHECKERS Luciano' : 'DAMA Luciano') + '</span>' +
                 '</a>' +
-                '<a href="' + (en ? '/scacchi-en.html' : '/scacchi.html') + '" target="_self" class="sudoku-promo-btn" style="' + stileBase + 'background:linear-gradient(180deg,#4c1d95 0%,#3b0764 100%);border:2px solid #a78bfa;"' + hover + '>' +
-                badge + '♞&nbsp;<span style="color:#ffd700;">' + (en ? 'CHESS Luciano' : 'SCACCHI Luciano') + '</span>' +
+                '<a href="' + (en ? '/scacchi-en.html' : '/scacchi.html') + '" target="_self" class="sudoku-promo-btn" style="' + stilePiccolo + 'background:linear-gradient(180deg,#4c1d95 0%,#3b0764 100%);border:2px solid #a78bfa;"' + hover + '>' +
+                badgeSmall + '♞<span style="color:#ffd700;">' + (en ? 'CHESS Luciano' : 'SCACCHI Luciano') + '</span>' +
                 '</a>' +
+                '</div>' +
+                '<div style="display:flex;justify-content:space-between;width:262px;gap:12px;">' +
+                '<a href="' + (en ? '/scopa-en.html' : '/scopa.html') + '" target="_self" class="sudoku-promo-btn" style="' + stilePiccolo + 'background:linear-gradient(180deg,#0f766e 0%,#115e59 100%);border:2px solid #5eead4;"' + hover + '>' +
+                badgeSmall + '🎴<span style="color:#ffd700;">SCOPA Luciano</span>' +
+                '</a>' +
+                '<a href="' + (en ? '/briscola-en.html' : '/briscola.html') + '" target="_self" class="sudoku-promo-btn" style="' + stilePiccolo + 'background:linear-gradient(180deg,#166534 0%,#14532d 100%);border:2px solid #ffd700;"' + hover + '>' +
+                '🃏<span style="color:#ffd700;">BRISCOLA</span><span style="font-size:9px;font-weight:normal;">(' + (en ? 'prototype' : 'prototipo') + ')</span>' +
+                '</a>' +
+                '</div>' +
                 '</div>';
         }
 
@@ -1660,7 +1672,7 @@ function setupAmazonFinishBanner(formId, options) {
             if (typeof gtag === 'function') {
                 gtag('event', 'Amazon_Banner_Impression', {
                     'event_category': 'Affiliate',
-                    'amazon_deal_id': dealId + '_finish',
+                    'amazon_deal_id': dealId,
                     'format': 'finish',
                     'asin': deal.asin || '',
                     'page_location': window.location.href,
@@ -1681,7 +1693,7 @@ function setupAmazonFinishBanner(formId, options) {
             if (typeof gtag === 'function') {
                 gtag('event', 'Amazon_Banner_Click', {
                     'event_category': 'Affiliate',
-                    'amazon_deal_id': dealId + '_finish',
+                    'amazon_deal_id': dealId,
                     'format': 'finish',
                     'asin': deal.asin || '',
                     'tempo_esposizione': exposureSeconds,

@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Generatore HD Carte Napoletane (Senza Numeri sulle Figure)</title>
+</head>
+<body>
+    <div id="status">Inizializzazione...</div>
+    <canvas id="canvas" width="4828" height="1536" style="display:none;"></canvas>
+    <div id="svg-container" style="display:block; position:absolute; left:-99999px; top:-99999px; visibility:hidden;"></div>
+
+    <script>
+        const SCALE = 4;
+        const cardWidth = 71 * SCALE;  // 284
+        const cardHeight = 96 * SCALE; // 384
+
+        const SUITS = [
+            { name: 'club', row: 0 },    // Bastoni
+            { name: 'diamond', row: 1 }, // Denari
+            { name: 'heart', row: 2 },   // Coppe
+            { name: 'spade', row: 3 }    // Spade
+        ];
+
+        function getCardColumn(number) {
+            if (number <= 7) return number - 1;
+            if (number === 8) return 10;
+            if (number === 9) return 11;
+            if (number === 10) return 12;
+            return -1;
+        }
+
+        function log(msg) {
+            console.log(msg);
+            document.getElementById('status').textContent = msg;
+        }
+
+        async function start() {
+            try {
+                log("Caricamento napoletane.svg...");
+                const response = await fetch('/napoletane.svg');
+                if (!response.ok) throw new Error("Impossibile caricare napoletane.svg: " + response.statusText);
+                const svgText = await response.text();
+
+                log("SVG caricato. Inserimento nel DOM...");
+                const container = document.getElementById('svg-container');
+                container.innerHTML = svgText;
+
+                const svgElement = container.querySelector('svg');
+                if (!svgElement) throw new Error("Elemento <svg> non trovato.");
+
+                const tasks = [];
+                SUITS.forEach(suit => {
+                    for (let num = 1; num <= 10; num++) {
+                        let suffix = num;
+                        if (num === 8) suffix = 'jack';
+                        else if (num === 9) suffix = 'queen';
+                        else if (num === 10) suffix = 'king';
+                        tasks.push({ id: suit.name + '_' + suffix, col: getCardColumn(num), row: suit.row, label: suit.name + ' ' + num });
+                    }
+                });
+                tasks.push({ id: 'back', col: 16, row: 0, label: 'Retro Rosso' });
+                tasks.push({ id: 'back', col: 16, row: 1, label: 'Retro Blu' });
+
+                // RIMOSZIONE NUMERI DALLE FIGURE (Jack, Queen, King):
+                // Nascondiamo gli elementi <path> che compongono le cifre del numero nell'angolo superiore
+                const figureKeywords = ['jack', 'queen', 'king'];
+                tasks.forEach(task => {
+                    if (figureKeywords.some(k => task.id.includes(k))) {
+                        const el = document.getElementById(task.id);
+                        if (el) {
+                            const paths = el.querySelectorAll('path');
+                            paths.forEach(p => {
+                                p.setAttribute('display', 'none');
+                                p.style.display = 'none';
+                            });
+                        }
+                    }
+                });
+
+                function transformPoint(x, y, matrix) {
+                    return {
+                        x: matrix.a * x + matrix.c * y + matrix.e,
+                        y: matrix.b * x + matrix.d * y + matrix.f
+                    };
+                }
+
+                let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+                const validTasks = [];
+
+                tasks.forEach(task => {
+                    const el = document.getElementById(task.id);
+                    if (el) {
+                        try {
+                            const bbox = el.getBBox();
+                            const ctm = el.getCTM();
+                            if (bbox && bbox.width > 0 && bbox.height > 0) {
+                                let txBBox = { x: bbox.x, y: bbox.y, width: bbox.width, height: bbox.height };
+                                if (ctm) {
+                                    const p1 = transformPoint(bbox.x, bbox.y, ctm);
+                                    const p2 = transformPoint(bbox.x + bbox.width, bbox.y, ctm);
+                                    const p3 = transformPoint(bbox.x, bbox.y + bbox.height, ctm);
+                                    const p4 = transformPoint(bbox.x + bbox.width, bbox.y + bbox.height, ctm);
+
+                                    const xs = [p1.x, p2.x, p3.x, p4.x];
+                                    const ys = [p1.y, p2.y, p3.y, p4.y];
+
+                                    txBBox = {
+                                        x: Math.min(...xs),
+                                        y: Math.min(...ys),
+                                        width: Math.max(...xs) - Math.min(...xs),
+                                        height: Math.max(...ys) - Math.min(...ys)
+                                    };
+                                }
+
+                                minX = Math.min(minX, txBBox.x);
+                                minY = Math.min(minY, txBBox.y);
+                                maxX = Math.max(maxX, txBBox.x + txBBox.width);
+                                maxY = Math.max(maxY, txBBox.y + txBBox.height);
+                                task.bbox = txBBox;
+                                validTasks.push(task);
+                            }
+                        } catch (e) {
+                            console.error("BBox error for " + task.id, e);
+                        }
+                    }
+                });
+
+                const svgW = maxX - minX;
+                const svgH = maxY - minY;
+                svgElement.setAttribute('viewBox', `${minX} ${minY} ${svgW} ${svgH}`);
+                svgElement.setAttribute('width', svgW * SCALE);
+                svgElement.setAttribute('height', svgH * SCALE);
+
+                log("Creazione immagine vettoriale temporanea (HD x4 senza numeri figure)...");
+                const svgString = new XMLSerializer().serializeToString(svgElement);
+                const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+                const blobUrl = URL.createObjectURL(svgBlob);
+
+                const svgImage = new Image();
+                svgImage.onload = async function () {
+                    URL.revokeObjectURL(blobUrl);
+                    log("Rendering carte a 4828x1536 (senza numeri figure)...");
+
+                    const canvas = document.getElementById('canvas');
+                    const ctx = canvas.getContext('2d');
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                    validTasks.forEach(task => {
+                        const bbox = task.bbox;
+                        const destX = task.col * cardWidth;
+                        const destY = task.row * cardHeight;
+
+                        const srcX = (bbox.x - minX) * SCALE;
+                        const srcY = (bbox.y - minY) * SCALE;
+                        const srcW = bbox.width * SCALE;
+                        const srcH = bbox.height * SCALE;
+
+                        ctx.drawImage(
+                            svgImage,
+                            srcX, srcY, srcW, srcH,
+                            destX, destY, cardWidth, cardHeight
+                        );
+                    });
+
+                    log("Invio dello sprite HD al server per il salvataggio...");
+                    const dataUrl = canvas.toDataURL('image/png');
+                    const base64Data = dataUrl.replace(/^data:image\/png;base64,/, "");
+
+                    const saveRes = await fetch('/save_napoletane', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ image: base64Data })
+                    });
+
+                    const saveJson = await saveRes.json();
+                    if (saveJson.success) {
+                        log("COMPLETATO! Immagine carte_napoletane.png salvata SENZA NUMERI SULLE FIGURE (4828x1536).");
+                    } else {
+                        log("Errore durante il salvataggio: " + saveJson.error);
+                    }
+                };
+
+                svgImage.onerror = function (e) {
+                    log("Errore caricamento SVG image: " + e);
+                };
+
+                svgImage.src = blobUrl;
+
+            } catch (err) {
+                log("Errore: " + err.message);
+            }
+        }
+
+        window.onload = start;
+    </script>
+</body>
+</html>

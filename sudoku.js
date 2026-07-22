@@ -75,6 +75,9 @@ let iniziale = [];         // 81 valori: schema di partenza (0 = vuota)
 let griglia = [];          // 81 valori: stato corrente (0 = vuota)
 let note = [];             // 81 array di booleani [10] per le note a matita
 let selezionata = -1;      // indice cella selezionata (0-80), -1 = nessuna
+let numeroArmato = 0;      // numero "in mano" (1-9), 0 = nessuno; si piazza cliccando una cella vuota
+let ultimoPiazzamentoArmato = -1; // indice dell'ultima cella riempita in modalità armata, ricliccabile per svuotarla
+let cellaArmante = -1;     // indice della cella piena cliccata per armare il numero corrente, -1 se armato da numpad/tastiera; è il bersaglio di Cancella in modalità armata
 let matitaAttiva = false;
 let difficolta = 'facile';
 let erroriCount = 0;
@@ -214,6 +217,27 @@ function risolvibileLogicamente(puzzle) {
     }
 }
 
+// Verifica se lo schema si conclude con i soli singoli nascosti (unico posto
+// per un numero in una riga/colonna/riquadro): è esattamente la deduzione che
+// l'evidenziazione del numero armato mostra a colpo d'occhio, quindi questi
+// schemi si risolvono meccanicamente armando i numeri a rotazione
+function risolvibileConSoliNascosti(puzzle) {
+    const b = puzzle.slice();
+    for (;;) {
+        const cand = calcolaCandidati(b);
+        const unita = listaUnita();
+        let ded = null;
+        for (let u = 0; u < unita.length && !ded; u++) {
+            for (let v = 1; v <= 9 && !ded; v++) {
+                const posti = unita[u].filter(i => cand[i] && cand[i].indexOf(v) !== -1);
+                if (posti.length === 1) ded = { idx: posti[0], val: v };
+            }
+        }
+        if (!ded) return b.every(x => x !== 0);
+        b[ded.idx] = ded.val;
+    }
+}
+
 function generaPuzzle(clues, soloLogico) {
     const sol = generaSoluzione();
     const puzzle = sol.slice();
@@ -279,14 +303,26 @@ function nuovaPartita(diff) {
 
     // setTimeout per lasciare aggiornare il messaggio prima del calcolo
     setTimeout(function () {
-        // Facile e Medio: schemi sempre concludibili con sole deduzioni semplici
-        const gen = generaPuzzle(SUDOKU_CLUES[diff], diff !== 'difficile');
+        // Facile e Medio: schemi sempre concludibili con sole deduzioni semplici.
+        // Medio in più non deve essere risolvibile con i soli singoli nascosti,
+        // altrimenti si conclude meccanicamente armando i numeri a rotazione:
+        // se lo è, lo si rigenera (con un tetto di tentativi, ~85% di scarti)
+        let gen = generaPuzzle(SUDOKU_CLUES[diff], diff !== 'difficile');
+        if (diff === 'medio') {
+            for (let t = 0; t < 30 && risolvibileConSoliNascosti(gen.puzzle); t++) {
+                gen = generaPuzzle(SUDOKU_CLUES[diff], true);
+            }
+        }
         soluzione = gen.soluzione;
         iniziale = gen.puzzle.slice();
         griglia = gen.puzzle.slice();
         note = Array.from({ length: 81 }, () => new Array(10).fill(false));
         selezionata = -1;
+        numeroArmato = 0;
+        ultimoPiazzamentoArmato = -1;
+        cellaArmante = -1;
         matitaAttiva = false;
+        aggiornaSpriteCursore();
         erroriCount = 0;
         hintCount = 0;
         secondi = 0;
@@ -471,18 +507,35 @@ function renderCella(i) {
 }
 
 function renderEvidenziazioni() {
-    const valSel = (selezionata >= 0) ? griglia[selezionata] : 0;
-    const collegate = (selezionata >= 0) ? new Set(celleCollegate(selezionata)) : new Set();
+    const valSel = (selezionata >= 0) ? griglia[selezionata] : numeroArmato;
+    let collegate = new Set();
+    if (selezionata >= 0) {
+        collegate = new Set(celleCollegate(selezionata));
+    } else if (numeroArmato !== 0) {
+        for (let i = 0; i < 81; i++) {
+            if (griglia[i] === numeroArmato) celleCollegate(i).forEach(function (j) { collegate.add(j); });
+        }
+    }
     for (let i = 0; i < 81; i++) {
         const cella = document.getElementById('cella-' + i);
         cella.classList.toggle('selezionata', i === selezionata);
+        cella.classList.toggle('cella-armante', selezionata < 0 && i === cellaArmante);
+        cella.classList.toggle('armata', selezionata < 0 && numeroArmato !== 0 && griglia[i] === numeroArmato);
         cella.classList.toggle('evidenziata', collegate.has(i));
         cella.classList.toggle('stesso-numero',
             valSel !== 0 && i !== selezionata && griglia[i] === valSel);
+        // In modalità armata, le celle piene con un altro numero e non toccate
+        // da nessuna riga/colonna/box del numero armato risaltano meno: grigie
+        cella.classList.toggle('non-collegata-armata',
+            selezionata < 0 && numeroArmato !== 0 && griglia[i] !== 0 &&
+            griglia[i] !== numeroArmato && !collegate.has(i));
         cella.classList.toggle('suggerita',
             !!(hintTarget && hintTarget.idx === i && hintTarget.tipo !== 'errore'));
         cella.classList.toggle('suggerita-errore',
             !!(hintTarget && hintTarget.idx === i && hintTarget.tipo === 'errore'));
+    }
+    for (let v = 1; v <= 9; v++) {
+        document.getElementById('btn-num-' + v).classList.toggle('armato', v === numeroArmato);
     }
 }
 
@@ -525,8 +578,71 @@ function setMessaggio(testo, stile) {
 // === INTERAZIONE ===
 function selezionaCella(i) {
     if (partitaFinita) return;
+
+    // Cella vuota con una cella selezionata in corso: selezione normale (navigazione manuale)
+    if (griglia[i] === 0 && selezionata >= 0) {
+        selezionata = (selezionata === i) ? -1 : i;
+        renderEvidenziazioni();
+        return;
+    }
+
+    // Cella vuota con un numero armato (numpad o cella piena) e nessuna selezione: piazza subito
+    if (griglia[i] === 0 && numeroArmato !== 0) {
+        selezionata = i;
+        inserisciNumero(numeroArmato);
+        selezionata = -1;
+        ultimoPiazzamentoArmato = i;
+        renderEvidenziazioni();
+        return;
+    }
+
+    // Ricliccando proprio l'ultima cella piazzata in modalità armata, se il numero
+    // è segnalato come errato, la si svuota invece di armarne il numero: un "annulla"
+    // mirato al piazzamento sbagliato appena fatto. Se invece è corretto, si arma
+    // normalmente: cancellare un numero giusto per un semplice reclick sarebbe ambiguo
+    if (griglia[i] !== 0 && i === ultimoPiazzamentoArmato && cellaErrata(i)) {
+        selezionata = i;
+        cancellaCella();
+        selezionata = -1;
+        renderEvidenziazioni();
+        return;
+    }
+
+    // Cella piena: arma/disarma sempre il suo numero, mai una scrittura,
+    // anche se un'altra cella era selezionata; la matita si disattiva di conseguenza
+    if (griglia[i] !== 0) {
+        const disarmo = (numeroArmato === griglia[i]);
+        numeroArmato = disarmo ? 0 : griglia[i];
+        selezionata = -1;
+        ultimoPiazzamentoArmato = -1;
+        cellaArmante = disarmo ? -1 : i;
+        matitaAttiva = false;
+        document.getElementById('btn-matita').classList.remove('attivo');
+        renderEvidenziazioni();
+        aggiornaSpriteCursore();
+        return;
+    }
+
+    // Cella vuota, nessun numero armato: selezione normale
     selezionata = (selezionata === i) ? -1 : i;
     renderEvidenziazioni();
+}
+
+// Click su un numero del numpad (o tasto numerico): se c'è una cella vuota
+// selezionata inserisce subito, altrimenti arma/disarma il numero per il piazzamento
+// successivo su una cella vuota (o, con la matita attiva, per aggiungere/togliere la nota)
+function clickNumero(val) {
+    if (partitaFinita) return;
+    if (selezionata >= 0 && griglia[selezionata] === 0) {
+        inserisciNumero(val);
+        return;
+    }
+    numeroArmato = (numeroArmato === val) ? 0 : val;
+    selezionata = -1;
+    ultimoPiazzamentoArmato = -1;
+    cellaArmante = -1; // armato da numpad/tastiera: nessuna cella di riferimento per Cancella
+    renderEvidenziazioni();
+    aggiornaSpriteCursore();
 }
 
 function inserisciNumero(val) {
@@ -546,6 +662,8 @@ function inserisciNumero(val) {
     }
 
     if (griglia[i] === val) return; // nessun cambiamento
+
+    if (i === ultimoPiazzamentoArmato) ultimoPiazzamentoArmato = -1;
 
     // Verifica in anticipo se il numero verrà segnalato come errato
     const valPrec = griglia[i];
@@ -597,10 +715,16 @@ function inserisciNumero(val) {
 }
 
 function cancellaCella() {
-    if (partitaFinita || selezionata < 0) return;
-    const i = selezionata;
+    if (partitaFinita) return;
+    // In modalità armata non c'è una cella "selezionata": il bersaglio di Cancella
+    // diventa la cella piena che ha armato il numero corrente (evidenziata in giallo)
+    const i = (selezionata >= 0) ? selezionata : cellaArmante;
+    if (i < 0) return;
     if (iniziale[i] !== 0) return; // solo i numeri di partenza sono intoccabili
     if (griglia[i] === 0 && !note[i].some(Boolean)) return;
+
+    if (i === ultimoPiazzamentoArmato) ultimoPiazzamentoArmato = -1;
+    if (i === cellaArmante) { cellaArmante = -1; numeroArmato = 0; }
 
     annullaSuggerimento();
     salvaSnapshot(i, []);
@@ -626,6 +750,7 @@ function annullaMossa() {
     if (partitaFinita || cronologia.length === 0) return;
     annullaSuggerimento();
     const m = cronologia.pop();
+    if (m.idx === ultimoPiazzamentoArmato) ultimoPiazzamentoArmato = -1;
     griglia[m.idx] = m.valPrec;
     note[m.idx] = m.notePrec;
     m.noteAltrui.forEach(function (o) {
@@ -871,7 +996,39 @@ function toggleMatita() {
     matitaAttiva = !matitaAttiva;
     document.getElementById('btn-matita').classList.toggle('attivo', matitaAttiva);
     setMessaggio(matitaAttiva ? SUDOKU_LANG.matitaOn : SUDOKU_LANG.matitaOff);
+    // La matita e il numero armato sono due modalità di piazzamento alternative:
+    // tenerle attive insieme renderebbe ambiguo il click su una casella vuota
+    if (matitaAttiva && numeroArmato !== 0) {
+        numeroArmato = 0;
+        renderEvidenziazioni();
+    }
+    aggiornaSpriteCursore();
 }
+
+// === SPRITE AL CURSORE (numero armato / matita) ===
+// Solo per dispositivi con mouse vero: su touch non c'è un cursore da seguire e lo sprite darebbe solo fastidio
+const haCursoreMouse = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+
+function aggiornaSpriteCursore() {
+    const sprite = document.getElementById('sprite-cursore');
+    if (!sprite || !haCursoreMouse) return;
+    if (matitaAttiva) {
+        sprite.textContent = '✏️';
+        sprite.classList.add('visibile');
+    } else if (numeroArmato !== 0) {
+        sprite.textContent = numeroArmato;
+        sprite.classList.add('visibile');
+    } else {
+        sprite.classList.remove('visibile');
+    }
+}
+
+document.addEventListener('mousemove', function (e) {
+    const sprite = document.getElementById('sprite-cursore');
+    if (!sprite || !sprite.classList.contains('visibile')) return;
+    sprite.style.left = e.clientX + 'px';
+    sprite.style.top = e.clientY + 'px';
+});
 
 // === VITTORIA ===
 function controllaVittoria() {
@@ -1006,7 +1163,7 @@ document.addEventListener('keydown', function (e) {
     if (e.ctrlKey) return;
 
     if (e.key >= '1' && e.key <= '9') {
-        inserisciNumero(parseInt(e.key, 10));
+        clickNumero(parseInt(e.key, 10));
     } else if (e.key === 'Backspace' || e.key === 'Delete' || e.key === '0') {
         e.preventDefault();
         cancellaCella();
@@ -1061,7 +1218,7 @@ function initSudoku() {
     // Pulsanti pannello
     for (let v = 1; v <= 9; v++) {
         document.getElementById('btn-num-' + v).addEventListener('click', (function (val) {
-            return function () { inserisciNumero(val); };
+            return function () { clickNumero(val); };
         })(v));
     }
     document.getElementById('btn-matita').addEventListener('click', toggleMatita);

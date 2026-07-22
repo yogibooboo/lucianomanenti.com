@@ -321,14 +321,16 @@ a.pulsante-top {
 .cella-sudoku.data {
     color: #1c1c1c;
     font-weight: 700;
-    background: #ece6d4;
 }
-.cella-sudoku.evidenziata { background: #ddd5bc; }
-.cella-sudoku.data.evidenziata { background: #d5cdb2; }
-.cella-sudoku.stesso-numero { background: #c3dcae; }
-.cella-sudoku.data.stesso-numero { background: #b8d2a2; }
+.cella-sudoku.evidenziata { background: #d7ecc8; }
+.cella-sudoku.stesso-numero { background: #4a8f3c; color: #fff; }
+.cella-sudoku.data.stesso-numero { color: #fff; }
+.cella-sudoku.non-collegata-armata { background: #d8d8d0; }
 .cella-sudoku.selezionata,
 .cella-sudoku.data.selezionata { background: #ffe08a; }
+.cella-sudoku.cella-armante,
+.cella-sudoku.data.cella-armante { background: linear-gradient(180deg, #ffd700 0%, #b8860b 100%); color: #1a1a2e; }
+.cella-sudoku.armata:not(.selezionata) { box-shadow: inset 0 0 0 3px rgba(74, 143, 60, 0.6); }
 .cella-sudoku.errata { color: #c0182b; }
 .cella-sudoku.errata:not(.selezionata) { background: #f2c6cb; }
 .cella-sudoku.lampeggia {
@@ -444,6 +446,33 @@ a.pulsante-top {
     filter: grayscale(0.6);
     cursor: default;
     transform: none;
+}
+.btn-num.armato {
+    background: linear-gradient(180deg, #ffd700 0%, #b8860b 100%);
+    border-color: #ffd700;
+    color: #1a1a2e;
+    box-shadow: 0 0 12px rgba(255, 215, 0, 0.5);
+}
+#sprite-cursore {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    pointer-events: none;
+    transform: translate(14px, -6px);
+    font-size: 22px;
+    font-weight: 800;
+    color: #1a1a2e;
+    background: linear-gradient(180deg, #ffd700 0%, #b8860b 100%);
+    border: 2px solid #fff8dc;
+    border-radius: 6px;
+    width: 30px;
+    height: 30px;
+    line-height: 26px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+#sprite-cursore.visibile {
+    display: block;
 }
 .btn-num .num-count {
     position: absolute;

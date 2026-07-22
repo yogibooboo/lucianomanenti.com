@@ -224,7 +224,7 @@
 				<tr>
 					<td><strong>Medium</strong></td>
 					<td>32 of 81</td>
-					<td>Pencil notes and some patience are needed too.</td>
+					<td>Hidden singles alone are never enough: pencil notes and some patience are needed too.</td>
 				</tr>
 				<tr>
 					<td><strong>Hard</strong></td>
@@ -238,11 +238,12 @@
 
 			<h2>How to play "Sudoku Luciano"</h2>
 			<ul>
-				<li><strong>Select a cell:</strong> click a cell in the grid. Its row, column and box are highlighted, and every cell with the same number is colored to help you find your bearings.</li>
-				<li><strong>Enter a number:</strong> use the number buttons on the right or the <strong>1-9</strong> keys on your keyboard. Each button shows how many copies of that number are still missing.</li>
+				<li><strong>Select an empty cell:</strong> click an empty cell in the grid. Its row, column and box are highlighted to help you find your bearings.</li>
+				<li><strong>Armed number:</strong> click a number button on the right, a <strong>1-9</strong> key on your keyboard, or a cell that already holds a number, to "arm" that number: the button lights up and the number stays attached to your mouse cursor. With a number armed, every cell holding it turns dark green, and every row, column and box touched by those cells turns light green — so you can spot at a glance the empty cells where that number could go; cells already filled with a different number that fall outside those rows/columns/boxes turn grey instead, to stand out visually from the rest. Clicking the same number (or the same cell) again disarms it. If you armed the number by clicking a cell that already held it, that specific cell stays highlighted in yellow: it's the target of the <strong>Erase</strong> button, which in this mode clears exactly that cell (unless it's a starting cell). Each button shows how many copies of that number are still missing.</li>
+				<li><strong>Enter a number:</strong> with a number armed, click an empty cell to place it right away (it stays armed for further placements). Alternatively, select an empty cell first and then use the number buttons or the <strong>1-9</strong> keys to fill it. If the number you just entered is flagged as a mistake and you click that very same cell again right after, it gets removed (a targeted "undo" for the wrong placement); if it's correct instead, or you click a different cell holding the same number, that cell just arms normally without erasing anything.</li>
 				<li><strong>Mistakes:</strong> numbers flagged as wrong are shown in <span style="color:#c0182b; font-weight:bold;">red</span> and counted in the top panel. You can fix them by overwriting or erasing them. Two options below the buttons (remembered by the browser) control the flagging: <em>Highlight obvious mistakes</em> (on by default) only flags conflicts with the numbers already visible in the row, column or box; <em>Highlight all mistakes</em> (off by default) checks every number against the solution. Turn both off to play "the old-fashioned way", with no help at all.</li>
-				<li><strong>&#9999;&#65039; Pencil:</strong> toggle note mode (also with the <strong>N</strong> key) to jot down the possible candidates in a cell. When you enter a final number, notes for that number in the connected cells are cleaned up automatically.</li>
-				<li><strong>&#10060; Erase:</strong> clear the selected cell (also with <strong>Del</strong> or <strong>Backspace</strong>).</li>
+				<li><strong>&#9999;&#65039; Pencil:</strong> toggle note mode (also with the <strong>N</strong> key) to jot down the possible candidates in a cell; a little pencil stays attached to the cursor while it's on. Turning it on automatically disarms any armed number (and vice versa: arming a number turns pencil mode off), since the two are alternative placement modes. When you enter a final number, notes for that number in the connected cells are cleaned up automatically.</li>
+				<li><strong>&#10060; Erase:</strong> clear the selected cell, or the cell highlighted in yellow while a number is armed (also with <strong>Del</strong> or <strong>Backspace</strong>).</li>
 				<li><strong>&#8630; Undo:</strong> undo the last move, notes included (also with <strong>Ctrl+Z</strong>).</li>
 				<li><strong>&#128161; Hint:</strong> a "didactic" helper. Pressing the button highlights a cell that can be logically deduced from the visible numbers and opens a panel with three choices: <strong>Explanation</strong> shows the reasoning behind the deduction (and therefore the number), <strong>Fill it in</strong> fills the cell, <strong>Close</strong> dismisses the hint without changing anything. If the grid contains mistakes, the hint points those out first, and the panel offers to erase the wrong number. Only when no simple deduction exists (it can happen at the Hard level) does the hint point to the cell with the fewest candidates and offer to reveal it. Only actual fills are counted in the final summary.</li>
 				<li><strong>Arrow keys:</strong> move the selection around the grid.</li>

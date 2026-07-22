@@ -6,7 +6,7 @@
    Stile e struttura coerenti con gli altri giochi del sito (Scopa, Dama).
    ============================================================================ */
 
-window.scriptVersion = '1.8';
+window.scriptVersion = '1.26';
 
 // === TESTI MULTILINGUA ===
 const BRISCOLA_LANG = (window.currentLang === 'en') ? {
@@ -25,8 +25,9 @@ const BRISCOLA_LANG = (window.currentLang === 'en') ? {
     },
     resetChiedi: 'OK?',
     tu: 'You', pc: 'PC', noi: 'Us', loro: 'Them',
-    diffNames: { facile: 'Easy', medio: 'Medium', difficile: 'Hard' },
+    diffNames: { facile: 'Beginner', medio: 'Medium', difficile: 'Expert' },
     mossaAnnullata: 'Move undone — your turn again',
+    clicPerContinuare: 'Click anywhere to continue',
     mazzo: { francesi: 'Deck: French', napoletane: 'Deck: Neapolitan', bresciane: 'Deck: Brescian' }
 } : {
     tuoTurno: 'Tocca a te — gioca una carta',
@@ -44,8 +45,9 @@ const BRISCOLA_LANG = (window.currentLang === 'en') ? {
     },
     resetChiedi: 'OK?',
     tu: 'Tu', pc: 'PC', noi: 'Noi', loro: 'Loro',
-    diffNames: { facile: 'Facile', medio: 'Medio', difficile: 'Difficile' },
+    diffNames: { facile: 'Principiante', medio: 'Medio', difficile: 'Esperto' },
     mossaAnnullata: 'Mossa annullata — di nuovo il tuo turno',
+    clicPerContinuare: 'Clicca per continuare',
     mazzo: { francesi: 'Mazzo: Francesi', napoletane: 'Mazzo: Napoletane', bresciane: 'Mazzo: Bresciane' }
 };
 
@@ -76,12 +78,11 @@ class Carta {
         let col = 0;
         if (this.number <= 7) {
             col = this.number - 1;
-        } else if (this.number === 8) {
-            col = tema === 'bresciane' ? 7 : 10;
-        } else if (this.number === 9) {
-            col = tema === 'bresciane' ? 8 : 11;
-        } else if (this.number === 10) {
-            col = tema === 'bresciane' ? 9 : 12;
+        } else {
+            // 8=Fante, 9=Cavallo, 10=Re: colonne 10-12 in tutti i fogli sprite.
+            // Anche nel bresciano, dove le colonne 7-9 sono l'8/9/10 numerici
+            // che esistono solo nella Scopa bresciana a 52 carte
+            col = this.number + 2;
         }
 
         const row = VALORI_SEMI[this.suit];
@@ -109,9 +110,10 @@ let partitaFinita = false;
 let animando = false;         // blocca l'input durante le animazioni
 let stats = {};
 let nomiGiocatori = [];       // [{nome, avatar}] per posto
-let undoSnapshot = null;      // stato salvato all'inizio dell'ultimo turno del giocatore
+let undoStack = [];           // storia degli snapshot salvati a inizio di ogni turno del giocatore
 let maniScoperte = false;     // mostra le carte degli avversari (pratica/debug)
 let segnaliAttivi = false;    // opzione di partita: indicatori fissi di briscole/carichi del compagno
+let presaInAttesaClick = false; // tavolo pieno, in pausa: un click sul campo fa proseguire alla presa successiva
 
 // Valori delle 5 briscole segnalabili, in ordine di forza decrescente (Asso -> Fante)
 const VALORI_SEGNALE = [1, 3, 10, 9, 8];
@@ -228,11 +230,99 @@ function carteFuori(g) {
     return fuori;
 }
 
+// Pressione di mano: punti che tengo in mano rapportati alle prese rimanenti.
+// Una mano ingolfata di carichi verso il finale è una passività (andranno
+// giocati per forza, spesso a condizioni pessime): pressione alta abbassa
+// l'asticella per monetizzare subito. I punti di briscola pesano metà perché
+// asso e 3 di briscola si difendono da soli
+function pressioneMano(g) {
+    let pts = 0;
+    for (const c of mani[g]) pts += (c.suit === semeBriscola) ? puntiDi(c) * 0.5 : puntiDi(c);
+    const prese = mani[g].length + Math.floor((mazzo.length + (briscolaCarta ? 1 : 0)) / modalita);
+    return prese > 0 ? pts / prese : 0;
+}
+
 // La carta è la più forte rimasta del suo seme e non ci sono più briscole in giro?
 function vincenteSicura(g, c) {
     const fuori = carteFuori(g);
     if (c.suit !== semeBriscola && fuori.some(function (f) { return f.suit === semeBriscola; })) return false;
     return !fuori.some(function (f) { return f.suit === c.suit && FORZA[f.number] > FORZA[c.number]; });
+}
+
+// Sintesi dei segnali del compagno di squadra, se l'opzione è attiva (solo 2 vs 2).
+// L'AI vede esattamente ciò che mostra la griglia dei segnali: le 5 briscole
+// principali e il numero di carichi, niente di più
+function segnaleCompagno(g) {
+    if (!segnaliAttivi || modalita !== 4) return null;
+    return sintesiSegnale((g + 2) % 4);
+}
+
+// Scarto "intelligente": normalmente la carta più sacrificabile, ma non butta
+// una briscola dominante (nessuna superiore in giro) per risparmiare i pochi
+// punti di un fante, cavallo o re: verso il finale quella briscola vale una
+// presa ricca garantita
+function scartoAI(g) {
+    const mano = mani[g];
+    const scarto = ordinaPerScarto(mano)[0];
+    if (difficolta === 'facile') return scarto;
+    if (scarto.suit !== semeBriscola) return scarto;
+    if (!vincenteSicura(g, scarto)) return scarto;
+    let puntiFuori = 0;
+    for (const f of carteFuori(g)) puntiFuori += puntiDi(f);
+    if (briscolaCarta) puntiFuori += puntiDi(briscolaCarta);
+    if (puntiFuori < 10) return scarto;
+    const alternative = mano.filter(function (c) { return c.suit !== semeBriscola && puntiDi(c) <= 4; });
+    if (alternative.length) return ordinaPerScarto(alternative)[0];
+    return scarto;
+}
+
+// Da ultimo di mano con presa certa ma la sola vincente è un carico di briscola
+// (asso o 3): vale la pena spenderlo? Confronta il guadagno immediato con il
+// valore atteso futuro della briscola, considerando le briscole superiori ancora
+// in giro, i punti ancora in palio, quante prese mancano e dove sta il bottino
+function convieneBriscolaCaraDaUltimo(g, carta, ptTavolo) {
+    const sq = squadraDi(g);
+
+    // La presa chiude la partita a nostro favore, o lasciarla regala il 61: prendo
+    if (punti[sq] + ptTavolo + puntiDi(carta) > 60) return true;
+    if (punti[1 - sq] + ptTavolo > 60) return true;
+    // Presa ricca: vale sempre la spesa
+    if (ptTavolo >= 10) return true;
+
+    const fuori = carteFuori(g);
+    // La mia briscola è ancora battibile? (conto anche la scoperta, che finirà in una mano)
+    const battibile = fuori.some(function (f) { return f.suit === semeBriscola && FORZA[f.number] > FORZA[carta.number]; }) ||
+        (briscolaCarta !== null && FORZA[briscolaCarta.number] > FORZA[carta.number]);
+
+    // Punti ancora in palio (mani altrui + mazzo + briscola scoperta)
+    let puntiFuori = 0;
+    for (const f of fuori) puntiFuori += puntiDi(f);
+    if (briscolaCarta) puntiFuori += puntiDi(briscolaCarta);
+
+    // Prese rimanenti dopo questa
+    const prese = (mani[g].length - 1) + Math.floor((mazzo.length + (briscolaCarta ? 1 : 0)) / modalita);
+
+    // Finale scarno: poco da catturare o quasi finita, monetizzo ora
+    if (prese <= 1 || puntiFuori <= 10) return true;
+
+    // Battibile col mazzo agli sgoccioli: la metto al sicuro incassando
+    if (battibile && mazzo.length + (briscolaCarta ? 1 : 0) <= modalita) return true;
+
+    // Quota del bottino presumibilmente già nelle mani (subito catturabile)
+    let carteAltrui = 0;
+    for (let x = 0; x < modalita; x++) if (x !== g) carteAltrui += mani[x].length;
+    const quotaInMano = fuori.length > 0 ? carteAltrui / fuori.length : 0;
+
+    // Valore atteso di una presa futura fatta con questa briscola: se è dominante
+    // potrò scegliermi la presa migliore, se è battibile dovrò accontentarmi
+    const orizzonte = Math.min(1, prese / 4);
+    const atteso = (battibile ? 0.15 : 0.25) * puntiFuori * (0.5 + 0.5 * quotaInMano) * orizzonte;
+    // Incassare subito ha un premio di sicurezza se la briscola è battibile,
+    // più la pressione di mano: coi punti che si accumulano e le prese che
+    // scarseggiano, il valore dell'incasso certo cresce
+    const bonusIncasso = (battibile ? 3 : 0) + pressioneMano(g);
+
+    return ptTavolo + bonusIncasso >= atteso;
 }
 
 // Apertura della presa
@@ -242,6 +332,13 @@ function aperturaAI(g) {
     if (difficolta === 'difficile') {
         const sicure = mano.filter(function (c) { return puntiDi(c) > 0 && vincenteSicura(g, c); });
         if (sicure.length) return ordinaPerScarto(sicure)[sicure.length - 1];
+    }
+    // Segnali: il compagno ha l'asso di briscola (presa imbattibile),
+    // gli apro con il mio carico migliore perché lo incassi lui
+    const seg = segnaleCompagno(g);
+    if (seg && seg.briscole[1]) {
+        const carichi = mano.filter(function (c) { return c.suit !== semeBriscola && puntiDi(c) > 0; });
+        if (carichi.length) return ordinaPerScarto(carichi)[carichi.length - 1];
     }
     return ordinaPerScarto(mano)[0];
 }
@@ -307,15 +404,40 @@ function scegliCartaAI(g) {
     const compagnoVince = modalita === 4 && squadraDi(gv) === squadraDi(g);
 
     if (compagnoVince) {
-        // Il compagno sta vincendo: se la sua presa è solida, carico punti
+        const pressione = pressioneMano(g);
+        // Il compagno sta vincendo: se la sua presa è solida, carico punti.
+        // A pressione alta considero solida anche una presa con briscola bassa:
+        // meglio caricare ora che regalare i carichi nelle ultime prese
         const solida = ultimo ||
             (cartaVincente.suit === semeBriscola && FORZA[cartaVincente.number] >= 7) ||
-            (difficolta === 'difficile' && vincenteSicura(g, cartaVincente));
+            (difficolta === 'difficile' && vincenteSicura(g, cartaVincente)) ||
+            (difficolta !== 'facile' && pressione >= 3 && cartaVincente.suit === semeBriscola);
         if (solida) {
             const carichi = mano.filter(function (c) { return puntiDi(c) > 0 && c.suit !== semeBriscola; });
             if (carichi.length) return ordinaPerScarto(carichi)[carichi.length - 1];
         }
-        return ordinaPerScarto(mano)[0];
+        // Segnali: presa del compagno ricca ma non solida e ho l'asso di briscola:
+        // la metto in sicurezza io (col segnale dell'asso il compagno mi ha
+        // probabilmente aperto un carico proprio per questo)
+        if (segnaliAttivi && !solida && ptTavolo >= 10) {
+            const asso = mano.find(function (c) { return c.suit === semeBriscola && c.number === 1; });
+            if (asso) return asso;
+        }
+        // Ho una carta con punti nel seme di apertura che rafforza la presa
+        // debole del compagno: la gioco quando dopo di me parla un solo
+        // avversario (se taglia, spende una briscola per pochi punti: costo
+        // anche per lui) oppure quando la pressione di mano è alta
+        if (difficolta !== 'facile' && (pressione >= 3 || tavolo.length === modalita - 2)) {
+            const semeApertura = tavolo[0].carta.suit;
+            const rinforzi = mano.filter(function (c) {
+                return c.suit === semeApertura && c.suit !== semeBriscola &&
+                    puntiDi(c) > 0 && batte(c, cartaVincente);
+            });
+            if (rinforzi.length) {
+                return rinforzi.sort(function (a, b) { return puntiDi(b) - puntiDi(a); })[0];
+            }
+        }
+        return scartoAI(g);
     }
 
     // Un avversario sta vincendo: valuto se prendere
@@ -336,6 +458,12 @@ function scegliCartaAI(g) {
                 const conPunti = ordinate.filter(function (c) { return puntiDi(c) > 0; });
                 if (conPunti.length && difficolta !== 'facile') return conPunti[conPunti.length - 1];
             }
+            // La minima vincente è un carico di briscola (asso o 3): valuto se la
+            // presa vale davvero la spesa, altrimenti lascio andare
+            if (difficolta !== 'facile' && puntiDi(ordinate[0]) >= 10 &&
+                !convieneBriscolaCaraDaUltimo(g, ordinate[0], ptTavolo)) {
+                return scartoAI(g);
+            }
             return ordinate[0];
         }
         // Non ultimo: rischio surtaglio, uso la vincente più economica (mai carichi se evitabile)
@@ -343,14 +471,22 @@ function scegliCartaAI(g) {
             return puntiDi(a) - puntiDi(b) || FORZA[a.number] - FORZA[b.number];
         });
         const scelta = economiche[0];
-        // Con pochi punti sul tavolo non spreco una briscola con punti
-        if (puntiDi(scelta) >= 3 && ptTavolo < 10 && difficolta !== 'facile') {
-            return ordinaPerScarto(mano)[0];
+        // Con pochi punti sul tavolo non spreco una briscola con punti —
+        // ma se la mano è ingolfata di carichi tento comunque l'incasso
+        if (puntiDi(scelta) >= 3 && ptTavolo < 10 && difficolta !== 'facile' && pressioneMano(g) < 3) {
+            return scartoAI(g);
+        }
+        // Segnali: il compagno deve ancora giocare e ha segnalato l'asso di
+        // briscola: può incassare lui, non spreco una mia briscola con punti
+        const seg = segnaleCompagno(g);
+        if (seg && seg.briscole[1] && puntiDi(scelta) >= 3 && scelta.suit === semeBriscola &&
+            !tavolo.some(function (t) { return squadraDi(t.g) === squadraDi(g); })) {
+            return scartoAI(g);
         }
         return scelta;
     }
 
-    return ordinaPerScarto(mano)[0];
+    return scartoAI(g);
 }
 
 // === FLUSSO DI GIOCO ===
@@ -373,7 +509,8 @@ function nuovaPartita(diff, mod, segnali) {
     visteIds = {};
     partitaFinita = false;
     animando = false;
-    undoSnapshot = null;
+    presaInAttesaClick = false;
+    undoStack = [];
     maniScoperte = false;
     document.getElementById('btn-scoperte').classList.remove('attivo');
     document.getElementById('campogioco').classList.remove('mani-scoperte');
@@ -389,17 +526,41 @@ function nuovaPartita(diff, mod, segnali) {
     prossimaMossa();
 }
 
+// Testo "Presa di.../Presa tua" per la presa corrente, con relativi punti
+function messaggioPresa() {
+    const iv = idxVincente();
+    const vincitore = tavolo[iv].g;
+    const pt = puntiTavolo();
+    return vincitore === 0 ? BRISCOLA_LANG.presaTua(pt) : BRISCOLA_LANG.presaDi(nomiGiocatori[vincitore].nome, pt);
+}
+
+// Evidenzia con il bordo ciano/nero la carta che sta vincendo la presa sul tavolo
+function evidenziaCartaVincente() {
+    const slotDi = modalita === 2
+        ? { 0: 'slot-basso', 1: 'slot-alto' }
+        : { 0: 'slot-basso', 1: 'slot-sinistra', 2: 'slot-alto', 3: 'slot-destra' };
+    const iv = idxVincente();
+    const gv = tavolo[iv].g;
+    document.getElementById(slotDi[gv]).querySelectorAll('.carta').forEach(function (el) {
+        el.classList.add('cartavincente');
+    });
+}
+
 function prossimaMossa() {
     if (partitaFinita) return;
     if (tavolo.length === modalita) {
         animando = true;
-        setTimeout(risolviPresa, 1100);
+        // Le carte restano visibili in tavola finché il giocatore non clicca sul
+        // campo di gioco: dà il tempo di capire chi ha preso e con cosa
+        presaInAttesaClick = true;
+        setMessaggio(messaggioPresa() + ' — ' + BRISCOLA_LANG.clicPerContinuare);
+        evidenziaCartaVincente();
+        aggiornaStatoUndoUI();
         return;
     }
     if (turno === 0) {
         animando = false;
         salvaPartita();
-        creaUndoSnapshot();
         setMessaggio(BRISCOLA_LANG.tuoTurno);
         aggiornaEvidenzaTurno();
         aggiornaStatoUndoUI();
@@ -417,6 +578,7 @@ function prossimaMossa() {
 function giocaCarta(g, carta) {
     const idx = mani[g].indexOf(carta);
     if (idx === -1) return;
+    if (g === 0) creaUndoSnapshot();
     mani[g].splice(idx, 1);
     tavolo.push({ g: g, carta: carta });
     visteIds[carta.id] = true;
@@ -432,7 +594,7 @@ function risolviPresa() {
     const sq = squadraDi(vincitore);
     const pt = puntiTavolo();
     const numCarte = tavolo.length;
-    setMessaggio(vincitore === 0 ? BRISCOLA_LANG.presaTua(pt) : BRISCOLA_LANG.presaDi(nomiGiocatori[vincitore].nome, pt));
+    setMessaggio(messaggioPresa());
 
     animaPresaVerso(sq === 0 ? 'mazzetto-tu' : 'mazzetto-loro', function () {
         punti[sq] += pt;
@@ -523,10 +685,18 @@ function clickCartaGiocatore(carta) {
     giocaCarta(0, carta);
 }
 
+// Click sul campo di gioco durante la pausa a fine presa: si prosegue
+function clickCampoContinuaPresa() {
+    if (!presaInAttesaClick) return;
+    presaInAttesaClick = false;
+    aggiornaStatoUndoUI();
+    risolviPresa();
+}
+
 // === FINE PARTITA ===
 function finePartita() {
     partitaFinita = true;
-    undoSnapshot = null;
+    undoStack = [];
     aggiornaStatoUndoUI();
     localStorage.removeItem('briscola-save');
 
@@ -677,9 +847,9 @@ function caricaPartita() {
     } catch (e) { return false; }
 }
 
-// === UNDO (snapshot dello stato all'inizio del tuo turno) ===
+// === UNDO (storia degli snapshot, uno per ogni carta che giochi tu) ===
 function creaUndoSnapshot() {
-    undoSnapshot = {
+    undoStack.push({
         mazzo: mazzo.map(serializzaCarta),
         bris: serializzaCarta(briscolaCarta),
         seme: semeBriscola,
@@ -689,13 +859,13 @@ function creaUndoSnapshot() {
         tavolo: tavolo.map(function (t) { return { g: t.g, c: serializzaCarta(t.carta) }; }),
         primo: primoDiMano,
         viste: JSON.parse(JSON.stringify(visteIds))
-    };
+    });
     aggiornaStatoUndoUI();
 }
 
 function eseguiUndo() {
-    if (!undoSnapshot || partitaFinita) return;
-    const s = undoSnapshot;
+    if (!undoStack.length || partitaFinita) return;
+    const s = undoStack.pop();
     mazzo = s.mazzo.map(deserializzaCarta);
     briscolaCarta = deserializzaCarta(s.bris);
     semeBriscola = s.seme;
@@ -707,7 +877,8 @@ function eseguiUndo() {
     visteIds = JSON.parse(JSON.stringify(s.viste));
     turno = 0;
     animando = false;
-    undoSnapshot = null;
+    presaInAttesaClick = false;
+    document.querySelectorAll('.carta.cartavincente').forEach(function (el) { el.classList.remove('cartavincente'); });
     salvaPartita();
     renderTutto();
     setMessaggio(BRISCOLA_LANG.mossaAnnullata);
@@ -719,7 +890,7 @@ function eseguiUndo() {
 function aggiornaStatoUndoUI() {
     const btn = document.getElementById('btn-undo');
     if (!btn) return;
-    const abilitato = !!undoSnapshot && !partitaFinita && !animando;
+    const abilitato = undoStack.length > 0 && !partitaFinita && (!animando || presaInAttesaClick);
     btn.disabled = !abilitato;
 }
 
@@ -751,7 +922,7 @@ function aggiornaLabelMazzo() {
 function riprendiPartita() {
     chiudiModali();
     document.getElementById('campogioco').classList.toggle('quattro', modalita === 4);
-    undoSnapshot = null;
+    undoStack = [];
     maniScoperte = false;
     document.getElementById('btn-scoperte').classList.remove('attivo');
     document.getElementById('campogioco').classList.remove('mani-scoperte');
@@ -832,8 +1003,10 @@ function renderTutto() {
     ['slot-basso', 'slot-alto', 'slot-sinistra', 'slot-destra'].forEach(function (id) {
         document.getElementById(id).innerHTML = '';
     });
-    tavolo.forEach(function (t) {
-        document.getElementById(slotDi[t.g]).appendChild(elementoCarta(t.carta, false, false));
+    tavolo.forEach(function (t, k) {
+        const el = elementoCarta(t.carta, false, false);
+        if (k === 0) el.classList.add('carta-apertura');
+        document.getElementById(slotDi[t.g]).appendChild(el);
     });
 
     // Mazzo e briscola scoperta
@@ -932,6 +1105,7 @@ function chiudiModali() {
     document.getElementById('confermatermina').style.display = 'none';
     document.getElementById('finepartita').style.display = 'none';
     document.getElementById('modale-regole').style.display = 'none';
+    document.getElementById('modale-info-segnali').style.display = 'none';
     document.querySelectorAll('#campogioco .finish-banner').forEach(function (b) { b.remove(); });
 }
 
@@ -960,7 +1134,7 @@ function selezionaModalita(mod) {
     tempModalita = mod;
     document.getElementById('btn-mod-2').classList.toggle('attiva', mod === 2);
     document.getElementById('btn-mod-4').classList.toggle('attiva', mod === 4);
-    document.getElementById('opzione-segnali').style.display = mod === 4 ? 'block' : 'none';
+    document.getElementById('opzione-segnali').style.display = mod === 4 ? 'flex' : 'none';
 }
 function toggleSegnaliOpzione(attivo) {
     tempSegnali = attivo;
@@ -1006,6 +1180,11 @@ function apriRegole() {
     document.getElementById('modale-regole').style.display = 'flex';
 }
 
+function apriInfoSegnali() {
+    document.getElementById('schermo').style.display = 'block';
+    document.getElementById('modale-info-segnali').style.display = 'flex';
+}
+
 // === INIZIALIZZAZIONE DELLA PAGINA ===
 document.addEventListener('DOMContentLoaded', function () {
     if (typeof window.waitForInterstitial === 'function') {
@@ -1033,13 +1212,15 @@ function initBriscola() {
         adjustLayout();
     }
 
-    document.getElementById('btn-nuova-partita').addEventListener('click', richiediNuovaPartita);
-    document.getElementById('btn-regole-top').addEventListener('click', apriRegole);
+    document.getElementById('btn-nuova-partita').addEventListener('click', function (e) { e.stopPropagation(); richiediNuovaPartita(); });
+    document.getElementById('btn-regole-top').addEventListener('click', function (e) { e.stopPropagation(); apriRegole(); });
+    document.getElementById('btn-info-segnali').addEventListener('click', function (e) { e.stopPropagation(); apriInfoSegnali(); });
     document.getElementById('btn-riprendi').addEventListener('click', riprendiPartita);
-    document.getElementById('btn-reset-stats').addEventListener('click', azzeraStats);
-    document.getElementById('btn-undo').addEventListener('click', eseguiUndo);
-    document.getElementById('btn-scoperte').addEventListener('click', toggleManiScoperte);
-    document.getElementById('btn-mazzo').addEventListener('click', cambiaMazzoCiclo);
+    document.getElementById('btn-reset-stats').addEventListener('click', function (e) { e.stopPropagation(); azzeraStats(); });
+    document.getElementById('btn-undo').addEventListener('click', function (e) { e.stopPropagation(); eseguiUndo(); });
+    document.getElementById('btn-scoperte').addEventListener('click', function (e) { e.stopPropagation(); toggleManiScoperte(); });
+    document.getElementById('btn-mazzo').addEventListener('click', function (e) { e.stopPropagation(); cambiaMazzoCiclo(); });
+    document.getElementById('campogioco').addEventListener('click', clickCampoContinuaPresa);
     document.getElementById('btn-no-continua').addEventListener('click', chiudiModali);
     document.getElementById('btn-si-termina').addEventListener('click', function () {
         localStorage.removeItem('briscola-save');

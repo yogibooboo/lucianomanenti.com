@@ -21,7 +21,7 @@
     <meta http-Equiv="Pragma" Content="no-cache">
     <meta http-Equiv="Expires" Content="0">
 
-    <link rel="stylesheet" href="briscola.css?v=2.7" />
+    <link rel="stylesheet" href="briscola.css?v=2.17" />
 
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
@@ -50,6 +50,9 @@
 
         <!-- Campo di gioco principale centrato e riscalato -->
         <div id="campogioco">
+            <!-- Filigrana avviso versione prototipale -->
+            <div class="filigrana-proto">Prototype version<br>this game will improve over time</div>
+
             <!-- Schermo overlay per modali -->
             <div id="schermo"></div>
 
@@ -161,9 +164,9 @@
                 <div class="opzione-gruppo" style="margin-bottom: 14px; text-align: center;">
                     <div style="font-size: 13px; font-weight: bold; margin-bottom: 8px; color: #ffd700; text-transform: uppercase;">Difficulty:</div>
                     <div style="display: flex; justify-content: center; gap: 10px; align-items: center;">
-                        <button id="btn-diff-facile" onclick="selezionaDifficolta('facile')" class="btn-opzione-sel attiva">EASY</button>
+                        <button id="btn-diff-facile" onclick="selezionaDifficolta('facile')" class="btn-opzione-sel attiva">BEGINNER</button>
                         <button id="btn-diff-medio" onclick="selezionaDifficolta('medio')" class="btn-opzione-sel">MEDIUM</button>
-                        <button id="btn-diff-difficile" onclick="selezionaDifficolta('difficile')" class="btn-opzione-sel">HARD</button>
+                        <button id="btn-diff-difficile" onclick="selezionaDifficolta('difficile')" class="btn-opzione-sel">EXPERT</button>
                     </div>
                 </div>
 
@@ -175,11 +178,12 @@
                     </div>
                 </div>
 
-                <div class="opzione-gruppo" id="opzione-segnali" style="margin-bottom: 14px; text-align: center; display: none;">
+                <div class="opzione-gruppo" id="opzione-segnali" style="margin-bottom: 14px; display: flex; justify-content: center; align-items: center; gap: 8px;">
                     <label style="display: flex; justify-content: center; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; font-weight: bold; color: #ffd700; text-transform: uppercase;">
                         <input type="checkbox" id="chk-segnali" onchange="toggleSegnaliOpzione(this.checked)" style="width: 16px; height: 16px; cursor: pointer;">
                         Partner signals
                     </label>
+                    <button type="button" id="btn-info-segnali" class="btn-info-tondo" aria-label="What are partner signals?">?</button>
                 </div>
 
                 <div class="opzione-gruppo" style="margin-bottom: 18px; text-align: center;">
@@ -223,10 +227,23 @@
                     <p><b>The trick:</b> the leader plays any card; the others respond <i>with no obligation to follow suit</i>. The highest briscola wins, or with no briscolas the highest card of the suit led (Ace &gt; 3 &gt; King &gt; Knight &gt; Jack &gt; 7...2). The trick winner leads the next one.</p>
                     <p><b>Drawing:</b> after each trick everyone draws one card, starting with the trick winner; the last card drawn is the face-up briscola.</p>
                     <p><b>2 vs 2:</b> your partner (&#9733;) sits opposite you; points are added up per team.</p>
+                    <p><b>Partner signals</b> (option, 2 vs 2 only): you see your partner's main trump cards and point cards, and they see yours. The opposing pair exchanges its own signals too, and plays accordingly.</p>
                     <p style="color: #aaa; font-size: 12px;">The game is saved automatically at the start of each of your turns: if you close the page you can resume where you left off.</p>
                 </div>
                 <div style="display: flex; gap: 12px; margin-top: 15px; align-items: center;">
                     <a href="regole-briscola-en.html" target="_blank" rel="opener" class="btn-continua" style="text-decoration: none; display: inline-block; background: #27ae60; border-color: #1e8449; color: white;">FULL GUIDE</a>
+                    <button onclick="chiudiModali()" class="btn-continua">CLOSE</button>
+                </div>
+            </div>
+
+            <!-- 5. Modale Info Segnali Compagno -->
+            <div id="modale-info-segnali" class="form-briscola" style="justify-content: flex-start;">
+                <div class="form-briscola-title">Partner Signals</div>
+                <div style="font-size: 14px; line-height: 1.7; color: #e8e8e8; text-align: left; padding: 0 10px;">
+                    <p style="margin-top: 0;">With this option on (2 vs 2 only), you and your partner can see at a glance which of the 5 main trump cards (Ace, 3, King, Knight, Jack) the other holds, and how many point cards (Aces/3s not in the trump suit) they have in hand. The X means they have no trump cards at all.</p>
+                    <p>The opposing pair exchanges the same signals too, and uses them: with this option on, the PC players will factor it into their choices, just like a human partner would.</p>
+                </div>
+                <div style="display: flex; gap: 12px; margin-top: 15px; align-items: center;">
                     <button onclick="chiudiModali()" class="btn-continua">CLOSE</button>
                 </div>
             </div>
@@ -264,7 +281,7 @@
     <!-- Layout engine per ridimensionare la finestra del gioco -->
     <script src="game-layout.js?v=4.6"></script>
     <!-- Logica della Briscola -->
-    <script src="briscola.js?v=1.8"></script>
+    <script src="briscola.js?v=1.26"></script>
     <script>
         (function () {
             var nascosto = false;

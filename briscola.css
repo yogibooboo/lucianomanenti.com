@@ -1,5 +1,5 @@
 /* ============================================================================
-   BRISCOLA - Stili CSS (v2.7)
+   BRISCOLA - Stili CSS
    Stile feltro verde Burraco/Scopa con layout 1024x750px
    Sprite delle carte condivisi con la Scopa (francesi/napoletane/bresciane)
    ============================================================================ */
@@ -56,6 +56,25 @@ html, body {
     border-radius: 10px;
     box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.4), 0 10px 30px rgba(0,0,0,0.5);
     overflow: hidden;
+}
+
+/* Filigrana sul tappeto: avviso versione prototipale, sotto a tutti gli elementi di gioco */
+.filigrana-proto {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 85%;
+    transform: translate(-50%, -50%) rotate(-16deg);
+    text-align: center;
+    font-size: 30px;
+    font-weight: bold;
+    line-height: 1.5;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: rgba(255, 255, 255, 0.4);
+    pointer-events: none;
+    user-select: none;
+    z-index: 1;
 }
 
 /* === SCHERMO OVERLAY === */
@@ -252,9 +271,28 @@ a.pulsante-top {
     z-index: 45;
     box-sizing: border-box;
 }
+.mazzetto-prese::before {
+    content: "";
+    position: absolute;
+    left: -0.5px;
+    top: 50%;
+    width: 120px;
+    height: 89px;
+    margin-top: -44.5px;
+    border: 2px solid rgba(100, 160, 110, 0.35);
+    border-radius: 8px;
+    background: rgba(0, 40, 10, 0.45);
+    z-index: -1;
+}
+#campogioco.bresciane .mazzetto-prese::before {
+    left: -21px;
+    width: 144px;
+    height: 72px;
+    margin-top: -36px;
+}
 .mazzetto-prese .mazzetto-etichetta {
     position: absolute;
-    left: 100px;
+    left: 130px;
     top: 50%;
     transform: translateY(-50%);
     font-size: 11px;
@@ -278,7 +316,7 @@ a.pulsante-top {
 .mazzetto-prese .mazzetto-count {
     position: absolute;
     left: 15px;
-    top: 50%;
+    top: 140%;
     transform: translateY(-50%);
     background: rgba(0, 40, 10, 0.85);
     color: #ffd700;
@@ -440,7 +478,7 @@ a.pulsante-top {
 
 /* Temi carte */
 #campogioco.napoletane .carta {
-    background-image: url(images/scala40/carte_napoletane.png?v=2);
+    background-image: url(images/scala40/carte_napoletane.png?v=4);
     background-size: 1509px 480px;
 }
 #campogioco.bresciane .carta {
@@ -451,6 +489,36 @@ a.pulsante-top {
 }
 #campogioco.bresciane .carta.coperta {
     background-position: -1721.25px 0;
+}
+
+/* Carta che ha effettuato la presa: bordo a trattini ciano/nero animato
+   (marching ants), stesso effetto usato in Scala40Tris per il jolly recuperato */
+.carta.cartavincente::after {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 8px;
+    pointer-events: none;
+    background-image:
+        repeating-linear-gradient(90deg, #00ffff 0 8px, #000000 8px 16px),
+        repeating-linear-gradient(90deg, #00ffff 0 8px, #000000 8px 16px),
+        repeating-linear-gradient(0deg, #00ffff 0 8px, #000000 8px 16px),
+        repeating-linear-gradient(0deg, #00ffff 0 8px, #000000 8px 16px);
+    background-size: 100% 3px, 100% 3px, 3px 100%, 3px 100%;
+    background-position: 0 0, 16px 100%, 0 16px, 100% 0;
+    background-repeat: no-repeat;
+    animation: marciapresa 0.6s linear infinite;
+}
+@keyframes marciapresa {
+    to {
+        background-position: 16px 0, 0 100%, 0 0, 100% 16px;
+    }
+}
+
+/* Carta che ha aperto la presa: bordino leggero color oro, per riconoscerla a colpo d'occhio
+   (stesso colore del bordo del giocatore di turno, ma più tenue) */
+.carta.carta-apertura {
+    box-shadow: 0 0 0 2px rgb(255, 0, 0), 2px 2px 5px rgba(0, 0, 0, 0.3);
 }
 
 /* === MANI === */
@@ -576,7 +644,7 @@ a.pulsante-top {
     padding: 1px 8px;
     border-radius: 8px;
 }
-#avatar-alto { top: 95px; left: calc(50% + 175px); }
+#avatar-alto { top: 95px; left: 670px; }
 #avatar-sinistra { top: 190px; left: 30px; }
 #avatar-destra { top: 190px; right: 30px; }
 
@@ -585,7 +653,7 @@ a.pulsante-top {
     display: none;
     position: absolute;
     top: 95px;
-    left: calc(50% - 175px - 84px);
+    left: 270px;
     grid-template-columns: repeat(3, 22px);
     grid-template-rows: repeat(3, 22px);
     gap: 4px;
@@ -677,12 +745,12 @@ a.pulsante-top {
     z-index: 50;
 }
 #campogioco.quattro #mazzo-blocco {
-    top: 570px;
+    top: 550px;
     left: 30px;
 }
 .carta-briscola {
     position: absolute !important;
-    top: 18px;
+    top: 0px;
     left: 62px;
 }
 .mazzo-dorso {
@@ -704,6 +772,25 @@ a.pulsante-top {
 }
 
 /* === MODALI E DIALOGHI === */
+/* Pulsante rotondo "?" di richiamo info, accanto a un'opzione */
+.btn-info-tondo {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    color: #fff;
+    font-size: 12px;
+    font-weight: bold;
+    line-height: 16px;
+    padding: 0;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+.btn-info-tondo:hover {
+    background: rgba(255, 255, 255, 0.35);
+}
+
 .form-briscola {
     z-index: 40000;
     position: absolute;
