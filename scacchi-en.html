@@ -22,6 +22,7 @@
     <meta http-Equiv="Expires" Content="0">
 
     <link rel="stylesheet" href="scacchi.css?v=1.5" />
+    <link rel="stylesheet" href="richiami.css?v=1.0" />
 
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
@@ -128,6 +129,42 @@
                         <span id="catture-sue" class="catture-pezzi"></span>
                         <span id="vantaggio-suo" class="vantaggio"></span>
                     </div>
+                </div>
+
+                <!-- Richiami agli altri due giochi da tavoliere. Le miniature
+                     sono disegnate in CSS (vedi richiami.css): nessuna immagine
+                     da caricare. Il Mulino è etichettato "Morris" perché il nome
+                     per esteso non entra nella casella affiancata: quello
+                     completo sta nel title. -->
+                <div class="richiami-giochi">
+                    <a href="dama-en.html" class="richiamo" title="Go to the Checkers game">
+                        <span class="mini-scacchiera" aria-hidden="true">
+                            <span class="mc chiara"></span><span class="mc scura"></span><span class="mc chiara"></span><span class="mc scura"></span>
+                            <span class="mc scura"><i class="mp nera"></i></span><span class="mc chiara"></span><span class="mc scura"><i class="mp nera"></i></span><span class="mc chiara"></span>
+                            <span class="mc chiara"></span><span class="mc scura"></span><span class="mc chiara"></span><span class="mc scura"></span>
+                            <span class="mc scura"><i class="mp bianca"></i></span><span class="mc chiara"></span><span class="mc scura"><i class="mp bianca"></i></span><span class="mc chiara"></span>
+                        </span>
+                        <span class="richiamo-testo"><b>Checkers</b></span>
+                    </a>
+                    <a href="mulino-en.html" class="richiamo" title="Go to the Nine Men's Morris game">
+                        <span class="mini-mulino" aria-hidden="true">
+                            <i class="mq esterno"></i>
+                            <i class="mq mezzo"></i>
+                            <i class="mq interno"></i>
+                            <i class="mr alto"></i>
+                            <i class="mr basso"></i>
+                            <i class="mr sinistra"></i>
+                            <i class="mr destra"></i>
+                            <i class="mp bianca p-alto-sx"></i>
+                            <i class="mp bianca p-alto-cx"></i>
+                            <i class="mp bianca p-alto-dx"></i>
+                            <i class="mp bianca p-sx-cy"></i>
+                            <i class="mp bianca p-basso-sx"></i>
+                            <i class="mp nera p-mezzo-dx"></i>
+                            <i class="mp nera p-basso-dx"></i>
+                        </span>
+                        <span class="richiamo-testo"><b>Morris</b></span>
+                    </a>
                 </div>
             </div>
 

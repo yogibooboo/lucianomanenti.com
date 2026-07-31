@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
+	<script>
+		window.dataLayer = window.dataLayer || [];
+		function gtag() { dataLayer.push(arguments); }
+		gtag('js', new Date());
+		gtag('config', 'G-WRBDRDQ4L8');
+		window.currentLang = 'it';
+	</script>
+	<title>Regole del Mulino (Filetto, Tria) - Come giocare</title>
+	<meta name="Description"
+		content="Regole del gioco del Mulino, detto anche Filetto o Tria: le tre fasi di piazzamento, spostamento e volo, come si chiude un mulino, il doppio mulino e consigli strategici per giocare gratis online contro il computer.">
+	<link rel="alternate" hreflang="it" href="regole-mulino.html">
+	<link rel="alternate" hreflang="en" href="regole-mulino-en.html">
+	<link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
+	<link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
+	<link rel="shortcut icon" href="favicon/favicon.ico">
+	<link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+	<style>
+		body {
+			font-family: sans-serif;
+			line-height: 1.7;
+			max-width: 800px;
+			margin: 40px auto;
+			padding: 20px;
+			color: #333;
+			background-color: #f9f9f9;
+		}
+
+		h1 {
+			color: #2c3e50;
+			border-bottom: 2px solid #ffd700;
+			padding-bottom: 10px;
+		}
+
+		h2 {
+			color: #2c3e50;
+			margin-top: 30px;
+		}
+
+		h3 {
+			color: #2c3e50;
+			font-size: 1.1em;
+			margin-top: 20px;
+		}
+
+		.lang-switch {
+			text-align: right;
+			margin-bottom: 20px;
+		}
+
+		.lang-switch a {
+			display: inline-block;
+			padding: 6px 16px;
+			margin-left: 5px;
+			text-decoration: none;
+			border-radius: 5px;
+			font-weight: bold;
+			font-size: 14px;
+		}
+
+		.lang-switch a.active {
+			background: #2c3e50;
+			color: white;
+		}
+
+		.lang-switch a:not(.active) {
+			background: #ddd;
+			color: #333;
+			cursor: pointer;
+		}
+
+		.content-box {
+			background: white;
+			padding: 30px;
+			border-radius: 8px;
+			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+		}
+
+		.play-btn {
+			display: inline-block;
+			margin-top: 25px;
+			padding: 12px 30px;
+			background: #27ae60;
+			color: white;
+			text-decoration: none;
+			border-radius: 8px;
+			font-size: 18px;
+			font-weight: bold;
+		}
+
+		.nav-links {
+			text-align: center;
+			margin-top: 30px;
+			font-size: 14px;
+		}
+
+		.nav-links a {
+			color: #3498db;
+			text-decoration: none;
+			margin: 0 10px;
+		}
+
+		.banner {
+			width: 100%;
+			height: 150px;
+			background-image: url('images/home/castagne.jpg');
+			background-size: cover;
+			background-position: center;
+			border-radius: 8px;
+			margin: 20px 0;
+			box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+		}
+
+		.score-table {
+			width: 100%;
+			border-collapse: collapse;
+			margin-top: 10px;
+			margin-bottom: 20px;
+		}
+
+		.score-table th,
+		.score-table td {
+			border: 1px solid #ddd;
+			padding: 8px;
+			text-align: left;
+		}
+
+		.score-table th {
+			background-color: #f2f2f2;
+			font-weight: bold;
+		}
+
+		.highlight {
+			background-color: #fff9c4;
+			padding: 0 4px;
+		}
+
+		/* Schema del tabellone disegnato in SVG: nessuna immagine da caricare e
+		   nitidezza a qualsiasi zoom. Serve a mostrare le 24 posizioni e le 16
+		   linee di tre su cui si chiudono i mulini. */
+		.schema-tabellone {
+			display: block;
+			margin: 20px auto;
+			max-width: 320px;
+			width: 100%;
+			height: auto;
+		}
+
+		.didascalia {
+			text-align: center;
+			font-size: 0.9em;
+			color: #777;
+			margin-top: -10px;
+			margin-bottom: 25px;
+		}
+	</style>
+</head>
+
+<body>
+	<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+		<a href="#" id="btn-back" onclick="goBack(); return false;"
+			style="display: inline-block; padding: 6px 16px; background: #e74c3c; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 14px;">&#x2190;
+			Indietro</a>
+		<div class="lang-switch" style="margin-bottom: 0;">
+			<a href="regole-mulino.html" id="btn-it" class="active">Italiano</a>
+			<a href="regole-mulino-en.html" id="btn-en">English</a>
+		</div>
+	</div>
+
+	<div class="banner"></div>
+
+	<div class="content-box">
+		<div id="lang-it">
+			<h1>Regole del Mulino</h1>
+
+			<p>Il <strong>Mulino</strong> &egrave; uno dei giochi da tavolo pi&ugrave; antichi che si conoscano: tabelloni incisi nella pietra sono stati ritrovati in templi egizi e in edifici romani. In Italia &egrave; noto anche come <strong>Filetto</strong> o <strong>Tria</strong>, e con molti altri nomi regionali (<em>mulinello</em>, <em>smerelli</em>, <em>triplice cinta</em>, <em>grisia</em> in Piemonte, <em>merler</em> in Trentino); nei paesi anglosassoni si chiama <em>Nine Men's Morris</em>. Le regole si imparano in due minuti, ma la partita fra giocatori esperti &egrave; una lotta sottile di posizione.</p>
+
+			<p style="background: #fff9c4; padding: 12px 16px; border-radius: 6px; border-left: 4px solid #ffd700;">
+				Questo gioco &egrave; in continua evoluzione: nuove funzionalit&agrave; e miglioramenti vengono aggiunti regolarmente. Se riscontri qualcosa che non funziona come previsto o hai suggerimenti, scrivici a
+				<a href="mailto:postmaster@lucianomanenti.com" style="color: #3498db;">postmaster@lucianomanenti.com</a>
+				— il tuo feedback &egrave; prezioso!
+			</p>
+
+			<h2>1. Il Tabellone e lo Scopo del Gioco</h2>
+			<p>Si gioca in due su un tabellone di <strong>24 posizioni</strong>, disposte sugli angoli e sui punti di mezzo dei lati di <strong>tre quadrati concentrici</strong>. Quattro linee di raccordo uniscono i punti di mezzo dei lati corrispondenti. Le pedine si mettono <strong>sui punti</strong>, non nelle caselle.</p>
+
+			<svg class="schema-tabellone" viewBox="0 0 240 240" role="img" aria-label="Schema del tabellone del Mulino: tre quadrati concentrici uniti da quattro linee di raccordo, con le 24 posizioni evidenziate e un mulino completo sulla riga superiore">
+				<!-- Griglia logica 0..6 con passo uniforme di 36px a partire da 12,
+				     come nel tabellone vero: i tre quadrati concentrici risultano
+				     così equidistanti (12/48/84 e i simmetrici 228/192/156). -->
+				<rect x="0" y="0" width="240" height="240" fill="#f4e4c8" />
+				<g stroke="#8b5a2b" stroke-width="3" fill="none">
+					<rect x="12" y="12" width="216" height="216" />
+					<rect x="48" y="48" width="144" height="144" />
+					<rect x="84" y="84" width="72" height="72" />
+					<line x1="120" y1="12" x2="120" y2="84" />
+					<line x1="120" y1="156" x2="120" y2="228" />
+					<line x1="12" y1="120" x2="84" y2="120" />
+					<line x1="156" y1="120" x2="228" y2="120" />
+				</g>
+				<g fill="#5d3a1a">
+					<circle cx="12" cy="12" r="6" /><circle cx="120" cy="12" r="6" /><circle cx="228" cy="12" r="6" />
+					<circle cx="48" cy="48" r="6" /><circle cx="120" cy="48" r="6" /><circle cx="192" cy="48" r="6" />
+					<circle cx="84" cy="84" r="6" /><circle cx="120" cy="84" r="6" /><circle cx="156" cy="84" r="6" />
+					<circle cx="12" cy="120" r="6" /><circle cx="48" cy="120" r="6" /><circle cx="84" cy="120" r="6" />
+					<circle cx="156" cy="120" r="6" /><circle cx="192" cy="120" r="6" /><circle cx="228" cy="120" r="6" />
+					<circle cx="84" cy="156" r="6" /><circle cx="120" cy="156" r="6" /><circle cx="156" cy="156" r="6" />
+					<circle cx="48" cy="192" r="6" /><circle cx="120" cy="192" r="6" /><circle cx="192" cy="192" r="6" />
+					<circle cx="12" cy="228" r="6" /><circle cx="120" cy="228" r="6" /><circle cx="228" cy="228" r="6" />
+				</g>
+				<!-- Un mulino chiuso sulla riga superiore del quadrato esterno -->
+				<line x1="12" y1="12" x2="228" y2="12" stroke="#e74c3c" stroke-width="4" />
+				<g fill="#fffdf5" stroke="#8b5a2b" stroke-width="2">
+					<circle cx="12" cy="12" r="10" />
+					<circle cx="120" cy="12" r="10" />
+					<circle cx="228" cy="12" r="10" />
+				</g>
+			</svg>
+			<p class="didascalia">Le 24 posizioni del tabellone. In alto, tre pedine allineate formano un <strong>mulino</strong>.</p>
+
+			<p>Ogni giocatore dispone di <strong>9 pedine</strong>. Muove per primo il <strong>Bianco</strong>. Si vince quando l'avversario:</p>
+			<ul>
+				<li>resta con <strong>2 sole pedine</strong> (non pu&ograve; pi&ugrave; formare un mulino), oppure</li>
+				<li>non ha <strong>nessuna mossa legale</strong>, perch&eacute; tutte le sue pedine sono bloccate.</li>
+			</ul>
+
+			<h2>2. Il Mulino</h2>
+			<p>Il <strong>mulino</strong> &egrave; l'allineamento di <strong>tre pedine dello stesso colore</strong> su una delle linee del tabellone. Le linee valide sono <strong>16</strong>: quattro per ciascuno dei tre quadrati (i quattro lati) pi&ugrave; le quattro linee di raccordo che attraversano i quadrati.</p>
+			<p><span class="highlight">Ogni volta che chiudi un mulino, <strong>togli dal tabellone una pedina avversaria</strong></span> a tua scelta. La pedina eliminata esce definitivamente dal gioco.</p>
+			<p>Attenzione a due punti che confondono i principianti:</p>
+			<ul>
+				<li>Le tre pedine devono stare su una linea <strong>disegnata sul tabellone</strong>. Tre pedine sui tre quadrati che "sembrano" allineate a occhio, ma non unite da una linea, <em>non</em> formano un mulino: gli angoli dei quadrati non sono collegati fra loro.</li>
+				<li>Il mulino vale solo <strong>nel momento in cui si chiude</strong>. Tenerlo fermo sul tabellone non d&agrave; alcun vantaggio ulteriore.</li>
+			</ul>
+
+			<h3>Quale pedina si pu&ograve; togliere</h3>
+			<p>Non si possono togliere pedine che <strong>fanno parte di un mulino avversario</strong>, a meno che l'avversario non abbia <strong>soltanto</strong> pedine impegnate in mulini: in quel caso si pu&ograve; togliere qualunque pedina.</p>
+
+			<h2>3. Le Tre Fasi della Partita</h2>
+			<table class="score-table">
+				<tr>
+					<th>Fase</th>
+					<th>Come si muove</th>
+				</tr>
+				<tr>
+					<td><strong>1. Piazzamento</strong></td>
+					<td>A turno si colloca una pedina su una <strong>qualsiasi posizione libera</strong>, finch&eacute; tutte e 18 le pedine sono sul tabellone.</td>
+				</tr>
+				<tr>
+					<td><strong>2. Spostamento</strong></td>
+					<td>Esaurite le pedine in mano, si sposta una propria pedina su una posizione <strong>libera adiacente</strong>, seguendo le linee.</td>
+				</tr>
+				<tr>
+					<td><strong>3. Volo</strong></td>
+					<td>Il giocatore ridotto a <strong>3 pedine</strong> pu&ograve; spostare una pedina su <strong>qualsiasi</strong> posizione libera, anche lontana.</td>
+				</tr>
+			</table>
+			<p>Le fasi non sono simultanee per i due giocatori: chi scende per primo a tre pedine inizia a volare mentre l'altro continua a muovere di un passo. Il volo &egrave; una regola di compensazione, che d&agrave; a chi sta perdendo una possibilit&agrave; di rimonta.</p>
+
+			<h2>4. Il Doppio Mulino e l'Altalena</h2>
+			<p>&Egrave; qui che si decidono le partite. Un mulino, una volta chiuso, pu&ograve; essere <strong>aperto e richiuso</strong>: spostando fuori una delle tre pedine e riportandola indietro alla mossa successiva, si chiude di nuovo il mulino e <strong>si cattura un'altra pedina</strong>. Questa manovra si chiama <em>altalena</em> (o mulino aperto) e frutta una cattura ogni due mosse.</p>
+			<p>Ancora pi&ugrave; forte &egrave; il <strong>doppio mulino</strong>: due mulini che condividono una pedina, disposti in modo che spostandola si chiuda alternativamente l'uno e l'altro. Ogni singola mossa chiude un mulino, quindi cattura <strong>una pedina a ogni turno</strong>. Un doppio mulino ben piazzato di solito decide la partita.</p>
+
+			<h2>5. La Patta</h2>
+			<p>La partita &egrave; dichiarata <strong>patta</strong> (pareggio) in due casi:</p>
+			<ul>
+				<li>quando si ripete <strong>tre volte la stessa posizione</strong> con lo stesso giocatore di mano (triplice ripetizione);</li>
+				<li>quando si arriva a <strong>30 mosse per parte</strong> senza che nessuno chiuda un mulino n&eacute; catturi una pedina: la posizione &egrave; considerata bloccata.</li>
+			</ul>
+
+			<h2>6. Come giocare a Mulino Luciano</h2>
+			<ul>
+				<li><strong>Livelli:</strong> tre difficolt&agrave; (Facile, Medio, Difficile) che corrispondono alla profondit&agrave; di calcolo del computer. Puoi scegliere di giocare con il Bianco (piazza per primo) o con il Nero.</li>
+				<li><strong>Muovere:</strong> in fase di piazzamento clicca su una posizione libera; in fase di spostamento clicca prima su una tua pedina e poi sulla destinazione. Le posizioni giocabili vengono <strong>evidenziate a ogni turno</strong>.</li>
+				<li><strong>Catturare:</strong> quando chiudi un mulino, il gioco ti chiede di cliccare la pedina avversaria da togliere, mostrando solo quelle che il regolamento consente.</li>
+				<li><strong>&#8630; Annulla:</strong> riporta la partita a com'era prima della tua ultima mossa, annullando anche la risposta del computer (anche con <strong>Ctrl+Z</strong>).</li>
+				<li><strong>&#128161; Suggerimento:</strong> evidenzia una buona mossa calcolata dal computer.</li>
+				<li><strong>Bilancio:</strong> il pannello in alto a destra conta vittorie, sconfitte e patte per il livello selezionato, con pulsante di azzeramento.</li>
+				<li><strong>Salvataggio automatico:</strong> la partita viene salvata all'inizio di ogni tuo turno; chiudendo la pagina potrai riprenderla.</li>
+			</ul>
+
+			<h2>7. Consigli Strategici</h2>
+			<ul>
+				<li><strong>Punta ai punti di mezzo:</strong> le quattro posizioni al centro dei lati del quadrato di mezzo hanno <strong>quattro adiacenze</strong> ciascuna, contro le due degli angoli. Sono le caselle pi&ugrave; mobili del tabellone.</li>
+				<li><strong>Nel piazzamento, non inseguire il mulino immediato:</strong> costruire due minacce contemporanee vale molto di pi&ugrave; di chiuderne una sola che l'avversario aveva gi&agrave; previsto di parare.</li>
+				<li><strong>Prepara l'altalena:</strong> disponi le pedine in modo da poter aprire e richiudere un mulino. Una cattura ogni due mosse logora l'avversario rapidamente.</li>
+				<li><strong>Togli le pedine giuste:</strong> conviene eliminare le pedine che stanno per completare un mulino avversario, o quelle che gli darebbero mobilit&agrave;, non quelle isolate e innocue.</li>
+				<li><strong>Non sguarnirti per attaccare:</strong> nella fase di spostamento la mobilit&agrave; conta pi&ugrave; del numero. Restare con pedine bloccate significa perdere anche avendo pi&ugrave; pezzi.</li>
+				<li><strong>Occhio alla soglia delle 3 pedine:</strong> scendendo a tre l'avversario guadagna il volo e torna pericoloso. A volte conviene lasciarlo a quattro pedine bloccate piuttosto che ridurlo a tre libere di volare.</li>
+			</ul>
+
+			<p style="text-align: center;"><a href="#" onclick="goBack(); return false;" class="play-btn">Chiudi</a></p>
+		</div>
+	</div>
+
+	<div class="banner"></div>
+
+	<div class="nav-links">
+		<a href="index.html">Home</a> |
+		<a href="info.html">Tutti i giochi</a> |
+		<a href="aboutme.html">Chi Sono</a> |
+		<a href="privacy.html">Privacy Policy</a>
+	</div>
+
+	<p style="text-align: center; font-size: 0.8em; color: #999; margin-top: 15px;">
+		&copy; 2026 Luciano Manenti
+	</p>
+
+	<script>
+		function goBack() {
+			if (window.opener) {
+				window.close();
+			} else {
+				window.location.href = 'mulino.html';
+			}
+		}
+	</script>
+</body>
+
+</html>

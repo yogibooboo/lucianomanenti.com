@@ -311,8 +311,12 @@ body {
 	color: #ffd700;
 	text-align: center;
 	text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9);
-	margin-bottom: 12px;
-	margin-top: 5px;
+	/* Titolo centrato nel vano fra l'ultimo pulsante di Altri Giochi e il primo
+	   della musica. Attenzione: sotto al titolo si somma anche il gap da 12px del
+	   contenitore flex, quindi per avere 18px da entrambi i lati il margine
+	   inferiore va messo a 6 (6 + 12 di gap) contro i 18 di quello superiore. */
+	margin-bottom: 6px;
+	margin-top: 18px;
 }
 
 /* Menu dei giochi con pulsanti moderni */
@@ -459,10 +463,14 @@ body {
 	border-radius: 12px;
 }
 
-/* Menu Musica con pulsanti caldi color legno/ambra */
+/* Menu Musica con pulsanti caldi color legno/ambra.
+   Il "top" e' legato al numero di pulsanti di Altri Giochi: quel blocco parte da
+   170 e ogni pulsante occupa 42px + 12 di gap. Con quattro voci (Sudoku, Dama,
+   Scacchi, Mulino) arriva a quota 430, e da li' parte la musica. Se si aggiunge
+   o toglie una voce lassu', questo valore va rivisto di 54px. */
 .music-menu-container {
 	position: absolute;
-	top: 384px;
+	top: 430px;
 	right: 94px;
 	width: 225px;
 	display: flex;
@@ -507,29 +515,33 @@ body {
 	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
 }
 
-/* Pulsante basso Offerte Amazon (in fondo, a destra) */
+/* Pulsante Offerte Amazon, in basso a destra.
+   Volutamente piccolo e defilato: non e' un contenuto del sito, serve solo a
+   tenere un link Amazon raggiungibile in home per eventuali verifiche del
+   programma di affiliazione. Deve restare VISIBILE: nasconderlo via CSS lo
+   renderebbe invisibile a crawler e revisori, che e' l'opposto dello scopo. */
 .amazon-btn {
 	position: absolute;
-	bottom: 30px;
-	right: 94px;
+	bottom: 8px;
+	right: 12px;
 	z-index: 1000;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	gap: 6px;
-	width: 225px;
-	height: 38px;
+	gap: 4px;
+	width: 118px;
+	height: 26px;
 	background: linear-gradient(180deg, #ff9900 0%, #e68a00 100%);
-	border: 2px solid rgba(255, 255, 255, 0.85);
-	border-radius: 10px;
+	border: 1px solid rgba(255, 255, 255, 0.7);
+	border-radius: 6px;
 	color: #1a1a1a;
 	font-family: 'Outfit', 'Open Sans', sans-serif;
-	font-size: 16px;
+	font-size: 12px;
 	font-weight: 600;
-	letter-spacing: 0.5px;
+	letter-spacing: 0.2px;
 	text-decoration: none;
 	text-shadow: none;
-	box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+	box-shadow: 0 2px 5px rgba(0, 0, 0, 0.35);
 	transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 	cursor: pointer;
 	box-sizing: border-box;

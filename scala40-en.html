@@ -32,7 +32,7 @@
 			if (localStorage.getItem('scala40_versione') === 'nuova') window.scala40versione = 'nuova';
 		} catch (e) { }
 		if (window.scala40versione === 'nuova') {
-			document.write('<link rel="stylesheet" href="scala40tris.css?v=1.9" />');
+			document.write('<link rel="stylesheet" href="scala40tris.css?v=1.11" />');
 		} else {
 			document.write('<link rel="stylesheet" href="scala40V1.css?v=2.5" />');
 		}
@@ -175,6 +175,11 @@
 				<button class="bottone2" type="button" style="left: 300px;">CONTINUE</button>
 			</div>
 
+			<div id="stallo" class="form" style="background-image:url(images/scala40/allerta-en.jpg)">
+				<div id="testostallo"></div>
+				<button class="bottone1" type="button" style="left: 200px;">NEW DEAL</button>
+			</div>
+
 			<div id="allerta" class="form" style="background-image:url(images/scala40/allerta-en.jpg)">
 				<div id="testoallerta"> alert </div>
 				<button class="bottone1" type="button" style="left: 200px;">OK</button>
@@ -211,7 +216,7 @@
 					<div class="pulsante-link pulsante-burraco">Burraco</div>
 				</a>
 				<a href="scopa-en.html">
-					<div class="pulsante-link pulsante-scopa">Scopa<span class="new-badge">NEW</span></div>
+					<div class="pulsante-link pulsante-scopa">Scopa</div>
 				</a>
 				<a href="machiavelli-en.html">
 					<div class="pulsante-link pulsante-machiavelli">Machiavelli</div>
@@ -253,7 +258,7 @@
 	<script src="site.js?v=1.2"></script>
 	<script>
 		if (window.scala40versione === 'nuova') {
-			document.write('<script src="scala40tris.js?v=1.48"><\/script>');
+			document.write('<script src="scala40tris.js?v=1.52"><\/script>');
 		} else {
 			document.write('<script src="jquery-2.1.1.js"><\/script>');
 			document.write('<script src="scala40codeV1.js?v=3.16"><\/script>');

@@ -39,10 +39,10 @@ var INTERSTITIAL_CLOSE_DELAY_SECONDS = 0;        // secondi prima che appaia il 
 // ─────────────────────────────────────────────────────────────────────────────
 
 // ─── ADSENSE CONFIG & SHIELD ─────────────────────────────────────────────────
-// NOTA PER L'UTENTE: Durante il bando di 29 giorni, imposta ADSENSE_GLOBAL_ENABLED = false e var AMAZON_BANNERS_ENABLED = true; 
-// Al termine, rimettilo a true. Lo Shield ti proteggerà automaticamente dai click futuri.
+// NOTA PER L'UTENTE: Durante il bando di 29 giorni, imposta ADSENSE_GLOBAL_ENABLED = false e AMAZON_BANNERS_ENABLED = true; 
+// Al termine, imposta ADSENSE_GLOBAL_ENABLED = true AMAZON_BANNERS_ENABLED = false;  Lo Shield ti proteggerà automaticamente dai click futuri.
 var ADSENSE_GLOBAL_ENABLED = false;  // Interruttore di sicurezza principale
-var ADSENSE_ONLY_LEFT = false;       // Se true, AdSense carica solo a sinistra
+var ADSENSE_ONLY_LEFT = true;       // Se true, AdSense carica solo a sinistra
 
 // Controllo attivazione blocco annunci su richiesta
 var adsDisabled = localStorage.getItem('ads_disabled') === '1';
@@ -54,7 +54,7 @@ if (adsDisabled) {
     ADSENSE_GLOBAL_ENABLED = false;
 }
 
-var ADSENSE_SHIELD_DURATION = 20 * 60 * 1000; // 20 minuti di blocco dopo un click
+var ADSENSE_SHIELD_DURATION = 70 * 60 * 1000; // 70 minuti di blocco dopo un click
 var _isMouseOverAdSense = false;
 
 // ─── INTERSTITIAL RELOAD INTERCEPT ───────────────────────────────────────────
@@ -142,11 +142,44 @@ function resetAdSenseShield() {
     if (typeof adjustLayout === 'function') adjustLayout();
 }
 
-// Global detector for focus-blur (click proxy)
-window.addEventListener('blur', function () {
+// ─── SENSORI HOVER CENTRALIZZATI (con debounce anti-race) ────────────────────
+// Gli <ins> AdSense chiamano window._onAdEnter / window._onAdLeave invece di
+// azzerare _isMouseOverAdSense inline. Il mouseleave NON azzera subito: programma
+// l'azzeramento tra ADSENSE_LEAVE_DEBOUNCE_MS. Così, se un click reale sull'ad
+// emette mouseleave immediatamente prima del blur (nuova scheda), la variabile
+// è ancora true quando arriva il blur e lo shield scatta correttamente.
+var ADSENSE_LEAVE_DEBOUNCE_MS = 200;
+window._adLeaveTimer = null;
+
+window._onAdEnter = function () {
+    if (window._adLeaveTimer) { clearTimeout(window._adLeaveTimer); window._adLeaveTimer = null; }
+    window._isMouseOverAdSense = true;
+};
+
+window._onAdLeave = function () {
+    if (window._adLeaveTimer) clearTimeout(window._adLeaveTimer);
+    window._adLeaveTimer = setTimeout(function () {
+        window._isMouseOverAdSense = false;
+        window._adLeaveTimer = null;
+    }, ADSENSE_LEAVE_DEBOUNCE_MS);
+};
+
+// Trigger comune: mouse era sull'ad + la finestra/scheda ha perso primo piano.
+// Guardia identica (_isMouseOverAdSense) per entrambi gli eventi → nessun falso
+// positivo su Alt+Tab / cambio scheda quando il mouse NON è sull'annuncio.
+function _maybeActivateShieldFromLeave() {
     if (_isMouseOverAdSense && !isAdSenseShieldActive() && !devMode) {
         activateAdSenseShield(true);
     }
+}
+
+// Global detector for focus-blur (click proxy)
+window.addEventListener('blur', _maybeActivateShieldFromLeave);
+
+// Seconda rete: la scheda passa in background (es. l'ad ha aperto una nuova tab).
+// Copre i casi in cui blur arriva tardi o non arriva. Stessa guardia del blur.
+document.addEventListener('visibilitychange', function () {
+    if (document.hidden) _maybeActivateShieldFromLeave();
 });
 
 // ─── TASTIERA E COMANDI ──────────────────────────────────────────────────────
@@ -296,14 +329,42 @@ function showInterstitialIfDue(onClose) {
     overlay.id = 'interstitial-overlay';
     overlay.style.cssText = 'position:fixed;top:0;left:0;width:' + _vw + 'px;height:' + _vh + 'px;background:#000;z-index:999999;';
 
-    // Area annuncio — occupa tutto lo spazio sopra il footer
+    // Area annuncio — occupa lo spazio sopra il footer, con una banda morta di
+    // sicurezza (gap) prima del footer: la policy AdSense raccomanda distanza tra
+    // gli ad e i pulsanti (close/navigazione) per evitare clic accidentali.
+    // La fascia inferiore ospita l'hub di navigazione (CONTINUA al centro, link ai
+    // giochi + musica ai lati) e SCALA con gameScale: se l'utente gioca su un campo
+    // piccolo, banda e pulsanti sono proporzionati al gioco (aspetto uniforme al
+    // resize). Clamp per non scendere sotto una taglia leggibile/cliccabile.
+    var _uiScale = (window.gameScale !== undefined && window.gameScale > 0) ? window.gameScale : 1;
+    if (_uiScale > 1) _uiScale = 1;
+    if (_uiScale < 0.65) _uiScale = 0.65;
+    var _footerH = Math.round(240 * _uiScale); // altezza banda scalata col gioco
+    var _adSafetyGap = Math.round(40 * _uiScale); // banda morta ad↔fascia, scalata
     var adArea = document.createElement('div');
-    adArea.style.cssText = 'position:absolute;top:0;left:0;right:0;bottom:50px;overflow:hidden;display:flex;align-items:flex-start;justify-content:center;';
+    adArea.style.cssText = 'position:absolute;top:0;left:0;right:0;bottom:' + (_footerH + _adSafetyGap) + 'px;overflow:hidden;display:flex;align-items:center;justify-content:center;';
 
-    if (devMode) {
+    // Simulazione (devMode) del creative AdSense: solo quando lo scudo NON è
+    // attivo. Con scudo attivo AdSense non verrebbe servito, quindi lasciamo
+    // proseguire al ramo reale sotto (useAdSense=false → fallback Amazon), così
+    // la simulazione rispecchia esattamente il comportamento di sidebar/finish.
+    if (devMode && !isAdSenseShieldActive()) {
+        // Finto creative AdSense, stesso riquadro giallo di simulazione delle
+        // altre posizioni (sidebar/finish). Dimensione di un creative orizzontale
+        // tipico (970x250): il flex-container adArea lo centra come farebbe con
+        // un creative reale, così la simulazione riflette il layout vero.
         var adPlaceholder = document.createElement('div');
-        adPlaceholder.style.cssText = 'width:100%;height:100%;border:2px dashed #ffcc00;box-sizing:border-box;display:flex;align-items:center;justify-content:center;color:#ffcc00;font-family:monospace;font-size:16px;text-align:center;';
-        adPlaceholder.textContent = '[DEV] Interstitial — verrebbe mostrato qui';
+        adPlaceholder.style.cssText = 'width:970px;max-width:100%;height:250px;background:#222;border:2px dashed #ffee00;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:15px;text-align:center;cursor:pointer;';
+        adPlaceholder.innerHTML =
+            '<span style="color:#ffee00;font-weight:bold;font-size:16px;">SIMULAZIONE ADSENSE INTERSTITIAL</span>' +
+            '<span style="font-size:12px;color:#aaa;margin-top:10px;">Clicca per simulare un clic e attivare lo scudo 24h</span>';
+        adPlaceholder.setAttribute('onmouseenter', 'window._onAdEnter();');
+        adPlaceholder.setAttribute('onmouseleave', 'window._onAdLeave();');
+        adPlaceholder.onclick = function () {
+            if (confirm("Vuoi simulare un clic su AdSense?\n\nQuesto attiverà lo scudo per 24 ore e nasconderà gli annunci reali (mostrando solo Amazon).")) {
+                activateAdSenseShield(false);
+            }
+        };
         adArea.appendChild(adPlaceholder);
     } else {
         var isEnglish = (window.currentLang === 'en');
@@ -313,15 +374,23 @@ function showInterstitialIfDue(onClose) {
                          window.gameConfig && window.gameConfig.adsenseActive;
 
         if (useAdSense) {
+            // Formato libero (auto): AdSense sceglie il creative. NON diamo
+            // width:100%/height:100% — quello fa ancorare il banner in alto a
+            // sinistra dentro un ins gigante. L'ins si dimensiona al creative
+            // (larghezza e altezza decise da AdSense) e il flex-container adArea
+            // (align/justify center) lo fa "galleggiare" al centro dello schermo,
+            // qualunque formato AdSense restituisca.
+            // full-width-responsive OFF: vogliamo un creative raccolto e centrato,
+            // non un banner stirato a piena larghezza ancorato in alto.
             var ins = document.createElement('ins');
             ins.className = 'adsbygoogle';
-            ins.style.cssText = 'display:block;width:100%;height:100%;';
+            ins.style.cssText = 'display:inline-block;';
             ins.setAttribute('data-ad-client', 'ca-pub-9335537153013492');
             ins.setAttribute('data-ad-slot', '7155310138');
             ins.setAttribute('data-ad-format', 'auto');
-            ins.setAttribute('data-full-width-responsive', 'true');
-            ins.setAttribute('onmouseenter', 'window._isMouseOverAdSense = true;');
-            ins.setAttribute('onmouseleave', 'window._isMouseOverAdSense = false;');
+            ins.setAttribute('data-full-width-responsive', 'false');
+            ins.setAttribute('onmouseenter', 'window._onAdEnter();');
+            ins.setAttribute('onmouseleave', 'window._onAdLeave();');
             adArea.appendChild(ins);
             // push() viene chiamato dopo body.appendChild(overlay) più sotto
             if (typeof gtag === 'function') {
@@ -344,8 +413,9 @@ function showInterstitialIfDue(onClose) {
                 var dealId = titleText.length > 60 ? titleText.substring(0, 60) + '...' : titleText;
 
                 var viewH = window.innerHeight;
-                var footerH = 50;
-                var bannerH = viewH - footerH;
+                // Riempi l'area disponibile sopra il footer + banda di sicurezza
+                // (stessa geometria dell'adArea, allineata a _footerH/_adSafetyGap).
+                var bannerH = viewH - _footerH - _adSafetyGap;
                 var infoColW = 260;
                 var bannerW = Math.min(window.innerWidth, 1200);
                 var imgColW = bannerW - infoColW - 4;
@@ -456,51 +526,156 @@ function showInterstitialIfDue(onClose) {
         }
     }
 
-    // Banda inferiore
-    var footer = document.createElement('div');
-    footer.style.cssText = 'position:absolute;bottom:0;left:0;right:0;height:50px;display:flex;align-items:center;justify-content:center;gap:16px;padding:0 20px;background:#1a1a1a;border-top:1px solid #333;';
+    // Banda inferiore — alta _footerH: hub di navigazione (link reali ai giochi +
+    // musica su due colonne) + pulsante CONTINUA grande + riga note. Serve sia come
+    // alternativa esplicita al clic sull'ad (riduce i clic accidentali), sia per la
+    // conformità AdSense: l'interstitial NON è "pagina dedicata all'annuncio" ma una
+    // transizione con "obvious game play links".
+    var _isEn = (window.currentLang === 'en');
+    var _suffix = _isEn ? '-en.html' : '.html';
 
-    var label = document.createElement('span');
-    label.style.cssText = 'color:#aaa;font-family:sans-serif;font-size:13px;';
-    label.textContent = 'Pubblicità sperimentale — compare al massimo ogni ' + INTERSTITIAL_COOLDOWN_MINUTES + ' minuti';
+    // Tutte le misure del footer sono moltiplicate per _uiScale (derivato da
+    // gameScale, clampato) così banda e pulsanti restano proporzionati al campo di
+    // gioco e l'aspetto è uniforme al resize della finestra. Helper di comodo:
+    var _px = function (n) { return Math.round(n * _uiScale) + 'px'; };
 
-    var btnPerche = document.createElement('button');
-    btnPerche.textContent = 'Perché la pubblicità?';
-    btnPerche.style.cssText = 'background:transparent;border:1px solid #666;color:#ccc;padding:4px 10px;border-radius:4px;cursor:pointer;font-size:13px;font-family:sans-serif;';
-    btnPerche.onclick = function () {
-        var lang = (window.currentLang === 'en') ? 'aboutme-en.html' : 'aboutme.html';
-        window.open(lang + '#pubblicita', '_blank');
+    // Helper: crea un link-pulsante di navigazione a un gioco/pagina (in griglia).
+    var makeNavLink = function (label, href) {
+        var a = document.createElement('a');
+        a.href = href;
+        a.textContent = label;
+        a.style.cssText = 'display:block;background:#2d5a3d;color:#fff;text-decoration:none;padding:' + _px(6) + ' ' + _px(10) + ';border-radius:' + _px(5) + ';font-size:' + _px(13) + ';font-family:sans-serif;border:1px solid #3d7a52;white-space:nowrap;text-align:center;';
+        a.onmouseover = function () { this.style.background = '#3d7a52'; };
+        a.onmouseout = function () { this.style.background = '#2d5a3d'; };
+        return a;
     };
 
+    // Titolo di colonna (giallo).
+    var makeColTitle = function (text, marginTop) {
+        var t = document.createElement('div');
+        t.style.cssText = 'color:#ffee00;font-weight:bold;font-size:' + _px(12) + ';font-family:sans-serif;margin:' + _px(marginTop || 0) + ' 0 ' + _px(4) + ';text-transform:uppercase;letter-spacing:0.5px;text-align:center;';
+        t.textContent = text;
+        return t;
+    };
+
+    var footer = document.createElement('div');
+    footer.style.cssText = 'position:absolute;bottom:0;left:0;right:0;height:' + _footerH + 'px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:' + _px(8) + ';padding:' + _px(10) + ' ' + _px(20) + ';box-sizing:border-box;background:#1a1a1a;border-top:1px solid #333;';
+
+    // ─── Riga principale: [carte] · [CONTINUA rosso] · [altri+musica] ───
+    // I gruppi di link stanno AI LATI, il pulsante CONTINUA al CENTRO (non sopra
+    // né sotto i link) — così il tasto di uscita è ben separato dall'area ad e dai
+    // link di navigazione, e centrale/prominente.
+    var mainRow = document.createElement('div');
+    mainRow.style.cssText = 'display:flex;gap:' + _px(24) + ';justify-content:center;align-items:center;width:100%;max-width:' + _px(1180) + ';flex-wrap:nowrap;';
+
+    // ── Colonna SINISTRA — Giochi di Carte (griglia 2 colonne) ──
+    var colCards = document.createElement('div');
+    colCards.style.cssText = 'flex:0 1 auto;';
+    colCards.appendChild(makeColTitle(_isEn ? 'Card Games' : 'Giochi di Carte'));
+    var gridCards = document.createElement('div');
+    gridCards.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:' + _px(5) + ';';
+    var cardGames = [
+        ['Scala 40', 'scala40'], ['Burraco', 'burraco'], ['Scopa', 'scopa'],
+        ['Machiavelli', 'machiavelli'], ['Gin Rummy', 'rummy'], ['Spider', 'spider'],
+        ['Klondike', 'klondike'], ['Briscola', 'briscola']
+    ];
+    cardGames.forEach(function (g) { gridCards.appendChild(makeNavLink(g[0], g[1] + _suffix)); });
+    colCards.appendChild(gridCards);
+
+    // ── Colonna CENTRALE — pulsante CONTINUA (rosso, grande) + riga note sotto ──
+    var colCenter = document.createElement('div');
+    colCenter.style.cssText = 'flex:0 0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:' + _px(10) + ';padding:0 ' + _px(10) + ';';
+
     var btnClose = document.createElement('button');
-    btnClose.textContent = '✕ Chiudi';
-    btnClose.style.cssText = 'background:#cc3333;border:none;color:#fff;padding:6px 16px;border-radius:4px;cursor:pointer;font-size:14px;font-weight:bold;font-family:sans-serif;';
-    btnClose.onclick = function () {
+    var _continua = _isEn ? '✓ CONTINUE' : '✓ CONTINUA';
+    btnClose.textContent = _continua;
+    btnClose.style.cssText = 'background:#cc3333;border:none;color:#fff;padding:' + _px(18) + ' ' + _px(56) + ';border-radius:' + _px(8) + ';cursor:pointer;font-size:' + _px(28) + ';font-weight:bold;font-family:sans-serif;box-shadow:0 3px 10px rgba(0,0,0,0.4);white-space:nowrap;';
+    btnClose.onmouseover = function () { if (!this.disabled) this.style.background = '#e04444'; };
+    btnClose.onmouseout = function () { if (!this.disabled) this.style.background = '#cc3333'; };
+
+    // Chiusura interstitial (idempotente): rimuove overlay + listener resize e
+    // richiama onClose una sola volta. Usata sia da CONTINUA che dall'auto-chiusura
+    // al resize (l'overlay è costruito con le misure di gameScale al momento
+    // dell'apertura e non si riadatta live: al resize lo chiudiamo, equivale a
+    // premere CONTINUA — policy-safe, nessun ad servito viene mascherato).
+    var _closed = false;
+    var closeInterstitial = function () {
+        if (_closed) return;
+        _closed = true;
+        window.removeEventListener('resize', closeInterstitial);
         overlay.remove();
         if (onClose) onClose();
     };
+    btnClose.onclick = closeInterstitial;
+    window.addEventListener('resize', closeInterstitial);
 
     if (INTERSTITIAL_CLOSE_DELAY_SECONDS > 0) {
         btnClose.disabled = true;
         btnClose.style.opacity = '0.4';
         var remaining = INTERSTITIAL_CLOSE_DELAY_SECONDS;
-        btnClose.textContent = '✕ Chiudi (' + remaining + ')';
+        btnClose.textContent = _continua + ' (' + remaining + ')';
         var timer = setInterval(function () {
             remaining--;
             if (remaining <= 0) {
                 clearInterval(timer);
                 btnClose.disabled = false;
                 btnClose.style.opacity = '1';
-                btnClose.textContent = '✕ Chiudi';
+                btnClose.textContent = _continua;
             } else {
-                btnClose.textContent = '✕ Chiudi (' + remaining + ')';
+                btnClose.textContent = _continua + ' (' + remaining + ')';
             }
         }, 1000);
     }
 
-    footer.appendChild(label);
-    footer.appendChild(btnPerche);
-    footer.appendChild(btnClose);
+    // Riga note (sotto CONTINUA): scritta pubblicità + "Perché la pubblicità?"
+    var noteRow = document.createElement('div');
+    noteRow.style.cssText = 'display:flex;align-items:center;justify-content:center;gap:' + _px(10) + ';flex-wrap:wrap;';
+
+    var label = document.createElement('span');
+    label.style.cssText = 'color:#888;font-family:sans-serif;font-size:' + _px(12) + ';text-align:center;';
+    label.textContent = (_isEn ? 'Experimental ad — shown at most every ' : 'Pubblicità sperimentale — compare al massimo ogni ') + INTERSTITIAL_COOLDOWN_MINUTES + (_isEn ? ' minutes' : ' minuti');
+
+    var btnPerche = document.createElement('button');
+    btnPerche.textContent = _isEn ? 'Why ads?' : 'Perché la pubblicità?';
+    btnPerche.style.cssText = 'background:transparent;border:1px solid #555;color:#aaa;padding:' + _px(3) + ' ' + _px(9) + ';border-radius:' + _px(4) + ';cursor:pointer;font-size:' + _px(12) + ';font-family:sans-serif;white-space:nowrap;';
+    btnPerche.onclick = function () {
+        var lang = _isEn ? 'aboutme-en.html' : 'aboutme.html';
+        window.open(lang + '#pubblicita', '_blank');
+    };
+
+    noteRow.appendChild(label);
+    noteRow.appendChild(btnPerche);
+
+    colCenter.appendChild(btnClose);
+    colCenter.appendChild(noteRow);
+
+    // ── Colonna DESTRA — Altri Giochi + Musica (due griglie) ──
+    var colOther = document.createElement('div');
+    colOther.style.cssText = 'flex:0 1 auto;';
+    colOther.appendChild(makeColTitle(_isEn ? 'Other Games' : 'Altri Giochi'));
+    var gridOther = document.createElement('div');
+    gridOther.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:' + _px(5) + ';';
+    var otherGames = [['Sudoku', 'sudoku'], ['Dama', 'dama'], ['Scacchi', 'scacchi']];
+    otherGames.forEach(function (g) { gridOther.appendChild(makeNavLink(g[0], g[1] + _suffix)); });
+    colOther.appendChild(gridOther);
+
+    colOther.appendChild(makeColTitle(_isEn ? 'Music' : 'Musica', 8));
+    var gridMusic = document.createElement('div');
+    gridMusic.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:' + _px(5) + ';';
+    var musicPages = [
+        ['🎵 ' + (_isEn ? 'Intervals' : 'Intervalli'), 'musica/intervalli/' + (_isEn ? 'index-en.html' : '')],
+        ['🎹 ' + (_isEn ? 'Chords' : 'Accordi'), 'musica/accordi/' + (_isEn ? 'index-en.html' : '')],
+        ['🎶 ' + (_isEn ? 'Scales' : 'Scale'), 'musica/scale/' + (_isEn ? 'index-en.html' : '')],
+        ['⏱️ ' + (_isEn ? 'Metronome' : 'Metronomo'), 'metronome' + _suffix]
+    ];
+    musicPages.forEach(function (g) { gridMusic.appendChild(makeNavLink(g[0], g[1])); });
+    colOther.appendChild(gridMusic);
+
+    mainRow.appendChild(colCards);
+    mainRow.appendChild(colCenter);
+    mainRow.appendChild(colOther);
+
+    footer.appendChild(mainRow);
     overlay.appendChild(adArea);
     overlay.appendChild(footer);
     // Se il body ha transform (es. Machiavelli scala il body), position:fixed si ancora al body
@@ -509,9 +684,29 @@ function showInterstitialIfDue(onClose) {
     var hasBodyTransform = bodyTransform && bodyTransform !== 'none';
     var overlayParent = hasBodyTransform ? document.documentElement : document.body;
     overlayParent.appendChild(overlay);
-    // AdSense push dopo che l'ins è nel DOM reale
-    if (overlay.querySelector('ins.adsbygoogle')) {
-        (window.adsbygoogle = window.adsbygoogle || []).push({});
+    // ─── ANTI-CLIC ACCIDENTALE: ritardo del push() ──────────────────────────
+    // L'interstitial compare a schermo pieno subito dopo un reload: i click
+    // "residui" dell'utente (che veniva dal gioco) rischiano di finire sull'ad.
+    // Policy-safe: NON mascheriamo un ad già servito. Ritardiamo la RICHIESTA
+    // dell'ad (push) di ADSENSE_INTERSTITIAL_ARM_DELAY_MS, tenendo l'area coperta
+    // da un velo OPACO NOSTRO. L'annuncio non esiste finché il layout non è
+    // stabile; quando appare è pienamente visibile e cliccabile.
+    var _insInterstitial = overlay.querySelector('ins.adsbygoogle');
+    if (_insInterstitial) {
+        var ADSENSE_INTERSTITIAL_ARM_DELAY_MS = 600;
+
+        // Velo neutro sopra l'area ad (non copre il footer/pulsante Chiudi).
+        var veil = document.createElement('div');
+        veil.style.cssText = 'position:absolute;top:0;left:0;right:0;bottom:' + (_footerH + _adSafetyGap) + 'px;background:#000;z-index:1;transition:opacity 250ms ease;';
+        overlay.appendChild(veil);
+
+        setTimeout(function () {
+            // Richiede l'ad solo ora, a layout stabile.
+            (window.adsbygoogle = window.adsbygoogle || []).push({});
+            // Dissolvi il velo e rimuovilo: l'ad resta pienamente interattivo.
+            veil.style.opacity = '0';
+            setTimeout(function () { if (veil.parentNode) veil.parentNode.removeChild(veil); }, 300);
+        }, ADSENSE_INTERSTITIAL_ARM_DELAY_MS);
     }
 }
 // ─────────────────────────────────────────────────────────────────────────────
@@ -811,8 +1006,10 @@ function adjustLayout() {
                 '</a>';
         }
         
-        var headerText = (AMAZON_USE_NEW_DEALS && deal.custom_message) ? deal.custom_message : 'Offerta a Tempo';
-        var badgeText = deal.badge || 'OFFERTA A TEMPO';
+        var isAli = (deal && deal.store === 'aliexpress');
+        var targetLink = (deal && deal.link) ? deal.link : amazonGenericLink;
+        var headerText = (AMAZON_USE_NEW_DEALS && deal.custom_message) ? deal.custom_message : (isAli ? 'OFFERTA ALIEXPRESS' : 'Offerta a Tempo');
+        var badgeText = deal.badge || (isAli ? 'OFFERTA ALIEXPRESS' : 'OFFERTA A TEMPO');
         var expiryText = deal.expiry || '';
         
         var firstImg = (AMAZON_USE_NEW_DEALS && deal.active_images && deal.active_images.length > 0) ? deal.active_images[0] : (deal.img || amazonGenericImg);
@@ -829,6 +1026,12 @@ function adjustLayout() {
         var priceAndBadgeHtml = '';
         var expiryTitleAttr = (expiryText ? ' title="' + expiryText + '"' : '');
 
+        var ctaBtnText = isAli ? 'Vedi offerta su AliExpress' : 'Vedi offerta su Amazon.it';
+        var ctaBtnStyle = isAli ? 'background:linear-gradient(180deg,#ff4747 0%,#d62828 100%);color:#fff;' : 'background:linear-gradient(180deg,#ff9900 0%,#e68a00 100%);color:#000;';
+        var disclaimerText = isAli ? 'Disponibile su AliExpress<br><span style="font-size: 9px; opacity: 0.7;">In qualità di affiliato AliExpress, guadagno dagli acquisti idonei.</span>' : 'Come affiliato Amazon,<br>guadagno dagli acquisti idonei.';
+        var headerBg = isAli ? '#d62828' : '#cc0c39';
+        var themeBg = isAli ? '#18181b' : '#131921';
+
         if (AMAZON_USE_NEW_DEALS) {
             var priceHtml = (deal.price && deal.price.trim() !== '') ? '<span style="font-size:28px; font-weight:bold; color:#ff5252; margin:0;">' + deal.price + '</span>' : '';
             var badgeHtml = '';
@@ -839,7 +1042,8 @@ function adjustLayout() {
                     isHighDiscount = true;
                 }
                 var pulseClass = isHighDiscount ? ' amazon-badge-pulse' : '';
-                badgeHtml = '<span class="amazon-badge' + pulseClass + '">' + deal.badge + '</span>';
+                var aliBadgeClass = isAli ? ' ali-badge' : '';
+                badgeHtml = '<span class="amazon-badge' + aliBadgeClass + pulseClass + '">' + deal.badge + '</span>';
             }
             if (priceHtml || badgeHtml) {
                 var gapStyle = (priceHtml && badgeHtml) ? ' gap:10px;' : '';
@@ -850,40 +1054,40 @@ function adjustLayout() {
             }
         } else {
             priceAndBadgeHtml = '<div style="margin-bottom:12px;"' + expiryTitleAttr + '>' +
-                '<span style="display:inline-block;background:#cc0c39;color:#fff;padding:4px 10px;border-radius:4px;font-size:13px;font-weight:bold;">' + badgeText + '</span>' +
+                '<span style="display:inline-block;background:' + headerBg + ';color:#fff;padding:4px 10px;border-radius:4px;font-size:13px;font-weight:bold;">' + badgeText + '</span>' +
                 '</div>';
         }
 
         // Struttura a due strati con animazione
-        return '<a href="' + amazonGenericLink + '" target="_blank" rel="sponsored noopener" style="display:block;width:100%;height:100%;text-decoration:none;color:inherit;position:relative;overflow:hidden;background:#131921;"' + imagesAttr + '>' +
+        return '<a href="' + targetLink + '" target="_blank" rel="sponsored noopener" style="display:block;width:100%;height:100%;text-decoration:none;color:inherit;position:relative;overflow:hidden;background:' + themeBg + ';"' + imagesAttr + '>' +
             // STRATO 1: Versione Ricca
             '<div style="position:absolute;top:0;left:0;width:300px;height:600px;display:flex;flex-direction:column;box-sizing:border-box;font-family:Segoe UI,Roboto,Helvetica,Arial,sans-serif;animation: amazonFadeRich' + animSuffix + ' ' + duration + ' infinite; transition: opacity 1s ease-in-out;">' +
-            '<div style="background:#cc0c39;color:#fff;padding:12px;text-align:center;font-weight:bold;font-size:14px;text-transform:uppercase;">' + headerText + '</div>' +
+            '<div style="background:' + headerBg + ';color:#fff;padding:12px;text-align:center;font-weight:bold;font-size:14px;text-transform:uppercase;">' + headerText + '</div>' +
             '<div style="width:100%;height:260px;background:#fff;display:flex;justify-content:center;align-items:center;padding:0;box-sizing:border-box;">' +
-            '<img src="' + firstImg + '" class="amazon-banner-img amazon-rich-img" style="max-width:100%;max-height:100%;object-fit:contain;" alt="Offerte Amazon">' +
+            '<img src="' + firstImg + '" class="amazon-banner-img amazon-rich-img" style="max-width:100%;max-height:100%;object-fit:contain;" alt="Offerta">' +
             '</div>' +
             '<div style="padding:15px 24px 0;flex-grow:1;display:flex;flex-direction:column;text-align:center;color:#fff;justify-content:center;min-height:0;">' +
             '<div style="font-size:16px;font-weight:600;margin-bottom:0;line-height:1.4;display:-webkit-box;-webkit-line-clamp:6;overflow:hidden;">' + deal.title + '</div>' +
             '</div>' +
             priceAndBadgeHtml +
             '<div style="padding:0 24px 0;">' +
-            '<div style="display:block;background:linear-gradient(180deg,#ff9900 0%,#e68a00 100%);color:#000;padding:16px;border-radius:30px;font-weight:bold;text-align:center;">Vedi offerta su Amazon.it</div>' +
+            '<div style="display:block;' + ctaBtnStyle + 'padding:16px;border-radius:30px;font-weight:bold;text-align:center;">' + ctaBtnText + '</div>' +
             '</div>' +
-            '<div style="font-size:12px;color:#64748b;text-align:center;padding:8px 10px 8px;line-height:1.2;">Come affiliato Amazon,<br>guadagno dagli acquisti idonei.</div>' +
+            '<div style="font-size:12px;color:#64748b;text-align:center;padding:8px 10px 8px;line-height:1.2;">' + disclaimerText + '</div>' +
             '</div>' +
             // STRATO 2: Versione Semplice (Immagine Ingrandita + Info)
-            '<div style="position:absolute;top:0;left:0;width:300px;height:600px;display:flex;flex-direction:column;box-sizing:border-box;font-family:Segoe UI,Roboto,Helvetica,Arial,sans-serif;animation: amazonFadeSimple' + animSuffix + ' ' + duration + ' infinite; transition: opacity 1s ease-in-out; background:#131921;">' +
-            '<div style="background:#cc0c39;color:#fff;padding:12px;text-align:center;font-weight:bold;font-size:14px;text-transform:uppercase;">' + headerText + '</div>' +
+            '<div style="position:absolute;top:0;left:0;width:300px;height:600px;display:flex;flex-direction:column;box-sizing:border-box;font-family:Segoe UI,Roboto,Helvetica,Arial,sans-serif;animation: amazonFadeSimple' + animSuffix + ' ' + duration + ' infinite; transition: opacity 1s ease-in-out; background:' + themeBg + ';">' +
+            '<div style="background:' + headerBg + ';color:#fff;padding:12px;text-align:center;font-weight:bold;font-size:14px;text-transform:uppercase;">' + headerText + '</div>' +
             '<div style="width:100%;flex-grow:1;background:#fff;display:flex;justify-content:center;align-items:center;padding:0;box-sizing:border-box;min-height:0;">' +
-            '<img src="' + secondImg + '" class="amazon-banner-img amazon-simple-img" style="max-width:100%;max-height:100%;object-fit:contain;" alt="Offerte Amazon">' +
+            '<img src="' + secondImg + '" class="amazon-banner-img amazon-simple-img" style="max-width:100%;max-height:100%;object-fit:contain;" alt="Offerta">' +
             '</div>' +
             '<div style="padding:15px 24px 5px;display:flex;flex-direction:column;text-align:center;color:#fff;">' +
             priceAndBadgeHtml +
             '</div>' +
             '<div style="padding:0 24px 0;">' +
-            '<div style="display:block;background:linear-gradient(180deg,#ff9900 0%,#e68a00 100%);color:#000;padding:16px;border-radius:30px;font-weight:bold;text-align:center;">Vedi offerta su Amazon.it</div>' +
+            '<div style="display:block;' + ctaBtnStyle + 'padding:16px;border-radius:30px;font-weight:bold;text-align:center;">' + ctaBtnText + '</div>' +
             '</div>' +
-            '<div style="font-size:12px;color:#64748b;text-align:center;padding:8px 10px 8px;line-height:1.2;">Come affiliato Amazon,<br>guadagno dagli acquisti idonei.</div>' +
+            '<div style="font-size:12px;color:#64748b;text-align:center;padding:8px 10px 8px;line-height:1.2;">' + disclaimerText + '</div>' +
             '</div>' +
             '</a>';
     };
@@ -978,8 +1182,8 @@ function adjustLayout() {
                 'style="display:inline-block; position: relative; width:' + width + 'px;height:' + height + 'px; z-index: 2;" ' +
                 'data-ad-client="' + caPub + '" ' +
                 'data-ad-slot="' + slotId + '" ' +
-                'onmouseenter="window._isMouseOverAdSense = true;" ' +
-                'onmouseleave="window._isMouseOverAdSense = false;" ' +
+                'onmouseenter="window._onAdEnter();" ' +
+                'onmouseleave="window._onAdLeave();" ' +
                 'data-adsbygoogle-status="pending"></ins>';
 
             banner.innerHTML = html;
@@ -1036,7 +1240,7 @@ function adjustLayout() {
         // Il rilevamento chirurgico è gestito direttamente dal tag <ins> (z-index 2).
         // Usiamo il mouseleave del banner come rete di sicurezza globale.
         if (slotId && !isAdSenseShieldActive() && !devMode) {
-            banner.onmouseleave = function () { window._isMouseOverAdSense = false; };
+            banner.onmouseleave = function () { window._onAdLeave(); };
         }
 
         // --- Amazon Banner Impression + Click Tracking ---
@@ -1468,7 +1672,7 @@ function setupAmazonFinishBanner(formId, options) {
         oldBanner.remove();
     }
 
-    if (useAdSense || (devMode && ENABLE_ADSENSE_ON_FINISH && window.gameConfig && window.gameConfig.adsenseActive)) {
+    if (useAdSense || (devMode && !shieldActive && ENABLE_ADSENSE_ON_FINISH && window.gameConfig && window.gameConfig.adsenseActive)) {
         var adContainer = document.createElement('div');
         adContainer.className = 'finish-banner';
 
@@ -1493,8 +1697,8 @@ function setupAmazonFinishBanner(formId, options) {
             ins.style.cssText = 'display:block;width:' + bannerWidth + 'px;height:' + bannerHeight + 'px;';
             ins.setAttribute('data-ad-client', 'ca-pub-9335537153013492');
             ins.setAttribute('data-ad-slot', '6538837230');
-            ins.setAttribute('onmouseenter', 'window._isMouseOverAdSense = true;');
-            ins.setAttribute('onmouseleave', 'window._isMouseOverAdSense = false;');
+            ins.setAttribute('onmouseenter', 'window._onAdEnter();');
+            ins.setAttribute('onmouseleave', 'window._onAdLeave();');
             adContainer.appendChild(ins);
             modal.appendChild(adContainer);
             (window.adsbygoogle = window.adsbygoogle || []).push({});

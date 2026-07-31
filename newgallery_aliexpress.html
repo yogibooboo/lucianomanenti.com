@@ -4,15 +4,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Anteprima e Gestione Banner Amazon</title>
+    <title>Anteprima e Gestione Banner AliExpress</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --amazon-orange: #ff9900;
-            --amazon-dark: #131921;
-            --deal-red: #cc0c39;
+            --ali-red: #ff4747;
+            --ali-red-dark: #cc0c39;
+            --ali-dark: #131921;
             --bg-color: #121212;
             --panel-bg: #1e1e1e;
             --input-bg: #141414;
@@ -167,7 +167,7 @@
             position: relative;
             width: 300px;
             height: 600px;
-            background: var(--amazon-dark);
+            background: var(--ali-dark);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 4px;
             overflow: hidden;
@@ -193,7 +193,7 @@
         }
 
         .deal-header {
-            background: var(--deal-red);
+            background: var(--ali-red-dark);
             color: white;
             padding: 12px;
             text-align: center;
@@ -258,12 +258,12 @@
         .price-text {
             font-size: 22px;
             font-weight: bold;
-            color: white;
+            color: #ff4747;
         }
 
         .status-badge {
             display: inline-block;
-            background: var(--deal-red);
+            background: var(--ali-red-dark);
             color: white;
             padding: 3px 8px;
             border-radius: 4px;
@@ -505,9 +505,9 @@
         <div class="admin-panel-box">
             <div class="panel-section-title">➕ Aggiungi un Banner Manualmente</div>
             <div class="panel-form">
-                <input type="text" id="addAsin" placeholder="Incolla l'ASIN (es. B0BN5WRWNW)">
+                <input type="text" id="addPid" placeholder="Incolla il Product ID (es. 1005007805694170)">
                 <input type="text" id="addMsg" placeholder="Testo Rosso (es. In Offerta!)">
-                <button class="btn btn-add" onclick="aggiungiProdottoManuale()">Aggiungi ad Amazon</button>
+                <button class="btn btn-add" onclick="aggiungiProdottoManuale()">Aggiungi ad AliExpress</button>
             </div>
 
             <div class="divider"></div>
@@ -516,7 +516,7 @@
             <div class="panel-form" style="margin-bottom: 0;">
                 <button class="btn btn-sync" onclick="aggiornaTuttiIPrezzi()">Aggiorna Tutti i Prezzi Ora</button>
                 <button class="btn btn-copy" onclick="copiaSuOneDrive()">📂 Copia su lucianomanenti.com</button>
-                <a href="sync_log.txt" target="_blank" class="btn btn-log">📄 Vedi Log Sistema</a>
+                <a href="sync_log_ali.txt" target="_blank" class="btn btn-log">📄 Vedi Log Sistema</a>
             </div>
             <div id="statusMessage" style="margin-top: 12px; font-size: 13px; font-weight: bold; min-height: 20px; color: #4ade80;"></div>
         </div>
@@ -578,7 +578,7 @@
             <!-- Anteprima Live Banner 300x600 -->
             <div class="banner-300x600" id="liveBanner">
                 <div class="star-badge" id="previewStarBadge">⭐ 5</div>
-                <div class="deal-header" id="previewHeader">OFFERTA A TEMPO</div>
+                <div class="deal-header" id="previewHeader">OFFERTA ALIEXPRESS</div>
                 <div class="image-container" id="previewImgContainer">
                     <img class="product-img" id="previewImg" src="" alt="Product">
                 </div>
@@ -591,17 +591,17 @@
                     <div class="expiry-info" id="previewExpiry">In corso</div>
                 </div>
                 <div class="button-container" id="previewBtnContainer">
-                    <div class="cta-btn">Vedi offerta su Amazon.it</div>
+                    <div class="cta-btn">Vedi offerta su AliExpress</div>
                 </div>
                 <div class="disclosure" id="previewDisclosure">
-                    Disponibile su Amazon.it<br>
-                    <span style="font-size: 9px; opacity: 0.7;">Come affiliato Amazon, guadagno dagli acquisti idonei.</span>
+                    Disponibile su AliExpress<br>
+                    <span style="font-size: 9px; opacity: 0.7;">In qualità di affiliato AliExpress, guadagno dagli acquisti idonei.</span>
                 </div>
             </div>
 
             <!-- Pulsanti Azione In Basso a Destra -->
             <div class="sidebar-actions">
-                <button class="btn-sidebar btn-visit" onclick="visitaLinkAmazon()">🔍 VAI SU AMAZON</button>
+                <button class="btn-sidebar btn-visit" onclick="visitaLinkAli()">🔍 VAI SU ALIEXPRESS</button>
                 <button class="btn-sidebar btn-delete" onclick="eliminaBanner()">🗑️ ELIMINA BANNER</button>
                 <button class="btn-sidebar btn-save" onclick="salvaEDisci()">💾 ESCI E SALVA MODIFICHE</button>
                 <button class="btn-sidebar btn-cancel" onclick="chiudiEditorSenzaSalvare()">✕ ESCI SENZA MODIFICHE</button>
@@ -630,16 +630,16 @@
 
         async function loadDeals() {
             try {
-                let response = await fetch('newdeals.json?nocache=' + Date.now());
+                let response = await fetch('newdeals_aliexpress.json?nocache=' + Date.now());
                 if (!response.ok) {
-                    response = await fetch('banner/newdeals.json?nocache=' + Date.now());
+                    response = await fetch('banner/newdeals_aliexpress.json?nocache=' + Date.now());
                 }
                 const data = await response.json();
                 allDeals = data.deals || [];
                 renderGallery();
             } catch (err) {
                 console.error(err);
-                document.getElementById('gallery').innerHTML = '<p style="color:#ff9900;text-align:center;">Errore caricamento banner/newdeals.json</p>';
+                document.getElementById('gallery').innerHTML = '<p style="color:#ff4747;text-align:center;">Errore caricamento banner/newdeals_aliexpress.json</p>';
             }
         }
 
@@ -667,7 +667,7 @@
                 card.className = 'banner-wrapper';
                 card.onclick = () => apriEditorBanner(idx);
 
-                const headerText = deal.custom_message || 'OFFERTA A TEMPO';
+                const headerText = deal.custom_message || 'OFFERTA ALIEXPRESS';
                 const weight = deal.weight !== undefined ? deal.weight : 5;
                 const activeImgs = deal.active_images && deal.active_images.length > 0 ? deal.active_images : [deal.img];
                 const mainImg = activeImgs[0] || deal.img;
@@ -695,11 +695,11 @@
                                 </div>
                             </div>
                             <div class="button-container">
-                                <div class="cta-btn">Vedi offerta su Amazon.it</div>
+                                <div class="cta-btn">Vedi offerta su AliExpress</div>
                             </div>
                             <div class="disclosure">
-                                Disponibile su Amazon.it<br>
-                                <span style="font-size: 9px; opacity: 0.7;">Come affiliato Amazon, guadagno dagli acquisti idonei.</span>
+                                Disponibile su AliExpress<br>
+                                <span style="font-size: 9px; opacity: 0.7;">In qualità di affiliato AliExpress, guadagno dagli acquisti idonei.</span>
                             </div>
                         </div>
                     `;
@@ -712,7 +712,7 @@
                                 <img class="product-img" id="gallery_img_${idx}" src="${mainImg}" alt="Product">
                             </div>
                             <div class="button-container" style="padding-top:15px;">
-                                <div class="cta-btn">Vedi offerta su Amazon.it</div>
+                                <div class="cta-btn">Vedi offerta su AliExpress</div>
                             </div>
                         </div>
                     `;
@@ -725,7 +725,7 @@
                                 <img class="product-img" id="gallery_img_${idx}" src="${mainImg}" alt="Product">
                             </div>
                             <div class="button-container" style="padding-top:15px;">
-                                <div class="cta-btn">Vedi offerta su Amazon.it</div>
+                                <div class="cta-btn">Vedi offerta su AliExpress</div>
                             </div>
                         </div>
                     `;
@@ -813,7 +813,7 @@
             const weightVal = document.getElementById('editWeight').value;
 
             document.getElementById('previewStarBadge').textContent = '⭐ ' + weightVal;
-            document.getElementById('previewHeader').textContent = headerVal || 'OFFERTA A TEMPO';
+            document.getElementById('previewHeader').textContent = headerVal || 'OFFERTA ALIEXPRESS';
             document.getElementById('previewTitle').textContent = titleVal || 'Senza Titolo';
             document.getElementById('previewPrice').textContent = deal.price || '';
             document.getElementById('previewBadge').textContent = deal.badge || '';
@@ -840,6 +840,7 @@
                 contentBox.style.display = 'none';
                 disclosureBox.style.display = 'none';
                 
+                // Avvia la rotazione automatica per la modalità Auto
                 if (editorRotationTimer) clearInterval(editorRotationTimer);
                 let rotIdx = 0;
                 document.getElementById('previewImg').src = activeImgs[0] || deal.img;
@@ -872,7 +873,7 @@
             updateLivePreview();
         }
 
-        function visitaLinkAmazon() {
+        function visitaLinkAli() {
             if (editingIndex === null) return;
             window.open(allDeals[editingIndex].link, '_blank');
         }
@@ -907,14 +908,14 @@
 
         async function salvaTuttiIDeals() {
             try {
-                let endpoint = 'api_salva_deals.php';
+                let endpoint = 'api_salva_deals_ali.php';
                 let resp = await fetch(endpoint, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ deals: allDeals })
                 });
                 if (!resp.ok) {
-                    endpoint = 'banner/api_salva_deals.php';
+                    endpoint = 'banner/api_salva_deals_ali.php';
                     resp = await fetch(endpoint, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -941,39 +942,39 @@
         }
 
         async function aggiungiProdottoManuale() {
-            const asin = document.getElementById('addAsin').value.trim();
+            const pid = document.getElementById('addPid').value.trim();
             const msg = document.getElementById('addMsg').value.trim();
-            if (!asin) { showStatusMessage('⚠️ Inserisci un ASIN Amazon valido!', true); return; }
+            if (!pid) { showStatusMessage('⚠️ Inserisci un Product ID AliExpress valido!', true); return; }
 
-            showStatusMessage('⏳ Aggiunta ASIN in corso...');
+            showStatusMessage('⏳ Aggiunta Product ID in corso...');
             try {
-                let resp = await fetch('api_ricevi_asin.php', {
+                let resp = await fetch('api_ricevi_ali_id.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ asin: asin, message: msg })
+                    body: JSON.stringify({ product_id: pid, message: msg })
                 });
                 if (!resp.ok) {
-                    resp = await fetch('banner/api_ricevi_asin.php', {
+                    resp = await fetch('banner/api_ricevi_ali_id.php', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ asin: asin, message: msg })
+                        body: JSON.stringify({ product_id: pid, message: msg })
                     });
                 }
-                showStatusMessage('✅ ASIN aggiunto con successo! Avvio sincronizzazione...');
-                document.getElementById('addAsin').value = '';
+                showStatusMessage('✅ Product ID aggiunto con successo! Avvio sincronizzazione...');
+                document.getElementById('addPid').value = '';
                 document.getElementById('addMsg').value = '';
                 aggiornaTuttiIPrezzi();
             } catch (e) {
-                showStatusMessage('⚠️ Errore durante l\'aggiunta dell\'ASIN.', true);
+                showStatusMessage('⚠️ Errore durante l\'aggiunta del prodotto.', true);
             }
         }
 
         async function aggiornaTuttiIPrezzi() {
-            showStatusMessage('🔄 Sincronizzazione prezzi da API Amazon in corso...');
+            showStatusMessage('🔄 Sincronizzazione prezzi da API AliExpress in corso...');
             try {
-                let resp = await fetch('aggiorna_offerte.php');
+                let resp = await fetch('aggiorna_offerte_aliexpress.php');
                 if (!resp.ok) {
-                    resp = await fetch('banner/aggiorna_offerte.php');
+                    resp = await fetch('banner/aggiorna_offerte_aliexpress.php');
                 }
                 showStatusMessage('✅ Sincronizzazione completata con successo!');
                 loadDeals();
@@ -985,9 +986,9 @@
         async function copiaSuOneDrive() {
             showStatusMessage('⏳ Copia del file su lucianomanenti.com in corso...');
             try {
-                let resp = await fetch('api_copia_su_sito.php');
+                let resp = await fetch('api_copia_su_sito_ali.php');
                 if (!resp.ok) {
-                    resp = await fetch('banner/api_copia_su_sito.php');
+                    resp = await fetch('banner/api_copia_su_sito_ali.php');
                 }
                 const res = await resp.json();
                 if (res.status === 'success') {

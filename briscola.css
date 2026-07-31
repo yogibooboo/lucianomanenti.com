@@ -432,6 +432,64 @@ a.pulsante-top {
 }
 #pannello-punti .punti-riga span:last-child { color: #ffd700; }
 
+/* Registri di debug: briscole/carichi ancora disponibili in gioco */
+.registro-debug {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px;
+    margin-top: 4px;
+    padding-top: 4px;
+    border-top: 1px solid rgba(174, 214, 174, 0.25);
+}
+.registro-debug .reg-carta {
+    font-size: 8px;
+    font-weight: bold;
+    padding: 1px 3px;
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.35);
+    min-width: 12px;
+    text-align: center;
+    line-height: 1.3;
+    transition: background 0.2s, color 0.2s;
+}
+.registro-debug .reg-carta.disponibile {
+    background: #ffd700;
+    color: #14320c;
+}
+.registro-debug .reg-carta.in-fondo {
+    background: #c0392b;
+    color: #fff;
+}
+
+/* Tooltip su opzioni temporaneamente disattivate (es. bottone disabled) */
+.tooltip-disabilitato {
+    position: relative;
+    display: inline-block;
+}
+.tooltip-disabilitato::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-bottom: 6px;
+    padding: 4px 8px;
+    background: #14320c;
+    color: #ffd700;
+    font-size: 11px;
+    font-weight: normal;
+    white-space: nowrap;
+    border-radius: 4px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s;
+    z-index: 10;
+}
+.tooltip-disabilitato:hover::after {
+    opacity: 1;
+}
+
 /* === PULSANTE NUOVA PARTITA (sotto i pulsanti in alto a destra) === */
 #btn-nuova-partita {
     position: absolute;

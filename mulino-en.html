@@ -8,7 +8,7 @@
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Free Online Italian Checkers (Dama) - lucianomanenti.com</title>
+    <title>Free Online Nine Men's Morris (Mill, Merels) - lucianomanenti.com</title>
     <link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
     <link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
     <link rel="shortcut icon" href="favicon/favicon.ico">
@@ -16,12 +16,12 @@
     <link rel="manifest" href="favicon/site.webmanifest">
 
     <meta name="Description"
-        content="Play Italian checkers (dama) for free online against the computer. Three difficulty levels, official FID rules with mandatory captures, hints and automatic game saving.">
+        content="Play Nine Men's Morris (also known as Mill or Merels) for free online against the computer. Three difficulty levels, all three game phases, hints and automatic game saving.">
     <meta http-Equiv="Cache-Control" Content="no-cache">
     <meta http-Equiv="Pragma" Content="no-cache">
     <meta http-Equiv="Expires" Content="0">
 
-    <link rel="stylesheet" href="dama.css?v=1.7" />
+    <link rel="stylesheet" href="mulino.css?v=1.8" />
     <link rel="stylesheet" href="richiami.css?v=1.0" />
 
     <!-- Google tag (gtag.js) -->
@@ -34,7 +34,7 @@
     </script>
     <script>
         window.gameConfig = {
-            gaPrefix: 'DAMA_en_',
+            gaPrefix: 'MULINO_en_',
             hideLegalFooter: true,
             adsenseActive: false
         };
@@ -56,11 +56,9 @@
 
             <!-- Titolo del gioco -->
             <div class="lang-switch-header">
-                <a href="dama.html">IT</a>
-                <a href="dama-en.html" class="active">EN</a>
                 <div id="btn-audio" class="btn-audio-game" aria-label="Audio"></div>
             </div>
-            <div id="titolo-gioco">Dama Luciano</div>
+            <div id="titolo-gioco">Nine Men's Morris Luciano</div>
 
             <!-- Messaggio di stato -->
             <div id="messaggio-stato">Loading...</div>
@@ -68,8 +66,8 @@
             <!-- ================= PANNELLO STATISTICHE ================= -->
             <div id="pannello-stats">
                 <div class="stats-header">
-                    <span>RECORD — <span id="stat-diff">--</span></span>
-                    <button id="btn-reset-stats" title="Reset this level's record">&#10226;</button>
+                    <span>RECORD &mdash; <span id="stat-diff">--</span></span>
+                    <button id="btn-reset-stats" title="Reset the record for this level">&#10226;</button>
                 </div>
                 <div class="stats-righe">
                     <div class="info-blocco">
@@ -87,8 +85,14 @@
                 </div>
             </div>
 
-            <!-- ================= SCACCHIERA ================= -->
-            <div id="scacchiera"></div>
+            <!-- ================= RISERVE E TABELLONE ================= -->
+            <!-- Pedine del computer ancora da piazzare -->
+            <div id="riserva-computer" class="riserva"></div>
+
+            <div id="tabellone"></div>
+
+            <!-- Pedine del giocatore ancora da piazzare -->
+            <div id="riserva-giocatore" class="riserva"></div>
 
             <!-- ================= PANNELLO CONTROLLI ================= -->
             <div id="pannello-controlli">
@@ -103,7 +107,15 @@
                     </div>
                     <div class="info-blocco">
                         <div class="info-label">Pieces</div>
-                        <div class="info-valore" id="info-pezzi">12 - 12</div>
+                        <div class="info-valore" id="info-pezzi">9 - 9</div>
+                    </div>
+                    <div class="info-blocco">
+                        <div class="info-label">Phase</div>
+                        <div class="info-valore" id="info-fase">--</div>
+                    </div>
+                    <div class="info-blocco">
+                        <div class="info-label">To place</div>
+                        <div class="info-valore" id="info-riserva">9 - 9</div>
                     </div>
                 </div>
 
@@ -114,38 +126,28 @@
 
                 <div id="promemoria-regole">
                     <b>Key rules:</b><br>
-                    &#8226; Capturing is <b>mandatory</b> (and the best capture applies).<br>
-                    &#8226; A man <b>cannot</b> capture a king.<br>
-                    &#8226; The king moves and captures one square in any direction.<br>
-                    &#8226; A man reaching the last row becomes a <b>king</b> (and the capture stops).
+                    &#8226; First <b>place</b> your 9 pieces, one per turn.<br>
+                    &#8226; Then <b>move</b> one step along the lines.<br>
+                    &#8226; Three in a row = <b>mill</b>: remove an opponent piece.<br>
+                    &#8226; You cannot take from a mill if other pieces are free.<br>
+                    &#8226; Down to <b>3 pieces</b> you may jump anywhere (flying).<br>
+                    &#8226; You lose with 2 pieces left or with no legal move.
                 </div>
 
                 <button id="btn-nuova-partita">NEW GAME</button>
 
                 <!-- Richiami agli altri due giochi da tavoliere. Le miniature
                      sono disegnate in CSS (vedi richiami.css): nessuna immagine
-                     da caricare. Il Mulino è etichettato "Morris" perché il nome
-                     per esteso non entra nella casella affiancata: quello
-                     completo sta nel title. -->
+                     da caricare. -->
                 <div class="richiami-giochi">
-                    <a href="mulino-en.html" class="richiamo" title="Go to the Nine Men's Morris game">
-                        <span class="mini-mulino" aria-hidden="true">
-                            <i class="mq esterno"></i>
-                            <i class="mq mezzo"></i>
-                            <i class="mq interno"></i>
-                            <i class="mr alto"></i>
-                            <i class="mr basso"></i>
-                            <i class="mr sinistra"></i>
-                            <i class="mr destra"></i>
-                            <i class="mp bianca p-alto-sx"></i>
-                            <i class="mp bianca p-alto-cx"></i>
-                            <i class="mp bianca p-alto-dx"></i>
-                            <i class="mp bianca p-sx-cy"></i>
-                            <i class="mp bianca p-basso-sx"></i>
-                            <i class="mp nera p-mezzo-dx"></i>
-                            <i class="mp nera p-basso-dx"></i>
+                    <a href="dama-en.html" class="richiamo" title="Go to the Checkers game">
+                        <span class="mini-scacchiera" aria-hidden="true">
+                            <span class="mc chiara"></span><span class="mc scura"></span><span class="mc chiara"></span><span class="mc scura"></span>
+                            <span class="mc scura"><i class="mp nera"></i></span><span class="mc chiara"></span><span class="mc scura"><i class="mp nera"></i></span><span class="mc chiara"></span>
+                            <span class="mc chiara"></span><span class="mc scura"></span><span class="mc chiara"></span><span class="mc scura"></span>
+                            <span class="mc scura"><i class="mp bianca"></i></span><span class="mc chiara"></span><span class="mc scura"><i class="mp bianca"></i></span><span class="mc chiara"></span>
                         </span>
-                        <span class="richiamo-testo"><b>Morris</b></span>
+                        <span class="richiamo-testo"><b>Checkers</b></span>
                     </a>
                     <a href="scacchi-en.html" class="richiamo" title="Go to the Chess game">
                         <span class="mini-scacchiera" aria-hidden="true">
@@ -162,10 +164,10 @@
             <!-- ================= MODALI ED OVERLAY ================= -->
 
             <!-- 1. Modale Inizio Gioco -->
-            <div id="modale-inizio" class="form-dama">
+            <div id="modale-inizio" class="form-mulino">
                 <button id="btn-riprendi" class="btn-continua" style="display: none; width: 100%; max-width: 250px; margin: 0 auto 20px auto; background: #27ae60; border-color: #1e8449; color: white;">RESUME PREVIOUS GAME</button>
 
-                <div class="form-dama-title">New Checkers Game</div>
+                <div class="form-mulino-title">New Game of Nine Men's Morris</div>
 
                 <div class="opzione-gruppo" style="margin-bottom: 16px; text-align: center;">
                     <div style="font-size: 13px; font-weight: bold; margin-bottom: 10px; color: #ffd700; text-transform: uppercase;">Difficulty:</div>
@@ -182,78 +184,84 @@
                         <button id="btn-col-bianco" onclick="selezionaColore(1)" class="btn-opzione-sel attiva" style="min-width: 130px;">&#9898; WHITE</button>
                         <button id="btn-col-nero" onclick="selezionaColore(-1)" class="btn-opzione-sel" style="min-width: 130px;">&#9899; BLACK</button>
                     </div>
-                    <div style="font-size: 11px; color: #aaa; margin-top: 8px;">White always moves first.</div>
+                    <div style="font-size: 11px; color: #aaa; margin-top: 8px;">White always places first.</div>
                 </div>
 
                 <button onclick="confermaEAvviaPartita()" class="btn-continua" style="width: 100%; max-width: 250px; margin: 0 auto 15px auto; display: block;">START PLAYING</button>
 
                 <p style="font-size: 11px; color: #aaa; text-align: center; margin: 0;">
-                    Official Italian checkers (FID) rules.<br>
-                    Capturing is mandatory: playable squares are highlighted.
+                    Classic Nine Men's Morris rules.<br>
+                    Playable positions are highlighted on every turn.
                 </p>
             </div>
 
             <!-- 2. Modale Fine Partita (bassa e larga, banner sopra) -->
-            <div id="finepartita" class="form-dama modale-fine">
+            <div id="finepartita" class="form-mulino modale-fine">
                 <div class="confirm-message" id="fine-messaggio" style="margin: 0 0 8px 0; line-height: 1.3;">YOU WIN!</div>
                 <div id="fine-dettagli" style="color: #ffd700; font-size: 15px; font-weight: bold; text-align: center; margin-bottom: 16px; text-shadow: 1px 1px 2px #000;"></div>
                 <div style="display: flex; gap: 16px; justify-content: center;">
-                    <button id="btn-vedi-scacchiera" class="btn-continua" style="width: 250px; height: 44px; font-size: 16px; background: rgba(0,40,10,0.6); color: white; border-color: #6b9b7a;">VIEW THE BOARD</button>
+                    <button id="btn-vedi-tabellone" class="btn-continua" style="width: 250px; height: 44px; font-size: 16px; background: rgba(0,40,10,0.6); color: white; border-color: #6b9b7a;">VIEW THE BOARD</button>
                     <button onclick="location.reload()" class="btn-continua" style="width: 250px; height: 44px; font-size: 16px;">NEW GAME</button>
                 </div>
             </div>
 
             <!-- 3. Modale di Conferma Abbandono Partita (bassa e larga, banner sopra) -->
-            <div id="confermatermina" class="form-dama modale-conferma">
+            <div id="confermatermina" class="form-mulino modale-conferma">
                 <div class="confirm-message" style="margin: 0 0 18px 0; line-height: 1.4; font-size: 22px;">Do you really want to abandon the current game?</div>
                 <div class="conferma-bottoni">
-                    <button id="btn-no-continua" class="btn-continua" style="width: 260px; height: 44px; font-size: 16px;">NO, CONTINUE</button>
+                    <button id="btn-no-continua" class="btn-continua" style="width: 260px; height: 44px; font-size: 16px;">NO, KEEP PLAYING</button>
                     <button id="btn-si-termina" class="btn-continua" style="width: 260px; height: 44px; font-size: 16px; background-color: #cc0c39; color: white; border-color: #990022;">YES, NEW GAME</button>
                 </div>
             </div>
 
             <!-- 4. Modale Regole -->
-            <div id="modale-regole" class="form-dama" style="justify-content: flex-start;">
-                <div class="form-dama-title">How to Play</div>
+            <div id="modale-regole" class="form-mulino" style="justify-content: flex-start;">
+                <div class="form-mulino-title">How to Play</div>
                 <div style="font-size: 14px; line-height: 1.7; color: #e8e8e8; text-align: left; overflow-y: auto; padding: 0 10px;">
-                    <p style="margin-top: 0;">The game is played on the dark squares with <b>Italian checkers</b> rules. You win by capturing all your opponent's pieces or by blocking every move they have.</p>
-                    <p><b>Men</b> move diagonally forward, one square at a time. They capture by jumping over an adjacent enemy man, always forward. A man <b>cannot</b> capture a king.</p>
-                    <p><b>The king</b> (a man that reaches the last row) moves and captures one square in any diagonal direction.</p>
-                    <p><b>Capturing is mandatory</b>: if you can capture, you must. When several captures are available, the official precedence rules apply: the greatest number of pieces first, then capturing with a king, then the greatest number of kings captured. Multiple captures are played one jump at a time: the game highlights the squares where you can continue.</p>
+                    <p style="margin-top: 0;"><b>Nine Men's Morris</b> (also known as Mill or Merels) is played on a board of <b>24 positions</b> arranged in three concentric squares. Each player has <b>9 pieces</b>.</p>
+                    <p><b>1. Placing.</b> Players take turns putting one piece on any free position, until all 18 pieces are on the board.</p>
+                    <p><b>2. Moving.</b> Once your pieces are all placed, on each turn you move one of your pieces to a <b>free adjacent position</b>, following the lines of the board.</p>
+                    <p><b>3. Flying.</b> A player reduced to <b>3 pieces</b> may move a piece to any free position on the board, adjacent or not.</p>
+                    <p><b>The mill.</b> Lining up <b>three</b> of your pieces on a line closes a mill and lets you <b>remove one opponent piece</b> from the board. You may not remove a piece that is part of an opponent's mill, unless <b>all</b> their pieces are in mills. A mill can be opened and closed again to capture repeatedly.</p>
+                    <p><b>You win</b> by reducing your opponent to <b>2 pieces</b>, or by blocking them so they have <b>no legal move</b>.</p>
                     <p><b>&#8630; Undo</b>: takes the game back to before your last move (also Ctrl+Z).<br>
-                    <b>&#128161; Hint</b>: highlights a good move recommended by the computer.</p>
+                    <b>&#128161; Hint</b>: highlights a good move suggested by the computer.</p>
                     <p style="color: #aaa; font-size: 12px;">The game is saved automatically at the start of each of your turns: if you close the page you can resume where you left off.</p>
                 </div>
                 <div style="display: flex; gap: 12px; margin-top: 15px; align-items: center;">
-                    <a href="regole-dama-en.html" target="_blank" rel="opener" class="btn-continua" style="text-decoration: none; display: inline-block; background: #27ae60; border-color: #1e8449; color: white;">FULL GUIDE</a>
+                    <a href="regole-mulino-en.html" target="_blank" rel="opener" class="btn-continua" style="text-decoration: none; display: inline-block; background: #27ae60; border-color: #1e8449; color: white;">FULL GUIDE</a>
                     <button onclick="chiudiModali()" class="btn-continua">CLOSE</button>
                 </div>
             </div>
 
             <!-- Link di navigazione ed utilità a fondo pagina -->
             <div class="link-utility-bottom">
-                <a href="aboutme-en.html" target="_blank" id="btn-scrivetemi-dama" class="pulsante-top">Contact Me</a>
+                <a href="aboutme.html" target="_blank" id="btn-scrivetemi-mulino" class="pulsante-top">Contact Me</a>
                 <button id="btn-regole-top" class="pulsante-top">How to Play</button>
+                <span class="lang-switch-inline">
+                    <a href="mulino.html">IT</a>
+                    <a href="mulino-en.html" class="active">EN</a>
+                </span>
             </div>
 
             <!-- Link Legali (Privacy e Cookie) -->
-            <div class="legal-links-dama">
-                <a href="privacy-en.html" target="_blank" id="btn-privacy-dama">Privacy Policy</a>
+            <div class="legal-links-mulino">
+                <a href="privacy.html" target="_blank" id="btn-privacy-mulino">Privacy Policy</a>
                 <span class="sep">&#8226;</span>
-                <a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)" id="btn-cookie-dama">Manage Cookies</a>
+                <a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)" id="btn-cookie-mulino">Manage Cookies</a>
             </div>
 
-            <div class="link-giochi-dama">
-                <a href="scacchi-en.html" class="pulsante-link-dama">Chess</a>
-                <a href="sudoku-en.html" class="pulsante-link-dama">Sudoku</a>
-                <a href="scopa-en.html" class="pulsante-link-dama">Scopa</a>
-                <a href="rummy-en.html" class="pulsante-link-dama">Gin Rummy</a>
-                <a href="burraco-en.html" class="pulsante-link-dama">Burraco</a>
-                <a href="scala40-en.html" class="pulsante-link-dama">Scala 40</a>
-                <a href="machiavelli-en.html" class="pulsante-link-dama">Machiavelli</a>
-                <a href="spider-en.html" class="pulsante-link-dama">Spider</a>
-                <a href="klondike-en.html" class="pulsante-link-dama">Klondike</a>
-                <a href="index-en.html" class="pulsante-link-dama">Home</a>
+            <div class="link-giochi-mulino">
+                <a href="dama-en.html" class="pulsante-link-mulino">Checkers</a>
+                <a href="scacchi-en.html" class="pulsante-link-mulino">Chess</a>
+                <a href="sudoku-en.html" class="pulsante-link-mulino">Sudoku</a>
+                <a href="scopa-en.html" class="pulsante-link-mulino">Scopa</a>
+                <a href="rummy-en.html" class="pulsante-link-mulino">Gin Rummy</a>
+                <a href="burraco-en.html" class="pulsante-link-mulino">Burraco</a>
+                <a href="scala40-en.html" class="pulsante-link-mulino">Scala 40</a>
+                <a href="spider-en.html" class="pulsante-link-mulino">Spider</a>
+                <a href="klondike-en.html" class="pulsante-link-mulino">Klondike</a>
+                <a href="index-en.html" class="pulsante-link-mulino">Home</a>
             </div>
 
         </div><!-- /campogioco -->
@@ -263,8 +271,8 @@
     <script src="site.js?v=1.1"></script>
     <!-- Layout engine per ridimensionare la finestra del gioco -->
     <script src="game-layout.js?v=4.6"></script>
-    <!-- Logica della Dama -->
-    <script src="dama.js?v=1.3"></script>
+    <!-- Logica del Mulino -->
+    <script src="mulino.js?v=1.5"></script>
     <script>
         (function () {
             var nascosto = false;

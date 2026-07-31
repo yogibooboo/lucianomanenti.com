@@ -1,6 +1,6 @@
 /* ============================================================================
-   DAMA ITALIANA - Stili CSS
-   Stile feltro verde Burraco/Scopa con layout 1024x750px
+   MULINO (Nine Men's Morris) - Stili CSS
+   Stile feltro verde Burraco/Scopa con layout 1024x750px, coerente con la Dama
    ============================================================================ */
 
 /* === BASE & LAYOUT === */
@@ -87,7 +87,7 @@ html, body {
 #messaggio-stato {
     position: absolute;
     top: 50px;
-    left: 50%;
+    left: 340px;
     transform: translateX(-50%);
     color: #fff;
     font-size: 16px;
@@ -123,73 +123,66 @@ html, body {
 .lang-switch-header {
     position: absolute;
     top: 8px;
-    left: 230px;
+    right: 15px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
     z-index: 10001;
+}
+/* I selettori di lingua stanno nella barra in alto a sinistra, subito a destra
+   di "Come si Gioca"; nell'angolo destro resta la sola icona audio. */
+.lang-switch-inline {
     display: flex;
     align-items: center;
     gap: 6px;
 }
-.lang-switch-header a {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0 10px;
-    height: 32px;
-    text-decoration: none;
-    border-radius: 4px;
-    font-weight: bold;
-    font-size: 12px;
-    background: rgba(255, 255, 255, 0.15);
-    color: white;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    transition: all 0.2s;
-    box-sizing: border-box;
-}
-.lang-switch-header a.active {
-    background: #ffd700;
-    color: #1a1a2e;
-    border-color: #b8860b;
-}
-.lang-switch-header a:hover:not(.active) {
-    background: rgba(255, 255, 255, 0.3);
-}
 
-.btn-audio-game {
-    width: 32px;
-    height: 32px;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: 20px;
-    background-color: rgba(255, 255, 255, 0.15);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-.btn-audio-game:hover {
-    background-color: rgba(255, 255, 255, 0.25);
-}
-.btn-audio-game.muted {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.21.05-.42.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z'/%3E%3C/svg%3E");
-}
-
-#btn-audio {
-    position: relative;
-    z-index: 10001;
-}
-
-.pulsante-top {
-    height: 32px;
-    line-height: 32px;
+.lang-switch-header a,
+.lang-switch-inline a {
+    height: 26px;
+    line-height: 26px;
     background: rgba(0,0,0,0.4);
     border: 1px solid #6b9b7a;
     color: white;
     border-radius: 4px;
     padding: 0 10px;
     cursor: pointer;
-    font-size: 12px;
+    font-size: 11px;
     font-weight: bold;
+    text-decoration: none;
+    transition: all 0.2s;
+    box-sizing: border-box;
+}
+.lang-switch-header a.active,
+.lang-switch-inline a.active {
+    background: linear-gradient(180deg, #ffd700 0%, #d4af37 100%);
+    color: #1a1a2e;
+    border-color: #b8860b;
+}
+.lang-switch-header a:hover:not(.active),
+.lang-switch-inline a:hover:not(.active) {
+    background: rgba(0, 60, 20, 0.7);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+.btn-audio-game {
+    width: 26px;
+    height: 26px;
+    cursor: pointer;
+}
+
+.pulsante-top {
+    height: 26px;
+    line-height: 26px;
+    background: rgba(0,0,0,0.4);
+    border: 1px solid #6b9b7a;
+    color: white;
+    border-radius: 4px;
+    padding: 0 10px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: bold;
+    text-decoration: none;
     transition: all 0.2s;
     box-sizing: border-box;
 }
@@ -197,17 +190,13 @@ html, body {
     background: rgba(0, 60, 20, 0.7);
     border-color: rgba(255, 255, 255, 0.5);
 }
-a.pulsante-top {
-    display: inline-block;
-    text-decoration: none;
-}
 
-/* Scrivetemi e Come si Gioca: in alto a sinistra, prima del selettore lingua */
 .link-utility-bottom {
     position: absolute;
     top: 8px;
     left: 15px;
     display: flex;
+    align-items: center;
     gap: 6px;
     z-index: 10001;
 }
@@ -282,52 +271,98 @@ a.pulsante-top {
 #stat-vinte { color: #7fe07f; }
 #stat-perse { color: #ff8f8f; }
 
-/* === SCACCHIERA === */
-#scacchiera {
+/* === TABELLONE ===
+   Non è una griglia di caselle: 24 nodi in coordinate assolute, con le linee
+   disegnate come sottili div sotto ai nodi.
+   560 = 420px di area utile + 62px di cornice per lato + 8px di bordo per lato
+   (box-sizing: border-box, quindi l'area interna netta è esattamente 544).
+   Cornice e bordo sommano a 70px, cioè un passo di griglia (420/6): lo stacco
+   fra il legno e il primo quadrato è così identico a quello fra due quadrati
+   concentrici. Cambiando il border-width va aggiornato BORDO_TAB nel JS.
+   La cornice è nelle
+   coordinate calcolate dal JS (MARGINE_TAB), non in un padding: i figli
+   assoluti si riferiscono al padding box, quindi un padding non li
+   scosterebbe dal bordo in alto e a sinistra e il disegno risulterebbe
+   scentrato verso quell'angolo. */
+#tabellone {
     position: absolute;
-    top: 102px;
-    left: 52px;
-    display: grid;
-    grid-template-columns: repeat(8, 72px);
-    grid-template-rows: repeat(8, 72px);
+    top: 122px;
+    left: 60px;      /* centrato nella colonna di gioco larga 680: (680-560)/2 */
+    width: 560px;
+    height: 560px;
+    box-sizing: border-box;
+    background: #9c6b3c;
+    background-image: linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(0,0,0,0.12) 100%);
     border: 8px solid #4a2f17;
-    background: #4a2f17;
-    border-radius: 6px;
+    border-radius: 8px;
     box-shadow: 0 8px 25px rgba(0,0,0,0.55), inset 0 0 12px rgba(0,0,0,0.4);
     z-index: 50;
 }
 
-.casa {
-    width: 72px;
-    height: 72px;
+/* Segmenti che uniscono i punti: left/top/width/height li assegna il JS, che
+   include già MARGINE_TAB nelle coordinate. */
+.linea {
+    position: absolute;
+    background: #4a2f17;
+    border-radius: 2px;
+    pointer-events: none;
+    box-shadow: 0 1px 1px rgba(255,255,255,0.12);
+}
+
+/* Nodi: cerchietti cliccabili da centrare sulla propria coordinata.
+   Il JS assegna left/top del punto esatto, i margini negativi di mezza
+   larghezza spostano il cerchio in modo che risulti centrato lì sopra. */
+.nodo {
+    position: absolute;
+    width: 48px;
+    height: 48px;
+    margin-left: -24px;
+    margin-top: -24px;
+    border-radius: 50%;
     box-sizing: border-box;
     display: flex;
     align-items: center;
     justify-content: center;
-    position: relative;
     cursor: pointer;
+    z-index: 5;
 }
-.casa.chiara { background: #e9d5ab; }
-.casa.scura { background: #9c6b3c; }
-
-/* Evidenziazioni di gioco */
-.casa.selezionabile::before {
+/* Punto di innesto visibile quando la posizione è vuota */
+.nodo::before {
     content: '';
     position: absolute;
-    inset: 3px;
-    border: 2px solid rgba(255, 215, 0, 0.55);
-    border-radius: 6px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #6b4423;
+    border: 2px solid #3d2612;
+    box-sizing: border-box;
     pointer-events: none;
 }
-.casa.selezionata {
-    background: #c9a24b;
-    box-shadow: inset 0 0 14px rgba(255, 215, 0, 0.8);
-}
-.casa.destinazione::after {
+.nodo:has(.pezzo)::before { display: none; }
+
+/* Evidenziazioni di gioco */
+.nodo.selezionabile::after {
     content: '';
     position: absolute;
-    width: 26px;
-    height: 26px;
+    inset: 2px;
+    border: 3px solid rgba(255, 215, 0, 0.6);
+    border-radius: 50%;
+    pointer-events: none;
+}
+.nodo.selezionata::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border: 4px solid #ffd700;
+    border-radius: 50%;
+    box-shadow: 0 0 16px rgba(255, 215, 0, 0.9);
+    pointer-events: none;
+}
+.nodo.destinazione::after {
+    content: '';
+    position: absolute;
+    width: 30px;
+    height: 30px;
     border-radius: 50%;
     background: rgba(255, 215, 0, 0.55);
     border: 3px solid rgba(255, 215, 0, 0.9);
@@ -339,14 +374,38 @@ a.pulsante-top {
     0%, 100% { transform: scale(1); opacity: 0.85; }
     50% { transform: scale(1.25); opacity: 1; }
 }
-.casa.suggerita {
-    box-shadow: inset 0 0 16px 4px rgba(127, 212, 255, 0.9);
+.nodo.suggerita::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border: 4px solid #7fd4ff;
+    border-radius: 50%;
+    box-shadow: 0 0 18px 3px rgba(127, 212, 255, 0.9);
+    pointer-events: none;
+}
+/* Pedine avversarie che si possono togliere dopo un mulino */
+.nodo.catturabile::after {
+    content: '\00D7';
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 40px;
+    font-weight: bold;
+    color: #ff3b3b;
+    text-shadow: 0 0 6px rgba(0,0,0,0.9);
+    border: 4px solid #ff3b3b;
+    border-radius: 50%;
+    box-sizing: border-box;
+    animation: pulsaDest 0.9s infinite;
+    pointer-events: none;
 }
 
-/* === PEZZI === */
+/* === PEDINE === */
 .pezzo {
-    width: 55px;
-    height: 55px;
+    width: 46px;
+    height: 46px;
     border-radius: 50%;
     box-sizing: border-box;
     position: relative;
@@ -360,30 +419,50 @@ a.pulsante-top {
     background: radial-gradient(circle at 35% 30%, #6a6a6a 0%, #3a3a3a 45%, #191919 100%);
     border: 3px solid #000;
 }
-/* Anello interno per l'effetto "pedina impilata" */
+/* Anello interno per l'effetto "pedina tornita" */
 .pezzo::before {
     content: '';
     position: absolute;
-    inset: 7px;
+    inset: 6px;
     border-radius: 50%;
     border: 2px solid rgba(0, 0, 0, 0.18);
     pointer-events: none;
 }
 .pezzo.nero::before { border-color: rgba(255, 255, 255, 0.15); }
-/* Corona della dama */
-.pezzo.regina::after {
-    content: '\265B';
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 32px;
-    color: #d4af37;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.6);
-    pointer-events: none;
+/* Pedina che fa parte di un mulino chiuso */
+.pezzo.in-mulino {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.45), 0 0 0 3px rgba(255, 215, 0, 0.85);
 }
-.pezzo.bianco.regina::after { color: #b8860b; }
+
+/* === RISERVE (pedine ancora da piazzare) === */
+.riserva {
+    position: absolute;
+    left: 60px;       /* allineata al bordo sinistro del tabellone */
+    width: 560px;
+    height: 26px;
+    display: flex;
+    gap: 5px;
+    align-items: center;
+    z-index: 50;
+}
+#riserva-computer { top: 84px; }
+#riserva-giocatore { top: 690px; }   /* sotto il tabellone: 122 + 560 = 682 */
+
+.pezzo-riserva {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    box-sizing: border-box;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+}
+.pezzo-riserva.bianco {
+    background: radial-gradient(circle at 35% 30%, #fffdf5 0%, #f0e6c8 45%, #cdbd92 100%);
+    border: 2px solid #b3a27a;
+}
+.pezzo-riserva.nero {
+    background: radial-gradient(circle at 35% 30%, #6a6a6a 0%, #3a3a3a 45%, #191919 100%);
+    border: 2px solid #000;
+}
 
 /* === PANNELLO CONTROLLI (colonna destra) === */
 #pannello-controlli {
@@ -403,14 +482,16 @@ a.pulsante-top {
     border-radius: 10px;
     padding: 10px 14px;
     display: flex;
+    flex-wrap: wrap;
     justify-content: space-between;
     align-items: center;
+    gap: 8px 0;
     color: #fff;
     font-size: 14px;
 }
 #info-partita .info-blocco {
     text-align: center;
-    flex: 1;
+    flex: 1 0 33%;
 }
 #info-partita .info-label {
     font-size: 11px;
@@ -487,7 +568,7 @@ a.pulsante-top {
    condiviso fra dama, mulino e scacchi. */
 
 /* === MODALI E DIALOGHI === */
-.form-dama {
+.form-mulino {
     z-index: 40000;
     position: absolute;
     width: 500px;
@@ -508,7 +589,7 @@ a.pulsante-top {
     overflow: hidden;
 }
 
-.form-dama-title {
+.form-mulino-title {
     font-family: 'Slackey', 'Outfit', sans-serif;
     font-size: 26px;
     color: #ffd700;
@@ -610,7 +691,7 @@ a.pulsante-top {
 }
 
 /* === LINK A FONDO PAGINA === */
-.legal-links-dama {
+.legal-links-mulino {
     position: absolute;
     bottom: 12px;
     left: 15px;
@@ -620,18 +701,18 @@ a.pulsante-top {
     z-index: 100;
     font-size: 11px;
 }
-.legal-links-dama a {
+.legal-links-mulino a {
     color: #cde8cd;
     text-decoration: none;
     transition: color 0.2s;
 }
-.legal-links-dama a:hover {
+.legal-links-mulino a:hover {
     color: #ffd700;
     text-decoration: underline;
 }
-.legal-links-dama .sep { color: #6b9b7a; }
+.legal-links-mulino .sep { color: #6b9b7a; }
 
-.link-giochi-dama {
+.link-giochi-mulino {
     position: absolute;
     bottom: 8px;
     right: 15px;
@@ -639,7 +720,7 @@ a.pulsante-top {
     gap: 5px;
     z-index: 100;
 }
-.pulsante-link-dama {
+.pulsante-link-mulino {
     height: 26px;
     line-height: 26px;
     background: rgba(0,0,0,0.4);
@@ -654,7 +735,7 @@ a.pulsante-top {
     transition: all 0.2s;
     box-sizing: border-box;
 }
-.pulsante-link-dama:hover {
+.pulsante-link-mulino:hover {
     background: rgba(0, 60, 20, 0.7);
     border-color: rgba(255, 255, 255, 0.5);
 }

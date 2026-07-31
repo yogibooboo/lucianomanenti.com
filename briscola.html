@@ -21,7 +21,7 @@
     <meta http-Equiv="Pragma" Content="no-cache">
     <meta http-Equiv="Expires" Content="0">
 
-    <link rel="stylesheet" href="briscola.css?v=2.17" />
+    <link rel="stylesheet" href="briscola.css?v=2.21" />
 
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
@@ -108,6 +108,9 @@
                 <div class="punti-titolo">Punti</div>
                 <div class="punti-riga"><span id="label-tu">Tu</span><span id="punti-tu">0</span></div>
                 <div class="punti-riga"><span id="label-loro">PC</span><span id="punti-loro">0</span></div>
+                <!-- Registri di debug: briscole e carichi già usciti dal gioco -->
+                <div id="registro-briscole" class="registro-debug"></div>
+                <div id="registro-carichi" class="registro-debug"></div>
             </div>
 
             <!-- Mazzetto delle tue carte prese -->
@@ -164,26 +167,24 @@
                 <div class="opzione-gruppo" style="margin-bottom: 14px; text-align: center;">
                     <div style="font-size: 13px; font-weight: bold; margin-bottom: 8px; color: #ffd700; text-transform: uppercase;">Difficoltà:</div>
                     <div style="display: flex; justify-content: center; gap: 10px; align-items: center;">
-                        <button id="btn-diff-facile" onclick="selezionaDifficolta('facile')" class="btn-opzione-sel attiva">PRINCIPIANTE</button>
-                        <button id="btn-diff-medio" onclick="selezionaDifficolta('medio')" class="btn-opzione-sel">MEDIO</button>
-                        <button id="btn-diff-difficile" onclick="selezionaDifficolta('difficile')" class="btn-opzione-sel">ESPERTO</button>
+                        <span class="tooltip-disabilitato" data-tooltip="Opzione temporaneamente non disponibile">
+                            <button id="btn-diff-facile" onclick="selezionaDifficolta('facile')" class="btn-opzione-sel" disabled>PRINCIPIANTE</button>
+                        </span>
+                        <span class="tooltip-disabilitato" data-tooltip="Opzione temporaneamente non disponibile">
+                            <button id="btn-diff-medio" onclick="selezionaDifficolta('medio')" class="btn-opzione-sel" disabled>MEDIO</button>
+                        </span>
+                        <button id="btn-diff-difficile" onclick="selezionaDifficolta('difficile')" class="btn-opzione-sel attiva">ESPERTO</button>
                     </div>
                 </div>
 
                 <div class="opzione-gruppo" style="margin-bottom: 14px; text-align: center;">
                     <div style="font-size: 13px; font-weight: bold; margin-bottom: 8px; color: #ffd700; text-transform: uppercase;">Modalità:</div>
                     <div style="display: flex; justify-content: center; gap: 10px; align-items: center;">
-                        <button id="btn-mod-2" onclick="selezionaModalita(2)" class="btn-opzione-sel attiva" style="min-width: 140px;">1 CONTRO 1</button>
-                        <button id="btn-mod-4" onclick="selezionaModalita(4)" class="btn-opzione-sel" style="min-width: 140px;">2 CONTRO 2</button>
+                        <span class="tooltip-disabilitato" data-tooltip="Opzione temporaneamente non disponibile">
+                            <button id="btn-mod-2" onclick="selezionaModalita(2)" class="btn-opzione-sel" style="min-width: 140px;" disabled>1 CONTRO 1</button>
+                        </span>
+                        <button id="btn-mod-4" onclick="selezionaModalita(4)" class="btn-opzione-sel attiva" style="min-width: 140px;">2 CONTRO 2</button>
                     </div>
-                </div>
-
-                <div class="opzione-gruppo" id="opzione-segnali" style="margin-bottom: 14px; display: flex; justify-content: center; align-items: center; gap: 8px;">
-                    <label style="display: flex; justify-content: center; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; font-weight: bold; color: #ffd700; text-transform: uppercase;">
-                        <input type="checkbox" id="chk-segnali" onchange="toggleSegnaliOpzione(this.checked)" style="width: 16px; height: 16px; cursor: pointer;">
-                        Segnali compagno
-                    </label>
-                    <button type="button" id="btn-info-segnali" class="btn-info-tondo" aria-label="Cosa sono i segnali compagno?">?</button>
                 </div>
 
                 <div class="opzione-gruppo" style="margin-bottom: 18px; text-align: center;">
@@ -227,7 +228,7 @@
                     <p><b>La presa:</b> chi apre gioca una carta qualsiasi; gli altri rispondono <i>senza obbligo di seme</i>. Prende la briscola pi&ugrave; alta, o in assenza di briscole la carta pi&ugrave; alta del seme di apertura (Asso &gt; 3 &gt; Re &gt; Cavallo &gt; Fante &gt; 7...2). Chi prende apre la presa successiva.</p>
                     <p><b>La pesca:</b> dopo ogni presa si pesca una carta a testa, a partire da chi ha preso; l'ultima carta pescata &egrave; la briscola scoperta.</p>
                     <p><b>2 contro 2:</b> il tuo compagno (&#9733;) &egrave; di fronte a te; i punti si sommano per coppia.</p>
-                    <p><b>Segnali compagno</b> (opzione, solo 2 contro 2): vedi le briscole principali e i carichi del tuo compagno, e lui vede i tuoi. Anche la coppia avversaria si scambia i propri segnali e ne approfitta nel gioco.</p>
+                    <p><b>Segnali compagno</b> (solo 2 contro 2): vedi le briscole principali e i carichi del tuo compagno, e lui vede i tuoi. Anche la coppia avversaria si scambia i propri segnali e ne approfitta nel gioco.</p>
                     <p style="color: #aaa; font-size: 12px;">La partita viene salvata automaticamente all'inizio di ogni tuo turno: se chiudi la pagina puoi riprendere da dove eri rimasto.</p>
                 </div>
                 <div style="display: flex; gap: 12px; margin-top: 15px; align-items: center;">
@@ -240,8 +241,8 @@
             <div id="modale-info-segnali" class="form-briscola" style="justify-content: flex-start;">
                 <div class="form-briscola-title">Segnali Compagno</div>
                 <div style="font-size: 14px; line-height: 1.7; color: #e8e8e8; text-align: left; padding: 0 10px;">
-                    <p style="margin-top: 0;">Con questa opzione attiva (solo 2 contro 2), tu e il tuo compagno vedete a colpo d'occhio quali delle 5 briscole principali (Asso, 3, Re, Cavallo, Fante) l'altro possiede, e quanti carichi (Assi/3 non di briscola) ha in mano. La X indica che non ha nessuna briscola.</p>
-                    <p>Anche la coppia avversaria si scambia gli stessi segnali, e li usa: se attivi questa opzione, i giocatori del PC ne terranno conto nelle loro scelte, proprio come farebbe un compagno umano.</p>
+                    <p style="margin-top: 0;">In 2 contro 2, tu e il tuo compagno vedete a colpo d'occhio quali delle 5 briscole principali (Asso, 3, Re, Cavallo, Fante) l'altro possiede, e quanti carichi (Assi/3 non di briscola) ha in mano. La X indica che non ha nessuna briscola.</p>
+                    <p>Anche la coppia avversaria si scambia gli stessi segnali, e li usa: i giocatori del PC ne tengono conto nelle loro scelte, proprio come farebbe un compagno umano.</p>
                 </div>
                 <div style="display: flex; gap: 12px; margin-top: 15px; align-items: center;">
                     <button onclick="chiudiModali()" class="btn-continua">CHIUDI</button>
@@ -281,7 +282,7 @@
     <!-- Layout engine per ridimensionare la finestra del gioco -->
     <script src="game-layout.js?v=4.6"></script>
     <!-- Logica della Briscola -->
-    <script src="briscola.js?v=1.26"></script>
+    <script src="briscola.js?v=1.53"></script>
     <script>
         (function () {
             var nascosto = false;

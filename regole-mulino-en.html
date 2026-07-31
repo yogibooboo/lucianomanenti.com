@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
+	<script>
+		window.dataLayer = window.dataLayer || [];
+		function gtag() { dataLayer.push(arguments); }
+		gtag('js', new Date());
+		gtag('config', 'G-WRBDRDQ4L8');
+		window.currentLang = 'en';
+	</script>
+	<title>Nine Men's Morris (Mill, Merels) Rules - How to play</title>
+	<meta name="Description"
+		content="Rules of Nine Men's Morris, also known as Mill or Merels: the three phases of placing, moving and flying, how to close a mill, the double mill and strategy tips to play free online against the computer.">
+	<link rel="alternate" hreflang="it" href="regole-mulino.html">
+	<link rel="alternate" hreflang="en" href="regole-mulino-en.html">
+	<link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
+	<link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
+	<link rel="shortcut icon" href="favicon/favicon.ico">
+	<link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+	<style>
+		body {
+			font-family: sans-serif;
+			line-height: 1.7;
+			max-width: 800px;
+			margin: 40px auto;
+			padding: 20px;
+			color: #333;
+			background-color: #f9f9f9;
+		}
+
+		h1 {
+			color: #2c3e50;
+			border-bottom: 2px solid #ffd700;
+			padding-bottom: 10px;
+		}
+
+		h2 {
+			color: #2c3e50;
+			margin-top: 30px;
+		}
+
+		h3 {
+			color: #2c3e50;
+			font-size: 1.1em;
+			margin-top: 20px;
+		}
+
+		.lang-switch {
+			text-align: right;
+			margin-bottom: 20px;
+		}
+
+		.lang-switch a {
+			display: inline-block;
+			padding: 6px 16px;
+			margin-left: 5px;
+			text-decoration: none;
+			border-radius: 5px;
+			font-weight: bold;
+			font-size: 14px;
+		}
+
+		.lang-switch a.active {
+			background: #2c3e50;
+			color: white;
+		}
+
+		.lang-switch a:not(.active) {
+			background: #ddd;
+			color: #333;
+			cursor: pointer;
+		}
+
+		.content-box {
+			background: white;
+			padding: 30px;
+			border-radius: 8px;
+			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+		}
+
+		.play-btn {
+			display: inline-block;
+			margin-top: 25px;
+			padding: 12px 30px;
+			background: #27ae60;
+			color: white;
+			text-decoration: none;
+			border-radius: 8px;
+			font-size: 18px;
+			font-weight: bold;
+		}
+
+		.nav-links {
+			text-align: center;
+			margin-top: 30px;
+			font-size: 14px;
+		}
+
+		.nav-links a {
+			color: #3498db;
+			text-decoration: none;
+			margin: 0 10px;
+		}
+
+		.banner {
+			width: 100%;
+			height: 150px;
+			background-image: url('images/home/castagne.jpg');
+			background-size: cover;
+			background-position: center;
+			border-radius: 8px;
+			margin: 20px 0;
+			box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+		}
+
+		.score-table {
+			width: 100%;
+			border-collapse: collapse;
+			margin-top: 10px;
+			margin-bottom: 20px;
+		}
+
+		.score-table th,
+		.score-table td {
+			border: 1px solid #ddd;
+			padding: 8px;
+			text-align: left;
+		}
+
+		.score-table th {
+			background-color: #f2f2f2;
+			font-weight: bold;
+		}
+
+		.highlight {
+			background-color: #fff9c4;
+			padding: 0 4px;
+		}
+
+		/* Board diagram drawn in SVG: no image to load and it stays sharp at any
+		   zoom level. It shows the 24 points and the 16 lines of three on which
+		   mills are closed. */
+		.schema-tabellone {
+			display: block;
+			margin: 20px auto;
+			max-width: 320px;
+			width: 100%;
+			height: auto;
+		}
+
+		.didascalia {
+			text-align: center;
+			font-size: 0.9em;
+			color: #777;
+			margin-top: -10px;
+			margin-bottom: 25px;
+		}
+	</style>
+</head>
+
+<body>
+	<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+		<a href="#" id="btn-back" onclick="goBack(); return false;"
+			style="display: inline-block; padding: 6px 16px; background: #e74c3c; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 14px;">&#x2190;
+			Back</a>
+		<div class="lang-switch" style="margin-bottom: 0;">
+			<a href="regole-mulino.html" id="btn-it">Italiano</a>
+			<a href="regole-mulino-en.html" id="btn-en" class="active">English</a>
+		</div>
+	</div>
+
+	<div class="banner"></div>
+
+	<div class="content-box">
+		<div id="lang-en">
+			<h1>Nine Men's Morris Rules</h1>
+
+			<p><strong>Nine Men's Morris</strong> is one of the oldest board games we know of: boards carved into stone have been found in Egyptian temples and in Roman buildings. In English it is also called <strong>Mill</strong>, <strong>Merels</strong> (or <em>Merrills</em>), and <em>Cowboy Checkers</em> in the United States; in Italy it is known as <em>Mulino</em>, <em>Filetto</em> or <em>Tria</em>. The rules take two minutes to learn, but a game between experienced players is a subtle positional fight.</p>
+
+			<p style="background: #fff9c4; padding: 12px 16px; border-radius: 6px; border-left: 4px solid #ffd700;">
+				This game is constantly evolving: new features and improvements are added regularly. If something doesn't work as expected or you have suggestions, write to
+				<a href="mailto:postmaster@lucianomanenti.com" style="color: #3498db;">postmaster@lucianomanenti.com</a>
+				— your feedback is precious!
+			</p>
+
+			<h2>1. The Board and the Goal of the Game</h2>
+			<p>Two players face each other on a board of <strong>24 points</strong>, placed at the corners and at the midpoints of the sides of <strong>three concentric squares</strong>. Four connecting lines join the midpoints of the matching sides. Pieces are placed <strong>on the points</strong>, not inside the cells.</p>
+
+			<svg class="schema-tabellone" viewBox="0 0 240 240" role="img" aria-label="Diagram of the Nine Men's Morris board: three concentric squares joined by four connecting lines, with the 24 points marked and a completed mill on the top row">
+				<!-- Logical 0..6 grid with a uniform 36px step starting at 12, just
+				     like the real board: the three concentric squares therefore come
+				     out equidistant (12/48/84 and the mirrored 228/192/156). -->
+				<rect x="0" y="0" width="240" height="240" fill="#f4e4c8" />
+				<g stroke="#8b5a2b" stroke-width="3" fill="none">
+					<rect x="12" y="12" width="216" height="216" />
+					<rect x="48" y="48" width="144" height="144" />
+					<rect x="84" y="84" width="72" height="72" />
+					<line x1="120" y1="12" x2="120" y2="84" />
+					<line x1="120" y1="156" x2="120" y2="228" />
+					<line x1="12" y1="120" x2="84" y2="120" />
+					<line x1="156" y1="120" x2="228" y2="120" />
+				</g>
+				<g fill="#5d3a1a">
+					<circle cx="12" cy="12" r="6" /><circle cx="120" cy="12" r="6" /><circle cx="228" cy="12" r="6" />
+					<circle cx="48" cy="48" r="6" /><circle cx="120" cy="48" r="6" /><circle cx="192" cy="48" r="6" />
+					<circle cx="84" cy="84" r="6" /><circle cx="120" cy="84" r="6" /><circle cx="156" cy="84" r="6" />
+					<circle cx="12" cy="120" r="6" /><circle cx="48" cy="120" r="6" /><circle cx="84" cy="120" r="6" />
+					<circle cx="156" cy="120" r="6" /><circle cx="192" cy="120" r="6" /><circle cx="228" cy="120" r="6" />
+					<circle cx="84" cy="156" r="6" /><circle cx="120" cy="156" r="6" /><circle cx="156" cy="156" r="6" />
+					<circle cx="48" cy="192" r="6" /><circle cx="120" cy="192" r="6" /><circle cx="192" cy="192" r="6" />
+					<circle cx="12" cy="228" r="6" /><circle cx="120" cy="228" r="6" /><circle cx="228" cy="228" r="6" />
+				</g>
+				<!-- A closed mill on the top row of the outer square -->
+				<line x1="12" y1="12" x2="228" y2="12" stroke="#e74c3c" stroke-width="4" />
+				<g fill="#fffdf5" stroke="#8b5a2b" stroke-width="2">
+					<circle cx="12" cy="12" r="10" />
+					<circle cx="120" cy="12" r="10" />
+					<circle cx="228" cy="12" r="10" />
+				</g>
+			</svg>
+			<p class="didascalia">The 24 points of the board. At the top, three pieces in a row form a <strong>mill</strong>.</p>
+
+			<p>Each player has <strong>9 pieces</strong>. <strong>White</strong> moves first. You win when your opponent:</p>
+			<ul>
+				<li>is left with <strong>only 2 pieces</strong> (they can no longer form a mill), or</li>
+				<li>has <strong>no legal move</strong>, because all their pieces are blocked.</li>
+			</ul>
+
+			<h2>2. The Mill</h2>
+			<p>A <strong>mill</strong> is a row of <strong>three pieces of the same colour</strong> along one of the lines on the board. There are <strong>16</strong> valid lines: four for each of the three squares (their four sides) plus the four connecting lines that cross the squares.</p>
+			<p><span class="highlight">Every time you close a mill, <strong>you remove one opposing piece</strong></span> of your choice from the board. The captured piece is out of the game for good.</p>
+			<p>Two points regularly confuse beginners:</p>
+			<ul>
+				<li>The three pieces must sit on a line <strong>drawn on the board</strong>. Three pieces on the three squares that only "look" aligned to the eye, but are not joined by a line, do <em>not</em> form a mill: the corners of the squares are not connected to each other.</li>
+				<li>A mill counts only <strong>at the moment it is closed</strong>. Leaving it standing on the board gives no further advantage.</li>
+			</ul>
+
+			<h3>Which piece can be removed</h3>
+			<p>You cannot remove pieces that are <strong>part of an opposing mill</strong>, unless your opponent has <strong>only</strong> pieces committed to mills: in that case any piece may be taken.</p>
+
+			<h2>3. The Three Phases of the Game</h2>
+			<table class="score-table">
+				<tr>
+					<th>Phase</th>
+					<th>How you move</th>
+				</tr>
+				<tr>
+					<td><strong>1. Placing</strong></td>
+					<td>Players take turns putting one piece on <strong>any empty point</strong>, until all 18 pieces are on the board.</td>
+				</tr>
+				<tr>
+					<td><strong>2. Moving</strong></td>
+					<td>Once you have no pieces left in hand, you move one of your pieces to an <strong>adjacent empty point</strong>, following the lines.</td>
+				</tr>
+				<tr>
+					<td><strong>3. Flying</strong></td>
+					<td>A player reduced to <strong>3 pieces</strong> may move a piece to <strong>any</strong> empty point, however far away.</td>
+				</tr>
+			</table>
+			<p>The phases are not simultaneous for the two players: whoever drops to three pieces first starts flying while the other keeps moving one step at a time. Flying is a compensation rule, giving the losing player a chance to come back.</p>
+
+			<h2>4. The Double Mill and the Running Mill</h2>
+			<p>This is where games are decided. A mill, once closed, can be <strong>opened and closed again</strong>: by moving one of the three pieces out and bringing it back on the following move, you close the mill again and <strong>capture another piece</strong>. This manoeuvre is called a <em>running mill</em> (or open mill) and yields one capture every two moves.</p>
+			<p>Stronger still is the <strong>double mill</strong>: two mills sharing one piece, arranged so that moving it closes first one and then the other. Every single move closes a mill, so it captures <strong>one piece per turn</strong>. A well-placed double mill usually decides the game.</p>
+
+			<h2>5. The Draw</h2>
+			<p>The game is declared a <strong>draw</strong> in two cases:</p>
+			<ul>
+				<li>when <strong>the same position occurs three times</strong> with the same player to move (threefold repetition);</li>
+				<li>when <strong>30 moves per side</strong> are reached without anyone closing a mill or capturing a piece: the position is considered blocked.</li>
+			</ul>
+
+			<h2>6. How to play Nine Men's Morris Luciano</h2>
+			<ul>
+				<li><strong>Levels:</strong> three difficulties (Easy, Medium, Hard) matching the computer's search depth. You can choose to play White (places first) or Black.</li>
+				<li><strong>Moving:</strong> during the placing phase click an empty point; during the moving phase click one of your pieces first and then the destination. Playable points are <strong>highlighted every turn</strong>.</li>
+				<li><strong>Capturing:</strong> when you close a mill, the game asks you to click the opposing piece to remove, showing only the ones the rules allow.</li>
+				<li><strong>&#8630; Undo:</strong> takes the game back to how it was before your last move, undoing the computer's reply as well (also with <strong>Ctrl+Z</strong>).</li>
+				<li><strong>&#128161; Hint:</strong> highlights a good move worked out by the computer.</li>
+				<li><strong>Record:</strong> the panel at the top right counts wins, losses and draws for the selected level, with a reset button.</li>
+				<li><strong>Auto-save:</strong> the game is saved at the start of each of your turns; if you close the page you can pick it up again.</li>
+			</ul>
+
+			<h2>7. Strategy Tips</h2>
+			<ul>
+				<li><strong>Aim for the midpoints:</strong> the four points at the centre of the sides of the middle square have <strong>four adjacencies</strong> each, against the two of the corners. They are the most mobile spots on the board.</li>
+				<li><strong>While placing, don't chase the immediate mill:</strong> building two threats at once is worth far more than closing a single one your opponent had already planned to parry.</li>
+				<li><strong>Set up a running mill:</strong> arrange your pieces so you can open and close a mill. One capture every two moves wears the opponent down fast.</li>
+				<li><strong>Remove the right pieces:</strong> take out the pieces about to complete an opposing mill, or the ones that would give mobility, not the isolated and harmless ones.</li>
+				<li><strong>Don't strip your position to attack:</strong> in the moving phase mobility counts for more than numbers. Being left with blocked pieces means losing even with more material.</li>
+				<li><strong>Watch the 3-piece threshold:</strong> dropping to three, your opponent gains flying and becomes dangerous again. Sometimes it is better to leave them with four blocked pieces than to reduce them to three free to fly.</li>
+			</ul>
+
+			<p style="text-align: center;"><a href="#" onclick="goBack(); return false;" class="play-btn">Close</a></p>
+		</div>
+	</div>
+
+	<div class="banner"></div>
+
+	<div class="nav-links">
+		<a href="index-en.html">Home</a> |
+		<a href="info-en.html">All games</a> |
+		<a href="aboutme-en.html">About Me</a> |
+		<a href="privacy-en.html">Privacy Policy</a>
+	</div>
+
+	<p style="text-align: center; font-size: 0.8em; color: #999; margin-top: 15px;">
+		&copy; 2026 Luciano Manenti
+	</p>
+
+	<script>
+		function goBack() {
+			if (window.opener) {
+				window.close();
+			} else {
+				window.location.href = 'mulino-en.html';
+			}
+		}
+	</script>
+</body>
+
+</html>

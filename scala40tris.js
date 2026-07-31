@@ -56,7 +56,8 @@ var translations = {
 		audio_tuono: "Tuono",
 		audio_lacrimosa: "Mozart: Lacrimosa",
 		sigla_giocatore: "G",
-		sigla_avversario: "A"
+		sigla_avversario: "A",
+		stallo_testo: "Nessuno può più formare o allungare combinazioni: la smazzata è in stallo. Verrà annullata e le carte ridistribuite (i totali del torneo restano invariati)."
 	},
 	en: {
 		undo: "UNDO",
@@ -101,7 +102,8 @@ var translations = {
 		audio_tuono: "Thunder",
 		audio_lacrimosa: "Mozart: Lacrimosa",
 		sigla_giocatore: "P",
-		sigla_avversario: "O"
+		sigla_avversario: "O",
+		stallo_testo: "No one can form or extend any more combinations: the deal is stuck. It will be cancelled and the cards redealt (tournament totals stay unchanged)."
 	}
 };
 
@@ -1911,8 +1913,12 @@ var scala = {
 			this.astato = TurnState.FINETURNO;
 			this.turno = -1;
 
-			this.totalepartite++;
-
+			/* Nessun totalepartite++ qui: l'incremento del contatore mani
+			   è di competenza esclusiva di calcolatotali(), che lo esegue
+			   per entrambi i percorsi di fine mano (chiusura del giocatore
+			   e chiusura dell'IA). L'incremento in questo punto era un
+			   doppione storico che faceva avanzare il contatore di 2 sulle
+			   sole mani vinte dal giocatore. */
 			var vintotorneo = this.calcolatotali();
 
 			$$.css($$.one("#puntigiocatore"), { "z-index": "40000" });
@@ -1929,6 +1935,10 @@ var scala = {
 			else {
 				window.setTimeout(function () { tada.play(); scala.mydialog("haivinto", scala.nuovo); }, 1000);
 			}
+		}
+		else if (this.rilevastallo()) {
+			this.render();
+			return this.mostrastallo();
 		}
 		else {
 			this.iaimminente = true;
@@ -2770,10 +2780,15 @@ var scala = {
 				esito.jollycontenuti.push(carte[i]);
 				continue;
 			}
+			/* Ancoraggio alla prima carta reale quando la scala inizia con un
+			   jolly: carte[0] (il jolly di testa) NON va contato qui in
+			   numerojolly2 — è già sommato a parte in numerojollytotale, e il
+			   doppio conteggio farebbe scattare il minimo di carte reali
+			   (scala jolly+2 consecutive giudicata invalida senza l'opzione
+			   "una carta basta", niente evidenziazione del jolly ambiguo). */
 			if (primonumero2 > 49) {
 				primonumero2 = carte[i].numero; primoseme = carte[i].seme;
-				numerojolly2++;
-				esito.jollycontenuti.splice(0, 0, carte[i]);
+				esito.jollycontenuti.splice(0, 0, carte[0]);
 			}
 			if (carte[i].numero != primonumero2) { trovatotris = false; break; }
 			if (carte[i].seme != primoseme) { trovatotris = false; break; }
@@ -3283,6 +3298,13 @@ var scala = {
 					}
 				}
 
+				if (!finito && scala.rilevastallo()) {
+					scala.turno = -1;
+					scala.render();
+					scala.mostrastallo();
+					return;
+				}
+
 				if ((!finito) && (avv < (scala.numeroavversari - 1))) {
 					scala.astato = TurnState.NEXTAVV;
 					scala.turno++;
@@ -3417,8 +3439,20 @@ var scala = {
 				}
 				var esito = scala.analizzatris(tris);
 				if (esito.tipotris == TRIS) {
+					if (tris.length > 3) continue;
 					if (esito.primonumero != carta.numero) continue;
-					if (esito.semidausare.indexOf(carta.seme) < 0) continue;
+					/* semidausare di analizzatris non conta i semi già assegnati
+					   ai jolly del blocco (tipojolly): senza sottrarli l'IA
+					   attaccherebbe il doppione della carta rappresentata dal
+					   jolly invece di scambiarlo, lasciando due carte con lo
+					   stesso seme (stessa compensazione già presente in
+					   aggiungitris per l'aggiunta di un jolly). */
+					var semiliberi = esito.semidausare.slice();
+					for (var jj = 0; jj < esito.jollycontenuti.length; jj++) {
+						var pos = semiliberi.indexOf(esito.jollycontenuti[jj].tipojolly);
+						if (pos >= 0) semiliberi.splice(pos, 1);
+					}
+					if (semiliberi.indexOf(carta.seme) < 0) continue;
 					return salvacarta(ultimacartatris + 1);
 				}
 				else {
@@ -4033,6 +4067,70 @@ var scala = {
 			}
 		}
 		return false;
+	},
+
+	/* Vero se il blocco (tris o scala, array di carte già raggruppate per
+	   ntris) non può più essere allungato da NESSUNA carta, presente o
+	   futura: un tris è saturo a 4 carte (tutti e 4 i semi occupati, non
+	   esiste un quinto seme); una scala è satura solo a 13 carte (copre
+	   l'intero ciclo del seme) — se tocca un solo estremo (es. contiene il
+	   K ma non l'Asso) resta comunque estendibile dall'altro lato. Usa
+	   analizzatris già solo per distinguere tris da scala (tipotris), non
+	   serve altro perché la saturazione dipende unicamente dal numero di
+	   carte nel blocco. */
+	bloccosaturo: function (blocco) {
+		var esito = this.analizzatris(blocco);
+		if (!esito.valido) return false;
+		if (esito.tipotris == TRIS) return blocco.length >= 4;
+		return blocco.length >= 13;
+	},
+
+	/* Stallo (regolamento Sisal/FISCA): "qualora a terra si formino dei
+	   giochi che non è più possibile allungare ed entrambi i giocatori non
+	   hanno la possibilità di formare un nuovo gioco, si crea una situazione
+	   di stallo" — la smazzata va annullata e ridistribuita, totali invariati.
+	   La saturazione dei blocchi in tavola è una proprietà astratta (dipende
+	   solo dal numero di carte già piazzate, non da cosa c'è in mano: una
+	   carta che non attacca ORA potrebbe arrivare pescando in futuro), quindi
+	   va verificata sui blocchi, non sulle mani. La condizione "nessuno può
+	   formare un nuovo gioco" invece dipende dalle carte in mano: con 2 carte
+	   o meno non si può comunque aprire una nuova combinazione (minimo 3);
+	   con 3+ carte in mano a un qualsiasi giocatore attivo si potrebbe ancora
+	   formare un nuovo tris/scala, quindi non c'è stallo (evita falsi
+	   positivi, costerebbe enumerare tutte le sottocombinazioni). */
+	rilevastallo: function () {
+		var gruppi = [this.trisgiocatore];
+		for (var j = 0; j < this.numeroavversari; j++) gruppi.push(this.campitrisavversario[j]);
+		for (var g = 0; g < gruppi.length; g++) {
+			var carte = gruppi[g].carte;
+			var visti = {};
+			for (var i = 0; i < carte.length; i++) {
+				var nt = carte[i].ntris;
+				if (visti[nt]) continue;
+				visti[nt] = true;
+				var blocco = [];
+				for (var k = 0; k < carte.length; k++) {
+					if (carte[k].ntris === nt) blocco.push(carte[k]);
+				}
+				if (!this.bloccosaturo(blocco)) return false;
+			}
+		}
+
+		var mani = [this.giocatore];
+		for (var j2 = 0; j2 < this.numeroavversari; j2++) {
+			if (this.avvescluso(j2)) continue;
+			mani.push(this.campiavversario[j2]);
+		}
+		for (var m = 0; m < mani.length; m++) {
+			if (mani[m].carte.length > 2) return false;
+		}
+		return true;
+	},
+
+	mostrastallo: function () {
+		var el = $$.one("#testostallo");
+		if (el) el.textContent = t('stallo_testo');
+		this.mydialog("stallo", function () { scala.hidedialog(); scala.nuovo(); });
 	},
 
 	attaccajolly: function (contx, carta) {
