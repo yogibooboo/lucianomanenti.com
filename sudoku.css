@@ -546,6 +546,15 @@ a.pulsante-top {
     padding: 0 4px;
 }
 #hint-testo b { color: #ffd700; }
+#hint-penalita {
+    color: #ff9f43;
+    font-size: 12px;
+    line-height: 1.4;
+    text-align: center;
+    padding: 0 4px;
+    font-style: italic;
+}
+#hint-penalita b { color: #ff6b6b; font-style: normal; }
 #hint-bottoni {
     display: flex;
     flex-direction: column;
@@ -799,4 +808,24 @@ a.pulsante-top {
     color: #fff;
     background-color: rgba(0, 60, 20, 0.7);
     border-color: rgba(255, 255, 255, 0.4);
+}
+
+/* === SPRITE PENALITÀ "+Ns" (stile arcade: sale e sfuma) === */
+.penalita-volante {
+    position: fixed;
+    transform: translate(-50%, -50%);
+    z-index: 9999;
+    pointer-events: none;
+    font-family: 'Slackey', 'Outfit', sans-serif;
+    font-size: 30px;
+    font-weight: bold;
+    color: #ff3b30;
+    text-shadow: 0 0 6px rgba(0, 0, 0, 0.8), 2px 2px 0 #7a0000;
+    animation: penalita-sali 2.6s ease-out forwards;
+}
+@keyframes penalita-sali {
+    0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+    8%   { opacity: 1; transform: translate(-50%, -70%) scale(1.15); }
+    16%  { transform: translate(-50%, -90%) scale(1); }
+    100% { opacity: 0; transform: translate(-50%, -390%) scale(1); }
 }

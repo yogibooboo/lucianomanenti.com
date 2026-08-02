@@ -12,7 +12,7 @@
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Le Nostre Offerte Amazon Selezionate | lucianomanenti.com</title>
+    <title>Le Nostre Offerte Selezionate | lucianomanenti.com</title>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -216,6 +216,13 @@
             transition: transform 0.3s ease;
         }
 
+        /* Badge AliExpress: stesso ingombro, colore del marchio. Serve !important
+           perche' i keyframes dell'animazione pulse reimpostano il background
+           arancione di Amazon a ogni passaggio. */
+        .ali-badge {
+            background: #e62e04 !important;
+        }
+
         /* Pulse Animation */
         @keyframes amazonPulseAnim {
             0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.7); background: #e47911; }
@@ -291,7 +298,7 @@
         <a href="index.html" class="back-button" onclick="if(window.opener||window.history.length<=1){window.close();return false;}">← Torna ai Giochi</a>
 
         <header>
-            <h1>Offerte Amazon in Evidenza</h1>
+            <h1>Offerte in Evidenza</h1>
         </header>
 
         <!-- Loader di caricamento -->
@@ -344,6 +351,14 @@
                     card.target = '_blank';
                     card.rel = 'sponsored noopener';
 
+                    // Lo store determina testo del pulsante e disclaimer: la galleria
+                    // ora contiene anche prodotti AliExpress, non solo Amazon.
+                    const isAli = deal.store === 'aliexpress';
+                    const ctaText = isAli ? 'Vedi offerta su AliExpress' : 'Vedi offerta su Amazon.it';
+                    const disclaimerText = isAli
+                        ? 'Come affiliato AliExpress, guadagno dagli acquisti idonei.'
+                        : 'Come affiliato Amazon, guadagno dagli acquisti idonei.';
+
                     const headerText = deal.custom_message ? deal.custom_message : 'Offerta a tempo';
                     const expiryText = deal.expiry ? deal.expiry : '';
                     
@@ -364,7 +379,8 @@
                                 isHighDiscount = true;
                             }
                             const pulseClass = isHighDiscount ? ' amazon-badge-pulse' : '';
-                            badgeHtml = `<span class="amazon-badge${pulseClass}">${deal.badge}</span>`;
+                            const aliClass = isAli ? ' ali-badge' : '';
+                            badgeHtml = `<span class="amazon-badge${aliClass}${pulseClass}">${deal.badge}</span>`;
                         }
 
                         const expiryTitle = expiryText ? ` title="${expiryText}"` : '';
@@ -386,22 +402,25 @@
                         </div>
                         ${priceAndBadgeHtml}
                         <div class="button-box">
-                            <span class="cta-button">Vedi offerta su Amazon.it</span>
+                            <span class="cta-button">${ctaText}</span>
                         </div>
-                        <div class="disclaimer">Come affiliato Amazon, guadagno dagli acquisti idonei.</div>
+                        <div class="disclaimer">${disclaimerText}</div>
                     `;
 
                     // Tracciamento dei click per GA4
                     card.addEventListener('click', function () {
                         if (typeof gtag === 'function') {
                             const titleText = deal.title;
-                            const dealId = titleText.length > 60 ? titleText.substring(0, 60) + '...' : titleText;
+                            // Prefisso ALI- per separare i due canali nei report GA4.
+                            const troncato = titleText.length > 60 ? titleText.substring(0, 60) + '...' : titleText;
+                            const dealId = (deal.store === 'aliexpress') ? 'ALI-' + troncato : troncato;
                             const exposureSeconds = Math.round((Date.now() - pageStartTime) / 1000);
                             
                             gtag('event', 'Amazon_Banner_Click', {
                                 'event_category': 'Affiliate',
                                 'amazon_deal_id': dealId,
-                                'asin': deal.asin || '',
+                                'store': deal.store || 'amazon',
+                                'asin': deal.asin || deal.product_id || '',
                                 'format': 'gallery',
                                 'tempo_esposizione': exposureSeconds,
                                 'page_location': window.location.href,

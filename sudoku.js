@@ -21,6 +21,7 @@ const SUDOKU_LANG = (window.currentLang === 'en') ? {
     btnApplica: 'FILL IT IN',
     btnCancellaErrore: 'ERASE THE MISTAKE',
     btnRivela: 'REVEAL THE NUMBER',
+    hintPenalita: 'Penalty: +10 s now, +20 s more for the Explanation or filling it in (once).',
     spiegaNudo: function (val) { return 'This cell can only contain ' + val + ': it\'s the only candidate left, given the numbers already placed in its row, column and box.'; },
     spiegaNascostoRiga: function (val) { return 'In this row, ' + val + ' can only go in this cell: every other empty cell in the row already rules it out.'; },
     spiegaNascostoCol: function (val) { return 'In this column, ' + val + ' can only go in this cell: every other empty cell in the column already rules it out.'; },
@@ -49,6 +50,7 @@ const SUDOKU_LANG = (window.currentLang === 'en') ? {
     btnApplica: 'INSERISCI IL NUMERO',
     btnCancellaErrore: 'CANCELLA L\'ERRORE',
     btnRivela: 'RIVELA IL NUMERO',
+    hintPenalita: 'Penalit&agrave;: +10 s ora, +20 s per la Spiegazione o l\'inserimento (una volta sola).',
     spiegaNudo: function (val) { return 'In questa casella può andare solo ' + art(val) + val + ': è l\'unico candidato rimasto, dati i numeri già presenti su riga, colonna e riquadro.'; },
     spiegaNascostoRiga: function (val) { return 'In questa riga ' + art(val) + val + ' può andare solo qui: tutte le altre caselle vuote della riga lo escludono già.'; },
     spiegaNascostoCol: function (val) { return 'In questa colonna ' + art(val) + val + ' può andare solo qui: tutte le altre caselle vuote della colonna lo escludono già.'; },
@@ -69,6 +71,12 @@ const SUDOKU_LANG = (window.currentLang === 'en') ? {
 // === CONFIGURAZIONE DIFFICOLTÀ (numero di caselle iniziali rivelate) ===
 const SUDOKU_CLUES = { facile: 40, medio: 32, difficile: 26 };
 
+// === PENALITÀ SUL TEMPO (secondi aggiunti al cronometro) ===
+const PENALITA_AIUTO = 10;         // apertura del suggerimento (cella evidenziata)
+const PENALITA_AIUTO_EXTRA = 20;   // spiegazione o inserimento del numero (una volta sola)
+const PENALITA_ERRORE = 30;        // errore visibile solo dal confronto con la soluzione
+const PENALITA_CONFLITTO = 10;     // errore in conflitto con numeri già visibili (più lieve)
+
 // === STATO GLOBALE ===
 let soluzione = [];        // 81 valori 1-9: la soluzione completa
 let iniziale = [];         // 81 valori: schema di partenza (0 = vuota)
@@ -83,6 +91,8 @@ let difficolta = 'facile';
 let erroriCount = 0;
 let hintCount = 0;
 let secondi = 0;
+let ultimoMouseX = -1;     // ultima posizione nota del cursore, per posizionare lo sprite "+Ns"
+let ultimoMouseY = -1;
 let timerId = null;
 let cronologia = [];       // stack per undo: { idx, valPrec, notePrec, noteAltrui }
 let partitaFinita = false;
@@ -694,6 +704,11 @@ function inserisciNumero(val) {
     if (segnalato) {
         erroriCount++;
         riproduciAudio('sounds/scala40/knock.mp3');
+        // Penalità sul tempo: più lieve se in conflitto con numeri già visibili
+        // (l'informazione per evitarlo era davanti agli occhi), piena se l'errore
+        // emerge solo dal confronto con la soluzione.
+        const penalita = conflittoVisibile(i) ? PENALITA_CONFLITTO : PENALITA_ERRORE;
+        applicaPenalita(penalita, i);
     } else {
         riproduciAudio('sounds/scala40/cardplace1.mp3');
     }
@@ -873,6 +888,10 @@ function apriPannelloHint() {
     const testo = document.getElementById('hint-testo');
     const btnSpiega = document.getElementById('btn-hint-spiega');
     const btnApplica = document.getElementById('btn-hint-applica');
+    const nota = document.getElementById('hint-penalita');
+    // La nota sulle penalità riguarda solo i suggerimenti veri (non la cancellazione errore)
+    nota.innerHTML = (hintTarget.tipo === 'errore') ? '' : SUDOKU_LANG.hintPenalita;
+    nota.style.display = (hintTarget.tipo === 'errore') ? 'none' : '';
     if (hintTarget.tipo === 'errore') {
         testo.innerHTML = SUDOKU_LANG.hintErrore;
         btnSpiega.style.display = 'none';
@@ -894,9 +913,18 @@ function chiudiPannelloHint() {
     if (pan) pan.classList.remove('aperto');
 }
 
+// Addebita una sola volta l'extra di aiuto (spiegazione o inserimento): chiedere
+// entrambe le cose per lo stesso suggerimento costa i 20 secondi una volta sola.
+function pagaExtraAiuto() {
+    if (!hintTarget || hintTarget.pagatoExtra) return;
+    hintTarget.pagatoExtra = true;
+    applicaPenalita(PENALITA_AIUTO_EXTRA, hintTarget.idx);
+}
+
 // Pulsante "Spiegazione": mostra il ragionamento (e quindi il numero) nel pannello
 function mostraSpiegazioneHint() {
     if (!hintTarget || hintTarget.tipo !== 'deduzione') return;
+    pagaExtraAiuto();
     riproduciAudio('sounds/scala40/tick.mp3');
     document.getElementById('hint-testo').innerHTML = spiegaDeduzione(hintTarget.ded);
     document.getElementById('btn-hint-spiega').style.display = 'none';
@@ -919,8 +947,10 @@ function applicaHint() {
         setMessaggio(SUDOKU_LANG.partitaInCorso);
         salvaPartita();
     } else if (hintTarget.tipo === 'deduzione') {
+        pagaExtraAiuto(); // prima di riempiDaSuggerimento, che azzera hintTarget
         riempiDaSuggerimento(hintTarget.idx, hintTarget.val);
     } else { // rivela
+        pagaExtraAiuto();
         riempiDaSuggerimento(hintTarget.idx, soluzione[hintTarget.idx]);
     }
 }
@@ -971,6 +1001,8 @@ function suggerimento() {
     if (ded) {
         hintTarget = { tipo: 'deduzione', idx: ded.idx, val: ded.val, ded: ded };
         selezionata = ded.idx;
+        // L'aiuto si paga all'apertura: l'informazione (cella evidenziata) è già data
+        applicaPenalita(PENALITA_AIUTO, ded.idx);
         riproduciAudio('sounds/scala40/tick.mp3');
         renderEvidenziazioni();
         apriPannelloHint();
@@ -986,6 +1018,8 @@ function suggerimento() {
     if (idx === -1) return; // griglia piena
     hintTarget = { tipo: 'rivela', idx: idx };
     selezionata = idx;
+    // L'aiuto si paga all'apertura: l'informazione (cella evidenziata) è già data
+    applicaPenalita(PENALITA_AIUTO, idx);
     riproduciAudio('sounds/scala40/tick.mp3');
     renderEvidenziazioni();
     apriPannelloHint();
@@ -1024,11 +1058,43 @@ function aggiornaSpriteCursore() {
 }
 
 document.addEventListener('mousemove', function (e) {
+    ultimoMouseX = e.clientX;
+    ultimoMouseY = e.clientY;
     const sprite = document.getElementById('sprite-cursore');
     if (!sprite || !sprite.classList.contains('visibile')) return;
     sprite.style.left = e.clientX + 'px';
     sprite.style.top = e.clientY + 'px';
 });
+
+// Applica una penalità di tempo e mostra lo sprite volante "+Ns" partendo,
+// se nota, dalla posizione del cursore; in mancanza (es. tastiera) dalla cella indicata.
+function applicaPenalita(sec, cellaFallback) {
+    if (partitaFinita) return;
+    secondi += sec;
+    aggiornaTimer();
+    salvaPartita();
+    let x = ultimoMouseX, y = ultimoMouseY;
+    if ((x < 0 || y < 0) && cellaFallback !== undefined && cellaFallback >= 0) {
+        const cel = document.getElementById('cella-' + cellaFallback);
+        if (cel) {
+            const r = cel.getBoundingClientRect();
+            x = r.left + r.width / 2;
+            y = r.top + r.height / 2;
+        }
+    }
+    if (x >= 0 && y >= 0) mostraPenalita(x, y, sec);
+}
+
+// Sprite volante "+Ns" stile arcade: sale e sfuma, poi si autorimuove
+function mostraPenalita(x, y, sec) {
+    const el = document.createElement('div');
+    el.className = 'penalita-volante';
+    el.textContent = '+' + sec + 's';
+    el.style.left = x + 'px';
+    el.style.top = y + 'px';
+    document.body.appendChild(el);
+    setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 2600);
+}
 
 // === VITTORIA ===
 function controllaVittoria() {

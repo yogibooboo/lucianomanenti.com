@@ -21,7 +21,7 @@
     <meta http-Equiv="Pragma" Content="no-cache">
     <meta http-Equiv="Expires" Content="0">
 
-    <link rel="stylesheet" href="sudoku.css?v=2.5" />
+    <link rel="stylesheet" href="sudoku.css?v=2.7" />
 
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
@@ -142,6 +142,7 @@
                 <div id="pannello-hint">
                     <div class="hint-titolo">&#128161; Suggerimento</div>
                     <div id="hint-testo"></div>
+                    <div id="hint-penalita"></div>
                     <div id="hint-bottoni">
                         <button id="btn-hint-spiega">SPIEGAZIONE</button>
                         <button id="btn-hint-applica">INSERISCI IL NUMERO</button>
@@ -197,12 +198,12 @@
                 <div class="form-sudoku-title">Come si Gioca</div>
                 <div style="font-size: 14px; line-height: 1.7; color: #e8e8e8; text-align: left; overflow-y: auto; padding: 0 10px;">
                     <p style="margin-top: 0;">Riempi la griglia in modo che ogni <b>riga</b>, ogni <b>colonna</b> e ogni <b>riquadro 3&times;3</b> contenga tutti i numeri da 1 a 9, senza ripetizioni.</p>
-                    <p><b>Seleziona una casella vuota</b> e inserisci un numero con la tastiera o con i pulsanti a destra. I numeri segnalati come errati vengono mostrati in rosso e contati come errori: le due opzioni sotto i pulsanti scelgono se segnalare solo i conflitti evidenti con i numeri visibili (default) o tutti gli errori rispetto alla soluzione.</p>
+                    <p><b>Seleziona una casella vuota</b> e inserisci un numero con la tastiera o con i pulsanti a destra. I numeri segnalati come errati vengono mostrati in rosso e contati come errori: le due opzioni sotto i pulsanti scelgono se segnalare solo i conflitti evidenti con i numeri visibili (default) o tutti gli errori rispetto alla soluzione. Ogni errore segnalato aggiunge una <b>penalit&agrave; al tempo</b>: <b>10 secondi</b> se in conflitto con numeri gi&agrave; visibili, <b>30 secondi</b> se emerge solo dal confronto con la soluzione.</p>
                     <p><b>Numero armato</b>: clicca un pulsante numerico, un tasto 1-9 o una casella gi&agrave; piena per "armare" quel numero (resta agganciato al cursore). Le caselle con quel numero si colorano verde scuro, righe/colonne/riquadri collegati verde chiaro, e le altre caselle piene grigie: un colpo d'occhio su dove pu&ograve; andare. Clicca una casella vuota per piazzarlo subito (resta armato per i successivi); ricliccando l'ultima casella piazzata, se il numero &egrave; risultato errato, lo toglie. Se hai armato cliccando una casella gi&agrave; piena, questa resta gialla: &egrave; quella che Cancella svuoter&agrave;.</p>
                     <p><b>&#9999;&#65039; Matita</b>: attiva le note per annotare i candidati possibili in una casella (disarma automaticamente un eventuale numero armato).<br>
                     <b>&#10060; Cancella</b>: svuota la casella selezionata (o quella gialla in modalit&agrave; armata).<br>
                     <b>&#8630; Annulla</b>: annulla l'ultima mossa (anche Ctrl+Z).<br>
-                    <b>&#128161; Suggerimento</b>: evidenzia una casella deducibile dai numeri visibili (o un errore, se presente) e apre un pannello con tre scelte: <b>Spiegazione</b> mostra il ragionamento logico, <b>Inserisci il numero</b> riempie la casella, <b>Chiudi</b> annulla senza modificare nulla.</p>
+                    <b>&#128161; Suggerimento</b>: evidenzia una casella deducibile dai numeri visibili (o un errore, se presente) e apre un pannello con tre scelte: <b>Spiegazione</b> mostra il ragionamento logico, <b>Inserisci il numero</b> riempie la casella, <b>Chiudi</b> annulla senza modificare nulla. Aprire un suggerimento (casella evidenziata) costa <b>10 secondi</b>; chiedere la <b>Spiegazione</b> o <b>Inserire il numero</b> aggiunge <b>altri 20 secondi</b> (una sola volta, anche se le usi entrambe).</p>
                     <p style="color: #aaa; font-size: 12px;">La partita viene salvata automaticamente: se chiudi la pagina puoi riprendere da dove eri rimasto.</p>
                 </div>
                 <div style="display: flex; gap: 12px; margin-top: 15px; align-items: center;">
@@ -245,7 +246,7 @@
     <!-- Layout engine per ridimensionare la finestra del gioco -->
     <script src="game-layout.js?v=4.6"></script>
     <!-- Logica del Sudoku -->
-    <script src="sudoku.js?v=2.12"></script>
+    <script src="sudoku.js?v=2.14"></script>
     <script>
         (function () {
             var nascosto = false;

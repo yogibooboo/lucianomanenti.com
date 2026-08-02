@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Anteprima e Gestione Banner Amazon</title>
+    <title>Anteprima e Gestione Banner Unificata (Amazon & AliExpress)</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
@@ -12,7 +12,9 @@
         :root {
             --amazon-orange: #ff9900;
             --amazon-dark: #131921;
-            --deal-red: #cc0c39;
+            --ali-red: #ff4747;
+            --ali-red-dark: #cc0c39;
+            --ali-dark: #111115;
             --bg-color: #121212;
             --panel-bg: #1e1e1e;
             --input-bg: #141414;
@@ -21,33 +23,42 @@
 
         body {
             margin: 0;
-            padding: 20px;
+            padding: 10px 20px 20px;
             background: var(--bg-color);
             font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             color: white;
+            /* La pagina non scorre: l'altezza e' esattamente quella della
+               finestra e lo scroll vive dentro la griglia dei banner, cosi'
+               la barra comandi resta sempre visibile in alto. */
+            height: 100vh;
+            box-sizing: border-box;
+            overflow: hidden;
         }
 
         /* --- VISTA GALLERIA --- */
         #galleryView {
-            display: block;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            min-height: 0;   /* senza questo il figlio in overflow sfonda il flex */
         }
 
         h1 {
             text-align: center;
             font-family: 'Segoe UI', sans-serif;
-            font-size: 2.2rem;
-            margin-bottom: 25px;
+            font-size: 1.3rem;
+            margin: 0 0 12px;
             color: white;
         }
 
         /* Top Admin Panel Box */
         .admin-panel-box {
-            max-width: 760px;
-            margin: 0 auto 25px auto;
+            max-width: 860px;
+            margin: 0 auto 12px auto;
             background: var(--panel-bg);
             border: 1px solid var(--border-color);
             border-radius: 12px;
-            padding: 22px;
+            padding: 12px 16px;
             box-shadow: 0 8px 30px rgba(0,0,0,0.5);
             text-align: center;
         }
@@ -55,8 +66,8 @@
         .panel-section-title {
             color: #ff9900;
             font-weight: bold;
-            font-size: 15px;
-            margin-bottom: 12px;
+            font-size: 13px;
+            margin-bottom: 7px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -67,13 +78,13 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             flex-wrap: wrap;
-            margin-bottom: 20px;
+            margin-bottom: 8px;
         }
 
-        .panel-form input {
-            padding: 10px 14px;
+        .panel-form input, .panel-form select {
+            padding: 6px 10px;
             border-radius: 6px;
             border: 1px solid #334155;
             background: var(--input-bg);
@@ -83,15 +94,15 @@
         }
 
         .panel-form input[type="text"] {
-            width: 220px;
+            width: 260px;
         }
 
         .btn {
-            padding: 10px 18px;
+            padding: 6px 14px;
             border-radius: 6px;
             border: none;
             font-weight: bold;
-            font-size: 13px;
+            font-size: 12px;
             cursor: pointer;
             transition: transform 0.15s ease, filter 0.15s ease;
             display: inline-flex;
@@ -108,12 +119,44 @@
         .btn-add { background: #2e7d32; color: white; }
         .btn-sync { background: #0288d1; color: white; }
         .btn-copy { background: #e67e22; color: white; }
+        .btn-restore { background: #8b5cf6; color: white; }
+        /* Verde pieno: e' l'unico pulsante che scrive sul sito pubblico. */
+        .btn-publish { background: #15803d; color: white; font-weight: bold; }
+        .btn-delete-all { background: #b91c1c; color: white; }
         .btn-log { background: #374151; color: #d1d5db; font-size: 12px; }
+        .btn-import { background: #dc2626; color: white; }
 
         .divider {
             height: 1px;
             background: var(--border-color);
-            margin: 18px 0;
+            margin: 9px 0;
+        }
+
+        /* Filter Tabs */
+        .store-filter-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+        }
+
+        .store-filter-btn {
+            padding: 5px 14px;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            background: #252533;
+            color: #d1d5db;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .store-filter-btn.active {
+            background: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
         }
 
         /* View Mode Tabs */
@@ -121,11 +164,11 @@
             display: flex;
             justify-content: center;
             gap: 8px;
-            margin-bottom: 30px;
+            margin-bottom: 14px;
         }
 
         .tab-btn {
-            padding: 10px 22px;
+            padding: 6px 18px;
             border-radius: 8px;
             border: 1px solid var(--border-color);
             background: #222533;
@@ -147,6 +190,15 @@
             grid-template-columns: repeat(auto-fill, 300px);
             gap: 25px;
             justify-content: center;
+            /* Unica area scorrevole della pagina: prende tutta l'altezza
+               rimasta sotto la barra comandi. align-content evita che le
+               righe si stirino quando i banner sono pochi. */
+            flex: 1 1 auto;
+            min-height: 0;
+            overflow-y: auto;
+            align-content: start;
+            padding: 4px 4px 20px;
+            scroll-behavior: smooth;
         }
 
         .banner-wrapper {
@@ -157,10 +209,124 @@
             height: 600px;
             cursor: pointer;
             transition: transform 0.2s;
+            /* Contesto di posizionamento per .var-badge, che e' absolute:
+               senza, si ancorerebbe alla pagina e finirebbe sulla toolbar. */
+            position: relative;
         }
 
         .banner-wrapper:hover {
             transform: scale(1.02);
+        }
+
+        /* Variazione rispetto al prezzo di riferimento (campi ref_* nel JSON).
+           Si mostra solo oltre la soglia impostata in SOGLIA_VARIAZIONE. */
+        .var-badge {
+            position: absolute;
+            /* A destra: in alto a sinistra c'e' gia' .star-badge (il peso). */
+            top: 26px;
+            right: 6px;
+            z-index: 5;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: bold;
+            color: #fff;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
+            pointer-events: none;
+        }
+        .var-badge.su   { background: #b91c1c; }   /* rincarato */
+        .var-badge.giu  { background: #15803d; }   /* ribassato: e' l'occasione */
+        .var-badge.inattivo { background: #52525b; }   /* prodotto disattivato */
+
+        /* Cornice sulla card, per individuarla scorrendo la galleria. */
+        .banner-wrapper.var-su   { outline: 3px solid #b91c1c; outline-offset: -3px; border-radius: 8px; }
+        .banner-wrapper.var-giu  { outline: 3px solid #15803d; outline-offset: -3px; border-radius: 8px; }
+        .banner-wrapper.var-off  { outline: 3px solid #52525b; outline-offset: -3px; border-radius: 8px; }
+
+        /* --- REVISIONE DEI CANDIDATI ALIEXPRESS --- */
+
+        /* Cornice ambra: segnala che la card non e' ancora nel catalogo. */
+        .banner-wrapper.in-revisione {
+            outline: 3px dashed #f59e0b;
+            outline-offset: -3px;
+            border-radius: 8px;
+            cursor: default;   /* non si apre l'editor: non c'e' nulla da modificare */
+        }
+        .banner-wrapper.in-revisione:hover { transform: none; }
+
+        /* La card in revisione lascia spazio alla barra sottostante: il banner
+           viene rimpicciolito, cosi' i pulsanti non coprono il disclosure. */
+        .banner-wrapper.in-revisione { height: 660px; }
+        .banner-wrapper.in-revisione .banner-300x600 { height: 600px; }
+
+        /* Barra delle azioni, sotto la card e fuori dal banner. */
+        .barra-revisione {
+            display: flex;
+            gap: 6px;
+            padding: 8px 0 0 0;
+            border-radius: 0 0 8px 8px;
+        }
+        .barra-revisione button, .barra-revisione a {
+            flex: 1;
+            padding: 8px 4px;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            line-height: 1.4;
+        }
+        .barra-revisione .btn-approva { background: #16a34a; color: #fff; }
+        .barra-revisione .btn-approva:hover { background: #15803d; }
+        .barra-revisione .btn-scarta  { background: #b91c1c; color: #fff; }
+        .barra-revisione .btn-scarta:hover  { background: #991b1b; }
+        /* Il link al prodotto e' un'azione secondaria: non deve rubare spazio. */
+        .barra-revisione .btn-vedi { flex: 0 0 40px; background: #334155; color: #e2e8f0; }
+        .barra-revisione .btn-vedi:hover { background: #475569; }
+
+        /* Riga esplicativa in cima alla galleria in revisione: occupa tutta
+           la larghezza, altrimenti il flex la stringerebbe come una card. */
+        .pending-intestazione {
+            /* La galleria e' una grid a colonne da 300px: senza questa regola
+               l'intestazione occuperebbe una sola cella, larga come una card. */
+            grid-column: 1 / -1;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 12px 16px;
+            background: rgba(245, 158, 11, 0.12);
+            border: 1px solid #f59e0b;
+            border-radius: 8px;
+            color: #fde68a;
+        }
+        .pending-nota { font-size: 12px; opacity: 0.85; margin-top: 4px; font-weight: normal; }
+        .btn-scarta-tutti {
+            flex: 0 0 auto;
+            padding: 8px 14px;
+            background: #7f1d1d;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .btn-scarta-tutti:hover { background: #991b1b; }
+
+        /* Banner appena arrivato dall'estensione Chrome: alone verde pulsante
+           che si spegne da solo. Serve a distinguerlo a colpo d'occhio quando
+           la galleria ci si e' appena centrata sopra. */
+        .banner-wrapper.appena-aggiunto {
+            animation: evidenzia-nuovo 2.4s ease-out 3;
+            border-radius: 8px;
+        }
+
+        @keyframes evidenzia-nuovo {
+            0%   { box-shadow: 0 0 0 0 rgba(21, 128, 61, 0.85); }
+            40%  { box-shadow: 0 0 22px 10px rgba(21, 128, 61, 0.55); }
+            100% { box-shadow: 0 0 0 0 rgba(21, 128, 61, 0); }
         }
 
         .banner-300x600 {
@@ -174,6 +340,11 @@
             display: flex;
             flex-direction: column;
             box-sizing: border-box;
+        }
+
+        .banner-300x600.ali-theme {
+            background: var(--ali-dark);
+            border-color: rgba(255, 71, 71, 0.2);
         }
 
         .star-badge {
@@ -192,8 +363,23 @@
             gap: 3px;
         }
 
+        .store-tag-badge {
+            position: absolute;
+            top: 0;
+            right: 0;
+            font-size: 10px;
+            font-weight: bold;
+            padding: 3px 8px;
+            border-bottom-left-radius: 6px;
+            z-index: 20;
+            text-transform: uppercase;
+        }
+
+        .tag-amazon { background: #ff9900; color: #000; }
+        .tag-ali { background: #ff4747; color: #fff; }
+
         .deal-header {
-            background: var(--deal-red);
+            background: #cc0c39;
             color: white;
             padding: 12px;
             text-align: center;
@@ -205,13 +391,14 @@
 
         .image-container {
             width: 100%;
-            height: 200px;
+            height: 260px;
             background: white;
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 10px;
+            padding: 0;
             box-sizing: border-box;
+            position: relative;
         }
 
         .image-container.large-view {
@@ -219,56 +406,73 @@
         }
 
         .product-img {
-            max-width: 100%;
-            max-height: 100%;
+            max-width: 90%;
+            max-height: 90%;
             object-fit: contain;
             transition: opacity 0.3s ease;
         }
 
         .content {
-            padding: 15px 20px;
+            padding: 15px 24px 0;
             flex-grow: 1;
             display: flex;
             flex-direction: column;
             text-align: center;
             color: white;
+            justify-content: center;
+            min-height: 0;
         }
 
         .title {
-            font-size: 14px;
+            font-size: 15px;
             font-weight: 600;
-            margin-bottom: 12px;
-            line-height: 1.4;
+            margin-bottom: 0;
+            line-height: 1.45;
             display: -webkit-box;
-            -webkit-line-clamp: 4;
-            line-clamp: 4;
+            -webkit-line-clamp: 6;
+            line-clamp: 6;
             -webkit-box-orient: vertical;
             overflow: hidden;
-            max-height: 80px;
         }
 
         .price-badge-row {
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 8px;
-            margin-bottom: 6px;
+            gap: 10px;
+            margin-bottom: 8px;
+            min-height: 42px;
         }
 
         .price-text {
-            font-size: 22px;
-            font-weight: bold;
-            color: white;
+            font-size: 28px;
+            font-weight: 700;
+            color: #ff5252;
+            margin: 0;
         }
 
         .status-badge {
             display: inline-block;
-            background: var(--deal-red);
+            background: #e47911;
             color: white;
-            padding: 3px 8px;
+            padding: 4px 10px;
             border-radius: 4px;
-            font-size: 12px;
+            font-size: 13px;
             font-weight: bold;
+        }
+
+        .status-badge.ali-badge {
+            background: #ff4747;
+        }
+
+        @keyframes amazonPulseAnim {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.7); background: #e47911; }
+            50% { transform: scale(1.1); box-shadow: 0 0 12px 4px rgba(255, 0, 0, 0.5); background: #ff0000; }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 0, 0, 0); background: #e47911; }
+        }
+
+        .amazon-badge-pulse {
+            animation: amazonPulseAnim 1s infinite !important;
         }
 
         .expiry-info {
@@ -278,26 +482,196 @@
         }
 
         .button-container {
-            padding: 0 20px 12px 20px;
+            padding: 0 24px 0;
         }
 
         .cta-btn {
             display: block;
             background: linear-gradient(180deg, #ff9900 0%, #e68a00 100%);
             color: #000;
-            padding: 14px;
+            padding: 16px;
             border-radius: 30px;
-            font-weight: bold;
+            font-weight: 700;
+            font-size: 14px;
             text-align: center;
-            font-size: 13px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .cta-btn.ali-btn {
+            background: linear-gradient(180deg, #ff4747 0%, #e61919 100%);
+            color: #fff;
         }
 
         .disclosure {
-            font-size: 10px;
+            font-size: 11px;
             color: #64748b;
             text-align: center;
-            padding: 8px;
+            padding: 8px 10px 10px;
             line-height: 1.2;
+        }
+
+        /* --- BARRA COMANDI UNICA (sostituisce il pannello alto) --- */
+        /* Tutti i comandi su una riga sola: i due form lunghi (inserimento
+           manuale e importatore AliExpress) vivono nelle modali qui sotto, che
+           riusano gli stessi id dei campi, quindi le funzioni non cambiano. */
+        .toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            max-width: 1500px;
+            margin: 0 auto 10px;
+            padding: 8px 12px;
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            flex: 0 0 auto;   /* barra fissa: non si comprime, non scorre */
+        }
+
+        .toolbar-sep {
+            width: 1px;
+            align-self: stretch;
+            background: var(--border-color);
+            margin: 0 4px;
+        }
+
+        /* Interruzione di riga forzata dentro il flex-wrap: larghezza 100%
+           costringe gli elementi successivi sulla riga sotto. */
+        .toolbar-break {
+            flex-basis: 100%;
+            height: 0;
+        }
+
+        .toolbar-title {
+            font-weight: bold;
+            font-size: 13px;
+            color: #ff9900;
+            margin-right: 4px;
+            white-space: nowrap;
+        }
+
+        /* Riga diagnostica: occupa tutta la larghezza sotto le due file di
+           pulsanti e allarga la barra in altezza solo quando c'e' qualcosa da
+           dire. A messaggio vuoto sparisce insieme all'interruzione che la
+           precede, altrimenti resterebbe una riga vuota. */
+        #statusMessage {
+            flex-basis: 100%;
+            text-align: center;
+            font-size: 12px;
+            font-weight: bold;
+            color: #4ade80;
+            padding-top: 6px;
+            border-top: 1px solid var(--border-color);
+            margin-top: 2px;
+        }
+
+        /* L'interruzione che precede la riga diagnostica si nasconde insieme a
+           lei: la gestisce showStatusMessage(), senza dipendere da :has(). */
+        #statusMessage:empty {
+            display: none;
+        }
+
+        /* --- MODALI DEI FORM --- */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.75);
+            z-index: 5000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.open {
+            display: flex;
+        }
+
+        .modal-box {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px 24px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+            max-width: 720px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+
+        .modal-head h2 {
+            margin: 0;
+            font-size: 16px;
+            color: #ff9900;
+        }
+
+        .modal-close {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: #94a3b8;
+            border-radius: 6px;
+            width: 28px;
+            height: 28px;
+            font-size: 16px;
+            line-height: 1;
+            cursor: pointer;
+            flex: 0 0 auto;
+        }
+
+        .modal-close:hover {
+            color: #fff;
+            border-color: #64748b;
+        }
+
+        /* Griglia dei campi nelle modali: etichetta sopra, campi affiancati */
+        .modal-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .modal-field {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .modal-field label {
+            font-size: 11px;
+            color: #94a3b8;
+            font-weight: bold;
+        }
+
+        .modal-field input,
+        .modal-field select {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 8px 10px;
+            border-radius: 6px;
+            border: 1px solid #334155;
+            background: var(--input-bg);
+            color: white;
+            font-size: 13px;
+        }
+
+        .modal-field.wide {
+            grid-column: 1 / -1;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
         }
 
         /* --- SCHERMATA DI PERSONALIZZAZIONE (EDITOR) --- */
@@ -306,6 +680,9 @@
             max-width: 1300px;
             margin: 0 auto;
             gap: 30px;
+            /* body e' overflow:hidden, quindi l'editor scorre per conto suo */
+            max-height: 100%;
+            overflow-y: auto;
         }
 
         .editor-main {
@@ -349,6 +726,25 @@
             gap: 20px;
         }
 
+        /* Pulsante che apre la modale dei dati tecnici. A tutta larghezza e in
+           tinta col riquadro informativo, per distinguerlo dai comandi di
+           salvataggio della sidebar. */
+        .btn-tecnici {
+            width: 100%;
+            margin-top: 15px;
+            padding: 10px;
+            background: #161622;
+            border: 1px solid #2e2e42;
+            border-radius: 8px;
+            color: #60a5fa;
+            font-size: 13px;
+            font-weight: bold;
+            text-align: left;
+            cursor: pointer;
+            transition: background 0.15s, border-color 0.15s;
+        }
+        .btn-tecnici:hover { background: #1d1d2e; border-color: #60a5fa; }
+
         .editor-col-flex {
             flex: 1;
         }
@@ -375,7 +771,6 @@
             box-sizing: border-box;
         }
 
-        /* Grid Immagini Variante dell'Editor */
         .images-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, 160px);
@@ -434,7 +829,6 @@
             color: #94a3b8;
         }
 
-        /* Sidebar Destra dell'Editor */
         .editor-sidebar {
             width: 320px;
             display: flex;
@@ -499,42 +893,218 @@
 
     <!-- === SCHERMATA MAIN GALLERIA === -->
     <div id="galleryView">
-        <h1>Anteprima e Gestione Banner</h1>
+        <!-- Barra comandi: tutto su una riga. I due form lunghi stanno nelle
+             modali in fondo alla pagina. -->
+        <div class="toolbar">
+            <button class="btn btn-add" onclick="apriModale('modalAdd')">➕ Aggiungi Banner</button>
+            <button class="btn btn-import" onclick="apriModale('modalImport')">🔥 Importa da AliExpress</button>
 
-        <!-- Pannello superiore di gestione -->
-        <div class="admin-panel-box">
-            <div class="panel-section-title">➕ Aggiungi un Banner Manualmente</div>
-            <div class="panel-form">
-                <input type="text" id="addAsin" placeholder="Incolla l'ASIN (es. B0BN5WRWNW)">
-                <input type="text" id="addMsg" placeholder="Testo Rosso (es. In Offerta!)">
-                <button class="btn btn-add" onclick="aggiungiProdottoManuale()">Aggiungi ad Amazon</button>
-            </div>
+            <div class="toolbar-sep"></div>
 
-            <div class="divider"></div>
+            <button class="btn btn-sync" onclick="aggiornaTuttiIPrezzi()">🔄 Aggiorna Prezzi</button>
+            <a href="sync_log.txt" target="_blank" class="btn btn-log">📄 Log</a>
+            <button class="btn btn-copy" onclick="copiaSuOneDrive()">📂 Copia su lucianomanenti</button>
+            <button class="btn btn-publish" onclick="pubblicaSuSito()" id="btnPublish" title="Copia in OneDrive e carica newdeals.json via FTP su lucianomanenti.com">🚀 Pubblica</button>
+            <button class="btn btn-restore" onclick="ripristinaDaSite()" title="Ripristina da lucianomanenti.com">🔄 Ripristina</button>
 
-            <div class="panel-section-title">🔄 Sincronizzazione Globale</div>
-            <div class="panel-form" style="margin-bottom: 0;">
-                <button class="btn btn-sync" onclick="aggiornaTuttiIPrezzi()">Aggiorna Tutti i Prezzi Ora</button>
-                <button class="btn btn-copy" onclick="copiaSuOneDrive()">📂 Copia su lucianomanenti.com</button>
-                <a href="sync_log.txt" target="_blank" class="btn btn-log">📄 Vedi Log Sistema</a>
-            </div>
-            <div id="statusMessage" style="margin-top: 12px; font-size: 13px; font-weight: bold; min-height: 20px; color: #4ade80;"></div>
-        </div>
+            <!-- Da qui in poi: seconda riga della barra -->
+            <div class="toolbar-break"></div>
 
-        <!-- Selettore Modalità Visualizzazione Galleria -->
-        <div class="tabs-container">
-            <button class="tab-btn active" id="tab1" onclick="switchView('standard')">1 (Visuale Standard)</button>
-            <button class="tab-btn" id="tab2" onclick="switchView('image')">2 (Visuale Immagine)</button>
-            <button class="tab-btn" id="tab3" onclick="switchView('anim')">Auto (Animazione)</button>
+            <button class="store-filter-btn active" id="filterAll" onclick="setStoreFilter('all')">Tutti</button>
+            <button class="store-filter-btn" id="filterAmazon" onclick="setStoreFilter('amazon')">🟧 Amazon</button>
+            <button class="store-filter-btn" id="filterAli" onclick="setStoreFilter('aliexpress')">🟥 AliExpress</button>
+
+            <!-- Filtro indipendente da quello per store: i due si combinano,
+                 cosi' si possono isolare per esempio i soli AliExpress anomali. -->
+            <button class="store-filter-btn" id="filterAnomali" onclick="toggleFiltroAnomali()"
+                    title="Mostra solo i prodotti non attivi, con prezzo variato oltre il 10% o sconto variato di oltre 5 punti">⚠️ Anomali</button>
+
+            <!-- Vista esclusiva: i candidati importati non stanno in
+                 newdeals.json, quindi non si possono mescolare al catalogo.
+                 Il pulsante resta nascosto finche' non c'e' nulla da rivedere. -->
+            <button class="store-filter-btn" id="filterPending" onclick="toggleVistaPending()" style="display:none"
+                    title="Esamina i prodotti importati da AliExpress prima di aggiungerli al catalogo">📥 Da rivedere</button>
+
+            <div class="toolbar-sep"></div>
+
+            <button class="tab-btn active" id="tab1" onclick="switchView('standard')">1 Standard</button>
+            <button class="tab-btn" id="tab2" onclick="switchView('image')">2 Immagine</button>
+            <button class="tab-btn" id="tab3" onclick="switchView('anim')">Auto</button>
+
+            <div class="toolbar-sep"></div>
+
+            <button class="btn btn-delete-all" onclick="cancellaSelezioneCorrente()" id="btnDeleteSelection">🗑️ Cancella Tutti (Tutti i Banner)</button>
+
+            <div class="toolbar-sep"></div>
+
+            <button class="btn btn-log" onclick="scrollGalleria('top')" title="Vai all'inizio">⬆️ Top</button>
+            <button class="btn btn-log" onclick="scrollGalleria('bottom')" title="Vai alla fine">⬇️ Fondo</button>
+
+            <!-- Terza riga: diagnostica. Compare solo quando c'e' un messaggio,
+                 allargando la barra in altezza (la griglia si accorcia da sola). -->
+            <div class="toolbar-break" id="statusBreak" style="display:none;"></div>
+            <div id="statusMessage"></div>
         </div>
 
         <!-- Griglia dei Banner 300x600 -->
         <div id="gallery" class="gallery-grid"></div>
     </div>
 
+    <!-- === MODALE: AGGIUNTA MANUALE === -->
+    <div class="modal-overlay" id="modalAdd" onclick="if (event.target === this) chiudiModale('modalAdd')">
+        <div class="modal-box" style="max-width: 560px;">
+            <div class="modal-head">
+                <h2>➕ Aggiungi un Banner Manualmente (Amazon o AliExpress)</h2>
+                <button class="modal-close" onclick="chiudiModale('modalAdd')" title="Chiudi">✕</button>
+            </div>
+            <div class="modal-grid">
+                <div class="modal-field wide">
+                    <label for="addIdInput">ASIN (Amazon) o Product ID (AliExpress)</label>
+                    <input type="text" id="addIdInput" placeholder="Incolla qui il codice prodotto">
+                </div>
+                <div class="modal-field wide">
+                    <label for="addMsgInput">Testo Rosso del Banner</label>
+                    <input type="text" id="addMsgInput" placeholder="es. In Offerta!">
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-log" onclick="chiudiModale('modalAdd')">Annulla</button>
+                <button class="btn btn-add" onclick="aggiungiProdottoManuale()">Aggiungi Prodotto</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- === MODALE: IMPORTATORE ALIEXPRESS === -->
+    <div class="modal-overlay" id="modalImport" onclick="if (event.target === this) chiudiModale('modalImport')">
+        <div class="modal-box">
+            <div class="modal-head">
+                <h2 style="color: #ff4747;">🔥 Importatore Automatico Offerte AliExpress (Advanced API)</h2>
+                <button class="modal-close" onclick="chiudiModale('modalImport')" title="Chiudi">✕</button>
+            </div>
+            <div class="modal-grid">
+                <div class="modal-field">
+                    <label for="importLimit">Quanti prodotti</label>
+                    <input type="number" id="importLimit" value="10" min="1" max="100">
+                </div>
+                <div class="modal-field">
+                    <label for="importCategory">Categoria</label>
+                    <select id="importCategory">
+                        <option value="all" selected>🌐 Tutte le Categorie</option>
+                        <option value="electronics">📱 Elettronica & Audio</option>
+                        <option value="auto">🚗 Auto, Moto & DashCam</option>
+                        <option value="home">🏡 Casa, Fai da te & LED</option>
+                        <option value="tech">💻 Informatica & Gaming</option>
+                        <option value="watches">⌚ Orologi & Accessori</option>
+                        <option value="sports">⚽ Sport & Outdoor</option>
+                        <option value="toys">🧸 Giocattoli & Droni</option>
+                        <option value="beauty">💄 Bellezza & Salute</option>
+                    </select>
+                </div>
+                <div class="modal-field">
+                    <label for="importKw">Parola chiave</label>
+                    <input type="text" id="importKw" placeholder="es. Xiaomi">
+                </div>
+                <div class="modal-field">
+                    <label for="importMinDisc">Sconto minimo %</label>
+                    <input type="number" id="importMinDisc" placeholder="0" min="0" max="90">
+                </div>
+                <div class="modal-field">
+                    <label for="importMinPrice">Prezzo minimo €</label>
+                    <input type="number" id="importMinPrice" placeholder="0" min="0">
+                </div>
+                <div class="modal-field">
+                    <label for="importMaxPrice">Prezzo massimo €</label>
+                    <input type="number" id="importMaxPrice" placeholder="nessuno" min="0">
+                </div>
+                <div class="modal-field wide">
+                    <label for="importMsg">Testo Rosso del Banner</label>
+                    <input type="text" id="importMsg" value="SUPER OFFERTA ALIEXPRESS!" placeholder="Testo Rosso Banner">
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-log" onclick="chiudiModale('modalImport')">Annulla</button>
+                <button class="btn btn-import" onclick="importaHotProductsAliExpress()">🚀 Importa Ora</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- === MODALE: DATI TECNICI DEL PRODOTTO IN EDITING ===
+         Sola lettura. Sta qui e non nell'editor per non allungarne la pagina:
+         l'overlay e' 'fixed' con box a max-height 90vh, quindi si consulta
+         senza scorrere l'editor sottostante. -->
+    <div class="modal-overlay" id="modalTecnici" onclick="if (event.target === this) chiudiModale('modalTecnici')">
+        <div class="modal-box">
+            <div class="modal-head">
+                <h2 style="color: #60a5fa;">📊 Dati Tecnici &amp; Parametri JSON</h2>
+                <button class="modal-close" onclick="chiudiModale('modalTecnici')" title="Chiudi">✕</button>
+            </div>
+
+            <div class="editor-row" style="flex-wrap: wrap; gap: 15px;">
+                <div style="flex: 1; min-width: 140px;">
+                    <label class="editor-label">Store</label>
+                    <input type="text" id="infoStore" class="editor-input" readonly style="background: #0d0d15; color: #4ade80; font-weight: bold; text-transform: uppercase;">
+                </div>
+                <div style="flex: 1; min-width: 140px;">
+                    <label class="editor-label" id="infoIdLabel">ASIN / Product ID</label>
+                    <input type="text" id="infoIdCode" class="editor-input" readonly style="background: #0d0d15; color: #fde047; font-family: monospace;">
+                </div>
+                <div style="flex: 1; min-width: 140px;">
+                    <label class="editor-label">Prezzo Rilevato</label>
+                    <input type="text" id="infoPrice" class="editor-input" readonly style="background: #0d0d15; color: #38bdf8; font-weight: bold;">
+                </div>
+                <div style="flex: 1; min-width: 140px;">
+                    <label class="editor-label">Sconto / Badge</label>
+                    <input type="text" id="infoBadge" class="editor-input" readonly style="background: #0d0d15; color: #f43f5e; font-weight: bold;">
+                </div>
+            </div>
+
+            <!-- Valori di riferimento (campi ref_* del JSON): la fotografia di
+                 prezzo e sconto al momento del caricamento, con cui si
+                 confrontano quelli attuali per rilevare le variazioni. -->
+            <div class="editor-row" style="flex-wrap: wrap; gap: 15px; margin-top: 12px;">
+                <div style="flex: 1; min-width: 140px;">
+                    <label class="editor-label">Prezzo di Riferimento</label>
+                    <input type="text" id="infoRefPrice" class="editor-input" readonly style="background: #0d0d15; color: #94a3b8;">
+                </div>
+                <div style="flex: 1; min-width: 140px;">
+                    <label class="editor-label">Sconto di Riferimento</label>
+                    <input type="text" id="infoRefBadge" class="editor-input" readonly style="background: #0d0d15; color: #94a3b8;">
+                </div>
+                <div style="flex: 1; min-width: 150px;">
+                    <label class="editor-label">Rilevato il</label>
+                    <input type="text" id="infoRefDate" class="editor-input" readonly style="background: #0d0d15; color: #94a3b8; font-size: 12px;">
+                </div>
+            </div>
+
+            <div style="margin-top: 12px;">
+                <label class="editor-label">Variazione</label>
+                <input type="text" id="infoVariazione" class="editor-input" readonly style="background: #0d0d15; font-weight: bold;">
+            </div>
+
+            <div class="editor-row" style="flex-wrap: wrap; gap: 15px; margin-top: 12px;">
+                <div style="flex: 1; min-width: 180px;">
+                    <label class="editor-label">Data Inserimento</label>
+                    <input type="text" id="infoDateAdded" class="editor-input" readonly style="background: #0d0d15; color: #94a3b8; font-size: 12px;">
+                </div>
+                <div style="flex: 2; min-width: 260px;">
+                    <label class="editor-label">Stato Aggiornamento Prezzo</label>
+                    <input type="text" id="infoExpiry" class="editor-input" readonly style="background: #0d0d15; color: #94a3b8; font-size: 12px;">
+                </div>
+            </div>
+
+            <div style="margin-top: 12px;">
+                <label class="editor-label">Link Affiliato Diretto</label>
+                <input type="text" id="infoLink" class="editor-input" readonly style="background: #0d0d15; color: #fb923c; font-size: 11px; font-family: monospace;" onclick="this.select()">
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn btn-log" onclick="chiudiModale('modalTecnici')">Chiudi</button>
+            </div>
+        </div>
+    </div>
+
     <!-- === SCHERMATA DEDICATA DI PERSONALIZZAZIONE (EDITOR) === -->
     <div id="editorView">
-        <!-- Area Principale Sinistra -->
         <div class="editor-main">
             <div class="editor-box">
                 <label class="editor-label">Titolo Prodotto</label>
@@ -565,6 +1135,12 @@
 
             <!-- Griglia Selezione Immagini Variante -->
             <div class="images-grid" id="imagesGrid"></div>
+
+            <!-- I dati tecnici sono di sola lettura e si consultano di rado:
+                 vivono nella modale #modalTecnici, in fondo alla pagina insieme
+                 alle altre, per non allungare l'editor. -->
+            <button type="button" class="btn-tecnici" onclick="apriDatiTecnici()"
+                    title="Prezzo di riferimento, variazioni, date e link affiliato">📊 Dati Tecnici &amp; Parametri JSON</button>
         </div>
 
         <!-- Sidebar Destra dell'Editor -->
@@ -578,6 +1154,7 @@
             <!-- Anteprima Live Banner 300x600 -->
             <div class="banner-300x600" id="liveBanner">
                 <div class="star-badge" id="previewStarBadge">⭐ 5</div>
+                <div class="store-tag-badge tag-amazon" id="previewStoreTag">AMAZON</div>
                 <div class="deal-header" id="previewHeader">OFFERTA A TEMPO</div>
                 <div class="image-container" id="previewImgContainer">
                     <img class="product-img" id="previewImg" src="" alt="Product">
@@ -591,7 +1168,7 @@
                     <div class="expiry-info" id="previewExpiry">In corso</div>
                 </div>
                 <div class="button-container" id="previewBtnContainer">
-                    <div class="cta-btn">Vedi offerta su Amazon.it</div>
+                    <div class="cta-btn" id="previewCtaBtn">Vedi offerta su Amazon.it</div>
                 </div>
                 <div class="disclosure" id="previewDisclosure">
                     Disponibile su Amazon.it<br>
@@ -601,7 +1178,8 @@
 
             <!-- Pulsanti Azione In Basso a Destra -->
             <div class="sidebar-actions">
-                <button class="btn-sidebar btn-visit" onclick="visitaLinkAmazon()">🔍 VAI SU AMAZON</button>
+                <button class="btn-sidebar btn-visit" id="btnVisitLink" onclick="visitaLinkProdotto()">🔍 VAI AL LINK AFFILIATO</button>
+                <button class="btn-sidebar" id="btnVisitDirect" style="background: #2563eb; color: white;" onclick="visitaLinkDiretto()">🌐 VAI AL SITO DIRETTO</button>
                 <button class="btn-sidebar btn-delete" onclick="eliminaBanner()">🗑️ ELIMINA BANNER</button>
                 <button class="btn-sidebar btn-save" onclick="salvaEDisci()">💾 ESCI E SALVA MODIFICHE</button>
                 <button class="btn-sidebar btn-cancel" onclick="chiudiEditorSenzaSalvare()">✕ ESCI SENZA MODIFICHE</button>
@@ -611,11 +1189,21 @@
 
     <script>
         let allDeals = [];
+        let isOperationPending = false;
         let currentView = 'standard';
+        let currentStoreFilter = 'all';
+        // Filtro "solo prodotti anomali", indipendente da currentStoreFilter.
+        let soloAnomali = false;
+
+        /* Candidati AliExpress in attesa di revisione (pending_ali.json).
+           Vivono fuori da allDeals e da newdeals.json: non sono in catalogo,
+           non finiscono nella pubblicazione FTP e non entrano nei conteggi dei
+           pesi. La galleria li mostra solo quando si attiva il filtro apposito. */
+        let pendingDeals = [];
+        let vistaPending = false;
         let editingIndex = null;
         let previewMode = 'vista1';
 
-        // Timer per la rotazione automatica delle immagini
         let rotationTimers = [];
         let editorRotationTimer = null;
 
@@ -628,19 +1216,303 @@
             }
         }
 
-        async function loadDeals() {
+        // Scorre la griglia dei banner, che e' l'unica area scorrevole:
+        // la finestra non scorre (body e' overflow:hidden).
+        function scrollGalleria(dove) {
+            const grid = document.getElementById('gallery');
+            if (!grid) return;
+            grid.scrollTo({ top: dove === 'bottom' ? grid.scrollHeight : 0, behavior: 'smooth' });
+        }
+
+        // --- Modali dei form della barra comandi ---
+        function apriModale(id) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.classList.add('open');
+            // Ripulisce l'esito della volta precedente
+            const vecchio = el.querySelector('.modal-status');
+            if (vecchio) vecchio.textContent = '';
+            // Porta il fuoco sul primo campo, cosi' si puo' incollare subito
+            const primo = el.querySelector('input, select');
+            if (primo) primo.focus();
+        }
+
+        function chiudiModale(id) {
+            const el = document.getElementById(id);
+            if (el) el.classList.remove('open');
+        }
+
+        // Esc chiude la modale aperta
+        document.addEventListener('keydown', function (ev) {
+            if (ev.key !== 'Escape') return;
+            document.querySelectorAll('.modal-overlay.open').forEach(function (m) {
+                m.classList.remove('open');
+            });
+        });
+
+        function showStatusMessage(msg, isError = false) {
+            // Se c'e' una modale aperta il messaggio va anche li' dentro: la
+            // barra comandi resta coperta dall'overlay e l'esito non si vedrebbe.
+            const aperta = document.querySelector('.modal-overlay.open');
+            if (aperta) {
+                let box = aperta.querySelector('.modal-status');
+                if (!box) {
+                    box = document.createElement('div');
+                    box.className = 'modal-status';
+                    box.style.cssText = 'margin-top:12px;font-size:12px;font-weight:bold;text-align:center;';
+                    aperta.querySelector('.modal-box').appendChild(box);
+                }
+                box.textContent = msg;
+                box.style.color = isError ? '#ff4747' : '#4ade80';
+            }
+
+            const el = document.getElementById('statusMessage');
+            if (!el) return;
+            el.textContent = msg;
+            el.style.color = isError ? '#ff4747' : '#4ade80';
+            // L'interruzione va accesa con il messaggio, altrimenti a barra
+            // pulita resterebbe una riga vuota sotto i pulsanti.
+            const brk = document.getElementById('statusBreak');
+            if (brk) brk.style.display = msg ? 'block' : 'none';
+
+            if (msg && !msg.startsWith('🔄') && !msg.startsWith('⏳')) {
+                setTimeout(() => {
+                    if (el.textContent === msg) {
+                        el.textContent = '';
+                        if (brk) brk.style.display = 'none';
+                    }
+                }, 5000);
+            }
+        }
+
+        async function loadDeals(retryCount = 0) {
+            if (isOperationPending) return;
             try {
                 let response = await fetch('newdeals.json?nocache=' + Date.now());
                 if (!response.ok) {
                     response = await fetch('banner/newdeals.json?nocache=' + Date.now());
                 }
-                const data = await response.json();
+                const text = await response.text();
+                const data = JSON.parse(text);
+
+                // Id presenti prima del ricaricamento: la differenza indica i
+                // banner appena creati (tipicamente dall'estensione Chrome).
+                const idPrecedenti = new Set(allDeals.map(d => String(d.id)));
+                const primoCaricamento = (allDeals.length === 0);
+
                 allDeals = data.deals || [];
+
+                if (!primoCaricamento) {
+                    const nuovi = allDeals.filter(d => !idPrecedenti.has(String(d.id)));
+                    // Se ne arrivassero piu' d'uno ci si centra sull'ultimo.
+                    if (nuovi.length > 0) dealDaEvidenziare = String(nuovi[nuovi.length - 1].id);
+                }
+
+                // I candidati in attesa stanno in un file a parte: si caricano
+                // in parallelo, ma un loro errore non deve impedire la galleria.
+                await caricaPending();
+
                 renderGallery();
             } catch (err) {
-                console.error(err);
-                document.getElementById('gallery').innerHTML = '<p style="color:#ff9900;text-align:center;">Errore caricamento banner/newdeals.json</p>';
+                console.error('loadDeals error:', err);
+                if (retryCount < 2) {
+                    setTimeout(() => loadDeals(retryCount + 1), 300);
+                } else {
+                    document.getElementById('gallery').innerHTML = '<p style="color:#ff9900;text-align:center;padding:20px;">⚠️ Impossibile caricare newdeals.json (' + err.message + '). <button onclick="loadDeals()" style="padding:6px 12px;cursor:pointer;">Riprova</button></p>';
+                }
             }
+        }
+
+        /* --- CANDIDATI IN ATTESA DI REVISIONE --- */
+
+        /* Chiamata all'endpoint dei pending. Ripete il fallback su 'banner/'
+           usato dal resto della pagina, perche' la console gira sia dalla root
+           del sito di sviluppo sia dalla sottocartella. */
+        async function chiamaPending(payload) {
+            let resp = await fetch('api_pending_ali.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            if (!resp.ok) {
+                resp = await fetch('banner/api_pending_ali.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+            }
+            return await resp.json();
+        }
+
+        async function caricaPending() {
+            try {
+                const res = await chiamaPending({ azione: 'lista' });
+                pendingDeals = (res && res.status === 'success' && Array.isArray(res.pending)) ? res.pending : [];
+            } catch (e) {
+                // L'assenza dei candidati non e' un errore bloccante: la
+                // galleria deve restare utilizzabile comunque.
+                pendingDeals = [];
+            }
+        }
+
+        function toggleVistaPending() {
+            vistaPending = !vistaPending;
+            document.getElementById('filterPending').classList.toggle('active', vistaPending);
+            // I due filtri sono alternativi: in revisione si guardano i
+            // candidati, non le anomalie del catalogo.
+            if (vistaPending && soloAnomali) {
+                soloAnomali = false;
+                document.getElementById('filterAnomali').classList.remove('active');
+            }
+            renderGallery();
+        }
+
+        async function approvaCandidato(pid) {
+            const cand = pendingDeals.find(p => String(p.product_id) === String(pid));
+            if (!cand) return;
+
+            isOperationPending = true;
+            try {
+                const res = await chiamaPending({
+                    azione: 'approva',
+                    product_id: String(pid),
+                    title: cand.title,
+                    custom_message: cand.custom_message,
+                    weight: cand.weight,
+                    active_images: cand.active_images
+                });
+                if (res.status === 'success') {
+                    showStatusMessage('✅ ' + res.message + ` (${res.pending_count} ancora in attesa)`);
+                    isOperationPending = false;
+                    await loadDeals();          // ricarica catalogo e lista d'attesa
+                    if (pendingDeals.length === 0) toggleVistaPending();
+                } else {
+                    showStatusMessage('⚠️ ' + (res.message || 'Approvazione fallita.'), true);
+                }
+            } catch (e) {
+                showStatusMessage('⚠️ Errore di connessione durante l\'approvazione.', true);
+            } finally {
+                isOperationPending = false;
+            }
+        }
+
+        async function scartaCandidato(pid) {
+            isOperationPending = true;
+            try {
+                const res = await chiamaPending({ azione: 'scarta', product_id: String(pid) });
+                if (res.status === 'success') {
+                    showStatusMessage('🗑️ ' + res.message + ` (${res.pending_count} ancora in attesa)`);
+                    await caricaPending();
+                    renderGallery();
+                    if (pendingDeals.length === 0) toggleVistaPending();
+                } else {
+                    showStatusMessage('⚠️ ' + (res.message || 'Operazione fallita.'), true);
+                }
+            } catch (e) {
+                showStatusMessage('⚠️ Errore di connessione.', true);
+            } finally {
+                isOperationPending = false;
+            }
+        }
+
+        async function scartaTuttiCandidati() {
+            if (!pendingDeals.length) return;
+            if (!confirm(`⚠️ Scartare tutti i ${pendingDeals.length} candidati in attesa?\n\nNon verranno piu' riproposti nelle importazioni future.`)) return;
+
+            isOperationPending = true;
+            try {
+                const res = await chiamaPending({ azione: 'svuota' });
+                if (res.status === 'success') {
+                    showStatusMessage('🗑️ ' + res.message);
+                    await caricaPending();
+                    if (vistaPending) toggleVistaPending(); else renderGallery();
+                } else {
+                    showStatusMessage('⚠️ ' + (res.message || 'Operazione fallita.'), true);
+                }
+            } catch (e) {
+                showStatusMessage('⚠️ Errore di connessione.', true);
+            } finally {
+                isOperationPending = false;
+            }
+        }
+
+        /* Riga esplicativa sopra le card in revisione, con lo scarto in blocco. */
+        function mostraIntestazionePending(gallery) {
+            const testa = document.createElement('div');
+            testa.className = 'pending-intestazione';
+            testa.innerHTML = `
+                <div>
+                    <strong>📥 Revisione candidati AliExpress</strong>
+                    <div class="pending-nota">Questi prodotti non sono ancora nel catalogo e non finiscono online.
+                    Approva quelli buoni: gli scartati non verranno piu' riproposti.</div>
+                </div>
+                <button type="button" class="btn-scarta-tutti" onclick="scartaTuttiCandidati()">🗑️ Scarta tutti</button>
+            `;
+            gallery.appendChild(testa);
+        }
+
+        /* Barra Approva/Scarta sovrapposta alla card del candidato. */
+        function costruisciBarraRevisione(deal) {
+            const pid = String(deal.product_id || '');
+            const barra = document.createElement('div');
+            barra.className = 'barra-revisione';
+
+            const ok = document.createElement('button');
+            ok.type = 'button';
+            ok.className = 'btn-approva';
+            ok.textContent = '✅ Approva';
+            ok.title = 'Aggiunge il prodotto al catalogo';
+            ok.onclick = (e) => { e.stopPropagation(); approvaCandidato(pid); };
+
+            const no = document.createElement('button');
+            no.type = 'button';
+            no.className = 'btn-scarta';
+            no.textContent = '🗑️ Scarta';
+            no.title = "Rimuove il candidato: non verra' piu' riproposto";
+            no.onclick = (e) => { e.stopPropagation(); scartaCandidato(pid); };
+
+            const vedi = document.createElement('a');
+            vedi.className = 'btn-vedi';
+            vedi.href = deal.link || '#';
+            vedi.target = '_blank';
+            vedi.rel = 'noopener';
+            vedi.textContent = '🔗';
+            vedi.title = 'Apri la pagina del prodotto su AliExpress';
+            vedi.onclick = (e) => e.stopPropagation();
+
+            barra.appendChild(ok);
+            barra.appendChild(vedi);
+            barra.appendChild(no);
+            return barra;
+        }
+
+        function setStoreFilter(store) {
+            currentStoreFilter = store;
+            // Il pulsante "Anomali" e' un filtro indipendente e si esclude dallo
+            // spegnimento: altrimenti cambiare store lo disattiverebbe di nascosto
+            // pur restando il suo filtro in vigore.
+            document.querySelectorAll('.store-filter-btn:not(#filterAnomali)').forEach(b => b.classList.remove('active'));
+            if (store === 'all') document.getElementById('filterAll').classList.add('active');
+            if (store === 'amazon') document.getElementById('filterAmazon').classList.add('active');
+            if (store === 'aliexpress') document.getElementById('filterAli').classList.add('active');
+
+            const delBtn = document.getElementById('btnDeleteSelection');
+            if (store === 'all') delBtn.textContent = '🗑️ Cancella Tutti (Tutti i Banner)';
+            if (store === 'amazon') delBtn.textContent = '🗑️ Cancella Tutti (Solo Amazon)';
+            if (store === 'aliexpress') delBtn.textContent = '🗑️ Cancella Tutti (Solo AliExpress)';
+
+            renderGallery();
+        }
+
+        function toggleFiltroAnomali() {
+            soloAnomali = !soloAnomali;
+            document.getElementById('filterAnomali').classList.toggle('active', soloAnomali);
+            // Le anomalie riguardano il catalogo: accenderle esce dalla revisione.
+            if (soloAnomali && vistaPending) {
+                vistaPending = false;
+                document.getElementById('filterPending').classList.remove('active');
+            }
+            renderGallery();
         }
 
         function switchView(mode) {
@@ -652,94 +1524,432 @@
             renderGallery();
         }
 
-        function renderGallery() {
-            stopAllRotationTimers();
-            const gallery = document.getElementById('gallery');
-            gallery.innerHTML = '';
+        // Aggiorna i totali sui pulsanti di filtro. La regola di appartenenza e'
+        // la stessa usata dal filtro: un banner senza 'store' e' di Amazon
+        // (i record piu' vecchi non avevano il campo).
+        /* --- VARIAZIONE RISPETTO AL PREZZO DI RIFERIMENTO ---
+           I campi ref_price / ref_badge / ref_date vengono scritti da
+           aggiorna_offerte.php al primo rilevamento valido e poi conservati.
+           Qui si confronta il prezzo attuale con quello di riferimento e si
+           evidenzia la card solo se lo scarto supera la soglia. */
+        const SOGLIA_VARIAZIONE = 10;   // punti percentuali
 
-            if (!allDeals || allDeals.length === 0) {
-                gallery.innerHTML = '<p style="color:#94a3b8;">Nessun banner presente.</p>';
+        /* Gemello JS di prezzo_a_numero() in lib_api.php: stessi formati
+           ("23,01 €", "da 2,88 €", "1.234,56 €") e stessi segnaposto.
+           Il prefisso "da" di AliExpress cade con gli altri caratteri non
+           numerici: e' un'etichetta nostra, non parte del prezzo. */
+        function prezzoANumero(testo) {
+            if (testo === null || testo === undefined) return null;
+            let p = String(testo).replace(/[^0-9,.]/g, '');
+            if (!p || !/\d/.test(p)) return null;
+
+            const iv = p.lastIndexOf(','), ip = p.lastIndexOf('.');
+            if (iv !== -1 && ip !== -1) {
+                p = (iv > ip) ? p.replace(/\./g, '').replace(',', '.') : p.replace(/,/g, '');
+            } else if (iv !== -1) {
+                p = (p.length - iv - 1) <= 2 ? p.replace(',', '.') : p.replace(/,/g, '');
+            } else if (ip !== -1 && (p.length - ip - 1) === 3) {
+                p = p.replace(/\./g, '');   // "1.234" = migliaia
+            }
+            const v = parseFloat(p);
+            return (isFinite(v) && v > 0) ? v : null;
+        }
+
+        /**
+         * Variazione percentuale rispetto al riferimento.
+         * @return {null|{perc:number, su:boolean, da:number, a:number}}
+         *         null se manca il riferimento o il prezzo non e' leggibile
+         *         (prodotto esaurito, errore API): in quel caso non si evidenzia.
+         */
+        function variazionePrezzo(deal) {
+            const rif = prezzoANumero(deal.ref_price);
+            const ora = prezzoANumero(deal.price);
+            if (rif === null || ora === null) return null;
+
+            const perc = ((ora - rif) / rif) * 100;
+            return { perc, su: perc > 0, da: rif, a: ora };
+        }
+
+        /* Soglia di variazione dello sconto, in PUNTI percentuali sul valore
+           della percentuale stessa: da "Sconto 30%" a "Sconto 20%" sono 10
+           punti, non il 33% di scarto relativo. */
+        const SOGLIA_SCONTO = 5;        // punti di percentuale
+
+        /* Estrae il numero da un badge "Sconto 22%". Restituisce null se il
+           badge e' vuoto o non contiene una percentuale: assenza di sconto e
+           sconto pari a zero non vanno confusi. */
+        function scontoANumero(testo) {
+            if (testo === null || testo === undefined) return null;
+            const m = String(testo).match(/(\d+(?:[.,]\d+)?)\s*%/);
+            if (!m) return null;
+            const v = parseFloat(m[1].replace(',', '.'));
+            return isFinite(v) ? v : null;
+        }
+
+        /**
+         * Variazione dello sconto rispetto al riferimento, in punti percentuali.
+         * @return {null|{punti:number, su:boolean, da:number, a:number}}
+         *         null se manca uno dei due badge: senza riferimento non si puo'
+         *         dire se lo sconto e' cambiato o non e' mai esistito.
+         */
+        function variazioneSconto(deal) {
+            const rif = scontoANumero(deal.ref_badge);
+            const ora = scontoANumero(deal.badge);
+            if (rif === null || ora === null) return null;
+
+            const punti = ora - rif;
+            return { punti, su: punti > 0, da: rif, a: ora };
+        }
+
+        /**
+         * Verdetto unico di anomalia, condiviso da filtro ed editor: le soglie
+         * vivono qui e in un posto solo, cosi' i due non possono divergere.
+         * @return {null|{motivi:string[], inattivo:boolean, varPrezzo, varSconto}}
+         *         null se il prodotto e' regolare.
+         */
+        function analizzaAnomalia(deal) {
+            const motivi = [];
+            const inattivo = (deal.active === false);
+            if (inattivo) motivi.push('non attivo');
+
+            const vp = variazionePrezzo(deal);
+            if (vp && Math.abs(vp.perc) >= SOGLIA_VARIAZIONE) {
+                motivi.push(`prezzo ${vp.su ? '+' : '−'}${Math.abs(vp.perc).toFixed(0)}%`);
+            }
+
+            const vs = variazioneSconto(deal);
+            if (vs && Math.abs(vs.punti) >= SOGLIA_SCONTO) {
+                motivi.push(`sconto ${vs.da}% → ${vs.a}%`);
+            }
+
+            if (motivi.length === 0) return null;
+            return { motivi, inattivo, varPrezzo: vp, varSconto: vs };
+        }
+
+        // Id del banner su cui centrarsi al prossimo render; null = nessuno.
+        let dealDaEvidenziare = null;
+        // Id da tenere evidenziato anche nei render successivi. Serve perche'
+        // l'inserimento avviene in due tempi (segnaposto, poi arricchimento da
+        // API): il secondo render ricostruisce la card da zero e senza questo
+        // l'alone verde sparirebbe dopo una frazione di secondo.
+        let dealEvidenziato = null;
+        let timerEvidenza = null;
+
+        /*
+         * Porta in vista il banner appena aggiunto e lo evidenzia.
+         * Va chiamata a fine renderGallery(), quando le card esistono davvero.
+         *
+         * L'inserimento avviene in due tempi (prima il segnaposto "In
+         * elaborazione...", poi l'arricchimento da API): il secondo giro non
+         * genera un id nuovo, quindi non fa scattare un secondo scroll e non
+         * strappa la vista mentre si sta gia' guardando il banner.
+         */
+        function centraSuNuovoBanner() {
+            if (!dealDaEvidenziare) return;
+
+            const card = document.getElementById(`deal_card_${dealDaEvidenziare}`);
+
+            // Il filtro store attivo puo' escludere il nuovo banner (es. filtro
+            // su Amazon e arriva un prodotto AliExpress): la card non esiste.
+            // Si passa da soli a "Tutti" e lo si segnala, cosi' il banner appena
+            // inserito e' sempre visibile senza doverci pensare.
+            if (!card) {
+                const nuovo = allDeals.find(d => String(d.id) === dealDaEvidenziare);
+
+                // Il banner non c'e' proprio (cancellato nel frattempo): non
+                // ha senso cambiare filtro, si lascia la vista com'e'.
+                if (!nuovo) { dealDaEvidenziare = null; return; }
+
+                // Gia' su "Tutti" e comunque assente: nulla da fare, e
+                // soprattutto niente ricorsione.
+                if (currentStoreFilter === 'all') { dealDaEvidenziare = null; return; }
+
+                const storeNuovo = (nuovo.store === 'aliexpress') ? 'AliExpress' : 'Amazon';
+                showStatusMessage(`➕ Nuovo banner ${storeNuovo} (ID ${nuovo.id}): filtro riportato su "Tutti" per mostrarlo.`);
+
+                // dealDaEvidenziare resta impostato di proposito: setStoreFilter
+                // richiama renderGallery(), che rientra qui e questa volta trova
+                // la card e la centra.
+                setStoreFilter('all');
                 return;
             }
 
-            allDeals.forEach((deal, idx) => {
+            dealDaEvidenziare = null;
+
+            card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+            // Riavvia l'animazione anche se la classe fosse gia' presente.
+            card.classList.remove('appena-aggiunto');
+            void card.offsetWidth;
+            card.classList.add('appena-aggiunto');
+
+            // L'evidenza dura 7,5s a prescindere da quanti render avvengano nel
+            // frattempo: ci pensa riapplicaEvidenza() a rimetterla.
+            dealEvidenziato = card.id.replace('deal_card_', '');
+            avviaScadenzaEvidenza();
+        }
+
+        /* Rimette l'alone sulla card ricostruita da un render intermedio.
+           La card e' un elemento nuovo, quindi l'animazione riparte da capo:
+           l'alone resta visibile per tutta la finestra di 7,5s anche quando
+           l'arricchimento da API ridisegna la galleria a meta' strada. */
+        function riapplicaEvidenza() {
+            if (!dealEvidenziato) return;
+            const card = document.getElementById(`deal_card_${dealEvidenziato}`);
+            if (!card) return;
+            card.classList.add('appena-aggiunto');
+            // Il conto riparte dall'ultimo render: l'arricchimento da API puo'
+            // arrivare vari secondi dopo il segnaposto, e senza questo riavvio
+            // la finestra si esaurirebbe prima che il banner sia completo.
+            avviaScadenzaEvidenza();
+        }
+
+        /* (Ri)arma il timer che spegne l'alone dopo un ciclo completo. */
+        function avviaScadenzaEvidenza() {
+            if (timerEvidenza) clearTimeout(timerEvidenza);
+            timerEvidenza = setTimeout(() => {
+                timerEvidenza = null;
+                dealEvidenziato = null;
+                document.querySelectorAll('.appena-aggiunto')
+                        .forEach(el => el.classList.remove('appena-aggiunto'));
+            }, 7200);   // = 2.4s x 3 ripetizioni dell'animazione CSS
+        }
+
+        function aggiornaConteggi() {
+            const tot = allDeals.length;
+            const dealsAli = allDeals.filter(d => d.store === 'aliexpress');
+            const ali = dealsAli.length;
+            const amz = tot - ali;
+
+            // Somma dei pesi: e' questa, non il numero di banner, a determinare
+            // quanto spesso ciascun vendor viene estratto. Il peso mancante vale
+            // 5, come nel resto della pagina.
+            const peso = arr => arr.reduce((s, d) => s + (d.weight !== undefined ? d.weight : 5), 0);
+            const pesoTot = peso(allDeals);
+            const pesoAli = peso(dealsAli);
+            const pesoAmz = pesoTot - pesoAli;
+
+            // Quota di estrazione effettiva, per leggere l'equilibrio a colpo
+            // d'occhio senza fare il conto a mente.
+            const quota = p => pesoTot ? Math.round(p * 100 / pesoTot) : 0;
+
+            const set = (id, testo, titolo) => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                el.textContent = testo;
+                if (titolo) el.title = titolo;
+            };
+            set('filterAll', `Tutti (${tot} · ⭐${pesoTot})`,
+                'Banner totali e somma dei pesi');
+            set('filterAmazon', `🟧 Amazon (${amz} · ⭐${pesoAmz})`,
+                `${quota(pesoAmz)}% delle estrazioni`);
+            set('filterAli', `🟥 AliExpress (${ali} · ⭐${pesoAli})`,
+                `${quota(pesoAli)}% delle estrazioni`);
+
+            // Conteggio anomalie sempre visibile, anche a filtro spento: e' il
+            // motivo per cui uno lo accende.
+            const anomali = allDeals.filter(d => analizzaAnomalia(d));
+            const nOff = anomali.filter(d => d.active === false).length;
+            set('filterAnomali', `⚠️ Anomali (${anomali.length})`,
+                anomali.length === 0
+                    ? 'Nessuna anomalia rilevata'
+                    : `${anomali.length} prodotti da controllare`
+                      + (nOff ? ` (di cui ${nOff} non attivi)` : '')
+                      + `\nSoglie: prezzo ±${SOGLIA_VARIAZIONE}%, sconto ±${SOGLIA_SCONTO} punti`);
+
+            // Il pulsante della revisione compare solo quando serve.
+            const btnPend = document.getElementById('filterPending');
+            if (btnPend) {
+                btnPend.style.display = pendingDeals.length ? '' : 'none';
+                btnPend.textContent = `📥 Da rivedere (${pendingDeals.length})`;
+                btnPend.title = `${pendingDeals.length} prodotti importati da AliExpress in attesa di essere esaminati`;
+            }
+        }
+
+        function renderGallery() {
+            stopAllRotationTimers();
+            aggiornaConteggi();
+            const gallery = document.getElementById('gallery');
+            gallery.innerHTML = '';
+
+            // In revisione si mostrano i candidati, che vivono in pending_ali.json
+            // e non sono ancora nel catalogo: i filtri per store e per anomalia
+            // non li riguardano.
+            const filteredDeals = vistaPending ? pendingDeals : allDeals.filter(d => {
+                if (soloAnomali && !analizzaAnomalia(d)) return false;
+                if (currentStoreFilter === 'amazon') return (!d.store || d.store === 'amazon');
+                if (currentStoreFilter === 'aliexpress') return (d.store === 'aliexpress');
+                return true;
+            });
+
+            if (!filteredDeals || filteredDeals.length === 0) {
+                // Con il filtro anomalie una lista vuota e' un buon risultato,
+                // non un filtro sbagliato: il messaggio lo dice esplicitamente.
+                gallery.innerHTML = vistaPending
+                    ? '<p style="color:#4ade80;">✅ Nessun candidato in attesa: tutti esaminati.</p>'
+                    : (soloAnomali
+                    ? '<p style="color:#4ade80;">✅ Nessun prodotto anomalo: tutti attivi, prezzi e sconti entro le soglie.</p>'
+                    : '<p style="color:#94a3b8;">Nessun banner trovato per questo filtro.</p>');
+                // Nessuna card esiste, ma la richiesta non si scarta qui: se il
+                // banner nuovo e' escluso dal filtro attivo, centraSuNuovoBanner()
+                // passa da solo a "Tutti". E' lei ad azzerare la variabile.
+                centraSuNuovoBanner();
+                return;
+            }
+
+            // Dopo il controllo sulla lista vuota: li' la gallery viene
+            // riscritta con innerHTML e l'intestazione andrebbe persa.
+            if (vistaPending) mostraIntestazionePending(gallery);
+
+            filteredDeals.forEach((deal, i) => {
+                // In revisione indexOf darebbe -1 per tutti (i candidati non
+                // sono in allDeals) e gli id delle immagini si ripeterebbero,
+                // rompendo la rotazione automatica: si usa la posizione.
+                const globalIndex = vistaPending ? `p${i}` : allDeals.indexOf(deal);
+                const isAli = (deal.store === 'aliexpress');
                 const card = document.createElement('div');
                 card.className = 'banner-wrapper';
-                card.onclick = () => apriEditorBanner(idx);
+                if (vistaPending) {
+                    // I candidati non hanno ancora un id (e' posizionale e viene
+                    // assegnato all'approvazione): si usa il product_id.
+                    card.id = `pending_card_${deal.product_id}`;
+                    card.classList.add('in-revisione');
+                    // Niente editor: il record non esiste in allDeals, quindi
+                    // apriEditorBanner non avrebbe nulla da modificare.
+                } else {
+                    // L'id serve a ritrovare la card dopo il render, per centrare la
+                    // galleria sul banner appena creato dall'estensione Chrome.
+                    card.id = `deal_card_${deal.id}`;
+                    card.onclick = () => apriEditorBanner(globalIndex);
+                }
 
-                const headerText = deal.custom_message || 'OFFERTA A TEMPO';
+                const headerText = deal.custom_message || (isAli ? 'OFFERTA ALIEXPRESS' : 'OFFERTA A TEMPO');
                 const weight = deal.weight !== undefined ? deal.weight : 5;
                 const activeImgs = deal.active_images && deal.active_images.length > 0 ? deal.active_images : [deal.img];
                 const mainImg = activeImgs[0] || deal.img;
                 const priceText = deal.price || '';
                 const badgeText = deal.badge || '';
 
+                const storeTagClass = isAli ? 'tag-ali' : 'tag-amazon';
+                const storeTagText = isAli ? 'AliExpress' : 'Amazon';
+                const ctaBtnText = isAli ? 'Vedi offerta su AliExpress' : 'Vedi offerta su Amazon.it';
+                const ctaBtnClass = isAli ? 'cta-btn ali-btn' : 'cta-btn';
+                const disclosureText = isAli 
+                    ? 'Disponibile su AliExpress<br><span style="font-size: 9px; opacity: 0.7;">In qualità di affiliato AliExpress, guadagno dagli acquisti idonei.</span>'
+                    : 'Come affiliato Amazon,<br>guadagno dagli acquisti idonei.';
+
+                let isHighDiscount = false;
+                if (badgeText) {
+                    const match = badgeText.match(/(\d+)%/);
+                    if (match && parseInt(match[1], 10) > 35) {
+                        isHighDiscount = true;
+                    }
+                }
+                const pulseClass = isHighDiscount ? ' amazon-badge-pulse' : '';
+                const badgeClass = 'status-badge' + (isAli ? ' ali-badge' : '') + pulseClass;
+
                 let innerContent = '';
 
                 if (currentView === 'standard') {
                     innerContent = `
-                        <div class="banner-300x600" style="opacity: ${deal.active !== false ? 1 : 0.45};">
+                        <div class="banner-300x600 ${isAli ? 'ali-theme' : ''}" style="opacity: ${deal.active !== false ? 1 : 0.45};">
                             <div class="star-badge">⭐ ${weight}</div>
+                            <div class="store-tag-badge ${storeTagClass}">${storeTagText}</div>
                             <div class="deal-header">${headerText}</div>
                             <div class="image-container">
-                                <img class="product-img" id="gallery_img_${idx}" src="${mainImg}" alt="Product">
+                                <img class="product-img" id="gallery_img_${globalIndex}" src="${mainImg}" alt="Product">
                             </div>
                             <div class="content">
                                 <div class="title" title="${deal.title}">${deal.title || 'Senza Titolo'}</div>
-                                <div class="price-info">
-                                    <div class="price-badge-row">
-                                        ${priceText ? `<span class="price-text">${priceText}</span>` : ''}
-                                        ${badgeText ? `<span class="status-badge">${badgeText}</span>` : ''}
-                                    </div>
-                                    <div class="expiry-info">${deal.expiry || ''}</div>
-                                </div>
+                            </div>
+                            <div class="price-badge-row"${deal.expiry ? ` title="${deal.expiry}"` : ''}>
+                                ${priceText ? `<span class="price-text">${priceText}</span>` : ''}
+                                ${badgeText ? `<span class="${badgeClass}">${badgeText}</span>` : ''}
                             </div>
                             <div class="button-container">
-                                <div class="cta-btn">Vedi offerta su Amazon.it</div>
+                                <div class="${ctaBtnClass}">${ctaBtnText}</div>
                             </div>
-                            <div class="disclosure">
-                                Disponibile su Amazon.it<br>
-                                <span style="font-size: 9px; opacity: 0.7;">Come affiliato Amazon, guadagno dagli acquisti idonei.</span>
-                            </div>
+                            <div class="disclosure">${disclosureText}</div>
                         </div>
                     `;
                 } else if (currentView === 'image') {
                     innerContent = `
-                        <div class="banner-300x600" style="opacity: ${deal.active !== false ? 1 : 0.45};">
+                        <div class="banner-300x600 ${isAli ? 'ali-theme' : ''}" style="opacity: ${deal.active !== false ? 1 : 0.45};">
                             <div class="star-badge">⭐ ${weight}</div>
+                            <div class="store-tag-badge ${storeTagClass}">${storeTagText}</div>
                             <div class="deal-header">${headerText}</div>
                             <div class="image-container large-view">
-                                <img class="product-img" id="gallery_img_${idx}" src="${mainImg}" alt="Product">
+                                <img class="product-img" id="gallery_img_${globalIndex}" src="${mainImg}" alt="Product">
                             </div>
                             <div class="button-container" style="padding-top:15px;">
-                                <div class="cta-btn">Vedi offerta su Amazon.it</div>
+                                <div class="${ctaBtnClass}">${ctaBtnText}</div>
                             </div>
+                            <div class="disclosure">${disclosureText}</div>
                         </div>
                     `;
                 } else { // Auto / Animazione
                     innerContent = `
-                        <div class="banner-300x600" style="opacity: ${deal.active !== false ? 1 : 0.45};">
+                        <div class="banner-300x600 ${isAli ? 'ali-theme' : ''}" style="opacity: ${deal.active !== false ? 1 : 0.45};">
                             <div class="star-badge">⭐ ${weight} (Rotatore)</div>
+                            <div class="store-tag-badge ${storeTagClass}">${storeTagText}</div>
                             <div class="deal-header">${headerText}</div>
                             <div class="image-container large-view">
-                                <img class="product-img" id="gallery_img_${idx}" src="${mainImg}" alt="Product">
+                                <img class="product-img" id="gallery_img_${globalIndex}" src="${mainImg}" alt="Product">
                             </div>
                             <div class="button-container" style="padding-top:15px;">
-                                <div class="cta-btn">Vedi offerta su Amazon.it</div>
+                                <div class="${ctaBtnClass}">${ctaBtnText}</div>
                             </div>
+                            <div class="disclosure">${disclosureText}</div>
                         </div>
                     `;
                 }
 
                 card.innerHTML = innerContent;
+
+                // Anomalie (prezzo, sconto, prodotto disattivato): cornice
+                // colorata + badge. Non tocca innerContent, cosi' resta
+                // indipendente dalle tre viste.
+                const anom = vistaPending ? null : analizzaAnomalia(deal);
+                if (vistaPending) card.appendChild(costruisciBarraRevisione(deal));
+                if (anom) {
+                    const varz = anom.varPrezzo;
+                    const oltrePrezzo = varz && Math.abs(varz.perc) >= SOGLIA_VARIAZIONE;
+                    const b = document.createElement('div');
+
+                    if (anom.inattivo) {
+                        // L'inattivita' prevale: e' il problema piu' grave e va
+                        // riconosciuta a colpo d'occhio anche se il prezzo e' mosso.
+                        b.className = 'var-badge inattivo';
+                        b.textContent = '⛔ OFF';
+                    } else if (oltrePrezzo) {
+                        b.className = 'var-badge ' + (varz.su ? 'su' : 'giu');
+                        b.textContent = `${varz.su ? '▲' : '▼'} ${Math.abs(varz.perc).toFixed(0)}%`;
+                    } else {
+                        // Resta il solo scostamento di sconto.
+                        b.className = 'var-badge ' + (anom.varSconto.su ? 'giu' : 'su');
+                        b.textContent = `%${anom.varSconto.su ? '▲' : '▼'} ${Math.abs(anom.varSconto.punti).toFixed(0)}`;
+                    }
+
+                    b.title = `Anomalie: ${anom.motivi.join(' · ')}`
+                            + `\nRiferimento: ${deal.ref_price || '-'}`
+                            + (deal.ref_badge ? ` / ${deal.ref_badge}` : '')
+                            + (deal.ref_date ? ` (${deal.ref_date})` : '')
+                            + `\nAttuale: ${deal.price || '-'}`
+                            + (deal.badge ? ` / ${deal.badge}` : '');
+                    card.appendChild(b);
+
+                    if (anom.inattivo) card.classList.add('var-off');
+                    else if (oltrePrezzo) card.classList.add(varz.su ? 'var-su' : 'var-giu');
+                    else card.classList.add(anom.varSconto.su ? 'var-giu' : 'var-su');
+                }
+
                 gallery.appendChild(card);
 
-                // Attiva il timer di rotazione solo se siamo in modalità "Auto (Animazione)" e ci sono più immagini
                 if (currentView === 'anim' && activeImgs.length > 1) {
                     let imgIdx = 0;
                     const timer = setInterval(() => {
                         imgIdx = (imgIdx + 1) % activeImgs.length;
-                        const imgEl = document.getElementById(`gallery_img_${idx}`);
+                        const imgEl = document.getElementById(`gallery_img_${globalIndex}`);
                         if (imgEl) {
                             imgEl.style.opacity = '0';
                             setTimeout(() => {
@@ -751,10 +1961,41 @@
                     rotationTimers.push(timer);
                 }
             });
+
+            // Le card ora esistono: si puo' centrare la vista su quella nuova.
+            riapplicaEvidenza();
+            centraSuNuovoBanner();
         }
 
-        /* --- LOGICA EDITOR DI PERSONALIZZAZIONE --- */
+        async function cancellaSelezioneCorrente() {
+            let label = "TUTTI i banner (Amazon ed AliExpress)";
+            if (currentStoreFilter === 'amazon') label = "TUTTI i banner Amazon";
+            if (currentStoreFilter === 'aliexpress') label = "TUTTI i banner AliExpress";
+
+            if (!confirm(`⚠️ Sei sicuro di voler cancellare definitivamente ${label}?`)) {
+                return;
+            }
+
+            const primaCount = allDeals.length;
+            allDeals = allDeals.filter(d => {
+                if (currentStoreFilter === 'amazon') return (d.store === 'aliexpress');
+                if (currentStoreFilter === 'aliexpress') return (!d.store || d.store === 'amazon');
+                return false; // 'all' -> cancella tutti
+            });
+
+            const cancellati = primaCount - allDeals.length;
+            await salvaTuttiIDeals();
+            renderGallery();
+            showStatusMessage(`🗑️ Cancellati ${cancellati} banner (${label}).`);
+        }
+
+        let savedScrollPosition = 0;
+
+        /* --- SCHERMATA DEDICATA DI PERSONALIZZAZIONE (EDITOR) --- */
         function apriEditorBanner(idx) {
+            // Lo scroll vive nella griglia dei banner, non nella finestra.
+            const gridScroll = document.getElementById('gallery');
+            savedScrollPosition = gridScroll ? gridScroll.scrollTop : 0;
             stopAllRotationTimers();
             editingIndex = idx;
             const deal = allDeals[idx];
@@ -763,64 +2004,162 @@
             document.getElementById('editHeader').value = deal.custom_message || '';
             document.getElementById('editWeight').value = (deal.weight !== undefined) ? deal.weight : 5;
 
-            // Popola la griglia delle immagini variante
+            // Popolamento Pannello Dati Tecnici & Parametri JSON
+            const isAli = (deal.store === 'aliexpress');
+            document.getElementById('infoStore').value = isAli ? 'AliExpress' : 'Amazon';
+            document.getElementById('infoIdLabel').textContent = isAli ? 'Product ID' : 'ASIN';
+            document.getElementById('infoIdCode').value = deal.product_id || deal.asin || deal.id || '-';
+            document.getElementById('infoPrice').value = deal.price || 'Non disponibile';
+            document.getElementById('infoBadge').value = deal.badge || 'Nessuno sconto';
+            document.getElementById('infoDateAdded').value = deal.date_added || '-';
+            document.getElementById('infoExpiry').value = deal.expiry || '-';
+            document.getElementById('infoLink').value = deal.link || '-';
+
+            // Riferimenti e variazione: stesse soglie della galleria, perche'
+            // entrambe passano da analizzaAnomalia().
+            document.getElementById('infoRefPrice').value = deal.ref_price || 'Non ancora rilevato';
+            document.getElementById('infoRefBadge').value = deal.ref_badge || 'Nessuno sconto';
+            document.getElementById('infoRefDate').value = deal.ref_date || '-';
+
+            const campoVar = document.getElementById('infoVariazione');
+            const anom = analizzaAnomalia(deal);
+            const vp = variazionePrezzo(deal);
+            const vs = variazioneSconto(deal);
+
+            if (anom) {
+                campoVar.value = '⚠️ ' + anom.motivi.join(' · ');
+                campoVar.style.color = anom.inattivo ? '#a1a1aa' : '#f43f5e';
+            } else if (vp || vs) {
+                // Sotto soglia: si mostrano comunque i numeri, altrimenti non si
+                // distingue "variazione piccola" da "nessun dato di confronto".
+                const parti = [];
+                if (vp) parti.push(`prezzo ${vp.perc >= 0 ? '+' : '−'}${Math.abs(vp.perc).toFixed(1)}%`);
+                if (vs) parti.push(`sconto ${vs.punti >= 0 ? '+' : '−'}${Math.abs(vs.punti)} punti`);
+                campoVar.value = '✅ Nella norma (' + parti.join(', ') + ')';
+                campoVar.style.color = '#4ade80';
+            } else {
+                campoVar.value = 'Nessun confronto disponibile';
+                campoVar.style.color = '#94a3b8';
+            }
+            // Il campo e' stretto e il testo puo' eccedere: il tooltip lo riporta
+            // per intero senza doverci cliccare dentro per scorrerlo.
+            campoVar.title = campoVar.value;
+
+            renderImageGrid(deal);
+
+            document.getElementById('galleryView').style.display = 'none';
+            const ed = document.getElementById('editorView');
+            ed.style.display = 'flex';
+            ed.scrollTop = 0;   // e' l'editor a scorrere, non la finestra
+
+            switchPreviewMode('vista1');
+        }
+
+        /* I campi sono gia' popolati da apriEditorBanner(): qui basta mostrare
+           la modale, che si chiude con Esc, con la X o cliccando fuori come
+           tutte le altre. */
+        function apriDatiTecnici() {
+            if (editingIndex === null) return;
+            apriModale('modalTecnici');
+        }
+
+        function renderImageGrid(deal) {
             const grid = document.getElementById('imagesGrid');
             grid.innerHTML = '';
             const allImgs = deal.all_images && deal.all_images.length > 0 ? deal.all_images : [deal.img];
             const activeImgs = deal.active_images || [deal.img];
 
-            allImgs.forEach(url => {
+            allImgs.forEach((url, imgIdx) => {
                 const isAct = activeImgs.includes(url);
                 const card = document.createElement('div');
                 card.className = 'image-card-box';
+                card.id = `img_card_${imgIdx}`;
                 card.innerHTML = `
-                    <div class="image-card-preview">
-                        <img src="${url}">
+                    <div class="image-card-preview" style="background: #1a1a24; position: relative;">
+                        <img src="${url}" loading="lazy" style="max-width: 100%; max-height: 100%; object-fit: contain;" onerror="this.onerror=null; this.src='https://via.placeholder.com/160?text=Immagine+non+disponibile';">
                     </div>
-                    <div class="image-card-footer ${isAct ? 'active' : 'inactive'}" onclick="toggleImageActive('${url}')">
-                        <input type="checkbox" ${isAct ? 'checked' : ''}> Immagine Attiva
+                    <div class="image-card-footer ${isAct ? 'active' : 'inactive'}" id="img_footer_${imgIdx}" onclick="toggleImageActive('${url}', ${imgIdx})">
+                        <input type="checkbox" id="img_check_${imgIdx}" ${isAct ? 'checked' : ''}> Immagine Attiva
                     </div>
                 `;
                 grid.appendChild(card);
             });
-
-            document.getElementById('galleryView').style.display = 'none';
-            document.getElementById('editorView').style.display = 'flex';
-
-            switchPreviewMode('vista1');
         }
 
-        function toggleImageActive(url) {
+        function toggleImageActive(url, imgIdx) {
+            if (editingIndex === null) return;
             const deal = allDeals[editingIndex];
             let activeImgs = deal.active_images || [deal.img];
+            
             if (activeImgs.includes(url)) {
                 if (activeImgs.length > 1) {
                     activeImgs = activeImgs.filter(u => u !== url);
+                } else {
+                    showStatusMessage('⚠️ Deve rimanere almeno un\'immagine attiva!', true);
+                    return;
                 }
             } else {
                 activeImgs.push(url);
             }
             deal.active_images = activeImgs;
-            apriEditorBanner(editingIndex);
+
+            // Aggiorna l'elemento grafico in-place senza ri-distruggere la griglia né azzerare lo scroll
+            const isAct = activeImgs.includes(url);
+            const footer = document.getElementById(`img_footer_${imgIdx}`);
+            const check = document.getElementById(`img_check_${imgIdx}`);
+            if (footer) footer.className = `image-card-footer ${isAct ? 'active' : 'inactive'}`;
+            if (check) check.checked = isAct;
+
+            updateLivePreview();
         }
 
         function updateLivePreview() {
             if (editingIndex === null) return;
             const deal = allDeals[editingIndex];
+            const isAli = (deal.store === 'aliexpress');
 
             const titleVal = document.getElementById('editTitle').value;
             const headerVal = document.getElementById('editHeader').value;
             const weightVal = document.getElementById('editWeight').value;
 
             document.getElementById('previewStarBadge').textContent = '⭐ ' + weightVal;
-            document.getElementById('previewHeader').textContent = headerVal || 'OFFERTA A TEMPO';
+            
+            const storeTag = document.getElementById('previewStoreTag');
+            storeTag.className = 'store-tag-badge ' + (isAli ? 'tag-ali' : 'tag-amazon');
+            storeTag.textContent = isAli ? 'AliExpress' : 'Amazon';
+
+            document.getElementById('previewHeader').textContent = headerVal || (isAli ? 'OFFERTA ALIEXPRESS' : 'OFFERTA A TEMPO');
             document.getElementById('previewTitle').textContent = titleVal || 'Senza Titolo';
             document.getElementById('previewPrice').textContent = deal.price || '';
-            document.getElementById('previewBadge').textContent = deal.badge || '';
+            
+            const badgeEl = document.getElementById('previewBadge');
+            badgeEl.textContent = deal.badge || '';
+            let isHighDiscount = false;
+            if (deal.badge) {
+                const match = deal.badge.match(/(\d+)%/);
+                if (match && parseInt(match[1], 10) > 35) {
+                    isHighDiscount = true;
+                }
+            }
+            badgeEl.className = 'status-badge' + (isAli ? ' ali-badge' : '') + (isHighDiscount ? ' amazon-badge-pulse' : '');
+            
             document.getElementById('previewExpiry').textContent = deal.expiry || '';
 
-            const activeImgs = deal.active_images && deal.active_images.length > 0 ? deal.active_images : [deal.img];
+            const ctaBtn = document.getElementById('previewCtaBtn');
+            ctaBtn.className = isAli ? 'cta-btn ali-btn' : 'cta-btn';
+            ctaBtn.textContent = isAli ? 'Vedi offerta su AliExpress' : 'Vedi offerta su Amazon.it';
 
+            const btnVisit = document.getElementById('btnVisitLink');
+            btnVisit.textContent = isAli ? '🔍 VAI SU ALIEXPRESS' : '🔍 VAI SU AMAZON';
+
+            document.getElementById('previewDisclosure').innerHTML = isAli
+                ? 'Disponibile su AliExpress<br><span style="font-size: 9px; opacity: 0.7;">In qualità di affiliato AliExpress, guadagno dagli acquisti idonei.</span>'
+                : 'Come affiliato Amazon,<br>guadagno dagli acquisti idonei.';
+
+            const liveBanner = document.getElementById('liveBanner');
+            if (isAli) { liveBanner.classList.add('ali-theme'); } else { liveBanner.classList.remove('ali-theme'); }
+
+            const activeImgs = deal.active_images && deal.active_images.length > 0 ? deal.active_images : [deal.img];
             const imgContainer = document.getElementById('previewImgContainer');
             const contentBox = document.getElementById('previewContent');
             const disclosureBox = document.getElementById('previewDisclosure');
@@ -872,16 +2211,37 @@
             updateLivePreview();
         }
 
-        function visitaLinkAmazon() {
+        function visitaLinkProdotto() {
             if (editingIndex === null) return;
-            window.open(allDeals[editingIndex].link, '_blank');
+            const deal = allDeals[editingIndex];
+            if (deal && deal.link) {
+                window.open(deal.link, '_blank');
+            }
         }
 
-        function eliminaBanner() {
+        function visitaLinkDiretto() {
             if (editingIndex === null) return;
-            if (confirm('Sei sicuro di voler disattivare questo banner?')) {
-                allDeals[editingIndex].active = false;
-                salvaEDisci();
+            const deal = allDeals[editingIndex];
+            if (!deal) return;
+            if (deal.store === 'aliexpress' && deal.product_id) {
+                window.open(`https://it.aliexpress.com/item/${deal.product_id}.html`, '_blank');
+            } else if (deal.asin) {
+                window.open(`https://www.amazon.it/dp/${deal.asin}`, '_blank');
+            } else if (deal.link) {
+                window.open(deal.link, '_blank');
+            }
+        }
+
+        async function eliminaBanner() {
+            if (editingIndex === null) return;
+            if (confirm('Sei sicuro di voler rimuovere questo banner?')) {
+                isOperationPending = true;
+                allDeals.splice(editingIndex, 1);
+                editingIndex = null;
+                renderGallery();
+                await salvaTuttiIDeals();
+                chiudiEditorSenzaSalvare();
+                setTimeout(() => { isOperationPending = false; }, 500);
             }
         }
 
@@ -889,9 +2249,11 @@
             if (editingIndex === null) return;
             const deal = allDeals[editingIndex];
 
-            deal.title = document.getElementById('editTitle').value.trim();
-            deal.custom_message = document.getElementById('editHeader').value.trim();
-            deal.weight = parseInt(document.getElementById('editWeight').value, 10) || 5;
+            if (deal) {
+                deal.title = document.getElementById('editTitle').value.trim();
+                deal.custom_message = document.getElementById('editHeader').value.trim();
+                deal.weight = parseInt(document.getElementById('editWeight').value, 10) || 5;
+            }
 
             await salvaTuttiIDeals();
             chiudiEditorSenzaSalvare();
@@ -901,11 +2263,17 @@
             stopAllRotationTimers();
             editingIndex = null;
             document.getElementById('editorView').style.display = 'none';
-            document.getElementById('galleryView').style.display = 'block';
+            // 'flex' e non 'block': la vista galleria e' una colonna con barra
+            // fissa in alto e griglia scorrevole sotto.
+            document.getElementById('galleryView').style.display = 'flex';
             renderGallery();
+            // Lo scroll ora vive nella griglia, non nella finestra.
+            const grid = document.getElementById('gallery');
+            if (grid) grid.scrollTop = savedScrollPosition;
         }
 
         async function salvaTuttiIDeals() {
+            isOperationPending = true;
             try {
                 let endpoint = 'api_salva_deals.php';
                 let resp = await fetch(endpoint, {
@@ -925,57 +2293,176 @@
                 console.log(res.message);
             } catch (e) {
                 console.error('Errore salvataggio.');
-            }
-        }
-
-        function showStatusMessage(msg, isError = false) {
-            const el = document.getElementById('statusMessage');
-            if (!el) return;
-            el.textContent = msg;
-            el.style.color = isError ? '#ff4747' : '#4ade80';
-            if (msg && !msg.startsWith('🔄') && !msg.startsWith('⏳')) {
-                setTimeout(() => {
-                    if (el.textContent === msg) el.textContent = '';
-                }, 5000);
+            } finally {
+                setTimeout(() => { isOperationPending = false; }, 500);
             }
         }
 
         async function aggiungiProdottoManuale() {
-            const asin = document.getElementById('addAsin').value.trim();
-            const msg = document.getElementById('addMsg').value.trim();
-            if (!asin) { showStatusMessage('⚠️ Inserisci un ASIN Amazon valido!', true); return; }
+            const rawId = document.getElementById('addIdInput').value.trim();
+            const msg = document.getElementById('addMsgInput').value.trim();
+            if (!rawId) { showStatusMessage('⚠️ Inserisci un ASIN Amazon o Product ID AliExpress!', true); return; }
 
-            showStatusMessage('⏳ Aggiunta ASIN in corso...');
+            showStatusMessage('⏳ Aggiunta prodotto in corso...');
             try {
-                let resp = await fetch('api_ricevi_asin.php', {
+                let resp = await fetch('api_ricevi_deal.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ asin: asin, message: msg })
+                    body: JSON.stringify({ id: rawId, message: msg })
                 });
                 if (!resp.ok) {
-                    resp = await fetch('banner/api_ricevi_asin.php', {
+                    resp = await fetch('banner/api_ricevi_deal.php', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ asin: asin, message: msg })
+                        body: JSON.stringify({ id: rawId, message: msg })
                     });
                 }
-                showStatusMessage('✅ ASIN aggiunto con successo! Avvio sincronizzazione...');
-                document.getElementById('addAsin').value = '';
-                document.getElementById('addMsg').value = '';
-                aggiornaTuttiIPrezzi();
+                // La risposta va letta: l'endpoint risponde 'error' quando il
+                // prodotto non e' recuperabile (non affiliabile, non disponibile
+                // in Italia, ASIN inesistente). Dichiarare successo senza
+                // guardarla nascondeva il motivo e lanciava comunque un
+                // aggiornamento completo inutile.
+                const testo = await resp.text();
+                let res;
+                try {
+                    res = JSON.parse(testo);
+                } catch (e) {
+                    showStatusMessage('⚠️ Risposta non valida dal server: ' + testo.substring(0, 200), true);
+                    return;
+                }
+
+                if (res.status !== 'success') {
+                    showStatusMessage('⚠️ ' + (res.message || 'Prodotto non aggiunto.'), true);
+                    return;
+                }
+
+                document.getElementById('addIdInput').value = '';
+                document.getElementById('addMsgInput').value = '';
+                // Si chiude solo qui: sui rami di errore la modale resta aperta
+                // con il codice digitato, cosi' si puo' correggere e riprovare.
+                chiudiModale('modalAdd');
+
+                // Il prodotto e' gia' arricchito dall'endpoint: basta ricaricare
+                // l'elenco, non serve un aggiornamento completo di tutti i deal.
+                if (res.duplicato) {
+                    showStatusMessage('ℹ️ ' + res.message);
+                } else {
+                    showStatusMessage('✅ ' + res.message);
+                }
+                loadDeals();
             } catch (e) {
-                showStatusMessage('⚠️ Errore durante l\'aggiunta dell\'ASIN.', true);
+                showStatusMessage('⚠️ Errore durante l\'aggiunta del prodotto: ' + e.message, true);
+            }
+        }
+
+        async function importaHotProductsAliExpress() {
+            const limit = parseInt(document.getElementById('importLimit').value, 10) || 10;
+            const category = document.getElementById('importCategory').value;
+            const kw = document.getElementById('importKw').value.trim();
+            const minDisc = parseInt(document.getElementById('importMinDisc').value, 10) || 0;
+            const minPrice = parseFloat(document.getElementById('importMinPrice').value) || 0;
+            const maxPrice = parseFloat(document.getElementById('importMaxPrice').value) || 0;
+            const msg = document.getElementById('importMsg').value.trim();
+
+            showStatusMessage('⏳ Ricerca ed importazione Top Offerte AliExpress in corso...');
+
+            try {
+                let endpoint = 'api_importa_hot_ali.php';
+                let resp = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        limit: limit,
+                        category: category,
+                        keywords: kw,
+                        min_discount: minDisc,
+                        min_price: minPrice,
+                        max_price: maxPrice,
+                        custom_message: msg,
+                        weight: 5
+                    })
+                });
+
+                if (!resp.ok) {
+                    endpoint = 'banner/api_importa_hot_ali.php';
+                    resp = await fetch(endpoint, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            limit: limit,
+                            category: category,
+                            keywords: kw,
+                            min_discount: minDisc,
+                            min_price: minPrice,
+                            max_price: maxPrice,
+                            custom_message: msg,
+                            weight: 5
+                        })
+                    });
+                }
+
+                const res = await resp.json();
+                if (res.status === 'success') {
+                    // Chiusura solo in caso di successo: su warning ed errore la
+                    // modale resta aperta con i filtri impostati, pronti da
+                    // ritoccare (es. allargare il prezzo o togliere la keyword).
+                    chiudiModale('modalImport');
+                    showStatusMessage('✅ ' + res.message);
+                    loadDeals();
+                } else if (res.status === 'warning') {
+                    showStatusMessage('⚠️ ' + res.message, true);
+                } else {
+                    showStatusMessage('⚠️ ' + (res.message || 'Errore durante l\'importazione.'), true);
+                }
+            } catch (e) {
+                showStatusMessage('⚠️ Errore di connessione durante l\'importazione AliExpress.', true);
             }
         }
 
         async function aggiornaTuttiIPrezzi() {
-            showStatusMessage('🔄 Sincronizzazione prezzi da API Amazon in corso...');
+            showStatusMessage('🔄 Sincronizzazione prezzi unificata da API in corso...');
             try {
                 let resp = await fetch('aggiorna_offerte.php');
                 if (!resp.ok) {
                     resp = await fetch('banner/aggiorna_offerte.php');
                 }
-                showStatusMessage('✅ Sincronizzazione completata con successo!');
+                if (!resp.ok) {
+                    showStatusMessage('⚠️ Sincronizzazione fallita: HTTP ' + resp.status + '.', true);
+                    return;
+                }
+
+                // Lettura in streaming: il PHP invia una riga per volta, cosi' il
+                // progresso e' visibile mentre avviene invece che solo alla fine.
+                const reader = resp.body.getReader();
+                const decoder = new TextDecoder();
+                let testo = '';
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    testo += decoder.decode(value, { stream: true });
+
+                    // Mostra l'ultima riga non vuota ricevuta finora.
+                    const righe = testo.replace(/<[^>]+>/g, '\n').split('\n')
+                        .map(r => r.trim()).filter(r => r.length > 0);
+                    if (righe.length) {
+                        const ultima = righe[righe.length - 1].replace(/^\[[^\]]+\]\s*/, '');
+                        showStatusMessage('🔄 ' + ultima);
+                    }
+                }
+
+                // L'esito reale si legge dal contenuto, non dal solo codice HTTP.
+                const fallito = /ERRORE|Fatal error|Parse error/i.test(testo);
+                const parziale = /PARZIALMENTE/i.test(testo);
+
+                if (fallito && !parziale) {
+                    showStatusMessage('⚠️ Sincronizzazione terminata con errori: controlla sync_log.txt', true);
+                } else if (parziale) {
+                    const m = testo.match(/(\d+)\s+non aggiornati/i);
+                    showStatusMessage('⚠️ Sincronizzazione parziale' + (m ? ': ' + m[1] + ' prodotti non aggiornati' : '') + '.', true);
+                } else {
+                    showStatusMessage('✅ Sincronizzazione unificata completata con successo!');
+                }
                 loadDeals();
             } catch (e) {
                 showStatusMessage('⚠️ Errore durante la sincronizzazione.', true);
@@ -983,7 +2470,7 @@
         }
 
         async function copiaSuOneDrive() {
-            showStatusMessage('⏳ Copia del file su lucianomanenti.com in corso...');
+            showStatusMessage('⏳ Copia del file unificato newdeals.json su lucianomanenti.com in corso...');
             try {
                 let resp = await fetch('api_copia_su_sito.php');
                 if (!resp.ok) {
@@ -1000,9 +2487,94 @@
             }
         }
 
+        async function pubblicaSuSito() {
+            const tot = allDeals.length;
+            if (!confirm(`🚀 Pubblicare ${tot} banner su lucianomanenti.com?\n\nIl file newdeals.json online verra' sostituito e le modifiche saranno subito visibili sul sito.`)) {
+                return;
+            }
+
+            // Due upload in parallelo sullo stesso file remoto si sovrascriverebbero
+            // a vicenda: finche' il trasferimento e' in corso il pulsante e' spento.
+            const btn = document.getElementById('btnPublish');
+            const testoOriginale = btn ? btn.textContent : '';
+            if (btn) { btn.disabled = true; btn.textContent = '⏳ Pubblicazione...'; }
+
+            showStatusMessage('⏳ Pubblicazione su lucianomanenti.com via FTP in corso...');
+            try {
+                let resp = await fetch('api_pubblica_ftp.php');
+                if (!resp.ok && resp.status === 404) {
+                    resp = await fetch('banner/api_pubblica_ftp.php');
+                }
+                const res = await resp.json();
+                if (res.status === 'success') {
+                    showStatusMessage(res.message);
+                } else {
+                    showStatusMessage('⚠️ ' + res.message, true);
+                }
+            } catch (e) {
+                showStatusMessage('⚠️ Errore di rete durante la pubblicazione: il file online potrebbe non essere stato aggiornato.', true);
+            } finally {
+                if (btn) { btn.disabled = false; btn.textContent = testoOriginale; }
+            }
+        }
+
+        async function ripristinaDaSite() {
+            if (!confirm('⚠️ Sei sicuro di voler ripristinare il catalogo locale con la versione pubblicata su lucianomanenti.com? Le modifiche locali non ancora pubblicate andranno perse.')) {
+                return;
+            }
+            showStatusMessage('⏳ Ripristino dal file pubblicato in lucianomanenti.com in corso...');
+            try {
+                let resp = await fetch('api_ripristina_da_sito.php');
+                if (!resp.ok) {
+                    resp = await fetch('banner/api_ripristina_da_sito.php');
+                }
+                const res = await resp.json();
+                if (res.status === 'success') {
+                    showStatusMessage('✅ ' + res.message);
+                    loadDeals();
+                } else {
+                    showStatusMessage('⚠️ ' + res.message, true);
+                }
+            } catch (e) {
+                showStatusMessage('⚠️ Errore durante il ripristino da lucianomanenti.com.', true);
+            }
+        }
+
+        // Caricamento iniziale
         loadDeals();
-        setInterval(() => { if (editingIndex === null) loadDeals(); }, 3000);
-        window.addEventListener('focus', () => { if (editingIndex === null) loadDeals(); });
+
+        // Ricarica solo i dati (non la pagina): filtro store, vista e scroll
+        // restano come sono, a differenza di un F5.
+        function ricaricaSeInattivo() {
+            if (editingIndex === null && !isOperationPending) loadDeals();
+        }
+
+        // 'focus' non scatta quando si torna da un'altra SCHEDA della stessa
+        // finestra: per quel caso serve visibilitychange. Servono entrambi.
+        window.addEventListener('focus', ricaricaSeInattivo);
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) ricaricaSeInattivo();
+        });
+
+        // Il popup dell'estensione e' una finestra sovrapposta: quando si chiude
+        // non genera ne' focus ne' visibilitychange, perche' la scheda sotto non
+        // e' mai cambiata. Serve quindi che sia questa pagina a controllare.
+        // Si confronta solo la dimensione del file: se non e' cambiata non si
+        // scarica nulla e non si ridisegna la galleria.
+        let ultimaFirmaDeals = null;
+        setInterval(async () => {
+            if (document.hidden || editingIndex !== null || isOperationPending) return;
+            try {
+                const r = await fetch('newdeals.json?probe=' + Date.now(), { method: 'HEAD' });
+                if (!r.ok) return;
+                const firma = r.headers.get('content-length') + '|' + r.headers.get('last-modified');
+                if (ultimaFirmaDeals === null) { ultimaFirmaDeals = firma; return; }
+                if (firma !== ultimaFirmaDeals) {
+                    ultimaFirmaDeals = firma;
+                    loadDeals();
+                }
+            } catch (e) { /* il file non e' raggiungibile: si riprova al giro dopo */ }
+        }, 3000);
     </script>
 </body>
 

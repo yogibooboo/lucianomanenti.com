@@ -407,10 +407,17 @@ function showInterstitialIfDue(onClose) {
             // Fallback Amazon — struttura identica a setupAmazonFinishBanner
             var deal = selectWeightedAmazonDeal(window._amazonDealsList) || window._amazonDeal600;
             if (deal) {
+                // Il deal puo' essere AliExpress: selectWeightedAmazonDeal pesca da
+                // tutto newdeals.json senza filtrare lo store. Pulsante e disclaimer
+                // vanno quindi scelti sul singolo prodotto, non dati per Amazon.
+                var isAliInter = (deal.store === 'aliexpress');
                 var imgUrl = (deal.active_images && deal.active_images.length > 0) ? deal.active_images[0] : (deal.img || 'banner/galleryamazon300x250.jpg');
                 var linkUrl = deal.link || 'view_gallery.html';
                 var titleText = deal.title || 'generic';
-                var dealId = titleText.length > 60 ? titleText.substring(0, 60) + '...' : titleText;
+                // Prefisso ALI- per distinguere i prodotti AliExpress nei report
+                // GA4: il troncamento resta a 60 caratteri sul solo titolo.
+                var dealId = (titleText.length > 60 ? titleText.substring(0, 60) + '...' : titleText);
+                if (isAliInter) dealId = 'ALI-' + dealId;
 
                 var viewH = window.innerHeight;
                 // Riempi l'area disponibile sopra il footer + banda di sicurezza
@@ -458,7 +465,7 @@ function showInterstitialIfDue(onClose) {
                     var match = deal.badge.match(/(\d+)%/);
                     var isHighDiscount = match && parseInt(match[1], 10) > AMAZON_DEALS_PULSE_THRESHOLD;
                     var badgeSpan = document.createElement('span');
-                    badgeSpan.className = 'amazon-badge' + (isHighDiscount ? ' amazon-badge-pulse' : '');
+                    badgeSpan.className = 'amazon-badge' + (isAliInter ? ' ali-badge' : '') + (isHighDiscount ? ' amazon-badge-pulse' : '');
                     badgeSpan.style.cssText = 'font-size:14px;padding:4px 10px;';
                     badgeSpan.textContent = deal.badge;
                     priceRow.appendChild(badgeSpan);
@@ -466,13 +473,22 @@ function showInterstitialIfDue(onClose) {
                 contentDiv.appendChild(priceRow);
 
                 var ctaDiv = document.createElement('div');
-                ctaDiv.style.cssText = 'display:block;width:100%;box-sizing:border-box;background:linear-gradient(180deg,#ff9900 0%,#e68a00 100%);color:#000;padding:12px;border-radius:20px;font-weight:bold;text-align:center;font-size:14px;margin-bottom:10px;';
-                ctaDiv.textContent = isEnglish ? 'View offer on Amazon.it' : 'Vedi offerta su Amazon.it';
+                var ctaBg = isAliInter ? 'background:linear-gradient(180deg,#ff4747 0%,#d62828 100%);color:#fff;' : 'background:linear-gradient(180deg,#ff9900 0%,#e68a00 100%);color:#000;';
+                ctaDiv.style.cssText = 'display:block;width:100%;box-sizing:border-box;' + ctaBg + 'padding:12px;border-radius:20px;font-weight:bold;text-align:center;font-size:14px;margin-bottom:10px;';
+                if (isAliInter) {
+                    ctaDiv.textContent = isEnglish ? 'View offer on AliExpress' : 'Vedi offerta su AliExpress';
+                } else {
+                    ctaDiv.textContent = isEnglish ? 'View offer on Amazon.it' : 'Vedi offerta su Amazon.it';
+                }
                 contentDiv.appendChild(ctaDiv);
 
                 var disclaimerDiv = document.createElement('div');
                 disclaimerDiv.style.cssText = 'font-size:10px;color:#94a3b8;line-height:1.2;text-align:center;';
-                disclaimerDiv.innerHTML = isEnglish ? 'As an Amazon affiliate,<br>I earn from qualifying purchases.' : 'Come affiliato Amazon,<br>guadagno dagli acquisti idonei.';
+                if (isAliInter) {
+                    disclaimerDiv.innerHTML = isEnglish ? 'As an AliExpress affiliate,<br>I earn from qualifying purchases.' : 'In qualit&agrave; di affiliato AliExpress,<br>guadagno dagli acquisti idonei.';
+                } else {
+                    disclaimerDiv.innerHTML = isEnglish ? 'As an Amazon affiliate,<br>I earn from qualifying purchases.' : 'Come affiliato Amazon,<br>guadagno dagli acquisti idonei.';
+                }
                 contentDiv.appendChild(disclaimerDiv);
 
                 infoCol.appendChild(contentDiv);
@@ -655,7 +671,15 @@ function showInterstitialIfDue(onClose) {
     colOther.appendChild(makeColTitle(_isEn ? 'Other Games' : 'Altri Giochi'));
     var gridOther = document.createElement('div');
     gridOther.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:' + _px(5) + ';';
-    var otherGames = [['Sudoku', 'sudoku'], ['Dama', 'dama'], ['Scacchi', 'scacchi']];
+    // Quattro voci riempiono la griglia 2x2: con tre restava un buco accanto a
+    // Scacchi. In inglese "Nine Men's Morris" per esteso e' troppo lungo per il
+    // pulsante (nowrap allargherebbe la colonna): si usa "Morris", che e' la
+    // parola distintiva del gioco, mentre "Mill" in inglese significa anche
+    // mulino ad acqua e in un elenco di giochi non si riconoscerebbe.
+    var otherGames = [['Sudoku', 'sudoku'],
+                      [_isEn ? 'Checkers' : 'Dama', 'dama'],
+                      [_isEn ? 'Chess' : 'Scacchi', 'scacchi'],
+                      [_isEn ? 'Morris' : 'Mulino', 'mulino']];
     otherGames.forEach(function (g) { gridOther.appendChild(makeNavLink(g[0], g[1] + _suffix)); });
     colOther.appendChild(gridOther);
 
@@ -916,6 +940,11 @@ function adjustLayout() {
             '100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 0, 0, 0); background: #e47911; } ' +
             '} ' +
             '.amazon-badge-pulse { animation: amazonPulseAnim 1s infinite !important; } ' +
+            /* Badge AliExpress: la classe era gia' applicata dal codice ma non era
+               mai stata definita, percio' i badge AliExpress restavano arancione
+               Amazon. !important perche' i keyframes del pulse reimpostano il
+               background a ogni passaggio. */
+            '.ali-badge { background: #e62e04 !important; } ' +
             /* Bagliore pulsante per il promo Sudoku nella sidebar */
             '.sudoku-promo-btn { animation: sudokuPromoGlow 1.8s infinite; } ' +
             '@keyframes sudokuPromoGlow { ' +
@@ -1251,6 +1280,8 @@ function adjustLayout() {
             if (window._amazonDeal600 && window._amazonDeal600.title) {
                 var titleText = window._amazonDeal600.title;
                 dealId = titleText.length > 60 ? titleText.substring(0, 60) + '...' : titleText;
+                // Prefisso ALI- per separare i due canali nei report GA4.
+                if (window._amazonDeal600.store === 'aliexpress') dealId = 'ALI-' + dealId;
             }
             // Impression solo per 300x600 e solo una volta per sessione (flag globale)
             if (width === 300 && height === 600 && !window._amazonImpressionSent[bannerId]) {
@@ -1770,10 +1801,15 @@ function setupAmazonFinishBanner(formId, options) {
     }
 
     if (deal) {
+        // Come per l'interstitial: il deal proviene da selectWeightedAmazonDeal,
+        // che non filtra lo store, quindi puo' essere AliExpress.
+        var isAliFinish = (deal.store === 'aliexpress');
         var imgUrl = (deal.active_images && deal.active_images.length > 0) ? deal.active_images[0] : (deal.img || 'banner/galleryamazon300x250.jpg');
         var linkUrl = deal.link || 'view_gallery.html';
         var titleText = deal.title || 'generic';
         var dealId = titleText.length > 60 ? titleText.substring(0, 60) + '...' : titleText;
+        // Prefisso ALI- per separare i due canali nei report GA4.
+        if (isAliFinish) dealId = 'ALI-' + dealId;
 
         var aLink = document.createElement('a');
         aLink.className = 'finish-banner amazon-finish-banner';
@@ -1834,7 +1870,7 @@ function setupAmazonFinishBanner(formId, options) {
             var pulseClass = isHighDiscount ? ' amazon-badge-pulse' : '';
             var badgeSpan = document.createElement('span');
             var badgeFontSize = isSmallBanner ? '10px' : '11px';
-            badgeSpan.className = 'amazon-badge' + pulseClass;
+            badgeSpan.className = 'amazon-badge' + (isAliFinish ? ' ali-badge' : '') + pulseClass;
             badgeSpan.style.cssText = 'font-size: ' + badgeFontSize + '; padding: 2px 6px;';
             badgeSpan.textContent = deal.badge;
             priceAndBadgeRow.appendChild(badgeSpan);
@@ -1845,13 +1881,20 @@ function setupAmazonFinishBanner(formId, options) {
         var ctaPadding = isSmallBanner ? '4px' : '8px';
         var ctaMarginBottom = isSmallBanner ? '4px' : '8px';
         var ctaFontSize = isSmallBanner ? '10px' : '11px';
-        ctaDiv.style.cssText = 'display: block; width: 100%; box-sizing: border-box; background: linear-gradient(180deg, #ff9900 0%, #e68a00 100%); color: #000; padding: ' + ctaPadding + '; border-radius: 20px; font-weight: bold; text-align: center; font-size: ' + ctaFontSize + '; margin-top: 0; margin-bottom: ' + ctaMarginBottom + ';';
-        ctaDiv.textContent = isEnglish ? 'View offer on Amazon.it' : 'Vedi offerta su Amazon.it';
+        var ctaBgFinish = isAliFinish ? 'background: linear-gradient(180deg, #ff4747 0%, #d62828 100%); color: #fff;' : 'background: linear-gradient(180deg, #ff9900 0%, #e68a00 100%); color: #000;';
+        ctaDiv.style.cssText = 'display: block; width: 100%; box-sizing: border-box; ' + ctaBgFinish + ' padding: ' + ctaPadding + '; border-radius: 20px; font-weight: bold; text-align: center; font-size: ' + ctaFontSize + '; margin-top: 0; margin-bottom: ' + ctaMarginBottom + ';';
+        if (isAliFinish) {
+            ctaDiv.textContent = isEnglish ? 'View offer on AliExpress' : 'Vedi offerta su AliExpress';
+        } else {
+            ctaDiv.textContent = isEnglish ? 'View offer on Amazon.it' : 'Vedi offerta su Amazon.it';
+        }
         contentDiv.appendChild(ctaDiv);
 
         var disclaimerDiv = document.createElement('div');
         disclaimerDiv.style.cssText = 'font-size: 9px; color: #94a3b8; line-height: 1.1; text-align: center; margin-top: 4px;';
-        disclaimerDiv.innerHTML = 'Come affiliato Amazon,<br>guadagno dagli acquisti idonei.';
+        disclaimerDiv.innerHTML = isAliFinish
+            ? 'In qualit&agrave; di affiliato AliExpress,<br>guadagno dagli acquisti idonei.'
+            : 'Come affiliato Amazon,<br>guadagno dagli acquisti idonei.';
         contentDiv.appendChild(disclaimerDiv);
 
         infoCol.appendChild(contentDiv);

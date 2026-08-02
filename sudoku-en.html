@@ -21,7 +21,7 @@
     <meta http-Equiv="Pragma" Content="no-cache">
     <meta http-Equiv="Expires" Content="0">
 
-    <link rel="stylesheet" href="sudoku.css?v=2.5" />
+    <link rel="stylesheet" href="sudoku.css?v=2.7" />
 
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
@@ -142,6 +142,7 @@
                 <div id="pannello-hint">
                     <div class="hint-titolo">&#128161; Hint</div>
                     <div id="hint-testo"></div>
+                    <div id="hint-penalita"></div>
                     <div id="hint-bottoni">
                         <button id="btn-hint-spiega">EXPLANATION</button>
                         <button id="btn-hint-applica">FILL IT IN</button>
@@ -197,12 +198,12 @@
                 <div class="form-sudoku-title">How to Play</div>
                 <div style="font-size: 14px; line-height: 1.7; color: #e8e8e8; text-align: left; overflow-y: auto; padding: 0 10px;">
                     <p style="margin-top: 0;">Fill the grid so that every <b>row</b>, every <b>column</b> and every <b>3&times;3 box</b> contains all the numbers from 1 to 9, with no repetitions.</p>
-                    <p><b>Select an empty cell</b> and enter a number with the keyboard or with the buttons on the right. Numbers flagged as wrong are shown in red and counted as mistakes: the two options below the buttons choose whether to flag only obvious conflicts with the visible numbers (default) or every mistake against the solution.</p>
+                    <p><b>Select an empty cell</b> and enter a number with the keyboard or with the buttons on the right. Numbers flagged as wrong are shown in red and counted as mistakes: the two options below the buttons choose whether to flag only obvious conflicts with the visible numbers (default) or every mistake against the solution. Each flagged mistake adds a <b>time penalty</b>: <b>10 seconds</b> if it conflicts with numbers already visible, <b>30 seconds</b> if it only shows up against the solution.</p>
                     <p><b>Armed number</b>: click a number button, a 1-9 key, or a cell that already holds a number to "arm" it (it stays attached to the cursor). Cells with that number turn dark green, connected rows/columns/boxes turn light green, and other filled cells turn grey: an at-a-glance view of where it can go. Click an empty cell to place it right away (it stays armed for the next ones); clicking the last placed cell again removes it if the number turned out to be wrong. If you armed the number by clicking a cell that already held it, that cell stays highlighted in yellow: it's the one Erase will clear.</p>
                     <p><b>&#9999;&#65039; Pencil</b>: toggle notes to jot down possible candidates in a cell (automatically disarms any armed number).<br>
                     <b>&#10060; Erase</b>: clear the selected cell (or the yellow one while a number is armed).<br>
                     <b>&#8630; Undo</b>: undo the last move (also Ctrl+Z).<br>
-                    <b>&#128161; Hint</b>: highlights a cell that can be deduced from the visible numbers (or a mistake, if present) and opens a panel with three choices: <b>Explanation</b> shows the logical reasoning, <b>Fill it in</b> fills the cell, <b>Close</b> dismisses the hint without changing anything.</p>
+                    <b>&#128161; Hint</b>: highlights a cell that can be deduced from the visible numbers (or a mistake, if present) and opens a panel with three choices: <b>Explanation</b> shows the logical reasoning, <b>Fill it in</b> fills the cell, <b>Close</b> dismisses the hint without changing anything. Opening a hint (highlighted cell) costs <b>10 seconds</b>; asking for the <b>Explanation</b> or choosing <b>Fill it in</b> adds <b>another 20 seconds</b> (only once, even if you use both).</p>
                     <p style="color: #aaa; font-size: 12px;">The game is saved automatically: if you close the page you can resume where you left off.</p>
                 </div>
                 <div style="display: flex; gap: 12px; margin-top: 15px; align-items: center;">
@@ -245,7 +246,7 @@
     <!-- Layout engine per ridimensionare la finestra del gioco -->
     <script src="game-layout.js?v=4.6"></script>
     <!-- Logica del Sudoku -->
-    <script src="sudoku.js?v=2.12"></script>
+    <script src="sudoku.js?v=2.14"></script>
     <script>
         (function () {
             var nascosto = false;

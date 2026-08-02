@@ -1293,6 +1293,16 @@ var scala = {
 		location.reload();
 	},
 	confirmNuovo: function () {
+		// Durante l'autocompletamento la partita e' di fatto gia' vinta: refresh()
+		// sposta le stecche un frame alla volta e aprira' 'haivinto' appena finito
+		// (vedi riga ~754). Aprire qui 'confermatermina' lascerebbe due modali a
+		// schermo insieme, perche' mydialog() sovrascrive scala.formtohide e
+		// hidedialog() ne chiuderebbe uno solo: due banner AdSense sovrapposti
+		// (offset diversi, targetTop-5 su haivinto contro 415 qui), vietati dalle
+		// policy di posizionamento. Si ignora il clic e vince 'haivinto', che ha
+		// il suo pulsante "NUOVA PARTITA": il giocatore non resta mai bloccato.
+		if (scala.fautocomplete) return;
+
 		if (scala.moves === 0) {
 			scala.nuovo();
 			return;

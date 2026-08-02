@@ -44,5 +44,19 @@ dist/
 # AdSense internal files
 banners.txt
 doc/
-banner/
 gallery.html
+
+# --- Cartella banner/ ---
+# Il codice PHP della console va versionato; restano fuori le credenziali,
+# i dati che si aggiornano da soli e le librerie di terze parti.
+banner/config.php
+banner/newdeals.json
+banner/pending_ali.json
+banner/scartati_ali.json
+banner/miei_product_ids_ali.json
+banner/miei_asin.json
+banner/*.json.tmp
+banner/*.bak-*
+banner/phpmailer/
+banner/*.jpg
+banner/*.png

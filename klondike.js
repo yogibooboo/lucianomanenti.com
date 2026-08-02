@@ -663,6 +663,16 @@ function confirmNewGame() {
         location.reload();
         return;
     }
+
+    // A partita vinta il modale 'haivinto' e' gia' in arrivo: checkWin() imposta
+    // gameWon subito ma apre il modale dopo 800ms, per lasciar finire l'animazione
+    // di completamento. Premendo "Nuova" in quella finestra si aprirebbe anche
+    // 'confermatermina', e i due modali userebbero offset diversi (305 e 325):
+    // due banner AdSense sovrapposti, che le policy di posizionamento vietano.
+    // Qui si lascia vincere 'haivinto': il banner resta uno solo e integro.
+    // L'utente non resta bloccato: il modale di vittoria ha il suo pulsante
+    // "NUOVA PARTITA", e comunque l'attesa massima e' di 800ms.
+    if (gameWon) return;
     var box = document.getElementById('confermatermina');
     if (!box) return;
 

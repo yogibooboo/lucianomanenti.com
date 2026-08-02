@@ -180,6 +180,7 @@ var scala = {
 
 		this.fscalauptouch = false;
 		this.fmodale = false;
+		this.finepartita = false;				//vittoria/sconfitta gia' decisa: vedi confirmNuovo
 		this.turno = -1;						//turno del giocatore
 
 		this.cartescoperte = false;				//avversario e mazzo a carte scoperte
@@ -1264,6 +1265,15 @@ var scala = {
 		}, */
 
 	confirmNuovo: function () {
+		// Partita gia' decisa: 'haivinto' o 'haiperso' e' aperto o sta per aprirsi
+		// (setTimeout di 1000ms e 500ms, che lasciano vedere l'ultima giocata).
+		// Aprire qui 'confermatermina' lascerebbe due modali a schermo insieme,
+		// perche' mydialog() sovrascrive scala.formtohide e hidedialog() ne
+		// chiuderebbe uno solo: due banner AdSense sovrapposti, vietati dalle
+		// policy di posizionamento. I modali di fine partita hanno il loro
+		// pulsante per ricominciare, quindi il giocatore non resta bloccato.
+		if (scala.finepartita) return;
+
 		if (scala.statostack.length === 0) {
 			scala.nuovo();
 			return;
@@ -1469,6 +1479,10 @@ var scala = {
 	checkvinto: function () {
 		if (scala.giocatore.carte.length != 0) return false;
 		if (!(scala.checksplit())) {
+			// Il ritardo lascia vedere l'ultimo tris calato prima che il modale copra
+			// il tavolo. In quel secondo il pulsante "Nuovo" e' ancora cliccabile: il
+			// flag impedisce che confirmNuovo apra 'confermatermina' sopra 'haivinto'.
+			scala.finepartita = true;
 			window.setTimeout(function () { tada.play(); scala.mydialog("haivinto", scala.nuovo) }, 1000)
 		}
 
@@ -2655,6 +2669,10 @@ var scala = {
 
 				var ncarte = scala.campiavversario[scala.turno].carte.length;
 				if (ncarte == 0) {
+					// Come per la vittoria: il ritardo mostra l'ultima giocata
+					// dell'avversario, e il flag protegge la finestra. Se la partita
+					// prosegue con gli altri avversari, testfine() lo rimette a false.
+					scala.finepartita = true;
 					window.setTimeout(function () { haiperso.play(); scala.mydialog("haiperso", scala.nuovo, scala.testfine) }, 500);
 
 					return;
@@ -2753,6 +2771,7 @@ var scala = {
 		if ((scala.campiavversario[0].carte.length == 0) && (scala.campiavversario[1].carte.length == 0) && (scala.campiavversario[2].carte.length == 0))
 			scala.nuovo();   //hanno finito tutti i giocatori
 		else {
+			scala.finepartita = false;	//la partita continua: "Nuovo" torna attivo
 			scala.hidedialog();
 			scala.astato = "next2";    //passa al prossimo avversario
 			scala.ritardo = 10;

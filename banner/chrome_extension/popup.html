@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            width: 320px;
+            padding: 14px;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #0f172a;
+            color: white;
+            margin: 0;
+            box-sizing: border-box;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #334155;
+        }
+
+        .header-title {
+            font-size: 15px;
+            font-weight: bold;
+        }
+
+        .badge-store {
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .store-amazon { background: #ff9900; color: #000; }
+        .store-aliexpress { background: #ff4747; color: #fff; }
+        .store-unknown { background: #64748b; color: #fff; }
+
+        label {
+            font-size: 11px;
+            color: #94a3b8;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+            display: block;
+        }
+
+        input, textarea {
+            width: 100%;
+            box-sizing: border-box;
+            margin-bottom: 12px;
+            background: #1e293b;
+            border: 1px solid #334155;
+            color: white;
+            border-radius: 6px;
+            padding: 8px 10px;
+            font-size: 13px;
+            font-family: inherit;
+            outline: none;
+        }
+
+        textarea {
+            height: 60px;
+            resize: none;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            border-radius: 6px;
+            border: none;
+            font-weight: bold;
+            font-size: 13px;
+            cursor: pointer;
+            transition: filter 0.2s;
+        }
+
+        button.amazon-btn { background: linear-gradient(180deg, #ff9900 0%, #e68a00 100%); color: #000; }
+        button.ali-btn { background: linear-gradient(180deg, #ff4747 0%, #e61919 100%); color: #fff; }
+        button.unknown-btn { background: #4b5563; color: #fff; }
+
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        button:hover:not(:disabled) { filter: brightness(1.1); }
+
+        #status {
+            font-size: 12px;
+            color: #4ade80;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 8px;
+            display: none;
+        }
+
+        .endpoint-info {
+            font-size: 10px;
+            color: #64748b;
+            margin-bottom: 12px;
+            border: 1px dashed #334155;
+            padding: 4px 6px;
+            border-radius: 4px;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <span class="header-title" id="titleText">Deal Catcher</span>
+        <span class="badge-store store-unknown" id="storeBadge">Rilevamento...</span>
+    </div>
+
+    <label id="idLabel">ID Prodotto Rilevato:</label>
+    <input type="text" id="productIdInput" readonly>
+
+    <label>Messaggio Custom (opzionale):</label>
+    <textarea id="messageInput" placeholder="Es: Super offerta del giorno!"></textarea>
+
+    <div class="endpoint-info">Endpoint: <span id="endpointText">-</span></div>
+
+    <button id="saveBtn" class="unknown-btn" disabled>Salva su LocalWP</button>
+    <div id="status">✅ Salvato con successo!</div>
+
+    <script src="popup.js"></script>
+</body>
+</html>
