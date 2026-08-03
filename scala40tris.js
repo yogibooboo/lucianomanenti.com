@@ -712,8 +712,11 @@ Snapshot.prototype.restore = function () {
 	scala.commento = this.commento;
 	scala.salvasuono = this.salvasuono;
 
-	scala.carteselezionate.splice(0, scala.carteselezionate.length);
-	$$.removeClassAll(".card", "cardselected");
+	/* Azzeramento completo (array + flag selected + classe): il loop iniziale
+	   su this.carte pulisce il flag solo sulle carte presenti nello snapshot,
+	   quindi una carta finita altrove poteva restare selected=true fuori
+	   dall'array. */
+	scala.azzeraselezione();
 
 	/* I vincoli (jolly recuperato, carta dagli scarti) tornano com'erano al
 	   momento dello stato: render() poi riapplica l'evidenziazione se la
@@ -1503,10 +1506,9 @@ var scala = {
 					}
 				}
 				if (attaccataclick) {
-					this.deselezionacarta(cartasel.gui);
 					this.tgoff();
 					for (var j = 0; j < scala.numeroavversari; j++) this.taoff(j);
-					$$.removeClassAll(".card", "cardselected");
+					this.azzeraselezione();
 					this.render();
 				}
 				return;
@@ -1623,7 +1625,9 @@ var scala = {
 
 		this.tgoff();
 		for (var j = 0; j < scala.numeroavversari; j++) this.taoff(j);
-		$$.removeClassAll(".card", "cardselected");
+		/* Il riordino chiude la mossa: la selezione va azzerata davvero, non
+		   solo resa invisibile (vedi azzeraselezione). */
+		this.azzeraselezione();
 		this.scalamove = false;
 		this.render();
 		return;
@@ -1895,14 +1899,9 @@ var scala = {
 		}
 
 		if (punti > 39) this.f40giocatore = true;
-		$$.removeClassAll(".card", "cardselected");
 		scarta.play();
 
-		for (var i = 0; i < this.carteselezionate.length; i++) {
-			this.carteselezionate[i].selected = false;
-			$$.removeClass(this.carteselezionate[i].gui, "cardselected");
-		}
-		this.carteselezionate = [];
+		this.azzeraselezione();
 		this.pescato = false;
 
 		this.muovicarta(carta, this.scarti, "faceUp", "scarta");
@@ -2928,6 +2927,28 @@ var scala = {
 		$$.addClass(divCard, "cardselected");
 		this.carteselezionate.push(divCard.card);
 		divCard.card.selected = true;
+	},
+
+	/* Azzera la selezione in TUTTE le sue rappresentazioni: array
+	   carteselezionate, flag selected sulle carte, classe CSS. Va usato al
+	   posto del solo removeClassAll(".card","cardselected"), che toglie
+	   l'evidenziazione lasciando però la selezione viva nei dati: da lì le
+	   carte "fantasma" invisibili ma ancora in carteselezionate, che facevano
+	   fallire in silenzio le selezioni successive (check1 confrontava con una
+	   carta che il giocatore credeva deselezionata) finché un undo non
+	   ripuliva tutto. Il flag si azzera scorrendo l'array E il DOM, così
+	   rientrano anche eventuali carte rimaste selected fuori dall'array. */
+	azzeraselezione: function () {
+		for (var i = 0; i < this.carteselezionate.length; i++) {
+			this.carteselezionate[i].selected = false;
+			if (this.carteselezionate[i].gui) $$.removeClass(this.carteselezionate[i].gui, "cardselected");
+		}
+		this.carteselezionate = [];
+		var sel = $$.all(".card.cardselected");
+		for (var j = 0; j < sel.length; j++) {
+			if (sel[j].card) sel[j].card.selected = false;
+		}
+		$$.removeClassAll(".card", "cardselected");
 	},
 
 	deselezionacarta: function (divCard) {
