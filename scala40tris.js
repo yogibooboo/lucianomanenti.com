@@ -677,12 +677,17 @@ Snapshot.prototype.restore = function () {
 		var gruppo = scala[nome];
 		var salvate = this.gruppi[nome];
 
-		/* Durante il replay del turno IA il giocatore può riordinare la
-		   mano: il contenuto della mano non cambia negli stati del turno,
+		/* Durante il turno di un avversario il giocatore può riordinare la
+		   mano: il contenuto della mano non cambia negli stati del turno IA,
 		   quindi si ripristina il contenuto salvato preservando l'ordine
 		   corrente (eventuali carte solo nello snapshot vanno in coda).
-		   Si lavora su una copia: lo snapshot resta intatto. */
-		if ((nome === "giocatore") && (scala.astato === TurnState.PLAYRENDER)) {
+		   Si lavora su una copia: lo snapshot resta intatto.
+		   La condizione copre TUTTA la fase automatica, non il solo
+		   PLAYRENDER: NEXTAVV calcola il turno successivo (apesca/alavora/
+		   ascarta) con altri restore, e con la sola guardia PLAYRENDER
+		   quei restore riscrivevano la mano con l'ordine congelato negli
+		   snapshot, annullando il riordino durante l'animazione stessa. */
+		if ((nome === "giocatore") && (scala.turno >= 0)) {
 			var ordinate = [];
 			for (var k = 0; k < gruppo.carte.length; k++) {
 				if (salvate.indexOf(gruppo.carte[k]) !== -1) ordinate.push(gruppo.carte[k]);
@@ -3173,8 +3178,24 @@ var scala = {
 	multiundo: function () {
 		if (this.pescato) { this.popstato(); this.popstato(-1, true); }
 		else {
-			while ((!this.pescato) && (scala.statostack.length > 0)) {
-				this.popstato();
+			/* Il while risale finché non ritrova uno stato con pescato=true.
+			   Se quello stato non c'è esce per stack esaurito, lasciando il
+			   gioco sull'ultimo pop fatto (il fondo dello stack): è così che
+			   la mano tornava all'inizio e il giocatore diventava primo di
+			   mano pur essendo mazziere. Qui si verifica prima che il ciclo
+			   abbia un punto d'arresto valido. */
+			var trovato = false;
+			for (var s = 0; s < scala.statostack.length; s++) {
+				if (scala.statostack[s].pescato) { trovato = true; break; }
+			}
+			if (trovato) {
+				while ((!this.pescato) && (scala.statostack.length > 0)) {
+					this.popstato();
+				}
+				/* Coerenza col ramo "if": lo stato d'arresto resta nello stack
+				   e viene riapplicato, così la cima corrisponde sempre a quanto
+				   è visualizzato e l'undo successivo parte allineato. */
+				if (scala.statostack.length > 0) this.popstato(-1, true);
 			}
 		}
 		if (scala.astato == TurnState.PLAYRENDER) {

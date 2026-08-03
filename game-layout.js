@@ -22,7 +22,7 @@ window.registerLayoutResizeListener = function (callback) {
 };
 
 // ─── AMAZON BANNER CONFIG ───────────────────────────────────────────────────
-var AMAZON_BANNERS_ENABLED = true;  // se false, disabilita Amazon a sinistra (ma non a destra se AMAZON_BANNERS_RIGHT = true)
+var AMAZON_BANNERS_ENABLED = false;  // se false, disabilita Amazon a sinistra (ma non a destra se AMAZON_BANNERS_RIGHT = true)
 var AMAZON_BANNERS_RIGHT = true;   // se true, carica Amazon a destra indipendentemente da AMAZON_BANNERS_ENABLED
 var AMAZON_FALLBACK_ON_SHIELD = true; // se true, Amazon subentra a sinistra quando AdSense viene bloccato dallo scudo
 var AMAZON_USE_NEW_DEALS = true;      // se true, usa newdeals.json e i pesi. Se false, usa il deals.json tradizionale
@@ -41,7 +41,7 @@ var INTERSTITIAL_CLOSE_DELAY_SECONDS = 0;        // secondi prima che appaia il 
 // ─── ADSENSE CONFIG & SHIELD ─────────────────────────────────────────────────
 // NOTA PER L'UTENTE: Durante il bando di 29 giorni, imposta ADSENSE_GLOBAL_ENABLED = false e AMAZON_BANNERS_ENABLED = true; 
 // Al termine, imposta ADSENSE_GLOBAL_ENABLED = true AMAZON_BANNERS_ENABLED = false;  Lo Shield ti proteggerà automaticamente dai click futuri.
-var ADSENSE_GLOBAL_ENABLED = false;  // Interruttore di sicurezza principale
+var ADSENSE_GLOBAL_ENABLED = true;  // Interruttore di sicurezza principale
 var ADSENSE_ONLY_LEFT = true;       // Se true, AdSense carica solo a sinistra
 
 // Controllo attivazione blocco annunci su richiesta
