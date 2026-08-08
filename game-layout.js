@@ -36,6 +36,20 @@ var ENABLE_INTERSTITIAL = true;                   // abilita il banner interstit
 var INTERSTITIAL_MIN_SESSION_MINUTES = 10;        // minuti di sessione prima della prima esposizione
 var INTERSTITIAL_COOLDOWN_MINUTES = 30;           // minuti tra un'esposizione e la successiva
 var INTERSTITIAL_CLOSE_DELAY_SECONDS = 0;        // secondi prima che appaia il pulsante X
+
+// ─── TEST A/B VIEWABILITY: sizing interstitial (2026-08-06) ──────────────────
+// Esperimento per capire cosa determina la bassa Active View (~41%) sull'inter-
+// stitial. Ipotesi in verifica: viewability ≈ tempo-su-schermo, NON geometria del
+// contenitore (il report risoluzioni conferma che il 99% degli utenti vede il box
+// 970×250 pieno, non compresso). Lo slot FLEXIBLE lascia campo libero ad AdSense
+// dentro adArea (display:block, 100%×100%, format=auto) → replica il comportamento
+// pre-ban ma con un box reale (niente ins 0×0 = "interstitial nero").
+// Slot SEPARATO apposta: (a) statistiche pulite prima/dopo nel report AdSense;
+// (b) non re-inizializza l'ottimizzatore dello slot fisso maturo (reduce dai ban).
+var USE_FLEXIBLE_INTERSTITIAL   = true;          // true = slot auto-responsive; false = 970×250 fisso attuale
+var INTERSTITIAL_SLOT_FIXED     = '7155310138';   // slot storico, dimensioni esplicite
+var INTERSTITIAL_SLOT_FLEXIBLE  = '5075879034';   // slot "interflex" (Display responsivo), test viewability
+// ─────────────────────────────────────────────────────────────────────────────
 // ─────────────────────────────────────────────────────────────────────────────
 
 // ─── ADSENSE CONFIG & SHIELD ─────────────────────────────────────────────────
@@ -56,6 +70,23 @@ if (adsDisabled) {
 
 var ADSENSE_SHIELD_DURATION = 70 * 60 * 1000; // 70 minuti di blocco dopo un click
 var _isMouseOverAdSense = false;
+
+// ─── TELEMETRIA SCALA (GA4) ──────────────────────────────────────────────────
+// gameScale = min(clientW/1024, clientH/750): quanto il campo di gioco (fisso
+// 1024x750) è rimpicciolito per stare nella finestra. È la SOLA grandezza di
+// "spazio" su cui il codice decide (soglia finish, famiglie sidebar); il
+// devicePixelRatio è ininfluente per la logica (solo densità schermo/zoom) e
+// resta loggato a parte solo come dato descrittivo. Qui esponiamo due campi:
+//  - game_scale  : valore numerico preciso (per medie/distribuzioni/soglie future)
+//  - scale_bucket: fascia categorica (per segmentare comodamente in GA4). Taglio
+//    a 1.0 = soglia del fallback finish (ADSENSE_FINISH_SCALE_THRESHOLD), così la
+//    fascia '≥1' isola le sessioni che usano davvero AdSense sul finish.
+function _scaleTelemetry() {
+    var s = window.gameScale;
+    if (s === undefined || s === null) return { game_scale: null, scale_bucket: 'unknown' };
+    var bucket = s < 0.6 ? '<0.6' : (s < 0.8 ? '0.6-0.8' : (s < 1 ? '0.8-1' : '≥1'));
+    return { game_scale: Math.round(s * 100) / 100, scale_bucket: bucket };
+}
 
 // ─── INTERSTITIAL RELOAD INTERCEPT ───────────────────────────────────────────
 // Monkey-patch di location.reload: se l'interstitial è abilitato e dovuto,
@@ -344,19 +375,38 @@ function showInterstitialIfDue(onClose) {
     var adArea = document.createElement('div');
     adArea.style.cssText = 'position:absolute;top:0;left:0;right:0;bottom:' + (_footerH + _adSafetyGap) + 'px;overflow:hidden;display:flex;align-items:center;justify-content:center;';
 
+    // ─── DIMENSIONI UNITÀ AD — calcolate UNA volta, condivise sim+reale ───────
+    // Prima erano ricalcolate solo nel ramo reale, mentre la simulazione devMode
+    // usava un riquadro giallo hardcoded 970x250; così la sim NON rispecchiava la
+    // geometria vera (su schermi bassi _adBoxH si comprime, ma il giallo restava
+    // 250). Ora il box è unico: la simulazione diventa uno SPECCHIO geometrico
+    // fedele dell'ins reale e mostra a occhio, ridimensionando la finestra, quando
+    // il box fisso 970x250 si comprime o sfora dentro adArea (overflow:hidden).
+    // adsbygoogle.js misura l'ins al push(): un ins 'inline-block' senza width/
+    // height misura 0x0 (il flex-container non lo stira) → richiesta 0x0 → AdSense
+    // non serve NULLA → interstitial nero. Per questo le dimensioni sono esplicite.
+    var _adBoxW = Math.max(120, Math.min(970, _vw - 40));
+    var _adBoxH = Math.max(50, Math.min(250, _vh - _footerH - _adSafetyGap - 40));
+
     // Simulazione (devMode) del creative AdSense: solo quando lo scudo NON è
     // attivo. Con scudo attivo AdSense non verrebbe servito, quindi lasciamo
     // proseguire al ramo reale sotto (useAdSense=false → fallback Amazon), così
     // la simulazione rispecchia esattamente il comportamento di sidebar/finish.
     if (devMode && !isAdSenseShieldActive()) {
-        // Finto creative AdSense, stesso riquadro giallo di simulazione delle
-        // altre posizioni (sidebar/finish). Dimensione di un creative orizzontale
-        // tipico (970x250): il flex-container adArea lo centra come farebbe con
-        // un creative reale, così la simulazione riflette il layout vero.
+        // In devMode rendo VISIBILE il bordo di adArea, così si vede il "vuoto"
+        // (la cornice nera inerte) attorno all'unità ad: adArea è il contenitore
+        // di layout, l'ad reale ne occupa solo la porzione _adBoxW x _adBoxH
+        // centrata. Diagnostica pura, mai in produzione.
+        adArea.style.outline = '2px dotted #3af';
+        adArea.style.outlineOffset = '-2px';
+        // Finto creative AdSense alle STESSE dimensioni dell'ins reale
+        // (_adBoxW x _adBoxH), NON più 970x250 hardcoded → specchio geometrico.
         var adPlaceholder = document.createElement('div');
-        adPlaceholder.style.cssText = 'width:970px;max-width:100%;height:250px;background:#222;border:2px dashed #ffee00;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:15px;text-align:center;cursor:pointer;';
+        adPlaceholder.style.cssText = 'width:' + _adBoxW + 'px;height:' + _adBoxH + 'px;background:#222;border:2px dashed #ffee00;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:15px;text-align:center;cursor:pointer;overflow:hidden;';
         adPlaceholder.innerHTML =
             '<span style="color:#ffee00;font-weight:bold;font-size:16px;">SIMULAZIONE ADSENSE INTERSTITIAL</span>' +
+            '<span style="font-size:13px;color:#4af;margin-top:8px;font-family:monospace;">unità ad: ' + _adBoxW + ' × ' + _adBoxH + ' px</span>' +
+            '<span style="font-size:11px;color:#888;margin-top:2px;font-family:monospace;">adArea: ' + '~' + (_vw) + ' × ' + (_vh - _footerH - _adSafetyGap) + ' px (riquadro azzurro)</span>' +
             '<span style="font-size:12px;color:#aaa;margin-top:10px;">Clicca per simulare un clic e attivare lo scudo 24h</span>';
         adPlaceholder.setAttribute('onmouseenter', 'window._onAdEnter();');
         adPlaceholder.setAttribute('onmouseleave', 'window._onAdLeave();');
@@ -374,34 +424,51 @@ function showInterstitialIfDue(onClose) {
                          window.gameConfig && window.gameConfig.adsenseActive;
 
         if (useAdSense) {
-            // Formato libero (auto): AdSense sceglie il creative. NON diamo
-            // width:100%/height:100% — quello fa ancorare il banner in alto a
-            // sinistra dentro un ins gigante. L'ins si dimensiona al creative
-            // (larghezza e altezza decise da AdSense) e il flex-container adArea
-            // (align/justify center) lo fa "galleggiare" al centro dello schermo,
-            // qualunque formato AdSense restituisca.
-            // full-width-responsive OFF: vogliamo un creative raccolto e centrato,
-            // non un banner stirato a piena larghezza ancorato in alto.
+            // Dimensioni ESPLICITE (vedi commento _adBoxW/_adBoxH sopra): il flex
+            // di adArea (align/justify center) tiene l'ins centrato.
             var ins = document.createElement('ins');
             ins.className = 'adsbygoogle';
-            ins.style.cssText = 'display:inline-block;';
             ins.setAttribute('data-ad-client', 'ca-pub-9335537153013492');
-            ins.setAttribute('data-ad-slot', '7155310138');
-            ins.setAttribute('data-ad-format', 'auto');
-            ins.setAttribute('data-full-width-responsive', 'false');
+            if (USE_FLEXIBLE_INTERSTITIAL) {
+                // Campo libero dentro adArea: l'ins riempie tutto il contenitore
+                // (100%×100%, no 0×0) e AdSense sceglie il creativo migliore via
+                // format=auto. Nessun tetto: su desktop grandi il creativo può
+                // arrivare a piena adArea. È il "lascia fare ad AdSense" pre-ban.
+                // ins come flex-container: AdSense riscrive l'altezza al formato
+                // servito (visto in DOM: height:100%→280px) e inserisce un wrapper
+                // interno più stretto (es. 1200px) ancorato a sinistra; display:flex
+                // + center centra QUEL wrapper dentro l'ins largo 100% → creativo
+                // centrato orizzontalmente senza restringere l'ins (test flessibile
+                // intatto). Da riverificare in DOM: non è garantito che AdSense
+                // preservi display:flex quando riscrive lo style dell'ins.
+                ins.style.cssText = 'display:flex;align-items:center;justify-content:center;width:100%;height:100%;';
+                ins.setAttribute('data-ad-slot', INTERSTITIAL_SLOT_FLEXIBLE);
+                ins.setAttribute('data-ad-format', 'auto');
+                ins.setAttribute('data-full-width-responsive', 'false');
+            } else {
+                // Dimensioni ESPLICITE (vedi commento _adBoxW/_adBoxH sopra): il flex
+                // di adArea (align/justify center) tiene l'ins centrato.
+                // Niente data-ad-format: con dimensioni fisse sarebbe contraddittorio
+                // ('auto' serve al responsive che si adatta al contenitore). E' la
+                // stessa configurazione degli slot sidebar e finish, che funzionano.
+                ins.style.cssText = 'display:inline-block;width:' + _adBoxW + 'px;height:' + _adBoxH + 'px;';
+                ins.setAttribute('data-ad-slot', INTERSTITIAL_SLOT_FIXED);
+                ins.setAttribute('data-full-width-responsive', 'false');
+            }
             ins.setAttribute('onmouseenter', 'window._onAdEnter();');
             ins.setAttribute('onmouseleave', 'window._onAdLeave();');
             adArea.appendChild(ins);
             // push() viene chiamato dopo body.appendChild(overlay) più sotto
             if (typeof gtag === 'function') {
-                gtag('event', 'AdSense_Interstitial_Impression', {
+                gtag('event', 'AdSense_Interstitial_Impression', Object.assign({
                     'event_category': 'AdSense',
                     'page_location': window.location.href,
                     'viewport_w': window.innerWidth,
                     'viewport_h': window.innerHeight,
                     'device_pixel_ratio': window.devicePixelRatio || 1,
+                    'sizing_mode': USE_FLEXIBLE_INTERSTITIAL ? 'flexible' : 'fixed',
                     'non_interaction': true
-                });
+                }, _scaleTelemetry()));
             }
         } else {
             // Fallback Amazon — struttura identica a setupAmazonFinishBanner
@@ -512,14 +579,14 @@ function showInterstitialIfDue(onClose) {
                 if (!window._amazonDealsImpressionTracked[deal.id]) {
                     window._amazonDealsImpressionTracked[deal.id] = true;
                     if (typeof gtag === 'function') {
-                        gtag('event', 'Amazon_Banner_Impression', {
+                        gtag('event', 'Amazon_Banner_Impression', Object.assign({
                             'event_category': 'Affiliate',
                             'amazon_deal_id': dealId,
                             'format': 'interstitial',
                             'asin': deal.asin || '',
                             'page_location': window.location.href,
                             'non_interaction': true
-                        });
+                        }, _scaleTelemetry()));
                     }
                 }
 
@@ -527,7 +594,7 @@ function showInterstitialIfDue(onClose) {
                 aLink.onclick = function () {
                     var exposureSeconds = Math.round((Date.now() - startTime) / 1000);
                     if (typeof gtag === 'function') {
-                        gtag('event', 'Amazon_Banner_Click', {
+                        gtag('event', 'Amazon_Banner_Click', Object.assign({
                             'event_category': 'Affiliate',
                             'amazon_deal_id': dealId,
                             'format': 'interstitial',
@@ -535,7 +602,7 @@ function showInterstitialIfDue(onClose) {
                             'tempo_esposizione': exposureSeconds,
                             'page_location': window.location.href,
                             'non_interaction': false
-                        });
+                        }, _scaleTelemetry()));
                     }
                 };
             }
@@ -708,28 +775,30 @@ function showInterstitialIfDue(onClose) {
     var hasBodyTransform = bodyTransform && bodyTransform !== 'none';
     var overlayParent = hasBodyTransform ? document.documentElement : document.body;
     overlayParent.appendChild(overlay);
-    // ─── ANTI-CLIC ACCIDENTALE: ritardo del push() ──────────────────────────
-    // L'interstitial compare a schermo pieno subito dopo un reload: i click
-    // "residui" dell'utente (che veniva dal gioco) rischiano di finire sull'ad.
-    // Policy-safe: NON mascheriamo un ad già servito. Ritardiamo la RICHIESTA
-    // dell'ad (push) di ADSENSE_INTERSTITIAL_ARM_DELAY_MS, tenendo l'area coperta
-    // da un velo OPACO NOSTRO. L'annuncio non esiste finché il layout non è
-    // stabile; quando appare è pienamente visibile e cliccabile.
+    // ─── RICHIESTA DELL'AD (delay + velo anti-primo-click) ───────────────────
+    // RIPRISTINATO (2026-08-05, stessa data della rimozione): la rimozione del
+    // ritardo aveva prodotto, nell'ora successiva alla pubblicazione, un CTR
+    // interstitial sull'ora ~1,1-1,3% (click passati 3→6→7) contro la baseline
+    // ~0,34% del giorno prima. Segnale debole in assoluto (pochi click) ma nella
+    // direzione temuta e, dato lo storico di 3 ban per "click multipli", non
+    // accettabile da rischiare: ripristinato subito. Il ritardo di ~600ms + velo
+    // nero coprono l'area ad finché il layout è "armato", così un eventuale click
+    // residuo del giocatore all'apertura non cade su un ad già servito e
+    // cliccabile. La push parte SOLO dopo il timeout, contestualmente alla
+    // rimozione del velo. Rivalutare la rimozione solo con un dato stabile su più
+    // giorni, eventualmente con un ritardo più corto invece che a 0.
+    var ADSENSE_INTERSTITIAL_ARM_DELAY_MS = 600;
     var _insInterstitial = overlay.querySelector('ins.adsbygoogle');
     if (_insInterstitial) {
-        var ADSENSE_INTERSTITIAL_ARM_DELAY_MS = 600;
-
-        // Velo neutro sopra l'area ad (non copre il footer/pulsante Chiudi).
-        var veil = document.createElement('div');
-        veil.style.cssText = 'position:absolute;top:0;left:0;right:0;bottom:' + (_footerH + _adSafetyGap) + 'px;background:#000;z-index:1;transition:opacity 250ms ease;';
-        overlay.appendChild(veil);
-
+        // Velo nero opaco sopra l'area ad (adArea è position:relative/absolute
+        // container con overflow:hidden): copre il creative finché non è "armato".
+        var _adVeil = document.createElement('div');
+        _adVeil.style.cssText = 'position:absolute;top:0;left:0;right:0;bottom:0;' +
+            'background:#000;z-index:5;pointer-events:auto;';
+        adArea.appendChild(_adVeil);
         setTimeout(function () {
-            // Richiede l'ad solo ora, a layout stabile.
             (window.adsbygoogle = window.adsbygoogle || []).push({});
-            // Dissolvi il velo e rimuovilo: l'ad resta pienamente interattivo.
-            veil.style.opacity = '0';
-            setTimeout(function () { if (veil.parentNode) veil.parentNode.removeChild(veil); }, 300);
+            if (_adVeil && _adVeil.parentNode) _adVeil.parentNode.removeChild(_adVeil);
         }, ADSENSE_INTERSTITIAL_ARM_DELAY_MS);
     }
 }
@@ -988,7 +1057,7 @@ function adjustLayout() {
                 '</div>' +
                 '<div style="display:flex;justify-content:space-between;width:262px;gap:12px;">' +
                 '<a href="' + (en ? '/scopa-en.html' : '/scopa.html') + '" target="_self" class="sudoku-promo-btn" style="' + stilePiccolo + 'background:linear-gradient(180deg,#0f766e 0%,#115e59 100%);border:2px solid #5eead4;"' + hover + '>' +
-                badgeSmall + '🎴<span style="color:#ffd700;">SCOPA Luciano</span>' +
+                badgeSmall + '🎴<span style="color:#ffd700;">' + (en ? 'SCOPA by Luciano' : 'SCOPA di Luciano') + '</span>' +
                 '</a>' +
                 '<a href="' + (en ? '/briscola-en.html' : '/briscola.html') + '" target="_self" class="sudoku-promo-btn" style="' + stilePiccolo + 'background:linear-gradient(180deg,#166534 0%,#14532d 100%);border:2px solid #ffd700;"' + hover + '>' +
                 '🃏<span style="color:#ffd700;">BRISCOLA</span><span style="font-size:9px;font-weight:normal;">(' + (en ? 'prototype' : 'prototipo') + ')</span>' +
@@ -1696,6 +1765,28 @@ function setupAmazonFinishBanner(formId, options) {
         threshold: ADSENSE_FINISH_SCALE_THRESHOLD
     });
 
+    // 3b. Telemetria "mancata pubblicazione AdSense" (solo in produzione).
+    // Quando NON usiamo AdSense pur essendo in produzione (no devMode), registriamo
+    // il MOTIVO, così in GA4 possiamo distinguere il fallback voluto (shield/disabled)
+    // da quello per finestra troppo piccola (too_small = gameScale < soglia), che è
+    // l'unica "occasione persa" su cui potremmo intervenire. Priorità: disabled >
+    // shield > too_small (un solo reason, il più "a monte"). NON emesso in devMode
+    // (simulazione) né quando AdSense viene effettivamente servito.
+    if (!useAdSense && !devMode && typeof gtag === 'function') {
+        var _adsOff = !ENABLE_ADSENSE_ON_FINISH || !ADSENSE_GLOBAL_ENABLED ||
+                      !(window.gameConfig && window.gameConfig.adsenseActive);
+        var _reason = _adsOff ? 'disabled' : (shieldActive ? 'shield' : (!scaleOk ? 'too_small' : 'other'));
+        gtag('event', 'AdSense_Finish_Skipped', Object.assign({
+            'event_category': 'AdSense',
+            'form_id': formId,
+            'reason': _reason,
+            'page_location': window.location.href,
+            'viewport_w': window.innerWidth,
+            'viewport_h': window.innerHeight,
+            'non_interaction': true
+        }, _scaleTelemetry()));
+    }
+
     // Rimuovi vecchio banner se esistente
     var oldBanner = modal.querySelector('.finish-banner');
     if (oldBanner) {
@@ -1735,16 +1826,15 @@ function setupAmazonFinishBanner(formId, options) {
             (window.adsbygoogle = window.adsbygoogle || []).push({});
             console.log('AdSense Push (Finish): Slot 6538837230 in ' + formId + ' (' + bannerWidth + 'x' + bannerHeight + ')');
             if (typeof gtag === 'function') {
-                gtag('event', 'AdSense_Banner_Finish_Impression', {
+                gtag('event', 'AdSense_Banner_Finish_Impression', Object.assign({
                     'event_category': 'AdSense',
                     'form_id': formId,
                     'page_location': window.location.href,
-                    'game_scale': window.gameScale !== undefined ? Math.round(window.gameScale * 100) / 100 : null,
                     'viewport_w': window.innerWidth,
                     'viewport_h': window.innerHeight,
                     'device_pixel_ratio': window.devicePixelRatio || 1,
                     'non_interaction': true
-                });
+                }, _scaleTelemetry()));
             }
             
             // Diagnostics to check if the ad unit is filled, blocked, or invisible after 2 seconds
@@ -1917,18 +2007,17 @@ function setupAmazonFinishBanner(formId, options) {
         if (!window._amazonDealsImpressionTracked[deal.id]) {
             window._amazonDealsImpressionTracked[deal.id] = true;
             if (typeof gtag === 'function') {
-                gtag('event', 'Amazon_Banner_Impression', {
+                gtag('event', 'Amazon_Banner_Impression', Object.assign({
                     'event_category': 'Affiliate',
                     'amazon_deal_id': dealId,
                     'format': 'finish',
                     'asin': deal.asin || '',
                     'page_location': window.location.href,
-                    'game_scale': window.gameScale !== undefined ? Math.round(window.gameScale * 100) / 100 : null,
                     'viewport_w': window.innerWidth,
                     'viewport_h': window.innerHeight,
                     'device_pixel_ratio': window.devicePixelRatio || 1,
                     'non_interaction': true
-                });
+                }, _scaleTelemetry()));
             }
             console.log('GA Tracked (Finish): Amazon_Banner_Impression | ' + dealId);
         }
@@ -1938,19 +2027,18 @@ function setupAmazonFinishBanner(formId, options) {
         aLink.onclick = function () {
             var exposureSeconds = Math.round((Date.now() - startTime) / 1000);
             if (typeof gtag === 'function') {
-                gtag('event', 'Amazon_Banner_Click', {
+                gtag('event', 'Amazon_Banner_Click', Object.assign({
                     'event_category': 'Affiliate',
                     'amazon_deal_id': dealId,
                     'format': 'finish',
                     'asin': deal.asin || '',
                     'tempo_esposizione': exposureSeconds,
                     'page_location': window.location.href,
-                    'game_scale': window.gameScale !== undefined ? Math.round(window.gameScale * 100) / 100 : null,
                     'viewport_w': window.innerWidth,
                     'viewport_h': window.innerHeight,
                     'device_pixel_ratio': window.devicePixelRatio || 1,
                     'non_interaction': false
-                });
+                }, _scaleTelemetry()));
             }
         };
     }

@@ -825,6 +825,7 @@ var scala = {
 		this.fscartiprima40 = true;
 
 		this.carteselezionate = [];
+		this.attacchiturno = [];
 		this.f40avversario = [false, false, false];
 		this.f40giocatore = false;
 		this.fscartipesca = false;
@@ -1506,6 +1507,7 @@ var scala = {
 					}
 				}
 				if (attaccataclick) {
+					try { this.registraattacco(cartasel, "click", cont); } catch (e) { }
 					this.tgoff();
 					for (var j = 0; j < scala.numeroavversari; j++) this.taoff(j);
 					this.azzeraselezione();
@@ -1592,13 +1594,17 @@ var scala = {
 		   la carta non si attacca. */
 		var attaccata = false;
 		if ((this.pescato) && (this.giocatore.carte.length != 1)) {
+			/* La carta trascinata va annotata prima dell'aggancio: dopo,
+			   cercamatch l'ha già spostata fuori dalla mano (sonda GA4). */
 			if (this.pointerinelement(ev, "#giocatore")) {
 				attaccata = this.cercamatch(this.trisgiocatore, ESEGUI);
+				if (attaccata) { try { this.registraattacco(carta, "drag", this.trisgiocatore); } catch (e) { } }
 			}
 			if (!attaccata && (this.calcolapuntitris(this.trisgiocatore.carte) > 39)) {
 				for (var j = 0; j < scala.numeroavversari; j++) {
 					if (this.pointerinelement(ev, "#avversario" + (j + 1))) {
 						attaccata = this.cercamatch(this.campitrisavversario[j], ESEGUI);
+						if (attaccata) { try { this.registraattacco(carta, "drag", this.campitrisavversario[j]); } catch (e) { } }
 						break;
 					}
 				}
@@ -1900,6 +1906,52 @@ var scala = {
 
 		if (punti > 39) this.f40giocatore = true;
 		scarta.play();
+
+		/* Sonda: qui il turno si chiude davvero (le modali di apertura sono
+		   già passate). Se una carta agganciata durante questo turno è
+		   tornata in mano, è il caso segnalato dal giocatore: si spedisce. */
+		try { this.verificaattacchi(carta); } catch (e) { }
+		this.attacchiturno = [];
+		this.undoturno = 0;
+
+		/* Sonda "scarto con drag appeso": se scaladown è ancora alto quando lo
+		   scarto si concretizza, un trascinamento non si è mai chiuso (mouseup
+		   o touchend mai arrivati): la carta trascinata è visivamente dove
+		   l'ha lasciata il gesto ma logicamente altrove, e i render la saltano
+		   finché il flag resta alto. È il sospetto principale per la
+		   segnalazione "carta attaccata tornata in mano" — che l'altra sonda
+		   non può vedere, perché lì l'attacco non viene mai eseguito.
+		   Sola lettura, nessun effetto sul gioco. */
+		if (this.scaladown) {
+			try {
+				var dragdiv = this.cartadown;
+				var dragcarta = dragdiv ? dragdiv.card : null;
+				var dovelogico = '?';
+				if (dragcarta) {
+					if (dragcarta.gruppo === this.giocatore) dovelogico = 'mano';
+					else if (dragcarta.gruppo === this.trisgiocatore) dovelogico = 'tris';
+					else if (dragcarta.gruppo === this.scarti) dovelogico = 'scarti';
+					else if (dragcarta.gruppo === this.mazzo) dovelogico = 'mazzo';
+					else dovelogico = 'avv';
+				}
+				if (typeof gtag === 'function') {
+					gtag('event', 'scala40_scarto_con_drag', {
+						'event_category': 'Bug_Report',
+						'event_label': (dragcarta ? dragcarta.shortName : '?') + '@' + dovelogico,
+						'carta_drag': dragcarta ? dragcarta.shortName : '?',
+						'drag_dove': dovelogico,
+						'drag_left': dragdiv ? (parseInt(dragdiv.style.left, 10) || 0) : -1,
+						'drag_top': dragdiv ? (parseInt(dragdiv.style.top, 10) || 0) : -1,
+						'drag_mosso': this.scalamove ? 1 : 0,
+						'carta_scartata': carta.shortName,
+						'transport_type': 'beacon'
+					});
+				}
+				if (localStorage.getItem('scala40_devmode') === '1') {
+					console.warn('[scala40] scarto con drag appeso', dragcarta ? dragcarta.shortName : '?', dovelogico);
+				}
+			} catch (e) { }
+		}
 
 		this.azzeraselezione();
 		this.pescato = false;
@@ -2348,6 +2400,13 @@ var scala = {
 		if (gruppotris.carte.length != 0) ntris = gruppotris.carte[gruppotris.carte.length - 1].ntris + 1;
 
 		var esito = this.analizzatris(tris);
+		/* Guardia: un blocco invalido non deve mai raggiungere il tavolo. Da un
+		   esito bocciato semidausare è vuoto e i jolly prenderebbero
+		   tipojolly=undefined: showcard non saprebbe dipingerli (restano a
+		   dorso) e calcolapuntitris conteggerebbe il blocco come scala da zero.
+		   I chiamanti validano già nei percorsi normali; qui si copre ogni
+		   percorso presente e futuro. */
+		if (!esito.valido) return;
 		for (var i = 0; i < ncarte; i++) {
 			var carta = tris[i];
 			carta.ntris = ntris;
@@ -2951,6 +3010,97 @@ var scala = {
 		$$.removeClassAll(".card", "cardselected");
 	},
 
+	/* --- Sonda diagnostica "carta attaccata tornata in mano" ---------------
+	   Segnalazione giocatore non riprodotta: attacca una carta a un blocco in
+	   tavola, scarta, e la carta attaccata si ritrova in mano (mentre lo
+	   scarto resta negli scarti). Quattro ricostruzioni a tavolino sono state
+	   falsificate, quindi si raccoglie il caso reale: registraattacco() annota
+	   ogni aggancio del turno, verificaattacchi() controlla allo scarto se una
+	   di quelle carte è tornata nel gruppo giocatore e in tal caso manda un
+	   evento GA4. Nessun effetto sul gioco: solo lettura e invio. */
+	attacchiturno: [],
+
+	registraattacco: function (carta, modo, contenitore) {
+		if (!carta) return;
+		/* I CardGroup non portano un nome: il bersaglio si identifica per
+		   riferimento (tris proprio oppure tris di un avversario). */
+		var dove = "?";
+		if (contenitore === this.trisgiocatore) dove = "tris";
+		else {
+			for (var a = 0; a < this.numeroavversari; a++) {
+				if (contenitore === this.campitrisavversario[a]) { dove = "avv" + (a + 1); break; }
+			}
+		}
+		this.attacchiturno.push({
+			id: carta.id,
+			nome: carta.shortName,
+			modo: modo,
+			dove: dove,
+			stack: this.statostack.length
+		});
+	},
+
+	/* Invariante di mazzo: 108 carte distinte, nessuna in due gruppi, nessuna
+	   con gruppo discordante dall'array che la contiene. Serve a distinguere
+	   una corruzione strutturale da un semplice spostamento indesiderato. */
+	invariantemazzo: function () {
+		var gruppi = [this.giocatore, this.trisgiocatore, this.mazzo, this.scarti];
+		for (var a = 0; a < this.numeroavversari; a++) {
+			gruppi.push(this.campiavversario[a]);
+			gruppi.push(this.campitrisavversario[a]);
+		}
+		var viste = [], doppioni = 0, disallineate = 0;
+		for (var g = 0; g < gruppi.length; g++) {
+			if (!gruppi[g]) continue;
+			for (var c = 0; c < gruppi[g].carte.length; c++) {
+				var carta = gruppi[g].carte[c];
+				if (carta.gruppo !== gruppi[g]) disallineate++;
+				if (viste.indexOf(carta) !== -1) doppioni++; else viste.push(carta);
+			}
+		}
+		return { totale: viste.length, doppioni: doppioni, disallineate: disallineate };
+	},
+
+	verificaattacchi: function (cartascartata) {
+		if (!this.attacchiturno.length) return;
+		var tornate = [];
+		for (var i = 0; i < this.attacchiturno.length; i++) {
+			var rec = this.attacchiturno[i];
+			for (var j = 0; j < this.giocatore.carte.length; j++) {
+				if (this.giocatore.carte[j].id === rec.id) { tornate.push(rec); break; }
+			}
+		}
+		if (!tornate.length) return;
+
+		var inv = this.invariantemazzo();
+		if (typeof gtag === 'function') {
+			gtag('event', 'scala40_attacco_annullato', {
+				'event_category': 'Bug_Report',
+				'event_label': tornate[0].nome + '/' + tornate[0].modo,
+				'modo_attacco': tornate[0].modo,
+				'carta_tornata': tornate[0].nome,
+				'carta_scartata': (cartascartata ? cartascartata.shortName : '?'),
+				'n_tornate': tornate.length,
+				'n_attacchi': this.attacchiturno.length,
+				'dove': tornate[0].dove,
+				'stack_attacco': tornate[0].stack,
+				'stack_ora': this.statostack.length,
+				'undo_turno': this.undoturno || 0,
+				'f40giocatore': this.f40giocatore ? 1 : 0,
+				'fscartipesca': this.fscartipesca ? 1 : 0,
+				'punti_tris': this.calcolapuntitris(this.trisgiocatore.carte),
+				'carte_mano': this.giocatore.carte.length,
+				'inv_totale': inv.totale,
+				'inv_doppioni': inv.doppioni,
+				'inv_disallineate': inv.disallineate,
+				'transport_type': 'beacon'
+			});
+		}
+		if (localStorage.getItem('scala40_devmode') === '1') {
+			console.warn('[scala40] attacco annullato', tornate, this.invariantemazzo());
+		}
+	},
+
 	deselezionacarta: function (divCard) {
 		$$.removeClass(divCard, "cardselected");
 		var a = this.carteselezionate.indexOf(divCard.card);
@@ -3232,6 +3382,12 @@ var scala = {
 	undo: function () {
 		this.jollymodificabili = [];
 		this.jollyestremiswappabili = [];
+		/* Il registro attacchi NON si azzera qui di proposito: se il caso
+		   segnalato nascesse da un undo (voluto o spurio), azzerare
+		   cancellerebbe proprio la traccia da catturare. Si conta soltanto,
+		   così l'evento distingue "annullato dal giocatore" da "annullato
+		   da solo". */
+		this.undoturno = (this.undoturno || 0) + 1;
 		this.popstato();
 		this.render();
 	},
@@ -3924,16 +4080,46 @@ var scala = {
 			while (this.f40avversario[avv] && (this.carteattaccabili.length > 0) && (lung > 2) && (lung < 7)
 				&& (this.campiavversario[avv].carte[lung - 1].numero > 49) && (this.campiavversario[avv].carte[1].numero < 49)) {
 				temp = this.carteattaccabili.pop();
+				/* attaccabiliconjolly ha fotografato indice e primonumero PRIMA di
+				   questo ciclo, ma ogni iterazione inserisce due carte nel
+				   contenitore: dalla seconda in poi i dati salvati possono essere
+				   slittati (carta infilata dentro il blocco sbagliato, jolly
+				   etichettato col numero sbagliato, blocco che diventa invalido).
+				   Si rilegge quindi il blocco bersaglio al momento dell'uso — lo
+				   identifica il suo ntris, che gli attacchi non cambiano — e si
+				   riverifica che l'aggancio previsto sia ancora possibile; se non
+				   lo è più, il candidato si salta senza toccare nulla. A ciclo
+				   vergine i valori ricalcolati coincidono con quelli salvati. */
+				var blocco = [];
+				var primo = -1;
+				for (var k = 0; k < temp.cont.carte.length; k++) {
+					if (temp.cont.carte[k].ntris == temp.cartatris.ntris) {
+						if (primo < 0) primo = k;
+						blocco.push(temp.cont.carte[k]);
+					}
+				}
+				if (blocco.length == 0) continue;
+				var esito = this.analizzatris(blocco);
+				if (!esito.valido || (esito.tipotris != SCALA) || (esito.semescala != temp.carta.seme)) continue;
+				var applicabile;
+				if (temp.messeprima) applicabile = (esito.primonumero == temp.carta.numero + 2);
+				else {
+					var prossimacarta = esito.primonumero + blocco.length + 1;
+					if (prossimacarta == 14) prossimacarta = 1;
+					applicabile = (prossimacarta == temp.carta.numero);
+				}
+				if (!applicabile) continue;
+				var indice = temp.messeprima ? primo : primo + blocco.length;
 				temp.carta.faceUp = true;
-				var infojolly = { semescala: temp.carta.seme, primonumero: temp.primonumero };
+				var infojolly = { semescala: temp.carta.seme, primonumero: esito.primonumero };
 				if (!temp.messeprima) {
-					this.aggiungitris(temp.cont, temp.indice, this.campiavversario[avv].carte[lung - 1], temp.cartatris, ESEGUI, infojolly);
-					this.aggiungitris(temp.cont, temp.indice + 1, temp.carta, temp.cartatris, ESEGUI, infojolly);
+					this.aggiungitris(temp.cont, indice, this.campiavversario[avv].carte[lung - 1], temp.cartatris, ESEGUI, infojolly);
+					this.aggiungitris(temp.cont, indice + 1, temp.carta, temp.cartatris, ESEGUI, infojolly);
 				}
 				else {
 					infojolly.primonumero -= 1;
-					this.aggiungitris(temp.cont, temp.indice, this.campiavversario[avv].carte[lung - 1], temp.cartatris, ESEGUI, infojolly);
-					this.aggiungitris(temp.cont, temp.indice, temp.carta, temp.cartatris, ESEGUI, infojolly);
+					this.aggiungitris(temp.cont, indice, this.campiavversario[avv].carte[lung - 1], temp.cartatris, ESEGUI, infojolly);
+					this.aggiungitris(temp.cont, indice, temp.carta, temp.cartatris, ESEGUI, infojolly);
 				}
 				lung = this.campiavversario[avv].carte.length;
 			}
@@ -3949,15 +4135,22 @@ var scala = {
 				}
 				lung2 = this.campiavversario[avv].carte.length;
 			}
+			/* Scarico di fine mano [carta reale + due jolly]: legale col default
+			   (unacartabasta), invalido con la regola "almeno 2 carte reali".
+			   Questi rami sono nati quando la calata era legale per definizione:
+			   senza il controllo di validità l'IA depositava un blocco che
+			   analizzatris boccia, con tipojolly=undefined sui jolly (dorsi
+			   congelati a video) e punteggio assurdo. Se la calata non è valida
+			   l'IA tiene le carte e scarta normalmente, come farebbe un umano. */
 			if ((this.campiavversario[avv].carte.length == 4) && (this.campiavversario[avv].carte[2].numero > 49)) {
 				var tris = [];
 				for (var i = 1; i < 4; i++) tris.push(this.campiavversario[avv].carte[i]);
-				this.scartatris(tris);
+				if (this.analizzatris(tris).valido) this.scartatris(tris);
 			}
 			if ((this.campiavversario[avv].carte.length == 5) && (this.campiavversario[avv].carte[3].numero > 49)) {
 				var tris = [];
 				for (var i = 2; i < 5; i++) tris.push(this.campiavversario[avv].carte[i]);
-				this.scartatris(tris);
+				if (this.analizzatris(tris).valido) this.scartatris(tris);
 			}
 
 			var carta;

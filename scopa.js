@@ -700,8 +700,8 @@ function confermaEAvviaPartita() {
     if (titoloEl) {
         const isEn = window.currentLang === 'en';
         titoloEl.textContent = variante === 'bresciana'
-            ? (isEn ? 'Scopa Bresciana Luciano' : 'Scopa Bresciana Luciano')
-            : (isEn ? 'Scopa Luciano' : 'Scopa Luciano');
+            ? (isEn ? 'Scopa Bresciana by Luciano' : 'Scopa Bresciana di Luciano')
+            : (isEn ? 'Scopa by Luciano' : 'Scopa di Luciano');
     }
     const areaSinistra = document.getElementById('area-sinistra');
     const areaDestra = document.getElementById('area-destra');
