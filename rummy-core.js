@@ -381,7 +381,7 @@ var TRANSLATIONS = {
         'link-burraco':     'Burraco',
         'link-scala40':     'Scala 40',
         'link-machiavelli': 'Machiavelli',
-        'link-home':        'Home',
+        'link-home':        'TUTTI I GIOCHI',
 
         // Legal
         'label-privacy':           'Privacy Policy',
@@ -480,7 +480,7 @@ var TRANSLATIONS = {
         'link-burraco':     'Burraco',
         'link-scala40':     'Scala 40',
         'link-machiavelli': 'Machiavelli',
-        'link-home':        'Home',
+        'link-home':        'ALL GAMES',
 
         'label-privacy':           'Privacy Policy',
         'label-gestisci-cookie':   'Manage Cookies',

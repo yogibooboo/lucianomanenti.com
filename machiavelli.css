@@ -803,8 +803,32 @@ h6 {
 .pulsante-spider     { background-color: #5a5a3a; }
 .pulsante-klondike   { background-color: #7a5a2a; }
 .pulsante-rummy      { background-color: #2a7a7a; }
-.pulsante-home       { background-color: #3a3a5a; }
+.pulsante-sudoku     { background-color: #2a5a8a; }
 .pulsante-scopa      { background-color: #8a3a1a; }
+
+/* "ALTRI GIOCHI": è l'uscita verso il resto del sito, quindi va distinto
+   dai link ai singoli giochi. Qui la barra è una griglia a 2 colonne, non
+   una fila: si allarga occupando entrambe le colonne (non con una width
+   fissa, che sfonderebbe la griglia). Cornice dorata e fondo caldo per
+   staccarlo dagli altri. Il grid-column va sull'<a>, che è il figlio
+   diretto della griglia: il div sta dentro l'<a>. */
+.link-giochi > a:last-child {
+	grid-column: 1 / -1;
+}
+
+.pulsante-home {
+	background: linear-gradient(135deg, #c9720f, #8a4a08);
+	border-color: #ffd700;
+	font-size: 11px;
+	letter-spacing: 0;
+	white-space: nowrap;
+	box-shadow: 0 0 8px rgba(255, 215, 0, 0.35);
+}
+
+.pulsante-home:hover {
+	transform: scale(1.12);
+	box-shadow: 0 0 14px rgba(255, 215, 0, 0.65);
+}
 
 /* === AUDIO TOGGLE BUTTON === */
 .btn-audio-game {

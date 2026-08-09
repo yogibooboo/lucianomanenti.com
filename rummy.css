@@ -837,8 +837,28 @@ html, body {
 .pulsante-scala40     { background-color: #3a5a3a; }
 .pulsante-machiavelli { background-color: #5a3a3a; }
 .pulsante-spider      { background-color: #5a5a3a; }
-.pulsante-home        { background-color: #3a3a5a; }
 .pulsante-klondike    { background-color: #7a5a2a; }
+.pulsante-sudoku      { background-color: #2a5a8a; }
+
+/* "TUTTI I GIOCHI": è l'uscita verso il resto del sito, quindi va distinto
+   dai link ai singoli giochi — cornice dorata e fondo caldo. La larghezza
+   resta quella della colonna (90px, .pulsante-link): qui la barra è
+   verticale e allargare solo questo lo farebbe sporgere dalla fila. Il
+   testo è lungo, quindi font piccolo e nessuna spaziatura extra: sta in
+   una riga sola perché il nowrap impedisce che vada a capo sforando i
+   30px di altezza. */
+.pulsante-home {
+    background: linear-gradient(135deg, #c9720f, #8a4a08);
+    border-color: #ffd700;
+    font-size: 9px;
+    letter-spacing: 0;
+    white-space: nowrap;
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.35);
+}
+
+.pulsante-home:hover {
+    box-shadow: 0 0 14px rgba(255, 215, 0, 0.65);
+}
 
 /* === TOAST === */
 #toast {

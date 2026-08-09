@@ -910,9 +910,38 @@ transform: scale(1.1);
 .pulsante-scala40 { background-color: #3a5a3a; }
 .pulsante-machiavelli { background-color: #5a3a3a; }
 .pulsante-spider { background-color: #5a5a3a; }
-.pulsante-home { background-color: #3a3a5a; }
 .pulsante-burraco { background-color: #7a2a7a; }
 .pulsante-rummy { background-color: #2a7a7a; }
+.pulsante-sudoku { background-color: #2a5a8a; }
+
+/* "TUTTI I GIOCHI": è l'uscita verso il resto del sito, quindi va distinto
+   dai link ai singoli giochi — cornice dorata e fondo caldo. La griglia ha
+   4 colonne da 80px e i pulsanti sono 7: l'ultima riga ne contiene 3 e
+   resta 1 cella libera in coda. Questo è il settimo pulsante: parte dalla
+   sua colonna (la terza) e arriva a fine griglia, quindi è largo 2 colonne.
+   Posizione esplicita e non "span": con "span 3" chiedeva più spazio di
+   quanto ne resti nella riga e il browser lo mandava a capo su una riga
+   tutta sua. La width sta sulla cella (l'<a>) e il pulsante la riempie,
+   perché .pulsante-link ha una width fissa di 80px da scavalcare qui. */
+.link-home-cella {
+	grid-column: 3 / -1;
+	width: 166px;   /* 2 colonne da 80px + 1 gap da 6px */
+}
+
+.link-home-cella .pulsante-home {
+	width: 100%;
+	background: linear-gradient(135deg, #c9720f, #8a4a08);
+	border-color: #ffd700;
+	font-size: 12px;
+	letter-spacing: 0;
+	white-space: nowrap;
+	box-shadow: 0 0 8px rgba(255, 215, 0, 0.35);
+}
+
+.link-home-cella .pulsante-home:hover {
+	box-shadow: 0 0 14px rgba(255, 215, 0, 0.65);
+}
+
 .pulsante-klondike { background-color: #7a5a2a; }
 .pulsante-scopa { background-color: #8a3a1a; }
 
@@ -930,6 +959,29 @@ transform: scale(1.1);
     height: 83px;
     font-size: 27px;
     line-height: 83px;
+}
+
+/* Nella variante da telefono la griglia passa a 2 colonne da 225px: il
+   settimo pulsante apre l'ultima riga e la occupa tutta. Deve stare DOPO
+   la regola qui sopra: stessa specificità, e quel width:225px altrimenti
+   vincerebbe per ordine, lasciando il pulsante stretto in una cella larga. */
+.link-giochi-open .link-home-cella {
+    grid-column: 1 / -1;
+    width: 465px;   /* 2 colonne da 225px + 1 gap da 15px */
+}
+
+/* Il blocco desktop qui sopra porta con sé font 12px e nowrap: qui vanno
+   rimessi entrambi ai valori della modalità ingrandita, altrimenti il
+   pulsante eredita misure pensate per una cella da 166px. A 27px il testo
+   occupa circa 240px dei 465 disponibili, quindi il nowrap resta una rete
+   di sicurezza e non un vincolo che stringe. */
+.link-giochi-open .link-home-cella .pulsante-home {
+    width: 100%;
+    height: 83px;
+    line-height: 83px;
+    font-size: 27px;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
 }
 
 .link-giochi-open .new-badge {

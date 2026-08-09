@@ -35,7 +35,7 @@ var ADSENSE_FINISH_SCALE_THRESHOLD = 1.0; // gameScale minimo per usare AdSense 
 var ENABLE_INTERSTITIAL = true;                   // abilita il banner interstitial
 var INTERSTITIAL_MIN_SESSION_MINUTES = 10;        // minuti di sessione prima della prima esposizione
 var INTERSTITIAL_COOLDOWN_MINUTES = 30;           // minuti tra un'esposizione e la successiva
-var INTERSTITIAL_CLOSE_DELAY_SECONDS = 0;        // secondi prima che appaia il pulsante X
+var INTERSTITIAL_CLOSE_DELAY_SECONDS = 2;        // secondi prima che appaia il pulsante X
 
 // ─── TEST A/B VIEWABILITY: sizing interstitial (2026-08-06) ──────────────────
 // Esperimento per capire cosa determina la bassa Active View (~41%) sull'inter-
@@ -1027,42 +1027,38 @@ function adjustLayout() {
 
     var getAmazonRichHtml = function (deal, amazonGenericLink, amazonGenericImg, side) {
         var isMusicBanner = amazonGenericLink && amazonGenericLink.indexOf('musica') !== -1;
-        if (isMusicBanner && side === 'right') {
-            return '<a href="view_gallery.html" target="_blank" rel="noopener" style="display:block;width:300px;height:250px;overflow:hidden;"><img src="banner/galleryamazon300x250.jpg" style="width:300px;height:250px;object-fit:cover;" alt="Gallery"></a>';
-        }
         if (isMusicBanner) {
+            // Pulsantiera dello slot 300x250, identica nelle due colonne (prima la
+            // destra mostrava solo l'immagine statica della gallery Amazon).
+            // Da sei pulsanti in griglia 2x3 si e' passati a tre righe piene: con
+            // tre voci la griglia a due colonne lasciava mezza riga vuota, mentre
+            // a piena larghezza (262px) le etichette stanno su una riga sola.
             var en = (window.currentLang === 'en');
             var newLabel = en ? 'NEW' : 'NUOVO';
-            // Stile comune dei 6 pulsanti in griglia 2x3 (il colore viene passato a parte)
-            var stilePiccolo = 'display:flex;flex-direction:column;align-items:center;justify-content:center;width:125px;height:60px;border-radius:9px;color:#ffffff;font-size:12px;font-weight:bold;text-align:center;text-decoration:none;position:relative;transition:transform 0.2s;cursor:pointer;box-sizing:border-box;line-height:1.25;box-shadow:0 3px 6px rgba(0,0,0,0.3);';
+            var stileRiga = 'display:flex;align-items:center;justify-content:center;gap:8px;width:262px;height:60px;border-radius:9px;color:#ffffff;font-size:15px;font-weight:bold;text-align:center;text-decoration:none;position:relative;transition:transform 0.2s;cursor:pointer;box-sizing:border-box;line-height:1.25;box-shadow:0 3px 6px rgba(0,0,0,0.3);';
             var hover = ' onmouseover="this.style.transform=\'scale(1.03)\';this.style.filter=\'brightness(1.15)\';" onmouseout="this.style.transform=\'scale(1)\';this.style.filter=\'none\';"';
             var badgeSmall = '<span class="amazon-badge amazon-badge-pulse" style="position:absolute;top:-7px;right:-5px;font-size:9px;padding:1px 5px;">' + newLabel + '</span>';
 
+            // Offerte: porta sempre alla vetrina interna (nuova scheda), non al
+            // deal del giorno, e nomina entrambi gli store perche' view_gallery
+            // li raccoglie tutti e due. Il gradiente unisce l'arancio Amazon al
+            // rosso AliExpress proprio perche' il pulsante vale per entrambi.
+            var offerteTesto = en ? 'Amazon / AliExpress Deals' : 'Offerte Amazon / AliExpress';
+            var offerteBg = 'background:linear-gradient(180deg,#e47911 0%,#e62e04 100%);border:2px solid #ffd18c;';
+
+            var promoLink = en ? '/calcolo-en.html' : '/calcolo.html';
+            var promoTesto = en ? 'CROSS FIGURE Luciano' : 'CALCOLO ENIGMATICO';
+
             return '<div style="display:flex;flex-direction:column;justify-content:space-evenly;align-items:center;width:300px;height:250px;padding:10px;box-sizing:border-box;background:linear-gradient(135deg, #14532d, #022c22);border:3px solid #ffdb4d;border-radius:12px;box-shadow:inset 0 0 20px rgba(0,0,0,0.6), 0 4px 15px rgba(0,0,0,0.5);font-family:\'Outfit\',\'Open Sans\',sans-serif;z-index:100;overflow:hidden;">' +
-                '<div style="display:flex;justify-content:space-between;width:262px;gap:12px;">' +
-                '<a href="' + amazonGenericLink + '" target="_self" style="' + stilePiccolo + 'background:linear-gradient(180deg,#1d4ed8 0%,#1e40af 100%);border:2px solid #60a5fa;"' + hover + '>' +
+                '<a href="' + promoLink + '" target="_self" class="sudoku-promo-btn" style="' + stileRiga + 'background:linear-gradient(180deg,#b91c1c 0%,#991b1b 100%);border:2px solid #ffd700;"' + hover + '>' +
+                badgeSmall + '🔢<span style="color:#ffd700;">' + promoTesto + '</span>' +
+                '</a>' +
+                '<a href="' + amazonGenericLink + '" target="_self" style="' + stileRiga + 'background:linear-gradient(180deg,#1d4ed8 0%,#1e40af 100%);border:2px solid #60a5fa;"' + hover + '>' +
                 '🎵<span style="color:#ffd700;">Music Ear Training</span>' +
                 '</a>' +
-                '<a href="' + (en ? '/sudoku-en.html' : '/sudoku.html') + '" target="_self" class="sudoku-promo-btn" style="' + stilePiccolo + 'background:linear-gradient(180deg,#b91c1c 0%,#991b1b 100%);border:2px solid #ffd700;"' + hover + '>' +
-                badgeSmall + '🔢<span style="color:#ffd700;">SUDOKU Luciano</span>' +
+                '<a href="view_gallery.html" target="_blank" rel="noopener" style="' + stileRiga + offerteBg + '"' + hover + '>' +
+                '🛒<span style="color:#ffd700;">' + offerteTesto + '</span>' +
                 '</a>' +
-                '</div>' +
-                '<div style="display:flex;justify-content:space-between;width:262px;gap:12px;">' +
-                '<a href="' + (en ? '/dama-en.html' : '/dama.html') + '" target="_self" class="sudoku-promo-btn" style="' + stilePiccolo + 'background:linear-gradient(180deg,#92400e 0%,#78350f 100%);border:2px solid #f59e0b;"' + hover + '>' +
-                badgeSmall + '⚫<span style="color:#ffd700;">' + (en ? 'CHECKERS Luciano' : 'DAMA Luciano') + '</span>' +
-                '</a>' +
-                '<a href="' + (en ? '/scacchi-en.html' : '/scacchi.html') + '" target="_self" class="sudoku-promo-btn" style="' + stilePiccolo + 'background:linear-gradient(180deg,#4c1d95 0%,#3b0764 100%);border:2px solid #a78bfa;"' + hover + '>' +
-                badgeSmall + '♞<span style="color:#ffd700;">' + (en ? 'CHESS Luciano' : 'SCACCHI Luciano') + '</span>' +
-                '</a>' +
-                '</div>' +
-                '<div style="display:flex;justify-content:space-between;width:262px;gap:12px;">' +
-                '<a href="' + (en ? '/scopa-en.html' : '/scopa.html') + '" target="_self" class="sudoku-promo-btn" style="' + stilePiccolo + 'background:linear-gradient(180deg,#0f766e 0%,#115e59 100%);border:2px solid #5eead4;"' + hover + '>' +
-                badgeSmall + '🎴<span style="color:#ffd700;">' + (en ? 'SCOPA by Luciano' : 'SCOPA di Luciano') + '</span>' +
-                '</a>' +
-                '<a href="' + (en ? '/briscola-en.html' : '/briscola.html') + '" target="_self" class="sudoku-promo-btn" style="' + stilePiccolo + 'background:linear-gradient(180deg,#166534 0%,#14532d 100%);border:2px solid #ffd700;"' + hover + '>' +
-                '🃏<span style="color:#ffd700;">BRISCOLA</span><span style="font-size:9px;font-weight:normal;">(' + (en ? 'prototype' : 'prototipo') + ')</span>' +
-                '</a>' +
-                '</div>' +
                 '</div>';
         }
 

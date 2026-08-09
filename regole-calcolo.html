@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
+	<script>
+		window.dataLayer = window.dataLayer || [];
+		function gtag() { dataLayer.push(arguments); }
+		gtag('js', new Date());
+		gtag('config', 'G-WRBDRDQ4L8');
+		window.currentLang = 'it';
+	</script>
+	<title>Regole Calcolo Enigmatico - Come giocare</title>
+	<meta name="Description"
+		content="Regole del Calcolo Enigmatico: il crittogramma matematico con nove numeri in matrice 3x3, cifre nascoste da lettere e sei operazioni da far tornare. Guida completa e tecniche di risoluzione.">
+	<link rel="alternate" hreflang="it" href="regole-calcolo.html">
+	<link rel="alternate" hreflang="en" href="regole-calcolo-en.html">
+	<link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
+	<link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
+	<link rel="shortcut icon" href="favicon/favicon.ico">
+	<link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+	<style>
+		body {
+			font-family: sans-serif;
+			line-height: 1.7;
+			max-width: 800px;
+			margin: 40px auto;
+			padding: 20px;
+			color: #333;
+			background-color: #f9f9f9;
+		}
+
+		h1 {
+			color: #2c3e50;
+			border-bottom: 2px solid #ffd700;
+			padding-bottom: 10px;
+		}
+
+		h2 {
+			color: #2c3e50;
+			margin-top: 30px;
+		}
+
+		h3 {
+			color: #2c3e50;
+			font-size: 1.1em;
+			margin-top: 20px;
+		}
+
+		.lang-switch {
+			text-align: right;
+			margin-bottom: 20px;
+		}
+
+		.lang-switch a {
+			display: inline-block;
+			padding: 6px 16px;
+			margin-left: 5px;
+			text-decoration: none;
+			border-radius: 5px;
+			font-weight: bold;
+			font-size: 14px;
+		}
+
+		.lang-switch a.active {
+			background: #2c3e50;
+			color: white;
+		}
+
+		.lang-switch a:not(.active) {
+			background: #ddd;
+			color: #333;
+			cursor: pointer;
+		}
+
+		.content-box {
+			background: white;
+			padding: 30px;
+			border-radius: 8px;
+			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+		}
+
+		.play-btn {
+			display: inline-block;
+			margin-top: 25px;
+			padding: 12px 30px;
+			background: #27ae60;
+			color: white;
+			text-decoration: none;
+			border-radius: 8px;
+			font-size: 18px;
+			font-weight: bold;
+		}
+
+		.nav-links {
+			text-align: center;
+			margin-top: 30px;
+			font-size: 14px;
+		}
+
+		.nav-links a {
+			color: #3498db;
+			text-decoration: none;
+			margin: 0 10px;
+		}
+
+		.banner {
+			width: 100%;
+			height: 150px;
+			background-image: url('images/home/castagne.jpg');
+			background-size: cover;
+			background-position: center;
+			border-radius: 8px;
+			margin: 20px 0;
+			box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+		}
+
+		.score-table {
+			width: 100%;
+			border-collapse: collapse;
+			margin-top: 10px;
+			margin-bottom: 20px;
+		}
+
+		.score-table th,
+		.score-table td {
+			border: 1px solid #ddd;
+			padding: 8px;
+			text-align: left;
+		}
+
+		.score-table th {
+			background-color: #f2f2f2;
+			font-weight: bold;
+		}
+
+		.highlight {
+			background-color: #fff9c4;
+			padding: 0 4px;
+		}
+
+		.mini-grid {
+			font-family: monospace;
+			font-size: 15px;
+			line-height: 1.5;
+			background: #f4f1e8;
+			border: 1px solid #ddd;
+			border-radius: 6px;
+			padding: 12px 20px;
+			display: inline-block;
+			white-space: pre;
+		}
+	</style>
+</head>
+
+<body>
+	<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+		<a href="#" id="btn-back" onclick="goBack(); return false;"
+			style="display: inline-block; padding: 6px 16px; background: #e74c3c; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 14px;">&#x2190;
+			Indietro</a>
+		<div class="lang-switch" style="margin-bottom: 0;">
+			<a href="regole-calcolo.html" id="btn-it" class="active">Italiano</a>
+			<a href="regole-calcolo-en.html" id="btn-en">English</a>
+		</div>
+	</div>
+
+	<div class="banner"></div>
+
+	<div class="content-box">
+		<div id="lang-it">
+			<h1>Regole del Calcolo Enigmatico</h1>
+
+			<p>Il <strong>Calcolo Enigmatico</strong> appartiene alla famiglia dei <em>crittogrammi matematici</em> (in inglese <em>alphametics</em> o <em>cryptarithms</em>), i rompicapi in cui le cifre di un'operazione vengono sostituite da lettere e bisogna ricostruire la corrispondenza. Il capostipite &egrave; il celebre <em>SEND + MORE = MONEY</em>, proposto nel 1924; da allora il genere &egrave; diventato un classico della matematica ricreativa e delle riviste di enigmistica.</p>
+
+			<p>Qui il gioco &egrave; portato su una <strong>matrice 3&times;3</strong>: non una sola operazione, ma <strong>sei operazioni intrecciate</strong> che devono tornare tutte insieme. Non serve fortuna e non si tira mai a indovinare: ogni schema ha una <strong>soluzione unica garantita</strong>, raggiungibile solo con la logica.</p>
+
+			<p style="background: #fff9c4; padding: 12px 16px; border-radius: 6px; border-left: 4px solid #ffd700;">
+				Questo gioco &egrave; in continua evoluzione: nuove funzionalit&agrave; e miglioramenti vengono aggiunti regolarmente. Se riscontri qualcosa che non funziona come previsto o hai suggerimenti, scrivici a
+				<a href="mailto:postmaster@lucianomanenti.com" style="color: #3498db;">postmaster@lucianomanenti.com</a>
+				&mdash; il tuo feedback &egrave; prezioso!
+			</p>
+
+			<h2>1. Scopo del Gioco</h2>
+			<p>Nella griglia ci sono <strong>nove numeri</strong> disposti in una matrice 3&times;3, ma le loro cifre sono nascoste da <strong>lettere</strong>. La regola d'oro &egrave; una sola:</p>
+			<ul>
+				<li>a <strong>lettera uguale</strong> corrisponde <strong>cifra uguale</strong>;</li>
+				<li>due lettere diverse non possono valere la stessa cifra;</li>
+				<li>un numero di pi&ugrave; cifre non pu&ograve; cominciare per zero.</li>
+			</ul>
+			<p>Le <strong>tre operazioni orizzontali</strong> e le <strong>tre verticali</strong> devono tornare <strong>tutte contemporaneamente</strong>. Gli operatori (+, &minus;, &times;, :) sono sempre visibili: il tuo compito &egrave; scoprire quale cifra si nasconde dietro ogni lettera, e la corrispondenza corretta &egrave; sempre <strong>una sola</strong>.</p>
+
+			<h2>2. Un esempio</h2>
+			<p>Ecco uno schema reale, con le lettere al posto delle cifre:</p>
+			<p class="mini-grid"> B  +  D  =  E
+ &times;      +      :
+AC  &minus;  AB  =  A
+BD  &minus;  AE  =  E</p>
+			<p>Ogni riga &egrave; un'operazione da sinistra a destra; ogni colonna &egrave; un'operazione dall'alto verso il basso (la terza riga &egrave; il risultato delle tre operazioni verticali). La stessa lettera <strong>A</strong> compare in quattro numeri diversi: in tutti vale la <em>stessa</em> cifra.</p>
+			<p>Come si comincia? La lettera <strong>A</strong> apre i numeri <em>AC</em>, <em>AB</em> e <em>AE</em>, quindi <strong>non pu&ograve; valere 0</strong>. Inoltre <em>AC</em> &minus; <em>AB</em> = <em>A</em>: due numeri di due cifre che iniziano entrambi per A e la cui differenza &egrave; un numero di una sola cifra &mdash; quindi la sottrazione riguarda solo le seconde cifre, e <strong>C &minus; B = A</strong>. Anche la prima riga, <em>B</em> + <em>D</em> = <em>E</em>, lega tre lettere con cifre singole. Incrociando questi vincoli si arriva all'unica soluzione: <strong>A=1, B=2, C=3, D=6, E=8</strong>, cio&egrave;</p>
+			<p class="mini-grid"> 2  +   6  =  8
+ &times;      +      :
+13  &minus;  12  =  1
+26  &minus;  18  =  8</p>
+			<p>Verifica pure: tutte e sei le operazioni tornano contemporaneamente, in orizzontale (2+6=8, 13&minus;12=1, 26&minus;18=8) e in verticale (2&times;13=26, 6+12=18, 8:1=8).</p>
+
+			<h2>3. Tecniche di Risoluzione</h2>
+
+			<h3>Partire dai vincoli forti</h3>
+			<p>Non tutte le operazioni sono ugualmente informative. Una <strong>moltiplicazione</strong> o una <strong>divisione</strong> restringe molto di pi&ugrave; di una somma: pochi accoppiamenti di cifre danno un prodotto compatibile con la lunghezza del risultato. Cerca l'operazione dove le lettere in gioco sono meno numerose o dove il risultato ha una cifra in meno degli operandi: sono gli appigli migliori per cominciare.</p>
+
+			<h3>Le lettere di testa</h3>
+			<p>La prima lettera di un numero a pi&ugrave; cifre <strong>non pu&ograve; valere zero</strong>. &Egrave; un'esclusione gratuita, da segnare subito nella matrice: spesso &egrave; quella che, incrociata con le altre, chiude il primo ragionamento.</p>
+
+			<h3>Ragionare per esclusione</h3>
+			<p>Come nel Sudoku, il progresso vero non viene dal "provare un numero" ma dall'<strong>eliminare i candidati</strong>. Se dimostri che una lettera non pu&ograve; valere 7, segnalo; quando su una riga della matrice resta <strong>una sola casella libera</strong>, quella lettera ha per forza quella cifra. Simmetricamente: se una cifra &egrave; possibile per una sola lettera, quella lettera se la prende.</p>
+
+			<h3>Le parit&agrave; e le cifre finali</h3>
+			<p>Guarda l'<strong>ultima cifra</strong> dei risultati. In una somma, la cifra finale del risultato dipende solo dalle cifre finali degli addendi (pi&ugrave; l'eventuale riporto). In una moltiplicazione, se il risultato termina per 0 uno dei fattori deve contenere un 5 o uno 0. Ragionamenti di questo tipo escludono molte combinazioni senza dover fare alcun conto per esteso.</p>
+
+			<h3>La propagazione a cascata</h3>
+			<p>Ogni assegnazione ne consente altre: una cifra fissata elimina se stessa da tutte le altre lettere e blocca tutte le altre cifre per quella lettera. Nel gioco questa propagazione &egrave; automatica, ma vale la pena capirla: &egrave; il motore che trasforma una singola deduzione in una serie.</p>
+
+			<h2>4. Livelli di Difficolt&agrave;</h2>
+			<table class="score-table">
+				<tr>
+					<th>Livello</th>
+					<th>Lettere in gioco</th>
+					<th>Cosa aspettarsi</th>
+				</tr>
+				<tr>
+					<td><strong>Facile</strong></td>
+					<td>poche</td>
+					<td>Poche incognite: bastano il vincolo delle lettere di testa e qualche esclusione diretta.</td>
+				</tr>
+				<tr>
+					<td><strong>Medio</strong></td>
+					<td>alcune</td>
+					<td>Servono la matrice delle possibilit&agrave; e qualche deduzione a catena.</td>
+				</tr>
+				<tr>
+					<td><strong>Difficile</strong></td>
+					<td>molte</td>
+					<td>Molte incognite e catene lunghe: la matrice diventa indispensabile.</td>
+				</tr>
+			</table>
+			<p>Pi&ugrave; lettere distinte compaiono nello schema, pi&ugrave; lunga &egrave; la catena di deduzioni necessaria per chiuderlo. In tutti i livelli la <strong>soluzione resta unica</strong>: non &egrave; mai necessario tirare a indovinare.</p>
+
+			<hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;">
+
+			<h2>Come giocare a "Calcolo Enigmatico Luciano"</h2>
+
+			<h3>La matrice delle possibilit&agrave;</h3>
+			<p>La matrice sotto la griglia &egrave; lo strumento con cui si risolve davvero lo schema: <strong>una riga per ogni lettera, una colonna per ogni cifra da 0 a 9</strong>. Il gioco si vince per esclusione, esattamente come si farebbe a matita sul giornale.</p>
+			<p>Accanto alla matrice ci sono <strong>tre modi</strong>, che decidono cosa fa il click su un incrocio:</p>
+			<ul>
+				<li><strong>&times; Escludi:</strong> segna che quella lettera <em>non</em> pu&ograve; valere quella cifra. Un secondo click toglie il segno.</li>
+				<li><strong>&#9679; Assegna:</strong> d&agrave; davvero quella cifra alla lettera. La casella diventa <span class="highlight">blu</span> e la cifra compare in tutte le posizioni della griglia dove quella lettera appare.</li>
+				<li><strong>&#8709; Cancella:</strong> ripulisce la casella, togliendo un'esclusione o un'assegnazione.</li>
+			</ul>
+			<p>Assegnare una cifra <strong>propaga da s&eacute; le esclusioni</strong>: quella cifra viene barrata per tutte le altre lettere, e tutte le altre cifre vengono barrate per quella lettera. Queste esclusioni automatiche compaiono con un puntino <strong>&middot;</strong> pi&ugrave; tenue, per distinguerle dalle <strong>&times;</strong> che hai ragionato tu; se togli l'assegnazione, spariscono da sole. Quando su una riga resta <strong>una sola casella libera</strong>, il gioco la evidenzia in giallo: la deduzione &egrave; chiusa, quella &egrave; la cifra.</p>
+
+			<h3>Assegnare una cifra dalla tastiera</h3>
+			<p>Oltre alla matrice puoi <strong>selezionare una lettera</strong> cliccandola a inizio riga, cliccando una cella della griglia, oppure premendo il tasto corrispondente sulla tastiera; poi premi una <strong>cifra 0-9</strong> per assegnarla. La cifra compare in tutte le posizioni dove quella lettera appare. Se una cifra &egrave; gi&agrave; assegnata a un'altra lettera, il gioco non te la lascia riusare.</p>
+
+			<h3>I segni "=" come spia</h3>
+			<p>I segni <strong>=</strong> della griglia fanno da controllo a vista: diventano <strong style="color:#27ae60">verdi</strong> quando l'operazione torna, <strong style="color:#c0182b">rossi</strong> quando i numeri sono tutti scoperti ma il conto non quadra. Un'operazione che contiene ancora delle lettere resta neutra.</p>
+
+			<h3>Pulsanti di gioco</h3>
+			<ul>
+				<li><strong>&#8630; Annulla:</strong> annulla l'ultima assegnazione, ripristinando anche la matrice com'era (anche con <strong>Ctrl+Z</strong>).</li>
+				<li><strong>&#128161; Suggerimento:</strong> evidenzia una lettera deducibile dalle assegnazioni gi&agrave; fatte (oppure una cifra sbagliata, se presente) e apre un pannello con tre scelte: <strong>Spiegazione</strong> mostra il ragionamento, <strong>Assegna la cifra</strong> la inserisce, <strong>Chiudi</strong> annulla senza modificare nulla. Aprire un suggerimento costa <strong>10 secondi</strong>; la <strong>Spiegazione</strong> o l'assegnazione aggiungono <strong>altri 20 secondi</strong>, una sola volta anche se le usi entrambe.</li>
+			</ul>
+
+			<h3>Segnalazione degli errori</h3>
+			<p>Sotto i pulsanti c'&egrave; l'opzione <strong>Segnala subito le esclusioni e le assegnazioni sbagliate</strong> (memorizzata dal browser). Con l'opzione attiva, un'assegnazione errata viene mostrata in rosso e conta come errore, con una <strong>penalit&agrave; di 30 secondi</strong>; allo stesso modo viene segnalata un'esclusione <strong>&times;</strong> messa proprio sulla cifra giusta. Disattivandola giochi "alla vecchia maniera": dello sbaglio ti accorgerai solo dai conti che non tornano.</p>
+
+			<h2>Pulsanti di Controllo</h2>
+			<ul>
+				<li><strong>NUOVA:</strong> abbandona lo schema corrente (previa conferma) e apre il pannello di scelta della difficolt&agrave;.</li>
+				<li><strong>COME SI GIOCA:</strong> apre questa guida.</li>
+				<li><strong>&#x1F50A; / &#x1F507; (Audio):</strong> abilita o disabilita gli effetti sonori. La tua preferenza &egrave; globale e sar&agrave; ricordata dal browser su tutte le pagine del sito.</li>
+			</ul>
+
+			<h2>Salvataggio Automatico</h2>
+			<p>La partita viene <strong>salvata automaticamente</strong> nel browser a ogni mossa: se chiudi la pagina o il computer, alla prossima visita riprenderai esattamente da dove eri rimasto, con tempo, errori, assegnazioni ed esclusioni conservati.</p>
+
+			<p style="text-align: center;"><a href="#" onclick="goBack(); return false;" class="play-btn">Chiudi</a></p>
+		</div>
+	</div>
+
+
+	<div class="banner"></div>
+
+	<div class="nav-links">
+		<a href="index.html">Home</a> |
+		<a href="calcolo.html">Calcolo Enigmatico</a> |
+		<a href="regole-sudoku.html">Sudoku</a> |
+		<a href="regole-scopa.html">Scopa</a> |
+		<a href="regole-burraco.html">Burraco</a> |
+		<a href="regole-scala40.html">Scala 40</a> |
+		<a href="regole-machiavelli.html">Machiavelli</a> |
+		<a href="regole-spider.html">Spider</a> |
+		<a href="regole-rummy.html">Gin Rummy</a> |
+		<a href="guida-metronomo.html">Metronomo</a> |
+		<a href="privacy.html">Privacy</a> |
+		<a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)">Gestisci Cookie</a>
+	</div>
+
+	<p style="text-align: center; font-size: 0.8em; color: #999; margin-top: 10px;">
+		© 2026 Luciano Manenti
+	</p>
+
+	<script>
+		function goBack() {
+			window.close();
+		}
+		(function() {
+			var nascosto = false;
+			var observer = new MutationObserver(function() {
+				if (nascosto) return;
+				var divs = document.querySelectorAll('body > div');
+				for (var i = 0; i < divs.length; i++) {
+					if (divs[i].shadowRoot && !divs[i].className && (divs[i].getAttribute('style')||'').length > 5000) {
+						divs[i].style.setProperty('display', 'none', 'important');
+						nascosto = true;
+						observer.disconnect();
+						return;
+					}
+				}
+			});
+			observer.observe(document.body, { childList: true });
+		})();
+	</script>
+</body>
+
+</html>

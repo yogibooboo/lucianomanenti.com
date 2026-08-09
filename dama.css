@@ -658,3 +658,20 @@ a.pulsante-top {
     background: rgba(0, 60, 20, 0.7);
     border-color: rgba(255, 255, 255, 0.5);
 }
+
+/* "TUTTI I GIOCHI": è l'uscita verso il resto del sito, quindi va distinto dai
+   link ai singoli giochi. Classe a parte e non ritocco di .pulsante-link-dama,
+   che veste anche gli altri pulsanti della barra. La barra è flex con padding
+   sul contenuto: il pulsante si allarga da sé, non serve fissare una width. */
+.pulsante-home-dama {
+    background: linear-gradient(135deg, #c9720f, #8a4a08);
+    border-color: #ffd700;
+    color: #fff;
+    white-space: nowrap;
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.35);
+}
+.pulsante-home-dama:hover {
+    background: linear-gradient(135deg, #e08514, #a3580a);
+    border-color: #ffd700;
+    box-shadow: 0 0 14px rgba(255, 215, 0, 0.65);
+}

@@ -2,6 +2,8 @@
 <html lang="it">
 
 <head>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9335537153013492"
+        crossorigin="anonymous"></script>
     <script>
         // Fix sicurezza per evitare crash da cross-origin su window.opener
         (function() { try { if (!window.opener) return; var test = window.opener.document; if (!window.opener.game) { window.opener = null; } } catch(e) { window.opener = null; } })();
@@ -21,7 +23,7 @@
     <meta http-Equiv="Pragma" Content="no-cache">
     <meta http-Equiv="Expires" Content="0">
 
-    <link rel="stylesheet" href="sudoku.css?v=2.7" />
+    <link rel="stylesheet" href="sudoku.css?v=2.9" />
 
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
@@ -35,7 +37,13 @@
         window.gameConfig = {
             gaPrefix: 'SUDOKU_',
             hideLegalFooter: true,
-            adsenseActive: false
+            adsenseActive: true,
+            adsenseSlots: {
+                '300x600': '5266697442',
+                '160x600': '1167670336',
+                '300x250': '8471445288',
+                '160x250': '8663016975'
+            }
         };
         window.currentLang = 'it';
     </script>
@@ -94,6 +102,13 @@
 
             <!-- ================= GRIGLIA SUDOKU ================= -->
             <div id="griglia-sudoku"></div>
+
+            <!-- Richiamo a Calcolo Enigmatico: stesso pubblico da enigmistica -->
+            <a href="calcolo.html" id="promo-calcolo" title="Calcolo Enigmatico Luciano">
+                <span class="promo-badge">NUOVO</span>
+                <span class="promo-testo">Ti piace il Sudoku? Prova <strong>Calcolo Enigmatico</strong></span>
+                <span class="promo-freccia">&rsaquo;</span>
+            </a>
 
             <!-- ================= PANNELLO CONTROLLI ================= -->
             <div id="pannello-controlli">
@@ -235,7 +250,7 @@
                 <a href="machiavelli.html" class="pulsante-link-sudoku">Machiavelli</a>
                 <a href="spider.html" class="pulsante-link-sudoku">Spider</a>
                 <a href="klondike.html" class="pulsante-link-sudoku">Klondike</a>
-                <a href="index.html" class="pulsante-link-sudoku">Home</a>
+                <a href="index.html" class="pulsante-link-sudoku pulsante-home-sudoku">TUTTI I GIOCHI</a>
             </div>
 
         </div><!-- /campogioco -->

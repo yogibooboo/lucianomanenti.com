@@ -1,6 +1,6 @@
 /* ============================================================================
-   SUDOKU - Stili CSS
-   Stile feltro verde Burraco/Scopa con layout 1024x750px
+   CALCOLO ENIGMATICO - Stili CSS
+   Stile feltro verde Burraco/Scopa con layout 1024x750px, come il Sudoku
    ============================================================================ */
 
 /* === BASE & LAYOUT === */
@@ -72,21 +72,23 @@ html, body {
 /* === TITOLO E BARRA SUPERIORE === */
 #titolo-gioco {
     position: absolute;
-    top: 8px;
+    top: 4px;
     left: 50%;
     transform: translateX(-50%);
     color: #ffd700;
-    font-size: 26px;
+    font-size: 24px;
     font-family: 'Slackey', 'Outfit', sans-serif;
     font-weight: bold;
     z-index: 1000;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
-    white-space: nowrap;
+    /* due righe: "Calcolo Enigmatico" e "Luciano" a capo */
+    text-align: center;
+    line-height: 1.12;
 }
 
 #messaggio-stato {
     position: absolute;
-    top: 50px;
+    top: 62px;
     left: 50%;
     transform: translateX(-50%);
     color: #fff;
@@ -281,164 +283,344 @@ a.pulsante-top {
     margin-top: 2px;
 }
 
-/* === GRIGLIA SUDOKU === */
-#griglia-sudoku {
+/* === GRIGLIA DEL CALCOLO ===
+   Matrice 5x5: le posizioni pari sono le celle-numero, le dispari ospitano
+   gli operatori e i segni "=". Le celle sono larghe perché contengono
+   numeri fino a 3 cifre. */
+#griglia-calcolo {
     position: absolute;
-    top: 108px;
-    left: 62px;
+    top: 100px;
+    left: 40px;
     display: grid;
-    grid-template-columns: repeat(9, 62px);
-    grid-template-rows: repeat(9, 62px);
-    border: 4px solid #14301c;
-    background: #14301c;
-    border-radius: 6px;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+    grid-template-columns: 118px 54px 118px 54px 118px;
+    grid-template-rows: 72px 42px 72px 42px 72px;
     z-index: 50;
 }
 
-.cella-sudoku {
-    width: 62px;
-    height: 62px;
+.cella-calcolo {
     box-sizing: border-box;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 32px;
     background: #f7f3e8;
-    color: #1a4fa0;
-    font-weight: 700;
+    border: 3px solid #14301c;
+    border-radius: 6px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.45);
     cursor: pointer;
-    position: relative;
-    border-right: 1px solid #b9b2a0;
-    border-bottom: 1px solid #b9b2a0;
-    transition: background-color 0.1s;
+    letter-spacing: 1px;
+    transition: background-color 0.15s;
 }
-.cella-sudoku.blocco-dx { border-right: 3px solid #14301c; }
-.cella-sudoku.blocco-giu { border-bottom: 3px solid #14301c; }
-.cella-sudoku.ultima-col { border-right: none; }
-.cella-sudoku.ultima-riga { border-bottom: none; }
+.cella-calcolo:hover {
+    background: #fffdf5;
+}
+.cella-calcolo.completa {
+    background: #eef6e6;
+}
 
-.cella-sudoku.data {
-    color: #1c1c1c;
+/* Ogni carattere della cella è un suo span: lettere e cifre si distinguono
+   a colpo d'occhio e la lettera selezionata si evidenzia ovunque compaia */
+.cella-calcolo .ch {
+    display: inline-block;
+    font-size: 34px;
     font-weight: 700;
+    line-height: 1;
+    padding: 3px 1px;
+    border-radius: 4px;
+    transition: background-color 0.15s, color 0.15s;
 }
-.cella-sudoku.evidenziata { background: #d7ecc8; }
-.cella-sudoku.stesso-numero { background: #4a8f3c; color: #fff; }
-.cella-sudoku.data.stesso-numero { color: #fff; }
-.cella-sudoku.non-collegata-armata { background: #d8d8d0; }
-.cella-sudoku.selezionata,
-.cella-sudoku.data.selezionata { background: #ffe08a; }
-.cella-sudoku.cella-armante,
-.cella-sudoku.data.cella-armante { background: linear-gradient(180deg, #ffd700 0%, #b8860b 100%); color: #1a1a2e; }
-.cella-sudoku.armata:not(.selezionata) { box-shadow: inset 0 0 0 3px rgba(74, 143, 60, 0.6); }
-.cella-sudoku.errata { color: #c0182b; }
-.cella-sudoku.errata:not(.selezionata) { background: #f2c6cb; }
-.cella-sudoku.lampeggia {
-    animation: cellaFlash 0.5s ease;
+.cella-calcolo .ch-lettera {
+    color: #8a6d1f;
+    font-family: 'Georgia', 'Times New Roman', serif;
+    font-style: italic;
 }
-
-/* Cella indicata dal Suggerimento (fase 1) */
-.cella-sudoku.suggerita {
+.cella-calcolo .ch-cifra {
+    color: #1a4fa0;
+}
+.cella-calcolo .ch-selezionata {
+    background: #ffd700;
+    color: #1a1a2e;
+    box-shadow: 0 0 0 2px rgba(184, 134, 11, 0.6);
+}
+.cella-calcolo .ch-errata {
+    color: #c0182b;
+    background: #f2c6cb;
+}
+.cella-calcolo .ch-suggerita {
     animation: pulseSugg 0.9s ease infinite alternate;
 }
-@keyframes pulseSugg {
-    from { box-shadow: inset 0 0 0 3px rgba(255, 215, 0, 0.95); }
-    to   { box-shadow: inset 0 0 0 5px rgba(255, 215, 0, 0.35); }
-}
-.cella-sudoku.suggerita-errore {
+.cella-calcolo .ch-suggerita-errore {
     animation: pulseSuggErr 0.9s ease infinite alternate;
 }
-@keyframes pulseSuggErr {
-    from { box-shadow: inset 0 0 0 3px rgba(204, 12, 57, 0.95); }
-    to   { box-shadow: inset 0 0 0 5px rgba(204, 12, 57, 0.35); }
+@keyframes pulseSugg {
+    from { box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.95); }
+    to   { box-shadow: 0 0 0 5px rgba(255, 215, 0, 0.35); }
 }
-@keyframes cellaFlash {
-    0% { background: #ffd700; }
-    100% { background: #f7f3e8; }
+@keyframes pulseSuggErr {
+    from { box-shadow: 0 0 0 3px rgba(204, 12, 57, 0.95); }
+    to   { box-shadow: 0 0 0 5px rgba(204, 12, 57, 0.35); }
 }
 
-/* === BANNER PROMO CALCOLO ENIGMATICO ===
-   Sta nella fascia libera fra la griglia (finisce a 674) e la barra dei link
-   agli altri giochi (comincia a 715): 32px di altezza a quota 682 lasciano
-   8px di respiro sopra e sotto. Largo quanto la griglia (566px) e allineato
-   al suo bordo sinistro, cosi' legge come parte dello schema e non come un
-   annuncio esterno. Se la griglia cambia dimensioni, vanno rivisti top e width. */
-#promo-calcolo {
-    position: absolute;
-    top: 682px;
-    left: 62px;
-    width: 566px;
-    height: 32px;
-    box-sizing: border-box;
+/* Operatori e segni "=" fra le celle */
+.segno-calcolo {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
-    padding: 0 12px;
-    background: linear-gradient(180deg, rgba(20, 83, 45, 0.95), rgba(2, 44, 34, 0.95));
-    border: 1px solid #ffdb4d;
-    border-radius: 8px;
+    font-size: 30px;
+    font-weight: bold;
+    color: #ffd700;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+}
+.segno-calcolo.segno-uguale {
     color: #ffffff;
-    font-family: 'Outfit', 'Segoe UI', sans-serif;
-    font-size: 14px;
-    text-decoration: none;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
-    transition: filter 0.2s, transform 0.2s;
-    z-index: 50;
+    transition: color 0.2s, text-shadow 0.2s;
+}
+/* Spia dell'operazione: verde se torna, rossa se i conti non quadrano */
+.segno-calcolo.segno-uguale.op-ok {
+    color: #7ee787;
+    text-shadow: 0 0 12px rgba(126, 231, 135, 0.8);
+}
+.segno-calcolo.segno-uguale.op-errata {
+    color: #ff7b72;
+    text-shadow: 0 0 12px rgba(255, 123, 114, 0.8);
 }
 
-#promo-calcolo:hover {
-    filter: brightness(1.18);
+.vuoto-calcolo {
+    /* incrocio fra due operatori: resta vuoto, come nello schema originale */
+}
+
+/* === MATRICE DELLE POSSIBILITÀ (lettere × cifre) ===
+   È il vero strumento di gioco: il giocatore esclude gli incroci impossibili
+   e arriva alla soluzione per esclusione progressiva. */
+#pannello-legenda {
+    position: absolute;
+    top: 430px;
+    left: 40px;
+    width: 620px;
+    box-sizing: border-box;
+    z-index: 50;
+    background: rgba(0, 40, 10, 0.55);
+    border: 2px solid rgba(100, 160, 110, 0.35);
+    border-radius: 10px;
+    padding: 10px 12px;
+    color: #fff;
+    /* matrice a sinistra, titolo e comandi nella colonna di fianco */
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+}
+.legenda-lato {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.legenda-titolo {
+    font-size: 11px;
+    font-weight: bold;
+    color: #aed6ae;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Modo di click: i tre radio decidono cosa fa il click su un incrocio */
+#modo-click {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+.modo-opzione {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 4px 8px;
+    border: 2px solid rgba(100, 160, 110, 0.35);
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.25);
+    color: #cde8cd;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+.modo-opzione:hover {
+    border-color: rgba(255, 255, 255, 0.45);
+}
+.modo-opzione input[type="radio"] {
+    accent-color: #ffd700;
+    width: 14px;
+    height: 14px;
+    margin: 0;
+    cursor: pointer;
+}
+.modo-opzione .modo-simbolo {
+    width: 16px;
+    text-align: center;
+    font-size: 14px;
+    line-height: 1;
+}
+.modo-opzione.attivo {
+    background: linear-gradient(180deg, #ffd700 0%, #b8860b 100%);
+    border-color: #ffd700;
+    color: #1a1a2e;
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.45);
+}
+#matrice-esclusioni {
+    display: grid;
+    gap: 2px;
+    align-items: center;
+}
+
+/* Intestazione delle colonne: le dieci cifre */
+.mat-intestazione {
+    text-align: center;
+    font-size: 11px;
+    font-weight: bold;
+    color: #ffd700;
+    padding-bottom: 1px;
+    transition: color 0.2s, opacity 0.2s;
+}
+/* Cifra già presa da una lettera: la colonna è chiusa */
+.mat-intestazione.col-presa {
+    color: #6f8f75;
+    opacity: 0.5;
+    text-decoration: line-through;
+}
+.mat-angolo {
+    /* angolo in alto a sinistra della matrice: resta vuoto */
+}
+
+/* Etichetta di riga: la lettera con la sua cifra, cliccabile per selezionarla */
+.btn-lettera {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    height: 22px;
+    background: linear-gradient(180deg, #4a7c59 0%, #2d5a3d 100%);
+    border: 2px solid #6b9b7a;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.15s;
+    padding: 0;
+}
+.btn-lettera:hover {
+    filter: brightness(1.2);
+}
+.btn-lettera .lettera-nome {
+    font-family: 'Georgia', 'Times New Roman', serif;
+    font-style: italic;
+    font-size: 14px;
+    font-weight: bold;
+    color: #ffe9a8;
+    line-height: 1;
+}
+.btn-lettera .lettera-cifra {
+    font-size: 12px;
+    font-weight: bold;
+    color: #cde8cd;
+    line-height: 1;
+}
+.btn-lettera.assegnata .lettera-cifra {
+    color: #7fd4ff;
+}
+.btn-lettera.selezionata {
+    background: linear-gradient(180deg, #ffd700 0%, #b8860b 100%);
+    border-color: #ffd700;
+    box-shadow: 0 0 12px rgba(255, 215, 0, 0.6);
+}
+.btn-lettera.selezionata .lettera-nome,
+.btn-lettera.selezionata .lettera-cifra {
+    color: #1a1a2e;
+}
+.btn-lettera.errata {
+    border-color: #cc0c39;
+    box-shadow: 0 0 12px rgba(204, 12, 57, 0.5);
+}
+.btn-lettera.errata .lettera-cifra {
+    color: #ff9aa5;
+}
+.btn-lettera.suggerita {
+    animation: pulseSugg 0.9s ease infinite alternate;
+}
+
+/* Incrocio lettera × cifra: i tre stati del click.
+   Contiene solo un simbolo (× o ●), quindi può stare molto stretto. */
+.mat-cella {
+    height: 22px;
+    background: rgba(247, 243, 232, 0.92);
+    border: 1px solid #8fa894;
+    border-radius: 3px;
+    cursor: pointer;
+    padding: 0;
+    font-size: 13px;
+    font-weight: bold;
+    line-height: 1;
+    color: #14301c;
+    transition: background-color 0.12s, border-color 0.12s, transform 0.12s;
+}
+.mat-cella:hover {
+    background: #ffffff;
+    border-color: #ffd700;
     transform: translateY(-1px);
 }
-
-#promo-calcolo .promo-badge {
-    background: #e47911;
+/* Escluso a mano: è un'esclusione ragionata dal giocatore, segno pieno */
+.mat-cella.mat-esclusa {
+    background: rgba(20, 48, 28, 0.55);
+    border-color: rgba(143, 168, 148, 0.35);
+    color: #ff9aa5;
+    font-size: 12px;
+}
+/* Esclusione dedotta da un'assegnazione: stessa casella spenta, ma segno
+   diverso e smorzato, perché non è una deduzione del giocatore */
+.mat-cella.mat-esclusa-auto {
+    background: rgba(20, 48, 28, 0.42);
+    border-color: rgba(143, 168, 148, 0.28);
+    color: #9fd0ad;
+    font-size: 22px;
+}
+/* Esclusione sbagliata: toglie proprio la cifra giusta */
+.mat-cella.mat-escl-errata {
+    background: rgba(120, 10, 30, 0.65);
+    border-color: #ff7b72;
+    color: #ffd9dc;
+}
+/* Assegnato: la cifra è entrata nella griglia */
+.mat-cella.mat-assegnata {
+    background: linear-gradient(180deg, #2f6fd0 0%, #1a4fa0 100%);
+    border-color: #7fd4ff;
     color: #ffffff;
+    box-shadow: 0 0 10px rgba(127, 212, 255, 0.55);
+}
+.mat-cella.mat-errata {
+    background: linear-gradient(180deg, #cc0c39 0%, #990022 100%);
+    border-color: #ff7b72;
+    box-shadow: 0 0 10px rgba(204, 12, 57, 0.6);
+}
+/* Riga della lettera selezionata: leggermente in evidenza.
+   Le caselle già escluse (a mano o di riflesso) restano spente: l'evidenza
+   serve a mostrare dove si può ancora scegliere, non a schiarire la riga. */
+.mat-cella.mat-riga-sel:not(.mat-esclusa):not(.mat-esclusa-auto):not(.mat-assegnata) {
+    background: #fffbe6;
+    border-color: #d8c88a;
+}
+/* Unica cifra rimasta su quella riga: si segnala da sé, è la deduzione chiusa */
+.mat-cella.mat-unica {
+    background: #fff3b0;
+    border-color: #ffd700;
+    box-shadow: inset 0 0 0 2px rgba(255, 215, 0, 0.55);
+}
+.legenda-nota {
     font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-    padding: 2px 7px;
-    border-radius: 4px;
-    flex-shrink: 0;
-}
-
-#promo-calcolo .promo-testo strong {
-    color: #ffd700;
-}
-
-#promo-calcolo .promo-freccia {
-    color: #ffd700;
-    font-size: 20px;
-    line-height: 1;
-    flex-shrink: 0;
-}
-
-/* Note (matita) dentro la cella */
-.note-grid {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    grid-template-rows: repeat(3, 1fr);
-    pointer-events: none;
-}
-.note-grid span {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 13px;
-    font-weight: 600;
-    color: #6b675a;
+    color: #cde8cd;
+    font-style: italic;
+    margin-top: 7px;
 }
 
 /* === PANNELLO LATERALE DESTRO === */
 #pannello-controlli {
     position: absolute;
-    top: 108px;
+    top: 118px;
     left: 680px;
     width: 290px;
     z-index: 50;
@@ -475,71 +657,6 @@ a.pulsante-top {
     margin-top: 2px;
 }
 
-#numpad {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-}
-.btn-num {
-    height: 62px;
-    font-size: 28px;
-    font-weight: bold;
-    color: white;
-    background: linear-gradient(180deg, #4a7c59 0%, #2d5a3d 100%);
-    border: 2px solid #6b9b7a;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.15s;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-    position: relative;
-    font-family: 'Segoe UI', sans-serif;
-}
-.btn-num:hover {
-    filter: brightness(1.2);
-    transform: translateY(-1px);
-}
-.btn-num.esaurito {
-    opacity: 0.35;
-    filter: grayscale(0.6);
-    cursor: default;
-    transform: none;
-}
-.btn-num.armato {
-    background: linear-gradient(180deg, #ffd700 0%, #b8860b 100%);
-    border-color: #ffd700;
-    color: #1a1a2e;
-    box-shadow: 0 0 12px rgba(255, 215, 0, 0.5);
-}
-#sprite-cursore {
-    display: none;
-    position: fixed;
-    z-index: 9999;
-    pointer-events: none;
-    transform: translate(14px, -6px);
-    font-size: 22px;
-    font-weight: 800;
-    color: #1a1a2e;
-    background: linear-gradient(180deg, #ffd700 0%, #b8860b 100%);
-    border: 2px solid #fff8dc;
-    border-radius: 6px;
-    width: 30px;
-    height: 30px;
-    line-height: 26px;
-    text-align: center;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-}
-#sprite-cursore.visibile {
-    display: block;
-}
-.btn-num .num-count {
-    position: absolute;
-    bottom: 3px;
-    right: 7px;
-    font-size: 11px;
-    font-weight: normal;
-    color: #cde8cd;
-}
-
 #azioni {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -561,30 +678,30 @@ a.pulsante-top {
     background: rgba(0, 60, 20, 0.8);
     border-color: rgba(255, 255, 255, 0.5);
 }
-.btn-azione.attivo {
-    background: linear-gradient(180deg, #ffd700 0%, #b8860b 100%);
-    color: #1a1a2e;
-    border-color: #ffd700;
-    box-shadow: 0 0 12px rgba(255, 215, 0, 0.5);
+.btn-azione-larga {
+    grid-column: 1 / -1;
 }
 
 /* Pannello del suggerimento: copre l'intera colonna dei tasti quando aperto */
+/* Il pannello parte dall'alto della colonna dei controlli e cresce quanto
+   serve: il contenuto varia (testo del suggerimento, spiegazione) e non deve
+   mai finire tagliato dal fondo del contenitore. */
 #pannello-hint {
     display: none;
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
-    bottom: 0;
+    height: auto;
     z-index: 60;
     background: #10331c;
     border: 2px solid #ffd700;
     border-radius: 10px;
     padding: 18px 16px;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
-    gap: 16px;
+    gap: 14px;
     box-shadow: 0 0 25px rgba(0, 0, 0, 0.6);
 }
 #pannello-hint.aperto { display: flex; }
@@ -636,6 +753,10 @@ a.pulsante-top {
     background: rgba(0, 60, 20, 0.8);
     border-color: rgba(255, 255, 255, 0.6);
 }
+#hint-bottoni button:disabled {
+    opacity: 0.45;
+    cursor: default;
+}
 #btn-hint-applica {
     background: linear-gradient(180deg, #ffd700 0%, #b8860b 100%) !important;
     color: #1a1a2e !important;
@@ -674,7 +795,7 @@ a.pulsante-top {
 }
 
 #btn-nuova-partita {
-    height: 56px;
+    height: 52px;
     font-size: 18px;
     font-weight: bold;
     letter-spacing: 1px;
@@ -695,7 +816,7 @@ a.pulsante-top {
 }
 
 /* === MODALI E DIALOGHI === */
-.form-sudoku {
+.form-calcolo {
     z-index: 40000;
     position: absolute;
     width: 500px;
@@ -716,7 +837,7 @@ a.pulsante-top {
     overflow: hidden;
 }
 
-.form-sudoku-title {
+.form-calcolo-title {
     font-family: 'Slackey', 'Outfit', sans-serif;
     font-size: 26px;
     color: #ffd700;
@@ -734,7 +855,7 @@ a.pulsante-top {
     border: 2px solid rgba(255, 255, 255, 0.2);
     color: rgba(255, 255, 255, 0.6);
     padding: 8px 16px;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: bold;
     border-radius: 6px;
     cursor: pointer;
@@ -818,7 +939,7 @@ a.pulsante-top {
 }
 
 /* === LINK A FONDO PAGINA === */
-.legal-links-sudoku {
+.legal-links-calcolo {
     position: absolute;
     bottom: 12px;
     left: 15px;
@@ -827,22 +948,22 @@ a.pulsante-top {
     z-index: 100;
     align-items: center;
 }
-.legal-links-sudoku a {
+.legal-links-calcolo a {
     color: rgba(255, 255, 255, 0.6);
     text-decoration: none;
     font-size: 11px;
     font-family: sans-serif;
     transition: color 0.2s;
 }
-.legal-links-sudoku a:hover {
+.legal-links-calcolo a:hover {
     color: #ffd700;
 }
-.legal-links-sudoku .sep {
+.legal-links-calcolo .sep {
     color: rgba(255, 255, 255, 0.3);
     font-size: 11px;
 }
 
-.link-giochi-sudoku {
+.link-giochi-calcolo {
     position: absolute;
     bottom: 10px;
     right: 10px;
@@ -850,7 +971,7 @@ a.pulsante-top {
     gap: 6px;
     z-index: 100;
 }
-.pulsante-link-sudoku {
+.pulsante-link-calcolo {
     background-color: rgba(0, 40, 10, 0.5);
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 4px;
@@ -861,17 +982,15 @@ a.pulsante-top {
     text-decoration: none;
     transition: all 0.2s;
 }
-.pulsante-link-sudoku:hover {
+.pulsante-link-calcolo:hover {
     color: #fff;
     background-color: rgba(0, 60, 20, 0.7);
     border-color: rgba(255, 255, 255, 0.4);
 }
 
 /* "TUTTI I GIOCHI": è l'uscita verso il resto del sito, quindi va distinto
-   dai link ai singoli giochi — cornice dorata e fondo caldo. La barra è
-   flex con padding sul contenuto: il pulsante si allarga da sé, non serve
-   fissare una width. */
-.pulsante-home-sudoku {
+   dai link ai singoli giochi — cornice dorata e fondo caldo. */
+.pulsante-home-calcolo {
     background: linear-gradient(135deg, #c9720f, #8a4a08);
     border-color: #ffd700;
     color: #fff;
@@ -879,12 +998,45 @@ a.pulsante-top {
     white-space: nowrap;
     box-shadow: 0 0 8px rgba(255, 215, 0, 0.35);
 }
-
-.pulsante-home-sudoku:hover {
+.pulsante-home-calcolo:hover {
     color: #fff;
     background: linear-gradient(135deg, #e08514, #a3580a);
     border-color: #ffd700;
     box-shadow: 0 0 14px rgba(255, 215, 0, 0.65);
+}
+
+/* Pannellino che resta in basso dopo "Vedi lo schema": i due soli comandi
+   utili mentre si guarda la matrice risolta senza la modale davanti. */
+#calcolo-minimal-win-panel {
+    position: absolute;
+    bottom: 42px;
+    left: 40px;
+    z-index: 10000;
+    display: flex;
+    gap: 15px;
+}
+#calcolo-minimal-win-panel button {
+    width: 180px;
+    height: 38px;
+    font-size: 13px;
+    font-weight: bold;
+    font-family: 'Segoe UI', sans-serif;
+    border-radius: 10px;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+    transition: filter 0.15s, transform 0.1s;
+}
+#calcolo-minimal-win-panel button:hover { filter: brightness(1.12); }
+#calcolo-minimal-win-panel button:active { transform: scale(0.96); }
+#calcolo-minimal-win-panel .btn-min-1 {
+    background: #ffd700;
+    color: #1a1a2e;
+    border: 2px solid #cca300;
+}
+#calcolo-minimal-win-panel .btn-min-2 {
+    background: #f0f0f0;
+    color: #333;
+    border: 2px solid #bbb;
 }
 
 /* === SPRITE PENALITÀ "+Ns" (stile arcade: sale e sfuma) === */

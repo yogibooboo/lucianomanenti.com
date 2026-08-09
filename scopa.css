@@ -613,6 +613,26 @@ html, body {
     border-color: rgba(255, 255, 255, 0.4);
 }
 
+/* "ALTRI GIOCHI": è l'uscita verso il resto del sito, quindi va distinto
+   dai link ai singoli giochi — cornice dorata e fondo caldo. Classe a
+   parte e non ritocco di .pulsante-link-scopa, perché quella veste anche
+   i comandi in alto (Undo, Mazzo, Scopri, Nuova). La barra è flex con
+   larghezza sul contenuto: nessuna width da fissare. */
+.pulsante-home-scopa {
+    background: linear-gradient(135deg, #c9720f, #8a4a08);
+    border-color: #ffd700;
+    color: #fff;
+    font-weight: bold;
+    letter-spacing: 0.3px;
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.35);
+}
+
+.pulsante-home-scopa:hover {
+    background: linear-gradient(135deg, #e08514, #a3580a);
+    border-color: #ffd700;
+    box-shadow: 0 0 14px rgba(255, 215, 0, 0.65);
+}
+
 /* === MODALI E DIALOGHI === */
 .form-scopa {
     z-index: 40000;
@@ -978,11 +998,15 @@ html, body {
 #campogioco.quattro-giocatori #area-giocatore {
     width: 420px;
 }
+/* In 4 giocatori il mazzo di distribuzione scende in basso a sinistra e
+   spinge a destra questi due pulsanti. Spostati troppo, però, "Regole"
+   finiva sotto il primo pulsante della barra giochi: 25px indietro
+   ciascuno, restando comunque a destra del mazzo (che arriva a 150px). */
 #campogioco.quattro-giocatori #btn-scrivetemi-scopa {
-    left: 302px;
+    left: 277px;
 }
 #campogioco.quattro-giocatori #btn-regole-scopa {
-    left: 382px;
+    left: 357px;
 }
 
 #campogioco.quattro-giocatori #carte-computer,

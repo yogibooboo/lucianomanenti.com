@@ -701,9 +701,26 @@ transform: scale(1.1);
 .pulsante-scala40 { background-color: #3a5a3a; }
 .pulsante-machiavelli { background-color: #5a3a3a; }
 .pulsante-spider { background-color: #5a5a3a; }
-.pulsante-home { background-color: #3a3a5a; }
 .pulsante-burraco { background-color: #7a2a7a; }
 .pulsante-rummy { background-color: #2a7a7a; }
+.pulsante-sudoku { background-color: #2a5a8a; }
 .pulsante-klondike { background-color: #7a5a2a; }
 .pulsante-scopa { background-color: #8a3a1a; }
+
+/* "TUTTI I GIOCHI": è l'uscita verso il resto del sito, quindi va distinto
+   dai link ai singoli giochi — più largo (il testo non entra in 74px),
+   cornice dorata e fondo caldo per staccarlo dalla fila. */
+.pulsante-home {
+	width: 112px;
+	background: linear-gradient(135deg, #c9720f, #8a4a08);
+	border-color: #ffd700;
+	font-size: 12px;
+	letter-spacing: 0.3px;
+	box-shadow: 0 0 8px rgba(255, 215, 0, 0.35);
+}
+
+.pulsante-home:hover {
+	transform: scale(1.12);
+	box-shadow: 0 0 14px rgba(255, 215, 0, 0.65);
+}
 

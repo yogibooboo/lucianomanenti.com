@@ -452,25 +452,30 @@ body {
 	width: 225px;
 	display: flex;
 	flex-direction: column;
-	gap: 12px;
+	gap: 8px;
 	z-index: 10;
 }
 
-/* Nella colonna destra i pulsanti sono più compatti per far posto a tutto */
+/* Nella colonna destra i pulsanti sono più compatti per far posto a tutto.
+   Con cinque voci il blocco è al limite: altezza e gap sono stati ridotti
+   (da 42/12 a 38/8) per far entrare "Calcolo Enigmatico" senza spingere la
+   musica sotto il footer. */
 .other-games-container .game-btn {
-	height: 42px;
-	font-size: 19px;
+	height: 38px;
+	font-size: 18px;
 	border-radius: 12px;
 }
 
 /* Menu Musica con pulsanti caldi color legno/ambra.
    Il "top" e' legato al numero di pulsanti di Altri Giochi: quel blocco parte da
-   170 e ogni pulsante occupa 42px + 12 di gap. Con quattro voci (Sudoku, Dama,
-   Scacchi, Mulino) arriva a quota 430, e da li' parte la musica. Se si aggiunge
-   o toglie una voce lassu', questo valore va rivisto di 54px. */
+   170 e ogni pulsante occupa 38px + 8 di gap. Con cinque voci (Sudoku, Calcolo
+   Enigmatico, Dama, Scacchi, Mulino) arriva a quota 448, e da li' parte la
+   musica. Se si aggiunge o toglie una voce lassu', questo valore va rivisto di
+   46px. Attenzione: il blocco musica e' alto 264px e il footer comincia a 726,
+   quindi 462 e' il massimo oltre il quale si sovrappongono. */
 .music-menu-container {
 	position: absolute;
-	top: 430px;
+	top: 448px;
 	right: 94px;
 	width: 225px;
 	display: flex;

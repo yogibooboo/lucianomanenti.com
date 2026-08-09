@@ -1039,12 +1039,31 @@ body {
     background-color: #5a5a3a;
 }
 
+/* "ALTRI GIOCHI": è l'uscita verso il resto del sito, quindi va distinto
+   dai link ai singoli giochi — cornice dorata e fondo caldo per staccarlo
+   dagli altri. Qui la larghezza NON si tocca: il pulsante è fuori dalla
+   griglia .link-giochi e la sua misura arriva da #btn-home-left (95px,
+   allineato al pulsante istruzioni sopra di lui). */
 .pulsante-home {
-    background-color: #3a3a5a;
+    background: linear-gradient(135deg, #c9720f, #8a4a08);
+    border-color: #ffd700;
+    font-size: 11px;
+    letter-spacing: 0;
+    white-space: nowrap;
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.35);
+}
+
+.pulsante-home:hover {
+    transform: scale(1.12);
+    box-shadow: 0 0 14px rgba(255, 215, 0, 0.65);
 }
 
 .pulsante-rummy {
     background-color: #2a7a7a;
+}
+
+.pulsante-sudoku {
+    background-color: #2a5a8a;
 }
 .pulsante-scopa {
     background-color: #8a3a1a;
