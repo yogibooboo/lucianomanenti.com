@@ -214,7 +214,8 @@ BD  &minus;  AE  =  E</p>
 			<p>La prima lettera di un numero a pi&ugrave; cifre <strong>non pu&ograve; valere zero</strong>. &Egrave; un'esclusione gratuita, da segnare subito nella matrice: spesso &egrave; quella che, incrociata con le altre, chiude il primo ragionamento.</p>
 
 			<h3>Ragionare per esclusione</h3>
-			<p>Come nel Sudoku, il progresso vero non viene dal "provare un numero" ma dall'<strong>eliminare i candidati</strong>. Se dimostri che una lettera non pu&ograve; valere 7, segnalo; quando su una riga della matrice resta <strong>una sola casella libera</strong>, quella lettera ha per forza quella cifra. Simmetricamente: se una cifra &egrave; possibile per una sola lettera, quella lettera se la prende.</p>
+			<p>Come nel Sudoku, il progresso vero non viene dal "provare un numero" ma dall'<strong>eliminare i candidati</strong>. Se dimostri che una lettera non pu&ograve; valere 7, segnalo; quando su una riga della matrice resta <strong>una sola casella libera</strong>, quella lettera ha per forza quella cifra.</p>
+			<p>Il ragionamento simmetrico &mdash; "questa cifra &egrave; possibile per una sola lettera, quindi &egrave; sua" &mdash; sembra altrettanto ovvio, ma <strong>di per s&eacute; non vale</strong>: le lettere in gioco sono 8, 9 o 10, quindi quella cifra potrebbe non comparire affatto nello schema. Diventa valido solo dopo aver escluso le cifre assenti, ed &egrave; esattamente il lavoro che fa l'apposita opzione descritta pi&ugrave; avanti.</p>
 
 			<h3>Le parit&agrave; e le cifre finali</h3>
 			<p>Guarda l'<strong>ultima cifra</strong> dei risultati. In una somma, la cifra finale del risultato dipende solo dalle cifre finali degli addendi (pi&ugrave; l'eventuale riporto). In una moltiplicazione, se il risultato termina per 0 uno dei fattori deve contenere un 5 o uno 0. Ragionamenti di questo tipo escludono molte combinazioni senza dover fare alcun conto per esteso.</p>
@@ -222,30 +223,31 @@ BD  &minus;  AE  =  E</p>
 			<h3>La propagazione a cascata</h3>
 			<p>Ogni assegnazione ne consente altre: una cifra fissata elimina se stessa da tutte le altre lettere e blocca tutte le altre cifre per quella lettera. Nel gioco questa propagazione &egrave; automatica, ma vale la pena capirla: &egrave; il motore che trasforma una singola deduzione in una serie.</p>
 
-			<h2>4. Livelli di Difficolt&agrave;</h2>
+			<h2>4. Ampiezza dei Numeri</h2>
+			<p>Prima di ogni partita si sceglie <strong>quanto sono grandi i numeri</strong> dello schema. Le <strong>lettere in gioco sono sempre 8, 9 o 10</strong> in tutti e tre i casi: a cambiare &egrave; solo la taglia dei numeri, e quindi quante cifre si vedono in griglia.</p>
 			<table class="score-table">
 				<tr>
-					<th>Livello</th>
-					<th>Lettere in gioco</th>
+					<th>Scelta</th>
+					<th>Numeri</th>
 					<th>Cosa aspettarsi</th>
 				</tr>
 				<tr>
-					<td><strong>Facile</strong></td>
-					<td>poche</td>
-					<td>Poche incognite: bastano il vincolo delle lettere di testa e qualche esclusione diretta.</td>
+					<td><strong>Piccoli</strong></td>
+					<td>da 1 a 3 cifre</td>
+					<td>Conti brevi, quasi tutti a mente. &Egrave; il comportamento storico del gioco.</td>
 				</tr>
 				<tr>
-					<td><strong>Medio</strong></td>
-					<td>alcune</td>
-					<td>Servono la matrice delle possibilit&agrave; e qualche deduzione a catena.</td>
+					<td><strong>Medi</strong></td>
+					<td>da 1 a 4 cifre</td>
+					<td>Via di mezzo, ed &egrave; la scelta predefinita: compaiono i numeri di tre cifre e ogni tanto uno di quattro.</td>
 				</tr>
 				<tr>
-					<td><strong>Difficile</strong></td>
-					<td>molte</td>
-					<td>Molte incognite e catene lunghe: la matrice diventa indispensabile.</td>
+					<td><strong>Grandi</strong></td>
+					<td>in prevalenza 3 e 4 cifre</td>
+					<td>La taratura pi&ugrave; vicina agli schemi delle riviste di enigmistica: conti pi&ugrave; laboriosi, ma anche pi&ugrave; cifre in vista.</td>
 				</tr>
 			</table>
-			<p>Pi&ugrave; lettere distinte compaiono nello schema, pi&ugrave; lunga &egrave; la catena di deduzioni necessaria per chiuderlo. In tutti i livelli la <strong>soluzione resta unica</strong>: non &egrave; mai necessario tirare a indovinare.</p>
+			<p>Le etichette dicono <em>cosa</em> cambia, non promettono un ordine di difficolt&agrave;. Numeri pi&ugrave; grandi significano conti pi&ugrave; lunghi da fare, ma anche pi&ugrave; cifre visibili e quindi pi&ugrave; appigli per dedurre: quale dei tre sia davvero il pi&ugrave; ostico dipende da come si ragiona. In tutti i casi la <strong>soluzione resta unica</strong>: non &egrave; mai necessario tirare a indovinare. I <strong>record sono tenuti separati</strong> per ciascuna scelta, perch&eacute; i tempi non sarebbero confrontabili.</p>
 
 			<hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;">
 
@@ -253,12 +255,13 @@ BD  &minus;  AE  =  E</p>
 
 			<h3>La matrice delle possibilit&agrave;</h3>
 			<p>La matrice sotto la griglia &egrave; lo strumento con cui si risolve davvero lo schema: <strong>una riga per ogni lettera, una colonna per ogni cifra da 0 a 9</strong>. Il gioco si vince per esclusione, esattamente come si farebbe a matita sul giornale.</p>
-			<p>Accanto alla matrice ci sono <strong>tre modi</strong>, che decidono cosa fa il click su un incrocio:</p>
+			<p>Accanto alla matrice ci sono <strong>due modi</strong>, che decidono cosa fa il click su un incrocio:</p>
 			<ul>
 				<li><strong>&times; Escludi:</strong> segna che quella lettera <em>non</em> pu&ograve; valere quella cifra. Un secondo click toglie il segno.</li>
-				<li><strong>&#9679; Assegna:</strong> d&agrave; davvero quella cifra alla lettera. La casella diventa <span class="highlight">blu</span> e la cifra compare in tutte le posizioni della griglia dove quella lettera appare.</li>
-				<li><strong>&#8709; Cancella:</strong> ripulisce la casella, togliendo un'esclusione o un'assegnazione.</li>
+				<li><strong>&#9679; Assegna:</strong> d&agrave; davvero quella cifra alla lettera. La casella diventa <span class="highlight">blu</span> e la cifra compare in tutte le posizioni della griglia dove quella lettera appare. Si pu&ograve; assegnare anche senza cambiare modo, con un <strong>click destro</strong> sulla casella: &egrave; la scorciatoia per quando sai gi&agrave; cosa vuoi fare.</li>
 			</ul>
+			<p>Il modo <strong>Assegna</strong> &egrave; <strong>monostabile</strong>: fatta l'assegnazione il gioco torna da solo su <strong>Escludi</strong>, che &egrave; quello che serve il 90% delle volte. Finch&eacute; &egrave; armato si vede a colpo d'occhio: il pulsante si accende di <strong>blu</strong>, la matrice prende una <strong>cornice blu</strong> pulsante e un <strong>pallino &#9679; blu segue il puntatore</strong>. &Egrave; sempre lo stesso blu, quello che avr&agrave; la casella una volta assegnata: il colore anticipa il risultato, mentre il rosso in questo gioco resta il colore dello sbaglio. Cos&igrave; non c'&egrave; bisogno di guardare i pulsanti per sapere cosa far&agrave; il prossimo click.</p>
+			<p>Per <strong>annullare</strong> un segno basta <strong>ricliccarci sopra</strong>, in qualunque modo ci si trovi: vale sia per le <strong>&times;</strong> sia per le assegnazioni, giuste o sbagliate che siano. Per questo il vecchio modo "Cancella" non c'&egrave; pi&ugrave;. Una lettera gi&agrave; assegnata invece <strong>non si sposta</strong> direttamente su un'altra cifra: prima va annullata, cos&igrave; un click distratto non pu&ograve; buttare via un ragionamento.</p>
 			<p>Assegnare una cifra <strong>propaga da s&eacute; le esclusioni</strong>: quella cifra viene barrata per tutte le altre lettere, e tutte le altre cifre vengono barrate per quella lettera. Queste esclusioni automatiche compaiono con un puntino <strong>&middot;</strong> pi&ugrave; tenue, per distinguerle dalle <strong>&times;</strong> che hai ragionato tu; se togli l'assegnazione, spariscono da sole. Quando su una riga resta <strong>una sola casella libera</strong>, il gioco la evidenzia in giallo: la deduzione &egrave; chiusa, quella &egrave; la cifra.</p>
 
 			<h3>Assegnare una cifra dalla tastiera</h3>
@@ -273,12 +276,14 @@ BD  &minus;  AE  =  E</p>
 				<li><strong>&#128161; Suggerimento:</strong> evidenzia una lettera deducibile dalle assegnazioni gi&agrave; fatte (oppure una cifra sbagliata, se presente) e apre un pannello con tre scelte: <strong>Spiegazione</strong> mostra il ragionamento, <strong>Assegna la cifra</strong> la inserisce, <strong>Chiudi</strong> annulla senza modificare nulla. Aprire un suggerimento costa <strong>10 secondi</strong>; la <strong>Spiegazione</strong> o l'assegnazione aggiungono <strong>altri 20 secondi</strong>, una sola volta anche se le usi entrambe.</li>
 			</ul>
 
-			<h3>Segnalazione degli errori</h3>
-			<p>Sotto i pulsanti c'&egrave; l'opzione <strong>Segnala subito le esclusioni e le assegnazioni sbagliate</strong> (memorizzata dal browser). Con l'opzione attiva, un'assegnazione errata viene mostrata in rosso e conta come errore, con una <strong>penalit&agrave; di 30 secondi</strong>; allo stesso modo viene segnalata un'esclusione <strong>&times;</strong> messa proprio sulla cifra giusta. Disattivandola giochi "alla vecchia maniera": dello sbaglio ti accorgerai solo dai conti che non tornano.</p>
+			<h3>Le due opzioni</h3>
+			<p>Sotto i pulsanti ci sono due opzioni, entrambe memorizzate dal browser e modificabili <strong>in qualunque momento</strong>, anche a partita in corso.</p>
+			<p><strong>Segnala subito le esclusioni e le assegnazioni sbagliate.</strong> Con l'opzione attiva, un'assegnazione errata viene mostrata in rosso e conta come errore, con una <strong>penalit&agrave; di 30 secondi</strong>. Lo stesso vale per un'esclusione <strong>&times;</strong> messa proprio sulla cifra giusta: la casella diventa rossa, e quel rosso &egrave; a tutti gli effetti un aiuto (ti sta dicendo che l&igrave; sotto c'&egrave; la soluzione), quindi costa anche lui un errore e 30 secondi. Si paga una volta sola per casella, e solo quando l'esclusione viene messa: toglierla e rimetterla non aggiunge penalit&agrave;. Disattivandola giochi "alla vecchia maniera": dello sbaglio ti accorgerai solo dai conti che non tornano.</p>
+			<p><strong>Sbarra le colonne delle cifre non presenti nello schema.</strong> Le lettere in gioco sono 8, 9 o 10, quindi <strong>una o due cifre possono non comparire affatto</strong>. Questo rende zoppo il ragionamento "per colonna": una colonna con una sola casella libera non dimostra niente, finch&eacute; resta il dubbio che quella cifra sia fuori gioco. Con l'opzione attiva le colonne morte vengono sbarrate in partenza e la matrice torna un quadrato pieno, dove il ragionamento per colonna vale quanto quello per riga. &Egrave; a tutti gli effetti un aiuto, quindi di default &egrave; <strong>spenta</strong>; accendendola e spegnendola le colonne si sbarrano e si liberano, senza mai toccare le <strong>&times;</strong> che hai segnato tu.</p>
 
 			<h2>Pulsanti di Controllo</h2>
 			<ul>
-				<li><strong>NUOVA:</strong> abbandona lo schema corrente (previa conferma) e apre il pannello di scelta della difficolt&agrave;.</li>
+				<li><strong>NUOVA:</strong> abbandona lo schema corrente (previa conferma) e apre il pannello dove si sceglie l'ampiezza dei numeri.</li>
 				<li><strong>COME SI GIOCA:</strong> apre questa guida.</li>
 				<li><strong>&#x1F50A; / &#x1F507; (Audio):</strong> abilita o disabilita gli effetti sonori. La tua preferenza &egrave; globale e sar&agrave; ricordata dal browser su tutte le pagine del sito.</li>
 			</ul>

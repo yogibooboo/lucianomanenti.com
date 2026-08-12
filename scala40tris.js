@@ -1627,13 +1627,24 @@ var scala = {
 			&& (carta.left > 0) && (this.scalamove) && (carta.gruppo == scala.giocatore)
 			&& this.inimpronta(this.giocatore, parseInt(divCard.style.left, 10))) {
 			var newindex = 0;
-			var currentindex = (carta.left - (this.giocatore.left + this.giocatore.offsetx)) / this.giocatore.deltax;
+			/* Indice attuale per identità, non derivato da carta.left: la
+			   posizione dipinta può essere stantia, perché la carta in drag
+			   viene saltata dai render (v. rendicontenitore) mentre la mano
+			   può cambiare sotto di lei (es. scarto col tasto destro a drag
+			   vivo). Con l'indice sbagliato la coppia di splice qui sotto
+			   inseriva una SECONDA copia della carta e rimuoveva una vicina
+			   innocente: da lì carta duplicata negli array, dipinta per sempre
+			   dove il render la tocca per ultima (eventi scala40_divergenza;
+			   riprodotto il 10 ago 2026). La guardia sul -1 evita inoltre
+			   splice(-1, ...) — inserimento in coda — se la carta non sta
+			   più nell'array. */
+			var currentindex = this.giocatore.carte.indexOf(carta);
 			var currentleft = parseInt(divCard.style.left, 10);
 			if (currentleft > (this.giocatore.left + this.giocatore.offsetx)) {
 				newindex = Math.floor((currentleft - (this.giocatore.left + this.giocatore.offsetx)) / this.giocatore.deltax) + 1;
 				if (newindex > (this.giocatore.carte.length)) newindex = this.giocatore.carte.length;
 			}
-			if (currentindex != newindex) {
+			if ((currentindex >= 0) && (currentindex != newindex)) {
 				this.giocatore.carte.splice(newindex, 0, carta);
 				if (newindex < currentindex) currentindex++;
 				this.giocatore.carte.splice(currentindex, 1);

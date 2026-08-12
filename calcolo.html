@@ -23,7 +23,7 @@
     <meta http-Equiv="Pragma" Content="no-cache">
     <meta http-Equiv="Expires" Content="0">
 
-    <link rel="stylesheet" href="calcolo.css?v=1.7" />
+    <link rel="stylesheet" href="calcolo.css?v=3.0" />
 
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
@@ -69,9 +69,6 @@
             </div>
             <div id="titolo-gioco">Calcolo Enigmatico<br>Luciano</div>
 
-            <!-- Messaggio di stato -->
-            <div id="messaggio-stato">Caricamento...</div>
-
             <!-- ================= PANNELLO RECORD ================= -->
             <div id="pannello-record">
                 <div class="record-header">
@@ -103,37 +100,37 @@
                  Righe = lettere in gioco, colonne = cifre 0-9. Il giocatore
                  clicca un incrocio per escluderlo o per assegnarlo: è lo
                  strumento con cui si arriva alla soluzione per esclusione. -->
+            <!-- Titolo, modo di click e nota: stanno di fianco alla griglia, non
+                 dentro il pannello, così la matrice si prende tutta la larghezza -->
+            <div class="legenda-lato">
+                <!-- Messaggio di stato e nota stanno in cima; il titolo e i due
+                     modi di click scendono in fondo, appoggiati alla matrice -->
+                <div id="messaggio-stato">Caricamento...</div>
+                <div class="legenda-nota">A lettera uguale corrisponde cifra uguale: ogni cifra sta in una sola riga e ogni lettera ha una sola cifra.</div>
+                <div class="legenda-titolo">Matrice delle possibilità</div>
+                <div id="modo-click">
+                    <label class="modo-opzione" id="modo-escludi">
+                        <input type="radio" name="modo-matrice" value="escludi" checked>
+                        <span class="modo-simbolo">&times;</span>
+                        <span class="modo-testo">Escludi</span>
+                    </label>
+                    <label class="modo-opzione" id="modo-assegna">
+                        <input type="radio" name="modo-matrice" value="assegna">
+                        <span class="modo-simbolo">&#9679;</span>
+                        <span class="modo-testo">Assegna <span class="modo-scorciatoia">(o tasto destro)</span></span>
+                    </label>
+                </div>
+            </div>
+
             <div id="pannello-legenda">
                 <div id="matrice-esclusioni"></div>
-                <!-- Colonna di fianco alla matrice: titolo, modo di click e nota -->
-                <div class="legenda-lato">
-                    <div class="legenda-titolo">Matrice delle possibilità</div>
-                    <div id="modo-click">
-                        <label class="modo-opzione" id="modo-escludi">
-                            <input type="radio" name="modo-matrice" value="escludi" checked>
-                            <span class="modo-simbolo">&times;</span>
-                            <span class="modo-testo">Escludi</span>
-                        </label>
-                        <label class="modo-opzione" id="modo-assegna">
-                            <input type="radio" name="modo-matrice" value="assegna">
-                            <span class="modo-simbolo">&#9679;</span>
-                            <span class="modo-testo">Assegna</span>
-                        </label>
-                        <label class="modo-opzione" id="modo-cancella">
-                            <input type="radio" name="modo-matrice" value="cancella">
-                            <span class="modo-simbolo">&#8709;</span>
-                            <span class="modo-testo">Cancella</span>
-                        </label>
-                    </div>
-                    <div class="legenda-nota">A lettera uguale corrisponde cifra uguale: ogni cifra sta in una sola riga e ogni lettera ha una sola cifra.</div>
-                </div>
             </div>
 
             <!-- ================= PANNELLO CONTROLLI ================= -->
             <div id="pannello-controlli">
                 <div id="info-partita">
                     <div class="info-blocco">
-                        <div class="info-label">Difficoltà</div>
+                        <div class="info-label">Lettere</div>
                         <div class="info-valore" id="info-difficolta">--</div>
                     </div>
                     <div class="info-blocco">
@@ -153,6 +150,7 @@
 
                 <div id="opzioni-errori">
                     <label><input type="checkbox" id="chk-errori"> Segnala subito le esclusioni e le assegnazioni sbagliate</label>
+                    <label><input type="checkbox" id="chk-sbarra-assenti"> Sbarra le colonne delle cifre non presenti nello schema</label>
                 </div>
 
                 <button id="btn-nuova-partita">NUOVA PARTITA</button>
@@ -179,19 +177,25 @@
                 <div class="form-calcolo-title">Nuovo Calcolo Enigmatico</div>
 
                 <div class="opzione-gruppo" style="margin-bottom: 20px; text-align: center;">
-                    <div style="font-size: 13px; font-weight: bold; margin-bottom: 12px; color: #ffd700; text-transform: uppercase;">Difficoltà:</div>
+                    <div style="font-size: 13px; font-weight: bold; margin-bottom: 12px; color: #ffd700; text-transform: uppercase;">Ampiezza dei numeri:</div>
                     <div style="display: flex; flex-direction: column; justify-content: center; gap: 12px; align-items: center;">
-                        <button id="btn-diff-facile" onclick="selezionaDifficolta('facile')" class="btn-opzione-sel attiva" style="width: 220px;">FACILE &mdash; 4 LETTERE</button>
-                        <button id="btn-diff-medio" onclick="selezionaDifficolta('medio')" class="btn-opzione-sel" style="width: 220px;">MEDIO &mdash; 5/6 LETTERE</button>
-                        <button id="btn-diff-difficile" onclick="selezionaDifficolta('difficile')" class="btn-opzione-sel" style="width: 220px;">DIFFICILE &mdash; 7/8 LETTERE</button>
+                        <button id="btn-diff-piccoli" onclick="selezionaDifficolta('piccoli')" class="btn-opzione-sel" style="width: 240px;">PICCOLI &mdash; 1/3 CIFRE</button>
+                        <button id="btn-diff-medi" onclick="selezionaDifficolta('medi')" class="btn-opzione-sel attiva" style="width: 240px;">MEDI &mdash; 1/4 CIFRE</button>
+                        <button id="btn-diff-grandi" onclick="selezionaDifficolta('grandi')" class="btn-opzione-sel" style="width: 240px;">GRANDI &mdash; PI&Ugrave; DA 3/4 CIFRE</button>
                     </div>
                 </div>
 
                 <button onclick="confermaEAvviaPartita()" class="btn-continua" style="width: 100%; max-width: 250px; margin: 0 auto 15px auto; display: block;">INIZIA A GIOCARE</button>
 
+                <!-- Avviso di attesa: la modale resta aperta per tutta la
+                     generazione, quindi e' l'unico posto dove un messaggio si
+                     puo' davvero vedere. Su una macchina veloce lampeggia e
+                     sparisce; su una lenta spiega perche' non succede nulla. -->
+                <div id="msg-generazione" style="display: none;">Preparazione dello schema&hellip;</div>
+
                 <p style="font-size: 11px; color: #fff; text-align: center; margin: 0;">
                     Ogni schema ha una sola corrispondenza lettera&rarr;cifra possibile.<br>
-                    Pi&ugrave; lettere in gioco, pi&ugrave; deduzione richiesta.<br>
+                    In gioco ci sono sempre 8, 9 o 10 lettere: cambia solo quanto sono grandi i numeri.<br>
                     Tastiera: 0-9 assegna, le lettere selezionano, Ctrl+Z annulla.
                 </p>
             </div>
@@ -233,6 +237,7 @@
                 <a href="scacchi.html" class="pulsante-link-calcolo">Scacchi</a>
                 <a href="dama.html" class="pulsante-link-calcolo">Dama</a>
                 <a href="scopa.html" class="pulsante-link-calcolo">Scopa</a>
+                <a href="briscola.html" class="pulsante-link-calcolo">Briscola</a>
                 <a href="rummy.html" class="pulsante-link-calcolo">Gin Rummy</a>
                 <a href="burraco.html" class="pulsante-link-calcolo">Burraco</a>
                 <a href="scala40.html" class="pulsante-link-calcolo">Scala 40</a>
@@ -249,7 +254,7 @@
     <!-- Layout engine per ridimensionare la finestra del gioco -->
     <script src="game-layout.js?v=4.6"></script>
     <!-- Logica del Calcolo Enigmatico -->
-    <script src="calcolo.js?v=1.7"></script>
+    <script src="calcolo.js?v=3.2"></script>
     <script>
         (function () {
             var nascosto = false;

@@ -214,7 +214,8 @@ BD  &minus;  AE  =  E</p>
 			<p>The first letter of a multi-digit number <strong>cannot be zero</strong>. That is a free exclusion, to be marked in the matrix straight away: crossed with the others, it is often the one that closes the first line of reasoning.</p>
 
 			<h3>Reasoning by elimination</h3>
-			<p>As in Sudoku, real progress does not come from "trying a number" but from <strong>eliminating candidates</strong>. If you prove that a letter cannot be 7, mark it; when <strong>only one free cell</strong> is left in a row of the matrix, that letter must take that digit. And symmetrically: if a digit is possible for only one letter, that letter claims it.</p>
+			<p>As in Sudoku, real progress does not come from "trying a number" but from <strong>eliminating candidates</strong>. If you prove that a letter cannot be 7, mark it; when <strong>only one free cell</strong> is left in a row of the matrix, that letter must take that digit.</p>
+			<p>The symmetrical argument &mdash; "this digit is possible for only one letter, so it is hers" &mdash; looks just as obvious, but <strong>on its own it does not hold</strong>: there are 8, 9 or 10 letters in play, so that digit might not appear in the puzzle at all. It only becomes valid once the missing digits have been ruled out, which is exactly the job of the option described further down.</p>
 
 			<h3>Parities and final digits</h3>
 			<p>Look at the <strong>last digit</strong> of the results. In an addition, the final digit of the result depends only on the final digits of the addends (plus any carry). In a multiplication, if the result ends in 0 then one of the factors must contain a 5 or a 0. Reasoning of this kind rules out many combinations without working anything out in full.</p>
@@ -222,30 +223,31 @@ BD  &minus;  AE  =  E</p>
 			<h3>Cascading propagation</h3>
 			<p>Every assignment enables more: a fixed digit removes itself from all the other letters and blocks all the other digits for that letter. In the game this propagation is automatic, but it is worth understanding: it is the engine that turns a single deduction into a chain of them.</p>
 
-			<h2>4. Difficulty Levels</h2>
+			<h2>4. Size of the Numbers</h2>
+			<p>Before each game you choose <strong>how large the numbers</strong> in the puzzle will be. There are <strong>always 8, 9 or 10 letters in play</strong> in all three cases: what changes is only the size of the numbers, and therefore how many digits are on show in the grid.</p>
 			<table class="score-table">
 				<tr>
-					<th>Level</th>
-					<th>Letters in play</th>
+					<th>Choice</th>
+					<th>Numbers</th>
 					<th>What to expect</th>
 				</tr>
 				<tr>
-					<td><strong>Easy</strong></td>
-					<td>few</td>
-					<td>Few unknowns: the leading-letter constraint plus a handful of direct exclusions are enough.</td>
+					<td><strong>Small</strong></td>
+					<td>1 to 3 digits</td>
+					<td>Short sums, nearly all doable in your head. This is how the game has always behaved.</td>
 				</tr>
 				<tr>
 					<td><strong>Medium</strong></td>
-					<td>some</td>
-					<td>You will need the possibility matrix and a few chained deductions.</td>
+					<td>1 to 4 digits</td>
+					<td>The middle ground, and the default choice: three-digit numbers show up, and now and then a four-digit one.</td>
 				</tr>
 				<tr>
-					<td><strong>Hard</strong></td>
-					<td>many</td>
-					<td>Many unknowns and long chains: the matrix becomes indispensable.</td>
+					<td><strong>Large</strong></td>
+					<td>mostly 3 and 4 digits</td>
+					<td>The setting closest to the puzzles in the magazines: heavier arithmetic, but also more digits in sight.</td>
 				</tr>
 			</table>
-			<p>The more distinct letters a puzzle contains, the longer the chain of deductions needed to close it. At every level the <strong>solution stays unique</strong>: guessing is never necessary.</p>
+			<p>The labels say <em>what</em> changes; they do not promise an order of difficulty. Larger numbers mean longer sums to work out, but also more visible digits and therefore more footholds for deduction: which of the three is really the toughest depends on how you reason. In all cases the <strong>solution stays unique</strong>: guessing is never necessary. <strong>Best times are kept separately</strong> for each choice, since they would not be comparable.</p>
 
 			<hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;">
 
@@ -253,12 +255,13 @@ BD  &minus;  AE  =  E</p>
 
 			<h3>The possibility matrix</h3>
 			<p>The matrix below the grid is the tool that actually solves the puzzle: <strong>one row per letter, one column per digit from 0 to 9</strong>. The game is won by elimination, exactly as you would do it with a pencil on a newspaper.</p>
-			<p>Next to the matrix there are <strong>three modes</strong>, which decide what a click on a crossing does:</p>
+			<p>Next to the matrix there are <strong>two modes</strong>, which decide what a click on a crossing does:</p>
 			<ul>
 				<li><strong>&times; Rule out:</strong> marks that the letter <em>cannot</em> be that digit. A second click removes the mark.</li>
-				<li><strong>&#9679; Assign:</strong> actually gives that digit to the letter. The cell turns <span class="highlight">blue</span> and the digit appears in every position of the grid where that letter occurs.</li>
-				<li><strong>&#8709; Clear:</strong> empties the cell, removing an exclusion or an assignment.</li>
+				<li><strong>&#9679; Assign:</strong> actually gives that digit to the letter. The cell turns <span class="highlight">blue</span> and the digit appears in every position of the grid where that letter occurs. You can also assign without switching mode, by <strong>right-clicking</strong> the cell: it is the shortcut for when you already know what you want to do.</li>
 			</ul>
+			<p>The <strong>Assign</strong> mode is <strong>momentary</strong>: once the assignment is made the game switches back to <strong>Rule out</strong> on its own, which is what you want 90% of the time. While it is armed you cannot miss it: the button lights up <strong>blue</strong>, the matrix takes a pulsing <strong>blue frame</strong>, and a <strong>blue dot &#9679; follows the pointer</strong>. It is always the same blue the square will take once assigned: the colour previews the result, while red in this game stays the colour of a mistake. So you never have to look at the buttons to know what the next click will do.</p>
+			<p>To <strong>undo</strong> a mark, just <strong>click it again</strong>, whichever mode you are in: this works both for the <strong>&times;</strong> marks and for assignments, right or wrong ones alike. That is why the old "Clear" mode is gone. A letter that is already assigned, on the other hand, <strong>cannot be moved</strong> straight onto another digit: you have to cancel it first, so a stray click cannot throw away a piece of reasoning.</p>
 			<p>Assigning a digit <strong>propagates the exclusions by itself</strong>: that digit is crossed out for all the other letters, and all the other digits are crossed out for that letter. These automatic exclusions appear as a fainter dot <strong>&middot;</strong>, to tell them apart from the <strong>&times;</strong> marks you reasoned out yourself; if you remove the assignment, they disappear on their own. When <strong>only one free cell</strong> is left in a row, the game highlights it in yellow: the deduction is closed, that is the digit.</p>
 
 			<h3>Assigning a digit from the keyboard</h3>
@@ -273,12 +276,14 @@ BD  &minus;  AE  =  E</p>
 				<li><strong>&#128161; Hint:</strong> highlights a letter that can be deduced from the assignments made so far (or a wrong digit, if there is one) and opens a panel with three choices: <strong>Explanation</strong> shows the reasoning, <strong>Assign the digit</strong> fills it in, <strong>Close</strong> cancels without changing anything. Opening a hint costs <strong>10 seconds</strong>; the <strong>Explanation</strong> or the assignment add <strong>another 20 seconds</strong>, once only even if you use both.</li>
 			</ul>
 
-			<h3>Mistake flagging</h3>
-			<p>Below the buttons there is the option <strong>Flag wrong exclusions and assignments right away</strong> (remembered by the browser). With the option on, a wrong assignment is shown in red and counts as a mistake, with a <strong>30-second penalty</strong>; in the same way, an <strong>&times;</strong> exclusion placed on the correct digit gets flagged. Turn it off and you play "the old-fashioned way": you will only notice the mistake from the arithmetic that fails to add up.</p>
+			<h3>The two options</h3>
+			<p>Below the buttons there are two options, both remembered by the browser and changeable <strong>at any time</strong>, even mid-game.</p>
+			<p><strong>Flag wrong exclusions and assignments right away.</strong> With the option on, a wrong assignment is shown in red and counts as a mistake, with a <strong>30-second penalty</strong>. The same goes for an <strong>&times;</strong> exclusion placed on the correct digit: the square turns red, and that red is help in all but name (it tells you the answer is right there), so it costs a mistake and 30 seconds too. It is charged once per square, and only when the exclusion is placed: removing it and putting it back adds no further penalty. Turn it off and you play "the old-fashioned way": you will only notice the mistake from the arithmetic that fails to add up.</p>
+			<p><strong>Cross out the columns of the digits missing from the puzzle.</strong> There are 8, 9 or 10 letters in play, so <strong>one or two digits may not appear at all</strong>. This makes reasoning "by column" lame: a column with a single free cell proves nothing as long as that digit might be out of play. With the option on, the dead columns are crossed out from the start and the matrix becomes a full square again, where reasoning by column is worth as much as reasoning by row. It is a help in every sense, so it is <strong>off</strong> by default; switching it on and off crosses out and frees the columns, and never touches the <strong>&times;</strong> marks you made yourself.</p>
 
 			<h2>Control Buttons</h2>
 			<ul>
-				<li><strong>NEW GAME:</strong> abandons the current puzzle (after confirmation) and opens the difficulty selection panel.</li>
+				<li><strong>NEW GAME:</strong> abandons the current puzzle (after confirmation) and opens the panel where you choose the size of the numbers.</li>
 				<li><strong>HOW TO PLAY:</strong> opens this guide.</li>
 				<li><strong>&#x1F50A; / &#x1F507; (Audio):</strong> enables or disables sound effects. Your preference is global and will be remembered by the browser across every page of the site.</li>
 			</ul>

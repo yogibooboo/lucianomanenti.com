@@ -11,6 +11,7 @@ const CALC_LANG = (window.currentLang === 'en') ? {
     scegliLettera: 'Pick a letter and assign it a digit',
     partitaInCorso: 'Game in progress — good luck!',
     generazione: 'Generating puzzle...',
+    generazioneFallita: 'Could not build a puzzle. Please try again.',
     schemaErrori: 'All letters are assigned but the sums do not work out',
     cifraOccupata: function (l) { return 'Digit already assigned to ' + l; },
     hintErrore: 'The highlighted letter has the <b>wrong</b> digit.',
@@ -30,7 +31,13 @@ const CALC_LANG = (window.currentLang === 'en') ? {
     suggerimenti: 'Hints',
     resetChiedi: 'OK?',
     nuovoRecord: ' — NEW ALL-TIME BEST!',
-    diffNames: { facile: 'Easy', medio: 'Medium', difficile: 'Hard' },
+    // Neutral names: levels change how wide the numbers are, and wider numbers
+    // are not proven to be harder. Older keys stay listed so a game or a record
+    // saved by a previous edition still shows a name instead of "undefined".
+    diffNames: {
+        piccoli: 'Small numbers', medi: 'Medium numbers', grandi: 'Large numbers',
+        standard: 'Cross Figure', facile: 'Easy', medio: 'Medium', difficile: 'Hard'
+    },
     riepilogo: function (diff, tempo, errori, hints) {
         return CALC_LANG.diffNames[diff] + ' — ' + CALC_LANG.tempo + ': ' + tempo +
             ' — ' + CALC_LANG.errori + ': ' + errori + ' — ' + CALC_LANG.suggerimenti + ': ' + hints;
@@ -39,6 +46,7 @@ const CALC_LANG = (window.currentLang === 'en') ? {
     scegliLettera: 'Scegli una lettera e assegnale una cifra',
     partitaInCorso: 'Partita in corso — buona fortuna!',
     generazione: 'Generazione dello schema...',
+    generazioneFallita: 'Non è stato possibile preparare lo schema. Riprova.',
     schemaErrori: 'Tutte le lettere sono assegnate ma i conti non tornano',
     cifraOccupata: function (l) { return 'Cifra già assegnata a ' + l; },
     hintErrore: 'La lettera evidenziata ha la cifra <b>sbagliata</b>.',
@@ -58,16 +66,54 @@ const CALC_LANG = (window.currentLang === 'en') ? {
     suggerimenti: 'Suggerimenti',
     resetChiedi: 'OK?',
     nuovoRecord: ' — NUOVO RECORD ASSOLUTO!',
-    diffNames: { facile: 'Facile', medio: 'Medio', difficile: 'Difficile' },
+    // Nomi neutri: i livelli cambiano l'ampiezza dei numeri, e non è dimostrato
+    // che numeri più grandi rendano lo schema più difficile. Le chiavi vecchie
+    // restano elencate perché una partita o un record salvato da un'edizione
+    // precedente mostri comunque un nome invece di "undefined".
+    diffNames: {
+        piccoli: 'Numeri piccoli', medi: 'Numeri medi', grandi: 'Numeri grandi',
+        standard: 'Calcolo Enigmatico', facile: 'Facile', medio: 'Medio', difficile: 'Difficile'
+    },
     riepilogo: function (diff, tempo, errori, hints) {
         return CALC_LANG.diffNames[diff] + ' — ' + CALC_LANG.tempo + ': ' + tempo +
             ' — ' + CALC_LANG.errori + ': ' + errori + ' — ' + CALC_LANG.suggerimenti + ': ' + hints;
     }
 };
 
-// === CONFIGURAZIONE DIFFICOLTÀ (numero di lettere distinte in gioco) ===
-// Più lettere = più cifre da dedurre = schema più impegnativo.
-const CALC_LETTERE = { facile: [3, 4], medio: [5, 6], difficile: [7, 8] };
+// === CONFIGURAZIONE DEI LIVELLI ===
+// I livelli cambiano l'ampiezza dei numeri, non il numero di lettere in gioco:
+// quelle restano 8-10 dappertutto. Le vecchie forbici strette (3-4 e 5-6
+// lettere) erano sbagliate proprio li': con poche lettere la matrice delle
+// possibilita' resta monca, perche' una colonna con una sola casella libera non
+// dimostra niente - quella cifra potrebbe non comparire affatto nello schema.
+// Il ragionamento per colonna vale solo con (quasi) tutte e dieci le cifre, e
+// quindi il numero di lettere non e' una manopola utilizzabile.
+//
+// I nomi sono neutri di proposito. Numeri piu' grandi vogliono dire piu' cifre
+// visibili, cioe' piu' vincoli e piu' appigli: uno schema con numeri grandi e'
+// piu' laborioso da calcolare ma non per forza piu' difficile da dedurre, e il
+// verso potrebbe perfino essere l'opposto. Finche' non lo si misura davvero
+// (lunghezza delle catene deduttive) le etichette dicono cosa cambia, non
+// promettono un ordine di difficolta' che non e' stato verificato.
+//
+// Le soglie sono scelte su una misura di 25 schemi ciascuna (celle per numero
+// di cifre, e costo di generazione):
+//   piccoli  60/999  -> 1c 31%  2c 62%  3c  7%  4c  0%   485 ms
+//   medi    150/9999 -> 1c 12%  2c 48%  3c 31%  4c  8%   653 ms
+//   grandi  300/9999 -> 1c  7%  2c 40%  3c 40%  4c 12%   719 ms
+// "grandi" e' la taratura vicina agli schemi della Settimana Enigmistica, dove
+// prevalgono i numeri di tre cifre e ogni tanto ne compare uno di quattro;
+// "piccoli" e' il comportamento storico del gioco.
+const CALC_LIVELLI = {
+    piccoli: { maxVal: 60, maxCella: 999 },
+    medi: { maxVal: 150, maxCella: 9999 },
+    grandi: { maxVal: 300, maxCella: 9999 }
+};
+const CALC_LIVELLO_DEF = 'medi';
+
+// Lettere in gioco: uguali per tutti i livelli, per il motivo detto sopra.
+const CALC_LETTERE_MIN = 8;
+const CALC_LETTERE_MAX = 10;
 
 // Lettere usate per mascherare le cifre, in ordine di assegnazione
 const ALFABETO = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'K', 'M'];
@@ -104,10 +150,14 @@ let selezioneAutomatica = false;
 // di un'assegnazione, non un ragionamento del giocatore.
 const ESCL_NO = 0, ESCL_MANO = 1, ESCL_AUTO = 2;
 let esclusioni = {};
+// Incroci "lettera-cifra" gia' costati un errore per un'esclusione sbagliata.
+// Serve a non ripunire lo stesso sbaglio: l'esclusione e' un interruttore, e
+// senza memoria bastava togliere e rimettere per accumulare penalita' a vuoto.
+let esclusioniPunite = {};
 
 // Modo attivo dei radio button: cosa fa il click su un incrocio della matrice
 let modoMatrice = 'escludi';
-let difficolta = 'facile';
+let difficolta = CALC_LIVELLO_DEF;
 let erroriCount = 0;
 let hintCount = 0;
 let secondi = 0;
@@ -119,6 +169,12 @@ let partitaFinita = false;
 
 // Opzione di segnalazione errori (persistente in localStorage)
 let opzErrori = true;      // evidenzia le cifre sbagliate rispetto alla soluzione
+
+// Opzione "sbarra le colonne delle cifre assenti" (persistente in localStorage).
+// Come opzErrori si può accendere e spegnere durante la partita: spegnendola le
+// colonne tornano libere, perché sono esclusioni automatiche e si ricostruiscono
+// da zero a ogni ricalcolo.
+let opzSbarraAssenti = false;
 
 // Record dei tempi migliori per difficoltà (persistenti in localStorage)
 let records = {};
@@ -160,7 +216,7 @@ function verificaSchema(v, opsR, opsC) {
 // === GENERATORE ===
 // Sceglie A,B,D,E e gli operatori, deriva C,F,G,H e verifica che la riga e la
 // colonna finali chiudano sullo stesso valore I.
-function generaMatrice(maxVal, opsR, opsC) {
+function generaMatrice(maxVal, maxCella, opsR, opsC) {
     for (let t = 0; t < 4000; t++) {
         const A = 1 + rnd(maxVal), B = 1 + rnd(maxVal), D = 1 + rnd(maxVal), E = 1 + rnd(maxVal);
         const C = applica(A, opsR[0], B), F = applica(D, opsR[1], E);
@@ -170,29 +226,95 @@ function generaMatrice(maxVal, opsR, opsC) {
         const I1 = applica(G, opsR[2], H), I2 = applica(C, opsC[2], F);
         if (I1 === null || I2 === null || I1 !== I2 || I1 <= 0) continue;
         const v = [A, B, C, D, E, F, G, H, I1];
-        if (v.some(x => x > 999)) continue;
+        if (v.some(x => x > maxCella)) continue;
         return v;
     }
     return null;
 }
 
+// Le sei operazioni dello schema come terne di indici di cella:
+// tre righe e tre colonne, nell'ordine operando-operando-risultato.
+const TERNE_OPERAZIONI = [
+    [0, 1, 2], [3, 4, 5], [6, 7, 8],   // righe
+    [0, 3, 6], [1, 4, 7], [2, 5, 8]    // colonne
+];
+
+// Operatore di ciascuna delle sei operazioni, nello stesso ordine
+function operatoriSchema(opsR, opsC) {
+    return [opsR[0], opsR[1], opsR[2], opsC[0], opsC[1], opsC[2]];
+}
+
 // Scarta gli schemi che non insegnano nulla: troppe moltiplicazioni per 1,
 // divisioni x:x, pochi operatori diversi o troppi valori ripetuti.
 function schemaInteressante(v, opsR, opsC) {
-    const [A, B, C, D, E, F] = v;
-    const trii = [
-        [v[0], opsR[0], v[1]], [v[3], opsR[1], v[4]], [v[6], opsR[2], v[7]],
-        [v[0], opsC[0], v[3]], [v[1], opsC[1], v[4]], [v[2], opsC[2], v[5]]
-    ];
+    const ops = operatoriSchema(opsR, opsC);
     let banali = 0;
-    for (const [x, op, y] of trii) {
+    TERNE_OPERAZIONI.forEach(function (t, i) {
+        const x = v[t[0]], y = v[t[1]], op = ops[i];
         if ((op === 'x' || op === ':') && (x === 1 || y === 1)) banali++;
         if (op === ':' && x === y) banali++;
-    }
+    });
     if (banali > 1) return false;
     if (new Set([...opsR, ...opsC]).size < 3) return false;
     if (new Set(v).size < 5) return false;
     if (!v.some(x => x >= 10)) return false;
+    return true;
+}
+
+// Scarta gli schemi in cui due delle sei operazioni, per il giocatore, sono la
+// stessa cosa. Va eseguito DOPO la costruzione dei pattern, perche' il confronto
+// deve avvenire sulle lettere: e' quello che si vede sullo schema, e due celle
+// con valori diversi possono mostrare la stessa struttura.
+//
+// Due casi, entrambi visti in partita:
+//  - simmetria diagonale: lo schema e' specchiato sulla diagonale, quindi ogni
+//    riga ripete la colonna corrispondente e le sei equazioni diventano tre;
+//  - stessa operazione con uno zero in coda: DD x A = BB affiancata da
+//    A0 x EC = FA0 e' la stessa moltiplicazione scalata per dieci, e non
+//    aggiunge nessun vincolo nuovo;
+//  - stessa relazione scritta al contrario: BE : D = C sulla riga e C x D = BE
+//    sulla colonna sono la stessa uguaglianza, e chi risolve la prima ha gia'
+//    risolto la seconda.
+// In tutti questi casi il giocatore crede di avere sei indizi e ne ha meno.
+function operazioniDistinte(pat, lettere, mappa, opsR, opsC) {
+    const ops = operatoriSchema(opsR, opsC);
+    // Testo di una cella in lettere, es. [0,2] -> "AC"
+    const testo = pat.map(p => p.map(i => lettere[i]).join(''));
+    // Stessa cosa senza gli zeri in coda: riconosce le operazioni che
+    // differiscono solo per un fattore dieci. Lo zero non e' il carattere "0"
+    // ma la lettera a cui e' toccata la cifra 0, e cambia da schema a schema.
+    const senzaZeri = pat.map(function (p) {
+        const l = p.slice();
+        while (l.length && mappa[lettere[l[l.length - 1]]] === 0) l.pop();
+        return l.map(i => lettere[i]).join('');
+    });
+
+    // Firma di un'operazione ridotta alla relazione che esprime davvero.
+    // Ogni uguaglianza si puo' scrivere in tre modi, e sono lo stesso vincolo:
+    //     x + y = z   <=>   z - y = x   <=>   z - x = y
+    //     x * y = z   <=>   z : y = x   <=>   z : x = y
+    // Riportando sottrazioni e divisioni alla forma diretta, e ordinando i due
+    // operandi (che commutano), le tre scritture collassano sulla stessa
+    // stringa. Cosi' BE : D = C e C x D = BE si riconoscono come una sola.
+    function canonica(t, op) {
+        const [a, b, c] = t;
+        if (op === '-') return '+|' + [c, b].sort().join('&') + '|' + a;
+        if (op === ':') return 'x|' + [c, b].sort().join('&') + '|' + a;
+        return op + '|' + [a, b].sort().join('&') + '|' + c;
+    }
+
+    const viste = new Set();
+    const visteScalate = new Set();
+    for (let i = 0; i < TERNE_OPERAZIONI.length; i++) {
+        const [a, b, c] = TERNE_OPERAZIONI[i];
+        const firma = canonica([testo[a], testo[b], testo[c]], ops[i]);
+        if (viste.has(firma)) return false;
+        viste.add(firma);
+        const ridotta = canonica([senzaZeri[a], senzaZeri[b], senzaZeri[c]], ops[i]);
+        if (senzaZeri[a] + senzaZeri[b] + senzaZeri[c] !== '' &&
+            visteScalate.has(ridotta)) return false;
+        visteScalate.add(ridotta);
+    }
     return true;
 }
 
@@ -255,12 +377,12 @@ function contaSoluzioni(pat, opsR, opsC, nLettere, limite, fisse) {
 }
 
 // Genera uno schema completo con mappa lettera->cifra unica.
-function generaPuzzle(minLettere, maxLettere) {
+function generaPuzzle(minLettere, maxLettere, maxVal, maxCella) {
     const scadenza = Date.now() + 6000; // tetto di sicurezza: non bloccare la pagina
     while (Date.now() < scadenza) {
         const opsR = [OPS[rnd(4)], OPS[rnd(4)], OPS[rnd(4)]];
         const opsC = [OPS[rnd(4)], OPS[rnd(4)], OPS[rnd(4)]];
-        const v = generaMatrice(60, opsR, opsC);
+        const v = generaMatrice(maxVal, maxCella, opsR, opsC);
         if (!v || !schemaInteressante(v, opsR, opsC)) continue;
 
         const cifre = Array.from(cifreUsate(v)).sort();
@@ -283,6 +405,9 @@ function generaPuzzle(minLettere, maxLettere) {
 
         // pattern per indice di lettera, nell'ordine di `lett`
         const pat = v.map(n => String(n).split('').map(ch => lett.indexOf(letteraDiCifra[ch])));
+        // Il controllo sui doppioni sta qui e non in schemaInteressante perche'
+        // ha bisogno dei pattern, che esistono solo da questa riga in poi.
+        if (!operazioniDistinte(pat, lett, cifraDiLettera, opsR, opsC)) continue;
         const r = contaSoluzioni(pat, opsR, opsC, lett.length, 2, null);
         if (r.sol !== 1) continue;
 
@@ -355,7 +480,10 @@ function salvaPartita() {
                 for (let d = 0; d <= 9; d++) s += (r[d] || ESCL_NO);
                 return s;
             }),
-            sec: secondi, diff: difficolta, err: erroriCount, hint: hintCount
+            sec: secondi, diff: difficolta, err: erroriCount, hint: hintCount,
+            // incroci gia' penalizzati: senza questi, ricaricando la pagina lo
+            // stesso sbaglio si potrebbe far pagare una seconda volta
+            punite: Object.keys(esclusioniPunite)
         }));
     } catch (e) { /* storage pieno o disabilitato: si continua senza salvataggio */ }
 }
@@ -380,9 +508,11 @@ function caricaPartita() {
                                  : new Array(10).fill(ESCL_NO);
         });
         secondi = s.sec || 0;
-        difficolta = s.diff || 'facile';
+        difficolta = s.diff || CALC_LIVELLO_DEF;
         erroriCount = s.err || 0;
         hintCount = s.hint || 0;
+        esclusioniPunite = {};
+        (s.punite || []).forEach(function (k) { esclusioniPunite[k] = true; });
         return true;
     } catch (e) {
         return false;
@@ -391,18 +521,45 @@ function caricaPartita() {
 
 // === AVVIO NUOVA PARTITA ===
 function nuovaPartita(diff) {
+    // Livello sconosciuto (chiamata senza argomento, o una chiave di
+    // un'edizione precedente rimasta in localStorage): si ricade sul livello di
+    // mezzo. Senza questa guardia difficolta' finiva per valere la stringa
+    // "undefined", e l'intestazione dei record restava senza nome.
+    if (!CALC_LIVELLI[diff]) diff = CALC_LIVELLO_DEF;
     difficolta = diff;
     localStorage.setItem('calcolo-difficolta', diff);
     setMessaggio(CALC_LANG.generazione);
+    // L'avviso vero e' quello dentro la modale: #messaggio-stato sta nel campo
+    // di gioco, che fino a chiudiModali() e' coperto dalla modale stessa.
+    const avviso = document.getElementById('msg-generazione');
+    if (avviso) {
+        avviso.textContent = CALC_LANG.generazione;
+        avviso.classList.remove('msg-errore');
+        avviso.style.display = 'block';
+    }
 
     // setTimeout per lasciare aggiornare il messaggio prima del calcolo
     setTimeout(function () {
-        const range = CALC_LETTERE[diff];
-        let gen = generaPuzzle(range[0], range[1]);
-        // Ripiego: se il livello richiesto non produce nulla entro il tetto di
-        // tempo, allarga la forbice invece di lasciare la pagina senza schema
-        if (!gen) gen = generaPuzzle(3, 8);
-        if (!gen) { setMessaggio(CALC_LANG.generazione, 'rosso'); return; }
+        const liv = CALC_LIVELLI[diff] || CALC_LIVELLI[CALC_LIVELLO_DEF];
+        let gen = generaPuzzle(CALC_LETTERE_MIN, CALC_LETTERE_MAX, liv.maxVal, liv.maxCella);
+        // Ripiego: se non esce nulla entro il tetto di tempo si scende a 7
+        // lettere, non piu' in basso. Sotto quella soglia la matrice tornerebbe
+        // monca, che e' proprio il motivo per cui il numero di lettere non viene
+        // usato come manopola: meglio riprovare che servire uno schema con meta'
+        // degli indizi. L'ampiezza dei numeri resta quella del livello scelto.
+        if (!gen) gen = generaPuzzle(7, CALC_LETTERE_MAX, liv.maxVal, liv.maxCella);
+        // Falliti sia il tentativo normale sia il ripiego a 7 lettere: la modale
+        // resta aperta, quindi l'avviso va cambiato in messaggio d'errore. Prima
+        // qui si rimostrava "Generazione dello schema...", che sembrava un lavoro
+        // ancora in corso invece di uno stop.
+        if (!gen) {
+            if (avviso) {
+                avviso.textContent = CALC_LANG.generazioneFallita;
+                avviso.classList.add('msg-errore');
+            }
+            setMessaggio(CALC_LANG.generazioneFallita, 'rosso');
+            return;
+        }
 
         celle = gen.celle;
         opsRighe = gen.opsR;
@@ -412,7 +569,9 @@ function nuovaPartita(diff) {
         soluzioneMappa = gen.mappa;
         assegnazioni = {};
         esclusioni = {};
+        esclusioniPunite = {};
         lettere.forEach(function (l) { esclusioni[l] = new Array(10).fill(ESCL_NO); });
+        preescludiCifreAssenti();
 
         letteraSelezionata = null;
         selezioneAutomatica = false;
@@ -424,6 +583,7 @@ function nuovaPartita(diff) {
         hintTarget = null;
         chiudiPannelloHint();
 
+        if (avviso) avviso.style.display = 'none';
         chiudiModali();
         costruisciGriglia();
         costruisciLegenda();
@@ -509,7 +669,9 @@ function renderRecord() {
     const r = records[difficolta] || {};
     const oggi = chiaveOggi();
     const settimana = chiaveSettimana();
-    document.getElementById('record-diff').textContent = CALC_LANG.diffNames[difficolta];
+    // I record sono per livello: senza il nome non si capirebbe a quale si
+    // riferiscono, e i tempi di livelli diversi non sono confrontabili.
+    document.getElementById('record-diff').textContent = CALC_LANG.diffNames[difficolta] || '';
     document.getElementById('record-oggi').textContent =
         (r.daily && r.daily.key === oggi) ? formattaTempo(r.daily.sec) : '--:--';
     document.getElementById('record-settimana').textContent =
@@ -558,7 +720,7 @@ function costruisciGriglia() {
                 const idx = (gr / 2) * 3 + (gc / 2);
                 el.className = 'cella-calcolo';
                 el.id = 'cella-' + idx;
-                el.addEventListener('click', function () { clickCella(idx); });
+                el.addEventListener('click', function (e) { clickCella(idx, e); });
             } else if (gr % 2 === 0 && gc % 2 === 1) {
                 // operatore di riga (colonna 1) oppure segno "=" (colonna 3)
                 el.className = 'segno-calcolo';
@@ -589,7 +751,11 @@ function simboloOp(op) {
 function costruisciLegenda() {
     const cont = document.getElementById('matrice-esclusioni');
     cont.innerHTML = '';
-    cont.style.gridTemplateColumns = '44px repeat(10, 30px)';
+    // Caselle passate da 30x22 a 53x31: la matrice si prende tutta la larghezza
+    // del pannello (640px) da quando titolo e modi sono stati spostati di fianco
+    // alla griglia. È lo strumento su cui si clicca decine di volte a partita,
+    // quindi è qui che serve il bersaglio grande, specie col dito su un touch.
+    cont.style.gridTemplateColumns = '52px repeat(10, 53px)';
 
     // Riga di intestazione: angolo vuoto + le dieci cifre
     const angolo = document.createElement('div');
@@ -617,51 +783,89 @@ function costruisciLegenda() {
             const cel = document.createElement('button');
             cel.className = 'mat-cella';
             cel.id = 'mat-' + l + '-' + d;
+            // Coordinata in filigrana (es. "A5"): sta in un attributo e non nel
+            // contenuto perché renderLegenda riscrive textContent a ogni render
+            // e cancellerebbe qualunque figlio. La disegna il ::before del CSS.
+            cel.dataset.coord = l + d;
             cel.addEventListener('click', function () { clickMatrice(l, d); });
+            // Tasto destro: assegna direttamente, senza passare dal pulsante
+            // "Assegna". E' la scorciatoia per chi sa gia' cosa vuole fare, e
+            // non tocca il modo attivo: finito il click si resta dov'eravamo.
+            cel.addEventListener('contextmenu', function (e) {
+                e.preventDefault();
+                clickMatrice(l, d, true);
+            });
             cont.appendChild(cel);
         }
     });
 }
 
-// Il click su un incrocio fa quello che dice il radio button attivo:
-// escludere la combinazione, assegnarla, oppure ripulire la casella.
-function clickMatrice(l, d) {
+// Il click su un incrocio fa quello che dice il radio button attivo: escludere
+// la combinazione oppure assegnarla. Il modo "cancella" non esiste piu': ogni
+// segno si toglie ricliccandoci sopra, che e' il gesto che il giocatore prova
+// per primo, e un modo apposta non serviva a niente.
+// `forzaAssegna` arriva dal tasto destro: assegna comunque, qualunque sia il
+// modo attivo, senza dover prima armare "Assegna".
+function clickMatrice(l, d, forzaAssegna) {
     if (partitaFinita) return;
     if (!esclusioni[l]) esclusioni[l] = new Array(10).fill(ESCL_NO);
 
-    if (modoMatrice === 'assegna') {
-        // Assegnare significa scrivere la cifra nella griglia: passa dal motore
-        // normale, che conta gli errori e propaga le esclusioni di riflesso
-        if (assegnazioni[l] === d) return;
+    // Riclick su un'assegnazione: la toglie, in qualunque modo si sia. Vale sia
+    // per quelle giuste sia per quelle sbagliate, cosi' il comportamento non
+    // lascia capire di striscio se la cifra era quella buona.
+    if (assegnazioni[l] === d) {
         letteraSelezionata = l;
         selezioneAutomatica = false;
-        esclusioni[l][d] = ESCL_NO;
-        assegnaCifra(d);
+        cancellaCifra();          // ripulisce anche le esclusioni che aveva generato
         return;
     }
 
-    if (modoMatrice === 'cancella') {
-        if (assegnazioni[l] === d) {
-            // togliere l'assegnazione ripulisce anche le esclusioni che aveva generato
-            letteraSelezionata = l;
-            selezioneAutomatica = false;
-            cancellaCifra();
-            return;
-        }
-        if (esclusioni[l][d] === ESCL_NO) return;
+    if (modoMatrice === 'assegna' || forzaAssegna) {
+        // Una lettera gia' assegnata non si sposta su un'altra cifra: prima si
+        // annulla ricliccando sulla sua casella. Senza questa guardia un click
+        // distratto cambierebbe un'assegnazione ragionata senza chiedere nulla.
+        if (assegnazioni[l] !== undefined) return;
+        // Col destro si assegna anche sopra una casella gia' barrata a mano: il
+        // gesto e' esplicito, e il giocatore sta correggendo un'esclusione che
+        // ora sa sbagliata. La × sparisce da se' con l'assegnazione.
+        // Assegnare significa scrivere la cifra nella griglia: passa dal motore
+        // normale, che conta gli errori e propaga le esclusioni di riflesso
+        letteraSelezionata = l;
+        selezioneAutomatica = false;
         esclusioni[l][d] = ESCL_NO;
-        renderTutto();
-        salvaPartita();
+        assegnaCifra(d);   // è lui che riporta il modo a "escludi"
         return;
     }
 
     // modo "escludi": è un interruttore sulla sola annotazione a mano.
     // Le esclusioni automatiche non si tolgono da qui: dipendono dall'assegnazione.
-    if (assegnazioni[l] === d) return;
     if (esclusioni[l][d] === ESCL_AUTO) return;
-    esclusioni[l][d] = esclusioni[l][d] === ESCL_MANO ? ESCL_NO : ESCL_MANO;
+    const poneEsclusione = esclusioni[l][d] !== ESCL_MANO;
+    esclusioni[l][d] = poneEsclusione ? ESCL_MANO : ESCL_NO;
+
+    // Escludere la cifra giusta e' un errore come assegnarne una sbagliata: la
+    // casella diventa rossa, e quel rosso e' a tutti gli effetti un aiuto (dice
+    // che li' sotto c'e' la soluzione), quindi si paga. Vale solo con la
+    // segnalazione errori attiva: spenta, la casella non si colora e non c'e'
+    // nessun aiuto da pagare. Si conta solo quando l'esclusione viene messa e
+    // solo la prima volta per casella, altrimenti clicca-e-riclicca sulla stessa
+    // cifra gonfierebbe il contatore all'infinito.
+    if (poneEsclusione && esclusioneErrata(l, d) && !esclusioniPunite[l + '-' + d]) {
+        esclusioniPunite[l + '-' + d] = true;
+        erroriCount++;
+        applicaPenalita(PENALITA_ERRORE, 'mat-' + l + '-' + d);
+    }
+
     renderTutto();
     salvaPartita();
+}
+
+// Cambia il modo di click da codice, tenendo allineato il radio button.
+function impostaModo(m) {
+    modoMatrice = m;
+    const r = document.querySelector('input[name="modo-matrice"][value="' + m + '"]');
+    if (r) r.checked = true;
+    renderModo();
 }
 
 // Assegnare una cifra esclude di riflesso il resto della riga e della colonna:
@@ -682,6 +886,24 @@ function propagaEsclusioni(l, d) {
     });
 }
 
+// Opzione "sbarra le cifre assenti": marca come già escluse le colonne delle
+// cifre che nello schema non compaiono affatto. Serve a rendere legittimo il
+// ragionamento per colonna, che senza questo è zoppo: una colonna con una sola
+// casella libera non dimostra niente finché quella cifra potrebbe non essere in
+// gioco. Con le colonne morte sbarrate, la matrice torna un quadrato pieno.
+// Va da sé che è un aiuto: di default è spenta. Si può accendere e spegnere in
+// qualunque momento dal pannello dei controlli.
+function preescludiCifreAssenti() {
+    if (!opzSbarraAssenti) return;
+    const inGioco = new Set(lettere.map(l => soluzioneMappa[l]));
+    for (let d = 0; d <= 9; d++) {
+        if (inGioco.has(d)) continue;
+        lettere.forEach(function (l) {
+            if (esclusioni[l][d] === ESCL_NO) esclusioni[l][d] = ESCL_AUTO;
+        });
+    }
+}
+
 // Toglie le esclusioni automatiche non più giustificate da nessuna assegnazione:
 // si ricalcolano da zero, così cancellare una cifra ripulisce i suoi riflessi
 // senza toccare le esclusioni segnate a mano.
@@ -692,6 +914,9 @@ function ricalcolaEsclusioniAuto() {
             if (esclusioni[l][d] === ESCL_AUTO) esclusioni[l][d] = ESCL_NO;
         }
     });
+    // Le colonne morte rientrano nel ricalcolo: sono anche loro esclusioni
+    // automatiche, e senza questa riga il primo annullamento le cancellerebbe.
+    preescludiCifreAssenti();
     lettere.forEach(function (l) {
         if (assegnazioni[l] !== undefined) propagaEsclusioni(l, assegnazioni[l]);
     });
@@ -721,9 +946,18 @@ function renderGriglia() {
             if (hintTarget && hintTarget.lettera === l) {
                 cls += (hintTarget.tipo === 'errore') ? ' ch-suggerita-errore' : ' ch-suggerita';
             }
-            html += '<span class="' + cls + '">' + (c === undefined ? l : c) + '</span>';
+            // La lettera sta anche in un attributo: serve al click per sapere
+            // su quale carattere si e' premuto davvero, non solo su quale cella
+            html += '<span class="' + cls + '" data-l="' + l + '">' +
+                    (c === undefined ? l : c) + '</span>';
         });
         cella.innerHTML = html;
+        // La cella è larga 112px al netto dei bordi: a 34px per carattere i
+        // numeri di quattro cifre ci stanno appena, e con la lettera in corsivo
+        // o l'alone della selezione arrivano a toccare i bordi. Il CSS stringe
+        // il testo in base a questa classe invece di allargare la griglia, che
+        // è incastrata in un campo di dimensioni fisse.
+        cella.classList.toggle('cella-4ch', patterns[i].length >= 4);
         cella.classList.toggle('completa', cellaCompleta(i));
     }
     renderSegni();
@@ -777,8 +1011,11 @@ function renderLegenda() {
             cel.classList.toggle('mat-errata', assegnata && letteraErrata(l));
             cel.classList.toggle('mat-escl-errata',
                 !assegnata && stato === ESCL_MANO && esclusioneErrata(l, d));
+            // Il segno dell'esclusione automatica è un pallino piccolo e non
+            // un punto mediano: quest'ultimo si appoggia alla linea di base e
+            // nella casella si leggeva come un granello fuori centro.
             cel.textContent = assegnata ? '●' :
-                (stato === ESCL_MANO ? '×' : (stato === ESCL_AUTO ? '·' : ''));
+                (stato === ESCL_MANO ? '×' : (stato === ESCL_AUTO ? '•' : ''));
             // L'unica cifra rimasta possibile su una riga: si evidenzia da sé
             cel.classList.toggle('mat-unica', !assegnata && stato === ESCL_NO &&
                 c === undefined && contaPossibili(l) === 1);
@@ -809,17 +1046,47 @@ function esclusioneErrata(l, d) {
 
 // Evidenzia il modo attivo, così si vede a colpo d'occhio cosa farà il click
 function renderModo() {
-    ['escludi', 'assegna', 'cancella'].forEach(function (m) {
+    ['escludi', 'assegna'].forEach(function (m) {
         const el = document.getElementById('modo-' + m);
         if (el) el.classList.toggle('attivo', modoMatrice === m);
     });
     const mat = document.getElementById('matrice-esclusioni');
     if (mat) mat.className = 'modo-' + modoMatrice;
+    // Anche il pannello porta il modo: la cornice rossa del modo "assegna" sta
+    // sul bordo esterno, che e' suo e non della griglia interna.
+    const pan = document.getElementById('pannello-legenda');
+    if (pan) pan.classList.toggle('pannello-assegna',
+                                  modoMatrice === 'assegna' && !partitaFinita);
+    aggiornaSprite();
+}
+
+// Pallino che segue il puntatore quando il modo "assegna" è armato: dato che il
+// modo torna da solo a "escludi" dopo ogni assegnazione, senza un segno addosso
+// al cursore è facile non accorgersi di com'è messo. È lo stesso simbolo della
+// voce "Assegna" nella legenda.
+function aggiornaSprite() {
+    let sp = document.getElementById('sprite-assegna');
+    if (!sp) {
+        // Creato da codice invece che nei due file HTML: è un elemento di pura
+        // presentazione e così non può disallinearsi tra italiano e inglese.
+        sp = document.createElement('div');
+        sp.id = 'sprite-assegna';
+        sp.textContent = '●';
+        document.body.appendChild(sp);
+    }
+    const armato = modoMatrice === 'assegna' && !partitaFinita;
+    sp.classList.toggle('visibile', armato);
+    // Fuori dal modo assegna lo sprite non deve restare dov'era: al prossimo
+    // armamento riapparirebbe per un istante nel punto vecchio.
+    if (!armato) sp.style.transform = 'translate(-9999px, -9999px)';
 }
 
 function renderInfo() {
     document.getElementById('info-errori').textContent = erroriCount;
-    document.getElementById('info-difficolta').textContent = CALC_LANG.diffNames[difficolta];
+    // Con un livello solo il nome della difficolta' non direbbe niente: al suo
+    // posto il dato che cambia davvero da schema a schema, cioe' quante lettere
+    // (e quindi quante cifre distinte) sono in gioco.
+    document.getElementById('info-difficolta').textContent = lettere.length || '--';
     aggiornaTimer();
     renderRecord();
 }
@@ -855,10 +1122,18 @@ function selezionaLettera(l) {
     renderTutto();
 }
 
-// Click su una cella della griglia: seleziona la prima lettera non ancora
-// assegnata che vi compare (o l'ultima, se sono tutte assegnate)
-function clickCella(i) {
+// Click su una cella della griglia: seleziona il carattere su cui si e' premuto.
+// Ogni carattere e' un <span> con la sua lettera in `data-l`, quindi in una
+// cella come FACH si prende davvero la H se si clicca la H. Solo se il click
+// cade a fianco dei caratteri (il padding della cella) si ricade sulla prima
+// lettera ancora senza cifra, o sull'ultima se sono tutte assegnate.
+function clickCella(i, e) {
     if (partitaFinita) return;
+    const span = e && e.target && e.target.closest ? e.target.closest('.ch') : null;
+    if (span && span.dataset.l) {
+        selezionaLettera(span.dataset.l);
+        return;
+    }
     const idxLettere = patterns[i];
     let scelta = null;
     for (const idx of idxLettere) {
@@ -896,10 +1171,17 @@ function assegnaCifra(d) {
         applicaPenalita(PENALITA_ERRORE, 'btn-lettera-' + l);
     }
 
-    // Passa in automatico alla prossima lettera ancora senza cifra
-    const prossima = lettere.find(x => assegnazioni[x] === undefined);
-    letteraSelezionata = prossima !== undefined ? prossima : null;
-    selezioneAutomatica = (letteraSelezionata !== null);
+    // Fatta l'assegnazione non si evidenzia più niente. Prima si saltava in
+    // automatico alla prossima lettera libera, ma quell'evidenziazione arrivava
+    // senza che il giocatore l'avesse chiesta e sembrava un suggerimento del
+    // gioco: la selezione ora nasce solo da un click esplicito sulla lettera.
+    letteraSelezionata = null;
+    selezioneAutomatica = false;
+
+    // Il modo "assegna" è monostabile: fatta l'assegnazione si torna a
+    // "escludi". Sta qui e non nel gestore del click perché valga per tutte le
+    // strade che portano a un'assegnazione: matrice, tastiera e suggerimento.
+    if (modoMatrice === 'assegna') impostaModo('escludi');
 
     renderTutto();
     salvaPartita();
@@ -936,8 +1218,10 @@ function annullaMossa() {
     if (s.cifraPrec === undefined) delete assegnazioni[s.lettera];
     else assegnazioni[s.lettera] = s.cifraPrec;
     if (s.esclPrec) esclusioni = s.esclPrec;
-    letteraSelezionata = s.lettera;
-    selezioneAutomatica = true;
+    // Nessuna evidenziazione: l'undo riporta indietro la mossa, non indica una
+    // lettera su cui lavorare.
+    letteraSelezionata = null;
+    selezioneAutomatica = false;
     annullaSuggerimento(true);
     renderTutto();
     salvaPartita();
@@ -1059,8 +1343,10 @@ function applicaHint() {
         salvaSnapshot(l);
         delete assegnazioni[l];
         ricalcolaEsclusioniAuto();
-        letteraSelezionata = l;
-        selezioneAutomatica = true;
+        // La cifra sbagliata è stata tolta: la lettera torna libera come le
+        // altre e non resta evidenziata.
+        letteraSelezionata = null;
+        selezioneAutomatica = false;
         renderTutto();
         salvaPartita();
         return;
@@ -1071,9 +1357,8 @@ function applicaHint() {
     assegnazioni[l] = soluzioneMappa[l];
     if (esclusioni[l]) esclusioni[l][soluzioneMappa[l]] = ESCL_NO;
     propagaEsclusioni(l, soluzioneMappa[l]);
-    const prossima = lettere.find(x => assegnazioni[x] === undefined);
-    letteraSelezionata = prossima !== undefined ? prossima : null;
-    selezioneAutomatica = (letteraSelezionata !== null);
+    letteraSelezionata = null;
+    selezioneAutomatica = false;
     renderTutto();
     salvaPartita();
     controllaVittoria();
@@ -1122,6 +1407,7 @@ function controllaVittoria() {
     }
 
     partitaFinita = true;
+    aggiornaSprite();   // a partita finita il pallino non deve restare appeso al cursore
     if (timerId) clearInterval(timerId);
     localStorage.removeItem('calcolo-save');
     riproduciAudio('sounds/scala40/tada.mp3');
@@ -1208,10 +1494,14 @@ function chiudiModali() {
 }
 
 function apriModaleInizio(mostraRiprendi) {
+    // L'avviso di attesa (o l'errore di una generazione fallita) appartiene al
+    // tentativo precedente: la modale si riapre sempre pulita.
+    const avviso = document.getElementById('msg-generazione');
+    if (avviso) { avviso.style.display = 'none'; avviso.classList.remove('msg-errore'); }
     document.getElementById('btn-riprendi').style.display = mostraRiprendi ? 'block' : 'none';
     document.getElementById('schermo').style.display = 'block';
     document.getElementById('modale-inizio').style.display = 'flex';
-    selezionaDifficolta(localStorage.getItem('calcolo-difficolta') || 'facile');
+    selezionaDifficolta(localStorage.getItem('calcolo-difficolta') || CALC_LIVELLO_DEF);
 }
 
 function riprendiPartita() {
@@ -1220,11 +1510,16 @@ function riprendiPartita() {
     setMessaggio(CALC_LANG.partitaInCorso);
 }
 
-let tempDifficolta = 'facile';
+let tempDifficolta = CALC_LIVELLO_DEF;
 function selezionaDifficolta(diff) {
+    // Un livello di un'edizione precedente salvato in localStorage (facile,
+    // medio, difficile, standard) non esiste piu' con quel nome: si ricade sul
+    // livello di mezzo invece di lasciare la scelta a vuoto.
+    if (!CALC_LIVELLI[diff]) diff = CALC_LIVELLO_DEF;
     tempDifficolta = diff;
-    ['facile', 'medio', 'difficile'].forEach(function (d) {
-        document.getElementById('btn-diff-' + d).classList.toggle('attiva', d === diff);
+    Object.keys(CALC_LIVELLI).forEach(function (d) {
+        const b = document.getElementById('btn-diff-' + d);
+        if (b) b.classList.toggle('attiva', d === diff);
     });
 }
 
@@ -1298,10 +1593,16 @@ document.addEventListener('keydown', function (e) {
     }
 });
 
-// Traccia il cursore per posizionare lo sprite "+Ns" delle penalità
+// Traccia il cursore per posizionare lo sprite "+Ns" delle penalità e il
+// pallino del modo "assegna". Sta in document.body con coordinate di viewport,
+// come le penalità: così non deve fare i conti con la scala del campo.
 document.addEventListener('mousemove', function (e) {
     ultimoMouseX = e.clientX;
     ultimoMouseY = e.clientY;
+    if (modoMatrice === 'assegna' && !partitaFinita) {
+        const sp = document.getElementById('sprite-assegna');
+        if (sp) sp.style.transform = 'translate(' + e.clientX + 'px, ' + e.clientY + 'px)';
+    }
 });
 
 // === INIZIALIZZAZIONE DELLA PAGINA ===
@@ -1341,6 +1642,13 @@ function initCalcolo() {
             if (this.checked) { modoMatrice = this.value; renderModo(); }
         });
     });
+    // Sui due modi il tasto destro non deve aprire il menu del browser: su
+    // "Assegna" e' la scorciatoia annunciata dall'etichetta, e il menu di
+    // sistema in mezzo alla matrice sarebbe solo un intralcio.
+    ['modo-escludi', 'modo-assegna'].forEach(function (id) {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+    });
     document.getElementById('btn-annulla').addEventListener('click', annullaMossa);
     document.getElementById('btn-hint').addEventListener('click', suggerimento);
     document.getElementById('btn-hint-spiega').addEventListener('click', mostraSpiegazioneHint);
@@ -1375,10 +1683,29 @@ function initCalcolo() {
         if (lettere.length) renderTutto();
     });
 
+    // Opzione colonne sbarrate (persistente). Si può cambiare a partita in corso:
+    // il ricalcolo rifà le esclusioni automatiche da zero, quindi accenderla le
+    // aggiunge e spegnerla le toglie, senza toccare quelle segnate a mano.
+    opzSbarraAssenti = localStorage.getItem('calcolo-opt-sbarra') === '1';
+    const chkSbarra = document.getElementById('chk-sbarra-assenti');
+    chkSbarra.checked = opzSbarraAssenti;
+    chkSbarra.addEventListener('change', function () {
+        opzSbarraAssenti = this.checked;
+        localStorage.setItem('calcolo-opt-sbarra', opzSbarraAssenti ? '1' : '0');
+        if (lettere.length) {
+            ricalcolaEsclusioniAuto();
+            renderTutto();
+            salvaPartita();
+        }
+    });
+
     // Se esiste una partita salvata chiedi se riprenderla, altrimenti mostra il modale iniziale
     if (caricaPartita()) {
         costruisciGriglia();
         costruisciLegenda();
+        // Riallinea le colonne all'opzione di adesso: la partita può essere stata
+        // salvata con l'impostazione opposta, o addirittura prima che esistesse.
+        ricalcolaEsclusioniAuto();
         renderTutto(); // mostra lo schema salvato dietro al modale
         apriModaleInizio(true);
     } else {

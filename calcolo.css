@@ -86,25 +86,27 @@ html, body {
     line-height: 1.12;
 }
 
+/* Il banner sta nella colonna di fianco alla griglia, sotto i modi di click:
+   prima era centrato in alto e passava sopra la griglia, e con la griglia
+   rimpicciolita quello spazio serve. Qui non copre niente e resta comunque
+   nel campo visivo di chi sta lavorando sulla matrice.
+   Non e' piu' posizionato in assoluto: e' l'ultimo elemento di .legenda-lato,
+   quindi si dispone da se' e cresce verso il basso quando il testo va a capo. */
 #messaggio-stato {
-    position: absolute;
-    top: 62px;
-    left: 50%;
-    transform: translateX(-50%);
     color: #fff;
-    font-size: 16px;
+    font-size: 13px;
     font-weight: bold;
     text-align: center;
     background: rgba(0, 40, 10, 0.6);
-    padding: 6px 20px;
-    border-radius: 20px;
+    padding: 6px 10px;
+    border-radius: 10px;
     border: 1px solid rgba(255, 255, 255, 0.2);
     z-index: 100;
     text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
     white-space: normal;
-    max-width: 560px;
-    width: max-content;
-    line-height: 1.35;
+    box-sizing: border-box;
+    width: 100%;
+    line-height: 1.3;
     transition: background-color 0.2s, color 0.2s;
 }
 #messaggio-stato.msg-giallo {
@@ -120,6 +122,23 @@ html, body {
     border-color: #990022;
     text-shadow: none;
     box-shadow: 0 0 15px rgba(204, 12, 57, 0.5);
+}
+
+/* Attesa dentro la modale di avvio. Il messaggio in #messaggio-stato non serve
+   allo scopo: sta nel campo di gioco, che durante la generazione e' coperto
+   dalla modale, quindi non lo vede nessuno. Qui invece e' sotto gli occhi. */
+#msg-generazione {
+    font-size: 13px;
+    font-weight: bold;
+    color: #ffd700;
+    text-align: center;
+    margin: 0 auto 15px auto;
+    text-shadow: 1px 1px 2px #000;
+}
+/* Fallita anche la generazione di ripiego: non e' piu' un'attesa ma un errore,
+   e va detto con parole diverse (il testo lo cambia il JS). */
+#msg-generazione.msg-errore {
+    color: #ff7b72;
 }
 
 .lang-switch-header {
@@ -218,7 +237,10 @@ a.pulsante-top {
 #pannello-record {
     position: absolute;
     top: 10px;
-    left: 680px;
+    /* Centrata nella fascia libera a destra della matrice, che finisce a 680:
+       (1024 - 680 - 290) / 2 = 27 di margine per parte. Stesso calcolo per
+       #pannello-controlli: le due colonne devono restare allineate. */
+    left: 707px;
     width: 290px;
     z-index: 50;
     background: rgba(0, 40, 10, 0.55);
@@ -292,8 +314,16 @@ a.pulsante-top {
     top: 100px;
     left: 40px;
     display: grid;
-    grid-template-columns: 118px 54px 118px 54px 118px;
-    grid-template-rows: 72px 42px 72px 42px 72px;
+    /* Griglia rimpicciolita a due terzi (cella da 150x72 a 100x48) per liberare
+       spazio alla matrice, che e' lo strumento su cui si lavora davvero: li' si
+       clicca decine di volte, qui si legge e basta. Il testo scende in
+       proporzione (34->23px), quindi i numeri di quattro cifre stanno dentro i
+       94px utili come prima.
+       Ora occupa 3x100 + 2x38 = 376px da left 40, quindi arriva a 416: resta
+       larga meta' campo e lascia 248px sulla destra per titolo, modi e nota,
+       che prima stavano di fianco alla matrice e le rubavano larghezza. */
+    grid-template-columns: 100px 38px 100px 38px 100px;
+    grid-template-rows: 48px 28px 48px 28px 48px;
     z-index: 50;
 }
 
@@ -303,11 +333,11 @@ a.pulsante-top {
     align-items: center;
     justify-content: center;
     background: #f7f3e8;
-    border: 3px solid #14301c;
-    border-radius: 6px;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.45);
+    border: 2px solid #14301c;   /* era 3: su una cella piu' piccola mangiava troppo */
+    border-radius: 5px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.45);
     cursor: pointer;
-    letter-spacing: 1px;
+    letter-spacing: 0;
     transition: background-color 0.15s;
 }
 .cella-calcolo:hover {
@@ -321,10 +351,10 @@ a.pulsante-top {
    a colpo d'occhio e la lettera selezionata si evidenzia ovunque compaia */
 .cella-calcolo .ch {
     display: inline-block;
-    font-size: 34px;
+    font-size: 23px;   /* sceso con la cella: 4 cifre a 23px stanno nei 94px utili */
     font-weight: 700;
     line-height: 1;
-    padding: 3px 1px;
+    padding: 2px 1px;
     border-radius: 4px;
     transition: background-color 0.15s, color 0.15s;
 }
@@ -335,6 +365,12 @@ a.pulsante-top {
 }
 .cella-calcolo .ch-cifra {
     color: #1a4fa0;
+    /* Serif come le lettere, ma NON Georgia: Georgia ha le cifre "old-style",
+       cioe' disegnate come minuscole. 6 e 8 salgono quanto una maiuscola, 0-1-2
+       restano bassi, 3-4-5-7-9 scendono pure sotto la linea di base: in un
+       numero come 23 si vede benissimo. Book Antiqua (e i ripieghi qui sotto)
+       ha invece le cifre allineate, alte come la maiuscola di Georgia. */
+    font-family: 'Book Antiqua', Palatino, 'Segoe UI', sans-serif;
 }
 .cella-calcolo .ch-selezionata {
     background: #ffd700;
@@ -365,7 +401,7 @@ a.pulsante-top {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 30px;
+    font-size: 21px;   /* in scala con la griglia ridotta */
     font-weight: bold;
     color: #ffd700;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
@@ -391,11 +427,17 @@ a.pulsante-top {
 /* === MATRICE DELLE POSSIBILITÀ (lettere × cifre) ===
    È il vero strumento di gioco: il giocatore esclude gli incroci impossibili
    e arriva alla soluzione per esclusione progressiva. */
+/* Il pannello e' salito a 318 (subito sotto la griglia rimpicciolita) e occupa
+   tutta la larghezza disponibile fino alla colonna dei controlli: 640px da
+   left 40. Prima si fermava a 620 e doveva anche ospitare titolo, modi e nota
+   di fianco alla matrice; ora quelli stanno accanto alla griglia, cosi' la
+   matrice si prende l'intera larghezza e le caselle passano da 30x22 a 53x31,
+   cioe' due volte e mezzo l'area da centrare col dito. */
 #pannello-legenda {
     position: absolute;
-    top: 430px;
+    top: 318px;
     left: 40px;
-    width: 620px;
+    width: 640px;
     box-sizing: border-box;
     z-index: 50;
     background: rgba(0, 40, 10, 0.55);
@@ -403,17 +445,47 @@ a.pulsante-top {
     border-radius: 10px;
     padding: 10px 12px;
     color: #fff;
-    /* matrice a sinistra, titolo e comandi nella colonna di fianco */
-    display: flex;
-    align-items: flex-start;
-    gap: 14px;
+    transition: border-color 0.2s, box-shadow 0.2s, background-color 0.2s;
 }
+/* Modo "assegna" armato: la matrice si accende del blu della casella assegnata,
+   lo stesso del pulsante e del pallino sul cursore. Lo stato deve essere
+   impossibile da non vedere, ma non allarmante: il prossimo click scrive nello
+   schema, e il colore anticipa il risultato invece di gridare al pericolo (il
+   rosso resta il colore dell'errore, e confonderli sarebbe un peccato).
+   Dura una mossa sola: il modo e' monostabile.
+   Il bordo resta di 2px perche' il pannello e' largo 640 esatti con
+   box-sizing:border-box, e ingrossarlo rubarebbe spazio alle caselle: la
+   drammaticita' la fanno il colore e l'alone, non lo spessore. */
+#pannello-legenda.pannello-assegna {
+    border-color: #7fd4ff;
+    background: rgba(0, 24, 60, 0.55);
+    box-shadow: 0 0 0 2px rgba(47, 111, 208, 0.55),
+                0 0 22px rgba(127, 212, 255, 0.75);
+    animation: pulseAssegna 1.1s ease-in-out infinite alternate;
+}
+@keyframes pulseAssegna {
+    from { box-shadow: 0 0 0 2px rgba(47, 111, 208, 0.45),
+                       0 0 14px rgba(127, 212, 255, 0.55); }
+    to   { box-shadow: 0 0 0 3px rgba(47, 111, 208, 0.75),
+                       0 0 30px rgba(127, 212, 255, 0.95); }
+}
+/* Titolo, modi di click e nota: spostati di fianco alla griglia, nei 248px
+   rimasti liberi alla sua destra. Sono comandi che si toccano di rado, quindi
+   stanno bene lontani dalla matrice; e cosi' non le sottraggono larghezza. */
 .legenda-lato {
-    flex: 1;
-    min-width: 0;
+    position: absolute;
+    top: 100px;
+    left: 432px;
+    width: 232px;
+    box-sizing: border-box;
+    z-index: 50;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 10px;
+    /* Arriva fin quasi al pannello della matrice (che sta a 318): serve
+       un'altezza vera, altrimenti il margin-top:auto del titolo non ha
+       spazio contro cui spingere e i due modi non scendono in fondo. */
+    height: 208px;
 }
 .legenda-titolo {
     font-size: 11px;
@@ -421,9 +493,12 @@ a.pulsante-top {
     color: #aed6ae;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    /* Spinge titolo e modi di click in fondo alla colonna, vicino alla
+       matrice a cui si riferiscono */
+    margin-top: auto;
 }
 
-/* Modo di click: i tre radio decidono cosa fa il click su un incrocio */
+/* Modo di click: i due radio decidono cosa fa il click su un incrocio */
 #modo-click {
     display: flex;
     flex-direction: column;
@@ -459,22 +534,46 @@ a.pulsante-top {
     font-size: 14px;
     line-height: 1;
 }
+/* La scorciatoia col destro e' un'informazione di servizio: si legge una volta
+   e poi entra nel gesto, quindi sta piu' piccola e in tono minore del nome del
+   modo, senza rubargli l'occhio. */
+.modo-opzione .modo-scorciatoia {
+    font-size: 9px;
+    font-weight: normal;
+    opacity: 0.75;
+    white-space: nowrap;
+}
 .modo-opzione.attivo {
     background: linear-gradient(180deg, #ffd700 0%, #b8860b 100%);
     border-color: #ffd700;
     color: #1a1a2e;
     box-shadow: 0 0 10px rgba(255, 215, 0, 0.45);
 }
+/* "Assegna" acceso: stesso blu della casella assegnata (.mat-assegnata), come
+   il pallino appeso al cursore. Lo stato armato anticipa il colore che avra' la
+   casella una volta cliccata, quindi pulsante, cornice e pallino parlano la
+   stessa lingua: il rosso qui direbbe "pericolo" invece di "ecco cosa ottieni",
+   e il rosso in questo gioco e' gia' il colore dello sbaglio. E' monostabile,
+   quindi lo stato dura una mossa sola. */
+#modo-assegna.attivo {
+    background: linear-gradient(180deg, #2f6fd0 0%, #1a4fa0 100%);
+    border-color: #7fd4ff;
+    color: #ffffff;
+    box-shadow: 0 0 12px rgba(127, 212, 255, 0.7);
+}
+#modo-assegna.attivo input[type="radio"] {
+    accent-color: #ffffff;
+}
 #matrice-esclusioni {
     display: grid;
-    gap: 2px;
+    gap: 3px;
     align-items: center;
 }
 
 /* Intestazione delle colonne: le dieci cifre */
 .mat-intestazione {
     text-align: center;
-    font-size: 11px;
+    font-size: 15px;
     font-weight: bold;
     color: #ffd700;
     padding-bottom: 1px;
@@ -495,8 +594,8 @@ a.pulsante-top {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 3px;
-    height: 22px;
+    gap: 4px;
+    height: 31px;   /* pari alla riga della matrice, altrimenti si disallinea */
     background: linear-gradient(180deg, #4a7c59 0%, #2d5a3d 100%);
     border: 2px solid #6b9b7a;
     border-radius: 5px;
@@ -510,13 +609,13 @@ a.pulsante-top {
 .btn-lettera .lettera-nome {
     font-family: 'Georgia', 'Times New Roman', serif;
     font-style: italic;
-    font-size: 14px;
+    font-size: 18px;
     font-weight: bold;
     color: #ffe9a8;
     line-height: 1;
 }
 .btn-lettera .lettera-cifra {
-    font-size: 12px;
+    font-size: 15px;
     font-weight: bold;
     color: #cde8cd;
     line-height: 1;
@@ -544,40 +643,101 @@ a.pulsante-top {
     animation: pulseSugg 0.9s ease infinite alternate;
 }
 
-/* Incrocio lettera × cifra: i tre stati del click.
-   Contiene solo un simbolo (× o ●), quindi può stare molto stretto. */
+/* Incrocio lettera × cifra: i due stati del click.
+   La casella è 53x31, cioè due volte e mezzo l'area di prima (30x22): è il
+   bersaglio che si centra decine di volte a partita, e con un dito su uno
+   schermo piccolo i 22px di prima erano al limite. I simboli crescono con lei. */
 .mat-cella {
-    height: 22px;
+    position: relative;   /* riferimento per la filigrana della coordinata */
+    /* Contesto di impilamento proprio: senza, la filigrana a z-index -1
+       scivolerebbe dietro allo sfondo della casella e non si vedrebbe. */
+    isolation: isolate;
+    height: 31px;
     background: rgba(247, 243, 232, 0.92);
     border: 1px solid #8fa894;
-    border-radius: 3px;
+    border-radius: 4px;
     cursor: pointer;
     padding: 0;
-    font-size: 13px;
+    font-size: 24px;
     font-weight: bold;
     line-height: 1;
     color: #14301c;
     transition: background-color 0.12s, border-color 0.12s, transform 0.12s;
+}
+
+/* Coordinata in filigrana (es. "A5") a tutta casella. Serve a ritrovarsi nella
+   matrice: con dieci colonne e fino a dieci righe, seguire la casella giusta a
+   occhio e' facile finche' la riga e' evidenziata, meno quando si guarda una
+   colonna.
+   E' un ::before perche' renderLegenda riscrive textContent a ogni render: un
+   figlio vero verrebbe cancellato. Il testo arriva da data-coord.
+   Riempie tutta la casella e ci sta sotto: il simbolo (× o ●) le si sovrappone
+   al centro, e per questo la filigrana e' molto smorzata: deve leggersi quando
+   la si cerca e sparire quando si guarda il segno. */
+.mat-cella::before {
+    content: attr(data-coord);
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 21px;
+    font-weight: bold;
+    line-height: 1;
+    letter-spacing: 0;
+    color: rgba(20, 48, 28, 0.20);
+    pointer-events: none;   /* non deve mai intercettare il click */
+    /* Sotto al simbolo. Serve z-index negativo: il testo della casella e' un
+       nodo nudo, senza un livello suo, e un ::before posizionato gli finirebbe
+       sopra annegando la ×. Con -1 la filigrana scende sotto al contenuto ma
+       resta sopra allo sfondo, perche' la casella crea un contesto di
+       impilamento suo (isolation qui sotto). */
+    z-index: -1;
+}
+/* La filigrana sta solo nelle caselle ancora in gioco. Dove c'e' gia' un segno
+   - esclusa a mano, esclusa di riflesso, assegnata - la coordinata non serve
+   piu': quella casella e' decisa, e conta solo il simbolo, che resta pulito.
+   Cosi' la filigrana diventa anche un indicatore: le caselle che la portano
+   sono esattamente quelle su cui c'e' ancora da ragionare. */
+.mat-cella.mat-esclusa::before,
+.mat-cella.mat-esclusa-auto::before,
+.mat-cella.mat-escl-errata::before,
+.mat-cella.mat-assegnata::before,
+.mat-cella.mat-errata::before {
+    content: none;
 }
 .mat-cella:hover {
     background: #ffffff;
     border-color: #ffd700;
     transform: translateY(-1px);
 }
-/* Escluso a mano: è un'esclusione ragionata dal giocatore, segno pieno */
+/* Escluso a mano: è un'esclusione ragionata dal giocatore, segno pieno.
+   È il simbolo che si guarda di più durante la partita, quindi tiene la
+   misura piena della cella.
+   Verde chiaro come il pallino delle esclusioni automatiche, non rosso:
+   un'esclusione e' un ragionamento riuscito, non uno sbaglio. In questo gioco
+   il rosso e' il colore dell'errore (assegnazione sbagliata, esclusione messa
+   sulla cifra giusta, "=" che non torna) e va lasciato solo a quello. Resta
+   piu' acceso del pallino automatico perche' questa l'ha decisa il giocatore. */
 .mat-cella.mat-esclusa {
     background: rgba(20, 48, 28, 0.55);
     border-color: rgba(143, 168, 148, 0.35);
-    color: #ff9aa5;
-    font-size: 12px;
+    color: #cdf0d6;
+    font-size: 24px;
 }
 /* Esclusione dedotta da un'assegnazione: stessa casella spenta, ma segno
-   diverso e smorzato, perché non è una deduzione del giocatore */
+   diverso e smorzato, perché non è una deduzione del giocatore.
+   Il pallino piccolo resta più leggero della × senza sparire: prima era un
+   punto mediano, che anche portato a 22px restava un granello appoggiato
+   alla linea di base invece che al centro della casella. */
 .mat-cella.mat-esclusa-auto {
     background: rgba(20, 48, 28, 0.42);
     border-color: rgba(143, 168, 148, 0.28);
     color: #9fd0ad;
-    font-size: 22px;
+    font-size: 20px;
 }
 /* Esclusione sbagliata: toglie proprio la cifra giusta */
 .mat-cella.mat-escl-errata {
@@ -621,7 +781,8 @@ a.pulsante-top {
 #pannello-controlli {
     position: absolute;
     top: 118px;
-    left: 680px;
+    /* Allineata a #pannello-record: vedi il calcolo lì sopra */
+    left: 707px;
     width: 290px;
     z-index: 50;
     display: flex;
@@ -1057,4 +1218,31 @@ a.pulsante-top {
     8%   { opacity: 1; transform: translate(-50%, -70%) scale(1.15); }
     16%  { transform: translate(-50%, -90%) scale(1); }
     100% { opacity: 0; transform: translate(-50%, -390%) scale(1); }
+}
+
+/* Pallino appeso al puntatore quando il modo "assegna" è armato. Il modo torna
+   da solo a "escludi" dopo ogni assegnazione, quindi serve un segno addosso al
+   cursore per sapere sempre com'è messo senza guardare i radio button.
+   La posizione arriva da transform (aggiornata sul mousemove), quindi lo
+   scostamento per centrarlo sulla punta sta nei margin: usare anche qui
+   translate() farebbe a pugni con la posizione. */
+#sprite-assegna {
+    position: fixed;
+    left: 0;
+    top: 0;
+    margin: -22px 0 0 14px;   /* di lato e appena sopra, così non copre la casella */
+    z-index: 9998;            /* sotto le penalità volanti */
+    pointer-events: none;     /* non deve mai rubare il click alla matrice */
+    font-size: 40px;
+    line-height: 1;
+    /* Stesso blu della casella assegnata (.mat-assegnata): il pallino che segue
+       il cursore anticipa il colore che avra' la casella una volta cliccata.
+       L'alone chiaro serve al contrasto, il blu pieno sul verde si perderebbe. */
+    color: #2f6fd0;
+    text-shadow: 0 0 6px #7fd4ff, 0 0 14px rgba(127, 212, 255, 0.8), 0 2px 3px rgba(0,0,0,0.8);
+    opacity: 0;
+    transition: opacity 0.12s;
+}
+#sprite-assegna.visibile {
+    opacity: 1;
 }

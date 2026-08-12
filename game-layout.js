@@ -787,7 +787,19 @@ function showInterstitialIfDue(onClose) {
     // cliccabile. La push parte SOLO dopo il timeout, contestualmente alla
     // rimozione del velo. Rivalutare la rimozione solo con un dato stabile su più
     // giorni, eventualmente con un ritardo più corto invece che a 0.
-    var ADSENSE_INTERSTITIAL_ARM_DELAY_MS = 600;
+    //
+    // 2026-08-10: ridotto 600→100ms, NON azzerato. Il precedente del 5 agosto
+    // resta valido come monito, ma le condizioni sono cambiate: allora
+    // INTERSTITIAL_CLOSE_DELAY_SECONDS era 0 e il clic residuo del giocatore
+    // trovava CONTINUA subito attivo; oggi è 2, quindi il pulsante è disabilitato
+    // per i primi 2s e il clic residuo non ha bersaglio. Il velo a 100ms resta
+    // come seconda difesa (pointer-events:auto intercetta il clic sull'area ad,
+    // non è solo visivo). Dati che motivano il test: viewability 70% (>= 69,3%
+    // pre-ban), CTR 0,39-0,41% stabile su due giorni pieni, RPM 0,75-0,82 cioè
+    // ~5x le altre unità. SOGLIA DI ROLLBACK: se il CTR orario supera l'1%
+    // ripristinare 600ms immediatamente — è la firma del clic accidentale che è
+    // già costata 3 ban.
+    var ADSENSE_INTERSTITIAL_ARM_DELAY_MS = 100;
     var _insInterstitial = overlay.querySelector('ins.adsbygoogle');
     if (_insInterstitial) {
         // Velo nero opaco sopra l'area ad (adArea è position:relative/absolute
