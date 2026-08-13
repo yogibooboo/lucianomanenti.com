@@ -354,9 +354,15 @@ function creaframmentitris() {
 			'<div class="opzioni-sezione">' +
 			'<div class="opzioni-etichetta">' + t('opz_avversari') + '</div>' +
 			'<div class="opzioni-radio">' +
-			'<label><input type="radio" name="avversari" value="1"><span>1</span></label>' +
-			'<label><input type="radio" name="avversari" value="2"><span>2</span></label>' +
-			'<label><input type="radio" name="avversari" value="3" checked><span>3</span></label>' +
+			/* name PROPRIO, diverso da quello del form classico #formnuovo:
+			   il guscio condiviso contiene entrambi i form (il classico è
+			   solo nascosto, non rimosso) e con lo stesso name il browser
+			   li tratta come UN unico gruppo di 6 radio. Conseguenze:
+			   selezionare qui despuntava i radio classici, e le query per
+			   name pescavano il primo del documento — quello nascosto. */
+			'<label><input type="radio" name="avversarinuovi" value="1"><span>1</span></label>' +
+			'<label><input type="radio" name="avversarinuovi" value="2"><span>2</span></label>' +
+			'<label><input type="radio" name="avversarinuovi" value="3" checked><span>3</span></label>' +
 			'</div>' +
 			'<div class="opzioni-nota">' + t('opz_nota_avversari') + '</div>' +
 			'</div>' +
@@ -760,7 +766,21 @@ var scala = {
 		scala.avvsalvalog = 0;
 		scala.salvasuono = 0;
 
-		var _na = parseInt(localStorage.getItem('scala40tris_numeroavversari') || '3', 10);
+		/* Numero avversari: preferenza UNIFICATA con la versione classica
+		   sulla chiave 'scala40_numeroavversari'. La vecchia chiave della
+		   nuova ('scala40tris_numeroavversari') era indipendente: le due
+		   versioni ricordavano due valori diversi. Migrazione una tantum,
+		   gestita solo qui — il motore classico resta invariato: se la
+		   chiave tris esiste vince (è la scelta più recente dell'utente),
+		   viene copiata sulla chiave condivisa e poi rimossa, così dal
+		   caricamento successivo la lettura è una sola. Se non esiste
+		   nessuna delle due si parte dal default 3, come prima. */
+		var _tris = localStorage.getItem('scala40tris_numeroavversari');
+		if (_tris !== null) {
+			localStorage.setItem('scala40_numeroavversari', _tris);
+			localStorage.removeItem('scala40tris_numeroavversari');
+		}
+		var _na = parseInt(localStorage.getItem('scala40_numeroavversari') || '3', 10);
 		var _tl = parseInt(localStorage.getItem('scala40tris_totalelimite') || '150', 10);
 		this.numeroavversari = (_na > 0 && _na < 4) ? _na : 3;
 		this.totalelimite = (!isNaN(_tl) && _tl > 0) ? _tl : 150;
@@ -1844,6 +1864,21 @@ var scala = {
 					var i;
 					for (i = 0; i < cont.carte.length; i++) { if (cont.carte[i].ntris == cartasel.ntris) break; }
 					carta.numerojolly = infotris.primonumero + indice - i;
+					/* Il conto è posizionale: oltre il K si arriva a 14, che non
+					   è una carta (dopo il K viene l'asso, cioè 1). Senza questa
+					   normalizzazione un jolly ATTACCATO in coda a una scala che
+					   si chiude con l'asso restava etichettato "seme14": nessuna
+					   carta ha quel nome, così tutti i confronti per nome
+					   fallivano in silenzio — la regola "non scartare carte che
+					   attaccano" non riconosceva l'asso (cartaattaccatavolo,
+					   riga 4506), il bonus JOLLYRECUPERABILE non veniva
+					   assegnato (cercajollyrecuperabili, riga 3973) e l'IA non
+					   riscattava più il jolly. La stessa scala CALATA intera
+					   passa invece dal ricalcolo di riga 2499, che normalizza:
+					   di qui il comportamento diverso a parità di tavolo,
+					   verificato in partita il 12 ago 2026. Identica riga già
+					   presente in 2499, 2543 e 3866. */
+					if (carta.numerojolly == 14) carta.numerojolly = 1;
 				}
 				else {
 					for (var i = 0; i < cont.carte.length; i++) {
@@ -2376,7 +2411,7 @@ var scala = {
 	   corrente. Bottone1 = NUOVA PARTITA (nuovo3), bottone2 = CHIUDI. */
 	apriopzioni: function () {
 		scala.salvaavversari = scala.numeroavversari;
-		var radio = document.querySelector('input[name="avversari"][value="' + scala.numeroavversari + '"]');
+		var radio = document.querySelector('#formopzioni input[name="avversarinuovi"][value="' + scala.numeroavversari + '"]');
 		if (radio) radio.checked = true;
 		var check = document.getElementById('optjollyimmediato');
 		if (check) check.checked = scala.jollyimmediato;
@@ -2394,11 +2429,11 @@ var scala = {
 	},
 
 	nuovo3: function () {
-		var checked = document.querySelector('input[name="avversari"]:checked');
+		var checked = document.querySelector('#formopzioni input[name="avversarinuovi"]:checked');
 		var tempavversari = checked ? checked.value : scala.salvaavversari;
 		scala.azzeratotale();
 		this.numeroavversari = tempavversari;
-		localStorage.setItem('scala40tris_numeroavversari', tempavversari);
+		localStorage.setItem('scala40_numeroavversari', tempavversari);
 		scala.nuovo();
 	},
 

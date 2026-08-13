@@ -12,6 +12,9 @@ const CALC_LANG = (window.currentLang === 'en') ? {
     partitaInCorso: 'Game in progress — good luck!',
     generazione: 'Generating puzzle...',
     generazioneFallita: 'Could not build a puzzle. Please try again.',
+    // Separatore decimale del display della calcolatrice: i conti si fanno
+    // sempre col punto, cambia solo come si legge.
+    decimale: '.',
     schemaErrori: 'All letters are assigned but the sums do not work out',
     cifraOccupata: function (l) { return 'Digit already assigned to ' + l; },
     hintErrore: 'The highlighted letter has the <b>wrong</b> digit.',
@@ -47,6 +50,8 @@ const CALC_LANG = (window.currentLang === 'en') ? {
     partitaInCorso: 'Partita in corso — buona fortuna!',
     generazione: 'Generazione dello schema...',
     generazioneFallita: 'Non è stato possibile preparare lo schema. Riprova.',
+    // Vedi il dizionario inglese
+    decimale: ',',
     schemaErrori: 'Tutte le lettere sono assegnate ma i conti non tornano',
     cifraOccupata: function (l) { return 'Cifra già assegnata a ' + l; },
     hintErrore: 'La lettera evidenziata ha la cifra <b>sbagliata</b>.',
@@ -165,6 +170,7 @@ let ultimoMouseX = -1;
 let ultimoMouseY = -1;
 let timerId = null;
 let cronologia = [];       // stack per undo: { lettera, cifraPrec }
+let calcAperta = false;    // calcolatrice a schermo: dirotta la tastiera (vedi === CALCOLATRICE ===)
 let partitaFinita = false;
 
 // Opzione di segnalazione errori (persistente in localStorage)
@@ -832,8 +838,14 @@ function clickMatrice(l, d, forzaAssegna) {
         // normale, che conta gli errori e propaga le esclusioni di riflesso
         letteraSelezionata = l;
         selezioneAutomatica = false;
+        // Se sotto c'era una × messa a mano, la cancello ma me ne ricordo: e'
+        // l'assegnazione a farla sparire, quindi deve tornare col suo undo.
+        const esclSoppressa = esclusioni[l][d] === ESCL_MANO ? d : null;
         esclusioni[l][d] = ESCL_NO;
         assegnaCifra(d);   // è lui che riporta il modo a "escludi"
+        if (esclSoppressa !== null && cronologia.length) {
+            cronologia[cronologia.length - 1].esclSoppressa = esclSoppressa;
+        }
         return;
     }
 
@@ -841,6 +853,7 @@ function clickMatrice(l, d, forzaAssegna) {
     // Le esclusioni automatiche non si tolgono da qui: dipendono dall'assegnazione.
     if (esclusioni[l][d] === ESCL_AUTO) return;
     const poneEsclusione = esclusioni[l][d] !== ESCL_MANO;
+    salvaSnapshotEsclusione(l, d, esclusioni[l][d]);
     esclusioni[l][d] = poneEsclusione ? ESCL_MANO : ESCL_NO;
 
     // Escludere la cifra giusta e' un errore come assegnarne una sbagliata: la
@@ -1201,23 +1214,52 @@ function cancellaCifra() {
 }
 
 // === UNDO ===
-// Si salva anche l'intera matrice delle esclusioni: un'assegnazione ne propaga
-// diverse, e l'undo deve riportare le annotazioni esattamente com'erano.
+// Una pila sola, in ordine di click: assegnazioni ed esclusioni a mano stanno
+// nello stesso stack e si annullano a ritroso nell'ordine in cui sono state
+// fatte. Sono le due cose che il giocatore "fa", e separarle vorrebbe dire
+// chiedergli di ricordare quale delle due sta per tornare indietro.
+//
+// Nessuno snapshot della matrice: le esclusioni automatiche non si salvano
+// perche' si rigenerano da ricalcolaEsclusioniAuto() a partire dalle
+// assegnazioni, e quelle a mano tornano indietro una alla volta con la propria
+// voce. Prima invece ogni assegnazione fotografava l'intera matrice e l'undo la
+// rimetteva in blocco: cosi' annullare un'assegnazione cancellava anche tutte le
+// esclusioni ragionate dopo di essa.
 function salvaSnapshot(l) {
-    const esclPrec = {};
-    lettere.forEach(function (x) {
-        esclPrec[x] = (esclusioni[x] || new Array(10).fill(ESCL_NO)).slice();
-    });
-    cronologia.push({ lettera: l, cifraPrec: assegnazioni[l], esclPrec: esclPrec });
+    cronologia.push({ tipo: 'assegna', lettera: l, cifraPrec: assegnazioni[l] });
+    if (cronologia.length > 200) cronologia.shift();
+}
+
+// Anche togliere un'esclusione e' una mossa da annullare: `statoPrec` copre da
+// solo i due versi dell'interruttore.
+function salvaSnapshotEsclusione(l, d, statoPrec) {
+    cronologia.push({ tipo: 'esclusione', lettera: l, cifra: d, statoPrec: statoPrec });
     if (cronologia.length > 200) cronologia.shift();
 }
 
 function annullaMossa() {
     if (partitaFinita || cronologia.length === 0) return;
     const s = cronologia.pop();
-    if (s.cifraPrec === undefined) delete assegnazioni[s.lettera];
-    else assegnazioni[s.lettera] = s.cifraPrec;
-    if (s.esclPrec) esclusioni = s.esclPrec;
+
+    if (s.tipo === 'esclusione') {
+        // Solo la casella toccata torna com'era. La penalita' eventualmente pagata
+        // non si restituisce, e esclusioniPunite non si tocca: e' la memoria di
+        // uno sbaglio gia' pagato, e riavvolgerla farebbe pagare due volte lo
+        // stesso errore a chi annulla e rimette la stessa esclusione.
+        if (esclusioni[s.lettera]) esclusioni[s.lettera][s.cifra] = s.statoPrec;
+    } else {
+        if (s.cifraPrec === undefined) delete assegnazioni[s.lettera];
+        else assegnazioni[s.lettera] = s.cifraPrec;
+        // Le esclusioni di riflesso si ricavano dalle assegnazioni rimaste: quelle
+        // messe a mano restano dove sono.
+        ricalcolaEsclusioniAuto();
+        // La × che l'assegnazione aveva coperto torna al suo posto.
+        if (s.esclSoppressa !== undefined && esclusioni[s.lettera] &&
+            esclusioni[s.lettera][s.esclSoppressa] === ESCL_NO) {
+            esclusioni[s.lettera][s.esclSoppressa] = ESCL_MANO;
+        }
+    }
+
     // Nessuna evidenziazione: l'undo riporta indietro la mossa, non indica una
     // lettera su cui lavorare.
     letteraSelezionata = null;
@@ -1295,6 +1337,8 @@ function suggerimento() {
 }
 
 function apriPannelloHint() {
+    // Occupano lo stesso spazio: vedi apriCalcolatrice()
+    if (calcAperta) chiudiCalcolatrice();
     const pann = document.getElementById('pannello-hint');
     document.getElementById('hint-testo').innerHTML =
         (hintTarget.tipo === 'errore') ? CALC_LANG.hintErrore : CALC_LANG.hintDeduzione;
@@ -1362,6 +1406,119 @@ function applicaHint() {
     renderTutto();
     salvaPartita();
     controllaVittoria();
+}
+
+// === CALCOLATRICE ===
+// Serve per i conti che a mente costano davvero: una moltiplicazione 2x2 cifre,
+// una divisione, quando manca un solo numero per chiudere una riga. Si apre, si
+// fa il conto e si chiude, quindi non ha memoria e non si salva da nessuna
+// parte: al reload riparte da zero come qualunque calcolatrice spenta.
+// Non e' un aiuto e non entra nelle statistiche: non dice niente sullo schema,
+// fa solo l'aritmetica che il giocatore farebbe su un foglio.
+// (calcAperta e' dichiarata con le altre globali in cima: la leggono anche
+// apriPannelloHint e il gestore della tastiera, che stanno piu' su.)
+let calcCorrente = '0';    // numero in digitazione, come stringa
+let calcAccumulato = null; // primo operando in attesa
+let calcOperatore = null;  // operatore in attesa
+let calcNuovoNumero = true; // il prossimo tasto-cifra ricomincia da capo
+
+// Il display non e' un campo di testo: i numeri lunghi si leggono meglio se il
+// separatore e' quello della lingua, ma i conti si fanno sempre col punto.
+function calcFormatta(txt) {
+    return CALC_LANG.decimale === ',' ? txt.replace('.', ',') : txt;
+}
+
+function calcMostra() {
+    const num = document.getElementById('calc-numero');
+    const op = document.getElementById('calc-operazione');
+    if (!num) return;
+    num.textContent = calcFormatta(calcCorrente);
+    // Riga di servizio: ricorda cosa si sta facendo mentre si digita il secondo
+    // operando, altrimenti dopo tre tasti non si sa piu' se era un x o un +.
+    if (op) {
+        const segni = { '+': '+', '-': '−', 'x': '×', ':': '÷' };
+        op.textContent = (calcAccumulato !== null && calcOperatore)
+            ? calcFormatta(calcArrotonda(calcAccumulato)) + ' ' + segni[calcOperatore] : '';
+    }
+}
+
+// Il risultato si taglia a 10 cifre significative: senza, 1:3 riempie il display
+// di 3 e i numeri dello schema (al massimo 4 cifre) diventano illeggibili.
+function calcArrotonda(v) {
+    if (!isFinite(v)) return '∞';
+    const s = parseFloat(v.toPrecision(10)).toString();
+    return s.length > 14 ? v.toExponential(6) : s;
+}
+
+function calcApplica(a, b, op) {
+    if (op === '+') return a + b;
+    if (op === '-') return a - b;
+    if (op === 'x') return a * b;
+    if (op === ':') return b === 0 ? NaN : a / b;
+    return b;
+}
+
+function calcTasto(t) {
+    if (t >= '0' && t <= '9') {
+        calcCorrente = (calcNuovoNumero || calcCorrente === '0') ? t : calcCorrente + t;
+        calcNuovoNumero = false;
+    } else if (t === ',') {
+        if (calcNuovoNumero) { calcCorrente = '0.'; calcNuovoNumero = false; }
+        else if (calcCorrente.indexOf('.') < 0) calcCorrente += '.';
+    } else if (t === 'C') {
+        calcCorrente = '0'; calcAccumulato = null; calcOperatore = null; calcNuovoNumero = true;
+    } else if (t === 'back') {
+        // Cancella l'ultima cifra digitata. Su un risultato appena calcolato non
+        // ha senso rosicchiare le cifre una a una: azzera e basta.
+        if (calcNuovoNumero) calcCorrente = '0';
+        else calcCorrente = calcCorrente.length > 1 ? calcCorrente.slice(0, -1) : '0';
+        if (calcCorrente === '' || calcCorrente === '-') calcCorrente = '0';
+    } else if (t === 'sqrt') {
+        const v = parseFloat(calcCorrente);
+        calcCorrente = v < 0 ? 'ERR' : calcArrotonda(Math.sqrt(v));
+        calcNuovoNumero = true;
+    } else if (t === '+' || t === '-' || t === 'x' || t === ':') {
+        const v = parseFloat(calcCorrente);
+        if (!isNaN(v)) {
+            // Operatori in catena: 2 x 3 x 4 chiude il primo prodotto e tiene il
+            // secondo in attesa, come su una calcolatrice vera.
+            calcAccumulato = (calcAccumulato !== null && calcOperatore && !calcNuovoNumero)
+                ? calcApplica(calcAccumulato, v, calcOperatore) : v;
+            calcCorrente = calcArrotonda(calcAccumulato);
+        }
+        calcOperatore = t;
+        calcNuovoNumero = true;
+    } else if (t === '=') {
+        const v = parseFloat(calcCorrente);
+        if (calcAccumulato !== null && calcOperatore && !isNaN(v)) {
+            const r = calcApplica(calcAccumulato, v, calcOperatore);
+            calcCorrente = isNaN(r) ? 'ERR' : calcArrotonda(r);
+        }
+        calcAccumulato = null; calcOperatore = null; calcNuovoNumero = true;
+    }
+    calcMostra();
+}
+
+function apriCalcolatrice() {
+    // Calcolatrice e suggerimento occupano lo stesso spazio: l'ultimo che si
+    // apre chiude l'altro, altrimenti si sovrappongono e non si capisce quale
+    // dei due sta rispondendo ai tasti.
+    annullaSuggerimento(true);
+    // annullaSuggerimento esce subito se non c'e' un hint in corso, ma il pannello
+    // puo' essere aperto lo stesso: qui lo chiudo comunque, altrimenti i due
+    // riquadri finiscono uno sopra l'altro nello stesso posto.
+    chiudiPannelloHint();
+    calcAperta = true;
+    calcCorrente = '0'; calcAccumulato = null; calcOperatore = null; calcNuovoNumero = true;
+    document.getElementById('pannello-calc').classList.add('aperto');
+    calcMostra();
+    renderTutto();
+}
+
+function chiudiCalcolatrice() {
+    calcAperta = false;
+    document.getElementById('pannello-calc').classList.remove('aperto');
+    renderTutto();
 }
 
 // === PENALITÀ SUL TEMPO ===
@@ -1557,6 +1714,26 @@ document.addEventListener('keydown', function (e) {
     // Non interferire con le scorciatoie di sistema (Ctrl+Alt+S/Q/P del layout)
     if (e.altKey) return;
 
+    // Con la calcolatrice aperta la tastiera e' sua: le cifre finiscono nel
+    // display, non sulle lettere dello schema. Chi ha le mani sui tasti per
+    // digitare un conto non deve passare al mouse.
+    if (calcAperta) {
+        const k = e.key;
+        let t = null;
+        if (k >= '0' && k <= '9') t = k;
+        else if (k === '+') t = '+';
+        else if (k === '-') t = '-';
+        else if (k === '*' || k.toLowerCase() === 'x') t = 'x';
+        else if (k === '/' || k === ':') t = ':';
+        else if (k === ',' || k === '.') t = ',';
+        else if (k === 'Enter' || k === '=') t = '=';
+        else if (k === 'Backspace') t = 'back';
+        else if (k === 'Delete' || k.toLowerCase() === 'c') t = 'C';
+        else if (k === 'Escape') { chiudiCalcolatrice(); e.preventDefault(); return; }
+        if (t !== null) { e.preventDefault(); calcTasto(t); }
+        return;
+    }
+
     if (e.ctrlKey && e.key.toLowerCase() === 'z') {
         e.preventDefault();
         annullaMossa();
@@ -1654,6 +1831,13 @@ function initCalcolo() {
     document.getElementById('btn-hint-spiega').addEventListener('click', mostraSpiegazioneHint);
     document.getElementById('btn-hint-applica').addEventListener('click', applicaHint);
     document.getElementById('btn-hint-chiudi').addEventListener('click', function () { annullaSuggerimento(); });
+    document.getElementById('btn-calcolatrice').addEventListener('click', function () {
+        if (calcAperta) chiudiCalcolatrice(); else apriCalcolatrice();
+    });
+    document.getElementById('btn-calc-chiudi').addEventListener('click', chiudiCalcolatrice);
+    document.querySelectorAll('#calc-tasti .calc-t').forEach(function (b) {
+        b.addEventListener('click', function () { calcTasto(b.dataset.calc); });
+    });
     document.getElementById('btn-vedi-schema').addEventListener('click', vediSchema);
     document.getElementById('btn-nuova-partita').addEventListener('click', richiediNuovaPartita);
     document.getElementById('btn-riprendi').addEventListener('click', riprendiPartita);

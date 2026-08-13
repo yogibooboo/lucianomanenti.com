@@ -237,11 +237,15 @@ a.pulsante-top {
 #pannello-record {
     position: absolute;
     top: 10px;
-    /* Centrata nella fascia libera a destra della matrice, che finisce a 680:
-       (1024 - 680 - 290) / 2 = 27 di margine per parte. Stesso calcolo per
-       #pannello-controlli: le due colonne devono restare allineate. */
-    left: 707px;
-    width: 290px;
+    /* Larga 300 e non piu' 290: sotto ai controlli resta un rettangolo libero e
+       300 e' la misura del formato pubblicitario piu' diffuso. I 10px in piu'
+       sono presi 5 per parte, e la colonna del gioco si sposta di 5 a sinistra:
+       cosi' il margine fra le due colonne resta quello di prima (27) e a cambiare
+       sono solo i due bordi esterni del campo (40 -> 35 a sinistra, 27 -> 22 a
+       destra). Stessa geometria per #pannello-controlli: le due colonne devono
+       restare allineate. */
+    left: 702px;
+    width: 300px;
     z-index: 50;
     background: rgba(0, 40, 10, 0.55);
     border: 2px solid rgba(100, 160, 110, 0.35);
@@ -312,7 +316,10 @@ a.pulsante-top {
 #griglia-calcolo {
     position: absolute;
     top: 100px;
-    left: 40px;
+    /* 35 e non 40: la colonna del gioco arretra di 5px per lasciare alla colonna
+       destra i 5 che le servono da questo lato. Stesso scostamento su
+       .legenda-lato e #pannello-legenda: si muovono insieme o si disallineano. */
+    left: 35px;
     display: grid;
     /* Griglia rimpicciolita a due terzi (cella da 150x72 a 100x48) per liberare
        spazio alla matrice, che e' lo strumento su cui si lavora davvero: li' si
@@ -436,7 +443,9 @@ a.pulsante-top {
 #pannello-legenda {
     position: absolute;
     top: 318px;
-    left: 40px;
+    /* Vedi #griglia-calcolo: la colonna del gioco sta 5px piu' a sinistra. La
+       larghezza non cambia, si sposta e basta. */
+    left: 35px;
     width: 640px;
     box-sizing: border-box;
     z-index: 50;
@@ -475,7 +484,8 @@ a.pulsante-top {
 .legenda-lato {
     position: absolute;
     top: 100px;
-    left: 432px;
+    /* Vedi #griglia-calcolo: 432 - 5 */
+    left: 427px;
     width: 232px;
     box-sizing: border-box;
     z-index: 50;
@@ -498,50 +508,108 @@ a.pulsante-top {
     margin-top: auto;
 }
 
-/* Modo di click: i due radio decidono cosa fa il click su un incrocio */
+/* Annulla spostato qui dalla colonna dei comandi, fra il titolo della matrice e i
+   modi di click: e' il tasto che si preme subito dopo un click sbagliato, e da
+   quella parte dello schermo ci si arriva senza attraversare il campo. Piu' basso
+   dei fratelli rimasti nella colonna (44px): qui divide una fascia stretta con i
+   due modi e non deve rubare loro l'altezza. */
+#riga-annulla {
+    display: flex;
+    gap: 6px;
+}
+/* Lo spazio fra simbolo e testo si mette qui e non nel markup: uno spazio
+   normale, con la lettera maiuscola forzata di .btn-azione, si stringeva fino a
+   far sembrare le due parti una parola sola. */
+#riga-annulla .btn-icona {
+    margin-right: 5px;
+}
+#riga-annulla .btn-azione {
+    /* Meta' per uno, come i due modi di click qui sotto: la colonna e' stretta e
+       due bersagli uguali si imparano meglio di due di misura diversa. */
+    flex: 1 1 0;
+    min-width: 0;
+    height: 30px;
+    font-size: 11px;
+    padding: 0;
+}
+
+/* Modo di click: i due radio decidono cosa fa il click su un incrocio.
+   Affiancati e non impilati: sono due bersagli che si toccano di continuo, e da
+   sovrapposti restavano due strisce sottili, difficili da centrare con un dito.
+   Fianco a fianco possono crescere in altezza usando la stessa fascia. */
 #modo-click {
     display: flex;
-    flex-direction: column;
-    gap: 5px;
+    flex-direction: row;
+    gap: 6px;
 }
 .modo-opzione {
+    /* Si dividono la colonna in parti uguali, qualunque sia la lunghezza del
+       testo: due bersagli identici si imparano meglio di due di misura diversa. */
+    flex: 1 1 0;
+    min-width: 0;
     display: flex;
-    align-items: center;
-    gap: 7px;
-    padding: 4px 8px;
+    /* In alto e non al centro: il testo di "Assegna" occupa due righe e quello di
+       "Escludi" una sola, quindi centrando ogni pezzo sulla propria altezza il
+       simbolo e il nome finivano a quote diverse nei due pulsanti. */
+    align-items: flex-start;
+    justify-content: center;
+    gap: 5px;
+    /* Piu' alti di prima (erano 4px): e' il bersaglio da centrare col dito */
+    padding: 9px 4px;
     border: 2px solid rgba(100, 160, 110, 0.35);
     border-radius: 6px;
     background: rgba(0, 0, 0, 0.25);
     color: #cde8cd;
-    font-size: 12px;
+    font-size: 13px;
     font-weight: bold;
     cursor: pointer;
     transition: all 0.15s;
 }
+/* "Escludi" ha una riga sola contro le due di "Assegna": ancorato in alto come il
+   vicino restava appiccicato al bordo superiore con un vuoto sotto. Qui il testo
+   e' uno solo, quindi centrarlo non puo' disallineare niente. */
+#modo-escludi {
+    align-items: center;
+}
 .modo-opzione:hover {
     border-color: rgba(255, 255, 255, 0.45);
 }
+/* Il radio nativo non si vede piu': lo stato acceso lo dice gia' il pulsante
+   intero (fondo pieno e bordo), e il pallino accanto al simbolo era un secondo
+   indicatore della stessa cosa che rubava spazio al testo. Resta nel DOM perche'
+   e' lui a tenere il gruppo e a ricevere il click del label. */
 .modo-opzione input[type="radio"] {
-    accent-color: #ffd700;
-    width: 14px;
-    height: 14px;
-    margin: 0;
-    cursor: pointer;
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
 }
+/* Il simbolo sta sulla stessa riga del nome del modo: e' l'anteprima del segno
+   che finira' nella casella (x per escludere, pallino per assegnare). */
 .modo-opzione .modo-simbolo {
-    width: 16px;
-    text-align: center;
     font-size: 14px;
-    line-height: 1;
+    line-height: 1.15;
+}
+/* Il nome del modo sta su una riga sua e la scorciatoia sotto. "Escludi" non ha
+   la seconda riga e non gliene riservo lo spazio: i due pulsanti si allineano
+   dall'alto, quindi il nome resta alla stessa quota anche se sotto non ha niente,
+   e riservargli una riga vuota lo faceva sembrare spostato in su. */
+.modo-opzione .modo-testo {
+    display: block;
+    text-align: center;
+    line-height: 1.15;
 }
 /* La scorciatoia col destro e' un'informazione di servizio: si legge una volta
    e poi entra nel gesto, quindi sta piu' piccola e in tono minore del nome del
-   modo, senza rubargli l'occhio. */
+   modo, senza rubargli l'occhio. Va a capo sotto il nome: ora i due pulsanti
+   sono affiancati e si dividono la colonna, quindi sulla stessa riga
+   allargherebbe "Assegna" a scapito di "Escludi". */
 .modo-opzione .modo-scorciatoia {
-    font-size: 9px;
+    display: block;
+    font-size: 10px;
     font-weight: normal;
     opacity: 0.75;
     white-space: nowrap;
+    line-height: 1.1;
 }
 .modo-opzione.attivo {
     background: linear-gradient(180deg, #ffd700 0%, #b8860b 100%);
@@ -688,7 +756,11 @@ a.pulsante-top {
     font-weight: bold;
     line-height: 1;
     letter-spacing: 0;
-    color: rgba(20, 48, 28, 0.20);
+    /* Era allo 0.20: su un telefono, con lo schermo piccolo e spesso alla luce
+       del sole, la coordinata spariva del tutto e la filigrana non serviva piu'
+       a niente. Alzata quel tanto che basta perche' si legga anche li', restando
+       sotto al simbolo (× o ●) che resta il segno da guardare. */
+    color: rgba(20, 48, 28, 0.34);
     pointer-events: none;   /* non deve mai intercettare il click */
     /* Sotto al simbolo. Serve z-index negativo: il testo della casella e' un
        nodo nudo, senza un livello suo, e un ::before posizionato gli finirebbe
@@ -782,8 +854,8 @@ a.pulsante-top {
     position: absolute;
     top: 118px;
     /* Allineata a #pannello-record: vedi il calcolo lì sopra */
-    left: 707px;
-    width: 290px;
+    left: 702px;
+    width: 300px;
     z-index: 50;
     display: flex;
     flex-direction: column;
@@ -927,6 +999,111 @@ a.pulsante-top {
 #btn-hint-chiudi {
     border-color: #990022 !important;
 }
+
+/* === CALCOLATRICE ===
+   Stessa meccanica del pannello del suggerimento (copre la colonna finche' e'
+   aperta) ma tirata piu' in alto: parte dal bordo superiore del riquadro dei
+   record invece che da sotto. Sale perche' il rettangolo libero in fondo alla
+   colonna e' destinato alla pubblicita' e va lasciato scoperto; quello che
+   copre salendo (record e NUOVA PARTITA) non serve mentre si fa un conto, anzi
+   NUOVA PARTITA sotto un tastierino premuto a raffica e' meglio nascosto.
+   -108 e' la distanza fra il top di #pannello-controlli (118) e quello di
+   #pannello-record (10). */
+#pannello-calc {
+    display: none;
+    position: absolute;
+    top: -108px;
+    left: 0;
+    right: 0;
+    z-index: 60;
+    background: #10331c;
+    border: 2px solid #7fd4ff;
+    border-radius: 10px;
+    padding: 12px;
+    flex-direction: column;
+    gap: 10px;
+    box-shadow: 0 0 25px rgba(0, 0, 0, 0.6);
+}
+#pannello-calc.aperto { display: flex; }
+#pannello-calc .calc-titolo {
+    font-size: 14px;
+    font-weight: bold;
+    color: #7fd4ff;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    text-align: center;
+}
+/* Il display e' alto per due righe: sopra l'operazione in corso, sotto il
+   numero che si sta digitando. Senza la prima, dopo tre tasti non si sa piu'
+   se si stava moltiplicando o sommando. */
+#calc-display {
+    background: rgba(0, 0, 0, 0.45);
+    border: 2px solid rgba(127, 212, 255, 0.35);
+    border-radius: 8px;
+    padding: 6px 10px;
+    text-align: right;
+    overflow: hidden;
+}
+#calc-operazione {
+    color: #8fb8a0;
+    font-size: 12px;
+    height: 15px;
+    font-family: "Courier New", monospace;
+}
+#calc-numero {
+    color: #fff;
+    font-size: 26px;
+    font-weight: bold;
+    font-family: "Courier New", monospace;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+#calc-tasti {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+}
+.calc-t {
+    /* 41 e non 38: il pannello deve arrivare a coprire NUOVA PARTITA (che finisce
+       a 414 nel campo) e i px mancanti si danno ai tasti invece che ai margini,
+       cosi' l'altezza in piu' si traduce in bersagli piu' comodi. */
+    height: 41px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #fff;
+    background: rgba(0, 40, 10, 0.6);
+    border: 2px solid #6b9b7a;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.12s;
+}
+.calc-t:hover { background: rgba(0, 60, 20, 0.85); border-color: rgba(255,255,255,0.5); }
+.calc-t:active { transform: translateY(1px); }
+/* Operatori e funzioni si distinguono a colpo d'occhio dalle cifre: sono i tasti
+   che cambiano il senso del conto, e sbagliarne uno costa un calcolo intero. */
+.calc-t.calc-op { background: rgba(0, 40, 70, 0.7); border-color: #4a86b8; color: #bfe6ff; }
+.calc-t.calc-fn { background: rgba(50, 40, 0, 0.6); border-color: #9b8b4a; color: #ffe9a8; font-size: 14px; }
+.calc-t.calc-zero { grid-column: span 2; }
+.calc-t.calc-uguale {
+    background: linear-gradient(180deg, #ffd700 0%, #b8860b 100%);
+    border-color: #ffd700;
+    color: #1a1a2e;
+}
+.calc-t.calc-uguale:hover { filter: brightness(1.1); background: linear-gradient(180deg, #ffd700 0%, #b8860b 100%); }
+#btn-calc-chiudi {
+    height: 36px;
+    font-size: 13px;
+    font-weight: bold;
+    color: #fff;
+    background: rgba(0, 40, 10, 0.6);
+    border: 2px solid #990022;
+    border-radius: 8px;
+    cursor: pointer;
+    text-transform: uppercase;
+}
+#btn-calc-chiudi:hover { background: rgba(0, 60, 20, 0.8); }
 
 #opzioni-errori {
     background: rgba(0, 40, 10, 0.55);
@@ -1171,7 +1348,8 @@ a.pulsante-top {
 #calcolo-minimal-win-panel {
     position: absolute;
     bottom: 42px;
-    left: 40px;
+    /* Allineato al bordo sinistro della colonna del gioco: vedi #griglia-calcolo */
+    left: 35px;
     z-index: 10000;
     display: flex;
     gap: 15px;

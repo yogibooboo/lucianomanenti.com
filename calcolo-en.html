@@ -23,7 +23,7 @@
     <meta http-Equiv="Pragma" Content="no-cache">
     <meta http-Equiv="Expires" Content="0">
 
-    <link rel="stylesheet" href="calcolo.css?v=3.0" />
+    <link rel="stylesheet" href="calcolo.css?v=3.8" />
 
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
@@ -108,6 +108,16 @@
                 <div id="messaggio-stato">Loading...</div>
                 <div class="legenda-nota">Same letter, same digit: every digit belongs to one row only and every letter has one digit only.</div>
                 <div class="legenda-titolo">Possibility matrix</div>
+                <!-- Annulla sta qui e non nella colonna dei comandi: si preme
+                     subito dopo un click sbagliato sulla matrice, quindi la mano
+                     e' gia' da questa parte dello schermo. Di fianco la
+                     calcolatrice, che serve nello stesso momento: si sta
+                     verificando un conto sulla griglia. -->
+                <div id="riga-annulla">
+                    <!-- Vedi il file italiano -->
+                    <button id="btn-annulla" class="btn-azione"><span class="btn-icona">&#8634;</span>Undo</button>
+                    <button id="btn-calcolatrice" class="btn-azione"><span class="btn-icona">&#128290;</span>Calculator</button>
+                </div>
                 <div id="modo-click">
                     <label class="modo-opzione" id="modo-escludi">
                         <input type="radio" name="modo-matrice" value="escludi" checked>
@@ -117,7 +127,7 @@
                     <label class="modo-opzione" id="modo-assegna">
                         <input type="radio" name="modo-matrice" value="assegna">
                         <span class="modo-simbolo">&#9679;</span>
-                        <span class="modo-testo">Assign <span class="modo-scorciatoia">(or right-click)</span></span>
+                        <span class="modo-testo">Assign<span class="modo-scorciatoia">(or right-click)</span></span>
                     </label>
                 </div>
             </div>
@@ -144,7 +154,6 @@
                 </div>
 
                 <div id="azioni">
-                    <button id="btn-annulla" class="btn-azione btn-azione-larga">&#8630; Undo</button>
                     <button id="btn-hint" class="btn-azione btn-azione-larga">&#128161; Hint</button>
                 </div>
 
@@ -165,6 +174,41 @@
                         <button id="btn-hint-applica">ASSIGN THE DIGIT</button>
                         <button id="btn-hint-chiudi">CLOSE</button>
                     </div>
+                </div>
+
+                <!-- Calcolatrice: si apre sopra la colonna dei tasti come il
+                     suggerimento. Serve per un conto isolato (una moltiplicazione
+                     a quattro cifre, una divisione) e si richiude subito, quindi
+                     coprire tempo ed errori per quei pochi secondi non pesa. -->
+                <div id="pannello-calc">
+                    <!-- Vedi il file italiano -->
+                    <div class="calc-titolo">Calculator</div>
+                    <div id="calc-display">
+                        <div id="calc-operazione"></div>
+                        <div id="calc-numero">0</div>
+                    </div>
+                    <div id="calc-tasti">
+                        <button class="calc-t calc-fn" data-calc="C">C</button>
+                        <button class="calc-t calc-fn" data-calc="back">&#9003;</button>
+                        <button class="calc-t calc-fn" data-calc="sqrt">&#8730;</button>
+                        <button class="calc-t calc-op" data-calc=":">&divide;</button>
+                        <button class="calc-t" data-calc="7">7</button>
+                        <button class="calc-t" data-calc="8">8</button>
+                        <button class="calc-t" data-calc="9">9</button>
+                        <button class="calc-t calc-op" data-calc="x">&times;</button>
+                        <button class="calc-t" data-calc="4">4</button>
+                        <button class="calc-t" data-calc="5">5</button>
+                        <button class="calc-t" data-calc="6">6</button>
+                        <button class="calc-t calc-op" data-calc="-">&minus;</button>
+                        <button class="calc-t" data-calc="1">1</button>
+                        <button class="calc-t" data-calc="2">2</button>
+                        <button class="calc-t" data-calc="3">3</button>
+                        <button class="calc-t calc-op" data-calc="+">+</button>
+                        <button class="calc-t calc-zero" data-calc="0">0</button>
+                        <button class="calc-t" data-calc=",">.</button>
+                        <button class="calc-t calc-uguale" data-calc="=">=</button>
+                    </div>
+                    <button id="btn-calc-chiudi">CLOSE</button>
                 </div>
             </div>
 
@@ -254,7 +298,7 @@
     <!-- Layout engine per ridimensionare la finestra del gioco -->
     <script src="game-layout.js?v=4.6"></script>
     <!-- Logica del Calcolo Enigmatico -->
-    <script src="calcolo.js?v=3.2"></script>
+    <script src="calcolo.js?v=3.5"></script>
     <script>
         (function () {
             var nascosto = false;
