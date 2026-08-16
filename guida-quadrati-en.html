@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
+	<script>
+		window.dataLayer = window.dataLayer || [];
+		function gtag() { dataLayer.push(arguments); }
+		gtag('js', new Date());
+		gtag('config', 'G-WRBDRDQ4L8');
+		window.currentLang = 'en';
+	</script>
+	<title>Luciano Dots and Boxes Rules - How to Play and How to Win</title>
+	<meta name="Description"
+		content="The rules of Dots and Boxes, the squared-paper game: how to draw a line, why closing a box lets you move again, the chain rule and the two-box sacrifice that wins the endgame.">
+	<link rel="alternate" hreflang="it" href="guida-quadrati.html">
+	<link rel="alternate" hreflang="en" href="guida-quadrati-en.html">
+	<link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
+	<link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
+	<link rel="shortcut icon" href="favicon/favicon.ico">
+	<link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+	<style>
+		body {
+			font-family: sans-serif;
+			line-height: 1.7;
+			max-width: 800px;
+			margin: 40px auto;
+			padding: 20px;
+			color: #333;
+			background-color: #f9f9f9;
+		}
+
+		h1 {
+			color: #2c3e50;
+			border-bottom: 2px solid #ffd700;
+			padding-bottom: 10px;
+		}
+
+		h2 {
+			color: #2c3e50;
+			margin-top: 30px;
+		}
+
+		h3 {
+			color: #2c3e50;
+			font-size: 1.1em;
+			margin-top: 20px;
+		}
+
+		.lang-switch {
+			text-align: right;
+			margin-bottom: 20px;
+		}
+
+		.lang-switch a {
+			display: inline-block;
+			padding: 6px 16px;
+			margin-left: 5px;
+			text-decoration: none;
+			border-radius: 5px;
+			font-weight: bold;
+			font-size: 14px;
+		}
+
+		.lang-switch a.active {
+			background: #2c3e50;
+			color: white;
+		}
+
+		.lang-switch a:not(.active) {
+			background: #ddd;
+			color: #333;
+			cursor: pointer;
+		}
+
+		.content-box {
+			background: white;
+			padding: 30px;
+			border-radius: 8px;
+			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+		}
+
+		.play-btn {
+			display: inline-block;
+			margin-top: 25px;
+			padding: 12px 30px;
+			background: #27ae60;
+			color: white;
+			text-decoration: none;
+			border-radius: 8px;
+			font-size: 18px;
+			font-weight: bold;
+		}
+
+		.nav-links {
+			text-align: center;
+			margin-top: 30px;
+			font-size: 14px;
+		}
+
+		.nav-links a {
+			color: #3498db;
+			text-decoration: none;
+			margin: 0 10px;
+		}
+
+		.banner {
+			width: 100%;
+			height: 150px;
+			background-image: url('images/home/castagne.jpg');
+			background-size: cover;
+			background-position: center;
+			border-radius: 8px;
+			margin: 20px 0;
+			box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+		}
+
+		.highlight {
+			background-color: #fff9c4;
+			padding: 0 4px;
+		}
+
+		/* The little example diagrams: dots, drawn lines and captured boxes, using
+		   the same colours as the game itself, so what you read here matches what
+		   you see on the board. Plain positioned divs, no images to download. */
+		.mini-griglia {
+			position: relative;
+			display: inline-block;
+			background: #fffaeb;
+			border: 2px solid #14301c;
+			border-radius: 6px;
+			padding: 16px;
+			margin: 10px 0 6px 0;
+		}
+
+		.mg-inner { position: relative; }
+
+		.mg-punto {
+			position: absolute;
+			width: 8px;
+			height: 8px;
+			margin-left: -4px;
+			margin-top: -4px;
+			border-radius: 50%;
+			background: #2c3e50;
+			z-index: 3;
+		}
+
+		.mg-lato { position: absolute; z-index: 2; border-radius: 2px; }
+		.mg-lato.h { height: 5px; margin-top: -2.5px; }
+		.mg-lato.v { width: 5px; margin-left: -2.5px; }
+		.mg-lato.blu { background: #2962be; }
+		.mg-lato.rosso { background: #c81e37; }
+		/* The "move to play" line in the examples: dashed, to tell it apart from
+		   the lines already drawn. */
+		.mg-lato.mossa { background: repeating-linear-gradient(90deg,#e8a020 0 6px,transparent 6px 10px); }
+		.mg-lato.v.mossa { background: repeating-linear-gradient(180deg,#e8a020 0 6px,transparent 6px 10px); }
+
+		.mg-cella {
+			position: absolute;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-weight: bold;
+			font-size: 18px;
+			z-index: 1;
+		}
+		.mg-cella.tua { background: rgba(41,98,190,0.30); color: #1a4fa0; }
+		.mg-cella.pc  { background: rgba(200,30,55,0.26); color: #a01028; }
+
+		.legenda-schema {
+			font-size: 0.92em;
+			color: #666;
+			margin-top: -2px;
+			margin-bottom: 18px;
+		}
+
+		.regola-chiave {
+			background: #eef7ee;
+			border-left: 4px solid #27ae60;
+			padding: 12px 18px;
+			margin: 18px 0;
+		}
+	</style>
+</head>
+
+<body>
+	<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+		<a href="#" id="btn-back" onclick="goBack(); return false;"
+			style="display: inline-block; padding: 6px 16px; background: #e74c3c; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 14px;">&#x2190;
+			Back</a>
+		<div class="lang-switch" style="margin-bottom: 0;">
+			<a href="guida-quadrati.html" id="btn-it">Italiano</a>
+			<a href="guida-quadrati-en.html" id="btn-en" class="active">English</a>
+		</div>
+	</div>
+
+	<div class="content-box">
+		<h1>Dots and Boxes</h1>
+
+		<p>This is the game so many of us played at school on squared paper, at the back of the classroom. All you need
+			is a grid of dots: players take turns joining one dot to the next, and whoever closes a box claims it.
+			Whoever ends up with more boxes wins.</p>
+
+		<p>The rules take half a minute to learn. What is surprising is the real strategy hiding behind them: halfway
+			through, the game changes character completely, and anyone who knows the trick of <em>chains</em> will beat
+			someone who simply grabs every box they can see. This page covers the rules first, then the trick.</p>
+
+		<div class="banner"></div>
+
+		<h2>The rules</h2>
+
+		<h3>1. One line per turn</h3>
+		<p>The board is a grid of dots. On your turn you draw <strong>a single line</strong>, that is one segment
+			between two neighbouring dots, horizontally or vertically. Never diagonally. In the game you just click the
+			gap between the two dots: hovering over it lights the line up in grey, so you can see which one you are
+			about to draw before you commit.</p>
+
+		<h3>2. Close a box and you claim it</h3>
+		<p>When the line you draw is the <strong>fourth</strong> side of a box, that box is yours: it fills with colour
+			and shows your initial. Yours are blue, the computer's are red.</p>
+
+		<div class="regola-chiave">
+			<h3 style="margin-top:0">3. Close a box, move again &mdash; this is the rule that decides games</h3>
+			<p style="margin-bottom:0">If your line closes a box, <strong>you play again</strong>. And if your next move
+				closes another one, you play again, and so on. That is why games are decided in bursts: a player can
+				bank ten boxes in a single turn. Anyone who does not know this rule loses without understanding
+				why.</p>
+		</div>
+
+		<p>A line that closes <em>two</em> boxes at once (which happens when it sits between two boxes that both already
+			have three sides) wins you both of them in one go.</p>
+
+		<h3>4. The game ends when the grid is full</h3>
+		<p>Play continues until every line has been drawn. At that point every box has an owner, and whoever has more
+			wins. On a grid with an even number of boxes a draw is possible; with an odd number (5&times;5, for
+			instance, has 25) someone has to win.</p>
+
+		<h2>The trick: chains</h2>
+
+		<p>Early on, every move looks much the same &mdash; and largely is: you fill the grid without giving anything
+			away. The point is that sooner or later <strong>the safe lines run out</strong>. From then on, every
+			available move takes some box to three sides, which means handing it to your opponent. That is where the
+			real game starts.</p>
+
+		<h3>What "giving away" a box means</h3>
+		<p>A box with <strong>three sides already drawn</strong> is ready to be closed: whoever is on move takes it for
+			free. So the move to avoid, for as long as you can, is the one that takes a box from two sides to
+			three.</p>
+
+		<div class="mini-griglia">
+			<div class="mg-inner" style="width:180px;height:60px">
+				<div class="mg-cella" style="left:0;top:0;width:60px;height:60px"></div>
+				<div class="mg-lato h blu" style="left:0;top:0;width:60px"></div>
+				<div class="mg-lato h blu" style="left:0;top:60px;width:60px"></div>
+				<div class="mg-lato v blu" style="left:0;top:0;height:60px"></div>
+				<div class="mg-lato v mossa" style="left:60px;top:0;height:60px"></div>
+				<div class="mg-punto" style="left:0;top:0"></div>
+				<div class="mg-punto" style="left:60px;top:0"></div>
+				<div class="mg-punto" style="left:120px;top:0"></div>
+				<div class="mg-punto" style="left:180px;top:0"></div>
+				<div class="mg-punto" style="left:0;top:60px"></div>
+				<div class="mg-punto" style="left:60px;top:60px"></div>
+				<div class="mg-punto" style="left:120px;top:60px"></div>
+				<div class="mg-punto" style="left:180px;top:60px"></div>
+			</div>
+		</div>
+		<p class="legenda-schema">The box on the left has three sides. The dashed line is the fourth: whoever draws it
+			takes the box <em>and moves again</em>.</p>
+
+		<h3>The chain</h3>
+		<p>A <strong>chain</strong> is a run of connected boxes, all with two sides drawn, that open one after another.
+			The crucial fact is this: the moment someone is forced to open a chain, the opponent does not take one box,
+			<strong>they take the whole thing</strong>. Every box they close earns them another move, and that move
+			closes the next box, all the way down the run.</p>
+
+		<div class="mini-griglia">
+			<div class="mg-inner" style="width:240px;height:60px">
+				<div class="mg-lato h blu" style="left:0;top:0;width:60px"></div>
+				<div class="mg-lato h blu" style="left:60px;top:0;width:60px"></div>
+				<div class="mg-lato h blu" style="left:120px;top:0;width:60px"></div>
+				<div class="mg-lato h blu" style="left:180px;top:0;width:60px"></div>
+				<div class="mg-lato h rosso" style="left:0;top:60px;width:60px"></div>
+				<div class="mg-lato h rosso" style="left:60px;top:60px;width:60px"></div>
+				<div class="mg-lato h rosso" style="left:120px;top:60px;width:60px"></div>
+				<div class="mg-lato h rosso" style="left:180px;top:60px;width:60px"></div>
+				<div class="mg-lato v blu" style="left:0;top:0;height:60px"></div>
+				<div class="mg-lato v mossa" style="left:240px;top:0;height:60px"></div>
+				<div class="mg-punto" style="left:0;top:0"></div>
+				<div class="mg-punto" style="left:60px;top:0"></div>
+				<div class="mg-punto" style="left:120px;top:0"></div>
+				<div class="mg-punto" style="left:180px;top:0"></div>
+				<div class="mg-punto" style="left:240px;top:0"></div>
+				<div class="mg-punto" style="left:0;top:60px"></div>
+				<div class="mg-punto" style="left:60px;top:60px"></div>
+				<div class="mg-punto" style="left:120px;top:60px"></div>
+				<div class="mg-punto" style="left:180px;top:60px"></div>
+				<div class="mg-punto" style="left:240px;top:60px"></div>
+			</div>
+		</div>
+		<p class="legenda-schema">A chain of four boxes. The inner vertical lines are not drawn: whoever closes the
+			dashed one on the right takes the first box, moves again, takes the second, and so on until they have taken
+			<strong>all four</strong>.</p>
+
+		<p>Which gives the single most useful rule in the game:</p>
+
+		<div class="regola-chiave">
+			<p style="margin:0"><strong>Whoever is forced to open a chain first loses the whole chain.</strong> So by
+				midgame the real goal is not taking boxes: it is leaving <em>the other player</em> without a safe
+				move.</p>
+		</div>
+
+		<p>It also follows that when you must open something, open <strong>the shortest chain</strong>: you give away
+			two or three boxes instead of eight, and keep the long ones for later.</p>
+
+		<h2>The move almost nobody knows: the sacrifice</h2>
+
+		<p>This is the refinement that separates playing well from playing very well, and for years I only discovered it
+			by losing to people who used it.</p>
+
+		<p>Imagine you have just been handed a chain of six boxes. Instinct says: take them all. But look at what happens
+			next: you have taken all six, the chain is finished, <strong>it is still your move</strong> &mdash; and
+			there is nothing safe left on the board. So you are the one who has to open the next chain, and you hand it
+			over whole. You won six boxes and gave away maybe eight.</p>
+
+		<p>The right move is different: take the first four, then, instead of banking the last two as well,
+			<strong>draw the line that divides them</strong>. You leave your opponent two boxes as a gift &mdash; but
+			they are the one who closes those two, and when they are done <em>they</em> are the one left without a safe
+			move, and they have to open the next chain.</p>
+
+		<div class="mini-griglia">
+			<div class="mg-inner" style="width:120px;height:60px">
+				<div class="mg-lato h blu" style="left:0;top:0;width:60px"></div>
+				<div class="mg-lato h blu" style="left:60px;top:0;width:60px"></div>
+				<div class="mg-lato h blu" style="left:0;top:60px;width:60px"></div>
+				<div class="mg-lato h blu" style="left:60px;top:60px;width:60px"></div>
+				<div class="mg-lato v blu" style="left:0;top:0;height:60px"></div>
+				<div class="mg-lato v blu" style="left:120px;top:0;height:60px"></div>
+				<div class="mg-lato v mossa" style="left:60px;top:0;height:60px"></div>
+				<div class="mg-punto" style="left:0;top:0"></div>
+				<div class="mg-punto" style="left:60px;top:0"></div>
+				<div class="mg-punto" style="left:120px;top:0"></div>
+				<div class="mg-punto" style="left:0;top:60px"></div>
+				<div class="mg-punto" style="left:60px;top:60px"></div>
+				<div class="mg-punto" style="left:120px;top:60px"></div>
+			</div>
+		</div>
+		<p class="legenda-schema">The last two boxes of a chain. Drawing the dashed line <em>down the middle</em> gives
+			both away &mdash; but forces your opponent to move first on whatever is left.</p>
+
+		<p>It is called the <em>two-box sacrifice</em>, or the all-but-two. It costs two points and often earns back
+			many more: it is worth it whenever the next chain is worth more than two boxes. This is exactly what the
+			computer does on Hard, and it is why that level is a good deal tougher.</p>
+
+		<h2>Controls and options</h2>
+
+		<h3>Grid size</h3>
+		<p>There are three ready-made sizes &mdash; <strong>Small</strong> (5&times;5, so 25 boxes),
+			<strong>Medium</strong> (8&times;8, 64 boxes) and <strong>Large</strong> (11&times;11, 121 boxes) &mdash;
+			plus a fourth, <strong>Custom</strong>, where you pick rows and columns yourself, from 3 up to 12 rows and
+			14 columns. The total number of boxes appears under the choice: handy for not stumbling into a half-hour
+			game by accident.</p>
+		<p>A small grid makes for a short, tactical game where every box matters; a large one makes for a long game
+			where chain play counts for much more. To learn the strategy I would start on Small or Medium: on Large
+			there are so many chains that they are hard to see at first.</p>
+
+		<h3>How good the computer is</h3>
+		<ul>
+			<li><strong>Easy</strong> &mdash; plays more or less at random, but avoids giving boxes away when it can.
+				It does not think about chains at all: put it under pressure and it collapses.</li>
+			<li><strong>Medium</strong> &mdash; never gives anything away while it still has safe moves, and when forced
+				it opens the shortest chain. This is how someone who knows the game well but not the theory plays.</li>
+			<li><strong>Hard</strong> &mdash; knows about chains, chooses which one to open by working out what happens
+				afterwards, and uses the two-box sacrifice. It beats the Medium level regularly: if you can beat it on
+				the Large grid, you have genuinely understood the game.</li>
+		</ul>
+
+		<h3>Your record</h3>
+		<p>There is no clock, deliberately: here the time depends mostly on how long your opponent takes to move, and
+			playing in a hurry is the surest way to give boxes away. What is kept instead is <strong>games won out of
+				games played</strong> and your <strong>best margin</strong>, meaning the widest win you have managed.
+			The tallies are separate per difficulty, because beating Easy and beating Hard are not the same
+			achievement. The circular-arrow button clears the record for the level you are playing: the first click
+			asks for confirmation, so nothing gets wiped by accident.</p>
+
+		<p>At the end of a game, under the score, you also see how many boxes you <strong>gave away</strong>. It is the
+			statistic you learn most from: games are almost always lost there, not in the boxes you failed to
+			take.</p>
+
+		<h3>The game saves itself</h3>
+		<p>If you close the page midway, next time the game offers it back to you with the <strong>Resume previous
+				game</strong> button. The save lives in your browser, not on a server: clear your browsing data and it
+			goes with it.</p>
+
+		<p style="text-align: center;"><a href="#" onclick="goBack(); return false;" class="play-btn">Close</a></p>
+
+		<div class="nav-links">
+			<a href="index-en.html">All games</a> |
+			<a href="minato-en.html">Minesweeper</a> |
+			<a href="sudoku-en.html">Sudoku</a> |
+			<a href="calcolo-en.html">Cross Math</a> |
+			<a href="dama-en.html">Checkers</a>
+		</div>
+	</div>
+
+	<p style="text-align: center; font-size: 0.8em; color: #999; margin-top: 10px;">
+		© 2026 Luciano Manenti
+	</p>
+
+	<script>
+		function goBack() {
+			window.close();
+		}
+		(function() {
+			var nascosto = false;
+			var observer = new MutationObserver(function() {
+				if (nascosto) return;
+				var divs = document.querySelectorAll('body > div');
+				for (var i = 0; i < divs.length; i++) {
+					if (divs[i].shadowRoot && !divs[i].className && (divs[i].getAttribute('style')||'').length > 5000) {
+						divs[i].style.setProperty('display', 'none', 'important');
+						nascosto = true;
+						observer.disconnect();
+						return;
+					}
+				}
+			});
+			observer.observe(document.body, { childList: true });
+		})();
+	</script>
+</body>
+
+</html>

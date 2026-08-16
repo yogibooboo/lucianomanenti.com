@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9335537153013492"
+        crossorigin="anonymous"></script>
+    <script>
+        // Fix sicurezza per evitare crash da cross-origin su window.opener
+        (function() { try { if (!window.opener) return; var test = window.opener.document; if (!window.opener.game) { window.opener = null; } } catch(e) { window.opener = null; } })();
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Free Online Minesweeper - lucianomanenti.com</title>
+    <link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
+    <link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
+    <link rel="shortcut icon" href="favicon/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+    <link rel="manifest" href="favicon/site.webmanifest">
+
+    <meta name="Description"
+        content="Play Minesweeper free online, no sign-up. Three classic levels, timer and records, first click always safe and an option for fields guaranteed solvable without guessing.">
+    <meta http-Equiv="Cache-Control" Content="no-cache">
+    <meta http-Equiv="Pragma" Content="no-cache">
+    <meta http-Equiv="Expires" Content="0">
+
+    <link rel="stylesheet" href="minato.css?v=1.8" />
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-WRBDRDQ4L8');
+    </script>
+    <script>
+        window.gameConfig = {
+            gaPrefix: 'MINATO_',
+            hideLegalFooter: true,
+            // Vedi il file italiano: gli slot sono gli stessi su tutto il sito.
+            adsenseActive: true,
+            adsenseSlots: {
+                '300x600': '5266697442',
+                '160x600': '1167670336',
+                '300x250': '8471445288',
+                '160x250': '8663016975'
+            }
+        };
+        window.currentLang = 'en';
+    </script>
+</head>
+
+<body>
+
+    <div class="main-container">
+        <div id="sidebar-left" class="sidebar"></div>
+        <div id="sidebar-right" class="sidebar"></div>
+
+        <div id="campogioco">
+            <div id="schermo"></div>
+
+            <div class="lang-switch-header">
+                <a href="minato.html">IT</a>
+                <a href="minato-en.html" class="active">EN</a>
+                <div id="btn-audio" class="btn-audio-game" aria-label="Audio"></div>
+            </div>
+            <div id="titolo-gioco">Minesweeper Luciano</div>
+
+            <div id="messaggio-stato">Loading...</div>
+
+            <!-- ================= RECORDS PANEL ================= -->
+            <div id="pannello-record">
+                <div class="record-header">
+                    <span>BEST — <span id="record-diff">--</span></span>
+                </div>
+                <div class="record-righe">
+                    <div class="info-blocco">
+                        <div class="info-label">Today</div>
+                        <div class="record-valore" id="record-oggi">--:--</div>
+                        <button class="btn-reset-record" data-tipo="daily" title="Reset today's best">&#10226;</button>
+                    </div>
+                    <div class="info-blocco">
+                        <div class="info-label">Week</div>
+                        <div class="record-valore" id="record-settimana">--:--</div>
+                        <button class="btn-reset-record" data-tipo="weekly" title="Reset this week's best">&#10226;</button>
+                    </div>
+                    <div class="info-blocco">
+                        <div class="info-label">All time</div>
+                        <div class="record-valore" id="record-assoluto">--:--</div>
+                        <button class="btn-reset-record" data-tipo="all" title="Reset all-time best">&#10226;</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Built by minato.js: size depends on the level -->
+            <div id="griglia-minato"></div>
+
+            <!-- ================= CONTROLS ================= -->
+            <div id="pannello-controlli">
+                <div id="info-partita">
+                    <div class="info-blocco">
+                        <div class="info-label">Level</div>
+                        <div class="info-valore" id="info-difficolta">--</div>
+                    </div>
+                    <div class="info-blocco">
+                        <div class="info-label">Time</div>
+                        <div class="info-valore" id="info-tempo">00:00</div>
+                    </div>
+                    <div class="info-blocco">
+                        <div class="info-label">Mines</div>
+                        <div class="info-valore" id="info-mine">--</div>
+                    </div>
+                    <!-- Vedi il file italiano. -->
+                    <div class="info-blocco">
+                        <div class="info-label">Mistakes</div>
+                        <div class="info-valore" id="info-errori">0</div>
+                    </div>
+                </div>
+
+                <div id="modi">
+                    <button id="modo-scava" class="btn-azione attivo"><span class="btn-icona">&#9935;</span>Dig</button>
+                    <button id="modo-bandiera" class="btn-azione"><span class="btn-icona">&#9873;</span>Flag</button>
+                </div>
+
+                <div id="legenda">
+                    <b>Right click</b>: place or remove a flag.<br>
+                    <b>Spacebar</b>: switch mode on the fly.<br>
+                    <b>Click an uncovered number</b>: if it already has as many flags
+                    around it as it says, all its other neighbours open at once.
+                </div>
+
+                <button id="btn-nuova-partita">NEW GAME</button>
+
+                <!-- Vedi il file italiano: riquadro affiliati rotante, non AdSense. -->
+                <div id="banner-rotante"></div>
+            </div>
+
+            <!-- ================= MODALS ================= -->
+
+            <div id="modale-inizio" class="form-minato">
+                <button id="btn-riprendi" class="btn-continua" style="display: none; width: 100%; max-width: 250px; margin: 0 auto 20px auto; background: #27ae60; border-color: #1e8449; color: white;">RESUME PREVIOUS GAME</button>
+
+                <div class="form-minato-title">New Minesweeper Game</div>
+
+                <div class="opzione-gruppo" style="margin-bottom: 6px; text-align: center;">
+                    <div style="font-size: 13px; font-weight: bold; margin-bottom: 12px; color: #ffd700; text-transform: uppercase;">Level:</div>
+                    <div class="diff-riga">
+                        <button id="btn-diff-principiante" onclick="selezionaDifficolta('principiante')" class="btn-opzione-sel attiva" style="width: 220px;">BEGINNER</button>
+                        <div class="diff-dettaglio">9 &times; 9 &mdash; 10 mines</div>
+                        <button id="btn-diff-intermedio" onclick="selezionaDifficolta('intermedio')" class="btn-opzione-sel" style="width: 220px;">INTERMEDIATE</button>
+                        <div class="diff-dettaglio">16 &times; 16 &mdash; 40 mines</div>
+                        <button id="btn-diff-esperto" onclick="selezionaDifficolta('esperto')" class="btn-opzione-sel" style="width: 220px;">EXPERT</button>
+                        <div class="diff-dettaglio">30 &times; 16 &mdash; 99 mines</div>
+                    </div>
+                </div>
+
+                <div id="opzione-risolvibile">
+                    <label>
+                        <input type="checkbox" id="chk-risolvibile" checked>
+                        <span>Field always solvable by logic
+                            <span class="nota">Without this option you may end up, usually near the end, having to guess between two squares. With it on, generating the field is slower and on Expert it may fail: if it does, you'll be told.</span>
+                        </span>
+                    </label>
+                </div>
+
+                <button onclick="confermaEAvviaPartita()" class="btn-continua" style="width: 100%; max-width: 250px; margin: 0 auto; display: block;">START PLAYING</button>
+            </div>
+
+            <div id="haivinto" class="form-minato modale-vittoria">
+                <div class="confirm-message" id="vittoria-messaggio" style="margin: 0 0 8px 0; line-height: 1.3;">CONGRATULATIONS!</div>
+                <div id="vittoria-dettagli"></div>
+                <button onclick="location.reload()" class="btn-continua" style="width: 280px; height: 44px; font-size: 16px; margin: 0 auto;">NEW GAME</button>
+            </div>
+
+            <div id="haiperso" class="form-minato modale-sconfitta">
+                <div class="confirm-message" id="sconfitta-messaggio" style="margin: 0 0 10px 0; line-height: 1.3;">BOOM!</div>
+                <div id="sconfitta-penalita"></div>
+                <button id="btn-annulla-fatale" class="btn-continua" style="width: 320px; height: 44px; font-size: 16px; margin: 0 auto 12px auto; display: block; background: #27ae60; border-color: #1e8449; color: white;">UNDO THE FATAL MOVE</button>
+                <button onclick="location.reload()" class="btn-continua" style="width: 280px; height: 40px; font-size: 15px; margin: 0 auto; display: block;">NEW GAME</button>
+            </div>
+
+            <div id="confermatermina" class="form-minato modale-conferma">
+                <div class="confirm-message" style="margin: 0 0 18px 0; line-height: 1.4; font-size: 22px;">Do you really want to abandon this game?</div>
+                <div class="conferma-bottoni">
+                    <button id="btn-no-continua" class="btn-continua" style="width: 260px; height: 44px; font-size: 16px;">NO, KEEP PLAYING</button>
+                    <button id="btn-si-termina" class="btn-continua" style="width: 260px; height: 44px; font-size: 16px; background-color: #cc0c39; color: white; border-color: #990022;">YES, NEW FIELD</button>
+                </div>
+            </div>
+
+            <!-- Vedi il file italiano: le regole stanno in guida-minato-en.html,
+                 non piu' in una modale qui. -->
+
+            <div class="link-utility-bottom">
+                <a href="aboutme.html" target="_blank" id="btn-scrivetemi-minato" class="pulsante-top">Contact Me</a>
+                <a href="guida-minato-en.html" target="_blank" rel="opener" id="btn-regole-top" class="pulsante-top">How to Play</a>
+            </div>
+
+            <div class="legal-links-minato">
+                <a href="privacy.html" target="_blank" id="btn-privacy-minato">Privacy Policy</a>
+                <span class="sep">•</span>
+                <a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)" id="btn-cookie-minato">Manage Cookies</a>
+            </div>
+
+            <div class="link-giochi-minato">
+                <a href="sudoku-en.html" class="pulsante-link-minato">Sudoku</a>
+                <a href="calcolo-en.html" class="pulsante-link-minato">Calcolo Enigmatico</a>
+                <a href="scacchi-en.html" class="pulsante-link-minato">Chess</a>
+                <a href="dama-en.html" class="pulsante-link-minato">Checkers</a>
+                <a href="scopa-en.html" class="pulsante-link-minato">Scopa</a>
+                <a href="briscola-en.html" class="pulsante-link-minato">Briscola</a>
+                <a href="burraco-en.html" class="pulsante-link-minato">Burraco</a>
+                <a href="scala40-en.html" class="pulsante-link-minato">Scala 40</a>
+                <a href="spider-en.html" class="pulsante-link-minato">Spider</a>
+                <a href="klondike-en.html" class="pulsante-link-minato">Klondike</a>
+                <a href="index-en.html" class="pulsante-link-minato pulsante-home-minato">ALL GAMES</a>
+            </div>
+
+        </div><!-- /campogioco -->
+    </div>
+
+    <script src="site.js?v=1.1"></script>
+    <script src="game-layout.js?v=4.6"></script>
+    <script src="minato.js?v=1.7"></script>
+    <script>
+        (function () {
+            var nascosto = false;
+            var observer = new MutationObserver(function () {
+                if (nascosto) return;
+                var divs = document.querySelectorAll('body > div');
+                for (var i = 0; i < divs.length; i++) {
+                    if (divs[i].shadowRoot && !divs[i].className && (divs[i].getAttribute('style') || '').length > 5000) {
+                        divs[i].style.setProperty('display', 'none', 'important');
+                        nascosto = true;
+                        observer.disconnect();
+                        return;
+                    }
+                }
+            });
+            observer.observe(document.body, { childList: true });
+        })();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,812 @@
+/* ============================================================================
+   CAMPO MINATO - Stili CSS
+   Stesso feltro verde e stessa impaginazione 1024x750 degli altri giochi del
+   sito (Sudoku, Calcolo Enigmatico): colonna di sinistra per lo schema,
+   colonna di destra per record e comandi.
+   ============================================================================ */
+
+/* === BASE & LAYOUT === */
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #1a5f2a;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.main-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+/* === SIDEBARS (per AdSense e layout) === */
+.sidebar {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    background: linear-gradient(135deg, #1a6b30 0%, #145524 50%, #0f4a1c 100%);
+    overflow-y: auto;
+    box-sizing: border-box;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    z-index: 1;
+    transition: opacity 0.3s ease;
+}
+#sidebar-left { left: 0; }
+#sidebar-right { right: 0; }
+
+/* === CAMPO DI GIOCO === */
+#campogioco {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 1024px;
+    height: 750px;
+    background: linear-gradient(135deg, #1a6b30 0%, #145524 50%, #0f4a1c 100%);
+    background-image: url(images/scala40/tappetoverde.png);
+    transform-origin: center center;
+    border-radius: 10px;
+    box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.4), 0 10px 30px rgba(0,0,0,0.5);
+    overflow: hidden;
+}
+
+/* === SCHERMO OVERLAY === */
+#schermo {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1024px;
+    height: 750px;
+    background-color: rgba(0, 0, 0, 0.65);
+    z-index: 30000;
+    display: none;
+}
+
+/* === TITOLO E BARRA SUPERIORE === */
+#titolo-gioco {
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #ffd700;
+    font-size: 26px;
+    font-family: 'Slackey', 'Outfit', sans-serif;
+    font-weight: bold;
+    z-index: 1000;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+    white-space: nowrap;
+}
+
+/* Centrato sulla colonna della griglia (asse x=340), non sul campo intero come
+   negli altri giochi: qui la meta' destra e' occupata dal pannello dei comandi,
+   e un messaggio centrato a 512 finirebbe a cavallo fra le due colonne invece
+   che sopra la cosa che commenta. Stesso valore del left di #griglia-minato:
+   se cambia uno, va cambiato anche l'altro. */
+#messaggio-stato {
+    position: absolute;
+    top: 50px;
+    left: 340px;
+    transform: translateX(-50%);
+    color: #fff;
+    font-size: 16px;
+    font-weight: bold;
+    text-align: center;
+    background: rgba(0, 40, 10, 0.6);
+    padding: 6px 20px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    z-index: 100;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    white-space: normal;
+    max-width: 560px;
+    width: max-content;
+    line-height: 1.35;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.lang-switch-header {
+    position: absolute;
+    top: 8px;
+    left: 230px;
+    z-index: 10001;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.lang-switch-header a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 10px;
+    height: 32px;
+    text-decoration: none;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 12px;
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    transition: all 0.2s;
+    box-sizing: border-box;
+}
+.lang-switch-header a.active {
+    background: #ffd700;
+    color: #1a1a2e;
+    border-color: #b8860b;
+}
+.lang-switch-header a:hover:not(.active) {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.btn-audio-game {
+    width: 32px;
+    height: 32px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 20px;
+    background-color: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+.btn-audio-game:hover {
+    background-color: rgba(255, 255, 255, 0.25);
+}
+.btn-audio-game.muted {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.21.05-.42.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z'/%3E%3C/svg%3E");
+}
+
+#btn-audio {
+    position: relative;
+    z-index: 10001;
+}
+
+.pulsante-top {
+    height: 32px;
+    line-height: 32px;
+    background: rgba(0,0,0,0.4);
+    border: 1px solid #6b9b7a;
+    color: white;
+    border-radius: 4px;
+    padding: 0 10px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: bold;
+    transition: all 0.2s;
+    box-sizing: border-box;
+}
+.pulsante-top:hover {
+    background: rgba(0, 60, 20, 0.7);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+a.pulsante-top {
+    display: inline-block;
+    text-decoration: none;
+}
+
+.link-utility-bottom {
+    position: absolute;
+    top: 8px;
+    left: 15px;
+    display: flex;
+    gap: 6px;
+    z-index: 10001;
+}
+
+/* === PANNELLO RECORD === */
+#pannello-record {
+    position: absolute;
+    top: 10px;
+    left: 680px;
+    width: 290px;
+    z-index: 50;
+    background: rgba(0, 40, 10, 0.55);
+    border: 2px solid rgba(100, 160, 110, 0.35);
+    border-radius: 10px;
+    padding: 8px 14px 10px;
+    box-sizing: border-box;
+    color: #fff;
+}
+.record-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    font-weight: bold;
+    color: #aed6ae;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 5px;
+}
+/* I record sono per livello: senza dirlo, un tempo da Principiante accanto a
+   una partita da Esperto sembrerebbe un confronto, e non lo e'. */
+#record-diff {
+    color: #ffd700;
+}
+.btn-reset-record {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: #ccc;
+    border-radius: 4px;
+    font-size: 11px;
+    line-height: 1;
+    padding: 2px 8px;
+    margin-top: 3px;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-width: 32px;
+}
+.btn-reset-record:hover {
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.5);
+}
+.btn-reset-record.conferma {
+    background: #cc0c39;
+    color: #fff;
+    border-color: #990022;
+    font-weight: bold;
+}
+.record-righe {
+    display: flex;
+    justify-content: space-between;
+}
+.record-righe .info-blocco {
+    text-align: center;
+    flex: 1;
+}
+.record-righe .info-label {
+    font-size: 11px;
+    color: #aed6ae;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.record-valore {
+    font-size: 16px;
+    font-weight: bold;
+    color: #7fd4ff;
+    margin-top: 2px;
+}
+
+/* === GRIGLIA DEL CAMPO ===
+   Non ha misure fisse come quella del Sudoku: righe, colonne e lato della
+   cella cambiano col livello e li scrive minato.js. Qui si fissa solo dove sta
+   il blocco. Il centraggio e' su translateX(-50%) con left al 50% della zona
+   libera (0..680 -> 340px): cosi' i tre livelli, larghi 9, 16 e 30 celle,
+   restano tutti incolonnati sullo stesso asse invece di partire dallo stesso
+   bordo sinistro e finire ognuno in un punto diverso. */
+#griglia-minato {
+    position: absolute;
+    /* Centrata nel rettangolo libero 0..680 in orizzontale e 108..688 in
+       verticale (sotto il messaggio di stato, sopra la barra dei link). Il
+       centraggio e' su entrambi gli assi perche' i tre livelli hanno formati
+       molto diversi (9x9 quadrato, 30x16 panoramico): con una posizione fissa
+       ognuno lascerebbe il vuoto in un punto diverso del tavolo. */
+    top: 398px;
+    left: 340px;
+    transform: translate(-50%, -50%);
+    display: grid;
+    border: 4px solid #14301c;
+    background: #14301c;
+    border-radius: 6px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+    z-index: 50;
+    /* Il tasto destro mette la bandierina: il menu contestuale del browser e'
+       gia' bloccato da JS, ma questo evita anche la selezione al trascinamento. */
+    user-select: none;
+}
+
+.cella-minato {
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    cursor: pointer;
+    /* Il rilievo e' quello del campo minato di sempre: chiaro in alto a
+       sinistra, scuro in basso a destra. E' cio' che fa leggere "da scavare"
+       a colpo d'occhio, senza bisogno di un colore diverso. */
+    background: #7c9d86;
+    border-top: 2px solid #b9d4c0;
+    border-left: 2px solid #b9d4c0;
+    border-right: 2px solid #46654f;
+    border-bottom: 2px solid #46654f;
+    color: #1a1a2e;
+    transition: background-color 0.1s;
+}
+.cella-minato:hover:not(.scoperta) {
+    background: #8fb399;
+}
+
+/* Scoperta: il rilievo sparisce e resta il fondo avorio degli altri giochi del
+   sito, cosi' le due meta' del campo si distinguono anche in bianco e nero. */
+.cella-minato.scoperta {
+    background: #f7f3e8;
+    border: 1px solid #b9b2a0;
+    cursor: default;
+}
+.cella-minato.scoperta:hover {
+    background: #f7f3e8;
+}
+
+/* I colori dei numeri sono quelli classici del gioco: chi ci ha giocato li
+   riconosce e non deve reimparare la scala. */
+.cella-minato.n1 { color: #1a4fa0; }
+.cella-minato.n2 { color: #2d7a2d; }
+.cella-minato.n3 { color: #c0182b; }
+.cella-minato.n4 { color: #17176b; }
+.cella-minato.n5 { color: #7a1a1a; }
+.cella-minato.n6 { color: #0e8080; }
+.cella-minato.n7 { color: #1a1a1a; }
+.cella-minato.n8 { color: #6b675a; }
+
+.cella-minato.bandiera {
+    color: #cc0c39;
+    text-shadow: 0 1px 1px rgba(0,0,0,0.35);
+}
+/* A partita persa: la bandierina messa dove non c'era nessuna mina. E' li' che
+   il ragionamento e' andato storto, e vederlo vale piu' di un messaggio. */
+.cella-minato.bandiera-errata {
+    background: #d8a0a8;
+    color: #4a0010;
+    text-decoration: line-through;
+}
+.cella-minato.mina {
+    background: #e8ded0;
+    color: #1a1a1a;
+}
+/* La mina che ha chiuso la partita, distinta dalle altre rivelate a fine gioco */
+.cella-minato.mina-fatale {
+    background: #cc0c39;
+    color: #fff;
+    animation: minaBoom 0.45s ease;
+}
+@keyframes minaBoom {
+    0%   { transform: scale(0.6); }
+    60%  { transform: scale(1.25); }
+    100% { transform: scale(1); }
+}
+
+/* In modo bandierina il cursore cambia su tutta la griglia: e' l'unico segnale
+   che il click sinistro ora fa un'altra cosa, e serve soprattutto a chi il
+   pulsante di modo l'ha premuto e poi se n'e' dimenticato. */
+#griglia-minato.modo-bandiera .cella-minato:not(.scoperta) {
+    cursor: crosshair;
+}
+
+/* === PANNELLO LATERALE DESTRO === */
+/* Larga 300 come in Calcolo Enigmatico, guadagnati 5px per lato rispetto ai
+   290 iniziali: cosi' il riquadro affiliati e' un 300x250 pulito. A sinistra il
+   margine c'era: la griglia piu' larga (Esperto, 30 colonne) finisce a 659 e ne
+   restano comunque 16. A destra il campo e' 1024, quindi la colonna chiude a 975
+   con 49px di aria. Se un giorno la cella dell'Esperto cresce, ricontrollare il
+   bordo destro della griglia contro il 675 di qui. */
+#pannello-controlli {
+    position: absolute;
+    top: 118px;
+    left: 675px;
+    width: 300px;
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+#info-partita {
+    background: rgba(0, 40, 10, 0.55);
+    border: 2px solid rgba(100, 160, 110, 0.35);
+    border-radius: 10px;
+    padding: 10px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #fff;
+    font-size: 14px;
+}
+#info-partita .info-blocco {
+    text-align: center;
+    flex: 1;
+}
+#info-partita .info-label {
+    font-size: 11px;
+    color: #aed6ae;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+#info-partita .info-valore {
+    font-size: 18px;
+    font-weight: bold;
+    color: #ffd700;
+    margin-top: 2px;
+}
+/* Con gli errori il valore diventa "2 (+03:00)", piu' largo degli altri tre:
+   qui si rimpicciolisce quel tanto che basta perche' non spinga via Livello,
+   Tempo e Mine, che sono blocchi flex:1 e cederebbero spazio. Rosso solo quando
+   il conto e' diverso da zero: uno 0 rosso allarmerebbe per nulla. */
+#info-partita #info-errori {
+    white-space: nowrap;
+}
+#info-partita #info-errori.errori-presenti {
+    color: #ff6b6b;
+    font-size: 15px;
+}
+
+/* Modo scava / bandierina: stessa coppia di pulsanti mutuamente esclusivi di
+   Escludi/Assegna nel Calcolo Enigmatico. Su desktop il tasto destro basta e
+   avanza; questi servono sul telefono, dove il tasto destro non c'e'. */
+#modi {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+.btn-azione {
+    height: 48px;
+    font-size: 13px;
+    font-weight: bold;
+    color: white;
+    background: rgba(0, 40, 10, 0.6);
+    border: 2px solid #6b9b7a;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-transform: uppercase;
+}
+.btn-azione:hover {
+    background: rgba(0, 60, 20, 0.8);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+.btn-azione.attivo {
+    background: linear-gradient(180deg, #ffd700 0%, #b8860b 100%);
+    color: #1a1a2e;
+    border-color: #ffd700;
+    box-shadow: 0 0 12px rgba(255, 215, 0, 0.5);
+}
+/* Lo spazio fra simbolo e testo si mette qui e non nel markup: uno spazio
+   normale, con la lettera maiuscola forzata di .btn-azione, si stringe fino a
+   far sembrare le due parti una parola sola. */
+.btn-azione .btn-icona {
+    margin-right: 5px;
+    font-size: 16px;
+}
+
+/* === LEGENDA ===
+   Il campo minato ha poche regole ma due comandi non ovvi (tasto destro e
+   chording): scritti qui una volta, evitano di doverli cercare nelle regole. */
+#legenda {
+    background: rgba(0, 40, 10, 0.55);
+    border: 2px solid rgba(100, 160, 110, 0.35);
+    border-radius: 10px;
+    padding: 10px 14px;
+    color: #cde8cd;
+    font-size: 12px;
+    line-height: 1.5;
+}
+#legenda b { color: #ffd700; }
+
+#btn-nuova-partita {
+    height: 56px;
+    font-size: 18px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #1a1a2e;
+    background: linear-gradient(180deg, #ffd700 0%, #b8860b 100%);
+    border: 2px solid #ffd700;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    font-family: 'Segoe UI', sans-serif;
+}
+#btn-nuova-partita:hover {
+    filter: brightness(1.15);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 15px rgba(255, 215, 0, 0.3);
+}
+
+/* Riquadro affiliati rotante, ultimo elemento della colonna dei comandi.
+   Stessa misura del riquadro di Calcolo Enigmatico. Il pannello e' un flex in
+   colonna, quindi la posizione la decide il flusso: sta sotto NUOVA PARTITA e
+   resta sopra la barra dei link. */
+#banner-rotante {
+    width: 300px;
+    height: 250px;
+    box-sizing: border-box;
+    border-radius: 6px;
+    overflow: hidden;
+    /* Fondo scuro come gli altri pannelli: si vede nell'istante fra il
+       caricamento della pagina e il primo prodotto disegnato. */
+    background: rgba(0, 40, 10, 0.55);
+    border: 2px solid rgba(100, 160, 110, 0.35);
+}
+
+/* === MODALI E DIALOGHI === */
+.form-minato {
+    z-index: 40000;
+    position: absolute;
+    width: 500px;
+    height: 520px;
+    left: 262px;
+    top: 115px;
+    background-color: #1a4224;
+    background-image: url(images/scala40/tappetoverde.png);
+    border: 4px solid #b8860b;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+    box-sizing: border-box;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    padding: 25px;
+    color: white;
+    overflow: hidden;
+}
+
+.form-minato-title {
+    font-family: 'Slackey', 'Outfit', sans-serif;
+    font-size: 26px;
+    color: #ffd700;
+    margin-bottom: 20px;
+    text-shadow: 2px 2px 4px #000;
+    text-align: center;
+}
+
+#modale-inizio {
+    justify-content: center;
+}
+
+.btn-opzione-sel {
+    background: #1f4068;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.6);
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: bold;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-width: 120px;
+    text-transform: uppercase;
+    opacity: 0.55;
+    filter: blur(0.5px);
+}
+.btn-opzione-sel.attiva {
+    background: linear-gradient(180deg, #ffd700 0%, #b8860b 100%);
+    border: 2px solid #ffd700;
+    color: #1a1a2e;
+    box-shadow: 0 0 12px rgba(255, 215, 0, 0.5);
+    opacity: 1;
+    filter: none;
+}
+.btn-opzione-sel:hover {
+    opacity: 0.85;
+    filter: none;
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.4);
+}
+.btn-opzione-sel.attiva:hover {
+    filter: brightness(1.1);
+    opacity: 1;
+}
+
+/* Sottotitolo del livello scelto: quante celle e quante mine. Serve a scegliere
+   con cognizione di causa senza dover ricordare i numeri classici. */
+.diff-riga {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 18px;
+}
+.diff-dettaglio {
+    font-size: 11px;
+    color: #aed6ae;
+    margin-top: -6px;
+    text-align: center;
+}
+
+/* Opzione "campo sempre risolvibile", accanto alla scelta del livello */
+#opzione-risolvibile {
+    background: rgba(0, 40, 10, 0.55);
+    border: 2px solid rgba(100, 160, 110, 0.35);
+    border-radius: 10px;
+    padding: 10px 14px;
+    margin-bottom: 18px;
+    width: 100%;
+    box-sizing: border-box;
+}
+#opzione-risolvibile label {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    color: #cde8cd;
+    font-size: 12px;
+    line-height: 1.4;
+    cursor: pointer;
+}
+#opzione-risolvibile input[type="checkbox"] {
+    accent-color: #ffd700;
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    margin-top: 1px;
+    cursor: pointer;
+}
+#opzione-risolvibile .nota {
+    display: block;
+    color: #9dbfa4;
+    font-size: 11px;
+    font-style: italic;
+    margin-top: 4px;
+}
+
+.btn-continua {
+    padding: 10px 30px;
+    font-size: 15px;
+    font-weight: bold;
+    color: #2c3e50;
+    background: #ffd700;
+    border: 2px solid #b8860b;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+.btn-continua:hover {
+    background: #fff;
+    transform: scale(1.05);
+}
+
+/* Modale conferma nuova partita: bassa e larga, con banner pubblicitario sopra */
+#confermatermina.modale-conferma {
+    width: 700px;
+    height: 180px;
+    left: 162px;
+    top: 470px;
+    padding: 24px 25px;
+    justify-content: center;
+    overflow: visible; /* il banner sporge sopra la modale */
+}
+.conferma-bottoni {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+}
+
+/* Modale vittoria e modale sconfitta: basse e larghe, con banner sopra */
+#haivinto.modale-vittoria {
+    width: 700px;
+    height: 210px;
+    left: 162px;
+    top: 430px;
+    padding: 20px 25px;
+    justify-content: center;
+    overflow: visible;
+}
+/* Occupa tutta la colonna di destra invece di stare in mezzo al tavolo: dopo
+   aver perso la prima cosa che si guarda e' dov'erano le mine, e una modale
+   sopra la griglia copre proprio quella. Stessi left/width del pannello dei
+   comandi (675/300), dal suo stesso top fino al fondo del riquadro affiliati
+   (699): la colonna sparisce sotto la modale e il campo resta tutto in chiaro.
+   Va insieme al fatto che mostraSconfitta() non accende #schermo. */
+#haiperso.modale-sconfitta {
+    width: 300px;
+    height: 581px;
+    left: 675px;
+    top: 118px;
+    padding: 20px 16px;
+    justify-content: center;
+    overflow: visible;
+}
+/* I due pulsanti hanno la larghezza scritta inline (320 e 280px): in una colonna
+   da 300 il primo sborderebbe, quindi qui li si riporta dentro. */
+#haiperso.modale-sconfitta .btn-continua {
+    width: 100% !important;
+    max-width: 250px;
+}
+/* Il bordo rosso invece del dorato: la sconfitta si deve distinguere dalla
+   vittoria prima ancora di leggere il testo. */
+#haiperso.modale-sconfitta {
+    border-color: #990022;
+}
+#sconfitta-penalita {
+    font-size: 12px;
+    color: #ff9f43;
+    font-style: italic;
+    margin-bottom: 14px;
+    text-align: center;
+}
+#btn-annulla-fatale {
+    margin-bottom: 12px;
+}
+
+.confirm-message {
+    font-family: 'Slackey', 'Outfit', sans-serif;
+    font-size: 24px;
+    color: white;
+    text-align: center;
+    margin-bottom: 20px;
+    text-shadow: 2px 2px 4px #000;
+    padding: 0 20px;
+}
+#vittoria-dettagli {
+    font-size: 15px;
+    color: #ffd700;
+    text-align: center;
+    margin-bottom: 18px;
+}
+
+/* === LINK A FONDO PAGINA === */
+.legal-links-minato {
+    position: absolute;
+    bottom: 12px;
+    left: 15px;
+    display: flex;
+    gap: 8px;
+    z-index: 100;
+    align-items: center;
+}
+.legal-links-minato a {
+    color: rgba(255, 255, 255, 0.6);
+    text-decoration: none;
+    font-size: 11px;
+    font-family: sans-serif;
+    transition: color 0.2s;
+}
+.legal-links-minato a:hover {
+    color: #ffd700;
+}
+.legal-links-minato .sep {
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 11px;
+}
+
+.link-giochi-minato {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    display: flex;
+    gap: 6px;
+    z-index: 100;
+}
+.pulsante-link-minato {
+    background-color: rgba(0, 40, 10, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    color: #ccc;
+    font-size: 11px;
+    padding: 4px 10px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+.pulsante-link-minato:hover {
+    color: #fff;
+    background-color: rgba(0, 60, 20, 0.7);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.pulsante-home-minato {
+    background: linear-gradient(135deg, #c9720f, #8a4a08);
+    border-color: #ffd700;
+    color: #fff;
+    font-weight: bold;
+    white-space: nowrap;
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.35);
+}
+.pulsante-home-minato:hover {
+    color: #fff;
+    background: linear-gradient(135deg, #e08514, #a3580a);
+    border-color: #ffd700;
+    box-shadow: 0 0 14px rgba(255, 215, 0, 0.65);
+}

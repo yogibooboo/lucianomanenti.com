@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
+	<script>
+		window.dataLayer = window.dataLayer || [];
+		function gtag() { dataLayer.push(arguments); }
+		gtag('js', new Date());
+		gtag('config', 'G-WRBDRDQ4L8');
+		window.currentLang = 'en';
+	</script>
+	<title>Battleship Solitaire Rules - How to Play</title>
+	<meta name="Description"
+		content="Rules of Battleship Solitaire: what the numbers along the edges mean, the rule that ships never touch, and the four deductions that solve any grid without guessing.">
+	<link rel="alternate" hreflang="it" href="guida-navale.html">
+	<link rel="alternate" hreflang="en" href="guida-navale-en.html">
+	<link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
+	<link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
+	<link rel="shortcut icon" href="favicon/favicon.ico">
+	<link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+	<style>
+		body {
+			font-family: sans-serif;
+			line-height: 1.7;
+			max-width: 800px;
+			margin: 40px auto;
+			padding: 20px;
+			color: #333;
+			background-color: #f9f9f9;
+		}
+
+		h1 {
+			color: #2c3e50;
+			border-bottom: 2px solid #ffd700;
+			padding-bottom: 10px;
+		}
+
+		h2 {
+			color: #2c3e50;
+			margin-top: 30px;
+		}
+
+		h3 {
+			color: #2c3e50;
+			font-size: 1.1em;
+			margin-top: 20px;
+		}
+
+		.lang-switch {
+			text-align: right;
+			margin-bottom: 20px;
+		}
+
+		.lang-switch a {
+			display: inline-block;
+			padding: 6px 16px;
+			margin-left: 5px;
+			text-decoration: none;
+			border-radius: 5px;
+			font-weight: bold;
+			font-size: 14px;
+		}
+
+		.lang-switch a.active {
+			background: #2c3e50;
+			color: white;
+		}
+
+		.lang-switch a:not(.active) {
+			background: #ddd;
+			color: #333;
+			cursor: pointer;
+		}
+
+		.content-box {
+			background: white;
+			padding: 30px;
+			border-radius: 8px;
+			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+		}
+
+		.play-btn {
+			display: inline-block;
+			margin-top: 25px;
+			padding: 12px 30px;
+			background: #27ae60;
+			color: white;
+			text-decoration: none;
+			border-radius: 8px;
+			font-size: 18px;
+			font-weight: bold;
+		}
+
+		.nav-links {
+			text-align: center;
+			margin-top: 30px;
+			font-size: 14px;
+		}
+
+		.nav-links a {
+			color: #3498db;
+			text-decoration: none;
+			margin: 0 10px;
+		}
+
+		.banner {
+			width: 100%;
+			height: 150px;
+			background-image: url('images/home/castagne.jpg');
+			background-size: cover;
+			background-position: center;
+			border-radius: 8px;
+			margin: 20px 0;
+			box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+		}
+
+		.highlight {
+			background-color: #fff9c4;
+			padding: 0 4px;
+		}
+
+		.regola-chiave {
+			background: #eef7ee;
+			border-left: 4px solid #27ae60;
+			padding: 12px 18px;
+			margin: 18px 0;
+		}
+
+		/* Miniature grids drawn with the game's own colours, so what you read here
+		   looks like what you see on the board. Plain CSS grid, no images. */
+		.mini-mare {
+			display: inline-grid;
+			gap: 2px;
+			background: rgba(0, 30, 55, 0.85);
+			border: 2px solid #b8860b;
+			border-radius: 6px;
+			padding: 5px;
+			margin: 10px 0 6px 0;
+		}
+
+		.mm-c {
+			width: 30px;
+			height: 30px;
+			box-sizing: border-box;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-size: 15px;
+			font-weight: bold;
+			border-radius: 3px;
+		}
+
+		.mm-n {
+			color: #ffd700;
+			background: transparent;
+		}
+
+		.mm-mare {
+			background: linear-gradient(160deg, #17456e 0%, #0e2f4e 100%);
+			border: 1px solid rgba(140, 190, 225, 0.28);
+		}
+
+		.mm-acqua {
+			background: rgba(10, 32, 52, 0.9);
+			border: 1px solid rgba(140, 190, 225, 0.15);
+			color: rgba(150, 195, 225, 0.55);
+		}
+
+		.mm-nave {
+			background: linear-gradient(160deg, #cdd6de 0%, #8d9aa6 100%);
+			border: 1px solid #3d4a56;
+		}
+		.mm-nave.sub  { border-radius: 50%; }
+		.mm-nave.sx   { border-radius: 50% 3px 3px 50%; }
+		.mm-nave.dx   { border-radius: 3px 50% 50% 3px; }
+		.mm-nave.top  { border-radius: 50% 50% 3px 3px; }
+		.mm-nave.bot  { border-radius: 3px 3px 50% 50%; }
+
+		.mm-focus {
+			box-shadow: 0 0 0 3px #ffd700;
+			z-index: 2;
+		}
+
+		.legenda-schema {
+			font-size: 0.92em;
+			color: #666;
+			margin-top: -2px;
+			margin-bottom: 18px;
+		}
+	</style>
+</head>
+
+<body>
+	<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+		<a href="#" id="btn-back" onclick="goBack(); return false;"
+			style="display: inline-block; padding: 6px 16px; background: #e74c3c; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 14px;">&#x2190;
+			Back</a>
+		<div class="lang-switch" style="margin-bottom: 0;">
+			<a href="guida-navale.html" id="btn-it">Italiano</a>
+			<a href="guida-navale-en.html" id="btn-en" class="active">English</a>
+		</div>
+	</div>
+
+	<div class="content-box">
+		<h1>Battleship Solitaire</h1>
+
+		<p>This is not the Battleship you played with a friend on squared paper, firing shots at random and shouting
+			&ldquo;miss! hit!&rdquo;. There is no opponent here and nothing to fire at: there is <strong>one grid</strong>,
+			a fleet hidden inside it, and numbers along the edges. Your job is to work out where the ships are
+			<strong>by reasoning</strong>, never by guessing.</p>
+
+		<p>It is the same pleasure as a cryptarithm or a Sudoku: every puzzle has exactly one possible arrangement, and
+			every square can be deduced from the ones you have already settled. If you find yourself about to gamble,
+			it means there is a deduction you haven't spotted yet &mdash; not that the puzzle is ambiguous.</p>
+
+		<div class="banner"></div>
+
+		<h2>The rules</h2>
+
+		<h3>1. The numbers count ship squares</h3>
+		<p>The number at the start of a row tells you <strong>how many squares in that row are occupied by a ship</strong>.
+			The same goes for the numbers above the columns. They don't say <em>which</em> squares, and they don't say how
+			many ships: only how many squares in total. A 3 on a row could mean a whole cruiser, or a destroyer plus a
+			submarine, or three separate submarines.</p>
+
+		<h3>2. The fleet is known from the start</h3>
+		<p>Below the grid every ship you have to find is drawn individually, with its shape: the <strong>battleship</strong>
+			is 4 squares long, the <strong>cruiser</strong> 3, the <strong>destroyer</strong> 2 and the
+			<strong>submarine</strong> 1. Knowing how many there are of each is part of the puzzle, and it is often the
+			information that finishes it: once you have found all the long ships, whatever is left can only be short.</p>
+		<p>A shape in the list is only crossed off once that ship is <strong>closed</strong>: once you have marked water
+			at both ends, or the ship runs into the edge. As long as one end still has an empty square next to it, the
+			shape stays lit &mdash; even if the length already looks right. That is deliberate: a group of two squares
+			could always be the trunk of a cruiser you haven't finished, and crossing off the destroyer would be telling
+			you the ship ends there &mdash; a deduction that is yours to make.</p>
+		<p>The same thing happens on the grid, with colour: a closed ship turns <strong>orange</strong>, while trunks you
+			might still extend stay grey. It is only a way of reading back at a glance what you have already worked out:
+			the orange appears because you marked the water at the ends yourself, not because the game checked the
+			solution.</p>
+		<p>Ships always lie <strong>straight</strong>, horizontally or vertically. Never diagonally, never bent into an L.</p>
+
+		<div class="regola-chiave">
+			<h3 style="margin-top:0">3. Ships never touch &mdash; not even at a corner</h3>
+			<p style="margin-bottom:0">This is the rule that makes the puzzle solvable, and the one people forget most
+				often. Every ship is surrounded by <strong>water on all sides</strong>: above, below, beside, and on all
+				four diagonals. Two separate ships can never be in contact. Every time you find a ship square, you have
+				automatically found that the four diagonal squares are water.</p>
+		</div>
+
+		<h2>Playing on screen</h2>
+
+		<p><strong>Left click</strong> marks a square as water. <strong>Right click</strong> marks it as ship. Clicking
+			the same mark again clears the square. Squares with a <span class="highlight">gold border</span> are given at
+			the start: they are part of the puzzle statement and cannot be changed.</p>
+
+		<p>Marking water isn't required to win &mdash; only the ships need to be in the right place &mdash; but it is how
+			the reasoning works: blacking out what is ruled out is exactly what makes it clear where the ships
+			<em>must</em> be.</p>
+
+		<p>The edge numbers light up on their own: they turn <strong>green and dim</strong> once that row has all its ship
+			squares, and <strong>red</strong> when the count can no longer work out (too many ships, or too few free
+			squares left to reach it). This is pure arithmetic and never looks at the solution, so it stays on even with
+			mistake flagging turned off.</p>
+
+		<h2>The four deductions that solve everything</h2>
+
+		<h3>1. The count is complete: the rest is water</h3>
+		<p>If a row asks for 2 ship squares and you have already marked 2, <strong>everything else in that row is
+			water</strong>. Obvious, but it is the deduction you'll use most, and blacking those squares out immediately
+			unlocks the columns crossing them.</p>
+
+		<div class="mini-mare" style="grid-template-columns: repeat(6, 30px)">
+			<div class="mm-c mm-n">2</div>
+			<div class="mm-c mm-nave sx"></div>
+			<div class="mm-c mm-nave dx"></div>
+			<div class="mm-c mm-mare mm-focus"></div>
+			<div class="mm-c mm-mare mm-focus"></div>
+			<div class="mm-c mm-mare mm-focus"></div>
+		</div>
+		<p class="legenda-schema">The row asks for 2 and both ship squares are there: the three highlighted squares must
+			be water.</p>
+
+		<h3>2. The free squares are exactly what's missing: they're all ship</h3>
+		<p>The reverse argument. If a row is 3 ship squares short and exactly 3 squares are still free, <strong>those are
+			the ones</strong>. You don't need to know which ship it is: just mark them.</p>
+
+		<div class="mini-mare" style="grid-template-columns: repeat(6, 30px)">
+			<div class="mm-c mm-n">3</div>
+			<div class="mm-c mm-acqua">&middot;</div>
+			<div class="mm-c mm-mare mm-focus"></div>
+			<div class="mm-c mm-mare mm-focus"></div>
+			<div class="mm-c mm-mare mm-focus"></div>
+			<div class="mm-c mm-acqua">&middot;</div>
+		</div>
+		<p class="legenda-schema">The row asks for 3 and the water has already ruled out two squares: the three free ones
+			are all ship.</p>
+
+		<h3>3. The diagonals of a ship are always water</h3>
+		<p>This follows straight from the no-touching rule. The moment you mark a ship square, the four diagonal squares
+			are water &mdash; always, without looking at anything else. It is the most plentiful free information in the
+			puzzle, and the game can fill it in for you with the option <em>&ldquo;Fill in the certain water
+			automatically&rdquo;</em>, which also takes care of rows and columns whose count is already complete
+			(deduction 1 above).</p>
+
+		<div class="mini-mare" style="grid-template-columns: repeat(3, 30px)">
+			<div class="mm-c mm-mare mm-focus"></div>
+			<div class="mm-c mm-mare"></div>
+			<div class="mm-c mm-mare mm-focus"></div>
+			<div class="mm-c mm-mare"></div>
+			<div class="mm-c mm-nave sub"></div>
+			<div class="mm-c mm-mare"></div>
+			<div class="mm-c mm-mare mm-focus"></div>
+			<div class="mm-c mm-mare"></div>
+			<div class="mm-c mm-mare mm-focus"></div>
+		</div>
+		<p class="legenda-schema">The four highlighted squares are water no matter what the numbers say.</p>
+
+		<h3>4. A finished ship is surrounded by water</h3>
+		<p>Once a ship is complete &mdash; because you recognised it in the fleet list, or because the numbers leave no
+			room to extend it &mdash; then <strong>its whole outline is water</strong>, not just the diagonals: the
+			squares at each end too. Realising that a ship is finished is often the step that unlocks half the grid.</p>
+
+		<div class="mini-mare" style="grid-template-columns: repeat(5, 30px)">
+			<div class="mm-c mm-mare mm-focus"></div>
+			<div class="mm-c mm-mare mm-focus"></div>
+			<div class="mm-c mm-mare mm-focus"></div>
+			<div class="mm-c mm-mare mm-focus"></div>
+			<div class="mm-c mm-mare mm-focus"></div>
+			<div class="mm-c mm-mare mm-focus"></div>
+			<div class="mm-c mm-nave sx"></div>
+			<div class="mm-c mm-nave"></div>
+			<div class="mm-c mm-nave dx"></div>
+			<div class="mm-c mm-mare mm-focus"></div>
+			<div class="mm-c mm-mare mm-focus"></div>
+			<div class="mm-c mm-mare mm-focus"></div>
+			<div class="mm-c mm-mare mm-focus"></div>
+			<div class="mm-c mm-mare mm-focus"></div>
+			<div class="mm-c mm-mare mm-focus"></div>
+		</div>
+		<p class="legenda-schema">The cruiser is complete: all twelve squares around it are water.</p>
+
+		<h3>A fifth trick: start with the zeros</h3>
+		<p>At the start of a puzzle, always begin with the rows and columns marked <strong>0</strong>: you can black them
+			out in one go, without thinking. Then look at the highest numbers: if a 10-square row asks for 6, space is so
+			tight that some squares are often occupied in every possible arrangement.</p>
+
+		<h2>Controls and options</h2>
+
+		<h3>Grid size</h3>
+		<ul>
+			<li><strong>Small</strong> &mdash; 6&times;6, with one cruiser, two destroyers and three submarines. About ten
+				minutes, good for learning.</li>
+			<li><strong>Medium</strong> &mdash; 8&times;8, with one battleship, two cruisers, three destroyers and four
+				submarines. This is the classic format of printed puzzles.</li>
+			<li><strong>Large</strong> &mdash; 10&times;10, with two battleships and a fleet of thirteen ships. The chains
+				of deduction get long and it pays to mark the water carefully.</li>
+		</ul>
+		<p>The kind of reasoning doesn't change between formats: what changes is how far you have to carry a chain before
+			it closes.</p>
+
+		<h3>Hints</h3>
+		<p>The <strong>Hint</strong> button points at a square where a deduction is available, and costs
+			<strong>+10 seconds</strong> on the clock. From there you can stop and think it through yourself, or ask for
+			the <strong>Explanation</strong> (which tells you <em>which</em> of the deductions above applies) or have the
+			game <strong>fill in the square</strong>: either one costs <strong>+20 seconds</strong>, once per hint.</p>
+		<p>If there is already a wrong mark on the grid, the hint points at that first: carrying on from a wrong premise
+			only leads to a dead end.</p>
+
+		<h3>Mistakes and penalties</h3>
+		<p>With <em>&ldquo;Flag wrong squares right away&rdquo;</em> turned on, a mark that contradicts the solution turns
+			red instantly and costs <strong>+30 seconds</strong>. The penalty is charged once per square: clearing it and
+			marking it again doesn't stack up seconds. If you'd rather catch your own mistakes, turn the option off: the
+			puzzle becomes more honest and the mistake counter stays at zero.</p>
+
+		<h3>Clock and best times</h3>
+		<p>Time is the only score, penalties included. Best times are kept separately for each grid size &mdash; a
+			6&times;6 and a 10&times;10 aren't comparable &mdash; and split into <strong>today</strong>,
+			<strong>this week</strong> (which restarts on Monday) and <strong>all time</strong>. The circular-arrow button
+			resets the record above it: the first click asks for confirmation, so nothing gets wiped by accident.</p>
+
+		<h3>Undo and saving</h3>
+		<p><strong>Undo</strong> (or <strong>Ctrl+Z</strong>) steps back one mark at a time, all the way through the game.
+			The <strong>H</strong> key asks for a hint. Penalties already charged are not refunded by undo: they are the
+			price of a decision made.</p>
+		<p>If you close the page halfway through, next time the game offers it back with the <strong>Resume previous
+			game</strong> button, clock included. The save lives in your browser, not on a server: clearing your browsing
+			data clears it too.</p>
+
+		<h2>Finishing</h2>
+		<p>The game ends the moment every ship square is in its place &mdash; you don't need to have blacked out all the
+			water. If the grid looks full but something doesn't add up, the game tells you instead of leaving you to
+			re-check everything.</p>
+
+		<p style="text-align: center;"><a href="#" onclick="goBack(); return false;" class="play-btn">Close</a></p>
+
+		<div class="nav-links">
+			<a href="index-en.html">All games</a> |
+			<a href="calcolo-en.html">Cryptarithm</a> |
+			<a href="minato-en.html">Minesweeper</a> |
+			<a href="sudoku-en.html">Sudoku</a> |
+			<a href="quadrati-en.html">Squares</a>
+		</div>
+	</div>
+
+	<p style="text-align: center; font-size: 0.8em; color: #999; margin-top: 10px;">
+		© 2026 Luciano Manenti
+	</p>
+
+	<script>
+		function goBack() {
+			window.close();
+		}
+		(function() {
+			var nascosto = false;
+			var observer = new MutationObserver(function() {
+				if (nascosto) return;
+				var divs = document.querySelectorAll('body > div');
+				for (var i = 0; i < divs.length; i++) {
+					if (divs[i].shadowRoot && !divs[i].className && (divs[i].getAttribute('style')||'').length > 5000) {
+						divs[i].style.setProperty('display', 'none', 'important');
+						nascosto = true;
+						observer.disconnect();
+						return;
+					}
+				}
+			});
+			observer.observe(document.body, { childList: true });
+		})();
+	</script>
+</body>
+
+</html>

@@ -796,9 +796,24 @@ function showInterstitialIfDue(onClose) {
     // come seconda difesa (pointer-events:auto intercetta il clic sull'area ad,
     // non è solo visivo). Dati che motivano il test: viewability 70% (>= 69,3%
     // pre-ban), CTR 0,39-0,41% stabile su due giorni pieni, RPM 0,75-0,82 cioè
-    // ~5x le altre unità. SOGLIA DI ROLLBACK: se il CTR orario supera l'1%
-    // ripristinare 600ms immediatamente — è la firma del clic accidentale che è
-    // già costata 3 ban.
+    // ~5x le altre unità.
+    //
+    // 2026-08-13, ESITO su tre giorni pieni a 100ms (11-12 ago):
+    //   600ms:  9 ago 1723 impr / 7 click / CTR 0,41% / RPM 0,75
+    //          10 ago 1038 impr / 4 click / CTR 0,39% / RPM 0,82
+    //   100ms: 11 ago 2235 impr / 15 click / CTR 0,67% / RPM 0,83
+    //          12 ago 2296 impr / 14 click / CTR 0,61% / RPM 0,85
+    // Il CTR si è assestato ~1,5x il regime a 600ms, l'RPM è invariato (0,85 vs
+    // 0,82, dentro il rumore: 9 e 10 ago differivano già del 9% a parametri
+    // uguali). CTR che sale del 50% senza che salga il ricavo = click che non
+    // convertono, cioè la firma del clic accidentale. Le altre unità nello
+    // stesso report stanno a 0,07-0,23%. La soglia di rollback originaria
+    // (CTR orario > 1%) è stata toccata l'11 ago; decisione consapevole di
+    // Luciano il 13 ago: TENERE 100ms per ora, accettando il rischio.
+    // Se si riapre il tema, il rollback a 600ms non richiede altri dati: la
+    // domanda "i 100ms pagano?" ha già risposto no. Rimettere 600ms se
+    // compaiono avvisi di traffico non valido o se il CTR giornaliero supera
+    // l'1%. Storico: 3 ban per "click multipli".
     var ADSENSE_INTERSTITIAL_ARM_DELAY_MS = 100;
     var _insInterstitial = overlay.querySelector('ins.adsbygoogle');
     if (_insInterstitial) {
@@ -1045,9 +1060,15 @@ function adjustLayout() {
             // Da sei pulsanti in griglia 2x3 si e' passati a tre righe piene: con
             // tre voci la griglia a due colonne lasciava mezza riga vuota, mentre
             // a piena larghezza (262px) le etichette stanno su una riga sola.
+            // Con la quarta voce (Campo Minato) l'altezza e' scesa da 60 a 52: lo
+            // spazio utile in verticale e' 230 (250 meno i due padding da 10) e
+            // quattro righe da 60 ne vorrebbero 240. A 52 il totale e' 208 e i 22
+            // che restano bastano allo space-evenly per staccarle. Se un giorno
+            // si aggiunge una quinta voce, qui non ci sta piu': o si torna alla
+            // griglia a due colonne o si sceglie cosa togliere.
             var en = (window.currentLang === 'en');
             var newLabel = en ? 'NEW' : 'NUOVO';
-            var stileRiga = 'display:flex;align-items:center;justify-content:center;gap:8px;width:262px;height:60px;border-radius:9px;color:#ffffff;font-size:15px;font-weight:bold;text-align:center;text-decoration:none;position:relative;transition:transform 0.2s;cursor:pointer;box-sizing:border-box;line-height:1.25;box-shadow:0 3px 6px rgba(0,0,0,0.3);';
+            var stileRiga = 'display:flex;align-items:center;justify-content:center;gap:8px;width:262px;height:52px;border-radius:9px;color:#ffffff;font-size:15px;font-weight:bold;text-align:center;text-decoration:none;position:relative;transition:transform 0.2s;cursor:pointer;box-sizing:border-box;line-height:1.25;box-shadow:0 3px 6px rgba(0,0,0,0.3);';
             var hover = ' onmouseover="this.style.transform=\'scale(1.03)\';this.style.filter=\'brightness(1.15)\';" onmouseout="this.style.transform=\'scale(1)\';this.style.filter=\'none\';"';
             var badgeSmall = '<span class="amazon-badge amazon-badge-pulse" style="position:absolute;top:-7px;right:-5px;font-size:9px;padding:1px 5px;">' + newLabel + '</span>';
 
@@ -1061,9 +1082,21 @@ function adjustLayout() {
             var promoLink = en ? '/calcolo-en.html' : '/calcolo.html';
             var promoTesto = en ? 'CROSS FIGURE Luciano' : 'CALCOLO ENIGMATICO';
 
+            // Campo Minato tiene il badge "nuovo" come Calcolo Enigmatico: sono
+            // i due arrivi recenti e li si vuole segnalare entrambi.
+            var minatoLink = en ? '/minato-en.html' : '/minato.html';
+            var minatoTesto = en ? 'MINESWEEPER Luciano' : 'CAMPO MINATO';
+
             return '<div style="display:flex;flex-direction:column;justify-content:space-evenly;align-items:center;width:300px;height:250px;padding:10px;box-sizing:border-box;background:linear-gradient(135deg, #14532d, #022c22);border:3px solid #ffdb4d;border-radius:12px;box-shadow:inset 0 0 20px rgba(0,0,0,0.6), 0 4px 15px rgba(0,0,0,0.5);font-family:\'Outfit\',\'Open Sans\',sans-serif;z-index:100;overflow:hidden;">' +
                 '<a href="' + promoLink + '" target="_self" class="sudoku-promo-btn" style="' + stileRiga + 'background:linear-gradient(180deg,#b91c1c 0%,#991b1b 100%);border:2px solid #ffd700;"' + hover + '>' +
                 badgeSmall + '🔢<span style="color:#ffd700;">' + promoTesto + '</span>' +
+                '</a>' +
+                // Verde scuro col bordo chiaro, gli stessi colori del campo di
+                // gioco: e' il modo piu' rapido per far riconoscere il gioco a
+                // chi ci e' gia' stato, e non ripete il rosso di Calcolo qui
+                // sopra ne' il blu della musica qui sotto.
+                '<a href="' + minatoLink + '" target="_self" class="sudoku-promo-btn" style="' + stileRiga + 'background:linear-gradient(180deg,#15803d 0%,#14532d 100%);border:2px solid #ffd700;"' + hover + '>' +
+                badgeSmall + '💣<span style="color:#ffd700;">' + minatoTesto + '</span>' +
                 '</a>' +
                 '<a href="' + amazonGenericLink + '" target="_self" style="' + stileRiga + 'background:linear-gradient(180deg,#1d4ed8 0%,#1e40af 100%);border:2px solid #60a5fa;"' + hover + '>' +
                 '🎵<span style="color:#ffd700;">Music Ear Training</span>' +
@@ -2054,6 +2087,312 @@ function setupAmazonFinishBanner(formId, options) {
     if (typeof options.onSetupButtons === 'function') {
         options.onSetupButtons(modal);
     }
+}
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// BANNER AFFILIATI ROTANTI (Amazon/AliExpress)
+//
+// Riempie un riquadro di QUALUNQUE dimensione con un prodotto del catalogo e lo
+// ruota nel tempo. Serve alle pagine dove il giocatore resta a lungo (calcolo,
+// sudoku): gli slot AdSense NON vanno mai rinfrescati senza gesto utente, i
+// link affiliati sì — non c'è impression fatturata né asta da falsare.
+//
+// Uso tipico, una riga nella pagina ospite:
+//     var stop = setupRotatingAffiliateBanner(document.getElementById('box'));
+// Opzioni: intervalMs (default 60000), store ('amazon'/'aliexpress') per
+// limitare il catalogo a un solo canale.
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Il layout si sceglie sul rapporto d'aspetto, non su dimensioni fisse: così un
+// solo motore copre 300x250, 300x600, 728x90 e qualunque altra misura futura.
+function _rbLayoutPerAspetto(w, h) {
+    var r = w / h;
+    if (r >= 2.2) return 'orizzontale';   // 728x90, 970x250
+    if (r <= 0.62) return 'verticale';    // 300x600, 160x600
+    return 'quadrato';                    // 300x250, 250x250, 336x280
+}
+
+function _rbPx(n) { return Math.round(n) + 'px'; }
+
+// I titoli del catalogo hanno mediana ~146 caratteri (massimo 290): vanno
+// troncati sulle righe disponibili. Il line-clamp da solo non basta, serve
+// anche max-height esplicita perché in un contenitore flex il box può
+// espandersi lo stesso e spingere fuori prezzo e piede.
+function _rbBloccoTesto(testo, fSize, righe) {
+    var lh = 1.25;
+    return '<div style="font-size:' + _rbPx(fSize) + ';line-height:' + lh + ';' +
+        'font-weight:600;max-height:' + _rbPx(fSize * lh * righe) + ';' +
+        'display:-webkit-box;-webkit-line-clamp:' + righe + ';' +
+        '-webkit-box-orient:vertical;overflow:hidden;word-break:break-word;">' +
+        _rbEscape(testo) + '</div>';
+}
+
+// I titoli arrivano da JSON esterno e finiscono in innerHTML: vanno neutralizzati
+// o un apostrofo/angolare nel titolo romperebbe il markup.
+function _rbEscape(s) {
+    return String(s == null ? '' : s)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+}
+
+// Disegna un deal dentro il contenitore, adattandosi alle sue dimensioni.
+// Esposta come globale: serve anche alla pagina di anteprima banner.
+function renderDealInBox(container, deal) {
+    var w = container.clientWidth || parseInt(container.style.width, 10) || 300;
+    var h = container.clientHeight || parseInt(container.style.height, 10) || 250;
+    var layout = _rbLayoutPerAspetto(w, h);
+    var isAli = (deal.store === 'aliexpress');
+
+    // Amazon e AliExpress hanno branding e disclaimer diversi: si sceglie sul
+    // singolo prodotto, non sullo store prevalente del sito.
+    var marchio = isAli ? 'AliExpress' : 'Amazon';
+    var coloreMarchio = isAli ? '#e62e04' : '#ff9900';
+    var disclaim = isAli ? 'Link affiliato AliExpress' : 'Link affiliato Amazon';
+
+    var base = Math.min(w, h);
+    var fTitolo = Math.max(10, Math.min(15, base / 18));
+    var fPrezzo = Math.max(13, Math.min(24, base / 11));
+    var fMini   = Math.max(8,  Math.min(11, base / 26));
+
+    // Il piede è un elemento reale in fondo alla colonna, non un overlay
+    // absolute: occupa spazio invece di coprire il contenuto ed è il primo
+    // spazio da sottrarre nei calcoli di altezza.
+    var hPiede = Math.round(fMini * 1.9);
+
+    var a = document.createElement('a');
+    a.href = deal.link;
+    a.target = '_blank';
+    a.rel = 'sponsored noopener';
+    a.style.cssText = 'display:flex;flex-direction:column;width:100%;height:100%;' +
+        'text-decoration:none;background:#fff;color:#111;box-sizing:border-box;' +
+        'overflow:hidden;position:relative;border-radius:6px;';
+
+    var piede = '<div style="flex:0 0 ' + _rbPx(hPiede) + ';height:' + _rbPx(hPiede) + ';' +
+        'background:#232f3e;color:#fff;font-size:' + _rbPx(fMini) + ';' +
+        'padding:0 6px;display:flex;justify-content:space-between;align-items:center;' +
+        'box-sizing:border-box;white-space:nowrap;overflow:hidden;">' +
+        '<span style="color:' + coloreMarchio + ';font-weight:700;">' + marchio + '</span>' +
+        '<span style="opacity:0.75;">' + disclaim + '</span></div>';
+
+    // Lo sconto sta accanto al prezzo, non in overlay sull'immagine: è
+    // un'informazione che si legge insieme al prezzo e come badge flottante
+    // finiva per coprire il prodotto.
+    var pillolaSconto = deal.badge
+        ? '<span style="background:#cc0c39;color:#fff;font-size:' + _rbPx(fMini + 1) + ';' +
+          'font-weight:700;padding:2px 6px;border-radius:3px;white-space:nowrap;' +
+          'line-height:1.3;">' + _rbEscape(deal.badge) + '</span>'
+        : '';
+
+    function bloccoPrezzo(disposizione) {
+        var testoPrezzo = '<span style="font-size:' + _rbPx(fPrezzo) + ';font-weight:800;' +
+            'color:#B12704;line-height:1.1;white-space:nowrap;">' +
+            _rbEscape(deal.price || '') + '</span>';
+        if (!pillolaSconto) return '<div>' + testoPrezzo + '</div>';
+        if (disposizione === 'sotto') {
+            return '<div style="display:flex;flex-direction:column;align-items:flex-start;' +
+                'gap:2px;">' + testoPrezzo + pillolaSconto + '</div>';
+        }
+        return '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">' +
+            testoPrezzo + pillolaSconto + '</div>';
+    }
+
+    // Altezza ESPLICITA in pixel, mai percentuale, e immagine in contain a
+    // width/height 100%: così non può debordare qualunque siano le sue
+    // proporzioni native.
+    function boxImmagine(larghezza, altezza) {
+        return '<div style="width:' + _rbPx(larghezza) + ';height:' + _rbPx(altezza) + ';' +
+            'flex:0 0 auto;background:#fff;overflow:hidden;padding:5px;box-sizing:border-box;">' +
+            '<img src="' + _rbEscape(deal.img) + '" alt="" style="width:100%;height:100%;' +
+            'object-fit:contain;display:block;"></div>';
+    }
+
+    if (layout === 'orizzontale') {
+        // Immagine quadrata a sinistra, testo a destra. La descrizione c'è
+        // sempre, anche a 60px: è quella che dice cosa stai comprando. Sotto i
+        // 75px si affianca al prezzo invece di impilarsi, perché in verticale
+        // non c'è spazio ma in orizzontale sì.
+        var hUtile = h - hPiede;
+        var stretto = hUtile < 75;
+        var righeTit = hUtile >= 150 ? 3 : 2;
+        var testoOriz = _rbBloccoTesto(deal.title,
+            stretto ? Math.max(9, fTitolo - 1) : fTitolo, righeTit);
+
+        var corpoOriz = stretto
+            ? '<div style="flex:1 1 auto;min-width:0;padding:3px 8px;display:flex;' +
+                'align-items:center;gap:10px;">' +
+                '<div style="flex:1 1 auto;min-width:0;">' + testoOriz + '</div>' +
+                '<div style="flex:0 0 auto;">' + bloccoPrezzo('sotto') + '</div></div>'
+            : '<div style="flex:1 1 auto;min-width:0;padding:4px 10px;display:flex;' +
+                'flex-direction:column;justify-content:center;gap:5px;">' +
+                testoOriz + bloccoPrezzo('riga') + '</div>';
+
+        a.innerHTML = '<div style="display:flex;flex:1 1 auto;min-height:0;">' +
+            boxImmagine(hUtile, hUtile) + corpoOriz + '</div>' + piede;
+
+    } else {
+        // Colonna (verticale e quadrato): si riserva PRIMA lo spazio del testo,
+        // poi l'immagine prende il resto. Al contrario (immagine a percentuale
+        // fissa) il blocco testo veniva schiacciato a zero e titolo e prezzo
+        // sparivano del tutto.
+        var righe = (layout === 'verticale') ? 4 : 2;
+        var padV = 10;
+        var hRigaPrezzo = Math.ceil(Math.max(fPrezzo * 1.15, (fMini + 1) * 1.9));
+        var hTitolo = Math.ceil(fTitolo * 1.25 * righe);
+        var hImg = h - hPiede - hTitolo - hRigaPrezzo - padV;
+
+        // Se non ci sta, si tolgono righe al titolo: l'immagine non scende mai
+        // sotto il 35% o il banner non comunica più nulla.
+        while (hImg < h * 0.35 && righe > 1) {
+            righe--;
+            hTitolo = Math.ceil(fTitolo * 1.25 * righe);
+            hImg = h - hPiede - hTitolo - hRigaPrezzo - padV;
+        }
+        if (hImg < 30) hImg = 30;
+
+        a.innerHTML = boxImmagine(w, hImg) +
+            '<div style="flex:1 1 auto;min-height:0;padding:2px 9px 5px;display:flex;' +
+              'flex-direction:column;justify-content:space-between;box-sizing:border-box;' +
+              'overflow:hidden;">' +
+              _rbBloccoTesto(deal.title, fTitolo, righe) + bloccoPrezzo('riga') +
+            '</div>' + piede;
+    }
+
+    container.innerHTML = '';
+    container.appendChild(a);
+    return a;
+}
+
+// Avvia il riempimento e la rotazione. Ritorna stop() per fermare il timer:
+// senza, resta orfano se la pagina cambia schermata senza ricaricare.
+function setupRotatingAffiliateBanner(container, options) {
+    options = options || {};
+    if (!container) return function () {};
+
+    var intervalMs = options.intervalMs || 60000;
+    var storeFiltro = options.store || null;
+
+    var rotazione = 0;
+    var dealCorrente = null;
+    var timer = null;
+    var fermato = false;
+    // selectWeightedAmazonDeal è pesata ma senza memoria: su decine di
+    // rotazioni ripeterebbe lo stesso prodotto a breve distanza. La coda
+    // scarta gli ultimi visti senza rompere la ponderazione per weight.
+    var recenti = [];
+    var MAX_RECENTI = 8;
+
+    function catalogo() {
+        var tutti = window._amazonDealsList || [];
+        if (storeFiltro) {
+            tutti = tutti.filter(function (d) { return d.store === storeFiltro; });
+        }
+        return tutti;
+    }
+
+    function scegliDeal() {
+        var validi = catalogo();
+        if (!validi.length) return null;
+        var freschi = validi.filter(function (d) {
+            return recenti.indexOf(d.id) === -1;
+        });
+        // Se la coda ha consumato tutto il catalogo (pochi prodotti, sessione
+        // lunga) si riparte dall'insieme completo invece di non mostrare nulla.
+        if (!freschi.length) { recenti = []; freschi = validi; }
+        var scelto = selectWeightedAmazonDeal(freschi);
+        if (scelto) {
+            recenti.push(scelto.id);
+            if (recenti.length > MAX_RECENTI) recenti.shift();
+        }
+        return scelto;
+    }
+
+    // I nomi dei parametri riusano le dimensioni GA4 gia' registrate invece di
+    // crearne di nuove: amazon_deal_id e asin sono quelli degli altri banner
+    // affiliati, trigger_type quello di simulated_banner_impression. Nei report
+    // i due canali finiscono percio' nelle stesse righe; si separano filtrando
+    // per nome evento (Rotating_Banner_* contro Amazon_Banner_*).
+    // La pagina NON e' un parametro: page_location e' automatica e da' gia' la
+    // dimensione "Percorso pagina", che distingue calcolo.html da calcolo-en.html.
+    // Lo store non e' un parametro: il prefisso ALI- nell'id lo rende leggibile,
+    // come negli altri banner.
+    function idDeal(deal) {
+        // Stesso troncamento a 60 + '...' degli altri banner: con titoli di
+        // mediana ~146 caratteri, tagliare a lunghezze diverse spezzerebbe lo
+        // stesso prodotto in due righe distinte nei report.
+        var t = deal.title || '';
+        var id = t.length > 60 ? t.substring(0, 60) + '...' : t;
+        if (deal.store === 'aliexpress') id = 'ALI-' + id;
+        return id;
+    }
+
+    function inviaEvento(nome, deal, interazione) {
+        if (typeof gtag !== 'function' || !deal) return;
+        gtag('event', nome, {
+            'event_category': 'AffiliateRotating',
+            'amazon_deal_id': idDeal(deal),
+            'banner_size': container.clientWidth + 'x' + container.clientHeight,
+            // Stessa convenzione di trackVisibleBanners: la prima esposizione e'
+            // un caricamento, non un rinnovo, quindi i refresh partono da 1.
+            'trigger_type': rotazione <= 1 ? 'initial_load' : 'timer_refresh_' + (rotazione - 1),
+            'asin': deal.asin || deal.product_id || '',
+            'page_location': window.location.href,
+            'non_interaction': !interazione
+        });
+    }
+
+    function mostra() {
+        var deal = scegliDeal();
+        if (!deal) return;
+        dealCorrente = deal;
+        rotazione++;
+        var link = renderDealInBox(container, deal);
+        // mousedown e non click: con target="_blank" il browser puo' interrompere
+        // lo script quando apre la scheda e gtag rischia di non partire.
+        link.addEventListener('mousedown', function () {
+            inviaEvento('Rotating_Banner_Click', dealCorrente, true);
+        });
+        inviaEvento('Rotating_Banner_Impression', deal, false);
+    }
+
+    function avviaTimer() {
+        if (timer || fermato) return;
+        timer = setInterval(function () {
+            // A scheda nascosta non si ruota: sarebbero impression mai viste
+            // che sporcano le statistiche.
+            if (!document.hidden) mostra();
+        }, intervalMs);
+    }
+
+    // Il catalogo arriva via XHR asincrona: se non e' ancora pronto si attende
+    // invece di lasciare il riquadro vuoto per sempre.
+    function avvia() {
+        if (fermato) return;
+        if (catalogo().length) {
+            mostra();
+            avviaTimer();
+        } else if (window._amazonDeal600 !== false) {
+            setTimeout(avvia, 300);   // caricamento in corso
+        }
+    }
+    avvia();
+
+    // Listener dedicato: NON tocca quello dello shield AdSense, che gestisce
+    // tutt'altro (rilevamento clic cross-origin).
+    function onVisibilita() {
+        if (document.hidden) {
+            if (timer) { clearInterval(timer); timer = null; }
+        } else {
+            avviaTimer();
+        }
+    }
+    document.addEventListener('visibilitychange', onVisibilita);
+
+    return function stop() {
+        fermato = true;
+        if (timer) { clearInterval(timer); timer = null; }
+        document.removeEventListener('visibilitychange', onVisibilita);
+    };
 }
 
 

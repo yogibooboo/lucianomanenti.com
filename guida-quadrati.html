@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
+	<script>
+		window.dataLayer = window.dataLayer || [];
+		function gtag() { dataLayer.push(arguments); }
+		gtag('js', new Date());
+		gtag('config', 'G-WRBDRDQ4L8');
+		window.currentLang = 'it';
+	</script>
+	<title>Regole del Gioco dei Quadrati Luciano (Dots and Boxes) - Come si gioca</title>
+	<meta name="Description"
+		content="Regole del Gioco dei Quadrati, il gioco del foglio a quadretti (Dots and Boxes): come si traccia un lato, perch&eacute; chi chiude rigioca, la regola delle catene e il sacrificio delle due caselle che fa vincere il finale.">
+	<link rel="alternate" hreflang="it" href="guida-quadrati.html">
+	<link rel="alternate" hreflang="en" href="guida-quadrati-en.html">
+	<link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
+	<link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
+	<link rel="shortcut icon" href="favicon/favicon.ico">
+	<link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+	<style>
+		body {
+			font-family: sans-serif;
+			line-height: 1.7;
+			max-width: 800px;
+			margin: 40px auto;
+			padding: 20px;
+			color: #333;
+			background-color: #f9f9f9;
+		}
+
+		h1 {
+			color: #2c3e50;
+			border-bottom: 2px solid #ffd700;
+			padding-bottom: 10px;
+		}
+
+		h2 {
+			color: #2c3e50;
+			margin-top: 30px;
+		}
+
+		h3 {
+			color: #2c3e50;
+			font-size: 1.1em;
+			margin-top: 20px;
+		}
+
+		.lang-switch {
+			text-align: right;
+			margin-bottom: 20px;
+		}
+
+		.lang-switch a {
+			display: inline-block;
+			padding: 6px 16px;
+			margin-left: 5px;
+			text-decoration: none;
+			border-radius: 5px;
+			font-weight: bold;
+			font-size: 14px;
+		}
+
+		.lang-switch a.active {
+			background: #2c3e50;
+			color: white;
+		}
+
+		.lang-switch a:not(.active) {
+			background: #ddd;
+			color: #333;
+			cursor: pointer;
+		}
+
+		.content-box {
+			background: white;
+			padding: 30px;
+			border-radius: 8px;
+			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+		}
+
+		.play-btn {
+			display: inline-block;
+			margin-top: 25px;
+			padding: 12px 30px;
+			background: #27ae60;
+			color: white;
+			text-decoration: none;
+			border-radius: 8px;
+			font-size: 18px;
+			font-weight: bold;
+		}
+
+		.nav-links {
+			text-align: center;
+			margin-top: 30px;
+			font-size: 14px;
+		}
+
+		.nav-links a {
+			color: #3498db;
+			text-decoration: none;
+			margin: 0 10px;
+		}
+
+		.banner {
+			width: 100%;
+			height: 150px;
+			background-image: url('images/home/castagne.jpg');
+			background-size: cover;
+			background-position: center;
+			border-radius: 8px;
+			margin: 20px 0;
+			box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+		}
+
+		.highlight {
+			background-color: #fff9c4;
+			padding: 0 4px;
+		}
+
+		/* Gli schemetti di esempio: puntini, lati tracciati e caselle conquistate
+		   disegnati con gli stessi colori del gioco, cosi' chi legge ritrova sul
+		   tavolo le stesse cose che ha visto qui. Sono fatti con dei semplici div
+		   posizionati, senza immagini da scaricare. */
+		.mini-griglia {
+			position: relative;
+			display: inline-block;
+			background: #fffaeb;
+			border: 2px solid #14301c;
+			border-radius: 6px;
+			padding: 16px;
+			margin: 10px 0 6px 0;
+		}
+
+		.mg-inner { position: relative; }
+
+		.mg-punto {
+			position: absolute;
+			width: 8px;
+			height: 8px;
+			margin-left: -4px;
+			margin-top: -4px;
+			border-radius: 50%;
+			background: #2c3e50;
+			z-index: 3;
+		}
+
+		.mg-lato { position: absolute; z-index: 2; border-radius: 2px; }
+		.mg-lato.h { height: 5px; margin-top: -2.5px; }
+		.mg-lato.v { width: 5px; margin-left: -2.5px; }
+		.mg-lato.blu { background: #2962be; }
+		.mg-lato.rosso { background: #c81e37; }
+		/* Il lato "da giocare" dell'esempio: tratteggiato, per distinguerlo da
+		   quelli gia' tracciati. */
+		.mg-lato.mossa { background: repeating-linear-gradient(90deg,#e8a020 0 6px,transparent 6px 10px); }
+		.mg-lato.v.mossa { background: repeating-linear-gradient(180deg,#e8a020 0 6px,transparent 6px 10px); }
+
+		.mg-cella {
+			position: absolute;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-weight: bold;
+			font-size: 18px;
+			z-index: 1;
+		}
+		.mg-cella.tua { background: rgba(41,98,190,0.30); color: #1a4fa0; }
+		.mg-cella.pc  { background: rgba(200,30,55,0.26); color: #a01028; }
+
+		.legenda-schema {
+			font-size: 0.92em;
+			color: #666;
+			margin-top: -2px;
+			margin-bottom: 18px;
+		}
+
+		.regola-chiave {
+			background: #eef7ee;
+			border-left: 4px solid #27ae60;
+			padding: 12px 18px;
+			margin: 18px 0;
+		}
+	</style>
+</head>
+
+<body>
+	<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+		<a href="#" id="btn-back" onclick="goBack(); return false;"
+			style="display: inline-block; padding: 6px 16px; background: #e74c3c; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 14px;">&#x2190;
+			Indietro</a>
+		<div class="lang-switch" style="margin-bottom: 0;">
+			<a href="guida-quadrati.html" id="btn-it" class="active">Italiano</a>
+			<a href="guida-quadrati-en.html" id="btn-en">English</a>
+		</div>
+	</div>
+
+	<div class="content-box">
+		<h1>Il Gioco dei Quadrati</h1>
+
+		<p>&Egrave; il gioco che tanti di noi facevano a scuola sul foglio a quadretti, in fondo al banco, e che nel
+			resto del mondo si chiama <strong>Dots and Boxes</strong>. Serve solo una griglia di puntini: a turno si
+			unisce un puntino a quello vicino, e chi chiude un quadretto se lo prende. Vince chi ne conquista di
+			pi&ugrave;.</p>
+
+		<p>Le regole si imparano in mezzo minuto. La cosa sorprendente &egrave; che dietro c'&egrave; una strategia vera:
+			verso met&agrave; partita il gioco cambia completamente natura, e chi conosce il trucco delle
+			<em>catene</em> batte quasi sempre chi si limita a prendere tutto quello che vede. In questa pagina ci sono
+			prima le regole, poi il trucco.</p>
+
+		<div class="banner"></div>
+
+		<h2>Le regole</h2>
+
+		<h3>1. Si traccia un lato per turno</h3>
+		<p>Il campo &egrave; una griglia di puntini. Al proprio turno si traccia <strong>un solo lato</strong>, cio&egrave;
+			un segmento fra due puntini vicini, in orizzontale o in verticale. Mai in diagonale. Nel gioco basta
+			cliccare nello spazio fra i due puntini: passandoci sopra col mouse il lato si accende in grigio, cos&igrave;
+			si vede quale si sta per tracciare prima di premere.</p>
+
+		<h3>2. Chi chiude un quadretto lo conquista</h3>
+		<p>Quando il lato che tracci &egrave; il <strong>quarto</strong> di un quadretto, quel quadretto &egrave; tuo:
+			si colora e ci compare la tua iniziale. I tuoi sono blu, quelli del computer rossi.</p>
+
+		<div class="regola-chiave">
+			<h3 style="margin-top:0">3. Chi chiude, rigioca &mdash; ed &egrave; la regola che decide le partite</h3>
+			<p style="margin-bottom:0">Se chiudendo un lato conquisti un quadretto, <strong>giochi
+					un'altra volta</strong>. E se anche la mossa dopo ne chiude un altro, giochi ancora, e cos&igrave;
+				via. Per questo le partite si decidono a raffica: un giocatore pu&ograve; incassare dieci caselle di
+				fila in un turno solo. Chi non conosce questa regola perde senza capire perch&eacute;.</p>
+		</div>
+
+		<p>Un lato che chiude <em>due</em> quadretti insieme (capita quando sta fra due caselle entrambe con tre lati
+			gi&agrave; tracciati) te li fa conquistare tutti e due in un colpo.</p>
+
+		<h3>4. La partita finisce quando la griglia &egrave; piena</h3>
+		<p>Si va avanti finch&eacute; non &egrave; stato tracciato ogni lato. A quel punto tutti i quadretti sono
+			assegnati e vince chi ne ha di pi&ugrave;. Se la griglia ha un numero pari di quadretti il pareggio &egrave;
+			possibile; con un numero dispari (per esempio 5&times;5, che ne ha 25) qualcuno vince per forza.</p>
+
+		<h2>Il trucco: le catene</h2>
+
+		<p>All'inizio le mosse sembrano tutte uguali e in effetti quasi lo sono: si riempie la griglia senza dare niente
+			all'avversario. Il punto &egrave; che prima o poi <strong>i lati sicuri finiscono</strong>. Da quel momento
+			ogni mossa possibile porta una casella a tre lati, cio&egrave; la regala all'altro. E qui comincia il gioco
+			vero.</p>
+
+		<h3>Cosa vuol dire "regalare" una casella</h3>
+		<p>Una casella con <strong>tre lati gi&agrave; tracciati</strong> &egrave; pronta da chiudere: chiunque tocchi a
+			lui se la prende gratis. Quindi la mossa da evitare, finch&eacute; si pu&ograve;, &egrave; quella che porta
+			una casella da due lati a tre.</p>
+
+		<div class="mini-griglia">
+			<div class="mg-inner" style="width:180px;height:60px">
+				<div class="mg-cella" style="left:0;top:0;width:60px;height:60px"></div>
+				<div class="mg-lato h blu" style="left:0;top:0;width:60px"></div>
+				<div class="mg-lato h blu" style="left:0;top:60px;width:60px"></div>
+				<div class="mg-lato v blu" style="left:0;top:0;height:60px"></div>
+				<div class="mg-lato v mossa" style="left:60px;top:0;height:60px"></div>
+				<div class="mg-punto" style="left:0;top:0"></div>
+				<div class="mg-punto" style="left:60px;top:0"></div>
+				<div class="mg-punto" style="left:120px;top:0"></div>
+				<div class="mg-punto" style="left:180px;top:0"></div>
+				<div class="mg-punto" style="left:0;top:60px"></div>
+				<div class="mg-punto" style="left:60px;top:60px"></div>
+				<div class="mg-punto" style="left:120px;top:60px"></div>
+				<div class="mg-punto" style="left:180px;top:60px"></div>
+			</div>
+		</div>
+		<p class="legenda-schema">La casella a sinistra ha tre lati. Il lato tratteggiato &egrave; il quarto: chi lo
+			traccia si prende la casella <em>e gioca ancora</em>.</p>
+
+		<h3>La catena</h3>
+		<p>Una <strong>catena</strong> &egrave; una fila di caselle collegate, tutte con due lati tracciati, che si
+			aprono una dopo l'altra. Il fatto cruciale &egrave; questo: appena qualcuno &egrave; costretto ad aprire una
+			catena, l'avversario <strong>non ne prende una sola, le prende tutte</strong>. Perch&eacute; ogni casella
+			che chiude gli d&agrave; il diritto di rigiocare, e la mossa successiva chiude quella dopo, fino in fondo
+			alla fila.</p>
+
+		<div class="mini-griglia">
+			<div class="mg-inner" style="width:240px;height:60px">
+				<div class="mg-lato h blu" style="left:0;top:0;width:60px"></div>
+				<div class="mg-lato h blu" style="left:60px;top:0;width:60px"></div>
+				<div class="mg-lato h blu" style="left:120px;top:0;width:60px"></div>
+				<div class="mg-lato h blu" style="left:180px;top:0;width:60px"></div>
+				<div class="mg-lato h rosso" style="left:0;top:60px;width:60px"></div>
+				<div class="mg-lato h rosso" style="left:60px;top:60px;width:60px"></div>
+				<div class="mg-lato h rosso" style="left:120px;top:60px;width:60px"></div>
+				<div class="mg-lato h rosso" style="left:180px;top:60px;width:60px"></div>
+				<div class="mg-lato v blu" style="left:0;top:0;height:60px"></div>
+				<div class="mg-lato v mossa" style="left:240px;top:0;height:60px"></div>
+				<div class="mg-punto" style="left:0;top:0"></div>
+				<div class="mg-punto" style="left:60px;top:0"></div>
+				<div class="mg-punto" style="left:120px;top:0"></div>
+				<div class="mg-punto" style="left:180px;top:0"></div>
+				<div class="mg-punto" style="left:240px;top:0"></div>
+				<div class="mg-punto" style="left:0;top:60px"></div>
+				<div class="mg-punto" style="left:60px;top:60px"></div>
+				<div class="mg-punto" style="left:120px;top:60px"></div>
+				<div class="mg-punto" style="left:180px;top:60px"></div>
+				<div class="mg-punto" style="left:240px;top:60px"></div>
+			</div>
+		</div>
+		<p class="legenda-schema">Una catena di quattro caselle. I lati verticali interni non sono tracciati: chi chiude
+			il tratteggiato a destra prende la prima casella, rigioca, prende la seconda, e cos&igrave; via fino a
+			prendersele <strong>tutte e quattro</strong>.</p>
+
+		<p>Da qui viene la regola pratica pi&ugrave; importante del gioco:</p>
+
+		<div class="regola-chiave">
+			<p style="margin:0"><strong>Chi &egrave; costretto ad aprire per primo una catena, la perde tutta.</strong>
+				Quindi il vero obiettivo, a met&agrave; partita, non &egrave; prendere caselle: &egrave; far restare
+				<em>l'altro</em> senza mosse sicure.</p>
+		</div>
+
+		<p>Ne segue anche che, quando sei costretto ad aprire, conviene <strong>aprire la catena pi&ugrave; corta</strong>:
+			regali due o tre caselle invece di otto, e tieni quelle lunghe per dopo.</p>
+
+		<h2>La mossa che quasi nessuno conosce: il sacrificio</h2>
+
+		<p>Questa &egrave; la finezza che separa chi gioca bene da chi gioca benissimo, e per anni l'ho scoperta solo
+			perdendo contro chi la usava.</p>
+
+		<p>Immagina di aver appena ricevuto in regalo una catena di sei caselle. L'istinto dice: prenditele tutte. Ma
+			guarda cosa succede dopo: le hai prese tutte e sei, la catena &egrave; finita, <strong>tocca ancora a
+				te</strong> &mdash; e sul tavolo non c'&egrave; pi&ugrave; niente di sicuro. Quindi sei tu a dover aprire
+			la catena successiva, e la regali intera all'avversario. Hai vinto sei caselle e gliene hai date magari
+			otto.</p>
+
+		<p>La mossa giusta &egrave; un'altra: prendi le prime quattro e poi, invece di incassare anche le ultime due,
+			<strong>traccia il lato che le divide</strong>. Gli lasci due caselle in regalo &mdash; ma quelle due
+			caselle le chiude lui, e quando ha finito &egrave; <em>lui</em> a ritrovarsi senza mosse sicure, e a dover
+			aprire la catena dopo.</p>
+
+		<div class="mini-griglia">
+			<div class="mg-inner" style="width:120px;height:60px">
+				<div class="mg-lato h blu" style="left:0;top:0;width:60px"></div>
+				<div class="mg-lato h blu" style="left:60px;top:0;width:60px"></div>
+				<div class="mg-lato h blu" style="left:0;top:60px;width:60px"></div>
+				<div class="mg-lato h blu" style="left:60px;top:60px;width:60px"></div>
+				<div class="mg-lato v blu" style="left:0;top:0;height:60px"></div>
+				<div class="mg-lato v blu" style="left:120px;top:0;height:60px"></div>
+				<div class="mg-lato v mossa" style="left:60px;top:0;height:60px"></div>
+				<div class="mg-punto" style="left:0;top:0"></div>
+				<div class="mg-punto" style="left:60px;top:0"></div>
+				<div class="mg-punto" style="left:120px;top:0"></div>
+				<div class="mg-punto" style="left:0;top:60px"></div>
+				<div class="mg-punto" style="left:60px;top:60px"></div>
+				<div class="mg-punto" style="left:120px;top:60px"></div>
+			</div>
+		</div>
+		<p class="legenda-schema">Le ultime due caselle della catena. Tracciando il lato tratteggiato <em>in mezzo</em>
+			le regali entrambe &mdash; ma costringi l'avversario a muovere per primo su quello che resta.</p>
+
+		<p>Si chiama <em>sacrificio delle due caselle</em>. Costa due punti e ne fa guadagnare spesso molti di
+			pi&ugrave;: conviene tutte le volte che la catena successiva vale pi&ugrave; di due caselle. &Egrave;
+			esattamente quello che fa il computer al livello Difficile, ed &egrave; il motivo per cui a quel livello
+			&egrave; parecchio pi&ugrave; ostico.</p>
+
+		<h2>I comandi e le opzioni</h2>
+
+		<h3>La grandezza della griglia</h3>
+		<p>Ci sono tre formati pronti &mdash; <strong>Piccolo</strong> (5&times;5, cio&egrave; 25 quadretti),
+			<strong>Medio</strong> (8&times;8, 64 quadretti) e <strong>Grande</strong> (11&times;11, 121 quadretti)
+			&mdash; pi&ugrave; un quarto, <strong>Libero</strong>, dove scegli tu righe e colonne, da 3 fino a 12
+			righe e 14 colonne. Sotto la scelta compare quanti quadretti verranno fuori in tutto: comodo per non
+			ritrovarsi per sbaglio in una partita da mezz'ora.</p>
+		<p>Una griglia piccola &egrave; una partita breve e tattica, dove ogni casella pesa; una grande &egrave; una
+			partita lunga in cui il gioco delle catene conta molto di pi&ugrave;. Per imparare la strategia
+			consiglio il formato Piccolo o Medio: sul Grande le catene sono tante e all'inizio si fa fatica a
+			vederle.</p>
+
+		<h3>La bravura del computer</h3>
+		<ul>
+			<li><strong>Facile</strong> &mdash; gioca a caso, ma evita di regalare caselle quando pu&ograve;.
+				Non ragiona sulle catene: se lo metti in difficolt&agrave; crolla.</li>
+			<li><strong>Medio</strong> &mdash; non regala mai niente finch&eacute; ha mosse sicure, e quando &egrave;
+				costretto apre la catena pi&ugrave; corta. &Egrave; il modo di giocare di chi conosce bene il gioco ma
+				non la teoria.</li>
+			<li><strong>Difficile</strong> &mdash; conosce le catene, sceglie l'apertura calcolando anche cosa succede
+				dopo, e usa il sacrificio delle due caselle. Batte regolarmente il livello Medio: se riesci a batterlo
+				sul formato Grande, il gioco lo hai capito davvero.</li>
+		</ul>
+
+		<h3>I risultati</h3>
+		<p>Non c'&egrave; cronometro, ed &egrave; voluto: qui il tempo dipende soprattutto da quanto ci mette
+			l'avversario a muovere, e giocare di fretta &egrave; il modo migliore per regalare caselle. Si tengono
+			invece le <strong>partite vinte su quelle giocate</strong> e il <strong>miglior scarto</strong>, cio&egrave;
+			la vittoria pi&ugrave; larga che hai ottenuto. I conti sono separati per livello di difficolt&agrave;,
+			perch&eacute; una vittoria contro il Facile e una contro il Difficile non sono la stessa cosa. Il
+			pulsante con la freccia circolare azzera i risultati del livello che stai giocando: il primo click
+			chiede conferma, cos&igrave; non si cancella niente per sbaglio.</p>
+
+		<p>A fine partita, sotto il punteggio, compare anche quante caselle hai <strong>regalato</strong>
+			all'avversario. &Egrave; la statistica che insegna di pi&ugrave;: quasi sempre le partite si perdono
+			l&igrave;, non nelle caselle che non si sono prese.</p>
+
+		<h3>La partita si salva da sola</h3>
+		<p>Se chiudi la pagina a met&agrave; partita, la volta dopo il gioco te la ripropone con il pulsante
+			<strong>Riprendi la partita precedente</strong>. Il salvataggio sta nel tuo browser, non su un server: se
+			cancelli i dati di navigazione se ne va anche quello.</p>
+
+		<p style="text-align: center;"><a href="#" onclick="goBack(); return false;" class="play-btn">Chiudi</a></p>
+
+		<div class="nav-links">
+			<a href="index.html">Tutti i giochi</a> |
+			<a href="minato.html">Campo Minato</a> |
+			<a href="sudoku.html">Sudoku</a> |
+			<a href="calcolo.html">Calcolo Enigmatico</a> |
+			<a href="dama.html">Dama</a>
+		</div>
+	</div>
+
+	<p style="text-align: center; font-size: 0.8em; color: #999; margin-top: 10px;">
+		© 2026 Luciano Manenti
+	</p>
+
+	<script>
+		function goBack() {
+			window.close();
+		}
+		(function() {
+			var nascosto = false;
+			var observer = new MutationObserver(function() {
+				if (nascosto) return;
+				var divs = document.querySelectorAll('body > div');
+				for (var i = 0; i < divs.length; i++) {
+					if (divs[i].shadowRoot && !divs[i].className && (divs[i].getAttribute('style')||'').length > 5000) {
+						divs[i].style.setProperty('display', 'none', 'important');
+						nascosto = true;
+						observer.disconnect();
+						return;
+					}
+				}
+			});
+			observer.observe(document.body, { childList: true });
+		})();
+	</script>
+</body>
+
+</html>

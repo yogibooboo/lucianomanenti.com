@@ -1813,6 +1813,17 @@ function initCalcolo() {
         adjustLayout();
     }
 
+    // Riquadro affiliati sotto NUOVA PARTITA. Parte da qui e non da
+    // DOMContentLoaded perche' initCalcolo attende la chiusura dell'interstitial:
+    // ruotare mentre l'overlay copre la pagina conterebbe impression mai viste.
+    // Non e' AdSense, quindi la rotazione automatica e' legittima.
+    if (typeof setupRotatingAffiliateBanner === 'function') {
+        const boxAff = document.getElementById('banner-rotante');
+        if (boxAff) {
+            setupRotatingAffiliateBanner(boxAff, { intervalMs: 60000 });
+        }
+    }
+
     // Radio button del modo: decidono cosa fa il click su un incrocio
     document.querySelectorAll('input[name="modo-matrice"]').forEach(function (r) {
         r.addEventListener('change', function () {

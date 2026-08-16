@@ -338,7 +338,13 @@ a.pulsante-top {
     box-sizing: border-box;
     display: flex;
     align-items: center;
-    justify-content: center;
+    /* A destra e non al centro: le operazioni si leggono in colonna e centrando
+       ogni numero nella sua cella un numero di 2 cifre finiva spostato rispetto
+       a uno di 3 o 4, con unita' e decine su incolonnamenti diversi. E' proprio
+       il conto in colonna che diventava fuorviante. Il padding tiene le cifre
+       staccate dal bordo. */
+    justify-content: flex-end;
+    padding-right: 6px;
     background: #f7f3e8;
     border: 2px solid #14301c;   /* era 3: su una cella piu' piccola mangiava troppo */
     border-radius: 5px;
@@ -1423,4 +1429,21 @@ a.pulsante-top {
 }
 #sprite-assegna.visibile {
     opacity: 1;
+}
+
+/* ================= RIQUADRO AFFILIATI ROTANTE =================
+   Sotto NUOVA PARTITA, in fondo alla colonna dei comandi. La colonna e' larga
+   300px, quindi il riquadro sta esattamente nel formato 300x250 senza margini
+   laterali. L'altezza e' fissa: il contenuto viene ridisegnato a ogni rotazione
+   e senza un'altezza dichiarata la colonna ballerebbe a ogni cambio prodotto. */
+#banner-rotante {
+    width: 300px;
+    height: 250px;
+    box-sizing: border-box;
+    border-radius: 6px;
+    overflow: hidden;
+    /* Fondo scuro come gli altri pannelli: si vede nell'istante fra il
+       caricamento della pagina e il primo prodotto disegnato. */
+    background: rgba(0, 40, 10, 0.55);
+    border: 2px solid rgba(100, 160, 110, 0.35);
 }

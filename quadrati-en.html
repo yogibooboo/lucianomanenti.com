@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9335537153013492"
+        crossorigin="anonymous"></script>
+    <script>
+        // Fix sicurezza per evitare crash da cross-origin su window.opener
+        (function() { try { if (!window.opener) return; var test = window.opener.document; if (!window.opener.game) { window.opener = null; } } catch(e) { window.opener = null; } })();
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luciano Dots and Boxes Online Free - lucianomanenti.com</title>
+    <link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
+    <link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
+    <link rel="shortcut icon" href="favicon/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+    <link rel="manifest" href="favicon/site.webmanifest">
+
+    <meta name="Description"
+        content="Play Dots and Boxes free online, the classic squared-paper game: join the dots and claim the boxes. Three grid sizes plus a custom one, a computer opponent with three strength levels, scores and autosave.">
+    <meta http-Equiv="Cache-Control" Content="no-cache">
+    <meta http-Equiv="Pragma" Content="no-cache">
+    <meta http-Equiv="Expires" Content="0">
+
+    <link rel="stylesheet" href="quadrati.css?v=1.3" />
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-WRBDRDQ4L8');
+    </script>
+    <script>
+        window.gameConfig = {
+            gaPrefix: 'QUADRATI_',
+            hideLegalFooter: true,
+            // Gli slot sono gli stessi su tutte le pagine del sito: uno per
+            // formato, non uno per gioco. Copiarli qui e' la cosa giusta, non
+            // un segnaposto da sostituire.
+            adsenseActive: true,
+            adsenseSlots: {
+                '300x600': '5266697442',
+                '160x600': '1167670336',
+                '300x250': '8471445288',
+                '160x250': '8663016975'
+            }
+        };
+        window.currentLang = 'en';
+    </script>
+</head>
+
+<body>
+
+    <div class="main-container">
+        <!-- Sidebar per annunci (gestite dal layout engine) -->
+        <div id="sidebar-left" class="sidebar"></div>
+        <div id="sidebar-right" class="sidebar"></div>
+
+        <!-- Campo di gioco principale centrato e riscalato -->
+        <div id="campogioco">
+            <!-- Schermo overlay per modali -->
+            <div id="schermo"></div>
+
+            <div class="lang-switch-header">
+                <a href="quadrati.html">IT</a>
+                <a href="quadrati-en.html" class="active">EN</a>
+                <div id="btn-audio" class="btn-audio-game" aria-label="Audio"></div>
+            </div>
+            <div id="titolo-gioco">Luciano Dots and Boxes</div>
+
+            <!-- Messaggio di stato -->
+            <div id="messaggio-stato">Loading...</div>
+
+            <!-- ================= PANNELLO RECORD =================
+                 No clock here: the time depends mostly on how long the computer
+                 takes to move. What is kept is the win/played tally and the best
+                 margin of victory. -->
+            <div id="pannello-record">
+                <div class="record-header">
+                    <span>SCORES &mdash; <span id="record-diff">--</span></span>
+                    <button class="btn-reset-record" title="Reset the scores for this level">&#10226;</button>
+                </div>
+                <div class="record-righe">
+                    <div class="info-blocco">
+                        <div class="info-label">Won</div>
+                        <div class="record-valore" id="record-vinte">0</div>
+                    </div>
+                    <div class="info-blocco">
+                        <div class="info-label">Played</div>
+                        <div class="record-valore" id="record-giocate">0</div>
+                    </div>
+                    <div class="info-blocco">
+                        <div class="info-label">Best margin</div>
+                        <div class="record-valore" id="record-scarto">--</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= GRIGLIA =================
+                 Vuota nel markup: righe, colonne e passo dipendono dal formato
+                 scelto e la costruisce quadrati.js. -->
+            <div id="area-griglia">
+                <div id="griglia-quadrati"></div>
+            </div>
+
+            <!-- ================= PANNELLO CONTROLLI ================= -->
+            <div id="pannello-controlli">
+                <div id="info-partita">
+                    <div class="info-blocco">
+                        <div class="info-label">You</div>
+                        <div class="info-valore" id="info-tu">0</div>
+                    </div>
+                    <div class="info-blocco">
+                        <div class="info-label">Computer</div>
+                        <div class="info-valore" id="info-pc">0</div>
+                    </div>
+                    <div class="info-blocco">
+                        <div class="info-label">Turn</div>
+                        <div class="info-valore" id="info-turno">--</div>
+                    </div>
+                    <div class="info-blocco">
+                        <div class="info-label">Grid</div>
+                        <div class="info-valore" id="info-formato">--</div>
+                    </div>
+                </div>
+
+                <div id="legenda">
+                    <b>Click between two dots</b> to draw a line.<br>
+                    <b>Whoever closes a box</b> claims it and <b>plays again</b>:
+                    that is the rule that decides the game.<br>
+                    Whoever claims the most boxes wins. It is often better
+                    <b>not</b> to take the last box in a chain: it forces your
+                    opponent to open the next one.
+                </div>
+
+                <button id="btn-nuova-partita">NEW GAME</button>
+
+                <!-- Riquadro affiliati rotante, come negli altri giochi: una
+                     partita sulla griglia grande dura parecchio, e un banner
+                     fisso dopo pochi minuti non lo guarda piu' nessuno. Ruota da
+                     solo ogni minuto (vedi quadrati.js). NON e' uno slot
+                     AdSense: gli annunci Google non vanno mai rinfrescati senza
+                     un gesto dell'utente, i link affiliati si'. -->
+                <div id="banner-rotante"></div>
+            </div>
+
+            <!-- ================= MODALI ED OVERLAY ================= -->
+
+            <!-- 1. Modale Inizio Gioco -->
+            <div id="modale-inizio" class="form-quadrati">
+                <button id="btn-riprendi" class="btn-continua" style="display: none; width: 100%; max-width: 250px; margin: 0 auto 16px auto; background: #27ae60; border-color: #1e8449; color: white;">RESUME PREVIOUS GAME</button>
+
+                <div class="form-quadrati-title">New Game</div>
+
+                <div class="gruppo-scelta">
+                    <div class="gruppo-label">Grid size</div>
+                    <div class="riga-formati">
+                        <button id="btn-fmt-piccolo" onclick="selezionaFormato('piccolo')" class="btn-opzione-sel attiva">Small<span class="formato-dettaglio">5 &times; 5</span></button>
+                        <button id="btn-fmt-medio" onclick="selezionaFormato('medio')" class="btn-opzione-sel">Medium<span class="formato-dettaglio">8 &times; 8</span></button>
+                        <button id="btn-fmt-grande" onclick="selezionaFormato('grande')" class="btn-opzione-sel">Large<span class="formato-dettaglio">11 &times; 11</span></button>
+                        <button id="btn-fmt-libero" onclick="selezionaFormato('libero')" class="btn-opzione-sel">Custom<span class="formato-dettaglio">your choice</span></button>
+                    </div>
+
+                    <!-- Compare solo scegliendo LIBERO -->
+                    <div id="opzione-libero">
+                        <div class="libero-riga">
+                            <label for="sel-righe">Rows</label>
+                            <select id="sel-righe">
+                                <option>3</option><option>4</option><option>5</option>
+                                <option>6</option><option selected>7</option><option>8</option>
+                                <option>9</option><option>10</option><option>11</option><option>12</option>
+                            </select>
+                            <span>&times;</span>
+                            <label for="sel-colonne">Columns</label>
+                            <select id="sel-colonne">
+                                <option>3</option><option>4</option><option>5</option>
+                                <option>6</option><option selected>7</option><option>8</option>
+                                <option>9</option><option>10</option><option>11</option>
+                                <option>12</option><option>13</option><option>14</option>
+                            </select>
+                        </div>
+                        <span class="libero-nota"><span id="libero-totale">49</span> boxes to be won in total</span>
+                    </div>
+                </div>
+
+                <div class="gruppo-scelta">
+                    <div class="gruppo-label">Computer strength</div>
+                    <div class="riga-difficolta">
+                        <button id="btn-diff-facile" onclick="selezionaDifficolta('facile')" class="btn-opzione-sel attiva">Easy</button>
+                        <button id="btn-diff-medio" onclick="selezionaDifficolta('medio')" class="btn-opzione-sel">Medium</button>
+                        <button id="btn-diff-difficile" onclick="selezionaDifficolta('difficile')" class="btn-opzione-sel">Hard</button>
+                    </div>
+                    <span class="libero-nota">Easy plays at random without giving boxes away, Medium avoids opening chains, Hard knows the chain game and sacrifices boxes to win the endgame.</span>
+                </div>
+
+                <button onclick="confermaEAvviaPartita()" class="btn-continua" style="width: 100%; max-width: 250px; margin: 4px auto 0 auto; display: block;">START PLAYING</button>
+            </div>
+
+            <!-- 2. Modale di fine partita (vittoria, sconfitta o pareggio) -->
+            <div id="modale-fine" class="form-quadrati modale-fine">
+                <div class="confirm-message" id="fine-messaggio" style="margin: 0 0 8px 0; line-height: 1.3;">GAME OVER</div>
+                <div id="fine-dettagli"></div>
+                <button onclick="location.reload()" class="btn-continua" style="width: 280px; height: 44px; font-size: 16px; margin: 0 auto;">NEW GAME</button>
+            </div>
+
+            <!-- 3. Modale di Conferma Abbandono Partita -->
+            <div id="confermatermina" class="form-quadrati modale-conferma">
+                <div class="confirm-message" style="margin: 0 0 18px 0; line-height: 1.4; font-size: 22px;">Do you really want to abandon the game in progress?</div>
+                <div class="conferma-bottoni">
+                    <button id="btn-no-continua" class="btn-continua" style="width: 260px; height: 44px; font-size: 16px;">NO, CARRY ON</button>
+                    <button id="btn-si-termina" class="btn-continua" style="width: 260px; height: 44px; font-size: 16px; background-color: #cc0c39; color: white; border-color: #990022;">YES, NEW GAME</button>
+                </div>
+            </div>
+
+            <!-- Le regole stanno in guida-quadrati-en.html, non in una modale qui:
+                 una pagina intera le contiene per esteso ed e' indicizzabile dai
+                 motori di ricerca. Come negli altri giochi si apre in una scheda
+                 nuova; rel="opener" serve al pulsante "Chiudi" della guida, che
+                 chiama window.close(). -->
+
+            <!-- Link di navigazione ed utilità a fondo pagina -->
+            <div class="link-utility-bottom">
+                <a href="aboutme-en.html" target="_blank" id="btn-scrivetemi-quadrati" class="pulsante-top">Contact Me</a>
+                <a href="guida-quadrati-en.html" target="_blank" rel="opener" id="btn-regole-top" class="pulsante-top">How to Play</a>
+            </div>
+
+            <!-- Link Legali (Privacy e Cookie) -->
+            <div class="legal-links-quadrati">
+                <a href="privacy-en.html" target="_blank" id="btn-privacy-quadrati">Privacy Policy</a>
+                <span class="sep">•</span>
+                <a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)" id="btn-cookie-quadrati">Manage Cookies</a>
+            </div>
+
+            <div class="link-giochi-quadrati">
+                <a href="minato-en.html" class="pulsante-link-quadrati">Minesweeper</a>
+                <a href="sudoku-en.html" class="pulsante-link-quadrati">Sudoku</a>
+                <a href="calcolo-en.html" class="pulsante-link-quadrati">Cross Figure</a>
+                <a href="scacchi-en.html" class="pulsante-link-quadrati">Chess</a>
+                <a href="dama-en.html" class="pulsante-link-quadrati">Checkers</a>
+                <a href="mulino-en.html" class="pulsante-link-quadrati">Morris</a>
+                <a href="scopa-en.html" class="pulsante-link-quadrati">Scopa</a>
+                <a href="burraco-en.html" class="pulsante-link-quadrati">Burraco</a>
+                <a href="scala40-en.html" class="pulsante-link-quadrati">Scala 40</a>
+                <a href="spider-en.html" class="pulsante-link-quadrati">Spider</a>
+                <a href="index-en.html" class="pulsante-link-quadrati pulsante-home-quadrati">ALL GAMES</a>
+            </div>
+
+        </div><!-- /campogioco -->
+    </div>
+
+    <!-- Script condivisi dal sito -->
+    <script src="site.js?v=1.1"></script>
+    <!-- Layout engine per ridimensionare la finestra del gioco -->
+    <script src="game-layout.js?v=4.6"></script>
+    <!-- Logica del Gioco dei Quadrati -->
+    <script src="quadrati.js?v=1.2"></script>
+    <script>
+        (function () {
+            var nascosto = false;
+            var observer = new MutationObserver(function () {
+                if (nascosto) return;
+                var divs = document.querySelectorAll('body > div');
+                for (var i = 0; i < divs.length; i++) {
+                    if (divs[i].shadowRoot && !divs[i].className && (divs[i].getAttribute('style') || '').length > 5000) {
+                        divs[i].style.setProperty('display', 'none', 'important');
+                        nascosto = true;
+                        observer.disconnect();
+                        return;
+                    }
+                }
+            });
+            observer.observe(document.body, { childList: true });
+        })();
+    </script>
+</body>
+
+</html>

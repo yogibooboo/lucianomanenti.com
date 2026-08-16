@@ -2459,9 +2459,20 @@ var scala = {
 		this.render();
 	},
 
+	/* Scarto rapido col tasto destro. Il controllo di appartenenza al gruppo
+	   NON è ridondante con pointerinelement: #giocatore è l'intera fascia del
+	   giocatore, che ospita anche le combinazioni calate (trisgiocatore usa lo
+	   stesso div, spostato a destra con xtris; v. creagruppi). Senza il filtro
+	   il destro su una carta già calata la strappava dal tris e la mandava
+	   negli scarti — segnalato da un giocatore il 13 ago 2026. Tutte le vie
+	   del tasto sinistro hanno una difesa equivalente (lo scarto pretende il
+	   rilascio su #scarti, il riordino filtra su carta.gruppo, l'attacco passa
+	   da cercamatch): cartadestro era l'unica strada che raggiungeva scarta()
+	   senza alcun filtro sulla provenienza. Rifiuto silenzioso: il gesto è un
+	   errore evidente e un avviso a ogni destro fuori posto sarebbe fastidioso. */
 	cartadestro: function (divCard, ev) {
 		if (this.pointerinelement(ev, "#giocatore")) {
-			if (this.pescato) return this.scarta(divCard.card);
+			if (this.pescato && (divCard.card.gruppo === this.giocatore)) return this.scarta(divCard.card);
 		}
 	},
 

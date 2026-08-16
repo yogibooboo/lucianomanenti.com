@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<title>Demo banner affiliati rotanti</title>
+<style>
+    body { background:#1a1a1a; color:#ddd; font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif; margin:0; padding:24px; }
+    h1 { font-size:20px; margin:0 0 4px; color:#fff; }
+    .sub { font-size:13px; color:#888; margin-bottom:24px; }
+    .controls { background:#222; border:1px solid #333; border-radius:8px; padding:14px; margin-bottom:24px; display:flex; gap:20px; align-items:center; flex-wrap:wrap; }
+    .controls label { font-size:13px; display:flex; gap:6px; align-items:center; }
+    button { background:#2d5a2d; color:#fff; border:none; padding:7px 14px; border-radius:5px; cursor:pointer; font-size:13px; }
+    button:hover { background:#3a733a; }
+    .griglia { display:flex; flex-wrap:wrap; gap:28px; align-items:flex-start; }
+    .caso { background:#111; border:1px solid #333; border-radius:8px; padding:12px; }
+    .caso h2 { font-size:13px; margin:0 0 3px; color:#ffdb4d; font-weight:600; }
+    .caso .meta { font-size:11px; color:#777; margin-bottom:10px; font-family:monospace; }
+    .slot { background:#000; }
+    .banco { background:#111; border:1px solid #3a3a2a; border-radius:8px; padding:14px; margin-bottom:28px; }
+    /* resize:both nativo del browser: nessuna libreria, il ResizeObserver
+       ridisegna il banner a ogni pixel di trascinamento. */
+    .ridim { resize:both; overflow:hidden; width:300px; height:250px;
+             min-width:120px; min-height:50px; background:#000;
+             border:1px dashed #555; box-sizing:content-box; }
+</style>
+</head>
+<body>
+
+<h1>Banner affiliati rotanti — anteprima layout</h1>
+<div class="sub">Dati reali da <code>newdeals.json</code>. Stesso motore che finirebbe in game-layout.js.</div>
+
+<div class="controls">
+    <button onclick="ruotaTutti()">Ruota adesso</button>
+    <label><input type="checkbox" id="autoRot"> rotazione automatica</label>
+    <label>ogni <input type="number" id="secondi" value="60" min="2" style="width:56px"> secondi</label>
+    <span style="font-size:12px;color:#888" id="stato">fermo</span>
+</div>
+
+<div class="banco">
+    <h2 style="font-size:14px;color:#ffdb4d;margin:0 0 3px;">Banco di prova ridimensionabile</h2>
+    <div style="font-size:12px;color:#888;margin-bottom:10px;">
+        Trascina l'angolo in basso a destra: il banner si ridisegna a ogni pixel.
+        <span id="misura" style="font-family:monospace;color:#ffdb4d;margin-left:8px;"></span>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+        <button onclick="preset(300,250)">300×250</button>
+        <button onclick="preset(336,280)">336×280</button>
+        <button onclick="preset(300,600)">300×600</button>
+        <button onclick="preset(160,600)">160×600</button>
+        <button onclick="preset(728,90)">728×90</button>
+        <button onclick="preset(468,60)">468×60</button>
+        <button onclick="preset(970,250)">970×250</button>
+        <button onclick="cambiaProdotto()">altro prodotto</button>
+    </div>
+    <div id="banco" class="ridim"></div>
+</div>
+
+<div class="griglia" id="griglia"></div>
+
+<script>
+// ─────────────────────────────────────────────────────────────────────────────
+// MOTORE DI RENDERING — questo è il codice candidato per game-layout.js
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Il layout si sceglie sul rapporto d'aspetto, non su dimensioni fisse: così
+// un solo motore copre 300x250, 300x600, 728x90 e qualunque altra misura.
+function _layoutPerAspetto(w, h) {
+    var r = w / h;
+    if (r >= 2.2) return 'orizzontale';   // 728x90, 970x250
+    if (r <= 0.62) return 'verticale';    // 300x600, 160x600
+    return 'quadrato';                    // 300x250, 250x250, 336x280
+}
+
+function _px(n) { return Math.round(n) + 'px'; }
+
+// Titolo mediano 146 caratteri, massimo 290: va troncato sulle righe
+// effettivamente disponibili. Il clamp da solo non basta — serve anche
+// un'altezza massima esplicita, perché -webkit-line-clamp non vincola il
+// box quando il contenitore padre è in flex e può espandersi.
+function _bloccoTesto(testo, fSize, righe) {
+    var lh = 1.25;
+    return '<div style="font-size:' + _px(fSize) + ';line-height:' + lh + ';' +
+        'font-weight:600;max-height:' + _px(fSize * lh * righe) + ';' +
+        'display:-webkit-box;-webkit-line-clamp:' + righe + ';' +
+        '-webkit-box-orient:vertical;overflow:hidden;word-break:break-word;">' +
+        testo + '</div>';
+}
+
+function renderDealInBox(container, deal, opts) {
+    opts = opts || {};
+    var w = container.clientWidth || parseInt(container.style.width, 10);
+    var h = container.clientHeight || parseInt(container.style.height, 10);
+    var layout = _layoutPerAspetto(w, h);
+    var isAli = (deal.store === 'aliexpress');
+
+    // Amazon e AliExpress hanno disclaimer e branding diversi: va scelto sul
+    // singolo prodotto, non sullo store "prevalente" del sito.
+    var marchio = isAli ? 'AliExpress' : 'Amazon';
+    var coloreMarchio = isAli ? '#e62e04' : '#ff9900';
+    var disclaim = isAli ? 'Link affiliato AliExpress' : 'Link affiliato Amazon';
+
+    // Scala tipografica ancorata alla dimensione minore del box.
+    var base = Math.min(w, h);
+    var fTitolo = Math.max(10, Math.min(15, base / 18));
+    var fPrezzo = Math.max(13, Math.min(24, base / 11));
+    var fMini   = Math.max(8,  Math.min(11, base / 26));
+
+    // Il piede col disclaimer è un elemento reale in fondo alla colonna, non
+    // un overlay in position:absolute: così occupa spazio invece di coprire
+    // il contenuto, ed è il primo spazio da sottrarre nei calcoli.
+    var hPiede = Math.round(fMini * 1.9);
+
+    var a = document.createElement('a');
+    a.href = deal.link;
+    a.target = '_blank';
+    a.rel = 'sponsored noopener';
+    a.style.cssText = 'display:flex;flex-direction:column;width:100%;height:100%;' +
+        'text-decoration:none;background:#fff;color:#111;box-sizing:border-box;' +
+        'overflow:hidden;position:relative;border-radius:6px;';
+
+    var piede = '<div style="flex:0 0 ' + _px(hPiede) + ';height:' + _px(hPiede) + ';' +
+        'background:#232f3e;color:#fff;font-size:' + _px(fMini) + ';' +
+        'padding:0 6px;display:flex;justify-content:space-between;' +
+        'align-items:center;box-sizing:border-box;white-space:nowrap;overflow:hidden;">' +
+        '<span style="color:' + coloreMarchio + ';font-weight:700;">' + marchio + '</span>' +
+        '<span style="opacity:0.75;">' + disclaim + '</span></div>';
+
+    // Lo sconto sta ACCANTO al prezzo, non più in overlay sull'immagine: è
+    // un'informazione commerciale che si legge insieme al prezzo, e come badge
+    // flottante rischiava di coprire il prodotto.
+    var pillolaSconto = deal.badge
+        ? '<span style="background:#cc0c39;color:#fff;font-size:' + _px(fMini + 1) + ';' +
+          'font-weight:700;padding:2px 6px;border-radius:3px;white-space:nowrap;' +
+          'line-height:1.3;">' + deal.badge + '</span>'
+        : '';
+
+    // disposizione: 'riga' = sconto a fianco (default), 'sotto' = sconto sotto
+    // il prezzo, per i formati bassissimi dove non c'è larghezza da spendere.
+    function bloccoPrezzo(disposizione) {
+        var testoPrezzo = '<span style="font-size:' + _px(fPrezzo) + ';font-weight:800;' +
+            'color:#B12704;line-height:1.1;white-space:nowrap;">' + (deal.price || '') + '</span>';
+        if (!pillolaSconto) return '<div>' + testoPrezzo + '</div>';
+        if (disposizione === 'sotto') {
+            return '<div style="display:flex;flex-direction:column;align-items:flex-start;' +
+                'gap:2px;">' + testoPrezzo + pillolaSconto + '</div>';
+        }
+        return '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">' +
+            testoPrezzo + pillolaSconto + '</div>';
+    }
+
+    // Il box immagine riceve un'altezza ESPLICITA in pixel, mai una percentuale.
+    // L'immagine dentro è in object-fit:contain con width/height al 100%: così
+    // non può debordare qualunque siano le sue proporzioni native — era la
+    // causa dell'immagine che usciva dal riquadro e copriva il badge.
+    function boxImmagine(larghezza, altezza) {
+        return '<div style="width:' + _px(larghezza) + ';height:' + _px(altezza) + ';' +
+            'flex:0 0 auto;background:#fff;overflow:hidden;padding:5px;' +
+            'box-sizing:border-box;">' +
+            '<img src="' + deal.img + '" alt="" style="width:100%;height:100%;' +
+            'object-fit:contain;display:block;"></div>';
+    }
+
+    if (layout === 'orizzontale') {
+        // Poca altezza: immagine quadrata a sinistra, testo a destra.
+        // La descrizione c'è SEMPRE — anche a 60px di altezza: è quella che
+        // dice cosa stai comprando. Nei formati bassi si affianca al prezzo
+        // (titolo a sinistra, prezzo+sconto in colonna a destra) invece di
+        // impilarsi, perché in verticale non c'è spazio ma in orizzontale sì.
+        var hUtile = h - hPiede;
+        var latoImg = hUtile;
+        var stretto = hUtile < 75;
+        var righeTit = hUtile >= 150 ? 3 : (hUtile >= 75 ? 2 : 2);
+        var testoOriz = _bloccoTesto(deal.title, stretto ? Math.max(9, fTitolo - 1) : fTitolo, righeTit);
+
+        var corpoOriz = stretto
+            // Affiancati: il titolo prende lo spazio elastico, il prezzo con lo
+            // sconto sotto sta in colonna a destra a larghezza propria.
+            ? '<div style="flex:1 1 auto;min-width:0;padding:3px 8px;display:flex;' +
+                'align-items:center;gap:10px;">' +
+                '<div style="flex:1 1 auto;min-width:0;">' + testoOriz + '</div>' +
+                '<div style="flex:0 0 auto;">' + bloccoPrezzo('sotto') + '</div>' +
+              '</div>'
+            : '<div style="flex:1 1 auto;min-width:0;padding:4px 10px;display:flex;' +
+                'flex-direction:column;justify-content:center;gap:5px;">' +
+                testoOriz + bloccoPrezzo('riga') +
+              '</div>';
+
+        a.innerHTML =
+            '<div style="display:flex;flex:1 1 auto;min-height:0;">' +
+              boxImmagine(latoImg, hUtile) + corpoOriz +
+            '</div>' + piede;
+
+    } else {
+        // Colonna (verticale e quadrato): si riserva PRIMA lo spazio del testo,
+        // poi l'immagine prende tutto il resto. Al contrario (immagine a
+        // percentuale fissa) il blocco testo veniva schiacciato a zero.
+        var righe = (layout === 'verticale') ? 4 : 2;
+        var padV = 10;
+        // Il blocco prezzo con lo sconto a fianco resta su una riga sola, ma
+        // se il riquadro è stretto va a capo: si riserva l'altezza maggiore.
+        var hRigaPrezzo = Math.ceil(Math.max(fPrezzo * 1.15, (fMini + 1) * 1.9));
+        var hTitolo = Math.ceil(fTitolo * 1.25 * righe);
+        var hImg = h - hPiede - hTitolo - hRigaPrezzo - padV;
+
+        // Se non ci sta, si tolgono righe al titolo una alla volta: l'immagine
+        // non scende mai sotto il 35% o il banner non comunica più nulla.
+        while (hImg < h * 0.35 && righe > 1) {
+            righe--;
+            hTitolo = Math.ceil(fTitolo * 1.25 * righe);
+            hImg = h - hPiede - hTitolo - hRigaPrezzo - padV;
+        }
+        if (hImg < 30) hImg = 30;
+
+        a.innerHTML =
+            boxImmagine(w, hImg) +
+            '<div style="flex:1 1 auto;min-height:0;padding:2px 9px 5px;' +
+              'display:flex;flex-direction:column;justify-content:space-between;' +
+              'box-sizing:border-box;overflow:hidden;">' +
+              _bloccoTesto(deal.title, fTitolo, righe) + bloccoPrezzo('riga') +
+            '</div>' + piede;
+    }
+
+    container.innerHTML = '';
+    container.appendChild(a);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DEMO
+// ─────────────────────────────────────────────────────────────────────────────
+var CAMPIONE = [
+ {
+  "store": "amazon",
+  "title": "Alzarsi all'alba",
+  "img": "https://m.media-amazon.com/images/I/41OzS41dp0L._SL500_.jpg",
+  "price": "17,57 €",
+  "badge": "Sconto 5%",
+  "custom_message": "mario calabresi",
+  "link": "https://www.amazon.it/dp/8804801816?tag=lucianomane0f-21&linkCode=ogi&th=1&psc=1"
+ },
+ {
+  "store": "aliexpress",
+  "title": "Utensile di collegamento multifunzione per il mandrino della testa di conversione del trapano trasformatore per smerigliatrice angolare da 100 mm.",
+  "img": "https://ae-pic-a1.aliexpress-media.com/kf/S4986e2a986674e5397ed233baa7577bai.jpg",
+  "price": "da 2,45 €",
+  "badge": "Sconto 53%",
+  "custom_message": "SUPER OFFERTA ALIEXPRESS!",
+  "link": "https://s.click.aliexpress.com/e/_c39w4Z9Z"
+ },
+ {
+  "store": "aliexpress",
+  "title": "Tendone Pop-Up LOEFME 3x6M Impermeabile in Oxford 210D con Pareti Laterali, Pannelli Finestra, Porte con Cerniera, Altezza Regolabile, Telaio in Acciaio, Sacchi di Sabbia, Parasole Portatile, Riparo Esterno per Giardino, Feste, Campeggio, Bancarella, Patio, Cortile, Eventi, Uso Commerciale",
+  "img": "https://ae-pic-a1.aliexpress-media.com/kf/Se0893fe9f095420fae19369e37e189d9d.jpg",
+  "price": "da 150,59 €",
+  "badge": "Sconto 68%",
+  "custom_message": "pop up",
+  "link": "https://s.click.aliexpress.com/e/_c3j7b92R"
+ },
+ {
+  "store": "aliexpress",
+  "title": "Orologio al Quarzo di Lusso Personalizzato per Uomo, Quadrante Ottagonale Argento con Foto Personalizzata, Resistente all'Acqua 30M, Regalo Festivo per Lui",
+  "img": "https://ae-pic-a1.aliexpress-media.com/kf/Scb5dae7822fa4c3d888b969cb919b27bh.png",
+  "price": "da 20,09 €",
+  "badge": "Sconto 56%",
+  "custom_message": "SUPER OFFERTA ALIEXPRESS!",
+  "link": "https://s.click.aliexpress.com/e/_c42ybaYj"
+ },
+ {
+  "store": "amazon",
+  "title": "MYCARBON Zanzariera Magnetica 140x240cm Zanzariera Porta Finestra, Nero",
+  "img": "https://m.media-amazon.com/images/I/41d1-UcoHKL._SL500_.jpg",
+  "price": "16,99 €",
+  "badge": "Sconto 26%",
+  "custom_message": "BASTA ZANZARE!!!",
+  "link": "https://www.amazon.it/dp/B07B3P1XVX?tag=lucianomane0f-21&linkCode=ogi&th=1&psc=1"
+ },
+ {
+  "store": "amazon",
+  "title": "Amazon Basics - Batterie Alcalino AAA 1.5 Volt, Performance, confezione da 100 (l’aspetto potrebbe variare dall’immagine)",
+  "img": "https://m.media-amazon.com/images/I/51tB632q9NL._SL500_.jpg",
+  "price": "22,98 €",
+  "badge": "",
+  "custom_message": "MAI PIU' SENZA!!!",
+  "link": "https://www.amazon.it/dp/B01B8R6V2E?tag=lucianomane0f-21&linkCode=ogi&th=1&psc=1"
+ }
+];
+
+var CASI = [
+    { nome: 'Riquadro di calcolo.html', w: 300, h: 250 },
+    { nome: 'Rettangolo grande',        w: 336, h: 280 },
+    { nome: 'Quadrato',                 w: 250, h: 250 },
+    { nome: 'Mezza pagina',             w: 300, h: 600 },
+    { nome: 'Grattacielo stretto',      w: 160, h: 600 },
+    { nome: 'Leaderboard',              w: 728, h: 90 },
+    { nome: 'Billboard',                w: 970, h: 250 },
+    { nome: 'Banner piccolo',           w: 468, h: 60 }
+];
+
+var slots = [];
+var giro = 0;
+
+(function costruisci() {
+    var g = document.getElementById('griglia');
+    CASI.forEach(function (caso) {
+        var box = document.createElement('div');
+        box.className = 'caso';
+        var lay = _layoutPerAspetto(caso.w, caso.h);
+        box.innerHTML = '<h2>' + caso.nome + '</h2>' +
+            '<div class="meta">' + caso.w + '×' + caso.h +
+            ' — layout: ' + lay + ' (ratio ' + (caso.w / caso.h).toFixed(2) + ')</div>';
+        var slot = document.createElement('div');
+        slot.className = 'slot';
+        slot.style.width = caso.w + 'px';
+        slot.style.height = caso.h + 'px';
+        box.appendChild(slot);
+        g.appendChild(box);
+        slots.push(slot);
+    });
+    ruotaTutti();
+})();
+
+function ruotaTutti() {
+    slots.forEach(function (s, i) {
+        renderDealInBox(s, CAMPIONE[(i + giro) % CAMPIONE.length]);
+    });
+    giro++;
+}
+
+// ── Banco di prova ridimensionabile ──────────────────────────────────────────
+var banco = document.getElementById('banco');
+var iBanco = 0;
+
+function ridisegnaBanco() {
+    var w = banco.clientWidth, h = banco.clientHeight;
+    document.getElementById('misura').textContent =
+        w + '×' + h + '  —  ' + _layoutPerAspetto(w, h) +
+        ' (ratio ' + (w / h).toFixed(2) + ')';
+    renderDealInBox(banco, CAMPIONE[iBanco % CAMPIONE.length]);
+}
+function preset(w, h) {
+    banco.style.width = w + 'px';
+    banco.style.height = h + 'px';
+    ridisegnaBanco();
+}
+function cambiaProdotto() { iBanco++; ridisegnaBanco(); }
+
+// ResizeObserver ridisegna a ogni pixel durante il trascinamento.
+if (window.ResizeObserver) {
+    new ResizeObserver(ridisegnaBanco).observe(banco);
+} else {
+    window.addEventListener('resize', ridisegnaBanco);
+}
+ridisegnaBanco();
+
+var timer = null;
+document.getElementById('autoRot').addEventListener('change', function () {
+    if (timer) { clearInterval(timer); timer = null; }
+    if (this.checked) {
+        var s = parseInt(document.getElementById('secondi').value, 10) || 60;
+        timer = setInterval(ruotaTutti, s * 1000);
+        document.getElementById('stato').textContent = 'rotazione ogni ' + s + 's';
+    } else {
+        document.getElementById('stato').textContent = 'fermo';
+    }
+});
+</script>
+</body>
+</html>

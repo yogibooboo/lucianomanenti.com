@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9335537153013492"
+        crossorigin="anonymous"></script>
+    <script>
+        // Fix sicurezza per evitare crash da cross-origin su window.opener
+        (function() { try { if (!window.opener) return; var test = window.opener.document; if (!window.opener.game) { window.opener = null; } } catch(e) { window.opener = null; } })();
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campo Minato Online Gratis - lucianomanenti.com</title>
+    <link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
+    <link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
+    <link rel="shortcut icon" href="favicon/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+    <link rel="manifest" href="favicon/site.webmanifest">
+
+    <meta name="Description"
+        content="Gioca a Campo Minato gratis online senza registrazione. Tre livelli classici, cronometro e record, primo click sempre sicuro e campo garantito risolvibile senza tirare a indovinare.">
+    <meta http-Equiv="Cache-Control" Content="no-cache">
+    <meta http-Equiv="Pragma" Content="no-cache">
+    <meta http-Equiv="Expires" Content="0">
+
+    <link rel="stylesheet" href="minato.css?v=1.8" />
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-WRBDRDQ4L8');
+    </script>
+    <script>
+        window.gameConfig = {
+            gaPrefix: 'MINATO_',
+            hideLegalFooter: true,
+            // Gli slot sono gli stessi su tutte le pagine del sito: uno per
+            // formato, non uno per gioco. Copiarli qui e' la cosa giusta, non
+            // un segnaposto da sostituire.
+            adsenseActive: true,
+            adsenseSlots: {
+                '300x600': '5266697442',
+                '160x600': '1167670336',
+                '300x250': '8471445288',
+                '160x250': '8663016975'
+            }
+        };
+        window.currentLang = 'it';
+    </script>
+</head>
+
+<body>
+
+    <div class="main-container">
+        <!-- Sidebar per annunci (gestite dal layout engine) -->
+        <div id="sidebar-left" class="sidebar"></div>
+        <div id="sidebar-right" class="sidebar"></div>
+
+        <!-- Campo di gioco principale centrato e riscalato -->
+        <div id="campogioco">
+            <!-- Schermo overlay per modali -->
+            <div id="schermo"></div>
+
+            <div class="lang-switch-header">
+                <a href="minato.html" class="active">IT</a>
+                <a href="minato-en.html">EN</a>
+                <div id="btn-audio" class="btn-audio-game" aria-label="Audio"></div>
+            </div>
+            <div id="titolo-gioco">Campo Minato Luciano</div>
+
+            <!-- Messaggio di stato -->
+            <div id="messaggio-stato">Caricamento...</div>
+
+            <!-- ================= PANNELLO RECORD ================= -->
+            <div id="pannello-record">
+                <div class="record-header">
+                    <span>RECORD — <span id="record-diff">--</span></span>
+                </div>
+                <div class="record-righe">
+                    <div class="info-blocco">
+                        <div class="info-label">Oggi</div>
+                        <div class="record-valore" id="record-oggi">--:--</div>
+                        <button class="btn-reset-record" data-tipo="daily" title="Azzera il record di oggi">&#10226;</button>
+                    </div>
+                    <div class="info-blocco">
+                        <div class="info-label">Settimana</div>
+                        <div class="record-valore" id="record-settimana">--:--</div>
+                        <button class="btn-reset-record" data-tipo="weekly" title="Azzera il record della settimana">&#10226;</button>
+                    </div>
+                    <div class="info-blocco">
+                        <div class="info-label">Assoluto</div>
+                        <div class="record-valore" id="record-assoluto">--:--</div>
+                        <button class="btn-reset-record" data-tipo="all" title="Azzera il record assoluto">&#10226;</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= GRIGLIA DEL CAMPO =================
+                 Vuota nel markup: righe, colonne e dimensione della cella
+                 dipendono dal livello e le costruisce minato.js. -->
+            <div id="griglia-minato"></div>
+
+            <!-- ================= PANNELLO CONTROLLI ================= -->
+            <div id="pannello-controlli">
+                <div id="info-partita">
+                    <div class="info-blocco">
+                        <div class="info-label">Livello</div>
+                        <div class="info-valore" id="info-difficolta">--</div>
+                    </div>
+                    <div class="info-blocco">
+                        <div class="info-label">Tempo</div>
+                        <div class="info-valore" id="info-tempo">00:00</div>
+                    </div>
+                    <div class="info-blocco">
+                        <div class="info-label">Mine</div>
+                        <div class="info-valore" id="info-mine">--</div>
+                    </div>
+                    <!-- Quante mine hai preso: resta a 0 finche' non sbagli, poi
+                         mostra anche i secondi che quegli errori sono costati. -->
+                    <div class="info-blocco">
+                        <div class="info-label">Errori</div>
+                        <div class="info-valore" id="info-errori">0</div>
+                    </div>
+                </div>
+
+                <!-- Modo del click sinistro: serve soprattutto su telefono, dove
+                     il tasto destro non esiste. -->
+                <div id="modi">
+                    <button id="modo-scava" class="btn-azione attivo"><span class="btn-icona">&#9935;</span>Scava</button>
+                    <button id="modo-bandiera" class="btn-azione"><span class="btn-icona">&#9873;</span>Bandierina</button>
+                </div>
+
+                <div id="legenda">
+                    <b>Tasto destro</b>: mette o toglie la bandierina.<br>
+                    <b>Barra spazio</b>: cambia modo al volo.<br>
+                    <b>Click su un numero</b> gi&agrave; scoperto: se le bandierine intorno
+                    sono gi&agrave; quante il numero dice, apre in un colpo tutte le altre
+                    caselle vicine.
+                </div>
+
+                <button id="btn-nuova-partita">NUOVA PARTITA</button>
+
+                <!-- Riquadro affiliati rotante, come in Calcolo Enigmatico: una
+                     partita da Esperto dura anche mezz'ora, e un banner fisso
+                     dopo pochi minuti non lo guarda piu' nessuno. Ruota da solo
+                     ogni minuto (vedi minato.js). NON e' uno slot AdSense: gli
+                     annunci Google non vanno mai rinfrescati senza un gesto
+                     dell'utente, i link affiliati si'. -->
+                <div id="banner-rotante"></div>
+            </div>
+
+            <!-- ================= MODALI ED OVERLAY ================= -->
+
+            <!-- 1. Modale Inizio Gioco -->
+            <div id="modale-inizio" class="form-minato">
+                <button id="btn-riprendi" class="btn-continua" style="display: none; width: 100%; max-width: 250px; margin: 0 auto 20px auto; background: #27ae60; border-color: #1e8449; color: white;">RIPRENDI LA PARTITA PRECEDENTE</button>
+
+                <div class="form-minato-title">Nuova Partita a Campo Minato</div>
+
+                <div class="opzione-gruppo" style="margin-bottom: 6px; text-align: center;">
+                    <div style="font-size: 13px; font-weight: bold; margin-bottom: 12px; color: #ffd700; text-transform: uppercase;">Livello:</div>
+                    <div class="diff-riga">
+                        <button id="btn-diff-principiante" onclick="selezionaDifficolta('principiante')" class="btn-opzione-sel attiva" style="width: 220px;">PRINCIPIANTE</button>
+                        <div class="diff-dettaglio">9 &times; 9 &mdash; 10 mine</div>
+                        <button id="btn-diff-intermedio" onclick="selezionaDifficolta('intermedio')" class="btn-opzione-sel" style="width: 220px;">INTERMEDIO</button>
+                        <div class="diff-dettaglio">16 &times; 16 &mdash; 40 mine</div>
+                        <button id="btn-diff-esperto" onclick="selezionaDifficolta('esperto')" class="btn-opzione-sel" style="width: 220px;">ESPERTO</button>
+                        <div class="diff-dettaglio">30 &times; 16 &mdash; 99 mine</div>
+                    </div>
+                </div>
+
+                <div id="opzione-risolvibile">
+                    <label>
+                        <input type="checkbox" id="chk-risolvibile" checked>
+                        <span>Campo sempre risolvibile con la logica
+                            <span class="nota">Senza questa opzione pu&ograve; capitare, di solito verso la fine, di dover tirare a indovinare fra due caselle. Con l'opzione attiva la generazione &egrave; pi&ugrave; lenta e sull'Esperto pu&ograve; non riuscire: in quel caso te lo dico.</span>
+                        </span>
+                    </label>
+                </div>
+
+                <button onclick="confermaEAvviaPartita()" class="btn-continua" style="width: 100%; max-width: 250px; margin: 0 auto; display: block;">INIZIA A GIOCARE</button>
+            </div>
+
+            <!-- 2. Modale Vittoria (bassa e larga, banner sopra) -->
+            <div id="haivinto" class="form-minato modale-vittoria">
+                <div class="confirm-message" id="vittoria-messaggio" style="margin: 0 0 8px 0; line-height: 1.3;">COMPLIMENTI!</div>
+                <div id="vittoria-dettagli"></div>
+                <button onclick="location.reload()" class="btn-continua" style="width: 280px; height: 44px; font-size: 16px; margin: 0 auto;">NUOVA PARTITA</button>
+            </div>
+
+            <!-- 3. Modale Sconfitta, con l'annulla della mossa fatale -->
+            <div id="haiperso" class="form-minato modale-sconfitta">
+                <div class="confirm-message" id="sconfitta-messaggio" style="margin: 0 0 10px 0; line-height: 1.3;">BOOM!</div>
+                <div id="sconfitta-penalita"></div>
+                <button id="btn-annulla-fatale" class="btn-continua" style="width: 320px; height: 44px; font-size: 16px; margin: 0 auto 12px auto; display: block; background: #27ae60; border-color: #1e8449; color: white;">ANNULLA LA MOSSA FATALE</button>
+                <button onclick="location.reload()" class="btn-continua" style="width: 280px; height: 40px; font-size: 15px; margin: 0 auto; display: block;">NUOVA PARTITA</button>
+            </div>
+
+            <!-- 4. Modale di Conferma Abbandono Partita -->
+            <div id="confermatermina" class="form-minato modale-conferma">
+                <div class="confirm-message" style="margin: 0 0 18px 0; line-height: 1.4; font-size: 22px;">Vuoi davvero abbandonare la partita in corso?</div>
+                <div class="conferma-bottoni">
+                    <button id="btn-no-continua" class="btn-continua" style="width: 260px; height: 44px; font-size: 16px;">NO, CONTINUA</button>
+                    <button id="btn-si-termina" class="btn-continua" style="width: 260px; height: 44px; font-size: 16px; background-color: #cc0c39; color: white; border-color: #990022;">S&Igrave;, NUOVO CAMPO</button>
+                </div>
+            </div>
+
+            <!-- Le regole stanno in guida-minato.html, non piu' in una modale qui:
+                 una pagina intera le contiene per esteso, con gli schemi di esempio,
+                 ed e' indicizzabile dai motori di ricerca. Come in Calcolo Enigmatico
+                 si apre in una scheda nuova; rel="opener" serve al pulsante "Chiudi"
+                 della guida, che chiama window.close(). -->
+
+            <!-- Link di navigazione ed utilità a fondo pagina -->
+            <div class="link-utility-bottom">
+                <a href="aboutme.html" target="_blank" id="btn-scrivetemi-minato" class="pulsante-top">Scrivetemi</a>
+                <a href="guida-minato.html" target="_blank" rel="opener" id="btn-regole-top" class="pulsante-top">Come si Gioca</a>
+            </div>
+
+            <!-- Link Legali (Privacy e Cookie) -->
+            <div class="legal-links-minato">
+                <a href="privacy.html" target="_blank" id="btn-privacy-minato">Privacy Policy</a>
+                <span class="sep">•</span>
+                <a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)" id="btn-cookie-minato">Gestisci Cookie</a>
+            </div>
+
+            <div class="link-giochi-minato">
+                <a href="sudoku.html" class="pulsante-link-minato">Sudoku</a>
+                <a href="calcolo.html" class="pulsante-link-minato">Calcolo Enigmatico</a>
+                <a href="scacchi.html" class="pulsante-link-minato">Scacchi</a>
+                <a href="dama.html" class="pulsante-link-minato">Dama</a>
+                <a href="scopa.html" class="pulsante-link-minato">Scopa</a>
+                <a href="briscola.html" class="pulsante-link-minato">Briscola</a>
+                <a href="burraco.html" class="pulsante-link-minato">Burraco</a>
+                <a href="scala40.html" class="pulsante-link-minato">Scala 40</a>
+                <a href="spider.html" class="pulsante-link-minato">Spider</a>
+                <a href="klondike.html" class="pulsante-link-minato">Klondike</a>
+                <a href="index.html" class="pulsante-link-minato pulsante-home-minato">TUTTI I GIOCHI</a>
+            </div>
+
+        </div><!-- /campogioco -->
+    </div>
+
+    <!-- Script condivisi dal sito -->
+    <script src="site.js?v=1.1"></script>
+    <!-- Layout engine per ridimensionare la finestra del gioco -->
+    <script src="game-layout.js?v=4.6"></script>
+    <!-- Logica del Campo Minato -->
+    <script src="minato.js?v=1.7"></script>
+    <script>
+        (function () {
+            var nascosto = false;
+            var observer = new MutationObserver(function () {
+                if (nascosto) return;
+                var divs = document.querySelectorAll('body > div');
+                for (var i = 0; i < divs.length; i++) {
+                    if (divs[i].shadowRoot && !divs[i].className && (divs[i].getAttribute('style') || '').length > 5000) {
+                        divs[i].style.setProperty('display', 'none', 'important');
+                        nascosto = true;
+                        observer.disconnect();
+                        return;
+                    }
+                }
+            });
+            observer.observe(document.body, { childList: true });
+        })();
+    </script>
+</body>
+
+</html>

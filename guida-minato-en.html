@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
+	<script>
+		window.dataLayer = window.dataLayer || [];
+		function gtag() { dataLayer.push(arguments); }
+		gtag('js', new Date());
+		gtag('config', 'G-WRBDRDQ4L8');
+		window.currentLang = 'en';
+	</script>
+	<title>Minesweeper Rules - How to play</title>
+	<meta name="Description"
+		content="Minesweeper rules: how to read the numbers, deduction techniques, the always-safe first click, the always-solvable field option and undoing the fatal move. Complete guide.">
+	<link rel="alternate" hreflang="it" href="guida-minato.html">
+	<link rel="alternate" hreflang="en" href="guida-minato-en.html">
+	<link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
+	<link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
+	<link rel="shortcut icon" href="favicon/favicon.ico">
+	<link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+	<style>
+		body {
+			font-family: sans-serif;
+			line-height: 1.7;
+			max-width: 800px;
+			margin: 40px auto;
+			padding: 20px;
+			color: #333;
+			background-color: #f9f9f9;
+		}
+
+		h1 {
+			color: #2c3e50;
+			border-bottom: 2px solid #ffd700;
+			padding-bottom: 10px;
+		}
+
+		h2 {
+			color: #2c3e50;
+			margin-top: 30px;
+		}
+
+		h3 {
+			color: #2c3e50;
+			font-size: 1.1em;
+			margin-top: 20px;
+		}
+
+		.lang-switch {
+			text-align: right;
+			margin-bottom: 20px;
+		}
+
+		.lang-switch a {
+			display: inline-block;
+			padding: 6px 16px;
+			margin-left: 5px;
+			text-decoration: none;
+			border-radius: 5px;
+			font-weight: bold;
+			font-size: 14px;
+		}
+
+		.lang-switch a.active {
+			background: #2c3e50;
+			color: white;
+		}
+
+		.lang-switch a:not(.active) {
+			background: #ddd;
+			color: #333;
+			cursor: pointer;
+		}
+
+		.content-box {
+			background: white;
+			padding: 30px;
+			border-radius: 8px;
+			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+		}
+
+		.play-btn {
+			display: inline-block;
+			margin-top: 25px;
+			padding: 12px 30px;
+			background: #27ae60;
+			color: white;
+			text-decoration: none;
+			border-radius: 8px;
+			font-size: 18px;
+			font-weight: bold;
+		}
+
+		.nav-links {
+			text-align: center;
+			margin-top: 30px;
+			font-size: 14px;
+		}
+
+		.nav-links a {
+			color: #3498db;
+			text-decoration: none;
+			margin: 0 10px;
+		}
+
+		.banner {
+			width: 100%;
+			height: 150px;
+			background-image: url('images/home/castagne.jpg');
+			background-size: cover;
+			background-position: center;
+			border-radius: 8px;
+			margin: 20px 0;
+			box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+		}
+
+		.score-table {
+			width: 100%;
+			border-collapse: collapse;
+			margin-top: 10px;
+			margin-bottom: 20px;
+		}
+
+		.score-table th,
+		.score-table td {
+			border: 1px solid #ddd;
+			padding: 8px;
+			text-align: left;
+		}
+
+		.score-table th {
+			background-color: #f2f2f2;
+			font-weight: bold;
+		}
+
+		.highlight {
+			background-color: #fff9c4;
+			padding: 0 4px;
+		}
+
+		/* Vedi il file italiano: schemetti di esempio con i colori del gioco. */
+		.mini-campo {
+			display: inline-block;
+			border: 3px solid #14301c;
+			border-radius: 4px;
+			background: #14301c;
+			margin: 6px 0 14px 0;
+		}
+
+		.mini-campo table {
+			border-collapse: collapse;
+		}
+
+		.mini-campo td {
+			width: 34px;
+			height: 34px;
+			text-align: center;
+			font-family: sans-serif;
+			font-weight: bold;
+			font-size: 17px;
+			background: #7c9d86;
+			border-top: 2px solid #b9d4c0;
+			border-left: 2px solid #b9d4c0;
+			border-right: 2px solid #46654f;
+			border-bottom: 2px solid #46654f;
+		}
+
+		.mini-campo td.ap {
+			background: #f7f3e8;
+			border: 1px solid #b9b2a0;
+		}
+
+		.mini-campo td.n1 { color: #1a4fa0; }
+		.mini-campo td.n2 { color: #1e7a34; }
+		.mini-campo td.n3 { color: #c0182b; }
+		.mini-campo td.n4 { color: #14225e; }
+
+		.legenda-schema {
+			font-size: 0.92em;
+			color: #666;
+			margin-top: -8px;
+		}
+	</style>
+</head>
+
+<body>
+	<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+		<a href="#" id="btn-back" onclick="goBack(); return false;"
+			style="display: inline-block; padding: 6px 16px; background: #e74c3c; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 14px;">&#x2190;
+			Back</a>
+		<div class="lang-switch" style="margin-bottom: 0;">
+			<a href="guida-minato.html" id="btn-it">Italiano</a>
+			<a href="guida-minato-en.html" id="btn-en" class="active">English</a>
+		</div>
+	</div>
+
+	<div class="banner"></div>
+
+	<div class="content-box">
+		<div id="lang-en">
+			<h1>Minesweeper Rules</h1>
+
+			<p><strong>Minesweeper</strong> is a puzzle of pure deduction: mines are hidden under the field, and the only information you get are the numbers that appear as you dig. Born as a mainframe pastime in the 1960s and made famous in 1990 as a system game, it is one of those games that look like a matter of luck and are instead, almost always, a matter of reasoning.</p>
+
+			<p>Here you get the <strong>three classic levels</strong>, a clock with records, an <strong>always-safe first click</strong>, an option that generates <strong>fields solvable without ever guessing</strong>, and the chance to <strong>undo the fatal move</strong> at the cost of a time penalty.</p>
+
+			<p style="background: #fff9c4; padding: 12px 16px; border-radius: 6px; border-left: 4px solid #ffd700;">
+				This game is constantly evolving: new features and improvements are added regularly. If you find something that doesn't work as expected or have suggestions, write to us at
+				<a href="mailto:postmaster@lucianomanenti.com" style="color: #3498db;">postmaster@lucianomanenti.com</a>
+				&mdash; your feedback is precious!
+			</p>
+
+			<h2>1. Goal of the Game</h2>
+			<p>Mines are hidden under the squares of the field, and how many there are is known from the start. You must <strong>uncover every safe square</strong> without ever digging where a mine is.</p>
+			<p>Each uncovered square shows a number: it is <strong>how many mines are in the eight squares around it</strong>. If there is no mine around it the square stays blank, and in that case the whole open area around it opens by itself, up to the first numbers: that's why a lucky click can uncover half the field at once.</p>
+			<p>You win when <strong>every square without a mine</strong> is uncovered. <strong>You don't need to flag the mines</strong>: flags are a note to yourself, not a goal. The game ends by itself the moment the last safe square is opened.</p>
+
+			<h2>2. How to read the numbers</h2>
+			<p>The whole game is in one sentence: <em>the number says how many mines are among its eight neighbours</em>. From this come the two elementary deductions, the ones that solve the vast majority of situations.</p>
+
+			<h3>When the covered squares are exactly as many as the number says</h3>
+			<p>Look at the <strong>1</strong> in the top-left corner: there is only one still-covered square around it. That 1 says a mine is there, and the only place it can be is that one.</p>
+			<div class="mini-campo">
+				<table>
+					<tr><td class="ap n1">1</td><td class="ap n1">1</td><td class="ap"></td></tr>
+					<tr><td class="ap n1">1</td><td></td><td class="ap"></td></tr>
+					<tr><td class="ap"></td><td class="ap n1">1</td><td class="ap"></td></tr>
+				</table>
+			</div>
+			<p class="legenda-schema">The pale squares are already uncovered, the green one is still covered: there is certainly a mine under it.</p>
+			<p>This is the rule of <strong>certain mines</strong>: if the covered squares around a number are <strong>as many as the number</strong>, they are <strong>all</strong> mines. Flag them and move on.</p>
+
+			<h3>When the flags are already all the ones needed</h3>
+			<p>This is the opposite reasoning, and it holds just as well: if you have already placed <strong>as many flags as the number says</strong> around a number, then every other covered square around it is <strong>safe</strong>. You can dig them without a second thought.</p>
+			<p>These two rules feed each other: every mine flagged makes other squares safe, every square opened shows a new number that may close another deduction. That's how the field unrolls, in a chain.</p>
+
+			<h3>Reasoning on two numbers together</h3>
+			<p>When the elementary rules get stuck, the answer usually lies in <strong>comparing two nearby numbers</strong>. A typical case is the <strong>1&ndash;2&ndash;1</strong> sequence along an edge:</p>
+			<div class="mini-campo">
+				<table>
+					<tr><td></td><td></td><td></td><td></td><td></td></tr>
+					<tr><td class="ap n1">1</td><td class="ap n2">2</td><td class="ap n1">1</td><td class="ap"></td><td class="ap"></td></tr>
+				</table>
+			</div>
+			<p class="legenda-schema">Above are five covered squares, below the row of numbers already uncovered.</p>
+			<p>The central <strong>2</strong> sees three covered squares and says two mines are among them. But the <strong>1</strong> on the left sees only the first two and says there is just one there; the 1 on the right says the same about the last two. If the <em>central</em> square were mined, the left 1 and the right 1 would both already be satisfied by that single mine, and the 2 would be missing one with nowhere left to put it. So the central square is <strong>safe</strong>, and the mines are the two on the sides.</p>
+			<p>The general principle is always this: <strong>if the squares seen by one number are a subset of those seen by another</strong>, subtract the two pieces of information and what remains is often a certainty. It's worth training your eye for it, because it's the reasoning that unlocks the spots where you seem to be forced to guess.</p>
+
+			<h3>Counting the remaining mines</h3>
+			<p>Towards the end of the game there is one last weapon: the <strong>total number</strong> of mines. If the counter says two are left and there are three covered squares, you have a global constraint that often decides the game even where the local numbers aren't enough. It's the reasoning that closes hard endgames, the ones with two separate areas that, taken one at a time, would stay ambiguous.</p>
+
+			<h2>3. The three levels</h2>
+			<p>These are the three classic configurations of the game, the same everywhere:</p>
+			<table class="score-table">
+				<tr>
+					<th>Level</th>
+					<th>Field</th>
+					<th>Mines</th>
+					<th>Density</th>
+				</tr>
+				<tr>
+					<td><strong>Beginner</strong></td>
+					<td>9 &times; 9</td>
+					<td>10</td>
+					<td>about 12%</td>
+				</tr>
+				<tr>
+					<td><strong>Intermediate</strong></td>
+					<td>16 &times; 16</td>
+					<td>40</td>
+					<td>about 16%</td>
+				</tr>
+				<tr>
+					<td><strong>Expert</strong></td>
+					<td>30 &times; 16</td>
+					<td>99</td>
+					<td>about 21%</td>
+				</tr>
+			</table>
+			<p>It isn't only the size that changes: the <strong>mine density</strong> grows too, and with it the difficulty. On Expert the areas that open by themselves are smaller and two-number reasoning becomes the norm. <strong>Records are kept separately</strong> for each level, with the best of today, of the week and of all time.</p>
+
+			<h2>4. The first click is never a mine</h2>
+			<p>The mines don't exist until you dig the first square: they are placed <strong>right after</strong> the first click, avoiding the square you chose <strong>and its eight neighbours</strong>. This guarantees two things: you can't lose on the first move, and the game always starts with an <strong>already open area</strong> to reason from, instead of a single isolated number.</p>
+			<p>So you can make the first click anywhere, without thinking about it. Opening near the <strong>centre</strong> tends to uncover more field than a corner, but that's the only difference.</p>
+
+			<h2>5. Field always solvable by logic</h2>
+			<p>This is the option in the start dialog, and it changes the nature of the game. In classic Minesweeper it can happen, usually towards the end, that you reach a situation where <strong>no reasoning decides</strong>: two squares, one mine, and no information to tell them apart. There you guess, and half an hour of play can come down to a coin toss.</p>
+			<p>With the option on, the field is <strong>generated and retried</strong> until one is found that can be finished by reasoning from the first click to the last square, never having to choose at random. Generation is slower, but still a matter of fractions of a second.</p>
+			<p style="background: #fff9c4; padding: 12px 16px; border-radius: 6px; border-left: 4px solid #ffd700;">
+				<strong>On Expert it may fail.</strong> With 99 mines on 480 squares, solvable fields are rare, and the game only tries a limited number of times so as not to keep you waiting. If it can't manage it <strong>it tells you</strong>, and the game starts anyway with a normal field: better to know than to believe you have a guarantee you don't.
+			</p>
+			<p>An honest note on what the option guarantees: the check uses the <strong>two elementary deductions</strong> described above &mdash; certain mines and safe squares around a number &mdash; applied in a chain for as long as they produce something. It does not try two-number reasoning such as the 1&ndash;2&ndash;1. This means an accepted field is <strong>certainly</strong> solvable, and indeed solvable with the simplest reasoning; but some rejected fields would have been solvable anyway by an expert player. The guarantee errs on the safe side, which is the right way round for an option that promises "you never have to guess".</p>
+
+			<h2>6. If you hit a mine</h2>
+			<p>When you dig on a mine the game ends and <strong>the whole field is revealed</strong>: the mines stay in sight, so you can look at where your reasoning went wrong. The defeat message appears in the right-hand column, deliberately so it doesn't cover the field.</p>
+			<p>At that point you can <strong>undo the fatal move</strong>: the mines go back under cover, a flag is placed on the fatal square and the game resumes exactly as before.</p>
+			<p>There is no cap on how many times you can undo, but the <strong>price doubles every time</strong>:</p>
+			<table class="score-table">
+				<tr>
+					<th>Undo</th>
+					<th>Costs</th>
+					<th>Total paid</th>
+				</tr>
+				<tr><td>first</td><td>60 seconds</td><td>1 minute</td></tr>
+				<tr><td>second</td><td>120 seconds</td><td>3 minutes</td></tr>
+				<tr><td>third</td><td>240 seconds</td><td>7 minutes</td></tr>
+				<tr><td>fourth</td><td>480 seconds</td><td>15 minutes</td></tr>
+			</table>
+			<p>The price is always written in the defeat message, before you decide. The idea is simple: <strong>a moment's inattention shouldn't throw away half an hour of Expert</strong>, and indeed the first mistake is almost entirely forgiven; but guessing over and over quickly becomes unsustainable, because by the fourth undo you have already given away a quarter of an hour.</p>
+			<p>The time that goes into the records <strong>already includes the penalties</strong>: a record set with an undo is worth as much as a clean one, because you paid those seconds.</p>
+
+			<hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;">
+
+			<h2>How to play "Minesweeper Luciano"</h2>
+
+			<h3>Digging and placing flags</h3>
+			<ul>
+				<li><strong>Left click:</strong> digs the square.</li>
+				<li><strong>Right click:</strong> places or removes a flag. A flag <strong>protects</strong>: a left click on a flagged square will not dig, so you can't lose through a slip.</li>
+				<li><strong>Click an uncovered number:</strong> if it already has as many flags around it as it says, it opens <strong>all at once</strong> every other neighbouring square. It's the move that makes the game fast &mdash; but careful: if one of those flags was wrong, it all blows up.</li>
+			</ul>
+
+			<h3>The two modes (Dig and Flag)</h3>
+			<p>The two buttons in the right-hand column decide what the <strong>left click</strong> does. They are mainly for <strong>tablets and phones</strong>, where there is no right button, but they also help on a laptop when the trackpad's right click is awkward. The active mode is obvious at a glance from the lit button.</p>
+			<p>The <strong>spacebar</strong> switches between the two modes without taking your hand off the mouse.</p>
+
+			<h3>The mine counter</h3>
+			<p>The number under <strong>Mines</strong> does not count mines found: it is the <strong>total mines minus the flags</strong> you have placed. If it goes <strong>negative</strong> it means you have placed more flags than there are mines, so at least one is wrong. It's a useful warning light: when it reaches zero and covered squares are left, some of those flags are in the wrong place.</p>
+
+			<h3>The mistakes counter</h3>
+			<p>Under <strong>Mistakes</strong> it stays at <strong>0</strong> until you hit a mine. From the first slip on it turns red and, if you have used an undo, it also shows in brackets <strong>how many seconds those undos have cost you</strong>: for instance <strong>2 (+03:00)</strong> means two mines hit and three minutes already added to the clock. That way the price you are paying is always in sight, not only at the moment you choose whether to undo. The last mine, the one that ends the game because you did not undo it, is counted too but costs nothing: the game stops there.</p>
+
+			<h3>The clock and the records</h3>
+			<p>The clock starts on the <strong>first click</strong>, not when the page opens, and stops at the end of the game. For each level the game keeps the <strong>best time of today, of the week and of all time</strong>; next to each there is a button to reset it, if you want to start over.</p>
+
+			<h3>Control buttons</h3>
+			<ul>
+				<li><strong>NEW GAME:</strong> opens the panel where you choose the level. With a game in progress it <strong>asks for confirmation</strong>, so a stray click can't throw away half an hour of Expert.</li>
+				<li><strong>HOW TO PLAY:</strong> opens this guide.</li>
+				<li><strong>&#x1F50A; / &#x1F507; (Audio):</strong> turns the sound effects on or off. Your preference is global and will be remembered by the browser across every page of the site.</li>
+			</ul>
+
+			<h2>Automatic Saving</h2>
+			<p>The game is <strong>saved automatically</strong> in the browser at every move: if you close the page or shut down the computer, next time you will be offered the chance to <strong>pick up where you left off</strong>, with the field, the flags and the time exactly as they were.</p>
+
+			<p style="text-align: center;"><a href="#" onclick="goBack(); return false;" class="play-btn">Close</a></p>
+		</div>
+	</div>
+
+
+	<div class="banner"></div>
+
+	<div class="nav-links">
+		<a href="index.html">Home</a> |
+		<a href="minato-en.html">Minesweeper</a> |
+		<a href="regole-calcolo-en.html">Cross Figure</a> |
+		<a href="regole-sudoku-en.html">Sudoku</a> |
+		<a href="regole-scopa-en.html">Scopa</a> |
+		<a href="regole-burraco-en.html">Burraco</a> |
+		<a href="regole-scala40-en.html">Scala 40</a> |
+		<a href="regole-machiavelli-en.html">Machiavelli</a> |
+		<a href="regole-spider-en.html">Spider</a> |
+		<a href="regole-rummy-en.html">Gin Rummy</a> |
+		<a href="privacy.html">Privacy</a> |
+		<a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)">Manage Cookies</a>
+	</div>
+
+	<p style="text-align: center; font-size: 0.8em; color: #999; margin-top: 10px;">
+		© 2026 Luciano Manenti
+	</p>
+
+	<script>
+		function goBack() {
+			window.close();
+		}
+		(function() {
+			var nascosto = false;
+			var observer = new MutationObserver(function() {
+				if (nascosto) return;
+				var divs = document.querySelectorAll('body > div');
+				for (var i = 0; i < divs.length; i++) {
+					if (divs[i].shadowRoot && !divs[i].className && (divs[i].getAttribute('style')||'').length > 5000) {
+						divs[i].style.setProperty('display', 'none', 'important');
+						nascosto = true;
+						observer.disconnect();
+						return;
+					}
+				}
+			});
+			observer.observe(document.body, { childList: true });
+		})();
+	</script>
+</body>
+
+</html>

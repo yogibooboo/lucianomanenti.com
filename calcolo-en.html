@@ -23,7 +23,7 @@
     <meta http-Equiv="Pragma" Content="no-cache">
     <meta http-Equiv="Expires" Content="0">
 
-    <link rel="stylesheet" href="calcolo.css?v=3.8" />
+    <link rel="stylesheet" href="calcolo.css?v=4.0" />
 
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
@@ -164,6 +164,11 @@
 
                 <button id="btn-nuova-partita">NEW GAME</button>
 
+                <!-- Rotating affiliate box: see calcolo.html for the rationale.
+                     Not an AdSense slot — Google ads must never be refreshed
+                     without a user gesture, affiliate links may. -->
+                <div id="banner-rotante"></div>
+
                 <!-- Pannello del suggerimento: copre la colonna dei tasti quando attivo -->
                 <div id="pannello-hint">
                     <div class="hint-titolo">&#128161; Hint</div>
@@ -298,7 +303,7 @@
     <!-- Layout engine per ridimensionare la finestra del gioco -->
     <script src="game-layout.js?v=4.6"></script>
     <!-- Logica del Calcolo Enigmatico -->
-    <script src="calcolo.js?v=3.5"></script>
+    <script src="calcolo.js?v=3.6"></script>
     <script>
         (function () {
             var nascosto = false;

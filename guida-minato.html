@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
+	<script>
+		window.dataLayer = window.dataLayer || [];
+		function gtag() { dataLayer.push(arguments); }
+		gtag('js', new Date());
+		gtag('config', 'G-WRBDRDQ4L8');
+		window.currentLang = 'it';
+	</script>
+	<title>Regole Campo Minato - Come giocare</title>
+	<meta name="Description"
+		content="Regole del Campo Minato: come si leggono i numeri, le tecniche di deduzione, il primo click sempre sicuro, l'opzione campo sempre risolvibile e l'annullo della mossa fatale. Guida completa.">
+	<link rel="alternate" hreflang="it" href="guida-minato.html">
+	<link rel="alternate" hreflang="en" href="guida-minato-en.html">
+	<link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
+	<link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
+	<link rel="shortcut icon" href="favicon/favicon.ico">
+	<link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+	<style>
+		body {
+			font-family: sans-serif;
+			line-height: 1.7;
+			max-width: 800px;
+			margin: 40px auto;
+			padding: 20px;
+			color: #333;
+			background-color: #f9f9f9;
+		}
+
+		h1 {
+			color: #2c3e50;
+			border-bottom: 2px solid #ffd700;
+			padding-bottom: 10px;
+		}
+
+		h2 {
+			color: #2c3e50;
+			margin-top: 30px;
+		}
+
+		h3 {
+			color: #2c3e50;
+			font-size: 1.1em;
+			margin-top: 20px;
+		}
+
+		.lang-switch {
+			text-align: right;
+			margin-bottom: 20px;
+		}
+
+		.lang-switch a {
+			display: inline-block;
+			padding: 6px 16px;
+			margin-left: 5px;
+			text-decoration: none;
+			border-radius: 5px;
+			font-weight: bold;
+			font-size: 14px;
+		}
+
+		.lang-switch a.active {
+			background: #2c3e50;
+			color: white;
+		}
+
+		.lang-switch a:not(.active) {
+			background: #ddd;
+			color: #333;
+			cursor: pointer;
+		}
+
+		.content-box {
+			background: white;
+			padding: 30px;
+			border-radius: 8px;
+			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+		}
+
+		.play-btn {
+			display: inline-block;
+			margin-top: 25px;
+			padding: 12px 30px;
+			background: #27ae60;
+			color: white;
+			text-decoration: none;
+			border-radius: 8px;
+			font-size: 18px;
+			font-weight: bold;
+		}
+
+		.nav-links {
+			text-align: center;
+			margin-top: 30px;
+			font-size: 14px;
+		}
+
+		.nav-links a {
+			color: #3498db;
+			text-decoration: none;
+			margin: 0 10px;
+		}
+
+		.banner {
+			width: 100%;
+			height: 150px;
+			background-image: url('images/home/castagne.jpg');
+			background-size: cover;
+			background-position: center;
+			border-radius: 8px;
+			margin: 20px 0;
+			box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+		}
+
+		.score-table {
+			width: 100%;
+			border-collapse: collapse;
+			margin-top: 10px;
+			margin-bottom: 20px;
+		}
+
+		.score-table th,
+		.score-table td {
+			border: 1px solid #ddd;
+			padding: 8px;
+			text-align: left;
+		}
+
+		.score-table th {
+			background-color: #f2f2f2;
+			font-weight: bold;
+		}
+
+		.highlight {
+			background-color: #fff9c4;
+			padding: 0 4px;
+		}
+
+		/* Gli schemetti di esempio: caselle coperte, scoperte, numeri e bandierine
+		   disegnati con i colori del gioco, cosi' chi legge ritrova le stesse cose
+		   che ha davanti sul tavolo verde. */
+		.mini-campo {
+			display: inline-block;
+			border: 3px solid #14301c;
+			border-radius: 4px;
+			background: #14301c;
+			margin: 6px 0 14px 0;
+		}
+
+		.mini-campo table {
+			border-collapse: collapse;
+		}
+
+		.mini-campo td {
+			width: 34px;
+			height: 34px;
+			text-align: center;
+			font-family: sans-serif;
+			font-weight: bold;
+			font-size: 17px;
+			background: #7c9d86;
+			border-top: 2px solid #b9d4c0;
+			border-left: 2px solid #b9d4c0;
+			border-right: 2px solid #46654f;
+			border-bottom: 2px solid #46654f;
+		}
+
+		.mini-campo td.ap {
+			background: #f7f3e8;
+			border: 1px solid #b9b2a0;
+		}
+
+		.mini-campo td.n1 { color: #1a4fa0; }
+		.mini-campo td.n2 { color: #1e7a34; }
+		.mini-campo td.n3 { color: #c0182b; }
+		.mini-campo td.n4 { color: #14225e; }
+
+		.legenda-schema {
+			font-size: 0.92em;
+			color: #666;
+			margin-top: -8px;
+		}
+	</style>
+</head>
+
+<body>
+	<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+		<a href="#" id="btn-back" onclick="goBack(); return false;"
+			style="display: inline-block; padding: 6px 16px; background: #e74c3c; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 14px;">&#x2190;
+			Indietro</a>
+		<div class="lang-switch" style="margin-bottom: 0;">
+			<a href="guida-minato.html" id="btn-it" class="active">Italiano</a>
+			<a href="guida-minato-en.html" id="btn-en">English</a>
+		</div>
+	</div>
+
+	<div class="banner"></div>
+
+	<div class="content-box">
+		<div id="lang-it">
+			<h1>Regole del Campo Minato</h1>
+
+			<p>Il <strong>Campo Minato</strong> &egrave; un rompicapo di deduzione pura: sotto il campo sono nascoste delle mine, e l'unica informazione a disposizione sono i numeri che compaiono man mano che si scava. Nato come passatempo per calcolatori negli anni Sessanta e diventato celebre nel 1990 come gioco di sistema, &egrave; uno di quei giochi che sembrano questione di fortuna e invece sono, quasi sempre, questione di ragionamento.</p>
+
+			<p>Qui trovi i <strong>tre livelli classici</strong>, il cronometro con i record, il <strong>primo click sempre sicuro</strong>, un'opzione che genera <strong>campi risolvibili senza tirare a indovinare</strong> e la possibilit&agrave; di <strong>annullare la mossa fatale</strong> pagando una penalit&agrave; sul tempo.</p>
+
+			<p style="background: #fff9c4; padding: 12px 16px; border-radius: 6px; border-left: 4px solid #ffd700;">
+				Questo gioco &egrave; in continua evoluzione: nuove funzionalit&agrave; e miglioramenti vengono aggiunti regolarmente. Se riscontri qualcosa che non funziona come previsto o hai suggerimenti, scrivici a
+				<a href="mailto:postmaster@lucianomanenti.com" style="color: #3498db;">postmaster@lucianomanenti.com</a>
+				&mdash; il tuo feedback &egrave; prezioso!
+			</p>
+
+			<h2>1. Scopo del Gioco</h2>
+			<p>Sotto le caselle del campo sono nascoste delle mine, in numero noto fin dall'inizio. Devi <strong>scoprire tutte le caselle libere</strong> senza mai scavare dove c'&egrave; una mina.</p>
+			<p>Ogni casella scoperta mostra un numero: &egrave; <strong>quante mine ci sono nelle otto caselle che la circondano</strong>. Se intorno non c'&egrave; nessuna mina la casella resta vuota, e in quel caso si apre da s&eacute; tutta l'area libera attorno, fino ai primi numeri: &egrave; per questo che un click fortunato pu&ograve; scoprire mezzo campo in un colpo.</p>
+			<p>Si vince quando <strong>tutte le caselle senza mina</strong> sono scoperte. <strong>Non serve segnare le mine con la bandierina</strong>: le bandierine sono un appunto per te, non un obiettivo. La partita finisce da sola nell'istante in cui l'ultima casella sicura viene aperta.</p>
+
+			<h2>2. Come si leggono i numeri</h2>
+			<p>Tutto il gioco sta in una frase: <em>il numero dice quante mine ci sono fra le sue otto vicine</em>. Da qui nascono le due deduzioni elementari, quelle che risolvono la grande maggioranza delle situazioni.</p>
+
+			<h3>Quando le caselle coperte sono esattamente quante il numero dice</h3>
+			<p>Guarda l'<strong>1</strong> nell'angolo in alto a sinistra: attorno a lui c'&egrave; una sola casella ancora coperta. Quell'1 dice che una mina c'&egrave;, e l'unico posto dove pu&ograve; stare &egrave; quello.</p>
+			<div class="mini-campo">
+				<table>
+					<tr><td class="ap n1">1</td><td class="ap n1">1</td><td class="ap"></td></tr>
+					<tr><td class="ap n1">1</td><td></td><td class="ap"></td></tr>
+					<tr><td class="ap"></td><td class="ap n1">1</td><td class="ap"></td></tr>
+				</table>
+			</div>
+			<p class="legenda-schema">Le caselle chiare sono gi&agrave; scoperte, quella verde &egrave; ancora coperta: l&igrave; sotto c'&egrave; per forza una mina.</p>
+			<p>&Egrave; la regola della <strong>certezza di mina</strong>: se le caselle coperte attorno a un numero sono <strong>tante quante il numero</strong>, sono <strong>tutte</strong> mine. Segnale con la bandierina e vai avanti.</p>
+
+			<h3>Quando le bandierine sono gi&agrave; tutte quelle che servono</h3>
+			<p>&Egrave; il ragionamento opposto, e vale altrettanto: se attorno a un numero hai gi&agrave; messo <strong>tante bandierine quanto dice il numero</strong>, allora tutte le altre caselle coperte l&igrave; intorno sono <strong>sicure</strong>. Puoi scavarle senza pensarci.</p>
+			<p>Queste due regole si alimentano a vicenda: ogni mina segnata rende sicure altre caselle, ogni casella aperta mostra un numero nuovo che pu&ograve; chiudere un altro ragionamento. Il campo si srotola cos&igrave;, a catena.</p>
+
+			<h3>Ragionare su due numeri insieme</h3>
+			<p>Quando le regole elementari si inceppano, di solito la risposta sta nel <strong>confrontare due numeri vicini</strong>. Un caso tipico &egrave; la sequenza <strong>1&ndash;2&ndash;1</strong> lungo un bordo:</p>
+			<div class="mini-campo">
+				<table>
+					<tr><td></td><td></td><td></td><td></td><td></td></tr>
+					<tr><td class="ap n1">1</td><td class="ap n2">2</td><td class="ap n1">1</td><td class="ap"></td><td class="ap"></td></tr>
+				</table>
+			</div>
+			<p class="legenda-schema">Sopra ci sono cinque caselle coperte, sotto la fila dei numeri gi&agrave; scoperti.</p>
+			<p>Il <strong>2</strong> centrale vede tre caselle coperte e dice che fra loro ci sono due mine. Ma l'<strong>1</strong> di sinistra vede solo le prime due e dice che l&igrave; ce n'&egrave; una sola; lo stesso fa l'1 di destra sulle ultime due. Se la casella <em>centrale</em> fosse minata, l'1 di sinistra e l'1 di destra sarebbero gi&agrave; soddisfatti entrambi da quella sola mina, e al 2 ne mancherebbe una che non ha pi&ugrave; dove stare. Quindi la centrale &egrave; <strong>sicura</strong>, e le mine sono le due ai lati.</p>
+			<p>Il principio generale &egrave; sempre questo: <strong>se le caselle viste da un numero sono un sottoinsieme di quelle viste da un altro</strong>, sottrai le due informazioni e quel che resta &egrave; spesso una certezza. Vale la pena allenarsi a vederlo, perch&eacute; &egrave; il ragionamento che sblocca i punti in cui sembra di dover indovinare.</p>
+
+			<h3>Il conto delle mine rimaste</h3>
+			<p>Verso la fine della partita c'&egrave; un'ultima arma: il <strong>numero totale</strong> di mine. Se il contatore dice che ne restano due e le caselle coperte sono tre, hai un vincolo globale che spesso decide la partita anche dove i numeri locali non bastano. &Egrave; il ragionamento che chiude i finali difficili, quelli con due zone separate che, prese una per volta, resterebbero ambigue.</p>
+
+			<h2>3. I tre livelli</h2>
+			<p>Sono le tre configurazioni classiche del gioco, uguali dappertutto:</p>
+			<table class="score-table">
+				<tr>
+					<th>Livello</th>
+					<th>Campo</th>
+					<th>Mine</th>
+					<th>Densit&agrave;</th>
+				</tr>
+				<tr>
+					<td><strong>Principiante</strong></td>
+					<td>9 &times; 9</td>
+					<td>10</td>
+					<td>circa il 12%</td>
+				</tr>
+				<tr>
+					<td><strong>Intermedio</strong></td>
+					<td>16 &times; 16</td>
+					<td>40</td>
+					<td>circa il 16%</td>
+				</tr>
+				<tr>
+					<td><strong>Esperto</strong></td>
+					<td>30 &times; 16</td>
+					<td>99</td>
+					<td>circa il 21%</td>
+				</tr>
+			</table>
+			<p>A cambiare non &egrave; solo la dimensione: cresce anche la <strong>densit&agrave; di mine</strong>, e con lei la difficolt&agrave;. Sull'Esperto le aree che si aprono da sole sono pi&ugrave; piccole e i ragionamenti a due numeri diventano la norma. I <strong>record sono tenuti separati</strong> per ciascun livello, con il migliore di oggi, della settimana e di sempre.</p>
+
+			<h2>4. Il primo click non &egrave; mai una mina</h2>
+			<p>Le mine non esistono finch&eacute; non scavi la prima casella: vengono piazzate <strong>subito dopo</strong> il primo click, evitando la casella che hai scelto <strong>e le sue otto vicine</strong>. Questo garantisce due cose: non si pu&ograve; perdere alla prima mossa, e la partita comincia sempre con un'<strong>area gi&agrave; aperta</strong> da cui partire a ragionare, invece che con un singolo numero isolato.</p>
+			<p>Di conseguenza il primo click puoi farlo dove vuoi, senza pensarci. Aprire vicino al <strong>centro</strong> tende a scoprire pi&ugrave; campo di un angolo, ma &egrave; l'unica differenza.</p>
+
+			<h2>5. Campo sempre risolvibile con la logica</h2>
+			<p>&Egrave; l'opzione che trovi nel pannello di avvio, e cambia la natura della partita. Nel Campo Minato classico pu&ograve; capitare, di solito verso la fine, di arrivare a una situazione in cui <strong>nessun ragionamento decide</strong>: due caselle, una mina, e nessuna informazione per distinguerle. L&igrave; si tira a indovinare, e mezz'ora di gioco pu&ograve; finire su una monetina.</p>
+			<p>Con l'opzione attiva il campo viene <strong>generato e riprovato</strong> finch&eacute; non se ne trova uno che si chiude ragionando dal primo click fino all'ultima casella, senza mai dover scegliere a caso. La generazione &egrave; pi&ugrave; lenta, ma resta questione di frazioni di secondo.</p>
+			<p style="background: #fff9c4; padding: 12px 16px; border-radius: 6px; border-left: 4px solid #ffd700;">
+				<strong>Sull'Esperto pu&ograve; non riuscire.</strong> Con 99 mine su 480 caselle i campi risolvibili sono rari, e il gioco ci prova un numero limitato di volte per non farti aspettare. Se non ce la fa <strong>te lo dice</strong> e la partita comincia lo stesso, con un campo normale: meglio saperlo che credere di avere una garanzia che non c'&egrave;.
+			</p>
+			<p>Una precisazione onesta su cosa garantisce l'opzione: il controllo usa le <strong>due deduzioni elementari</strong> descritte sopra &mdash; le mine certe e le caselle sicure attorno a un numero &mdash; applicate a catena finch&eacute; producono qualcosa. Non prova i ragionamenti a due numeri come l'1&ndash;2&ndash;1. Questo vuol dire che un campo accettato &egrave; <strong>certamente</strong> risolvibile, e anzi lo &egrave; con i ragionamenti pi&ugrave; semplici; ma qualche campo scartato sarebbe stato risolvibile lo stesso da un giocatore esperto. La garanzia &egrave; per difetto, ed &egrave; il modo giusto per un'opzione che promette "non devi mai indovinare".</p>
+
+			<h2>6. Se prendi una mina</h2>
+			<p>Quando scavi su una mina la partita finisce e <strong>tutto il campo viene rivelato</strong>: le mine restano in vista, cos&igrave; puoi guardare dove sbagliava il tuo ragionamento. Il messaggio di sconfitta compare nella colonna di destra, apposta per non coprire lo schema.</p>
+			<p>A quel punto puoi <strong>annullare la mossa fatale</strong>: le mine tornano coperte, sulla casella fatale viene messa una bandierina e la partita riprende esattamente da prima.</p>
+			<p>Non c'&egrave; un tetto al numero di annulli, ma il <strong>prezzo raddoppia ogni volta</strong>:</p>
+			<table class="score-table">
+				<tr>
+					<th>Annullo</th>
+					<th>Costa</th>
+					<th>Totale pagato</th>
+				</tr>
+				<tr><td>primo</td><td>60 secondi</td><td>1 minuto</td></tr>
+				<tr><td>secondo</td><td>120 secondi</td><td>3 minuti</td></tr>
+				<tr><td>terzo</td><td>240 secondi</td><td>7 minuti</td></tr>
+				<tr><td>quarto</td><td>480 secondi</td><td>15 minuti</td></tr>
+			</table>
+			<p>Il prezzo &egrave; sempre scritto nel messaggio di sconfitta, prima che tu decida. L'idea &egrave; semplice: <strong>una distrazione non deve buttare via mezz'ora di Esperto</strong>, e infatti il primo errore si perdona quasi per intero; ma tirare a indovinare a ripetizione diventa in fretta insostenibile, perch&eacute; al quarto annullo hai gi&agrave; regalato un quarto d'ora.</p>
+			<p>Il tempo che finisce nei record &egrave; quello con le <strong>penalit&agrave; gi&agrave; dentro</strong>: un record ottenuto con un annullo vale quanto uno pulito, perch&eacute; quei secondi li hai pagati.</p>
+
+			<hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;">
+
+			<h2>Come giocare a "Campo Minato Luciano"</h2>
+
+			<h3>Scavare e mettere le bandierine</h3>
+			<ul>
+				<li><strong>Click sinistro:</strong> scava la casella.</li>
+				<li><strong>Click destro:</strong> mette o toglie la bandierina. La bandierina <strong>protegge</strong>: un click sinistro sopra una casella con la bandierina non scava, quindi non si perde per una distrazione.</li>
+				<li><strong>Click su un numero gi&agrave; scoperto:</strong> se le bandierine intorno sono gi&agrave; tante quante il numero dice, apre <strong>in un colpo solo</strong> tutte le altre caselle vicine. &Egrave; la mossa che fa correre la partita &mdash; ma attenzione: se una di quelle bandierine era sbagliata, salta tutto.</li>
+			</ul>
+
+			<h3>I due modi (Scava e Bandierina)</h3>
+			<p>I due pulsanti nella colonna di destra decidono cosa fa il <strong>click sinistro</strong>. Servono soprattutto su <strong>tablet e telefono</strong>, dove il tasto destro non c'&egrave;, ma sono comodi anche su portatile quando il click destro del trackpad &egrave; scomodo. Il modo attivo si vede a colpo d'occhio dal pulsante acceso.</p>
+			<p>La <strong>barra spaziatrice</strong> passa da un modo all'altro senza staccare la mano dal mouse.</p>
+
+			<h3>Il contatore delle mine</h3>
+			<p>Il numero sotto <strong>Mine</strong> non conta le mine trovate: sono le <strong>mine totali meno le bandierine</strong> che hai messo. Se diventa <strong>negativo</strong> significa che hai messo pi&ugrave; bandierine di quante siano le mine, quindi almeno una &egrave; sbagliata. &Egrave; una spia utile: quando arriva a zero e restano caselle coperte, qualcuna di quelle bandierine &egrave; nel posto sbagliato.</p>
+
+			<h3>Il contatore degli errori</h3>
+			<p>Sotto <strong>Errori</strong> resta <strong>0</strong> finch&eacute; non prendi una mina. Dal primo sbaglio in poi diventa rosso e, se hai annullato, mostra fra parentesi anche <strong>quanti secondi ti sono costati gli annulli</strong>: per esempio <strong>2 (+03:00)</strong> vuol dire due mine prese e tre minuti gi&agrave; aggiunti al cronometro. Cos&igrave; il prezzo che stai pagando &egrave; sempre sotto gli occhi e non solo nel momento in cui scegli se annullare. L'ultima mina, quella che chiude la partita perch&eacute; non l'hai annullata, &egrave; contata anche lei ma non costa nulla: la partita finisce l&igrave;.</p>
+
+			<h3>Il cronometro e i record</h3>
+			<p>Il tempo parte al <strong>primo click</strong>, non all'apertura della pagina, e si ferma alla fine della partita. Per ogni livello il gioco tiene il <strong>miglior tempo di oggi, della settimana e di sempre</strong>; accanto a ciascuno c'&egrave; un pulsante per azzerarlo, se vuoi ripartire da zero.</p>
+
+			<h3>Pulsanti di controllo</h3>
+			<ul>
+				<li><strong>NUOVA PARTITA:</strong> apre il pannello dove si sceglie il livello. A partita in corso <strong>chiede conferma</strong>, cos&igrave; un click distratto non butta via mezz'ora di Esperto.</li>
+				<li><strong>COME SI GIOCA:</strong> apre questa guida.</li>
+				<li><strong>&#x1F50A; / &#x1F507; (Audio):</strong> abilita o disabilita gli effetti sonori. La tua preferenza &egrave; globale e sar&agrave; ricordata dal browser su tutte le pagine del sito.</li>
+			</ul>
+
+			<h2>Salvataggio Automatico</h2>
+			<p>La partita viene <strong>salvata automaticamente</strong> nel browser a ogni mossa: se chiudi la pagina o spegni il computer, alla prossima visita ti verr&agrave; proposto di <strong>riprendere da dove eri rimasto</strong>, con il campo, le bandierine e il tempo esattamente com'erano.</p>
+
+			<p style="text-align: center;"><a href="#" onclick="goBack(); return false;" class="play-btn">Chiudi</a></p>
+		</div>
+	</div>
+
+
+	<div class="banner"></div>
+
+	<div class="nav-links">
+		<a href="index.html">Home</a> |
+		<a href="minato.html">Campo Minato</a> |
+		<a href="regole-calcolo.html">Calcolo Enigmatico</a> |
+		<a href="regole-sudoku.html">Sudoku</a> |
+		<a href="regole-scopa.html">Scopa</a> |
+		<a href="regole-burraco.html">Burraco</a> |
+		<a href="regole-scala40.html">Scala 40</a> |
+		<a href="regole-machiavelli.html">Machiavelli</a> |
+		<a href="regole-spider.html">Spider</a> |
+		<a href="regole-rummy.html">Gin Rummy</a> |
+		<a href="guida-metronomo.html">Metronomo</a> |
+		<a href="privacy.html">Privacy</a> |
+		<a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)">Gestisci Cookie</a>
+	</div>
+
+	<p style="text-align: center; font-size: 0.8em; color: #999; margin-top: 10px;">
+		© 2026 Luciano Manenti
+	</p>
+
+	<script>
+		function goBack() {
+			window.close();
+		}
+		(function() {
+			var nascosto = false;
+			var observer = new MutationObserver(function() {
+				if (nascosto) return;
+				var divs = document.querySelectorAll('body > div');
+				for (var i = 0; i < divs.length; i++) {
+					if (divs[i].shadowRoot && !divs[i].className && (divs[i].getAttribute('style')||'').length > 5000) {
+						divs[i].style.setProperty('display', 'none', 'important');
+						nascosto = true;
+						observer.disconnect();
+						return;
+					}
+				}
+			});
+			observer.observe(document.body, { childList: true });
+		})();
+	</script>
+</body>
+
+</html>

@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
+	<script>
+		window.dataLayer = window.dataLayer || [];
+		function gtag() { dataLayer.push(arguments); }
+		gtag('js', new Date());
+		gtag('config', 'G-WRBDRDQ4L8');
+		window.currentLang = 'it';
+	</script>
+	<title>Regole della Battaglia Navale Solitario - Come si gioca</title>
+	<meta name="Description"
+		content="Regole della Battaglia Navale Solitario: cosa dicono i numeri a bordo griglia, la regola che le navi non si toccano, e le quattro deduzioni con cui si risolve uno schema senza tirare a indovinare.">
+	<link rel="alternate" hreflang="it" href="guida-navale.html">
+	<link rel="alternate" hreflang="en" href="guida-navale-en.html">
+	<link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
+	<link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
+	<link rel="shortcut icon" href="favicon/favicon.ico">
+	<link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+	<style>
+		body {
+			font-family: sans-serif;
+			line-height: 1.7;
+			max-width: 800px;
+			margin: 40px auto;
+			padding: 20px;
+			color: #333;
+			background-color: #f9f9f9;
+		}
+
+		h1 {
+			color: #2c3e50;
+			border-bottom: 2px solid #ffd700;
+			padding-bottom: 10px;
+		}
+
+		h2 {
+			color: #2c3e50;
+			margin-top: 30px;
+		}
+
+		h3 {
+			color: #2c3e50;
+			font-size: 1.1em;
+			margin-top: 20px;
+		}
+
+		.lang-switch {
+			text-align: right;
+			margin-bottom: 20px;
+		}
+
+		.lang-switch a {
+			display: inline-block;
+			padding: 6px 16px;
+			margin-left: 5px;
+			text-decoration: none;
+			border-radius: 5px;
+			font-weight: bold;
+			font-size: 14px;
+		}
+
+		.lang-switch a.active {
+			background: #2c3e50;
+			color: white;
+		}
+
+		.lang-switch a:not(.active) {
+			background: #ddd;
+			color: #333;
+			cursor: pointer;
+		}
+
+		.content-box {
+			background: white;
+			padding: 30px;
+			border-radius: 8px;
+			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+		}
+
+		.play-btn {
+			display: inline-block;
+			margin-top: 25px;
+			padding: 12px 30px;
+			background: #27ae60;
+			color: white;
+			text-decoration: none;
+			border-radius: 8px;
+			font-size: 18px;
+			font-weight: bold;
+		}
+
+		.nav-links {
+			text-align: center;
+			margin-top: 30px;
+			font-size: 14px;
+		}
+
+		.nav-links a {
+			color: #3498db;
+			text-decoration: none;
+			margin: 0 10px;
+		}
+
+		.banner {
+			width: 100%;
+			height: 150px;
+			background-image: url('images/home/castagne.jpg');
+			background-size: cover;
+			background-position: center;
+			border-radius: 8px;
+			margin: 20px 0;
+			box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+		}
+
+		.highlight {
+			background-color: #fff9c4;
+			padding: 0 4px;
+		}
+
+		.regola-chiave {
+			background: #eef7ee;
+			border-left: 4px solid #27ae60;
+			padding: 12px 18px;
+			margin: 18px 0;
+		}
+
+		/* Schemetti di esempio: la stessa griglia del gioco in miniatura, con gli
+		   stessi colori, cosi' chi legge ritrova sul tavolo quello che ha visto
+		   qui. Sono tabelle CSS grid, senza immagini da scaricare. */
+		.mini-mare {
+			display: inline-grid;
+			gap: 2px;
+			background: rgba(0, 30, 55, 0.85);
+			border: 2px solid #b8860b;
+			border-radius: 6px;
+			padding: 5px;
+			margin: 10px 0 6px 0;
+		}
+
+		.mm-c {
+			width: 30px;
+			height: 30px;
+			box-sizing: border-box;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-size: 15px;
+			font-weight: bold;
+			border-radius: 3px;
+		}
+
+		/* Numero di bordo */
+		.mm-n {
+			color: #ffd700;
+			background: transparent;
+		}
+
+		/* Casella ancora da decidere */
+		.mm-mare {
+			background: linear-gradient(160deg, #17456e 0%, #0e2f4e 100%);
+			border: 1px solid rgba(140, 190, 225, 0.28);
+		}
+
+		/* Acqua segnata */
+		.mm-acqua {
+			background: rgba(10, 32, 52, 0.9);
+			border: 1px solid rgba(140, 190, 225, 0.15);
+			color: rgba(150, 195, 225, 0.55);
+		}
+
+		/* Nave */
+		.mm-nave {
+			background: linear-gradient(160deg, #cdd6de 0%, #8d9aa6 100%);
+			border: 1px solid #3d4a56;
+		}
+		.mm-nave.sub  { border-radius: 50%; }
+		.mm-nave.sx   { border-radius: 50% 3px 3px 50%; }
+		.mm-nave.dx   { border-radius: 3px 50% 50% 3px; }
+		.mm-nave.top  { border-radius: 50% 50% 3px 3px; }
+		.mm-nave.bot  { border-radius: 3px 3px 50% 50%; }
+
+		/* Casella su cui si sta ragionando nell'esempio */
+		.mm-focus {
+			box-shadow: 0 0 0 3px #ffd700;
+			z-index: 2;
+		}
+
+		.legenda-schema {
+			font-size: 0.92em;
+			color: #666;
+			margin-top: -2px;
+			margin-bottom: 18px;
+		}
+	</style>
+</head>
+
+<body>
+	<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+		<a href="#" id="btn-back" onclick="goBack(); return false;"
+			style="display: inline-block; padding: 6px 16px; background: #e74c3c; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 14px;">&#x2190;
+			Indietro</a>
+		<div class="lang-switch" style="margin-bottom: 0;">
+			<a href="guida-navale.html" id="btn-it" class="active">Italiano</a>
+			<a href="guida-navale-en.html" id="btn-en">English</a>
+		</div>
+	</div>
+
+	<div class="content-box">
+		<h1>Battaglia Navale Solitario</h1>
+
+		<p>Non &egrave; la battaglia navale che si giocava in due sul quaderno, quella dei colpi a caso e dell'&laquo;acqua!
+			colpito!&raquo;. Qui non c'&egrave; nessun avversario e non si spara: c'&egrave; <strong>una sola griglia</strong>,
+			una flotta nascosta dentro, e dei numeri lungo i bordi. Il compito &egrave; capire dove sono le navi
+			<strong>ragionando</strong>, senza mai tirare a indovinare.</p>
+
+		<p>&Egrave; lo stesso tipo di piacere del Calcolo Enigmatico o del Sudoku: ogni schema ha una sola disposizione
+			possibile, e ogni casella si pu&ograve; dedurre da quelle che hai gi&agrave; deciso. Se ti trovi a dover
+			scommettere, vuol dire che c'&egrave; una deduzione che non hai ancora visto &mdash; non che lo schema &egrave;
+			ambiguo.</p>
+
+		<div class="banner"></div>
+
+		<h2>Le regole</h2>
+
+		<h3>1. I numeri contano le caselle di nave</h3>
+		<p>Il numero all'inizio di ogni riga dice <strong>quante caselle di quella riga sono occupate da una nave</strong>.
+			Lo stesso vale per i numeri in cima alle colonne. Non dicono <em>quali</em> caselle e non dicono quante navi:
+			solo quante caselle in tutto. Un 3 su una riga pu&ograve; voler dire un incrociatore intero, oppure un
+			cacciatorpediniere pi&ugrave; un sottomarino, oppure tre sottomarini staccati.</p>
+
+		<h3>2. La flotta &egrave; nota in partenza</h3>
+		<p>Sotto la griglia c'&egrave; l'elenco delle navi da trovare, disegnate una per una con la loro forma: la
+			<strong>corazzata</strong> da 4 caselle, l'<strong>incrociatore</strong> da 3, il
+			<strong>cacciatorpediniere</strong> da 2 e il <strong>sottomarino</strong> da 1. Sapere quante ce n'&egrave;
+			di ogni tipo &egrave; parte dell'enunciato, ed &egrave; spesso l'informazione che chiude lo schema: quando hai
+			gi&agrave; trovato tutte le navi lunghe, quello che resta pu&ograve; essere solo roba corta.</p>
+		<p>Una sagoma dell'elenco si spegne solo quando quella nave &egrave; <strong>chiusa</strong>: quando in testa e in
+			coda hai segnato l'acqua, o la nave tocca il bordo. Finch&eacute; a un capo resta una casella libera, la
+			sagoma resta accesa &mdash; anche se la lunghezza sembra gi&agrave; quella giusta. &Egrave; voluto: un
+			gruppo di due caselle pu&ograve; sempre essere il tronco di un incrociatore che non hai ancora finito, e
+			spegnere il cacciatorpediniere vorrebbe dire dirti che l&igrave; la nave finisce &mdash; cio&egrave; farti
+			una deduzione che tocca a te.</p>
+		<p>Sulla griglia vale la stessa cosa, con il colore: una nave chiusa diventa <strong>arancione</strong>, mentre i
+			tronconi ancora da allungare restano grigi. &Egrave; solo un modo per rileggere al volo quello che hai
+			gi&agrave; concluso: l'arancione arriva perch&eacute; hai segnato tu l'acqua ai capi, non perch&eacute; il
+			gioco abbia controllato la soluzione.</p>
+		<p>Le navi stanno sempre <strong>dritte</strong>, in orizzontale o in verticale. Mai in diagonale, mai piegate a L.</p>
+
+		<div class="regola-chiave">
+			<h3 style="margin-top:0">3. Le navi non si toccano mai &mdash; nemmeno per un angolo</h3>
+			<p style="margin-bottom:0">&Egrave; la regola che rende lo schema risolvibile, ed &egrave; quella che si
+				dimentica pi&ugrave; spesso. Attorno a ogni nave c'&egrave; <strong>acqua da tutte le parti</strong>:
+				sopra, sotto, ai lati e nelle quattro diagonali. Due navi distinte non possono mai stare a contatto. Ogni
+				volta che scopri una casella di nave, hai automaticamente scoperto anche che le quattro caselle in
+				diagonale sono acqua.</p>
+		</div>
+
+		<h2>Come si gioca sullo schermo</h2>
+
+		<p><strong>Click sinistro</strong> su una casella la segna come acqua. <strong>Click destro</strong> la segna come
+			nave. Premendo di nuovo lo stesso segno la casella torna libera. Le caselle con la <span class="highlight">cornice
+			dorata</span> sono quelle date in partenza: fanno parte del testo del problema e non si possono cambiare.</p>
+
+		<p>Segnare l'acqua non &egrave; obbligatorio per vincere &mdash; conta solo che le navi siano al posto giusto &mdash;
+			ma &egrave; il modo in cui si ragiona: annerire quello che &egrave; escluso &egrave; esattamente ci&ograve; che
+			fa emergere dove le navi <em>devono</em> stare.</p>
+
+		<p>I numeri di bordo si accendono da soli: diventano <strong>verdi e spenti</strong> quando quella riga ha
+			gi&agrave; tutte le sue caselle di nave, e <strong>rossi</strong> quando il conto non pu&ograve; pi&ugrave;
+			tornare (troppe navi, o troppe poche caselle libere per arrivarci). &Egrave; una spia puramente aritmetica:
+			non guarda la soluzione, quindi resta accesa anche con la segnalazione errori disattivata.</p>
+
+		<h2>Le quattro deduzioni che risolvono tutto</h2>
+
+		<h3>1. Il conto &egrave; gi&agrave; completo: il resto &egrave; acqua</h3>
+		<p>Se una riga chiede 2 caselle di nave e ne hai gi&agrave; segnate 2, <strong>tutto il resto di quella riga
+			&egrave; acqua</strong>. Banale, ma &egrave; la deduzione che si usa di pi&ugrave;, e annerire subito quelle
+			caselle sblocca le colonne che le attraversano.</p>
+
+		<div class="mini-mare" style="grid-template-columns: repeat(6, 30px)">
+			<div class="mm-c mm-n">2</div>
+			<div class="mm-c mm-nave sx"></div>
+			<div class="mm-c mm-nave dx"></div>
+			<div class="mm-c mm-mare mm-focus"></div>
+			<div class="mm-c mm-mare mm-focus"></div>
+			<div class="mm-c mm-mare mm-focus"></div>
+		</div>
+		<p class="legenda-schema">La riga chiede 2 e le due navi ci sono gi&agrave;: le tre caselle evidenziate sono acqua
+			per forza.</p>
+
+		<h3>2. Le caselle libere sono esattamente quelle che mancano: sono tutte nave</h3>
+		<p>Il ragionamento opposto. Se a una riga mancano 3 caselle di nave e sono rimaste libere esattamente 3 caselle,
+			<strong>sono quelle</strong>. Non serve sapere quale nave sia: si segnano e basta.</p>
+
+		<div class="mini-mare" style="grid-template-columns: repeat(6, 30px)">
+			<div class="mm-c mm-n">3</div>
+			<div class="mm-c mm-acqua">&middot;</div>
+			<div class="mm-c mm-mare mm-focus"></div>
+			<div class="mm-c mm-mare mm-focus"></div>
+			<div class="mm-c mm-mare mm-focus"></div>
+			<div class="mm-c mm-acqua">&middot;</div>
+		</div>
+		<p class="legenda-schema">La riga chiede 3, l'acqua ne ha gi&agrave; escluse due: le tre libere sono tutte nave.</p>
+
+		<h3>3. Le diagonali di una nave sono sempre acqua</h3>
+		<p>Discende direttamente dalla regola che le navi non si toccano. Appena segni una casella di nave, le quattro
+			caselle in diagonale sono acqua &mdash; sempre, senza guardare nient'altro. &Egrave; l'informazione gratuita
+			pi&ugrave; abbondante dello schema, e nel gioco puoi anche farla segnare in automatico con l'opzione
+			<em>&laquo;Annerisci da s&eacute; l'acqua sicura&raquo;</em>, che si occupa anche delle righe e delle
+			colonne con il conto gi&agrave; completo (la deduzione 1 qui sopra).</p>
+
+		<div class="mini-mare" style="grid-template-columns: repeat(3, 30px)">
+			<div class="mm-c mm-mare mm-focus"></div>
+			<div class="mm-c mm-mare"></div>
+			<div class="mm-c mm-mare mm-focus"></div>
+			<div class="mm-c mm-mare"></div>
+			<div class="mm-c mm-nave sub"></div>
+			<div class="mm-c mm-mare"></div>
+			<div class="mm-c mm-mare mm-focus"></div>
+			<div class="mm-c mm-mare"></div>
+			<div class="mm-c mm-mare mm-focus"></div>
+		</div>
+		<p class="legenda-schema">Le quattro caselle evidenziate sono acqua per forza, qualunque cosa dicano i numeri.</p>
+
+		<h3>4. Una nave completa &egrave; circondata d'acqua</h3>
+		<p>Quando una nave &egrave; finita &mdash; perch&eacute; l'hai riconosciuta nell'elenco della flotta, o perch&eacute;
+			i numeri non lasciano spazio per allungarla &mdash; allora <strong>tutto il suo contorno &egrave; acqua</strong>,
+			non solo le diagonali: anche le caselle in testa e in coda. Riconoscere che una nave &egrave; completa &egrave;
+			spesso il passo che sblocca mezzo schema.</p>
+
+		<div class="mini-mare" style="grid-template-columns: repeat(5, 30px)">
+			<div class="mm-c mm-mare mm-focus"></div>
+			<div class="mm-c mm-mare mm-focus"></div>
+			<div class="mm-c mm-mare mm-focus"></div>
+			<div class="mm-c mm-mare mm-focus"></div>
+			<div class="mm-c mm-mare mm-focus"></div>
+			<div class="mm-c mm-mare mm-focus"></div>
+			<div class="mm-c mm-nave sx"></div>
+			<div class="mm-c mm-nave"></div>
+			<div class="mm-c mm-nave dx"></div>
+			<div class="mm-c mm-mare mm-focus"></div>
+			<div class="mm-c mm-mare mm-focus"></div>
+			<div class="mm-c mm-mare mm-focus"></div>
+			<div class="mm-c mm-mare mm-focus"></div>
+			<div class="mm-c mm-mare mm-focus"></div>
+			<div class="mm-c mm-mare mm-focus"></div>
+		</div>
+		<p class="legenda-schema">L'incrociatore &egrave; completo: le dodici caselle attorno sono tutte acqua.</p>
+
+		<h3>Un quinto trucco: guarda le righe da 0</h3>
+		<p>All'inizio di uno schema conviene sempre partire dalle righe e dalle colonne con lo <strong>0</strong>: si
+			annerisce tutto in un colpo, senza pensarci. Subito dopo, le righe con il numero pi&ugrave; alto: se una riga
+			da 10 caselle ne chiede 6, lo spazio &egrave; talmente stretto che spesso qualche casella &egrave; occupata
+			per forza in qualunque disposizione.</p>
+
+		<h2>I comandi e le opzioni</h2>
+
+		<h3>La dimensione della griglia</h3>
+		<ul>
+			<li><strong>Piccola</strong> &mdash; 6&times;6, con un incrociatore, due cacciatorpediniere e tre sottomarini.
+				Una decina di minuti, buona per imparare.</li>
+			<li><strong>Media</strong> &mdash; 8&times;8, con una corazzata, due incrociatori, tre cacciatorpediniere e
+				quattro sottomarini. &Egrave; il formato classico degli schemi stampati.</li>
+			<li><strong>Grande</strong> &mdash; 10&times;10, con due corazzate e una flotta di tredici navi. Le catene di
+				deduzioni diventano lunghe e vale la pena annerire l'acqua con cura.</li>
+		</ul>
+		<p>Il tipo di ragionamento non cambia da un formato all'altro: cambia quanto lontano bisogna portare avanti la
+			catena prima che si chiuda.</p>
+
+		<h3>Il suggerimento</h3>
+		<p>Il pulsante <strong>Suggerimento</strong> ti indica una casella su cui c'&egrave; una deduzione da fare, e
+			costa <strong>+10 secondi</strong> sul cronometro. Da l&igrave; puoi fermarti e ragionarci, oppure chiedere la
+			<strong>Spiegazione</strong> (ti dice <em>quale</em> delle deduzioni qui sopra si applica) o far
+			<strong>segnare la casella</strong> al gioco: l'una o l'altra costano <strong>+20 secondi</strong>, una volta
+			sola per suggerimento.</p>
+		<p>Se sulla griglia c'&egrave; gi&agrave; un segno sbagliato, il suggerimento te lo indica per primo: continuare a
+			dedurre da una base sbagliata porta solo in un vicolo cieco.</p>
+
+		<h3>Errori e penalit&agrave;</h3>
+		<p>Con l'opzione <em>&laquo;Segnala subito le caselle sbagliate&raquo;</em> attiva, un segno che contraddice la
+			soluzione diventa rosso all'istante e costa <strong>+30 secondi</strong>. La penalit&agrave; si paga una volta
+			sola per casella: togliere e rimettere lo stesso segno non fa accumulare secondi. Se preferisci accorgerti
+			degli errori da solo, spegni l'opzione: la partita diventa pi&ugrave; onesta e il conto degli errori resta a
+			zero.</p>
+
+		<h3>Cronometro e record</h3>
+		<p>Il tempo &egrave; l'unico punteggio, penalit&agrave; comprese. I record sono tenuti separati per dimensione di
+			griglia &mdash; un 6&times;6 e un 10&times;10 non sono confrontabili &mdash; e divisi in
+			<strong>oggi</strong>, <strong>questa settimana</strong> (che riparte il luned&igrave;) e
+			<strong>assoluto</strong>. Il pulsante con la freccia circolare azzera il record che ha sotto: il primo click
+			chiede conferma, cos&igrave; non si cancella niente per sbaglio.</p>
+
+		<h3>Annulla e salvataggio</h3>
+		<p><strong>Annulla</strong> (o <strong>Ctrl+Z</strong>) torna indietro di un segno alla volta, per tutta la
+			partita. Il tasto <strong>H</strong> chiede un suggerimento. Le penalit&agrave; gi&agrave; pagate non
+			vengono restituite dall'annulla: sono il prezzo di una decisione presa.</p>
+		<p>Se chiudi la pagina a met&agrave; schema, la volta dopo il gioco te lo ripropone con il pulsante
+			<strong>Riprendi la partita precedente</strong>, cronometro compreso. Il salvataggio sta nel tuo browser, non
+			su un server: se cancelli i dati di navigazione se ne va anche quello.</p>
+
+		<h2>Quando hai finito</h2>
+		<p>La partita si chiude nel momento in cui tutte le caselle di nave sono al loro posto &mdash; non serve aver
+			annerito tutta l'acqua. Se la griglia sembra completa ma qualcosa non torna, il gioco te lo dice invece di
+			farti perdere tempo a ricontrollare.</p>
+
+		<p style="text-align: center;"><a href="#" onclick="goBack(); return false;" class="play-btn">Chiudi</a></p>
+
+		<div class="nav-links">
+			<a href="index.html">Tutti i giochi</a> |
+			<a href="calcolo.html">Calcolo Enigmatico</a> |
+			<a href="minato.html">Campo Minato</a> |
+			<a href="sudoku.html">Sudoku</a> |
+			<a href="quadrati.html">Quadrati</a>
+		</div>
+	</div>
+
+	<p style="text-align: center; font-size: 0.8em; color: #999; margin-top: 10px;">
+		© 2026 Luciano Manenti
+	</p>
+
+	<script>
+		function goBack() {
+			window.close();
+		}
+		(function() {
+			var nascosto = false;
+			var observer = new MutationObserver(function() {
+				if (nascosto) return;
+				var divs = document.querySelectorAll('body > div');
+				for (var i = 0; i < divs.length; i++) {
+					if (divs[i].shadowRoot && !divs[i].className && (divs[i].getAttribute('style')||'').length > 5000) {
+						divs[i].style.setProperty('display', 'none', 'important');
+						nascosto = true;
+						observer.disconnect();
+						return;
+					}
+				}
+			});
+			observer.observe(document.body, { childList: true });
+		})();
+	</script>
+</body>
+
+</html>
