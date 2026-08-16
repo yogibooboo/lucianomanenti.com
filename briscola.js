@@ -536,16 +536,28 @@ function ruoloPrimoDiMano(g) {
         }
     }
 
-    // 3. Se non abbiamo lisci (solo carichi non-briscola e briscole): gioca il carico non-briscola più basso (Fante/Cavallo) per cedere il pallino
+    // 3. Se non abbiamo lisci (solo carichi non-briscola e briscole): cede il pallino
+    // con la carta di sacrificio minimo. Con una figura (Fante/Cavallo/Re) si apre di
+    // quella; se però la minore non-briscola è un carico (Asso/3) e restano briscole in
+    // giro, vale il divieto di aprire col carico: verrebbe tagliato per 10-11 pt gratis,
+    // e una briscola bassa costa molto meno (confronto su scala unica, ordinaPerScarto).
     if (!scelta) {
         const nonBris = mano.filter(function (c) { return c.suit !== semeBriscola; });
         if (nonBris.length) {
             const carichiEconomici = nonBris.slice().sort(function (a, b) { return puntiDi(a) - puntiDi(b) || FORZA[a.number] - FORZA[b.number]; });
-            if (!briscoleFuori && vincenteSicura(g, carichiEconomici[0])) {
-                scelta = carichiEconomici[0];
+            const minNonBris = carichiEconomici[0];
+            if (!briscoleFuori && vincenteSicura(g, minNonBris)) {
+                scelta = minNonBris;
                 motivo = 'Incasso sicuro di apertura: briscole esaurite e carta imbattibile';
+            } else if (briscoleFuori && puntiDi(minNonBris) >= 10) {
+                const minimoSacrificio = ordinaPerScarto(mano, g)[0];
+                scelta = minimoSacrificio;
+                motivo = (minimoSacrificio === minNonBris)
+                    ? 'Assenza di lisci: nessuna briscola più economica del carico, apertura obbligata'
+                    : 'Divieto di aprire col carico ' + minNonBris.number + ' ' + minNonBris.suit +
+                      ' (esposto al taglio): cede il pallino con la briscola di sacrificio minimo';
             } else {
-                scelta = carichiEconomici[0];
+                scelta = minNonBris;
                 motivo = 'Assenza di lisci: cede la mano col carico non-briscola minore per passare in Posizione 4 al turno dopo';
             }
         }
@@ -994,6 +1006,7 @@ function nuovaPartita(diff, mod) {
     renderStats();
     renderTutto();
     setMessaggio(primoDiMano === 0 ? BRISCOLA_LANG.inizioTu : BRISCOLA_LANG.inizioAltro(nomiGiocatori[primoDiMano].nome));
+    snapshotIniziale = creaSnapshotStato(); // per CTRL+ALT+I
     prossimaMossa();
 }
 
@@ -1366,6 +1379,159 @@ function aggiornaStatoUndoUI() {
     const abilitato = undoStack.length > 0 && !partitaFinita && (!animando || presaInAttesaClick);
     btn.disabled = !abilitato;
 }
+
+// === DEBUG: SNAPSHOT SU FILE (CTRL+ALT+I / A / B) ===
+// Stessa convenzione degli altri giochi: I = stato iniziale della smazzata,
+// A = stato attuale, B = ricarica da file. Serve a riprodurre esattamente una
+// posizione dubbia (p.es. una scelta discutibile dell'IA) e rigiocarla.
+
+let snapshotIniziale = null; // catturato a ogni nuova partita e a ogni ripristino
+
+function creaSnapshotStato() {
+    return {
+        gioco: 'briscola',
+        versione: 1,
+        mod: modalita,
+        diff: difficolta,
+        segnali: segnaliAttivi,
+        motore: motoreAI,
+        mazzoTema: localStorage.getItem('briscola-deck-theme') || 'napoletane',
+        mazzo: mazzo.map(serializzaCarta),
+        bris: serializzaCarta(briscolaCarta),
+        seme: semeBriscola,
+        mani: mani.map(function (m) { return m.map(serializzaCarta); }),
+        punti: punti.slice(),
+        vinte: carteVinte.slice(),
+        tavolo: tavolo.map(function (t) { return { g: t.g, c: serializzaCarta(t.carta) }; }),
+        primo: primoDiMano,
+        turno: turno,
+        viste: JSON.parse(JSON.stringify(visteIds)),
+        nomi: nomiGiocatori,
+        // Storico dell'undo: consente, dopo il ripristino, di risalire ai turni
+        // precedenti per capire come si è arrivati alla posizione salvata.
+        // È già in forma serializzata (creaUndoSnapshot usa serializzaCarta).
+        undo: JSON.parse(JSON.stringify(undoStack))
+    };
+}
+
+function ripristinaSnapshotStato(s) {
+    if (!s || !s.mani || !s.seme) throw new Error('Snapshot non valido');
+    modalita = s.mod === 4 ? 4 : 2;
+    window._modalita4 = modalita === 4;
+    difficolta = s.diff || 'difficile';
+    segnaliAttivi = modalita === 4 && !!s.segnali;
+    if (s.motore) motoreAI = s.motore;
+    if (s.mazzoTema) localStorage.setItem('briscola-deck-theme', s.mazzoTema);
+    mazzo = s.mazzo.map(deserializzaCarta);
+    briscolaCarta = deserializzaCarta(s.bris);
+    semeBriscola = s.seme;
+    mani = s.mani.map(function (m) { return m.map(deserializzaCarta); });
+    punti = s.punti ? s.punti.slice() : [0, 0];
+    carteVinte = s.vinte ? s.vinte.slice() : [0, 0];
+    tavolo = (s.tavolo || []).map(function (t) { return { g: t.g, carta: deserializzaCarta(t.c) }; });
+    primoDiMano = s.primo || 0;
+    // il turno salvato è quello vero: ripristinarlo permette di rigiocare anche
+    // una posizione in cui tocca all'IA (è il caso interessante per il debug)
+    turno = (typeof s.turno === 'number') ? s.turno : 0;
+    visteIds = JSON.parse(JSON.stringify(s.viste || {}));
+    nomiGiocatori = s.nomi && s.nomi.length ? s.nomi : (scegliNomi(), nomiGiocatori);
+    partitaFinita = false;
+    animando = false;
+    presaInAttesaClick = false;
+    // Storico undo: ripristinato se presente nel file (snapshot vecchi non ce l'hanno)
+    undoStack = Array.isArray(s.undo) ? JSON.parse(JSON.stringify(s.undo)) : [];
+    maniScoperte = false;
+    azzeraDeduzioni();
+    snapshotIniziale = JSON.parse(JSON.stringify(s));
+    const btnSc = document.getElementById('btn-scoperte');
+    if (btnSc) btnSc.classList.remove('attivo');
+    const campo = document.getElementById('campogioco');
+    if (campo) {
+        campo.classList.remove('mani-scoperte');
+        campo.classList.toggle('quattro', modalita === 4);
+    }
+    document.querySelectorAll('.carta.cartavincente').forEach(function (el) { el.classList.remove('cartavincente'); });
+    chiudiModali();
+    applicaTema();
+    aggiornaLabelMazzo();
+    renderStats();
+    renderTutto();
+    salvaPartita();
+    aggiornaEvidenzaTurno();
+    aggiornaStatoUndoUI();
+}
+
+function scaricaSnapshot(snap, prefisso) {
+    const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(snap, null, 2));
+    const nomeData = new Date().toISOString().replace(/T/, '_').replace(/:/g, '-').slice(0, 19);
+    const a = document.createElement('a');
+    a.setAttribute('href', dataStr);
+    a.setAttribute('download', 'briscola_' + prefisso + '_' + nomeData + '.json');
+    a.click();
+}
+
+document.addEventListener('keydown', function (e) {
+    if (!e.ctrlKey || !e.altKey) return;
+    const k = e.key.toLowerCase();
+
+    // CTRL+ALT+I: scarica lo stato INIZIALE della smazzata in corso
+    if (k === 'i') {
+        e.preventDefault();
+        if (snapshotIniziale) {
+            scaricaSnapshot(snapshotIniziale, 'inizio');
+            console.log('[Debug] Salvataggio snapshot INIZIALE avviato.');
+        } else {
+            console.warn('[Debug] Nessuno snapshot iniziale: inizia una partita prima.');
+        }
+        return;
+    }
+
+    // CTRL+ALT+A: scarica lo stato ATTUALE
+    if (k === 'a') {
+        e.preventDefault();
+        if (!semeBriscola || !mani.length) {
+            console.warn('[Debug] Nessuna partita in corso da salvare.');
+            return;
+        }
+        scaricaSnapshot(creaSnapshotStato(), 'attuale');
+        console.log('[Debug] Salvataggio snapshot ATTUALE avviato (turno ' + turno + ', primo di mano ' + primoDiMano + ', carte in tavola ' + tavolo.length + ', undo disponibili ' + undoStack.length + ').');
+        return;
+    }
+
+    // CTRL+ALT+B: ricarica uno snapshot da file
+    if (k === 'b') {
+        e.preventDefault();
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+        input.addEventListener('change', function (ev) {
+            const file = ev.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function (le) {
+                try {
+                    const snap = JSON.parse(le.target.result);
+                    if (snap.gioco && snap.gioco !== 'briscola') {
+                        alert('Questo snapshot è del gioco "' + snap.gioco + '", non della briscola.');
+                        return;
+                    }
+                    ripristinaSnapshotStato(snap);
+                    setMessaggio('Posizione ripristinata da ' + file.name);
+                    console.log('🛠️ [Debug] Partita ripristinata dal file: ' + file.name +
+                        ' (turno ' + turno + ', briscola ' + semeBriscola +
+                        ', mosse annullabili ' + undoStack.length + ')');
+                    // se tocca all'IA, la posizione riparte da sola
+                    prossimaMossa();
+                } catch (err) {
+                    console.error('[Debug] Errore nel ripristino dello snapshot:', err);
+                    alert('File non valido o corrotto!');
+                }
+            };
+            reader.readAsText(file);
+        });
+        input.click();
+    }
+});
 
 // === CARTE SCOPERTE (mostra temporaneamente le mani degli avversari) ===
 function toggleManiScoperte() {
