@@ -2798,7 +2798,17 @@ var scala = {
 		this.jollyestremiswappabili = [];
 		this.jollymodificabili = [];
 
-		if (scala.statostack.length == 0) this.pushstato("iniziale");
+		/* Ancora d'inizio turno per l'undo. La condizione era
+		   `statostack.length == 0`, cioè "stack vuoto" usato come sinonimo di
+		   "inizio turno": i due coincidono SOLO al primissimo turno della
+		   mano, perché lo stack non viene mai svuotato (nessun reset in tutto
+		   il file: cala solo per consumo, via il pop() di popstato). Dal
+		   secondo turno in poi lo stack contiene già le mosse degli
+		   avversari, l'ancora non veniva piantata e l'undo scavava nel turno
+		   precedente. `!pescato` esprime davvero l'intenzione originale: il
+		   turno del giocatore comincia sempre senza aver pescato, e ogni
+		   pesca alza il flag — vale a ogni turno, non solo al primo. */
+		if (!this.pescato) this.pushstato("iniziale");
 		this.pescato = true;
 		this.muovicarta(this.mazzo, this.giocatore, "faceUp", "cartapesca");
 		pesca.play();
@@ -2810,7 +2820,13 @@ var scala = {
 	scartipesca: function () {
 		if (this.turno != -1) return;
 		if (this.iaimminente || this.distribuendo) return;
-		if (scala.statostack.length == 0) this.pushstato("iniziale");
+		/* Ancora d'inizio turno: v. nota in cartapesca. Qui il criterio
+		   sbagliato faceva danni visibili, perché "annulla apertura" riavvolge
+		   con un while che si ferma sulla condizione (fscartipesca && pescato)
+		   e senza ancora scavava nel turno precedente: alla seconda pesca
+		   dagli scarti la carta non tornava negli scarti ma ricompariva in
+		   mano all'avversario che l'aveva scartata. */
+		if (!this.pescato) this.pushstato("iniziale");
 		if (this.pescato) {
 			if (this.carteselezionate.length == 1) {
 				this.scarta(this.carteselezionate.pop());
