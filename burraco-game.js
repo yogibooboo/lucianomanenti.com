@@ -26,7 +26,7 @@ function shuffle(array) {
 }
 
 function playSound(nome) {
-    if (window.audioMuted) return;
+    if (window.audioMuted || game.fastMode) return;
     const audio = game.suoni[nome];
     if (audio) {
         audio.currentTime = 0;
@@ -36,7 +36,40 @@ function playSound(nome) {
 
 // Helper per ritardo (usato da AI)
 function delay(ms) {
+    if (game.fastMode) return Promise.resolve();
     return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+// ============================================================================
+// ABORTO DEL TURNO AI (serve all'undo premuto durante l'animazione)
+// ============================================================================
+// turnoAI e' una funzione async lunga: durante ogni await il controllo torna al
+// browser, che puo' eseguire un undo. Al risveglio la funzione riprenderebbe con
+// variabili locali (giocatore, best, mosse, carta da scartare) calcolate su uno
+// stato che nel frattempo e' stato sostituito, calando o scartando carte che non
+// sono piu' dove crede. Per questo l'undo era inibito durante il turno AI.
+//
+// Soluzione: un contatore di generazione. turnoAI lo legge all'inizio; l'undo lo
+// incrementa, invalidando di colpo ogni turno AI sospeso. Chi si risveglia con
+// l'epoca sbagliata esce senza toccare nulla. Non serve un controllo dopo ogni
+// await: bastano i punti in cui si sta per MUTARE lo stato (pesca, calate,
+// scarto, passaggio di turno) piu' l'ingresso degli helper annidati.
+function invalidaTurnoAI() {
+    game.aiEpoch = (game.aiEpoch || 0) + 1;
+    return game.aiEpoch;
+}
+
+// Vero se l'epoca catturata e' ancora quella corrente
+function aiEpocaValida(epoca) {
+    return (game.aiEpoch || 0) === epoca;
+}
+
+// Rimuove le carte volanti lasciate a meta' da un'animazione abortita.
+// Sono div.carta appesi a document.body con position:fixed (vedi animaCarta):
+// si autorimuoverebbero comunque a fine transizione, ma resterebbero visibili
+// per qualche centinaio di ms sopra lo stato appena ripristinato.
+function pulisciCarteVolanti() {
+    document.querySelectorAll('body > div.carta').forEach(el => el.remove());
 }
 
 // Helper per ottenere il selettore delle carte di un giocatore
@@ -274,8 +307,16 @@ function iniziaPartita() {
     creaMazzo();
 
     // Mischia
-    shuffle(game.mazzo);
-    shuffle(game.mazzo);
+    if (game.automaConfig && game.automaConfig.useSeedDb &&
+            window.BURRACO_MAZZI_SEEDS && window.seededShuffle) {
+        var _idx = game._seedDbIndex || 0;
+        var _seed = window.BURRACO_MAZZI_SEEDS[_idx % window.BURRACO_MAZZI_SEEDS.length];
+        window.seededShuffle(game.mazzo, _seed);
+        game._seedDbIndex = _idx + 1;
+    } else {
+        shuffle(game.mazzo);
+        shuffle(game.mazzo);
+    }
 
     // Distribuisci carte
     distribuisciCarte();
@@ -298,6 +339,21 @@ function iniziaPartita() {
             game.mazziere = Math.floor(Math.random() * game.giocatori.length);
         }
         try { localStorage.setItem('burraco_mazziere', game.mazziere); } catch(e) {}
+    }
+
+    // Override mazziere per modalità automa
+    if (game.autoRun && game.automaConfig && game.automaConfig.mazziere !== 'casuale') {
+        var _acfg = game.automaConfig;
+        var _nG   = game.giocatori.length;
+        var _mazP = Math.min(_acfg.mazzierePosizione || 0, _nG - 1);
+        if (_acfg.mazziere === 'fisso') {
+            game.mazziere = _mazP;
+        } else if (_acfg.mazziere === 'rotazione') {
+            game.mazziere = (game._automaLastMazziere === undefined)
+                ? _mazP
+                : (game._automaLastMazziere + 1) % _nG;
+            game._automaLastMazziere = game.mazziere;
+        }
     }
 
     // Il primo giocatore è quello dopo il mazziere in senso orario (indice +1)
@@ -332,12 +388,17 @@ function iniziaPartita() {
 function creaGiocatori() {
     game.giocatori = [];
 
-    // Seleziona personaggi per i bot
-    const numBot = game.modalita === '2v2' ? 3 : 1;
+    // Seleziona personaggi per i bot (in tuttiAI anche il posto "bottom" è un bot)
+    // Array resultante: [left, top, right, bottom?] per 2v2, [left, bottom?] per 1v1
+    const numBot = game.modalita === '2v2' ? (game.tuttiAI ? 4 : 3) : (game.tuttiAI ? 2 : 1);
     let personaggiSelezionati;
 
-    // In un torneo i personaggi rimangono fissi tra una mano e l'altra
-    if (game.torneo && game.torneo.personaggiIndici) {
+    const _automaCfg = game.tuttiAI && game.automaConfig && game.automaConfig.modoPersonaggi !== 'casuale'
+        ? game.automaConfig : null;
+
+    if (_automaCfg) {
+        personaggiSelezionati = _automaPersonaggiDaConfig(_automaCfg);
+    } else if (game.torneo && game.torneo.personaggiIndici) {
         personaggiSelezionati = game.torneo.personaggiIndici.map(i => PERSONAGGI[i]);
     } else {
         personaggiSelezionati = selezionaPersonaggiCasuali(numBot);
@@ -349,8 +410,12 @@ function creaGiocatori() {
 
     if (game.modalita === '2v2') {
         // 2 vs 2
-        // Giocatore umano
-        game.giocatori.push(new Giocatore('Tu', 'bottom', true));
+        // Posizione bottom: umano in gioco normale, bot in modalità automa
+        if (game.tuttiAI) {
+            game.giocatori.push(new Giocatore(null, 'bottom', false, personaggiSelezionati[3]));
+        } else {
+            game.giocatori.push(new Giocatore('Tu', 'bottom', true));
+        }
         game.giocatori[0].squadra = 0;
 
         // Avversario 1 (personaggio casuale)
@@ -366,7 +431,11 @@ function creaGiocatori() {
         game.giocatori[3].squadra = 1;
     } else {
         // 1 vs 1
-        game.giocatori.push(new Giocatore('Tu', 'bottom', true));
+        if (game.tuttiAI) {
+            game.giocatori.push(new Giocatore(null, 'bottom', false, personaggiSelezionati[1]));
+        } else {
+            game.giocatori.push(new Giocatore('Tu', 'bottom', true));
+        }
         game.giocatori[0].squadra = 0;
 
         // Avversario (personaggio casuale)
@@ -376,6 +445,16 @@ function creaGiocatori() {
 
     // Salva personaggi selezionati nel game per riferimento
     game.personaggiInGioco = personaggiSelezionati;
+
+    // Assegna motore AI ai giocatori non umani
+    game.giocatori.forEach(function(g) {
+        if (!g.isUmano) g.engine = _getEngineById(
+            (game.autoRun && game.automaConfig)
+                ? (g.squadra === 0 ? (game.automaConfig.engineNoi  || 'A')
+                                   : (game.automaConfig.engineLoro || 'A'))
+                : 'A'
+        );
+    });
 
     // Log per debug
     game.giocatori.forEach((g) => {
@@ -1044,7 +1123,7 @@ function prossimoTurno() {
     aggiornaIndicatoreTurno();
 
     if (!game.giocatori[game.giocatoreCorrente].isUmano) {
-        setTimeout(turnoAI, 1000);
+        if (game.fastMode) _fastTick(turnoAI); else setTimeout(turnoAI, 1000);
     } else {
         // Turno dell'umano: salva stato post-AI come punto di ripristino
         salvaStato('inizio-turno');
@@ -1102,22 +1181,35 @@ function derefMosse(mosse, giocatore) {
 
 async function turnoAI() {
 
+    // Automa fermato: stoppa la catena senza terminare la partita
+    if (!game.autoRun && game.giocatori.every(g => !g.isUmano)) {
+        render();
+        return;
+    }
+
     const giocatore = game.giocatori[game.giocatoreCorrente];
     const selettoreCarte = getSelettoreCarteGiocatore(giocatore);
     const isLaterale = giocatore.posizione === 'left' || giocatore.posizione === 'right';
 
+    // Epoca di questo turno: se l'undo la incrementa mentre siamo sospesi su un
+    // await, vivo() diventa falso e usciamo senza scrivere sullo stato ripristinato.
+    const epoca = game.aiEpoch || 0;
+    const vivo = () => aiEpocaValida(epoca);
+
     await delay(500);
+    if (!vivo()) return;
 
     // ===== ANALISI PARALLELA: scenari ['mano','scarti'] — identico a elaboraOpz =====
     // 'mano' = baseline con sole carte in mano (→ pescheremo dal mazzo)
     // 'scarti' = mano + scarti (→ pescheremo dagli scarti)
-    const best = scegliBestOpzioneAI(giocatore, false, false, 'prePesca');
+    const best = giocatore.engine(giocatore, false, false, 'prePesca');
 
     const pescaScarti = best?.scenario === 'scarti' && game.scarti.length > 0;
     console.log(`AI ${giocatore.nome}: elabora → ${best?.scenario?.toUpperCase() || '?'} → pesca ${pescaScarti ? 'SCARTI' : 'MAZZO'} | score=${best?.score?.toFixed(1) ?? '?'}`);
 
     // ========== DEBUG PAUSE 1: prima della scelta scarti/mazzo ==========
     await pausaDebugAI(giocatore, `Turno ${game.turno} - Scelta: ${pescaScarti ? 'SCARTI' : 'MAZZO'}`);
+    if (!vivo()) return;
 
     // ===== HELPER LOCALE: esegui le mosse dell'opzione =====
     const eseguiMosseBest = async (mosse) => {
@@ -1126,6 +1218,7 @@ async function turnoAI() {
 
         for (const mossa of mosseReali) {
             await delay(400);
+            if (!vivo()) return;
             if (mossa.tipo === 'tris' || mossa.tipo === 'scala') {
                 await depositaCombinazioneAI(giocatore, mossa);
             } else if (mossa.tipo === 'calata') {
@@ -1135,6 +1228,7 @@ async function turnoAI() {
                     calateRimaste.push(mossa); // non ancora adiacente, riprova dopo
                 }
             }
+            if (!vivo()) return;
         }
 
         // Retry calate che non erano adiacenti al primo giro (es. scala estesa in più passi)
@@ -1144,11 +1238,13 @@ async function turnoAI() {
             const rimaste = [];
             for (const mossa of calateRimaste) {
                 await delay(400);
+                if (!vivo()) return;
                 if (puoAggiungereACombinazione(mossa.carta, mossa.combo)) {
                     await eseguiCalataAI(giocatore, mossa);
                 } else {
                     rimaste.push(mossa);
                 }
+                if (!vivo()) return;
             }
             if (rimaste.length === calateRimaste.length) break; // nessun progresso
             calateRimaste.length = 0;
@@ -1160,6 +1256,7 @@ async function turnoAI() {
 
     // ===== HELPER LOCALE: esegui lo scarto =====
     const eseguiScarto = async (cartaClone) => {
+        if (!vivo()) return false;
         // Dereferenzia: trova la carta reale in mano
         let cartaDaScartare = derefCard(cartaClone, giocatore);
         // Fallback: usa la vecchia strategia se non trovata o se la carta non è in mano
@@ -1232,6 +1329,8 @@ async function turnoAI() {
     };
 
     // ===== FASE 1: PESCA =====
+    // Ultima verifica prima di mutare: da qui in poi si tocca lo stato del gioco.
+    if (!vivo()) return;
     let bestUsato = best; // aggiornato nel ramo mazzo dopo re-analisi
     if (pescaScarti) {
         // Pesca tutti gli scarti
@@ -1253,9 +1352,11 @@ async function turnoAI() {
 
         // ========== DEBUG PAUSE 2 (scarti): prima dell'esecuzione ==========
         await pausaDebugAI(giocatore, `Turno ${game.turno} - Esecuzione scarti`, 'scarti');
+        if (!vivo()) return;
 
         // Esegui mosse già decise
         await eseguiMosseBest(best?.opz?.mosse || []);
+        if (!vivo()) return;
 
     } else {
         // Pesca dal mazzo
@@ -1282,28 +1383,37 @@ async function turnoAI() {
         }
 
         // Re-analisi con la nuova carta in mano (identico a elaboraOpz per scenario 'mano')
-        const bestMazzo = scegliBestOpzioneAI(giocatore, true, false, 'postPesca');
+        const bestMazzo = giocatore.engine(giocatore, true, false, 'postPesca');
 
         // ========== DEBUG PAUSE 2 (mazzo): prima dell'esecuzione ==========
         await pausaDebugAI(giocatore, `Turno ${game.turno} - Esecuzione mazzo`, 'mano');
+        if (!vivo()) return;
 
         await eseguiMosseBest(bestMazzo?.opz?.mosse || []);
+        if (!vivo()) return;
         bestUsato = bestMazzo || best;
     }
 
     // ===== FASE 2: CONTROLLO 0 CARTE PRIMA DELLO SCARTO (pozzetto senza scarto) =====
     if (giocatore.carte.length === 0 && !giocatore.haPozzetto) {
         if (pescaPozzetto()) {
-            const bestPoz = typeof window.scegliBestOpzioneAI === 'function'
-                ? window.scegliBestOpzioneAI(giocatore, true, false, 'postPozzetto') : null;
+            const bestPoz = giocatore.engine ? giocatore.engine(giocatore, true, false, 'postPozzetto') : null;
 
             // ========== DEBUG PAUSE 3: dopo pozzetto, prima dell'analisi ==========
             await pausaDebugAI(giocatore, `Turno ${game.turno} - Dopo pozzetto (senza scarto)`, 'mano');
+            if (!vivo()) return;
 
             await eseguiMosseBest(bestPoz?.opz?.mosse || []);
+            if (!vivo()) return;
 
             await delay(500);
+            if (!vivo()) return;
             const scartato = await eseguiScarto(bestPoz?.scarto);
+            // Attenzione all'ordine: eseguiScarto torna false sia quando non si
+            // PUO' scartare (turno da passare) sia quando e' stato abortito.
+            // Il controllo dell'epoca va prima, altrimenti l'abort farebbe
+            // avanzare il turno sopra lo stato ripristinato dall'undo.
+            if (!vivo()) return;
             if (scartato === false) { render(); prossimoTurno(); return; }
 
             // ===== CONTROLLO 0 CARTE DOPO AVER GIOCATO IL POZZETTO =====
@@ -1318,7 +1428,10 @@ async function turnoAI() {
     } else {
         // ===== FASE 3: SCARTO NORMALE =====
         await delay(500);
+        if (!vivo()) return;
         const scartato = await eseguiScarto(bestUsato?.scarto);
+        // Come sopra: distinguere l'abort dal "non si puo' scartare"
+        if (!vivo()) return;
         if (scartato === false) { render(); prossimoTurno(); return; }
 
         // ===== FASE 4: CONTROLLO 0 CARTE DOPO LO SCARTO =====
@@ -1337,6 +1450,10 @@ async function turnoAI() {
         }
     }
 
+    // Guardia finale: prossimoTurno e finePartita sono le mutazioni piu' invasive
+    // (passaggio di turno, fine mano), non devono scattare su uno stato annullato.
+    if (!vivo()) return;
+
     render();
 
     if (game.ultimoTurno) {
@@ -1349,6 +1466,7 @@ async function turnoAI() {
 }
 
 function aggiornaIndicatoreTurno() {
+    if (game.fastMode) return;
     // Rimuovi la classe turno-attivo e deve-pescare da tutte le aree
     $$('.area-giocatore').forEach(el => {
         el.classList.remove('turno-attivo');
@@ -1477,7 +1595,7 @@ function finePartita(haVintoNoi) {
     }
 
     // ===== MOSTRA SCHERMATA RISULTATI =====
-    mostraRisultatoFinale(risultato, vinceNoi);
+    if (!game.fastMode) mostraRisultatoFinale(risultato, vinceNoi);
 
     // Musica: riflette l'esito della partita (torneo) se conclusa, altrimenti della mano
     const _torneo = game.torneo;
@@ -1487,8 +1605,28 @@ function finePartita(haVintoNoi) {
     } else {
         _suonaVittoria = vinceNoi;
     }
-    playSound(_suonaVittoria ? 'applauso' : 'sconfitta');
+    if (!game.autoRun) playSound(_suonaVittoria ? 'applauso' : 'sconfitta');
     renderPunteggi();
+
+    // Auto-restart per modalità automa
+    if (game.autoRun) {
+        _automaAccumulaStats(risultato, vinceNoi);
+        var _maxPart = (game.automaConfig && game.automaConfig.maxPartite) || 0;
+        var _seedLimit = (game.automaConfig && game.automaConfig.useSeedDb && window.BURRACO_MAZZI_SEEDS)
+            ? window.BURRACO_MAZZI_SEEDS.length : 0;
+        var _effMax = (_maxPart > 0 && _seedLimit > 0) ? Math.min(_maxPart, _seedLimit)
+                    : (_maxPart > 0 ? _maxPart : _seedLimit);
+        if (_effMax > 0 && window._automaStats.partite >= _effMax) {
+            fermaAutoma();
+            return;
+        }
+        var _delay = game.autoRunDelay !== undefined ? game.autoRunDelay : 1500;
+        if (game.fastMode) {
+            _fastTick(function () { if (game.autoRun) { chiudiModals(); iniziaPartita(); } });
+        } else {
+            setTimeout(function () { if (game.autoRun) { chiudiModals(); iniziaPartita(); } }, _delay);
+        }
+    }
 }
 
 function mostraRisultatoFinale(risultato, vinceNoi) {
@@ -1591,7 +1729,7 @@ function mostraRisultatoFinale(risultato, vinceNoi) {
             const sz = big ? 'font-size:15px;font-weight:bold' : '';
             return '<td style="text-align:right;font-family:monospace;padding:4px 8px;color:' + col + ';' + sz + '">' + pre + v + '</td>';
         }
-        return '<div style="margin:8px 0;background:rgba(0,0,0,0.25);border-radius:6px;padding:6px 8px">' +
+        return '<div style="background:rgba(0,0,0,0.25);border-radius:6px;padding:6px 8px">' +
             '<table style="width:100%;border-collapse:collapse;font-size:13px">' +
             '<tr><th></th>' +
             '<th style="text-align:right;color:#8cf;padding:4px 8px">' + window.t('label-noi').toUpperCase() + '</th>' +
@@ -1607,10 +1745,18 @@ function mostraRisultatoFinale(risultato, vinceNoi) {
             '</table></div>';
     })() : '';
 
-    const html = '<div style="padding:16px 20px">' +
+    // Layout a colonne affiancate: NOI | LORO | riepilogo torneo.
+    // Il riepilogo sta a fianco (non sopra) per contenere l'altezza del modal e
+    // lasciare spazio al banner di fine mano, che si posiziona al di sopra.
+    const colTorneo = rigaTorneo
+        ? '<div style="width:1px;background:#555"></div>' +
+          '<div style="flex:1.1;display:flex;flex-direction:column;justify-content:center">' + rigaTorneo + '</div>'
+        : '';
+
+    const html = '<div style="padding:12px 20px">' +
         '<h2 style="text-align:center;color:' + titoloColore + ';margin:0 0 4px;font-size:22px">' + titolo + '</h2>' +
-        sottotitolo + rigaTorneo +
-        '<div style="display:flex;gap:20px">' +
+        sottotitolo +
+        '<div style="display:flex;gap:16px">' +
         '<div style="flex:1">' +
         '<h3 style="color:#8cf;margin:0 0 8px;font-size:14px;text-transform:uppercase">' + window.t('label-noi').toUpperCase() + '</h3>' +
         tabellaSquadra(risultato.noi, window.t('label-totale').toUpperCase() + ' ' + window.t('label-noi').toUpperCase()) +
@@ -1620,17 +1766,20 @@ function mostraRisultatoFinale(risultato, vinceNoi) {
         '<h3 style="color:#fc8;margin:0 0 8px;font-size:14px;text-transform:uppercase">' + window.t('label-loro').toUpperCase() + '</h3>' +
         tabellaSquadra(risultato.loro, window.t('label-totale').toUpperCase() + ' ' + window.t('label-loro').toUpperCase()) +
         '</div>' +
+        colTorneo +
         '</div>' +
         '</div>';
 
     // ===== Bottoni =====
     let bottoni;
     if (torneo && !torneoConcluso) {
-        // Torneo in corso: pulsante "PROSSIMA MANO" + abbandona
+        // Torneo in corso: pulsante "PROSSIMA MANO" + abbandona.
+        // PROSSIMA MANO sta in mezzo perche' e' l'azione normale a fine mano:
+        // ABBANDONA, che chiude il torneo, resta di lato.
         bottoni = '<div style="display:flex;gap:10px;justify-content:center;margin:12px auto">' +
             '<button class="btn-modal btn-trasparenza" title="...">' + window.t('btn-vedi-carte') + '</button>' +
-            '<button class="btn-modal btn-abbandona-torneo">' + window.t('btn-abbandona') + '</button>' +
             '<button class="btn-modal btn-prossima-mano">' + window.t('btn-prossima-mano') + '</button>' +
+            '<button class="btn-modal btn-abbandona-torneo">' + window.t('btn-abbandona') + '</button>' +
             '</div>';
     } else {
         bottoni = '<div style="display:flex;gap:10px;justify-content:center;margin:12px auto">' +
@@ -1646,8 +1795,13 @@ function mostraRisultatoFinale(risultato, vinceNoi) {
             : (vinceNoi ? $('#modal-vittoria') : $('#modal-sconfitta')));
 
     modalEl.innerHTML = html + bottoni;
-    modalEl.style.width = '480px';
+    // Col riepilogo torneo affiancato servono tre colonne: più largo e più basso,
+    // così resta spazio sopra per il banner di fine mano.
+    modalEl.style.width = torneo ? '720px' : '480px';
     modalEl.style.maxHeight = '600px';
+    // Spostato sotto il centro (default top:50%): libera spazio in alto per il
+    // banner, che con gameScale>1 viene ingrandito insieme al resto del campo.
+    modalEl.style.top = '64%';
 
     // Riattacca eventi
     modalEl.querySelector('.btn-trasparenza').addEventListener('click', () => {
@@ -1670,7 +1824,7 @@ function mostraRisultatoFinale(risultato, vinceNoi) {
                 localStorage.setItem('burraco_torneo', JSON.stringify(torneo));
                 localStorage.setItem('burraco_nuova', game.modalita);
             } catch (e) { }
-            location.reload();
+            _riavviaPerNuovaPartita();
         });
         // Abbandona torneo
         modalEl.querySelector('.btn-abbandona-torneo').addEventListener('click', () => {
@@ -1678,8 +1832,10 @@ function mostraRisultatoFinale(risultato, vinceNoi) {
             var nGA = game.giocatori.length;
             try { localStorage.setItem('burraco_mazziere', (game.mazziere - 1 + nGA) % nGA); } catch (e) { }
             game.torneo = null;
-            chiudiModals();
-            mostraModal('modal-nuova');
+            // Reload come a fine mano: rinnova i banner delle sidebar e dà a
+            // game-layout.js l'occasione di mostrare l'interstitial. Al ritorno
+            // _apriModalNuovaDopoReload riapre la scelta della partita.
+            _riavviaPerNuovaPartita();
         });
     } else {
         // Fine: nuova partita (azzera torneo)
@@ -1688,12 +1844,218 @@ function mostraRisultatoFinale(risultato, vinceNoi) {
             var nGB = game.giocatori.length;
             try { localStorage.setItem('burraco_mazziere', (game.mazziere - 1 + nGB) % nGB); } catch (e) { }
             game.torneo = null;
-            chiudiModals();
-            mostraModal('modal-nuova');
+            _riavviaPerNuovaPartita();
         });
     }
 
     mostraModal(modalEl.id);
+
+    // Banner di fine mano/partita. Il modal è centrato via transform translate(-50%,-50%):
+    // applyModalTop:false preserva il centraggio. Il banner è posizionato in absolute con
+    // top negativo rispetto al modal, quindi va SOPRA: l'offset è esattamente la sua
+    // altezza, cosi' il bordo inferiore combacia con quello superiore del modal.
+    // Nessun margine: con gameScale>1 ogni px di stacco viene ingrandito e spingeva
+    // il banner oltre il bordo alto della finestra, tagliandolo.
+    if (typeof setupAmazonFinishBanner === 'function') {
+        // Larghezza allineata al modal (766 in torneo, 480 in mano singola):
+        // misurata a runtime perché offsetWidth include i bordi del .modal.
+        var _bannerW = modalEl.offsetWidth, _bannerH = 250;
+        setupAmazonFinishBanner(modalEl.id, {
+            modalStyle: { overflow: 'visible' },
+            applyModalTop: false,
+            bannerHeight: _bannerH,
+            bannerWidth: _bannerW,
+            bannerTopOffset: _bannerH,
+            leftOffset: Math.round((modalEl.offsetWidth - _bannerW) / 2)
+        });
+    }
+}
+
+// Fine partita: si riparte sempre con un reload, come fa la mano successiva del
+// torneo. Serve a rinnovare i banner delle sidebar e a far valutare l'interstitial.
+// Chiamata esplicita a reloadWithInterstitial: il monkey-patch su location.reload
+// in game-layout.js NON attecchisce sui browser correnti (defineProperty fallisce
+// e viene inghiottito dal catch), quindi il reload nudo non arma mai il flag.
+// Non serve alcun flag di ripartenza: senza burraco_nuova la pagina ricaricata cade
+// nel ramo che riapre modal-nuova con le preferenze ripristinate (init in burraco-ui.js).
+function _riavviaPerNuovaPartita() {
+    if (typeof window.reloadWithInterstitial === 'function') {
+        window.reloadWithInterstitial();
+    } else {
+        location.reload();
+    }
+}
+
+// ============================================================================
+// AUTOMA — partite AI vs AI per test statistico
+// ============================================================================
+
+function avviaAutoma(cfg) {
+    // Supporto chiamata legacy: avviaAutoma(1500) con solo delay numerico
+    if (typeof cfg === 'number') cfg = { delay: cfg };
+    cfg = cfg || {};
+    game.autoRun = true;
+    game.fastMode = !!cfg.fastMode;
+    game.autoRunDelay = cfg.fastMode ? 0 : (cfg.delay !== undefined ? cfg.delay : 1500);
+    game.automaConfig = cfg;
+    game.tuttiAI = true;
+    game.torneo = null;
+    game.debugAI = false;
+    game._automaLastMazziere = undefined;
+    game._seedDbIndex = 0;
+    window._automaStats = {
+        partite: 0, vittorieNoi: 0, vittorieLoro: 0, pareggi: 0,
+        punteggiNoi: [], punteggiLoro: [],
+        puntiTotNoi: 0, puntiTotLoro: 0,
+        burracosNoi:  { puliti: 0, semipuliti: 0, sporchi: 0 },
+        burracosLoro: { puliti: 0, semipuliti: 0, sporchi: 0 },
+        pozzettiNoi: 0, pozzettiLoro: 0,
+        chiusureNoi: 0, chiusureLoro: 0,
+        mazzoEsaurito: 0
+    };
+    try { localStorage.removeItem('burraco_torneo'); } catch (e) { }
+    if (cfg.fastMode && !window._origConsoleLog) {
+        window._origConsoleLog = console.log;
+        console.log = function () {};
+    }
+    chiudiModals();
+    if (typeof window.aggiornaAutomaBanner === 'function') window.aggiornaAutomaBanner();
+    iniziaPartita();
+}
+
+function fermaAutoma() {
+    game.autoRun = false;
+    game.tuttiAI = false;
+    game.fastMode = false;
+    // Ripristina console.log e stampa report finale
+    if (window._origConsoleLog) {
+        console.log = window._origConsoleLog;
+        delete window._origConsoleLog;
+    }
+    var s = window._automaStats;
+    if (s && s.partite > 0) {
+        var avgNoi  = Math.round(s.puntiTotNoi  / s.partite);
+        var avgLoro = Math.round(s.puntiTotLoro / s.partite);
+        console.log('[Automa] Fermato dopo ' + s.partite + ' partite.');
+        if (typeof console.table === 'function') {
+            console.table({
+                Noi:  { Vittorie: s.vittorieNoi,  'Avg punti': avgNoi,  'Burr.puliti': s.burracosNoi.puliti,  'Burr.semi': s.burracosNoi.semipuliti,  'Burr.sporchi': s.burracosNoi.sporchi,  Pozzetti: s.pozzettiNoi,  Chiusure: s.chiusureNoi  },
+                Loro: { Vittorie: s.vittorieLoro, 'Avg punti': avgLoro, 'Burr.puliti': s.burracosLoro.puliti, 'Burr.semi': s.burracosLoro.semipuliti, 'Burr.sporchi': s.burracosLoro.sporchi, Pozzetti: s.pozzettiLoro, Chiusure: s.chiusureLoro }
+            });
+        }
+        console.log('[Automa] Pareggi: ' + s.pareggi + ', Mazzo esaurito: ' + s.mazzoEsaurito);
+    }
+    if (typeof window._aggiornaTurnoFast === 'function') window._aggiornaTurnoFast();
+    if (typeof window.aggiornaAutomaBanner === 'function') window.aggiornaAutomaBanner();
+    // Hook per lo scan automatico: viene chiamato dal loop scan dopo ogni simulazione
+    if (typeof game._scanCallback === 'function') {
+        var _cb = game._scanCallback;
+        game._scanCallback = null;
+        _cb();
+    }
+}
+
+function _automaAccumulaStats(risultato, vinceNoi) {
+    if (!window._automaStats) {
+        window._automaStats = {
+            partite: 0, vittorieNoi: 0, vittorieLoro: 0, pareggi: 0,
+            punteggiNoi: [], punteggiLoro: [],
+            puntiTotNoi: 0, puntiTotLoro: 0,
+            burracosNoi:  { puliti: 0, semipuliti: 0, sporchi: 0 },
+            burracosLoro: { puliti: 0, semipuliti: 0, sporchi: 0 },
+            pozzettiNoi: 0, pozzettiLoro: 0,
+            chiusureNoi: 0, chiusureLoro: 0,
+            mazzoEsaurito: 0
+        };
+    }
+    var s = window._automaStats;
+    s.partite++;
+    s.punteggiNoi.push(risultato.noi.totale);
+    s.punteggiLoro.push(risultato.loro.totale);
+    s.puntiTotNoi  += risultato.noi.totale;
+    s.puntiTotLoro += risultato.loro.totale;
+    if      (risultato.noi.totale  > risultato.loro.totale) s.vittorieNoi++;
+    else if (risultato.loro.totale > risultato.noi.totale)  s.vittorieLoro++;
+    else                                                     s.pareggi++;
+
+    // Burracos per tipo
+    ['noi', 'loro'].forEach(function(team) {
+        var r = risultato[team];
+        var target = team === 'noi' ? s.burracosNoi : s.burracosLoro;
+        (r.burracos || []).forEach(function(b) {
+            if      (b.tipo === 'pulito')     target.puliti++;
+            else if (b.tipo === 'semipulito') target.semipuliti++;
+            else                              target.sporchi++;
+        });
+        if (!r.pozzettoNonPreso) {
+            if (team === 'noi') s.pozzettiNoi++;
+            else                s.pozzettiLoro++;
+        }
+        if (r.chiusura) {
+            if (team === 'noi') s.chiusureNoi++;
+            else                s.chiusureLoro++;
+        }
+    });
+    if (!risultato.noi.chiusura && !risultato.loro.chiusura) s.mazzoEsaurito++;
+
+    if (typeof window.aggiornaAutomaBanner === 'function') window.aggiornaAutomaBanner();
+    if (s.partite % 10 === 0) {
+        var avgNoi  = Math.round(s.puntiTotNoi  / s.partite);
+        var avgLoro = Math.round(s.puntiTotLoro / s.partite);
+        var bn = s.burracosNoi,  bl = s.burracosLoro;
+        console.log('[Automa] ' + s.partite + ' part — Noi ' + s.vittorieNoi + 'V/' + s.vittorieLoro + 'V/' + s.pareggi + 'P' +
+            ' — avg ' + avgNoi + '/' + avgLoro +
+            ' — BurrNoi P:' + bn.puliti + '/S:' + bn.semipuliti + '/X:' + bn.sporchi +
+            ' BurrLoro P:' + bl.puliti + '/S:' + bl.semipuliti + '/X:' + bl.sporchi +
+            ' — Pozz ' + s.pozzettiNoi + '/' + s.pozzettiLoro +
+            ' — MazzoEs:' + s.mazzoEsaurito);
+    }
+}
+
+window.avviaAutoma = avviaAutoma;
+window.fermaAutoma = fermaAutoma;
+
+// Scheduler non throttolato per fast mode: usa MessageChannel invece di setTimeout(fn,0)
+// I setTimeout vengono limitati a ~1s dal browser nelle tab in background; MessageChannel no.
+var _fastTick = (function () {
+    if (typeof MessageChannel === 'undefined') return function (fn) { setTimeout(fn, 0); };
+    var _queue = [];
+    var _mc = new MessageChannel();
+    _mc.port1.onmessage = function () { var fn = _queue.shift(); if (fn) fn(); };
+    return function (fn) { _queue.push(fn); _mc.port2.postMessage(null); };
+})();
+
+function _getEngineById(id) {
+    if (id === 'B' && typeof window.scegliBestOpzioneAI_B === 'function')
+        return window.scegliBestOpzioneAI_B;
+    return scegliBestOpzioneAI;
+}
+
+window._getAvailableEngines = function () {
+    var list = [{ id: 'A', nome: 'Motore A (predefinito)' }];
+    if (typeof window.scegliBestOpzioneAI_B === 'function')
+        list.push({ id: 'B', nome: 'Motore B' });
+    return list;
+};
+
+// Ritorna [left, top, right, bottom] per 2v2 oppure [left, bottom] per 1v1
+// usando i dati della configurazione automa (modoPersonaggi != 'casuale')
+function _automaPersonaggiDaConfig(cfg) {
+    function findP(id) { return PERSONAGGI.find(function(p){ return p.id === id; }) || PERSONAGGI[0]; }
+    if (game.modalita === '2v2') {
+        if (cfg.modoPersonaggi === 'perSquadra') {
+            var sq0 = findP(cfg.sq0Id), sq1 = findP(cfg.sq1Id);
+            return [sq1, sq0, sq1, sq0]; // left(1), top(0), right(1), bottom(0)
+        } else { // individuali
+            return [findP(cfg.leftId), findP(cfg.topId), findP(cfg.rightId), findP(cfg.bottomId)];
+        }
+    } else { // 1v1
+        if (cfg.modoPersonaggi === 'perSquadra') {
+            return [findP(cfg.sq1Id), findP(cfg.sq0Id)]; // left(1), bottom(0)
+        } else { // individuali
+            return [findP(cfg.leftId), findP(cfg.bottomId)];
+        }
+    }
 }
 
 // ============================================================================
@@ -1713,14 +2075,27 @@ function salvaStato(azione) {
 
 function undo() {
     if (game.fase === 'finito') return;
-    // Inibito durante il turno AI
-    if (!game.giocatori[game.giocatoreCorrente]?.isUmano) return;
     // Serve almeno 2 elementi: lo stato base + almeno un'azione
     if (!game.undoStack || game.undoStack.length <= 1) return;
 
+    // Undo durante il turno di una AI: capita quando ci si accorge di aver
+    // sbagliato scarto mentre gli avversari stanno gia' giocando. Si abortisce
+    // il turno AI in corso (vedi invalidaTurnoAI) e si torna a prima dell'ultimo
+    // scarto umano, buttando via i turni AI giocati nel frattempo: sono comunque
+    // conseguenza dello scarto che stiamo annullando.
+    const durantTurnoAI = !game.giocatori[game.giocatoreCorrente]?.isUmano;
+    if (durantTurnoAI) {
+        invalidaTurnoAI();
+        pulisciCarteVolanti();
+        // Risali fino allo snapshot salvato PRIMA dell'ultimo scarto umano.
+        const idxScarto = game.undoStack.map(s => s.azione).lastIndexOf('scarta');
+        if (idxScarto < 0) return;          // nessuno scarto da annullare
+        game.undoStack.length = idxScarto + 1;
+    }
+
     // Se siamo a inizio turno (prima della pesca), il top e' 'inizio-turno'
     // che e' lo stesso stato attuale: saltarlo e tornare allo scarto precedente
-    const quanti = (!game.haPescato && game.undoStack.length > 2) ? 2 : 1;
+    const quanti = (!durantTurnoAI && !game.haPescato && game.undoStack.length > 2) ? 2 : 1;
     for (let i = 0; i < quanti - 1; i++) game.undoStack.pop();
     const stato = game.undoStack.pop();
     ripristinaSnapshot(stato.snapshot);

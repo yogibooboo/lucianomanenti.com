@@ -6,8 +6,22 @@
         // Fix sicurezza per evitare crash da cross-origin su window.opener
         (function() { try { if (!window.opener) return; var test = window.opener.document; if (!window.opener.game) { window.opener = null; } } catch(e) { window.opener = null; } })();
     </script>
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9335537153013492"
-        crossorigin="anonymous"></script>
+    <script>
+        // AdSense caricato via JS e non con un tag statico: in dev_mode la libreria
+        // non deve partire affatto. Serve leggere localStorage qui, prima del tag,
+        // perche' game-layout.js (che definisce devMode) viene caricato molto dopo.
+        // Senza questo, adsbygoogle.js si carica comunque e inserisce da se' uno slot
+        // "auto ads": in locale Google lo rifiuta con 403, ma nei test ONLINE quello
+        // slot verrebbe servito davvero, con impression reali sulle nostre pagine.
+        (function () {
+            try { if (localStorage.getItem('dev_mode') === '1') return; } catch (e) { }
+            var s = document.createElement('script');
+            s.async = true;
+            s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9335537153013492';
+            s.crossOrigin = 'anonymous';
+            document.head.appendChild(s);
+        })();
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     	<title>Gioco del Burraco Online Gratis - lucianomanenti.com</title>
@@ -25,15 +39,25 @@
     <meta http-Equiv="Pragma" Content="no-cache">
     <meta http-Equiv="Expires" Content="0">
 
-    <link rel="stylesheet" href="burraco.css?v=4.17" />
+    <link rel="stylesheet" href="burraco.css?v=4.19" />
 
     <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
     <script>
+        // Come per AdSense: in dev_mode la libreria non viene caricata, cosi' le
+        // sessioni di test non finiscono nelle statistiche GA4. gtag() viene pero'
+        // definita SEMPRE, perche' il resto del codice la chiama per gli eventi:
+        // in dev_mode resta una funzione inerte che accumula solo in dataLayer.
         window.dataLayer = window.dataLayer || [];
         function gtag() { dataLayer.push(arguments); }
-        gtag('js', new Date());
-        gtag('config', 'G-WRBDRDQ4L8');
+        (function () {
+            try { if (localStorage.getItem('dev_mode') === '1') return; } catch (e) { }
+            var s = document.createElement('script');
+            s.async = true;
+            s.src = 'https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8';
+            document.head.appendChild(s);
+            gtag('js', new Date());
+            gtag('config', 'G-WRBDRDQ4L8');
+        })();
     </script>
     <script>
         window.gameConfig = {
@@ -279,7 +303,45 @@
                     </div>
                 </div>
                 <button class="btn-modal" id="btn-inizia">INIZIA</button>
+                <!-- Vie di fuga dal modale, tutte con id distinti da quelli in campo
+                     (btn-lang-it/en, btn-istruzioni, btn-home-left): due elementi con lo
+                     stesso id romperebbero getElementById e la validita' del documento. -->
+                <!-- Selettori di lingua in alto a destra, sopra il titolo. -->
+                <div style="position:absolute;right:12px;top:10px;display:flex;gap:4px">
+                    <button onclick="window.location.href='burraco.html'" class="btn-lang active" id="btn-lang-it-modal"
+                        title="Italiano"
+                        style="background:#ffd700;border:1px solid #ffd700;color:#2c3e50;border-radius:4px;padding:0 8px;cursor:pointer;font-size:11px;font-weight:bold;height:24px;line-height:22px;transition:all 0.2s">IT</button>
+                    <button onclick="window.location.href='burraco-en.html'" class="btn-lang" id="btn-lang-en-modal"
+                        title="English"
+                        style="background:rgba(0,0,0,0.4);border:1px solid #6b9b7a;color:white;border-radius:4px;padding:0 8px;cursor:pointer;font-size:11px;font-weight:bold;height:24px;line-height:22px;transition:all 0.2s">EN</button>
+                </div>
+                <!-- Copia rimpicciolita di ISTRUZIONI: qui basta un <a>, la versione in
+                     campo e' un div solo perche' burraco-ui.js le aggancia un handler. -->
+                <a href="regole-burraco.html" target="_blank" id="btn-istruzioni-modal" class="pulsante-link"
+                    style="position:absolute;left:12px;bottom:10px;width:88px;height:24px;line-height:20px;font-size:9px;margin:0;background:linear-gradient(180deg,#4a7c59 0%,#2d5a3d 100%);border-color:#6b9b7a">ISTRUZIONI</a>
+                <a href="index.html" id="btn-home-modal" class="pulsante-link pulsante-home"
+                    style="position:absolute;right:12px;bottom:10px;width:88px;height:24px;line-height:20px;font-size:9px;margin:0">TUTTI I GIOCHI</a>
+                <button class="btn-modal" id="btn-avvia-automa" style="background:rgba(0,0,0,0.3);font-size:11px;padding:6px 16px;margin-top:4px;color:#aaa;border-color:#555">AVVIA AUTOMA</button>
             </div>
+
+            <!-- Conferma abbandono partita in corso (pulsante NUOVA) -->
+            <div id="modal-conferma-nuova" class="modal" style="width:700px">
+                <h2 id="modal-conferma-nuova-titolo">Nuova Partita</h2>
+                <div class="modal-content">
+                    <p id="label-conferma-abbandono">Vuoi davvero abbandonare la partita in corso?</p>
+                </div>
+                <div style="display:flex;gap:16px;justify-content:center">
+                    <button class="btn-modal" id="btn-conferma-no" style="width:260px">NO, CONTINUA</button>
+                    <button class="btn-modal" id="btn-conferma-si" style="width:260px">S&Igrave;,
+                        NUOVA PARTITA</button>
+                </div>
+            </div>
+
+            <div id="automa-banner" style="display:none;position:fixed;bottom:60px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.85);color:#fff;padding:8px 18px;border-radius:20px;z-index:9000;font-size:13px;cursor:pointer;border:1px solid #4a4;user-select:none;text-align:center;line-height:1.5" title="Clicca per fermare"></div>
+
+            <div id="modal-automa-config" class="modal" style="width:460px;top:3%;transform:translateX(-50%);max-height:94vh;overflow-y:auto"></div>
+
+            <div id="fast-counter" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.92);border:2px solid #4a4;border-radius:14px;padding:24px 48px;z-index:9001;flex-direction:column;align-items:center;text-align:center;min-width:300px"></div>
 
             <div id="modal-vittoria" class="modal">
                 <h2 id="modal-vittoria-titolo">HAI VINTO!</h2>
@@ -328,9 +390,14 @@
 
     <!-- JS Files -->
     <script src="site.js?v=1.1"></script>
-    <script src="burraco-core.js?v=9.40"></script>
-    <script src="burraco-game.js?v=8.32"></script>
-    <script src="burraco-ui.js?v=11.1"></script>
+    <script src="burraco-core.js?v=10.0"></script>
+    <script src="burraco-engine-default.coeffs.js?v=1.0"></script>
+    <script src="burraco-engine-default.js?v=1.0"></script>
+    <script src="burraco-engine-b.coeffs.js?v=1.0"></script>
+    <script src="burraco-engine-b.js?v=1.0"></script>
+    <script src="burraco-mazzi-seed.js?v=1.0"></script>
+    <script src="burraco-game.js?v=9.2"></script>
+    <script src="burraco-ui.js?v=12.1"></script>
     <script>
         (function () {
             var nascosto = false;
@@ -353,6 +420,3 @@
 </body>
 
 </html>
-tml>
-
-

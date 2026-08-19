@@ -329,8 +329,9 @@ function injectLegalLinks() {
 function showInterstitialIfDue(onClose) {
     if (!ENABLE_INTERSTITIAL) { if (onClose) onClose(); return; }
     if (window._blockAutoInterstitial) { if (onClose) onClose(); return; }
-    var _excludedPrefixes = ['BUR_', 'BUR_en_'];
-    if (window.gameConfig && _excludedPrefixes.indexOf(window.gameConfig.gaPrefix) !== -1) { if (onClose) onClose(); return; }
+    // Esclusioni rimosse: entrambe le versioni del burraco (IT e EN) girano ora
+    // sulla stessa base e gestiscono l'interstitial via waitForInterstitial,
+    // consumando il flag _interstitial_pending.
 
     var now = Date.now();
 

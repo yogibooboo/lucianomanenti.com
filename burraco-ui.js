@@ -6,46 +6,8 @@
 // ============================================================================
 
 // ============================================================================
-// ###COEFFICIENTI### — Scoring opzioni AI (modificabili anche dal pannello debug)
-// ============================================================================
-if (!window.coeffScoreOpz) {
-    window.coeffScoreOpz = {
-        valCarte:          0.5,
-        premioTris:        10,
-        premioScala:       20,
-        premioTrisEstremo:  5,
-        premio4c:          10,
-        premio5c:          20,
-        premio6c:          40,
-        premioBurraco:    100,
-        premioOltreBurraco: 0,
-        penMattaBase:      15,
-        coeffScartoDecent:  3,
-        coeffScartoConn:    4,
-        penScarto6c:       25,
-        penScarto5c:       15,
-        penScarto4c:        7,
-        penScartoCalabile:  7,
-        premioLiberaMattaInterna: 15,
-        premioLiberaMattaBordo:   10,
-        premioMattaSolitaria:    200,
-        penCalataMatta:           35,
-        penMattaSuBurracoPulito: 100,
-        premioPrimoBurraco:       50,
-        premioMazzo:               5,
-        premioMattaPescata:       40,
-        penScartoMatta:           50,
-        penCartaOrfana:            2,
-        // Bonus D) "carta sottratta all'avversario" — scala separata da premioXc
-        bonusAvv4c:               10,
-        bonusAvv5c:               20,
-        bonusAvv6c:               40,
-        bonusAvv7c:              100,
-        bonusAvv8c:                0,
-        // Premio per svuotare la mano in fase pre-pozzetto
-        premioPozzetto:          100
-    };
-}
+// coeffScoreOpz, calcolaScoreOpz, calcolaScartoPer, _calcolaVarianti*, scegliBestOpzioneAI
+// → spostati in burraco-core.js (motore decisionale AI)
 // ============================================================================
 
 // ============================================================================
@@ -64,12 +26,17 @@ window.setLanguage = function(lang) {
         btn.style.borderColor = '#6b9b7a';
         btn.style.color = '#fff';
     });
-    const activeBtn = document.getElementById('btn-lang-' + lang);
-    if (activeBtn) {
-        activeBtn.style.background = '#ffd700';
-        activeBtn.style.borderColor = '#ffd700';
-        activeBtn.style.color = '#2c3e50';
-    }
+    // Due coppie di selettori: quella in campo e quella nel modale di nuova partita
+    // (id '-modal', distinti per non duplicare gli id). Il ciclo qui sopra spegne
+    // tutti i .btn-lang, quindi vanno riaccesi entrambi.
+    ['btn-lang-' + lang, 'btn-lang-' + lang + '-modal'].forEach(id => {
+        const activeBtn = document.getElementById(id);
+        if (activeBtn) {
+            activeBtn.style.background = '#ffd700';
+            activeBtn.style.borderColor = '#ffd700';
+            activeBtn.style.color = '#2c3e50';
+        }
+    });
     
     // Rendi nuovamente (per aggiornare scritte dinamiche come "Carte: X")
     // Solo se il gioco è già inizializzato
@@ -88,7 +55,9 @@ window.updateUILabels = function() {
         'modal-vittoria-titolo', 'label-complimenti', 'label-punteggio-finale-v',
         'label-punteggio-finale-p', 'modal-sconfitta-titolo', 'label-peccato',
         'btn-nuova-v', 'btn-nuova-s', 'label-privacy', 'label-gestisci-cookie',
-        'label-1v1', 'label-2v2'
+        'label-1v1', 'label-2v2',
+        'modal-conferma-nuova-titolo', 'label-conferma-abbandono',
+        'btn-conferma-no', 'btn-conferma-si'
     ];
     
     labels.forEach(id => {
@@ -140,6 +109,185 @@ window.addEventListener('load', () => {
     // solo layout/analytics, lingua e init già gestiti su DOMContentLoaded
 });
 
+// ============================================================================
+// AUTOMA LOG
+// ============================================================================
+
+window._logFileHandle = null; // File System Access API handle, persiste nella sessione
+window._logFileOffset = -1;   // byte offset corrente; -1 = non inizializzato
+
+window._salvaRigaLog = async function (descrizione) {
+    var s   = window._automaStats || {};
+    var cfg = game.automaConfig   || {};
+    var bn  = s.burracosNoi  || { puliti: 0, semipuliti: 0, sporchi: 0 };
+    var bl  = s.burracosLoro || { puliti: 0, semipuliti: 0, sporchi: 0 };
+    var now = new Date();
+    var pad = function(n){ return String(n).padStart(2,'0'); };
+    var ts  = now.getFullYear() + '-' + pad(now.getMonth()+1) + '-' + pad(now.getDate()) +
+              ' ' + pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds());
+    var avgNoi  = s.partite ? Math.round((s.puntiTotNoi  || 0) / s.partite) : 0;
+    var avgLoro = s.partite ? Math.round((s.puntiTotLoro || 0) / s.partite) : 0;
+
+    var COLS = ['Timestamp','Descrizione','Partite','Engine Noi','Engine Loro',
+        'V Noi','V Loro','Pareggi','Avg Noi','Avg Loro',
+        'Burr.P Noi','Burr.S Noi','Burr.X Noi',
+        'Burr.P Loro','Burr.S Loro','Burr.X Loro',
+        'Pozz Noi','Pozz Loro','Chius Noi','Chius Loro','Mazzo Es.'];
+    var vals = [ts, descrizione || '',
+        s.partite || 0, cfg.engineNoi || 'A', cfg.engineLoro || 'A',
+        s.vittorieNoi || 0, s.vittorieLoro || 0, s.pareggi || 0,
+        avgNoi, avgLoro,
+        bn.puliti, bn.semipuliti, bn.sporchi,
+        bl.puliti, bl.semipuliti, bl.sporchi,
+        s.pozzettiNoi || 0, s.pozzettiLoro || 0,
+        s.chiusureNoi || 0, s.chiusureLoro || 0,
+        s.mazzoEsaurito || 0];
+
+    var csvQ = function(v) { var s = String(v); return (s.indexOf(',') >= 0 || s.indexOf('"') >= 0) ? '"' + s.replace(/"/g,'""') + '"' : s; };
+    var toCsv = function(arr) { return arr.map(csvQ).join(','); };
+
+    // File System Access API
+    if (typeof window.showSaveFilePicker === 'function') {
+        try {
+            if (!window._logFileHandle) {
+                window._logFileHandle = await window.showSaveFilePicker({
+                    suggestedName: 'automa_log.csv',
+                    types: [{ description: 'CSV', accept: { 'text/csv': ['.csv'] } }]
+                });
+            }
+            // Leggiamo getFile() solo la prima volta per conoscere la dimensione iniziale
+            if (window._logFileOffset < 0) {
+                var file0 = await window._logFileHandle.getFile();
+                window._logFileOffset = file0.size;
+            }
+            var needHeader = window._logFileOffset === 0;
+            var newLine    = (needHeader ? toCsv(COLS) + '\n' : '') + toCsv(vals) + '\n';
+            var encoded    = new TextEncoder().encode(newLine);
+            var writable   = await window._logFileHandle.createWritable({ keepExistingData: true });
+            await writable.seek(window._logFileOffset);
+            await writable.write(encoded);
+            await writable.close();
+            window._logFileOffset += encoded.byteLength;
+            return true;
+        } catch(e) {
+            if (e.name !== 'AbortError') console.error('[Log]', e);
+            return false;
+        }
+    }
+
+    // Fallback: download CSV (browser senza File System Access API)
+    var lines = (window._logFallbackLines || []);
+    if (lines.length === 0) lines.push(toCsv(COLS));
+    lines.push(toCsv(vals));
+    window._logFallbackLines = lines;
+    var blob = new Blob([lines.join('\n') + '\n'], { type: 'text/csv' });
+    var url  = URL.createObjectURL(blob);
+    var a    = document.createElement('a');
+    a.href = url;
+    a.download = 'automa_log_' + now.toISOString().slice(0,10) + '.csv';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    return true;
+};
+
+// ============================================================================
+// AUTOMA SCAN
+// ============================================================================
+
+window._scanState = { running: false, total: 0, done: 0, currentParam: '', currentValue: 0 };
+
+window._fermaScan = function () {
+    window._scanState.running = false;
+    if (game && game._scanCallback) game._scanCallback = null;
+    // Ripristina i coefficienti originali
+    if (window._scanState.origCoeffs && window.coeffScoreOpzB) {
+        Object.assign(window.coeffScoreOpzB, window._scanState.origCoeffs);
+    }
+};
+
+window._avviaScan = async function (cfg) {
+    if (!window.coeffScoreOpzB) { alert('coeffScoreOpzB non disponibile.'); return; }
+    if (!cfg.useSeedDb) { alert('Lo scan richiede il database mazzi deterministico attivo.'); return; }
+
+    // Acquisisci il file handle ora (siamo nel click, quindi user gesture valido)
+    if (typeof window.showSaveFilePicker === 'function' && !window._logFileHandle) {
+        try {
+            window._logFileHandle = await window.showSaveFilePicker({
+                suggestedName: 'automa_log.csv',
+                types: [{ description: 'CSV', accept: { 'text/csv': ['.csv'] } }]
+            });
+        } catch (e) {
+            if (e.name !== 'AbortError') console.error('[Scan] File picker:', e);
+            return;
+        }
+    }
+
+    // Snapshot dei coefficienti originali
+    var orig = JSON.parse(JSON.stringify(window.coeffScoreOpzB));
+
+    // Costruisce la coda di test
+    var queue = [];
+    Object.keys(orig).forEach(function (key) {
+        var val = orig[key];
+        var testValues = [];
+        if (key === 'valCarte') {
+            for (var v = 0; v <= 1.0001; v = Math.round((v + 0.1) * 1000) / 1000)
+                testValues.push(Math.round(v * 10) / 10);
+        } else if (val === 0) {
+            return; // skip
+        } else {
+            var step = val / 5;
+            for (var v = 0; v <= val * 2 + step * 0.001; v = Math.round((v + step) * 10000) / 10000)
+                testValues.push(Math.round(v * 10000) / 10000);
+        }
+        testValues.forEach(function (tv) {
+            queue.push({ key: key, value: tv, origValue: val });
+        });
+    });
+
+    window._scanState = {
+        running: true, total: queue.length, done: 0,
+        currentParam: '', currentValue: 0,
+        queue: queue, cfg: cfg, origCoeffs: orig
+    };
+
+    console.log('[Scan] Avviato: ' + queue.length + ' simulazioni.');
+    _runNextScan();
+};
+
+function _runNextScan() {
+    var st = window._scanState;
+    if (!st.running || !st.queue || st.queue.length === 0) {
+        // Scan terminato
+        st.running = false;
+        if (st.origCoeffs && window.coeffScoreOpzB)
+            Object.assign(window.coeffScoreOpzB, st.origCoeffs);
+        console.log('[Scan] Completato!');
+        if (typeof window._aggiornaTurnoFast === 'function') window._aggiornaTurnoFast();
+        return;
+    }
+
+    var item = st.queue.shift();
+    st.done++;
+    st.currentParam = item.key;
+    st.currentValue = item.value;
+
+    // Ripristina tutti i coefficienti originali, poi imposta il valore di test
+    Object.assign(window.coeffScoreOpzB, st.origCoeffs);
+    window.coeffScoreOpzB[item.key] = item.value;
+
+    // Callback chiamata da fermaAutoma al termine della simulazione
+    game._scanCallback = function () {
+        var desc = item.key + '=' + item.value + ' (base=' + item.origValue + ')';
+        window._salvaRigaLog(desc).then(function () {
+            _runNextScan();
+        });
+    };
+
+    // Avvia la simulazione
+    if (typeof avviaAutoma === 'function') avviaAutoma(Object.assign({}, st.cfg));
+}
+
 // SETUP EVENTI
 // ============================================================================
 
@@ -149,7 +297,16 @@ function setupEventi() {
         const rulesUrl = window.currentLang === 'en' ? 'regole-burraco-en.html' : 'regole-burraco.html';
         window.open(rulesUrl, '_blank');
     });
-    $('#btn-nuova').addEventListener('click', () => mostraModal('modal-nuova'));
+    $('#btn-nuova').addEventListener('click', richiediNuovaPartita);
+
+    // Conferma abbandono: NO torna al gioco, SÌ apre la scelta della nuova partita.
+    // Il gestore generico su .btn-modal chiude tutti i modali: qui serve invece
+    // passare da conferma a modal-nuova, quindi il SÌ apre in coda al ciclo di
+    // eventi, dopo che quel gestore ha già chiuso.
+    $('#btn-conferma-no').addEventListener('click', chiudiModals);
+    $('#btn-conferma-si').addEventListener('click', () => {
+        setTimeout(() => mostraModal('modal-nuova'), 0);
+    });
     $('#btn-undo').addEventListener('click', undo);
 
     // Mostra/nasconde input limite custom nel modal nuova partita
@@ -280,7 +437,7 @@ function setupEventi() {
                 localStorage.removeItem('burraco_torneo');
             }
         } catch (e) { }
-        location.reload();
+        _riavviaPerNuovaPartita();
     });
 
     $$('.btn-nuova-partita').forEach(btn => {
@@ -289,6 +446,62 @@ function setupEventi() {
             mostraModal('modal-nuova');
         });
     });
+
+    // Automa: apre il modale di configurazione.
+    // Strumento di sviluppo: visibile solo in dev mode (Ctrl+Alt+Q, vedi game-layout.js).
+    var _btnAutoma = document.getElementById('btn-avvia-automa');
+    if (_btnAutoma) {
+        if (window.devMode) {
+            _btnAutoma.addEventListener('click', function () {
+                chiudiModals();
+                _buildAutomaConfigModal();
+                mostraModal('modal-automa-config');
+            });
+        } else {
+            _btnAutoma.remove();
+        }
+    }
+    var _automaBanner = document.getElementById('automa-banner');
+    if (_automaBanner) {
+        _automaBanner.addEventListener('click', function () {
+            if (game.autoRun) {
+                if (typeof fermaAutoma === 'function') fermaAutoma();
+            } else {
+                this.style.display = 'none';
+                var _fc = document.getElementById('fast-counter');
+                if (_fc) _fc.style.display = 'none';
+                window._automaStats = null;
+            }
+        });
+    }
+    // Event delegation sul fast-counter: il listener è sul div genitore e sopravvive
+    // ai continui innerHTML replacement del pulsante interno
+    var _fcDiv = document.getElementById('fast-counter');
+    if (_fcDiv) {
+        _fcDiv.addEventListener('click', function (e) {
+            var id = e.target && e.target.id;
+            if (id === 'fast-counter-btn') {
+                if (game.fastMode) {
+                    if (window._scanState && window._scanState.running) {
+                        window._fermaScan();
+                    }
+                    if (typeof fermaAutoma === 'function') fermaAutoma();
+                } else {
+                    _fcDiv.style.display = 'none';
+                    window._automaStats = null;
+                }
+            } else if (id === 'fc-salva') {
+                var salvaBtn = e.target;
+                salvaBtn.disabled = true;
+                salvaBtn.textContent = '…';
+                var desc = (_fcDiv.querySelector('#fc-desc') || {}).value || '';
+                window._salvaRigaLog(desc).then(function(ok) {
+                    salvaBtn.textContent = ok ? 'SALVATO ✓' : 'ERRORE';
+                    salvaBtn.style.color = ok ? '#aaa' : '#f88';
+                });
+            }
+        });
+    }
 
     // Mazzo
     $('#mazzo').addEventListener('click', pescaDaMazzo);
@@ -316,11 +529,6 @@ function setupEventi() {
 
     // DEBUG: click su pozzetto1 aggiunge carta a ogni giocatore
     $('#pozzetto1').addEventListener('click', testAggiungiCarta);
-
-    // Click su avatar per aprire finestra info giocatore
-    $('#avatar-compagno').addEventListener('click', () => mostraPannelloGiocatore(2, 'Compagno'));
-    $('#avatar-avv-sx').addEventListener('click', () => mostraPannelloGiocatore(1, 'Avversario SX'));
-    $('#avatar-avv-dx').addEventListener('click', () => mostraPannelloGiocatore(3, 'Avversario DX'));
 
     // Eventi globali mouse/touch per trascinamento
     document.addEventListener('mousedown', onMouseDown);
@@ -351,11 +559,6 @@ function setupEventi() {
                 console.log('DEBUG: Mazzo vuoto o partita non iniziata');
             }
         }
-        // Ctrl+Alt+D per finestra diagnostica
-        if (event.ctrlKey && event.altKey && event.key.toLowerCase() === 'd') {
-            event.preventDefault();
-            toggleDiagnostica();
-        }
     });
 }
 
@@ -364,6 +567,10 @@ function setupEventi() {
 // ============================================================================
 
 function render() {
+    if (game.fastMode) {
+        if (typeof window._aggiornaTurnoFast === 'function') window._aggiornaTurnoFast();
+        return;
+    }
     renderMazzo();
     renderScarti();
     renderPozzetti();
@@ -806,6 +1013,7 @@ function comprimiCombinazioni(container, containerSel) {
 }
 
 function renderPunteggi() {
+    if (game.fastMode) return;
     // Pannello torneo: visibile solo in modalita torneo
     const pannello = $('#pannello-torneo');
     if (pannello) pannello.style.display = game.torneo ? '' : 'none';
@@ -978,6 +1186,7 @@ function _animaVoloDeal(fromR, toR, duration, callback) {
 }
 
 function animaDealBurraco(onComplete) {
+    if (game.fastMode) { if (onComplete) onComplete(); return; }
     const mazzoEl = document.getElementById('mazzo');
     if (!mazzoEl) { if (onComplete) onComplete(); return; }
 
@@ -1053,6 +1262,7 @@ function animaDealBurraco(onComplete) {
 // ============================================================================
 
 function animaCarta(carta, daElemento, aElemento, opzioni = {}) {
+    if (game.fastMode) return Promise.resolve();
     return new Promise((resolve) => {
         const durata = opzioni.durata || 300;
         const mostraFronte = opzioni.mostraFronte !== undefined ? opzioni.mostraFronte : carta.faceUp;
@@ -2344,6 +2554,44 @@ function chiudiModals() {
     $$('.modal').forEach(m => m.style.display = 'none');
 }
 
+// Pulsante NUOVA: chiede conferma solo se c'è davvero una partita da abbandonare.
+// A partita finita il modale di fine ha già offerto "NUOVA PARTITA", e a mano
+// non ancora giocata non c'è nulla da perdere: in entrambi i casi si salta oltre.
+function richiediNuovaPartita() {
+    // Partita conclusa: si riparte con un reload, che rinnova i banner delle
+    // sidebar e fa valutare l'interstitial. Al ritorno init() riapre modal-nuova.
+    if (game.fase === 'finito') {
+        _riavviaPerNuovaPartita();
+        return;
+    }
+    // Mano non ancora giocata: niente da abbandonare, si va diritti alla scelta.
+    if (!game.storia || game.storia.length === 0) {
+        mostraModal('modal-nuova');
+        return;
+    }
+    mostraModal('modal-conferma-nuova');
+
+    // Stesso schema del banner di fine mano: absolute con top negativo, quindi
+    // il banner sta SOPRA il modale e l'offset è la sua altezza più il margine.
+    if (typeof setupAmazonFinishBanner === 'function') {
+        const modalEl = $('#modal-conferma-nuova');
+        // Questo modale è basso (~200px): centrato lascerebbe sopra meno dei 300px
+        // del banner, che sborderebbe dal campo. Spostato sotto il centro come il
+        // modale di fine mano.
+        modalEl.style.top = '64%';
+        const bannerH = 300;
+        const bannerW = modalEl.offsetWidth;
+        setupAmazonFinishBanner('modal-conferma-nuova', {
+            modalStyle: { overflow: 'visible' },
+            applyModalTop: false,
+            bannerHeight: bannerH,
+            bannerWidth: bannerW,
+            bannerTopOffset: bannerH + 15,
+            leftOffset: 0
+        });
+    }
+}
+
 // Finestre info giocatore (popup browser separati)
 // Finestra debug unica (mantiene posizione riutilizzando la stessa finestra)
 let debugWindow = null;
@@ -2385,1346 +2633,13 @@ function mostraPannelloGiocatore(indiceGiocatore, ruolo, defaultScenario) {
 }
 
 // Aggiorna il contenuto della finestra debug già aperta
-function aggiornaFinestraGiocatore(indiceGiocatore) {
-    if (!debugWindow || debugWindow.closed) return;
-
-    const ruolo = `AI Debug - Turno ${game.turno}`;
-
-    // Riscrivi l'intero documento
-    debugWindow.document.open();
-    debugWindow.document.write(getGiocatoreHTML(indiceGiocatore, ruolo));
-    debugWindow.document.close();
-
-    // Togli il focus dal popup per restituirlo al gioco
-    debugWindow.blur();
-}
 
 function _isAttaccabileAdAvversario(carta, combo) {
     return window.isCartaAttaccabileACombo(carta, combo);
 }
 
-window.calcolaScoreOpz = function(opzIdx, silent) {
-    var con = silent ? { group: function(){}, groupEnd: function(){}, log: function(){}, warn: function(){} } : console;
-    var d = window._analisiData;
-    if (!d) { con.log('[ScoreOpz] Nessun dato analisi disponibile'); return null; }
-    var _w = window.opener || window;
-    var game = _w.game;
-    var Strategia = _w.Strategia;
-    var giocatore = game.giocatori[window._analisiGiocatoreIdx];
-    var comboAvversarie = giocatore.squadra === 0 ? game.combinazioniLoro : game.combinazioniNoi;
-    var comboSquadra   = giocatore.squadra === 0 ? game.combinazioniNoi  : game.combinazioniLoro;
-
-    var opt = opzIdx === -1 ? { mosse: [], descCarte: 'OPZ0' } : (d.opzioniScenario ? d.opzioniScenario[opzIdx] : null);
-    if (!opt && opzIdx !== -1) { con.log('[ScoreOpz] OPZ' + (opzIdx + 1) + ' non trovata'); return null; }
-
-    var opzLabel = opzIdx === -1 ? 'OPZ0' : 'OPZ' + (opzIdx + 1);
-    var mosse = opt.mosse || [];
-
-    // Calcola scarto anticipatamente per mostrarlo prima del gruppo score
-    var _scartoInter = window.calcolaScartoPer(opzIdx, true);
-    if (!silent && _scartoInter && _scartoInter._candidati) {
-        var _nc = _scartoInter._nomeC;
-        console.group('--- Scarto candidati (fase1=' + _scartoInter._fase1Count + '/' + _scartoInter._totCount + ') ---');
-        _scartoInter._candidati.forEach(function(s) {
-            var isScelta = (s === _scartoInter._candidatoFinale);
-            var label = _nc(s.r) + ' → ' + s.score.toFixed(1) + (isScelta ? ' ◄ SCARTO' : '');
-            if (isScelta) console.log('%c' + label, 'font-weight:bold; color:#fa0'); else console.log(label);
-            s.righe.forEach(function(riga) { console.log(riga); });
-        });
-        console.groupEnd();
-        console.log('%c  → Scarto scelto: ' + _scartoInter.carta + ' (sc=' + _scartoInter.score.toFixed(1) + ')', 'font-weight:bold; color:#fff; background:#222; padding:2px 6px');
-    }
-
-    con.group('=== SCORE OPZ per ' + opzLabel + ' [' + (opt.descCarte || '?') + '] ===');
-
-    if (mosse.length === 0) {
-        con.log('Nessuna mossa.');
-    }
-
-    var cf = window.coeffScoreOpz;
-
-    function premioBase(tipo, lunghezza) {
-        if (lunghezza < 3) return 0;
-        var p = tipo === 'scala' ? cf.premioScala : cf.premioTris;
-        if (lunghezza >= 4) p += cf.premio4c;
-        if (lunghezza >= 5) p += cf.premio5c;
-        if (lunghezza >= 6) p += cf.premio6c;
-        if (lunghezza >= 7) p += cf.premioBurraco;
-        if (lunghezza >= 8) p += (lunghezza - 7) * (cf.premioOltreBurraco || 0);
-        return p;
-    }
-    function premioIncrementale(n) {
-        if (n === 3) return cf.premioTris;
-        if (n === 4) return cf.premio4c;
-        if (n === 5) return cf.premio5c;
-        if (n === 6) return cf.premio6c;
-        if (n === 7) return cf.premioBurraco;
-        if (n >= 8) return (cf.premioOltreBurraco || 0);
-        return 0;
-    }
-    function premioIncrementaleAvv(n) {
-        if (n === 3) return 0;
-        if (n === 4) return cf.bonusAvv4c !== undefined ? cf.bonusAvv4c : cf.premio4c;
-        if (n === 5) return cf.bonusAvv5c !== undefined ? cf.bonusAvv5c : cf.premio5c;
-        if (n === 6) return cf.bonusAvv6c !== undefined ? cf.bonusAvv6c : cf.premio6c;
-        if (n === 7) return cf.bonusAvv7c !== undefined ? cf.bonusAvv7c : cf.premioBurraco;
-        if (n >= 8) return cf.bonusAvv8c !== undefined ? cf.bonusAvv8c : 0;
-        return 0;
-    }
-    function nomeC(c) {
-        return Strategia && Strategia.nomeCarta ? Strategia.nomeCarta(c) : ((c.numero || '') + (c.seme || ''));
-    }
-    function isFisica(c) { return !c.isJolly && !c.isPinella; }
-
-    var totalScore = 0;
-    var breakdown = [];
-    var comboCurrentLen = {};
-    comboSquadra.forEach(function(cb) { comboCurrentLen[cb.id] = cb.carte.length; });
-
-    mosse.forEach(function(mossa) {
-        var mossoScore = 0;
-        var righe = [];
-        if (mossa.tipo === 'tris' || mossa.tipo === 'scala') {
-            var carte = mossa.carte || [];
-            var fisiche = carte.filter(isFisica);
-            var numMatte = carte.length - fisiche.length;
-            var lunghezza = carte.length;
-
-            var valoreCarte = fisiche.reduce(function(s, c) { return s + (c.punti || 0); }, 0) * cf.valCarte;
-            mossoScore += valoreCarte;
-            righe.push('  A) Valore carte ×' + cf.valCarte + ': +' + valoreCarte.toFixed(1) + ' [' + fisiche.map(nomeC).join(' ') + ']');
-
-            var premio = premioBase(mossa.tipo, lunghezza);
-            mossoScore += premio;
-            righe.push('  B) Premio ' + mossa.tipo + ' ' + lunghezza + 'c: +' + premio);
-
-            if (mossa.tipo === 'tris' && fisiche.length > 0) {
-                var numTris = fisiche[0].numero;
-                if (numTris === 1 || numTris === 3 || numTris === 13) {
-                    mossoScore += cf.premioTrisEstremo;
-                    righe.push('  B2) Bonus tris estremo (' + nomeC(fisiche[0]) + '): +' + cf.premioTrisEstremo);
-                }
-            }
-
-            if (numMatte > 0) {
-                var penMatta = -cf.penMattaBase * (lunghezza - 2);
-                mossoScore += penMatta;
-                righe.push('  C) Penalità matta (-' + cf.penMattaBase + '×' + (lunghezza - 2) + '): ' + penMatta.toFixed(1));
-            }
-
-            fisiche.forEach(function(carta) {
-                var bestLen = 0;
-                comboAvversarie.forEach(function(combo) {
-                    if (_isAttaccabileAdAvversario(carta, combo)) {
-                        var nl = combo.carte.length + 1; if (nl > bestLen) bestLen = nl;
-                    }
-                });
-                if (bestLen > 0) {
-                    var bonusAvv = premioIncrementaleAvv(bestLen);
-                    mossoScore += bonusAvv;
-                    righe.push('  D) Bonus sottratta avv [' + nomeC(carta) + '] →' + bestLen + 'c: +' + bonusAvv);
-                }
-            });
-
-            con.log(mossa.tipo.toUpperCase() + ' [' + fisiche.map(nomeC).join(' ') + (numMatte > 0 ? ' M' : '') + '] → +' + mossoScore.toFixed(1));
-            righe.forEach(function(r) { con.log(r); });
-
-        } else if (mossa.tipo === 'calata') {
-            var carta = mossa.carta;
-            if (!carta) return;
-            var combo = mossa.combo;
-            if (!combo && mossa.comboId !== undefined) {
-                combo = comboSquadra.find(function(cb) { return cb.id === mossa.comboId; });
-            }
-            var _cid = combo ? combo.id : null;
-            var _baseLenC = (_cid !== null && comboCurrentLen[_cid] !== undefined) ? comboCurrentLen[_cid] : (combo ? combo.carte.length : 0);
-            var lunghRisultante = _baseLenC + 1;
-            if (_cid !== null) comboCurrentLen[_cid] = lunghRisultante;
-
-            var valoreCarta = (carta.punti || 0) * cf.valCarte;
-            mossoScore += valoreCarta;
-            righe.push('  A) Valore carta ×' + cf.valCarte + ': +' + valoreCarta.toFixed(1) + ' [' + nomeC(carta) + ']');
-
-            var premioCalata = premioIncrementale(lunghRisultante);
-            mossoScore += premioCalata;
-            righe.push('  B) Premio calata →' + lunghRisultante + 'c: +' + premioCalata);
-
-            if (lunghRisultante === 7) {
-                var bonusPB = cf.premioPrimoBurraco !== undefined ? cf.premioPrimoBurraco : 50;
-                mossoScore += bonusPB;
-                righe.push('  B2) Premio primo burraco: +' + bonusPB);
-            }
-
-            var bestLen = 0;
-            comboAvversarie.forEach(function(comboAvv) {
-                if (_isAttaccabileAdAvversario(carta, comboAvv)) {
-                    var nl = comboAvv.carte.length + 1; if (nl > bestLen) bestLen = nl;
-                }
-            });
-            if (bestLen > 0) {
-                var bonusAvv = premioIncrementale(bestLen);
-                mossoScore += bonusAvv;
-                righe.push('  D) Bonus sottratta avv [' + nomeC(carta) + '] →' + bestLen + 'c: +' + bonusAvv);
-            }
-
-            // Premio calata che libera una matta (solo su scale)
-            if (combo && combo.tipo === 2 /* TIPO_SCALA */) {
-                var _puoAgg = _w.puoAggiungereACombinazione ? _w.puoAggiungereACombinazione(carta, combo) : false;
-                if (_puoAgg && _puoAgg.sostituzione) {
-                    var _fisC = combo.carte.filter(function(c) { return !c.isJolly && !c.isPinella; });
-                    var _numsC = _fisC.map(function(c) { return c.numero; }).sort(function(a,b){ return a-b; });
-                    var _isBordo = _numsC.length === 0 || carta.numero < _numsC[0] || carta.numero > _numsC[_numsC.length-1];
-                    var _bonusMatta = _isBordo ? (cf.premioLiberaMattaBordo || 10) : (cf.premioLiberaMattaInterna || 15);
-                    mossoScore += _bonusMatta;
-                    righe.push('  E) Libera matta ' + (_isBordo ? 'bordo' : 'interna') + ': +' + _bonusMatta);
-                }
-            }
-
-            // Premio matta solitaria (opzione generata da _calcolaVariantiM)
-            if (mossa.isMattaSolitaria) {
-                var _bonusMS = cf.premioMattaSolitaria || 200;
-                mossoScore += _bonusMS;
-                righe.push('  F) Bonus matta solitaria: +' + _bonusMS);
-            }
-
-            // Penalità calata matta (jolly/pinella): scoraggia calate non decisive
-            if (!isFisica(carta)) {
-                var _penCM = cf.penCalataMatta !== undefined ? cf.penCalataMatta : 20;
-                mossoScore -= _penCM;
-                righe.push('  G) Penalità calata matta: -' + _penCM);
-            }
-
-            con.log('CALATA [' + nomeC(carta) + '] → combo#' + mossa.comboId + ' (' + lunghRisultante + 'c) → +' + mossoScore.toFixed(1));
-            righe.forEach(function(r) { con.log(r); });
-        }
-        totalScore += mossoScore;
-        breakdown.push({ tipo: mossa.tipo, score: mossoScore });
-    });
-
-    // _scartoInter già calcolato prima del gruppo score
-    var _scartoScore = _scartoInter ? _scartoInter.score : 0;
-    var scartoId = _scartoInter && _scartoInter.cartaRef ? _scartoInter.cartaRef.id : null;
-
-    // H) Penalità carte orfane rimaste in mano dopo l'opzione
-    var _nOrfane = 0;
-    var _penCO = cf.penCartaOrfana !== undefined ? cf.penCartaOrfana : 2;
-    var _origManoFn = function(r) { return r.origine === 'mano' || r.origine === 'scarto' || r.origine === 'mazzo'; };
-    var _cuSet = (opt && opt.carteUsate) ? opt.carteUsate : new Set();
-    var _rimaste = d.classifica.filter(function(r) {
-        return _origManoFn(r) && !r.isMatta && !_cuSet.has(r.cartaRef.id) &&
-            (!scartoId || r.cartaRef.id !== scartoId);
-    });
-    var _orfaneIds = new Set();
-    _rimaste.forEach(function(r) {
-        var _conn = _rimaste.some(function(x) {
-            if (x.cartaRef.id === r.cartaRef.id) return false;
-            if (x.cartaRef.numero === r.cartaRef.numero) return true;
-            if (x.cartaRef.seme && x.cartaRef.seme === r.cartaRef.seme) {
-                return Math.abs((x.cartaRef.numero || 0) - (r.cartaRef.numero || 0)) <= 2;
-            }
-            return false;
-        });
-        if (!_conn) { _nOrfane++; _orfaneIds.add(r.cartaRef.id); }
-    });
-    if (_penCO > 0 && _nOrfane > 0) {
-        var _penOrfaneTot = -(_penCO * _nOrfane);
-        totalScore += _penOrfaneTot;
-        con.log('H) Penalità carte orfane (' + _nOrfane + ' carte): ' + _penOrfaneTot.toFixed(1));
-    }
-
-    // Controlla se anche la carta scartata era orfana rispetto alle rimaste
-    var _scartoOrfana = false;
-    if (scartoId) {
-        var _scartoEntry = d.classifica.find(function(r) { return r.cartaRef && r.cartaRef.id === scartoId; });
-        if (_scartoEntry && !_scartoEntry.isMatta) {
-            _scartoOrfana = !_rimaste.some(function(x) {
-                if (x.cartaRef.numero === _scartoEntry.cartaRef.numero) return true;
-                if (x.cartaRef.seme && x.cartaRef.seme === _scartoEntry.cartaRef.seme)
-                    return Math.abs((x.cartaRef.numero || 0) - (_scartoEntry.cartaRef.numero || 0)) <= 2;
-                return false;
-            });
-        }
-    }
-
-    var _totaleCombinato = totalScore + _scartoScore;
-    con.log('%c✓ SCORE TOTALE: ' + _totaleCombinato.toFixed(1) + ' (opz=' + totalScore.toFixed(1) + ' sc=' + _scartoScore.toFixed(1) + ')', 'font-size:14px; font-weight:bold; color:#ff8; background:#030');
-    con.groupEnd();
-    return {
-        score: _totaleCombinato,
-        opzScore: totalScore,
-        scartoScore: _scartoScore,
-        cartaScarto: _scartoInter ? _scartoInter.carta : '-',
-        cartaRef: _scartoInter ? _scartoInter.cartaRef : null,
-        breakdown: breakdown,
-        orfane: _nOrfane,
-        orfaneIds: _orfaneIds,
-        scartoOrfana: _scartoOrfana
-    };
-};
-
-// Costruisce una versione proiettata di comboSquadra simulando le calate nelle mosse.
-// Ogni mossa tipo 'calata' con carta e comboTarget aggiunge virtualmente la carta alla combo.
-window._proiettaComboConCalate = function(comboSquadra, mosse) {
-    if (!mosse || mosse.length === 0) return comboSquadra;
-    var calate = mosse.filter(function(m) { return m.tipo === 'calata' && m.carta && m.combo; });
-    if (calate.length === 0) return comboSquadra;
-    return comboSquadra.map(function(combo) {
-        var carteExtra = calate.filter(function(m) { return m.combo === combo; }).map(function(m) { return m.carta; });
-        if (carteExtra.length === 0) return combo;
-        return Object.assign({}, combo, { carte: combo.carte.concat(carteExtra) });
-    });
-};
-
-window.calcolaScartoPer = function(opzIdx, _silent, comboSquadraOverride) {
-    var d = window._analisiData;
-    if (!d || !d.opzioniScenario) return null;
-    var opt = opzIdx === -1 ? null : d.opzioniScenario[opzIdx];
-    if (!opt && opzIdx !== -1) return null;
-    var _w = window.opener || window;
-    var game = _w.game;
-    var Strategia = _w.Strategia;
-    var giocatore = game.giocatori[window._analisiGiocatoreIdx];
-    var comboAvversarie = giocatore.squadra === 0 ? game.combinazioniLoro : game.combinazioniNoi;
-    var comboSquadra = comboSquadraOverride || window._comboSquadraOverride || (giocatore.squadra === 0 ? game.combinazioniNoi : game.combinazioniLoro);
-
-    var carteUsateSet = opt ? opt.carteUsate : new Set();
-    // Se c'è una sola carta negli scarti, non può essere scartata (regola: carta appena pescata)
-    var _scartiUnici = d.classifica.filter(function(r) { return r.origine === 'scarto'; });
-    var _idVietato = _scartiUnici.length === 1 ? _scartiUnici[0].cartaRef.id : null;
-    var candidati = d.classifica.filter(function(r) {
-        if (r.origine !== 'mano' && r.origine !== 'mazzo' && r.origine !== 'scarto') return false;
-        if (carteUsateSet.has(r.cartaRef.id)) return false;
-        if (_idVietato !== null && r.cartaRef.id === _idVietato) return false;
-        return true;
-    });
-    if (candidati.length === 0) return null;
-
-    var pericoliAvversari = {};
-    candidati.forEach(function(r) {
-        var pericoli = [];
-        comboAvversarie.forEach(function(combo) {
-            if (!combo.isBurraco && _isAttaccabileAdAvversario(r.cartaRef, combo))
-                pericoli.push({ lunghezza: combo.carte.length + 1 });
-        });
-        pericoliAvversari[r.cartaRef.id] = pericoli;
-    });
-
-    var pericoliPropri = {};
-    candidati.forEach(function(r) {
-        var n = 0;
-        comboSquadra.forEach(function(combo) { if (_isAttaccabileAdAvversario(r.cartaRef, combo)) n++; });
-        pericoliPropri[r.cartaRef.id] = n;
-    });
-
-    var fase1 = candidati.filter(function(r) {
-        if (r.isMatta) return true; // matte sempre candidate, penalizzate in scoring
-        var completaBurraco = (pericoliAvversari[r.cartaRef.id] || []).some(function(p) { return p.lunghezza >= 7; });
-        if (completaBurraco) {
-            var nomeC = Strategia && Strategia.nomeCarta ? Strategia.nomeCarta(r.cartaRef) : (r.cartaRef.numero + r.cartaRef.seme);
-            console.log('[SCARTO ESCLUSO] ' + nomeC + ' → completerebbe burraco avversario → escluso dai candidati scarto');
-        }
-        return !completaBurraco;
-    });
-    if (fase1.length === 0) { fase1 = candidati; }
-
-    var connettivita = {};
-    fase1.forEach(function(r) {
-        var conn = 0;
-        fase1.filter(function(x) { return x.cartaRef.id !== r.cartaRef.id; }).forEach(function(x) {
-            if (x.isMatta || r.isMatta) return;
-            if (x.cartaRef.numero === r.cartaRef.numero) { conn++; return; }
-            if (x.cartaRef.seme && x.cartaRef.seme === r.cartaRef.seme) {
-                var dist = Math.abs((x.cartaRef.numero||0) - (r.cartaRef.numero||0));
-                if (dist === 1) conn++; else if (dist === 2) conn += 0.5;
-            }
-        });
-        connettivita[r.cartaRef.id] = conn;
-    });
-
-    var nomeC = function(r) { return Strategia && Strategia.nomeCarta ? Strategia.nomeCarta(r.cartaRef) : (r.cartaRef.numero + r.cartaRef.seme); };
-    var scoreFase3 = fase1.map(function(r) {
-        var score = 0;
-        var righe = [];
-        var cf = window.coeffScoreOpz;
-        var centralita = Strategia.getCentralita ? Strategia.getCentralita(r.cartaRef.numero) : 0.5;
-        var sDec = (1 - centralita) * (cf.coeffScartoDecent || 5);
-        score += sDec;
-        righe.push('  decent: +' + sDec.toFixed(1));
-        var conn = connettivita[r.cartaRef.id] || 0;
-        if (conn > 0) { var sConn = -(conn * (cf.coeffScartoConn || 8)); score += sConn; righe.push('  conn(' + conn.toFixed(1) + '): ' + sConn.toFixed(1)); }
-        var pericoli = pericoliAvversari[r.cartaRef.id] || [];
-        if (pericoli.length > 0) {
-            var peggiore = pericoli.reduce(function(w, p) { return p.lunghezza > w.lunghezza ? p : w; }, pericoli[0]);
-            var pen = peggiore.lunghezza >= 6 ? -(cf.penScarto6c || 25) : peggiore.lunghezza === 5 ? -(cf.penScarto5c || 15) : -(cf.penScarto4c || 5);
-            score += pen;
-            righe.push('  pericolo avv ' + peggiore.lunghezza + 'c: ' + pen);
-        }
-        var nPropri = pericoliPropri[r.cartaRef.id] || 0;
-        if (nPropri > 0) { var sProp = -(nPropri * (cf.penScartoCalabile || 7)); score += sProp; righe.push('  calabile propri(' + nPropri + '): ' + sProp.toFixed(1)); }
-        if (r.isMatta) { var sPenM = -(cf.penScartoMatta || 50); score += sPenM; righe.push('  pen. scarto matta: ' + sPenM); }
-        return { r: r, score: score, righe: righe };
-    });
-    scoreFase3.sort(function(a, b) { return b.score - a.score; });
-    var candidatoFinale = scoreFase3[0];
-
-    return candidatoFinale ? {
-        carta: candidatoFinale.r.carta, cartaRef: candidatoFinale.r.cartaRef,
-        origine: candidatoFinale.r.origine, score: candidatoFinale.score,
-        _candidati: scoreFase3, _candidatoFinale: candidatoFinale,
-        _fase1Count: fase1.length, _totCount: candidati.length,
-        _nomeC: nomeC
-    } : null;
-};
-
-window._calcolaVariantiB = function(d, game, giocatoreIdx) {
-    var giocatore = game.giocatori[giocatoreIdx];
-    var comboSquadra = giocatore.squadra === 0 ? game.combinazioniNoi : game.combinazioniLoro;
-    if (!d || !d.opzioniScenario || comboSquadra.length === 0) return { bLabelMap: {}, bFirstIdx: d ? d.opzioniScenario.length : 0 };
-
-    var origMano = function(r) { return r.origine === 'mano' || r.origine === 'scarto' || r.origine === 'mazzo'; };
-    var matteHand = d.classifica.filter(function(r){ return origMano(r) && r.isMatta; }).length;
-
-    function buildModMosse(bOpt, freeCalate, sacrificed) {
-        var mm = bOpt.mosse.map(function(m){ return m.carte ? Object.assign({},m,{carte:m.carte.slice()}) : Object.assign({},m); });
-        if (sacrificed && sacrificed.length > 0) {
-            var byM = {};
-            var stealIdx = new Set();
-            sacrificed.forEach(function(sc){
-                if (sc.mossoTipo === 'calata') {
-                    stealIdx.add(sc.mossoIdx); // rimuovi la calata originale dal base-opt
-                } else {
-                    if(!byM[sc.mossoIdx]) byM[sc.mossoIdx]=[];
-                    byM[sc.mossoIdx].push(sc.carta.id);
-                }
-            });
-            Object.keys(byM).forEach(function(mi){
-                var m = mm[parseInt(mi)]; if(!m||!m.carte) return;
-                m.carte = m.carte.filter(function(c){ return byM[mi].indexOf(c.id)===-1; });
-                if (m.carte.length < 3) mm[parseInt(mi)] = null;
-            });
-            mm = mm.filter(function(m, idx){ return m !== null && !stealIdx.has(idx); });
-            sacrificed.forEach(function(sc){ mm.push({tipo:'calata',carta:sc.carta,combo:sc.comboTarget,comboId:sc.comboTarget.id}); });
-        }
-        freeCalate.forEach(function(fc){ mm.push({tipo:'calata',carta:fc.carta,combo:fc.comboTarget,comboId:fc.comboTarget.id}); });
-        return mm;
-    }
-
-    // Calcola le carte calabili sulla combo cb per un dato bOpt.
-    // Ritorna { cb, freeList, sacList, cardIds } oppure null se nessuna carta.
-    function computeComboCandidate(bOpt, cb) {
-        var fisicheCombo = cb.carte.filter(function(c){return !c.isJolly&&!c.isPinella;});
-        if (fisicheCombo.length === 0) return null;
-        var matteCombo = cb.carte.length - fisicheCombo.length;
-        var avail = [];
-        d.classifica.forEach(function(r){ if(!origMano(r)||r.isMatta) return; if(bOpt.carteUsate&&bOpt.carteUsate.has(r.cartaRef.id)) return; avail.push({carta:r.cartaRef,mossoIdx:-1}); });
-        bOpt.mosse.forEach(function(mossa,mIdx){ if(mossa.tipo!=='tris'&&mossa.tipo!=='scala') return; (mossa.carte||[]).forEach(function(carta){ if(!carta.isJolly&&!carta.isPinella) avail.push({carta:carta,mossoIdx:mIdx}); }); });
-        // Calate del base-opt verso ALTRI combo: possono essere "rubate" e reindirizzate
-        bOpt.mosse.forEach(function(mossa, mIdx) {
-            if (mossa.tipo !== 'calata') return;
-            var carta = mossa.carta;
-            if (!carta || carta.isJolly || carta.isPinella) return;
-            var origCId = mossa.comboId !== undefined ? mossa.comboId : (mossa.combo ? mossa.combo.id : null);
-            if (origCId === cb.id) return; // già verso questo combo, già in physNums
-            avail.push({ carta: carta, mossoIdx: mIdx, mossoTipo: 'calata' });
-        });
-        var matteTotal = Math.min(1, matteCombo + matteHand);
-        var freeList = [], sacList = [];
-        if (cb.tipo === 1) {
-            var num = fisicheCombo[0].numero;
-            avail.forEach(function(ac){ if(ac.carta.numero!==num) return; if(ac.mossoIdx<0) freeList.push({carta:ac.carta,comboTarget:cb}); else sacList.push({carta:ac.carta,mossoIdx:ac.mossoIdx,mossoTipo:ac.mossoTipo,comboTarget:cb}); });
-        } else {
-            var seme = fisicheCombo[0].seme;
-            var physNums = fisicheCombo.map(function(c){return c.numero;}).sort(function(a,b){return a-b;});
-            // Includi numeri di calate già presenti in bOpt sullo stesso combo (evita posizioni duplicate nella scala)
-            bOpt.mosse.forEach(function(m) {
-                if (m.tipo==='calata' && m.carta && !m.carta.isJolly && !m.carta.isPinella
-                    && (m.comboId===cb.id || (m.combo&&m.combo.id===cb.id)) && m.carta.seme===seme)
-                    physNums.push(m.carta.numero);
-            });
-            physNums = physNums.filter(function(n,i,a){return a.indexOf(n)===i;}).sort(function(a,b){return a-b;});
-            var cMin = physNums[0], cMax = physNums[physNums.length-1];
-            var sameAvail = avail.filter(function(ac){return ac.carta.seme===seme;});
-            if (sameAvail.length === 0) return null;
-            var allNums = physNums.concat(sameAvail.map(function(ac){return ac.carta.numero;}));
-            allNums = allNums.filter(function(n,i,a){return a.indexOf(n)===i;}).sort(function(a,b){return a-b;});
-            var bestExt = cb.carte.length, bLo = cMin, bHi = cMax;
-            for (var lo = cMin; lo >= 1; lo--) {
-                for (var hi = cMax; hi <= 13; hi++) {
-                    var pin = 0; allNums.forEach(function(n){if(n>=lo&&n<=hi)pin++;});
-                    var gaps = (hi-lo+1)-pin;
-                    if (gaps<=matteTotal && (hi-lo+1)>bestExt) { bestExt=hi-lo+1; bLo=lo; bHi=hi; }
-                }
-            }
-            if (bestExt <= cb.carte.length) return null;
-            var used = {}; physNums.forEach(function(n){used[n]=true;});
-            sameAvail.forEach(function(ac){ var n=ac.carta.numero; if(n<bLo||n>bHi||used[n]) return; used[n]=true; if(ac.mossoIdx<0) freeList.push({carta:ac.carta,comboTarget:cb}); else sacList.push({carta:ac.carta,mossoIdx:ac.mossoIdx,mossoTipo:ac.mossoTipo,comboTarget:cb}); });
-            // Se ci sono gap nel range non coperti da carte fisiche, serve una matta dalla mano
-            var coveredNums = {}; physNums.forEach(function(n){coveredNums[n]=true;});
-            freeList.forEach(function(fc){coveredNums[fc.carta.numero]=true;});
-            sacList.forEach(function(sc){coveredNums[sc.carta.numero]=true;});
-            var gapScoperti = 0; for (var gn=bLo; gn<=bHi; gn++) { if (!coveredNums[gn]) gapScoperti++; }
-            if (gapScoperti > matteCombo && matteHand > 0) {
-                var mattaHandR = d.classifica.find(function(r){ return origMano(r) && r.isMatta && !(bOpt.carteUsate && bOpt.carteUsate.has(r.cartaRef.id)); });
-                if (mattaHandR) freeList.unshift({ carta: mattaHandR.cartaRef, comboTarget: cb });
-            }
-        }
-        if (freeList.length === 0 && sacList.length === 0) return null;
-        var cardIds = new Set();
-        freeList.forEach(function(fc){ cardIds.add(fc.carta.id); });
-        sacList.forEach(function(sc){ cardIds.add(sc.carta.id); });
-        return { cb: cb, freeList: freeList, sacList: sacList, cardIds: cardIds };
-    }
-
-    var bLabelMap = {}, bFirstIdx = d.opzioniScenario.length;
-
-    // Lista base OPZ da esplorare: OPZ0 (non fa nulla) + tutte le OPZ esistenti
-    var opz0 = { mosse: [], carteUsate: new Set(), descCarte: 'OPZ0' };
-    var baseList = [{ opt: opz0, isOPZ0: true, baseIdx: -1 }];
-    d.opzioniScenario.slice(0, bFirstIdx).forEach(function(opt, i) {
-        baseList.push({ opt: opt, isOPZ0: false, baseIdx: i });
-    });
-
-    baseList.forEach(function(entry) {
-        var bOpt = entry.opt;
-        if (!bOpt || !bOpt.mosse) return;
-        var isOPZ0 = entry.isOPZ0;
-        var baseIdx = entry.baseIdx;
-        var baseLabel = isOPZ0 ? '0' : String(baseIdx + 1);
-
-        // OPZ0 non è in d.opzioniScenario: la inseriamo temporaneamente per poter chiamare calcolaScoreOpz
-        var opzIdx;
-        if (isOPZ0) {
-            opzIdx = d.opzioniScenario.length;
-            d.opzioniScenario.push(bOpt);
-        } else {
-            opzIdx = baseIdx;
-        }
-
-        var baseRes = window.calcolaScoreOpz(opzIdx, true);
-        var bestScore = baseRes ? baseRes.score : 0;
-        var bestMosse = null;
-
-        // Calcola i candidati per ogni combo in campo (una entry per combo)
-        var comboCandidates = [];
-        comboSquadra.forEach(function(cb) {
-            var cand = computeComboCandidate(bOpt, cb);
-            if (cand) comboCandidates.push(cand);
-        });
-
-        // Prova tutti i sottoinsiemi non vuoti (powerset) dei comboCandidates
-        var n = comboCandidates.length;
-        var nProve = 0;
-        var _w2 = window.opener || window;
-        var _nomeCarta = function(c) { return _w2.Strategia && _w2.Strategia.nomeCarta ? _w2.Strategia.nomeCarta(c) : (c.numero + c.seme); };
-        if (game.debugAI && n > 0) {
-            console.log('[VariantiB] OPZ' + baseLabel + ' → ' + n + ' candidati:');
-            comboCandidates.forEach(function(cand, ci) {
-                var freeNames = cand.freeList.map(function(fc){ return _nomeCarta(fc.carta); }).join(',');
-                var sacNames = cand.sacList.map(function(sc){ return _nomeCarta(sc.carta); }).join(',');
-                var ids = Array.from(cand.cardIds).join(',');
-                console.log('  [' + ci + '] combo#' + cand.cb.id + ' free=[' + freeNames + '] sac=[' + sacNames + '] ids={' + ids + '}');
-            });
-            console.log('  base score=' + (baseRes ? baseRes.score.toFixed(2) : 'null'));
-        }
-        for (var mask = 1; mask < (1 << n); mask++) {
-            // Verifica che le carte usate dai combo selezionati siano disgiunte
-            var allCardIds = new Set();
-            var valid = true;
-            var selectedCandidates = [];
-            for (var i = 0; i < n; i++) {
-                if (!(mask & (1 << i))) continue;
-                var cand = comboCandidates[i];
-                var conflict = false;
-                cand.cardIds.forEach(function(id){ if (allCardIds.has(id)) conflict = true; });
-                if (conflict) { valid = false; break; }
-                cand.cardIds.forEach(function(id){ allCardIds.add(id); });
-                selectedCandidates.push(cand);
-            }
-            if (!valid) {
-                if (game.debugAI) console.log('  mask=' + mask + ' CONFLICT → skip');
-                continue;
-            }
-            nProve++;
-
-            var combinedFree = [], combinedSac = [];
-            selectedCandidates.forEach(function(cand){
-                combinedFree = combinedFree.concat(cand.freeList);
-                combinedSac = combinedSac.concat(cand.sacList);
-            });
-
-            var mm = buildModMosse(bOpt, combinedFree, combinedSac);
-            var origMosse = bOpt.mosse; bOpt.mosse = mm;
-            // Expand carteUsate with free calate so orfane penalty counts them as used
-            var origCU = bOpt.carteUsate;
-            var expandedCU = new Set(origCU);
-            combinedFree.forEach(function(fc) { expandedCU.add(fc.carta.id); });
-            bOpt.carteUsate = expandedCU;
-            var res = window.calcolaScoreOpz(opzIdx, true);
-            bOpt.mosse = origMosse;
-            bOpt.carteUsate = origCU;
-            var improved = res && res.score > bestScore;
-            if (game.debugAI) {
-                var combLabels = selectedCandidates.map(function(c){ return 'combo#'+c.cb.id; }).join('+');
-                var freeStr = combinedFree.map(function(fc){ return _nomeCarta(fc.carta); }).join(',');
-                var sacStr = combinedSac.map(function(sc){ return _nomeCarta(sc.carta); }).join(',');
-                console.log('  mask=' + mask + ' [' + combLabels + '] free=[' + freeStr + '] sac=[' + sacStr + '] → score=' + (res ? res.score.toFixed(2) : 'null') + (improved ? ' ◄ NUOVO BEST' : ''));
-            }
-            if (improved) { bestScore = res.score; bestMosse = mm; }
-        }
-
-        if (game.debugAI && n > 0) {
-            var baseScoreVal = baseRes ? baseRes.score : 0;
-            var deltaStr = bestMosse ? '+' + (bestScore - baseScoreVal).toFixed(1) : 'nessun miglioramento';
-            console.log('[VariantiB] OPZ' + baseLabel + ' (' + n + ' combo): ' + nProve + ' combinazioni provate → ' + deltaStr + ' vs base (bestScore=' + bestScore.toFixed(2) + ')');
-        }
-
-        // Ripristina d.opzioniScenario se avevamo inserito OPZ0 temporaneamente
-        if (isOPZ0) d.opzioniScenario.pop();
-
-        if (!bestMosse) return;
-        var bIdx = d.opzioniScenario.length;
-        bLabelMap['OPZ' + (bIdx + 1)] = 'OPZ' + baseLabel;
-        var bCU = new Set();
-        bestMosse.forEach(function(m){ if(m.tipo==='tris'||m.tipo==='scala'){(m.carte||[]).forEach(function(c){bCU.add(c.id);});} else if(m.tipo==='calata'&&m.carta){bCU.add(m.carta.id);} });
-        if (game.debugAI) {
-            var bestMosseStr = bestMosse.map(function(m){
-                if (m.tipo==='calata') return 'calata('+_nomeCarta(m.carta)+'→combo#'+m.comboId+')';
-                if (m.tipo==='tris'||m.tipo==='scala') return m.tipo+'['+(m.carte||[]).map(_nomeCarta).join(',')+']';
-                return m.tipo;
-            }).join(', ');
-            console.log('[VariantiB] OPZ' + baseLabel + 'B mosse: [' + bestMosseStr + '] bCU={' + Array.from(bCU).join(',') + '}');
-        }
-        d.opzioniScenario.push({ mosse: bestMosse, carteUsate: bCU, descCarte: 'OPZ' + baseLabel + 'B' });
-    });
-    return { bLabelMap: bLabelMap, bFirstIdx: bFirstIdx };
-};
-
-// ============================================================
-// Varianti C: sacrifica una carta della mano per sbloccare il vincolo
-// Usata quando faseVincoloMano=true e la miglior opzione scarti viola rim<1.
-// Per ogni carta della mano nelle mosse dell'opzione violante, la rimuove
-// temporaneamente e rigenera l'analisi scarti sul resto.
-// Ritorna { cartaSacrificata, opzIdx, opz, score, analisiData, opzCLabel } o null.
-// ============================================================
-window._calcolaVariantiC = function(d, game, giocatore, giocatoreIdx) {
-    // Non ha senso calcolare varianti C se tutta la mano è composta da matte/jolly:
-    // qualsiasi sacrificio rimuoverebbe una matta, producendo una simulazione distorta.
-    if (giocatore.carte.length > 0 && giocatore.carte.every(function(c) { return c.isJolly || c.isPinella; })) {
-        console.log('[_calcolaVariantiC] mano composta solo da matte/jolly → skip');
-        return null;
-    }
-
-    var _w = window.opener || window;
-    var Strategia = _w.Strategia;
-    var origMano = function(r) { return r.origine === 'mano' || r.origine === 'scarto' || r.origine === 'mazzo'; };
-
-    var savedAnalisi = window._analisiData;
-    var savedScenario = window._analisiScenario;
-    var savedIdx = window._analisiGiocatoreIdx;
-
-    window._analisiData = d;
-    window._analisiScenario = 'scarti';
-    window._analisiGiocatoreIdx = giocatoreIdx;
-
-    var totalCarteD = d.classifica.filter(origMano).length;
-    var opzioniLen = d.opzioniScenario ? d.opzioniScenario.length : 0;
-
-    // Trova la miglior opzione violante (rim<1, no burraco)
-    var bestViolIdx = -1, bestViolScore = -Infinity;
-    for (var i = 0; i < opzioniLen; i++) {
-        var opzV = d.opzioniScenario[i];
-        if (!opzV) continue;
-        var usateV = opzV.carteUsate ? opzV.carteUsate.size : 0;
-        var rimV = totalCarteD - usateV - 1;
-        var burrV = (opzV.mosse || []).some(function(m) { return (m.tipo==='tris'||m.tipo==='scala') && m.carte && m.carte.length >= 7; });
-        if (rimV < 1 && !burrV) {
-            var srV = window.calcolaScoreOpz(i, true);
-            var scV = srV ? srV.score : 0;
-            if (scV > bestViolScore) { bestViolScore = scV; bestViolIdx = i; }
-        }
-    }
-    console.log('[_calcolaVariantiC] bestViolIdx=' + bestViolIdx + ' (score=' + bestViolScore.toFixed(1) + ') totalCarteD=' + totalCarteD);
-    if (bestViolIdx < 0) {
-        window._analisiData = savedAnalisi; window._analisiScenario = savedScenario; window._analisiGiocatoreIdx = savedIdx;
-        return null;
-    }
-
-    var opzViolante = d.opzioniScenario[bestViolIdx];
-
-    // Raccoglie carte presenti nelle mosse dell'opzione violante (sia mano che scarto)
-    var carteDaProvare = new Map(); // id -> { card, isScarto }
-    (opzViolante.mosse || []).forEach(function(m) {
-        var refs = m.tipo === 'calata' ? [m.carta] : (m.carte || []);
-        refs.forEach(function(c) {
-            if (!c) return;
-            var refId = c._origineRef ? c._origineRef.id : c.id;
-            var realCard = giocatore.carte.find(function(rc) { return rc.id === refId; });
-            if (realCard && !carteDaProvare.has(realCard.id)) {
-                carteDaProvare.set(realCard.id, { card: realCard, isScarto: false });
-                return;
-            }
-            // Prova anche tra le carte scarto
-            if (!realCard) {
-                var scartoCard = game.scarti.find(function(sc) { return sc.id === refId; });
-                if (scartoCard && !carteDaProvare.has(scartoCard.id)) {
-                    carteDaProvare.set(scartoCard.id, { card: scartoCard, isScarto: true });
-                }
-            }
-        });
-    });
-
-    function _provaSacrificio(cartaDaRimuovere, isScarto) {
-        var idx;
-        if (isScarto) {
-            idx = game.scarti.indexOf(cartaDaRimuovere);
-            if (idx < 0) return;
-            game.scarti.splice(idx, 1);
-        } else {
-            idx = giocatore.carte.indexOf(cartaDaRimuovere);
-            if (idx < 0) return;
-            giocatore.carte.splice(idx, 1);
-        }
-
-        var dC = Strategia.generaAnalisiParallela(giocatore, 'scarti');
-        window._analisiData = dC;
-        window._analisiScenario = 'scarti';
-        window._analisiGiocatoreIdx = giocatoreIdx;
-        window._calcolaVariantiB(dC, game, giocatoreIdx);
-
-        var totalCarteDC = dC.classifica.filter(origMano).length;
-        var opzioniLenC = dC.opzioniScenario ? dC.opzioniScenario.length : 0;
-        var opzIdxList = [];
-        for (var oi = 0; oi < opzioniLenC; oi++) opzIdxList.push(oi);
-        if (opzIdxList.length === 0) opzIdxList.push(-1);
-
-        opzIdxList.forEach(function(oi) {
-            var sr = window.calcolaScoreOpz(oi, true);
-            var sc = sr ? sr.score : 0;
-            var opzData = oi === -1 ? null : dC.opzioniScenario[oi];
-            var opz = opzData || { mosse: [], carteUsate: new Set() };
-            var usate = opzData && opzData.carteUsate ? opzData.carteUsate.size : 0;
-            var burraco = (opz.mosse || []).some(function(m) { return (m.tipo==='tris'||m.tipo==='scala') && m.carte && m.carte.length >= 7; });
-            if (totalCarteDC - usate - 1 >= 1 || burraco) {
-                if (!bestC || sc > bestC.score) {
-                    bestC = { cartaSacrificata: cartaDaRimuovere, opzIdx: oi, opz: opz, score: sc, analisiData: dC };
-                }
-            }
-        });
-
-        if (isScarto) {
-            game.scarti.splice(idx, 0, cartaDaRimuovere);
-        } else {
-            giocatore.carte.splice(idx, 0, cartaDaRimuovere);
-        }
-    }
-
-    var bestC = null;
-    carteDaProvare.forEach(function(entry) {
-        _provaSacrificio(entry.card, entry.isScarto);
-    });
-
-    console.log('[_calcolaVariantiC] carteDaProvare.size=' + carteDaProvare.size + ' → bestC=' + (bestC ? bestC.opzIdx + ' score=' + bestC.score.toFixed(1) : 'null'));
-    if (bestC) bestC.opzCLabel = 'OPZ' + (bestViolIdx + 1) + 'C';
-
-    window._analisiData = savedAnalisi;
-    window._analisiScenario = savedScenario;
-    window._analisiGiocatoreIdx = savedIdx;
-    return bestC;
-};
-
-// ============================================================
-// ============================================================
-// Varianti M: se dopo le mosse restano esattamente 2 carte (1 matta + 1 da scartare)
-// e la matta è calabile su una combo di squadra, aggiunge la calata nelle mosse
-// con tag isMattaSolitaria=true per ricevere il premioMattaSolitaria in calcolaScoreOpz.
-// Si applica solo quando NON siamo in fase di vincolo mano (post-pozzetto pre-burraco).
-// ============================================================
-window._calcolaVariantiM = function(d, game, giocatoreIdx) {
-    var giocatore = game.giocatori[giocatoreIdx];
-    var comboSquadra = giocatore.squadra === 0 ? game.combinazioniNoi : game.combinazioniLoro;
-    var mFirstIdx = d ? d.opzioniScenario.length : 0;
-    if (!d || !d.opzioniScenario || comboSquadra.length === 0)
-        return { mFirstIdx: mFirstIdx, mLabelMap: {} };
-
-    var _w = window.opener || window;
-    var origMano = function(r) { return r.origine === 'mano' || r.origine === 'scarto' || r.origine === 'mazzo'; };
-    var mLabelMap = {};
-
-    // Combos con 6+ carte: opportunità burraco via calata matta
-    // (generaOpzioniGioco in core.js non genera queste calate per scelta progettuale)
-    var burracoTargets = comboSquadra.filter(function(cb) { return cb.carte.length >= 6; });
-
-    // Itera su OPZ0 (nessuna mossa base) + tutte le opzioni generate
-    var baseOptions = [{ _opzIdx: -1, mosse: [], carteUsate: new Set() }];
-    d.opzioniScenario.slice(0, mFirstIdx).forEach(function(opt, i) {
-        if (opt && opt.mosse) baseOptions.push({ _opzIdx: i });
-    });
-
-    baseOptions.forEach(function(wrapper) {
-        var opzIdx = wrapper._opzIdx;
-        var opt = opzIdx === -1 ? wrapper : d.opzioniScenario[opzIdx];
-        if (!opt || !opt.mosse) return;
-
-        // Carte rimanenti dopo questa opzione (escluse quelle usate)
-        var carteRim = d.classifica.filter(function(r) {
-            return origMano(r) && !(opt.carteUsate && opt.carteUsate.has(r.cartaRef.id));
-        });
-
-        var matteEntries = carteRim.filter(function(r) { return r.isMatta; });
-        if (matteEntries.length === 0) return; // nessuna matta disponibile
-
-        // Modalità "fine partita": esattamente 2 carte rimaste (matta + 1 non-matta) → prova tutte le combo
-        // Si applica solo post-pesca (classifica include una carta di origine 'scarto' o 'mazzo').
-        // In pre-pesca (scenario='mano' senza carta pescata) non possiamo sapere la mano finale.
-        var hasPescato = d.classifica.some(function(r) { return r.origine === 'scarto' || r.origine === 'mazzo'; });
-        var nonMatte = carteRim.filter(function(r) { return !r.isMatta; });
-        var isTwoRemaining = hasPescato && carteRim.length === 2 && nonMatte.length === 1;
-        // Modalità "matte multiple": solo matte rimaste (o matte + 1 non-matta) → cala tutte su combo diverse
-        var isSoloMatte = hasPescato && nonMatte.length <= 1 && matteEntries.length >= 2;
-        // Modalità "burraco opportunity": matta disponibile + combo da 6+ carte sul tavolo
-        var isBurracoOpp = burracoTargets.length > 0;
-
-        if (!isTwoRemaining && !isSoloMatte && !isBurracoOpp) return;
-
-        var baseRes = window.calcolaScoreOpz(opzIdx, true);
-        var baseScore = baseRes ? baseRes.score : 0;
-        var bestScore = baseScore;
-        var bestMosse = null;
-
-        // Modalità matte multiple: greedy su N matte → N combo diverse (max 1 matta per combo)
-        if (isSoloMatte) {
-            var comboUsateM = new Set();
-            var assegnazioniM = [];
-            for (var mi = 0; mi < matteEntries.length; mi++) {
-                var mattaM = matteEntries[mi].cartaRef;
-                var trovataM = null;
-                for (var ci = 0; ci < comboSquadra.length; ci++) {
-                    var comboC = comboSquadra[ci];
-                    if (comboUsateM.has(comboC.id)) continue;
-                    var puoAggM = _w.puoAggiungereACombinazione ? _w.puoAggiungereACombinazione(mattaM, comboC) : false;
-                    if (puoAggM) { trovataM = comboC; break; }
-                }
-                if (!trovataM) { assegnazioniM = null; break; }
-                comboUsateM.add(trovataM.id);
-                assegnazioniM.push({ matta: mattaM, combo: trovataM });
-            }
-            if (assegnazioniM && assegnazioniM.length > 0) {
-                var mmM = (opt.mosse || []).map(function(m) {
-                    return m.carte ? Object.assign({}, m, { carte: m.carte.slice() }) : Object.assign({}, m);
-                });
-                // isMattaSolitaria=true solo se dopo aver calato tutte le matte non rimane nulla (chiusura)
-                var isChiusura = nonMatte.length === 0;
-                assegnazioniM.forEach(function(a) {
-                    mmM.push({ tipo: 'calata', carta: a.matta, combo: a.combo, comboId: a.combo.id, isMattaSolitaria: isChiusura });
-                });
-                var tempCUM = new Set(opt.carteUsate || []);
-                mmM.forEach(function(m) {
-                    if (m.tipo === 'tris' || m.tipo === 'scala') { (m.carte || []).forEach(function(c) { tempCUM.add(c.id); }); }
-                    else if (m.tipo === 'calata' && m.carta) { tempCUM.add(m.carta.id); }
-                });
-                var tempIdxM = d.opzioniScenario.length;
-                d.opzioniScenario.push({ mosse: mmM, carteUsate: tempCUM });
-                var resM = window.calcolaScoreOpz(tempIdxM, true);
-                d.opzioniScenario.pop();
-                if (resM && resM.score > bestScore) { bestScore = resM.score; bestMosse = mmM; }
-            }
-        }
-
-        // Modalità singola matta (isTwoRemaining o isBurracoOpp)
-        if (!bestMosse) {
-            var matta = matteEntries[0].cartaRef;
-            var targetCombos = isTwoRemaining ? comboSquadra : burracoTargets;
-            targetCombos.forEach(function(combo) {
-                var puoAgg = _w.puoAggiungereACombinazione ? _w.puoAggiungereACombinazione(matta, combo) : false;
-                if (!puoAgg) return;
-                var mm = (opt.mosse || []).map(function(m) {
-                    return m.carte ? Object.assign({}, m, { carte: m.carte.slice() }) : Object.assign({}, m);
-                });
-                mm.push({ tipo: 'calata', carta: matta, combo: combo, comboId: combo.id, isMattaSolitaria: isTwoRemaining });
-                var tempCU = new Set(opt.carteUsate || []);
-                mm.forEach(function(m) {
-                    if (m.tipo === 'tris' || m.tipo === 'scala') { (m.carte || []).forEach(function(c) { tempCU.add(c.id); }); }
-                    else if (m.tipo === 'calata' && m.carta) { tempCU.add(m.carta.id); }
-                });
-                var tempIdx = d.opzioniScenario.length;
-                d.opzioniScenario.push({ mosse: mm, carteUsate: tempCU });
-                var res = window.calcolaScoreOpz(tempIdx, true);
-                d.opzioniScenario.pop();
-                if (res && res.score > bestScore) { bestScore = res.score; bestMosse = mm; }
-            });
-        }
-
-        if (!bestMosse) return;
-
-        var mIdx = d.opzioniScenario.length;
-        var mLabel = opzIdx === -1 ? 'OPZ0M' : ('OPZ' + (opzIdx + 1) + 'M');
-        mLabelMap['OPZ' + (mIdx + 1)] = mLabel;
-
-        var mCU = new Set(opt.carteUsate || []);
-        bestMosse.forEach(function(m) {
-            if (m.tipo === 'tris' || m.tipo === 'scala') { (m.carte || []).forEach(function(c) { mCU.add(c.id); }); }
-            else if (m.tipo === 'calata' && m.carta) { mCU.add(m.carta.id); }
-        });
-        d.opzioniScenario.push({ mosse: bestMosse, carteUsate: mCU, descCarte: mLabel });
-    });
-
-    return { mFirstIdx: mFirstIdx, mLabelMap: mLabelMap };
-};
-
-// ============================================================
-// Varianti P: se dopo le mosse resta esattamente 1 carta non-matta (il futuro scarto)
-// e tutte le matte rimanenti trovano posto su combo della squadra,
-// genera una variante che le cala tutte → pozzBonus applicato automaticamente.
-// Si applica solo quando !giocatore.haPozzetto.
-// ============================================================
-window._calcolaVariantiP = function(d, game, giocatoreIdx) {
-    var giocatore = game.giocatori[giocatoreIdx];
-    var pFirstIdx = d ? d.opzioniScenario.length : 0;
-    var pLabelMap = {};
-
-    if (!d || !d.opzioniScenario || giocatore.haPozzetto) {
-        return { pFirstIdx: pFirstIdx, pLabelMap: pLabelMap };
-    }
-
-    var _w = window.opener || window;
-    var origMano = function(r) { return r.origine === 'mano' || r.origine === 'scarto' || r.origine === 'mazzo'; };
-    var comboSquadra = giocatore.squadra === 0 ? game.combinazioniNoi : game.combinazioniLoro;
-
-    if (comboSquadra.length === 0) return { pFirstIdx: pFirstIdx, pLabelMap: pLabelMap };
-
-    // Opzioni base: OPZ0 + tutte le opzioni già generate (B, M incluse)
-    var baseOptions = [{ _opzIdx: -1, mosse: [], carteUsate: new Set() }];
-    d.opzioniScenario.slice(0, pFirstIdx).forEach(function(opt, i) {
-        if (opt && opt.mosse) baseOptions.push({ _opzIdx: i });
-    });
-
-    baseOptions.forEach(function(wrapper) {
-        var opzIdx = wrapper._opzIdx;
-        var opt = opzIdx === -1 ? wrapper : d.opzioniScenario[opzIdx];
-        if (!opt || !opt.mosse) return;
-
-        // Carte rimanenti dopo questa opzione
-        var carteRim = d.classifica.filter(function(r) {
-            return origMano(r) && !(opt.carteUsate && opt.carteUsate.has(r.cartaRef.id));
-        });
-
-        // Serve esattamente 1 non-matta (il futuro scarto) e ≥1 matta
-        var nonMatte = carteRim.filter(function(r) { return !r.isMatta; });
-        var matte = carteRim.filter(function(r) { return r.isMatta; });
-        if (nonMatte.length !== 1 || matte.length === 0) return;
-
-        // Assegnazione greedy: ogni matta su una combo diversa della squadra
-        var comboUsate = new Set();
-        var assegnazioni = [];
-        for (var mi = 0; mi < matte.length; mi++) {
-            var matta = matte[mi].cartaRef;
-            var trovata = null;
-            for (var ci = 0; ci < comboSquadra.length; ci++) {
-                var combo = comboSquadra[ci];
-                if (comboUsate.has(combo.id)) continue;
-                var puoAgg = _w.puoAggiungereACombinazione ? _w.puoAggiungereACombinazione(matta, combo) : false;
-                if (puoAgg) { trovata = combo; break; }
-            }
-            if (!trovata) { assegnazioni = null; break; }
-            comboUsate.add(trovata.id);
-            assegnazioni.push({ matta: matta, combo: trovata });
-        }
-        if (!assegnazioni) return;
-
-        // Costruisci le mosse extra (copia base + calate matte)
-        var mm = (opt.mosse || []).map(function(m) {
-            return m.carte ? Object.assign({}, m, { carte: m.carte.slice() }) : Object.assign({}, m);
-        });
-        assegnazioni.forEach(function(a) {
-            mm.push({ tipo: 'calata', carta: a.matta, combo: a.combo, comboId: a.combo.id });
-        });
-
-        // Calcola score con temp push/pop
-        var tempCU = new Set(opt.carteUsate || []);
-        mm.forEach(function(m) {
-            if (m.tipo === 'tris' || m.tipo === 'scala') { (m.carte || []).forEach(function(c) { tempCU.add(c.id); }); }
-            else if (m.tipo === 'calata' && m.carta) { tempCU.add(m.carta.id); }
-        });
-        var tempIdx = d.opzioniScenario.length;
-        d.opzioniScenario.push({ mosse: mm, carteUsate: tempCU });
-        var res = window.calcolaScoreOpz(tempIdx, true);
-        d.opzioniScenario.pop();
-
-        // Genera solo se lo score migliora rispetto alla base
-        var baseRes = window.calcolaScoreOpz(opzIdx, true);
-        var baseScore = baseRes ? baseRes.score : 0;
-        if (!res || res.score <= baseScore) return;
-
-        var pIdx = d.opzioniScenario.length;
-        var rawBase = opzIdx === -1 ? 'OPZ0' : 'OPZ' + (opzIdx + 1);
-        var pLabel = rawBase + 'P';
-        pLabelMap['OPZ' + (pIdx + 1)] = pLabel;
-
-        var pCU = new Set(opt.carteUsate || []);
-        mm.forEach(function(m) {
-            if (m.tipo === 'tris' || m.tipo === 'scala') { (m.carte || []).forEach(function(c) { pCU.add(c.id); }); }
-            else if (m.tipo === 'calata' && m.carta) { pCU.add(m.carta.id); }
-        });
-        d.opzioniScenario.push({ mosse: mm, carteUsate: pCU, descCarte: pLabel });
-
-        console.log('[VariantiP] ' + pLabel + ' → ' + matte.length + ' matt' + (matte.length > 1 ? 'e' : 'a') + ' calat' + (matte.length > 1 ? 'e' : 'a') + ' su ' + assegnazioni.map(function(a) { return 'combo#' + a.combo.id; }).join(',') + ' → score=' + res.score.toFixed(1));
-    });
-
-    return { pFirstIdx: pFirstIdx, pLabelMap: pLabelMap };
-};
-
-// ============================================================
-// Varianti V: in faseVincoloMano, per ogni opzione 'scarti' che viola il vincolo
-// (rim < 1) e contiene ≥2 calate, genera versioni "potate" rimuovendo le calate
-// finali finché rim ≥ 1. Restituisce il miglior candidato potato.
-// Sicuro: rimuove sempre dalla fine della sequenza calate, preservando il prefisso valido.
-// ============================================================
-window._calcolaVariantiV = function(candidatiScartiViolanti, totalCarteD) {
-    var bestV = null;
-
-    candidatiScartiViolanti.forEach(function(cand) {
-        var d = cand.analisiData;
-        if (!d || cand.opzIdx < 0) return;
-        var opz = d.opzioniScenario[cand.opzIdx];
-        if (!opz || !opz.mosse) return;
-
-        // Considera solo le calate (le mosse che consumano 1 carta ciascuna)
-        var calate = opz.mosse.filter(function(m) { return m.tipo === 'calata'; });
-        if (calate.length < 2) return; // con 1 sola calata non c'è nulla da potare
-
-        // Prova a rimuovere le calate finali (1 alla volta) finché il vincolo è soddisfatto
-        for (var trim = 1; trim < calate.length; trim++) {
-            var calateRimaste = calate.slice(0, calate.length - trim);
-            // Ricostruisce l'insieme completo di mosse: non-calate + calate rimaste
-            var mosseTrim = opz.mosse.filter(function(m) {
-                return m.tipo !== 'calata' || calateRimaste.indexOf(m) >= 0;
-            });
-
-            // Calcola carteUsate per le mosse trimmate
-            var cuTrim = new Set();
-            mosseTrim.forEach(function(m) {
-                if (m.tipo === 'calata' && m.carta) cuTrim.add(m.carta.id);
-                else (m.carte || []).forEach(function(c) { cuTrim.add(c.id); });
-            });
-
-            var rimTrim = totalCarteD - cuTrim.size - 1;
-            if (rimTrim < 1) continue; // ancora violante, prova a togliere un'altra calata
-
-            // Calcola score con una push/pop temporanea
-            var tempIdx = d.opzioniScenario.length;
-            d.opzioniScenario.push({ mosse: mosseTrim, carteUsate: cuTrim });
-            window._analisiData = d;
-            window._analisiScenario = 'scarti';
-            var sr = window.calcolaScoreOpz(tempIdx, true);
-            d.opzioniScenario.pop();
-
-            var sc = sr ? sr.score : 0;
-            if (!bestV || sc > bestV.score) {
-                bestV = {
-                    score:       sc,
-                    mosse:       mosseTrim,
-                    carteUsate:  cuTrim,
-                    rimTrim:     rimTrim,
-                    srcCand:     cand,
-                    analisiData: d,
-                    scoreRes:    sr
-                };
-            }
-            break; // trovata la versione potata minima valida per questa opzione
-        }
-    });
-
-    return bestV;
-};
-
-// scegliBestOpzioneAI — identico a elaboraOpz (usa calcolaScoreOpz)
-// Se soloMano=true usa solo 'mano' (dopo aver già pescato dal mazzo)
-// Ritorna { scenario, opzIdx, opz, score, scarto, rispettaVincolo, analisiData }
-// ============================================================
-function scegliBestOpzioneAI(giocatore, soloMano, verbose, fase) {
-    if (!Strategia || !game) return null;
-
-    // Logger capturante: salva sempre i log in _diagLines, li stampa in console solo se verbose
-    const _diagLines = [];
-    const _indent = { v: 0 };
-    function _fmt(...args) {
-        // Converti argomenti in stringa leggibile (salta direttive %c)
-        const s = args.map(a => typeof a === 'string' ? a.replace(/%c/g, '') : String(a)).join(' ');
-        return '  '.repeat(_indent.v) + s.trim();
-    }
-    const con = {
-        group:    (...a) => { _diagLines.push(_fmt(...a)); _indent.v++; if (verbose) console.group(...a); },
-        groupEnd: ()    => { _indent.v = Math.max(0, _indent.v - 1); if (verbose) console.groupEnd(); },
-        log:      (...a) => { _diagLines.push(_fmt(...a)); if (verbose) console.log(...a); },
-        warn:     (...a) => { _diagLines.push('⚠ ' + _fmt(...a)); if (verbose) console.warn(...a); }
-    };
-    const nomeC = c => Strategia.nomeCarta ? Strategia.nomeCarta(c) : (c.numero + (c.seme || ''));
-
-    const giocatoreIdx = game.giocatori.indexOf(giocatore);
-    const comboSquadra = giocatore.squadra === 0 ? game.combinazioniNoi : game.combinazioniLoro;
-    const squadraHaBurraco = comboSquadra.some(cb => cb.isBurraco);
-    const faseVincoloMano = giocatore.haPozzetto && !squadraHaBurraco;
-    const origMano = r => r.origine === 'mano' || r.origine === 'scarto' || r.origine === 'mazzo';
-
-    function _makesBurraco(mosse) {
-        const lenMap = {};
-        comboSquadra.forEach(cb => { lenMap[cb.id] = cb.carte.length; });
-        for (const m of (mosse || [])) {
-            if ((m.tipo === 'tris' || m.tipo === 'scala') && m.carte && m.carte.length >= 7) return true;
-            if (m.tipo === 'calata' && m.combo) {
-                lenMap[m.combo.id] = (lenMap[m.combo.id] || m.combo.carte.length) + 1;
-                if (lenMap[m.combo.id] >= 7) return true;
-            }
-        }
-        return false;
-    }
-
-    const scenariDaUsare = soloMano ? ['mano'] : ['mano', 'scarti'];
-    const candidati = [];
-
-    con.group('=== ELABORA: scelta migliore OPZ ===');
-    con.log('Giocatore:', giocatore.nome || ('idx=' + giocatoreIdx));
-    con.log('Fase vincolo mano (post-pozzetto pre-burraco):', faseVincoloMano, '| haPozzetto:', giocatore.haPozzetto, '| squadraHaBurraco:', squadraHaBurraco, '| squadra:', giocatore.squadra);
-
-    const _analisiDataPerScenario = {};
-
-    for (const scenario of scenariDaUsare) {
-        if (scenario === 'scarti' && game.scarti.length === 0) continue;
-
-        const d = Strategia.generaAnalisiParallela(giocatore, scenario);
-        // Salva d PRIMA delle varianti (copia shallow di opzioniScenario)
-        // così _diagData.analisiDataPerScenario[scenario] è clean (solo OPZ base)
-        _analisiDataPerScenario[scenario] = Object.assign({}, d, { opzioniScenario: d.opzioniScenario.slice() });
-
-        // Imposta contesto globale per calcolaScoreOpz / calcolaScartoPer
-        window._analisiData = d;
-        window._analisiScenario = scenario;
-        window._analisiGiocatoreIdx = giocatoreIdx;
-
-        const totalCarteD = d.classifica.filter(origMano).length;
-
-        // Aggiungi varianti B, M e P — mutano d.opzioniScenario in-place
-        const bInfo = window._calcolaVariantiB(d, game, giocatoreIdx);
-        const mInfo = window._calcolaVariantiM(d, game, giocatoreIdx);
-        const pInfo = window._calcolaVariantiP(d, game, giocatoreIdx);
-        const bLabelMap = bInfo ? bInfo.bLabelMap : {};
-        const mLabelMap = mInfo ? mInfo.mLabelMap : {};
-        const pLabelMap = pInfo ? pInfo.pLabelMap : {};
-
-        const opzioniLen = d.opzioniScenario ? d.opzioniScenario.length : 0;
-        const opzIdxList = [-1]; // OPZ0: non giocare nulla (sempre disponibile)
-        for (let i = 0; i < opzioniLen; i++) opzIdxList.push(i);
-
-        const nB = mInfo ? mInfo.mFirstIdx - bInfo.bFirstIdx : 0;
-        const nM = pInfo ? pInfo.pFirstIdx - mInfo.mFirstIdx : 0;
-        const nP = pInfo ? opzioniLen - pInfo.pFirstIdx : 0;
-        con.group('--- Scenario: ' + scenario + ' ---');
-        con.log('OPZ disponibili:', opzIdxList.length, '(di cui B:', nB, 'M:', nM, 'P:', nP + ')');
-
-        for (const opzIdx of opzIdxList) {
-            const scoreRes = window.calcolaScoreOpz(opzIdx, true);
-            const opzScore = scoreRes ? scoreRes.score : 0;  // include sc interno
-            const mazzBonus = (scenario === 'mano' && window.coeffScoreOpz.premioMazzo !== undefined) ? window.coeffScoreOpz.premioMazzo : 0;
-            const _scartiHaMatta = scenario === 'scarti' && game.scarti.some(function(c) { return c.isJolly || c.numero === 2; });
-            const mattaBonus = _scartiHaMatta ? (window.coeffScoreOpz.premioMattaPescata || 40) : 0;
-            const opzData = opzIdx === -1 ? null : (d.opzioniScenario ? d.opzioniScenario[opzIdx] : null);
-            const opz = opzData || { mosse: [], carteUsate: new Set() };
-            const scartoCarta = scoreRes ? scoreRes.cartaScarto : '-';
-
-            let rispettaVincolo = true;
-            let carteRim = null;
-            let pozzBonus = 0;
-            const _usate = opzData && opzData.carteUsate ? opzData.carteUsate.size : 0;
-            const _burraco = opzData && opzData.mosse ? _makesBurraco(opzData.mosse) : false;
-            // Premio pozzetto: si applica in fase pre-pozzetto (indipendentemente da faseVincoloMano)
-            // scarti: rimane 1 carta in mano che viene scartata → carteRim=0
-            // mano: tutte le carte usate nelle mosse → niente scarto
-            if (!giocatore.haPozzetto && !_burraco) {
-                const remAfterMoves = totalCarteD - _usate;
-                const isPozzetto = scenario === 'scarti' ? remAfterMoves === 1 : remAfterMoves === 0;
-                if (isPozzetto) pozzBonus = window.coeffScoreOpz.premioPozzetto || 0;
-            }
-            if (faseVincoloMano) {
-                carteRim = totalCarteD - _usate - 1;
-                if (scenario === 'scarti') {
-                    rispettaVincolo = carteRim >= 1 || _burraco;
-                } else {
-                    rispettaVincolo = (totalCarteD - _usate) >= 1 || _burraco;
-                }
-            }
-            if (verbose) {
-                const rawLabel = opzIdx === -1 ? 'OPZ0' : 'OPZ' + (opzIdx + 1);
-                const opzLabel = bLabelMap[rawLabel] ? bLabelMap[rawLabel] + 'B' : mLabelMap[rawLabel] ? mLabelMap[rawLabel] + 'M' : pLabelMap[rawLabel] ? pLabelMap[rawLabel] : rawLabel;
-                if (faseVincoloMano) {
-                    con.log(opzLabel + ' [' + scenario + '] → score=' + (opzScore + mazzBonus + mattaBonus + pozzBonus).toFixed(1) + ' (opz=' + opzScore.toFixed(1) + (mazzBonus ? ' mazzo=+' + mazzBonus : '') + (mattaBonus ? ' matta=+' + mattaBonus : '') + (pozzBonus ? ' pozzetto=+' + pozzBonus : '') + ') | scarto=' + scartoCarta + ' | rim=' + carteRim + (_burraco ? ' [BURRACO]' : '') + (pozzBonus ? ' [POZZETTO]' : '') + (rispettaVincolo ? '' : ' ⚠ viola vincolo'));
-                } else {
-                    con.log(opzLabel + ' → score=' + (opzScore + mazzBonus + mattaBonus + pozzBonus).toFixed(1) + ' (opz=' + opzScore.toFixed(1) + (mazzBonus ? ' mazzo=+' + mazzBonus : '') + (mattaBonus ? ' matta=+' + mattaBonus : '') + (pozzBonus ? ' pozzetto=+' + pozzBonus : '') + ') | scarto=' + scartoCarta + (_burraco ? ' [BURRACO]' : '') + (pozzBonus ? ' [POZZETTO]' : ''));
-                }
-            }
-            const score = opzScore + mazzBonus + mattaBonus + pozzBonus;
-
-            candidati.push({ scenario, opzIdx, opz, score, opzScore, mazzBonus, mattaBonus, pozzBonus, scarto: scoreRes?.cartaRef || null, scartoCarta, rispettaVincolo, carteRim, analisiData: d, _labelMaps: { bLabelMap, mLabelMap, pLabelMap }, _scoreRes: scoreRes });
-        }
-        con.groupEnd();
-    }
-
-    if (candidati.length === 0) { con.groupEnd(); return null; }
-
-    // ===== OPZnC: sacrifica una carta per sbloccare la fase vincolata =====
-    if (faseVincoloMano && !soloMano) {
-        const dScarti = candidati.find(c => c.scenario === 'scarti')?.analisiData;
-        if (dScarti) {
-            const bestC = window._calcolaVariantiC(dScarti, game, giocatore, giocatoreIdx);
-            if (bestC) {
-                // Scarto reale: calcolaScartoPer su dScarti (carta sacrificata ancora candidata)
-                const _cCUD = new Set();
-                (dScarti.classifica || []).forEach(function(r) {
-                    if (!r.cartaRef) return;
-                    const oid = r.cartaRef._origineRef ? r.cartaRef._origineRef.id : r.cartaRef.id;
-                    const used = (bestC.opz && bestC.opz.mosse || []).some(function(m) {
-                        const refs = m.tipo === 'calata' ? [m.carta] : (m.carte || []);
-                        return refs.some(function(c) { return c && (c._origineRef ? c._origineRef.id : c.id) === oid; });
-                    });
-                    if (used) _cCUD.add(r.cartaRef.id);
-                });
-                const _cVIdx = dScarti.opzioniScenario.length;
-                dScarti.opzioniScenario.push({ mosse: [], carteUsate: _cCUD, descCarte: bestC.opzCLabel });
-                window._analisiData = dScarti; window._analisiGiocatoreIdx = giocatoreIdx;
-                const scartoC = window.calcolaScartoPer(_cVIdx, true);
-                dScarti.opzioniScenario.pop();
-                con.log(`[OPZnC] ${bestC.opzCLabel}: esclusa=${nomeC(bestC.cartaSacrificata)} scarto=${scartoC ? scartoC.carta : '?'} score=${bestC.score.toFixed(1)}`);
-                candidati.push({
-                    scenario: 'scarti',
-                    opzIdx: bestC.opzIdx,
-                    opz: bestC.opz,
-                    score: bestC.score,
-                    scartoCarta: scartoC ? scartoC.carta : nomeC(bestC.cartaSacrificata),
-                    scarto: scartoC?.cartaRef || bestC.cartaSacrificata,
-                    rispettaVincolo: true,
-                    analisiData: dScarti,
-                    isOpzC: true,
-                    opzCLabel: bestC.opzCLabel
-                });
-            }
-        }
-    }
-
-    // ===== OPZnV: pota le calate finali delle opzioni violanti per soddisfare il vincolo =====
-    if (faseVincoloMano) {
-        const _violantiScarti = candidati.filter(c => c.scenario === 'scarti' && !c.rispettaVincolo && c.opzIdx >= 0);
-        if (_violantiScarti.length > 0) {
-            const dScartiV = _violantiScarti[0].analisiData;
-            const _totalCarteV = dScartiV ? dScartiV.classifica.filter(origMano).length : 0;
-            window._analisiData = dScartiV;
-            window._analisiScenario = 'scarti';
-            window._analisiGiocatoreIdx = giocatoreIdx;
-            const bestV = window._calcolaVariantiV(_violantiScarti, _totalCarteV);
-            if (bestV) {
-                // Calcola scarto sulla versione potata, con combo proiettate post-calata
-                const _vIdx = bestV.analisiData.opzioniScenario.length;
-                bestV.analisiData.opzioniScenario.push({ mosse: bestV.mosse, carteUsate: bestV.carteUsate });
-                window._analisiData = bestV.analisiData; window._analisiGiocatoreIdx = giocatoreIdx;
-                const _giocV = game.giocatori[giocatoreIdx];
-                const _comboSqV = _giocV.squadra === 0 ? game.combinazioniNoi : game.combinazioniLoro;
-                const _comboSqVProj = window._proiettaComboConCalate(_comboSqV, bestV.mosse);
-                const scartoV = window.calcolaScartoPer(_vIdx, true, _comboSqVProj);
-                bestV.analisiData.opzioniScenario.pop();
-                const _srcLm = bestV.srcCand._labelMaps || {};
-                const _srcRaw = bestV.srcCand.opzIdx === -1 ? 'OPZ0' : 'OPZ' + (bestV.srcCand.opzIdx + 1);
-                const _srcLbl = (_srcLm.bLabelMap && _srcLm.bLabelMap[_srcRaw]) ? _srcLm.bLabelMap[_srcRaw] + 'B'
-                    : (_srcLm.mLabelMap && _srcLm.mLabelMap[_srcRaw]) ? _srcLm.mLabelMap[_srcRaw] + 'M' : _srcRaw;
-                const vLabel = _srcLbl + 'V';
-                con.log('[OPZnV] ' + vLabel + ': potata da ' + _srcLbl + ' scarto=' + (scartoV ? scartoV.carta : '?') + ' score=' + bestV.score.toFixed(1) + ' rim=' + bestV.rimTrim);
-                candidati.push({
-                    scenario: 'scarti',
-                    opzIdx: -1,
-                    opz: { mosse: bestV.mosse, carteUsate: bestV.carteUsate },
-                    score: bestV.score,
-                    opzScore: bestV.score,
-                    mazzBonus: 0,
-                    pozzBonus: 0,
-                    scartoCarta: scartoV ? scartoV.carta : '-',
-                    scarto: scartoV ? scartoV.cartaRef : null,
-                    rispettaVincolo: true,
-                    carteRim: bestV.rimTrim,
-                    analisiData: bestV.analisiData,
-                    isOpzV: true,
-                    opzVLabel: vLabel,
-                    _labelMaps: {}
-                });
-            }
-        }
-    }
-
-    candidati.sort((a, b) => b.score - a.score);
-    const validati = candidati.filter(c => c.rispettaVincolo);
-    const best = validati.length > 0 ? validati[0] : candidati[0];
-    const usaFallback = validati.length === 0 && faseVincoloMano;
-
-    con.log('--- TUTTI I CANDIDATI (ordinati per score) ---');
-    // Risolve label display (OPZ0M, OPZ1, ecc.) per ogni candidato — usata anche in _diagData
-    function _opzLabel(c, bLM, mLM, pLM) {
-        if (c.opzCLabel) return c.opzCLabel;
-        if (c.opzVLabel) return c.opzVLabel;
-        const raw = c.opzIdx === -1 ? 'OPZ0' : 'OPZ' + (c.opzIdx + 1);
-        if (bLM && bLM[raw]) return bLM[raw] + 'B';
-        if (mLM && mLM[raw]) return mLM[raw] + 'M';
-        if (pLM && pLM[raw]) return pLM[raw];
-        return raw;
-    }
-    // Associa a ogni candidato le mappe label del suo scenario
-    const _scenarioLabelMaps = {};
-    for (const scenario of scenariDaUsare) {
-        _scenarioLabelMaps[scenario] = candidati.find(c => c.scenario === scenario)?._labelMaps || { bLabelMap: {}, mLabelMap: {}, pLabelMap: {} };
-    }
-    candidati.forEach(c => {
-        const marker = c === best ? ' ◄ MIGLIORE' : '';
-        const vincTag = c.carteRim !== null && !c.rispettaVincolo ? ' ⚠' : '';
-        const lm = c._labelMaps || { bLabelMap: {}, mLabelMap: {}, pLabelMap: {} };
-        const lbl = _opzLabel(c, lm.bLabelMap, lm.mLabelMap, lm.pLabelMap);
-        con.log('[' + c.scenario + '] ' + lbl + ' → score=' + c.score.toFixed(1) + ' (opz=' + (c.opzScore||0).toFixed(1) + (c.mazzBonus ? ' mazzo=+' + c.mazzBonus : '') + (c.pozzBonus ? ' pozzetto=+' + c.pozzBonus : '') + ') | scarto=' + (c.scartoCarta||'-') + vincTag + marker);
-    });
-    if (usaFallback) con.warn('Nessuna opzione lascia ≥1 carta in mano: scelto il miglior fallback disponibile.');
-    if (best) {
-        const bestLm = best._labelMaps || { bLabelMap: {}, mLabelMap: {}, pLabelMap: {} };
-        const bestLbl = _opzLabel(best, bestLm.bLabelMap, bestLm.mLabelMap, bestLm.pLabelMap);
-        con.log('→ SCELTA: [' + best.scenario + '] ' + bestLbl + ' → scarto: ' + (best.scartoCarta||'-') + ' (score=' + best.score.toFixed(1) + (best.carteRim !== null ? ', rim=' + best.carteRim : '') + ')');
-    }
-    con.groupEnd();
-
-    // Lascia il contesto debug puntato sull'analisi scelta
-    if (best) {
-        window._analisiData = best.analisiData;
-        window._analisiScenario = best.scenario;
-        window._analisiGiocatoreIdx = giocatoreIdx;
-    }
-
-    // ===== Salva dati diagnostici in window._diagData =====
-    const _fase = fase || (soloMano ? 'postPesca' : 'prePesca');
-    window._diagData = window._diagData || {};
-    window._diagData[_fase] = {
-        giocatoreIdx: giocatoreIdx,
-        giocatore: giocatore.nome || ('idx=' + giocatoreIdx),
-        scenari: scenariDaUsare,
-        candidati: candidati.map(c => {
-            const lm = c._labelMaps || { bLabelMap: {}, mLabelMap: {} };
-            return Object.assign({}, c, { label: _opzLabel(c, lm.bLabelMap, lm.mLabelMap) });
-        }),
-        best: best ? Object.assign({}, best, {
-            label: _opzLabel(best, (best._labelMaps||{}).bLabelMap||{}, (best._labelMaps||{}).mLabelMap||{})
-        }) : null,
-        logLines: _diagLines.slice(),
-        logPerOpz: {},   // verrà popolato on-demand al click colonna
-        analisiDataPerScenario: _analisiDataPerScenario
-    };
-    // Propaga ai turni precedenti non ancora salvati
-    if (_fase === 'postPesca') {
-        window._diagData['prePesca'] = window._diagData['prePesca'] || window._diagData['postPesca'];
-    }
-
-    return best;
-}
-
+// calcolaScoreOpz → spostato in burraco-core.js
+// (tutto il blocco da qui fino a scegliBestOpzioneAI inclusa è nel core)
 // ============================================================================
 // SISTEMA MESSAGGI DEBUG
 // ============================================================================
@@ -3784,6 +2699,313 @@ function nascondiMessaggio() {
     }
 }
 
+// Costruisce il modale di configurazione automa e lo inietta nel DOM
+function _buildAutomaConfigModal() {
+    var modalEl = document.getElementById('modal-automa-config');
+    if (!modalEl) return;
+
+    var modalita = document.querySelector('input[name="modalita"]:checked');
+    var is2v2 = !modalita || modalita.value !== '1v1';
+
+    var cfg = {
+        modoPersonaggi: 'casuale',
+        sq0Id: 'paolo', sq1Id: 'giuseppe',
+        bottomId: 'paolo', topId: 'francesca', leftId: 'giuseppe', rightId: 'teresa',
+        mazziere: 'casuale', mazzierePosizione: 0,
+        delay: 1500, maxPartite: 0
+    };
+    try {
+        var raw = localStorage.getItem('burraco_automa_config');
+        if (raw) Object.assign(cfg, JSON.parse(raw));
+    } catch (e) {}
+
+    function persOpts(selectedId) {
+        return PERSONAGGI.map(function(p) {
+            return '<option value="' + p.id + '"' + (p.id === selectedId ? ' selected' : '') + '>' + p.nome + '</option>';
+        }).join('');
+    }
+
+    function posOpts(selVal) {
+        var defs = [
+            [0, '↓ Basso (Noi)'],
+            [1, '← Sinistra (Loro)']
+        ];
+        if (is2v2) { defs.push([2, '↑ Alto (Noi)']); defs.push([3, '→ Destra (Loro)']); }
+        return defs.map(function(d) {
+            return '<option value="' + d[0] + '"' + (d[0] == selVal ? ' selected' : '') + '>' + d[1] + '</option>';
+        }).join('');
+    }
+
+    var si = 'background:#1a4a2a;color:#fff;border:1px solid #6b9b7a;border-radius:4px;padding:2px 6px;font-size:12px';
+    var chk = function(v, ref) { return v === ref ? ' checked' : ''; };
+    var nodisp = 'display:none';
+
+    var topRow = is2v2
+        ? '<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px"><span style="color:#8cf;font-size:12px;min-width:84px">↑ Alto:</span><select id="ac-top" style="' + si + '">' + persOpts(cfg.topId) + '</select></div>'
+        : '';
+    var rightRow = is2v2
+        ? '<div style="display:flex;align-items:center;gap:6px"><span style="color:#fc8;font-size:12px;min-width:84px">→ Destra:</span><select id="ac-right" style="' + si + '">' + persOpts(cfg.rightId) + '</select></div>'
+        : '';
+    var squadraNoi  = is2v2 ? 'Noi (↓↑)' : 'Noi (↓)';
+    var squadraLoro = is2v2 ? 'Loro (←→)' : 'Loro (←)';
+
+    modalEl.innerHTML =
+        '<h2 style="color:#8cf;font-size:16px;margin:0 0 12px;text-align:center">Configurazione Automa</h2>' +
+        '<div class="modal-content" style="max-height:calc(90vh - 130px);overflow-y:auto">' +
+
+        '<fieldset style="border:1px solid #456;border-radius:6px;padding:8px 12px;margin-bottom:10px">' +
+        '<legend style="color:#aaa;font-size:11px;padding:0 4px;text-transform:uppercase">Personaggi</legend>' +
+        '<label style="display:block;color:#ccc;font-size:13px;margin-bottom:5px"><input type="radio" name="ac-pers" value="casuale"' + chk(cfg.modoPersonaggi,'casuale') + '> Casuali (variati ogni partita)</label>' +
+        '<label style="display:block;color:#ccc;font-size:13px;margin-bottom:4px"><input type="radio" name="ac-pers" value="perSquadra"' + chk(cfg.modoPersonaggi,'perSquadra') + '> Per squadra:</label>' +
+        '<div id="ac-div-squadra" style="padding-left:18px;margin-bottom:6px;' + (cfg.modoPersonaggi === 'perSquadra' ? '' : nodisp) + '">' +
+            '<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><span style="color:#8cf;font-size:12px;min-width:90px">' + squadraNoi + ':</span><select id="ac-sq0" style="' + si + '">' + persOpts(cfg.sq0Id) + '</select></div>' +
+            '<div style="display:flex;align-items:center;gap:8px"><span style="color:#fc8;font-size:12px;min-width:90px">' + squadraLoro + ':</span><select id="ac-sq1" style="' + si + '">' + persOpts(cfg.sq1Id) + '</select></div>' +
+        '</div>' +
+        '<label style="display:block;color:#ccc;font-size:13px;margin-bottom:4px"><input type="radio" name="ac-pers" value="individuali"' + chk(cfg.modoPersonaggi,'individuali') + '> Individuali:</label>' +
+        '<div id="ac-div-indiv" style="padding-left:18px;margin-bottom:4px;' + (cfg.modoPersonaggi === 'individuali' ? '' : nodisp) + '">' +
+            '<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px"><span style="color:#8cf;font-size:12px;min-width:84px">↓ Basso:</span><select id="ac-bottom" style="' + si + '">' + persOpts(cfg.bottomId) + '</select></div>' +
+            topRow +
+            '<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px"><span style="color:#fc8;font-size:12px;min-width:84px">← Sinistra:</span><select id="ac-left" style="' + si + '">' + persOpts(cfg.leftId) + '</select></div>' +
+            rightRow +
+        '</div>' +
+        '</fieldset>' +
+
+        (function() {
+            var engines = typeof window._getAvailableEngines === 'function' ? window._getAvailableEngines() : [{ id: 'A', nome: 'Motore A' }];
+            var engOpts = function(selId) { return engines.map(function(e) { return '<option value="' + e.id + '"' + (e.id === selId ? ' selected' : '') + '>' + e.nome + '</option>'; }).join(''); };
+            return '<fieldset style="border:1px solid #456;border-radius:6px;padding:8px 12px;margin-bottom:10px">' +
+            '<legend style="color:#aaa;font-size:11px;padding:0 4px;text-transform:uppercase">Motori AI</legend>' +
+            '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="color:#8cf;font-size:12px;min-width:90px">Squadra Noi:</span><select id="ac-eng-noi" style="' + si + '">' + engOpts(cfg.engineNoi || 'A') + '</select></div>' +
+            '<div style="display:flex;align-items:center;gap:8px"><span style="color:#fc8;font-size:12px;min-width:90px">Squadra Loro:</span><select id="ac-eng-loro" style="' + si + '">' + engOpts(cfg.engineLoro || 'A') + '</select></div>' +
+            '</fieldset>';
+        })() +
+
+        '<fieldset style="border:1px solid #456;border-radius:6px;padding:8px 12px;margin-bottom:10px">' +
+        '<legend style="color:#aaa;font-size:11px;padding:0 4px;text-transform:uppercase">Mazziere</legend>' +
+        '<label style="display:block;color:#ccc;font-size:13px;margin-bottom:5px"><input type="radio" name="ac-maz" value="casuale"' + chk(cfg.mazziere,'casuale') + '> Casuale ogni partita</label>' +
+        '<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px"><label style="color:#ccc;font-size:13px;white-space:nowrap"><input type="radio" name="ac-maz" value="fisso"' + chk(cfg.mazziere,'fisso') + '> Fisso:</label><select id="ac-maz-pos" style="' + si + '">' + posOpts(cfg.mazzierePosizione) + '</select></div>' +
+        '<div style="display:flex;align-items:center;gap:8px"><label style="color:#ccc;font-size:13px;white-space:nowrap"><input type="radio" name="ac-maz" value="rotazione"' + chk(cfg.mazziere,'rotazione') + '> Rotazione da:</label><select id="ac-maz-rot" style="' + si + '">' + posOpts(cfg.mazzierePosizione) + '</select></div>' +
+        '</fieldset>' +
+
+        '<div style="display:flex;gap:12px;margin-bottom:4px">' +
+        '<div style="flex:1"><div style="color:#aaa;font-size:11px;text-transform:uppercase;margin-bottom:4px">Velocità</div>' +
+        '<select id="ac-delay" style="' + si + ';width:100%">' +
+        '<option value="500"' + (cfg.delay==500?' selected':'') + '>Veloce (0.5s)</option>' +
+        '<option value="1000"' + (cfg.delay==1000?' selected':'') + '>Normale (1s)</option>' +
+        '<option value="1500"' + (cfg.delay==1500?' selected':'') + '>Lenta (1.5s)</option>' +
+        '<option value="3000"' + (cfg.delay==3000?' selected':'') + '>Molto lenta (3s)</option>' +
+        '</select></div>' +
+        '<div style="flex:1"><div style="color:#aaa;font-size:11px;text-transform:uppercase;margin-bottom:4px">Max partite</div>' +
+        '<select id="ac-max" style="' + si + ';width:100%">' +
+        '<option value="0"'    + (cfg.maxPartite==0?   ' selected':'') + '>Illimitate</option>' +
+        '<option value="10"'   + (cfg.maxPartite==10?  ' selected':'') + '>10</option>' +
+        '<option value="50"'   + (cfg.maxPartite==50?  ' selected':'') + '>50</option>' +
+        '<option value="100"'  + (cfg.maxPartite==100? ' selected':'') + '>100</option>' +
+        '<option value="200"'  + (cfg.maxPartite==200? ' selected':'') + '>200</option>' +
+        '<option value="1000"' + (cfg.maxPartite==1000?' selected':'') + '>1000</option>' +
+        '<option value="custom"' + (cfg.maxPartite>0 && [10,50,100,200,1000].indexOf(cfg.maxPartite)<0?' selected':'') + '>Personalizzato…</option>' +
+        '</select>' +
+        '<input id="ac-max-custom" type="number" min="1" max="9999" placeholder="N. partite"' +
+        ' style="' + si + ';width:100%;margin-top:4px;display:' + (cfg.maxPartite>0 && [10,50,100,200,1000].indexOf(cfg.maxPartite)<0?'block':'none') + '"' +
+        ' value="' + (cfg.maxPartite>0 && [10,50,100,200,1000].indexOf(cfg.maxPartite)<0?cfg.maxPartite:'') + '">' +
+        '</div>' +
+        '</div>' +
+        '<label style="display:flex;align-items:center;gap:8px;color:#fc8;font-size:13px;margin-top:10px;cursor:pointer">' +
+        '<input type="checkbox" id="ac-fast"' + (cfg.fastMode?' checked':'') + ' style="width:16px;height:16px;cursor:pointer"> ' +
+        'Fast mode (senza UI — solo contatore)</label>' +
+        '<label style="display:flex;align-items:center;gap:8px;color:#adf;font-size:13px;margin-top:8px;cursor:pointer">' +
+        '<input type="checkbox" id="ac-seeddb"' + (cfg.useSeedDb?' checked':'') + ' style="width:16px;height:16px;cursor:pointer"> ' +
+        'Usa database mazzi deterministico (1000 seed fissi)</label>' +
+        '</div>' +  // end modal-content
+
+        '<div style="display:flex;gap:10px;justify-content:center;margin-top:14px;flex-wrap:wrap">' +
+        '<button id="ac-annulla" class="btn-modal" style="background:rgba(0,0,0,0.3);color:#aaa;border-color:#555;padding:8px 20px;font-size:14px">ANNULLA</button>' +
+        '<button id="ac-avvia"   class="btn-modal" style="padding:8px 24px;font-size:14px">AVVIA</button>' +
+        '<button id="ac-scan"    class="btn-modal" style="background:rgba(80,40,0,0.5);color:#fc8;border-color:#a84;padding:8px 20px;font-size:14px" title="Scan automatico di tutti i parametri del Motore B">SCAN B</button>' +
+        '</div>';
+
+    // Toggle show/hide personaggi sub-sections
+    modalEl.querySelectorAll('input[name="ac-pers"]').forEach(function(r) {
+        r.addEventListener('change', function() {
+            var divS = modalEl.querySelector('#ac-div-squadra');
+            var divI = modalEl.querySelector('#ac-div-indiv');
+            if (divS) divS.style.display = this.value === 'perSquadra'  ? '' : 'none';
+            if (divI) divI.style.display = this.value === 'individuali' ? '' : 'none';
+        });
+    });
+
+    // Toggle input personalizzato per max partite
+    var acMax = modalEl.querySelector('#ac-max');
+    var acMaxCustom = modalEl.querySelector('#ac-max-custom');
+    if (acMax && acMaxCustom) {
+        acMax.addEventListener('change', function() {
+            acMaxCustom.style.display = this.value === 'custom' ? 'block' : 'none';
+            if (this.value === 'custom') acMaxCustom.focus();
+        });
+    }
+
+    // Sync fisso/rotazione position selects
+    var mazPos = modalEl.querySelector('#ac-maz-pos');
+    var mazRot = modalEl.querySelector('#ac-maz-rot');
+    if (mazPos && mazRot) {
+        mazPos.addEventListener('change', function() { mazRot.value = this.value; });
+        mazRot.addEventListener('change', function() { mazPos.value = this.value; });
+    }
+
+    modalEl.querySelector('#ac-annulla').addEventListener('click', function() { chiudiModals(); });
+    modalEl.querySelector('#ac-avvia').addEventListener('click', function() {
+        var config = _leggiConfigAutoma(modalEl);
+        try { localStorage.setItem('burraco_automa_config', JSON.stringify(config)); } catch (e) {}
+        chiudiModals();
+        if (typeof avviaAutoma === 'function') avviaAutoma(config);
+    });
+    modalEl.querySelector('#ac-scan').addEventListener('click', function() {
+        var config = _leggiConfigAutoma(modalEl);
+        try { localStorage.setItem('burraco_automa_config', JSON.stringify(config)); } catch (e) {}
+        chiudiModals();
+        if (typeof window._avviaScan === 'function') window._avviaScan(config);
+    });
+}
+
+function _leggiConfigAutoma(modalEl) {
+    function v(id)   { var el = modalEl.querySelector('#' + id); return el ? el.value : null; }
+    function rad(nm) { var el = modalEl.querySelector('input[name="' + nm + '"]:checked'); return el ? el.value : null; }
+    var pos = parseInt(v('ac-maz-pos') || v('ac-maz-rot') || '0');
+    return {
+        modoPersonaggi:     rad('ac-pers')       || 'casuale',
+        sq0Id:              v('ac-sq0')           || 'paolo',
+        sq1Id:              v('ac-sq1')           || 'giuseppe',
+        bottomId:           v('ac-bottom')        || 'paolo',
+        topId:              v('ac-top')            || 'francesca',
+        leftId:             v('ac-left')           || 'giuseppe',
+        rightId:            v('ac-right')          || 'teresa',
+        mazziere:           rad('ac-maz')         || 'casuale',
+        mazzierePosizione:  isNaN(pos) ? 0 : pos,
+        delay:              parseInt(v('ac-delay') || '1500'),
+        maxPartite:         (function() {
+            var sel = v('ac-max') || '0';
+            if (sel === 'custom') { var n = parseInt((modalEl.querySelector('#ac-max-custom')||{}).value||'0'); return n > 0 ? n : 0; }
+            return parseInt(sel);
+        })(),
+        fastMode:           !!(modalEl.querySelector('#ac-fast')   || {}).checked,
+        useSeedDb:          !!(modalEl.querySelector('#ac-seeddb') || {}).checked,
+        engineNoi:          v('ac-eng-noi')  || 'A',
+        engineLoro:         v('ac-eng-loro') || 'A'
+    };
+}
+
+window._chiudiFastCounter = function () {
+    var el = document.getElementById('fast-counter');
+    if (el) el.style.display = 'none';
+};
+
+window._aggiornaTurnoFast = function () {
+    var el = document.getElementById('fast-counter');
+    if (!el) return;
+    var s = window._automaStats || {};
+    var hasDati = (s.partite || 0) > 0;
+    var running = game.fastMode;
+    if (!running && !hasDati) { el.style.display = 'none'; return; }
+    el.style.display = 'flex';
+
+    var maxPart = (game.automaConfig && game.automaConfig.maxPartite) || 0;
+    var bn = s.burracosNoi  || { puliti: 0, semipuliti: 0, sporchi: 0 };
+    var bl = s.burracosLoro || { puliti: 0, semipuliti: 0, sporchi: 0 };
+    var avgNoi  = s.partite ? Math.round((s.puntiTotNoi  || 0) / s.partite) : 0;
+    var avgLoro = s.partite ? Math.round((s.puntiTotLoro || 0) / s.partite) : 0;
+
+    var row = function(label, vNoi, vLoro, cNoi, cLoro) {
+        cNoi  = cNoi  || '#fff';
+        cLoro = cLoro || '#fff';
+        return '<tr>' +
+            '<td style="color:#aaa;padding:2px 10px 2px 0;font-size:12px;text-align:right">' + label + '</td>' +
+            '<td style="color:' + cNoi  + ';padding:2px 12px 2px 0;font-size:13px;font-weight:bold">' + vNoi  + '</td>' +
+            '<td style="color:' + cLoro + ';padding:2px 0;font-size:13px;font-weight:bold">' + vLoro + '</td>' +
+            '</tr>';
+    };
+
+    var partitaNum, partiteStr;
+    if (running) {
+        partitaNum = (s.partite || 0) + 1;
+        partiteStr = maxPart > 0 ? partitaNum + ' / ' + maxPart : String(partitaNum);
+    } else {
+        partiteStr = String(s.partite || 0) + (maxPart > 0 ? ' / ' + maxPart : '');
+    }
+
+    var sc = window._scanState || {};
+    var scanBar = (running && sc.running)
+        ? '<div style="font-size:11px;color:#fc8;margin-bottom:4px">SCAN ' + sc.done + ' / ' + sc.total +
+          ' &nbsp;—&nbsp; <b>' + sc.currentParam + '</b> = ' + sc.currentValue + '</div>'
+        : '';
+    var titolo = running
+        ? scanBar +
+          '<div style="font-size:22px;font-weight:bold;color:#8cf;margin-bottom:4px">Partita ' + partiteStr + '</div>' +
+          '<div style="font-size:13px;color:#ccc;margin-bottom:10px">Turno ' + (game.turno || 0) + ' &nbsp;|&nbsp; Mazzo: ' + (game.mazzo ? game.mazzo.length : '?') + '</div>'
+        : '<div style="font-size:16px;font-weight:bold;color:#4f4;margin-bottom:8px">' +
+          (sc.running === false && sc.total > 0 ? 'Scan completato &mdash; ' + sc.total + ' test' : 'Simulazione terminata &mdash; ' + (s.partite || 0) + ' partite') +
+          '</div>';
+
+    var btnLabel = running ? 'FERMA' : 'CHIUDI';
+    var btnColor = running ? '#f88' : '#8cf';
+    var seedDbActive = !!(game.automaConfig && game.automaConfig.useSeedDb);
+    var logCount = (window._automaLog || []).length;
+    var bsty = 'padding:5px 16px;border-radius:6px;cursor:pointer;font-size:12px;border:1px solid';
+
+    var pannelloSalva = (!running && seedDbActive)
+        ? '<textarea id="fc-desc" rows="2" placeholder="Nota descrittiva (es: premioScala=40)..." style="width:100%;margin-top:10px;background:rgba(0,0,0,0.5);color:#fff;border:1px solid #4a4;border-radius:4px;padding:4px 8px;font-size:12px;resize:vertical;box-sizing:border-box"></textarea>' +
+          '<div style="display:flex;gap:8px;margin-top:6px;justify-content:center;flex-wrap:wrap">' +
+          '<button id="fc-salva" style="' + bsty + ' #4a4;background:rgba(0,80,0,0.5);color:#4f4">SALVA</button>' +
+          '<button id="fast-counter-btn" style="' + bsty + ' #4a4;background:rgba(0,0,0,0.4);color:' + btnColor + '">' + btnLabel + '</button>' +
+          '</div>'
+        : '<button id="fast-counter-btn" style="margin-top:8px;padding:6px 28px;background:rgba(0,0,0,0.4);color:' + btnColor + ';border:1px solid #4a4;border-radius:6px;cursor:pointer;font-size:13px">' + btnLabel + '</button>';
+
+    el.innerHTML = titolo +
+        '<table style="border-collapse:collapse;margin-bottom:8px">' +
+        '<tr><th style="color:#888;font-size:11px;font-weight:normal;text-align:right;padding-right:10px"></th>' +
+        '<th style="color:#8cf;font-size:11px;font-weight:normal;padding-right:12px">NOI</th>' +
+        '<th style="color:#fc8;font-size:11px;font-weight:normal">LORO</th></tr>' +
+        row('Vittorie',      s.vittorieNoi || 0,  s.vittorieLoro || 0,  '#4f4', '#f88') +
+        row('Pareggi',       s.pareggi || 0,      s.pareggi || 0,       '#aaa', '#aaa') +
+        row('Punti medi',    avgNoi,               avgLoro) +
+        row('Burr. puliti',  bn.puliti,            bl.puliti,            '#8df', '#8df') +
+        row('Burr. semip.',  bn.semipuliti,        bl.semipuliti) +
+        row('Burr. sporchi', bn.sporchi,           bl.sporchi) +
+        row('Pozzetti',      s.pozzettiNoi || 0,   s.pozzettiLoro || 0) +
+        row('Chiusure',      s.chiusureNoi || 0,   s.chiusureLoro || 0) +
+        '</table>' +
+        '<div style="font-size:11px;color:#777;margin-bottom:4px">Mazzo esaurito: ' + (s.mazzoEsaurito || 0) + '</div>' +
+        pannelloSalva;
+
+};
+
+window.aggiornaAutomaBanner = function () {
+    var banner = document.getElementById('automa-banner');
+    if (!banner) return;
+    var s = window._automaStats || {};
+    var hasDati = (s.partite || 0) > 0;
+    if (game.fastMode || (!game.autoRun && !hasDati)) { banner.style.display = 'none'; return; }
+    banner.style.display = 'block';
+    var bn = s.burracosNoi  || { puliti: 0, semipuliti: 0, sporchi: 0 };
+    var bl = s.burracosLoro || { puliti: 0, semipuliti: 0, sporchi: 0 };
+    var avgNoi  = s.partite ? Math.round((s.puntiTotNoi  || 0) / s.partite) : 0;
+    var avgLoro = s.partite ? Math.round((s.puntiTotLoro || 0) / s.partite) : 0;
+    var btnLabel = game.autoRun ? '<span style="color:#f88">[FERMA]</span>' : '<span style="color:#8cf">[CHIUDI]</span>';
+    banner.innerHTML =
+        (game.autoRun ? 'AUTOMA' : '<b>TERMINATO</b>') +
+        ': <b>' + (s.partite || 0) + '</b> part. &nbsp;|&nbsp; ' +
+        'V Noi <span style="color:#4f4">' + (s.vittorieNoi  || 0) + '</span> / ' +
+        'V Loro <span style="color:#f88">' + (s.vittorieLoro || 0) + '</span> / ' +
+        'Pari <span style="color:#aaa">' + (s.pareggi || 0) + '</span>' +
+        ' &nbsp;|&nbsp; <span style="color:#aaa">Avg: Noi ' + avgNoi + ' / Loro ' + avgLoro + '</span>' +
+        '<br><span style="font-size:11px;color:#aaa">' +
+        'Burr.Noi: P:' + bn.puliti + '/S:' + bn.semipuliti + '/X:' + bn.sporchi + ' &nbsp; ' +
+        'Burr.Loro: P:' + bl.puliti + '/S:' + bl.semipuliti + '/X:' + bl.sporchi + ' &nbsp; ' +
+        'Pozz. Noi:' + (s.pozzettiNoi || 0) + ' / Loro:' + (s.pozzettiLoro || 0) + ' &nbsp; ' +
+        'Mazzo es.:' + (s.mazzoEsaurito || 0) +
+        '</span>' +
+        '&nbsp;&nbsp;' + btnLabel;
+};
+
 // Event listener per il debug AI
 document.addEventListener('keydown', (e) => {
     // SPAZIO: continua l'AI dopo la pausa
@@ -3792,15 +3014,16 @@ document.addEventListener('keydown', (e) => {
         game.debugAIContinua = true;
     }
 
-    // D: attiva/disattiva modalità debug AI
-    if (e.code === 'KeyD' && !e.ctrlKey && !e.altKey && !e.metaKey) {
+    // CTRL+ALT+D: attiva/disattiva modalità debug AI
+    if (e.ctrlKey && e.altKey && e.key.toLowerCase() === 'd') {
+        e.preventDefault();
         // Non attivare se stiamo scrivendo in un input
         if (document.activeElement?.tagName === 'INPUT' || document.activeElement?.tagName === 'TEXTAREA') {
             return;
         }
         game.debugAI = !game.debugAI;
         mostraMessaggio(
-            game.debugAI ? 'Debug AI ATTIVATO - Premi D per disattivare' : 'Debug AI DISATTIVATO',
+            game.debugAI ? 'Debug AI ATTIVATO - Ctrl+Alt+D per disattivare' : 'Debug AI DISATTIVATO',
             'info'
         );
         setTimeout(nascondiMessaggio, 2000);
@@ -3984,6 +3207,7 @@ function getGiocatoreHTML(indiceGiocatore, ruolo, defaultScenario) {
                         }
                     });
                 }
+                window._currentDiagPhaseData = _diagPhaseData || null;
                 var d;
                 if (_diagPhaseData) {
                     var _dStored = _diagPhaseData.analisiDataPerScenario[scenario];
@@ -3995,8 +3219,8 @@ function getGiocatoreHTML(indiceGiocatore, ruolo, defaultScenario) {
                         opzioniScenario: _dStored.opzioniScenario.slice()
                     });
                 } else {
-                    var g = window.opener.game.giocatori[giocatoreIdx];
-                    d = window.opener.Strategia.generaAnalisiParallela(g, scenario);
+                    console.warn('⚠️ [pannello debug] _diagData non disponibile per scenario=' + scenario + ' — il pannello dovrebbe aprirsi dopo scegliBestOpzioneAI. Verificare il flusso.');
+                    return;
                 }
                 window._analisiData = d;
                 window._analisiGiocatoreIdx = giocatoreIdx;
@@ -4344,6 +3568,16 @@ function getGiocatoreHTML(indiceGiocatore, ruolo, defaultScenario) {
                     var scoreOpzPreCalc = {};
                     var statOpzPreCalc = {};
 
+                    // Legge scores già calcolati dal core (fonte primaria), filtrati per scenario corrente
+                    var _scoreFromDiag = {};
+                    if (_diagPhaseData && _diagPhaseData.candidati) {
+                        _diagPhaseData.candidati.forEach(function(c) {
+                            if (c.label && c._scoreRes && c.scenario === window._analisiScenario) {
+                                _scoreFromDiag[c.label] = c._scoreRes;
+                            }
+                        });
+                    }
+
                     // Totali matte e carte per tutto il turno (base per calcoli residui)
                     var _originiMano = function(r) { return r.origine === 'mano' || r.origine === 'scarto' || r.origine === 'mazzo'; };
                     var _totalMatteDisp = d.classifica.filter(function(r) { return _originiMano(r) && r.isMatta; }).length;
@@ -4371,7 +3605,10 @@ function getGiocatoreHTML(indiceGiocatore, ruolo, defaultScenario) {
                     for (var scPre = 0; scPre < uniqueOpzLabels.length; scPre++) {
                         var opzLblPre = uniqueOpzLabels[scPre];
                         var opzIdxPre = parseInt(opzLblPre.replace('OPZ','')) - 1;
-                        var _rawScore = window.calcolaScoreOpz(opzIdxPre, true) || null;
+                        if (_scoreFromDiag[opzLblPre] === undefined) {
+                            console.warn('⚠️ [DEBUG PANEL] Score non trovato in _diagData per ' + opzLblPre + ' — il pannello dovrebbe sempre aprirsi dopo scegliBestOpzioneAI. Verificare il flusso.');
+                        }
+                        var _rawScore = _scoreFromDiag[opzLblPre] || null;
                         if (_rawScore && (_mazzoBonusDisplay || _mattaBonusDisplay)) {
                             _rawScore = Object.assign({}, _rawScore, { score: _rawScore.score + _mazzoBonusDisplay + _mattaBonusDisplay });
                         }
@@ -4488,7 +3725,10 @@ function getGiocatoreHTML(indiceGiocatore, ruolo, defaultScenario) {
                         // Pre-calc (scarto, score, stat) per le B labels
                         Object.keys(_bLabelMap).forEach(function(bLabel) {
                             var idx = parseInt(bLabel.replace('OPZ','')) - 1;
-                            scoreOpzPreCalc[bLabel] = window.calcolaScoreOpz(idx, true) || null;
+                            if (_scoreFromDiag[bLabel] === undefined) {
+                                console.warn('⚠️ [DEBUG PANEL] Score non trovato in _diagData per variante B: ' + bLabel);
+                            }
+                            scoreOpzPreCalc[bLabel] = _scoreFromDiag[bLabel] || null;
                             if (scoreOpzPreCalc[bLabel] && (_mazzoBonusDisplay || _mattaBonusDisplay)) {
                                 scoreOpzPreCalc[bLabel] = Object.assign({}, scoreOpzPreCalc[bLabel], { score: scoreOpzPreCalc[bLabel].score + _mazzoBonusDisplay + _mattaBonusDisplay });
                             }
@@ -4638,7 +3878,10 @@ function getGiocatoreHTML(indiceGiocatore, ruolo, defaultScenario) {
                         // Pre-calc scarto, score, stat per le M labels
                         Object.keys(_mLabelMap).forEach(function(mLblKey) {
                             var idx = parseInt(mLblKey.replace('OPZ','')) - 1;
-                            scoreOpzPreCalc[mLblKey] = window.calcolaScoreOpz(idx, true) || null;
+                            if (_scoreFromDiag[mLblKey] === undefined) {
+                                console.warn('⚠️ [DEBUG PANEL] Score non trovato in _diagData per variante M: ' + mLblKey);
+                            }
+                            scoreOpzPreCalc[mLblKey] = _scoreFromDiag[mLblKey] || null;
                             scartiPreCalc[mLblKey] = scoreOpzPreCalc[mLblKey] ? { carta: scoreOpzPreCalc[mLblKey].cartaScarto, cartaRef: scoreOpzPreCalc[mLblKey].cartaRef } : null;
                             var _mSid = scoreOpzPreCalc[mLblKey] && scoreOpzPreCalc[mLblKey].cartaRef ? scoreOpzPreCalc[mLblKey].cartaRef.id : null;
                             var _mOpt2 = d.opzioniScenario[idx];
@@ -4704,7 +3947,10 @@ function getGiocatoreHTML(indiceGiocatore, ruolo, defaultScenario) {
                                     window._analisiGiocatoreIdx = giocatoreIdx;
                                     var _vComboSqRaw = _giocV2.squadra === 0 ? _gameV2.combinazioniNoi : _gameV2.combinazioniLoro;
                                     window.opener._comboSquadraOverride = window.opener._proiettaComboConCalate(_vComboSqRaw, bestVP.mosse);
-                                    scoreOpzPreCalc[vLblP] = window.calcolaScoreOpz(vIdxP, true) || null;
+                                    if (_scoreFromDiag[vLblP] === undefined) {
+                                        console.warn('⚠️ [DEBUG PANEL] Score non trovato in _diagData per variante P/V: ' + vLblP);
+                                    }
+                                    scoreOpzPreCalc[vLblP] = _scoreFromDiag[vLblP] || null;
                                     window.opener._comboSquadraOverride = null;
                                     // Inietta breakdown V in d.classifica (come per B variant)
                                     var _vBD = {};
@@ -5474,29 +4720,17 @@ function getGiocatoreHTML(indiceGiocatore, ruolo, defaultScenario) {
             return r;
         };
 
-        // Wrapper: esegue scarto + score con log completo al click OPZ
+        // Mostra il log dettagliato pre-calcolato da scegliBestOpzioneAI al click colonna OPZ
         window.analizzaOpz = function(opzIdx) {
             var con = window.opener ? window.opener.console : console;
-            var r = window.calcolaScoreOpz(opzIdx, false);
-            // Mostra bonus aggiuntivi esterni a calcolaScoreOpz
-            var _bonusExtra = 0;
-            var _bonusLabel = '';
-            if (window._analisiScenario === 'mano' && window.coeffScoreOpz && window.coeffScoreOpz.premioMazzo) {
-                _bonusExtra += window.coeffScoreOpz.premioMazzo;
-                _bonusLabel += ' mazzo=+' + window.coeffScoreOpz.premioMazzo;
+            var scenario = window._analisiScenario || 'scarti';
+            var phaseData = window._currentDiagPhaseData;
+            var logArr = phaseData && phaseData.logPerOpz && phaseData.logPerOpz[scenario + ':' + opzIdx];
+            if (!logArr) {
+                con.warn('[analizzaOpz] Log non disponibile per ' + scenario + ':' + opzIdx + ' — assicurarsi che debugAI sia attivo e il pannello si apra dopo scegliBestOpzioneAI.');
+                return;
             }
-            if (window._analisiScenario === 'scarti') {
-                var _scartiList = window.opener && window.opener.game && window.opener.game.scarti;
-                var _hm = _scartiList && _scartiList.some(function(c) { return c.isJolly || c.numero === 2; });
-                if (_hm) {
-                    var _bm = (window.coeffScoreOpz && window.coeffScoreOpz.premioMattaPescata) || 40;
-                    _bonusExtra += _bm;
-                    _bonusLabel += ' matta=+' + _bm;
-                }
-            }
-            if (_bonusExtra && r) {
-                con.log('✓ + Bonus scenario (' + _bonusLabel.trim() + ') → TOTALE: ' + (r.score + _bonusExtra).toFixed(1));
-            }
+            logArr.forEach(function(line) { con.log(line); });
         };
 
         // OPZnC: usa analisiData del dC (mano ridotta) per mostrare scarto+score corretto
@@ -5578,16 +4812,8 @@ function getGiocatoreHTML(indiceGiocatore, ruolo, defaultScenario) {
                 con.groupEnd();
                 return;
             }
-            // Fallback: riesegui AI (verbose) se _diagData non disponibile
-            var g = op.game.giocatori[window._analisiGiocatoreIdx];
-            var savedCf = op.coeffScoreOpz;
-            op.coeffScoreOpz = window.coeffScoreOpz;
-            var soloMano = (window._analisiScenario === 'mano' || window._analisiScenario === 'mazzo');
-            op.scegliBestOpzioneAI(g, soloMano, true);
-            op.coeffScoreOpz = savedCf;
-            window._analisiData          = op._analisiData;
-            window._analisiScenario      = op._analisiScenario;
-            window._analisiGiocatoreIdx  = op._analisiGiocatoreIdx;
+            var con = window.opener ? window.opener.console : console;
+            con.warn('⚠️ [Elabora] _diagData non disponibile per fase=' + fase + ' scenario=' + window._analisiScenario + ' — il pannello dovrebbe sempre aprirsi dopo scegliBestOpzioneAI. Verificare il flusso.');
         };
 
         // Chiudi con ESC
@@ -5645,425 +4871,8 @@ function toggleScoperte() {
     render();
 }
 
-// ============================================================================
-// DIAGNOSTICA (finestra separata)
-// ============================================================================
-
-// Mappa nomi azioni per visualizzazione
-const AZIONE_NOMI = {
-    [AZIONE_PESCA_MAZZO]: 'Pesca mazzo',
-    [AZIONE_PESCA_SCARTI]: 'Pesca scarti',
-    [AZIONE_SCARTO]: 'Scarto',
-    [AZIONE_COMBINAZIONE]: 'Combinazione',
-    [AZIONE_ATTACCO]: 'Attacco',
-    [AZIONE_POZZETTO]: 'Pozzetto'
-};
-
-// Riferimento alla finestra diagnostica
-let diagWindow = null;
-
-function toggleDiagnostica() {
-    // Se la finestra esiste ed è aperta, la chiudiamo
-    if (diagWindow && !diagWindow.closed) {
-        diagWindow.close();
-        diagWindow = null;
-        return;
-    }
-
-    // Apri nuova finestra
-    diagWindow = window.open('', 'BurracoDiagnostica',
-        'width=700,height=500,resizable=yes,scrollbars=yes,menubar=no,toolbar=no,location=no,status=no'
-    );
-
-    if (!diagWindow) {
-        console.error('Impossibile aprire la finestra diagnostica (popup bloccato?)');
-        return;
-    }
-
-    // Scrivi il contenuto HTML della finestra
-    diagWindow.document.write(getDiagnosticaHTML());
-    diagWindow.document.close();
-
-    // Aggiorna il contenuto
-    aggiornaDiagnostica();
-}
-
-function getDiagnosticaHTML() {
-    return `<!DOCTYPE html>
-<html>
-<head>
-    <title>Burraco - Diagnostica</title>
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            font-family: 'Consolas', 'Monaco', monospace;
-            font-size: 12px;
-            background: #1a1a2e;
-            color: #ddd;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-        .header {
-            background: #2a2a4e;
-            color: #aaf;
-            padding: 10px 15px;
-            font-weight: bold;
-            font-size: 14px;
-            border-bottom: 1px solid #4a4a6a;
-        }
-        .content {
-            flex: 1;
-            overflow-y: auto;
-            padding: 10px;
-        }
-        .footer {
-            background: #2a2a4e;
-            color: #888;
-            padding: 8px 15px;
-            font-size: 11px;
-            border-top: 1px solid #4a4a6a;
-        }
-        .storia-riga {
-            padding: 4px 8px;
-            margin: 2px 0;
-            border-radius: 3px;
-            display: flex;
-            gap: 10px;
-            cursor: pointer;
-        }
-        .storia-riga:hover { background: #3a3a5e; }
-        .storia-riga.selected { background: #4a4a7e; }
-        .storia-riga.giocatore-0 { border-left: 3px solid #4a4; }
-        .storia-riga.giocatore-1 { border-left: 3px solid #a44; }
-        .storia-riga.giocatore-2 { border-left: 3px solid #44a; }
-        .storia-riga.giocatore-3 { border-left: 3px solid #a4a; }
-        .storia-turno { color: #888; width: 40px; }
-        .storia-giocatore { color: #aaa; width: 100px; }
-        .storia-azione { color: #8cf; width: 100px; }
-        .storia-dettagli { color: #ccc; flex: 1; }
-        .btn-refresh {
-            background: #4a4;
-            color: white;
-            border: none;
-            padding: 5px 15px;
-            border-radius: 4px;
-            cursor: pointer;
-            margin-left: 15px;
-        }
-        .btn-refresh:hover { background: #5b5; }
-    </style>
-</head>
-<body>
-    <div class="header">
-        Diagnostica - Storia Mosse
-        <button class="btn-refresh" onclick="window.opener.aggiornaDiagnostica()">Aggiorna</button>
-    </div>
-    <div id="content" class="content">
-        <!-- Contenuto generato da JS -->
-    </div>
-    <div id="footer" class="footer">
-        Turno: 0 | Mosse: 0
-    </div>
-    <script>
-        let detailWin = null;
-        function apriDettaglio(indice, el) {
-            // Rimuovi selezione precedente
-            document.querySelectorAll('.storia-riga').forEach(r => r.classList.remove('selected'));
-            if (el) el.classList.add('selected');
-            // Chiedi al parent di generare HTML e aprilo qui
-            const html = window.opener.getDettaglioHTML(window.opener.game.storia[indice], indice);
-            if (!detailWin || detailWin.closed) {
-                detailWin = window.open('', 'BurracoDettaglio',
-                    'width=600,height=500,resizable=yes,scrollbars=yes');
-            }
-            if (detailWin) {
-                detailWin.document.open();
-                detailWin.document.write(html);
-                detailWin.document.close();
-                detailWin.focus();
-            }
-        }
-    </script>
-</body>
-</html>`;
-}
-
-function aggiornaDiagnostica() {
-    if (!diagWindow || diagWindow.closed) return;
-
-    const content = diagWindow.document.getElementById('content');
-    const footer = diagWindow.document.getElementById('footer');
-    if (!content || !footer) return;
-
-    if (game.storia.length === 0) {
-        content.innerHTML = '<div style="color:#888; padding:20px; text-align:center;">Nessuna mossa registrata</div>';
-        footer.textContent = 'Turno: 0 | Mosse: 0';
-        return;
-    }
-
-    // Helper per ottenere nome giocatore
-    const nomeGiocatore = (idx) => {
-        if (!game.giocatori || !game.giocatori[idx]) return `Giocatore ${idx}`;
-        return game.giocatori[idx].nome;
-    };
-
-    // Helper per nome breve carta (7C, 8Q, JK per jolly)
-    const nomeBreve = (id) => {
-        const c = tutteLeCarte[id];
-        if (!c) return `#${id}`;
-        if (c.isJolly) return 'JK';
-        const numNomi = ['', 'A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
-        return numNomi[c.numero] + c.seme;
-    };
-
-    // Helper per formattare dettagli
-    const formattaDettagli = (mossa) => {
-        const parti = [];
-
-        if (mossa.carta !== undefined) {
-            parti.push(nomeBreve(mossa.carta));
-        }
-
-        if (mossa.carte && mossa.carte.length > 0) {
-            const nomi = mossa.carte.map(nomeBreve);
-            parti.push(`[${nomi.join(' ')}]`);
-        }
-
-        if (mossa.combinazione !== undefined) {
-            parti.push(`comb: #${mossa.combinazione}`);
-        }
-
-        if (mossa.tipo !== undefined) {
-            parti.push(`tipo: ${mossa.tipo === TIPO_TRIS ? 'Tris' : 'Scala'}`);
-        }
-
-        if (mossa.sostituzione) {
-            parti.push('(sostituzione)');
-        }
-
-        if (mossa.squadra !== undefined) {
-            parti.push(`squadra: ${mossa.squadra}`);
-        }
-
-        return parti.join(' | ');
-    };
-
-    // Genera HTML
-    let html = '';
-    for (let i = 0; i < game.storia.length; i++) {
-        const mossa = game.storia[i];
-        const azioneNome = AZIONE_NOMI[mossa.azione] || `Azione ${mossa.azione}`;
-        const dettagli = formattaDettagli(mossa);
-
-        html += `<div class="storia-riga giocatore-${mossa.giocatore}" data-indice="${i}" onclick="apriDettaglio(${i}, this)">
-            <span class="storia-turno">T${mossa.turno}</span>
-            <span class="storia-giocatore">${nomeGiocatore(mossa.giocatore)}</span>
-            <span class="storia-azione">${azioneNome}</span>
-            <span class="storia-dettagli">${dettagli}</span>
-        </div>`;
-    }
-
-    content.innerHTML = html;
-    footer.textContent = `Turno: ${game.turno} | Mosse: ${game.storia.length}`;
-
-    // Scroll to bottom
-    content.scrollTop = content.scrollHeight;
-}
-
-// Finestra dettaglio snapshot
-let detailWindow = null;
-
-function mostraDettaglioMossa(indice, elemento) {
-    if (indice < 0 || indice >= game.storia.length) return;
-
-    const mossa = game.storia[indice];
-
-    // Rimuovi selezione precedente e aggiungi nuova
-    if (diagWindow && !diagWindow.closed) {
-        const righe = diagWindow.document.querySelectorAll('.storia-riga');
-        righe.forEach(r => r.classList.remove('selected'));
-        if (elemento) elemento.classList.add('selected');
-    }
-
-    // Se la finestra non esiste o è chiusa, creala
-    if (!detailWindow || detailWindow.closed) {
-        detailWindow = window.open('', 'BurracoDettaglio',
-            'width=600,height=500,resizable=yes,scrollbars=yes,menubar=no,toolbar=no,location=no,status=no'
-        );
-        if (!detailWindow) {
-            console.error('Impossibile aprire finestra dettaglio');
-            return;
-        }
-    }
-
-    // Genera HTML per lo snapshot
-    const html = getDettaglioHTML(mossa, indice);
-    detailWindow.document.open();
-    detailWindow.document.write(html);
-    detailWindow.document.close();
-    detailWindow.focus();
-}
-
-function getDettaglioHTML(mossa, indice) {
-    const nomeGiocatore = (idx) => {
-        if (!game.giocatori || !game.giocatori[idx]) return `Giocatore ${idx}`;
-        return game.giocatori[idx].nome;
-    };
-
-    const azioneNome = AZIONE_NOMI[mossa.azione] || `Azione ${mossa.azione}`;
-    const snapshot = mossa.snapshot;
-
-    // Helper per nome breve carta (7C, 8Q, JK per jolly)
-    const nomeBreve = (id) => {
-        const c = tutteLeCarte[id];
-        if (!c) return `#${id}`;
-        if (c.isJolly) return 'JK';
-        const numNomi = ['', 'A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
-        return numNomi[c.numero] + c.seme;
-    };
-
-    // Helper per formattare array di carte
-    const formattaCarte = (ids) => {
-        if (!ids || ids.length === 0) return '(vuoto)';
-        return ids.map(nomeBreve).join(' ');
-    };
-
-    // Helper per formattare combinazioni
-    const formattaCombinazioni = (combs) => {
-        if (!combs || combs.length === 0) return '(nessuna)';
-        return combs.map(c => {
-            const tipo = c.tipo === TIPO_TRIS ? 'Tris' : 'Scala';
-            const carte = formattaCarte(c.carte);
-            return `<div style="margin-left:15px; margin-bottom:5px;">#${c.id} ${tipo}: ${carte}</div>`;
-        }).join('');
-    };
-
-    return `<!DOCTYPE html>
-<html>
-<head>
-    <title>Dettaglio Mossa #${indice}</title>
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            font-family: 'Consolas', 'Monaco', monospace;
-            font-size: 12px;
-            background: #1a1a2e;
-            color: #ddd;
-            padding: 15px;
-            overflow-y: auto;
-        }
-        .header {
-            background: #2a2a4e;
-            color: #aaf;
-            padding: 10px 15px;
-            margin: -15px -15px 15px -15px;
-            font-weight: bold;
-            font-size: 14px;
-        }
-        .section {
-            background: #252540;
-            border: 1px solid #3a3a5a;
-            border-radius: 5px;
-            padding: 10px;
-            margin-bottom: 10px;
-        }
-        .section-title {
-            color: #8cf;
-            font-weight: bold;
-            margin-bottom: 8px;
-            border-bottom: 1px solid #3a3a5a;
-            padding-bottom: 5px;
-        }
-        .field { margin: 4px 0; }
-        .label { color: #888; }
-        .value { color: #cfc; }
-        .carte-list { color: #ffc; margin-left: 15px; word-break: break-all; }
-    </style>
-</head>
-<body>
-    <div class="header">
-        Mossa #${indice} - Turno ${mossa.turno} - ${nomeGiocatore(mossa.giocatore)} - ${azioneNome}
-    </div>
-
-    <div class="section">
-        <div class="section-title">Dettagli Mossa</div>
-        <div class="field"><span class="label">Turno:</span> <span class="value">${mossa.turno}</span></div>
-        <div class="field"><span class="label">Giocatore:</span> <span class="value">${nomeGiocatore(mossa.giocatore)}</span></div>
-        <div class="field"><span class="label">Azione:</span> <span class="value">${azioneNome}</span></div>
-        ${mossa.carta !== undefined ? `<div class="field"><span class="label">Carta:</span> <span class="value">${nomeBreve(mossa.carta)}</span></div>` : ''}
-        ${mossa.carte ? `<div class="field"><span class="label">Carte:</span> <span class="value">${formattaCarte(mossa.carte)}</span></div>` : ''}
-        ${mossa.combinazione !== undefined ? `<div class="field"><span class="label">Combinazione:</span> <span class="value">#${mossa.combinazione}</span></div>` : ''}
-    </div>
-
-    <div class="section">
-        <div class="section-title">Snapshot (stato PRIMA della mossa)</div>
-        <div class="field"><span class="label">Fase:</span> <span class="value">${snapshot.fase}</span></div>
-        <div class="field"><span class="label">Ha pescato:</span> <span class="value">${snapshot.haPescato}</span></div>
-    </div>
-
-    <div class="section">
-        <div class="section-title">Mazzo (${snapshot.mazzo.length} carte)</div>
-        <div class="carte-list">${formattaCarte(snapshot.mazzo)}</div>
-    </div>
-
-    <div class="section">
-        <div class="section-title">Scarti (${snapshot.scarti.length} carte)</div>
-        <div class="carte-list">${formattaCarte(snapshot.scarti)}</div>
-    </div>
-
-    <div class="section">
-        <div class="section-title">Pozzetto Noi (${snapshot.pozzetti[0].length} carte)</div>
-        <div class="carte-list">${formattaCarte(snapshot.pozzetti[0])}</div>
-    </div>
-
-    <div class="section">
-        <div class="section-title">Pozzetto Loro (${snapshot.pozzetti[1].length} carte)</div>
-        <div class="carte-list">${formattaCarte(snapshot.pozzetti[1])}</div>
-    </div>
-
-    ${snapshot.mani.map((mano, i) => `
-    <div class="section">
-        <div class="section-title">${nomeGiocatore(i)} (${mano.length} carte)</div>
-        <div class="carte-list">${formattaCarte(mano)}</div>
-    </div>
-    `).join('')}
-
-    <div class="section">
-        <div class="section-title">Combinazioni Noi</div>
-        ${formattaCombinazioni(snapshot.combinazioniNoi)}
-    </div>
-
-    <div class="section">
-        <div class="section-title">Combinazioni Loro</div>
-        ${formattaCombinazioni(snapshot.combinazioniLoro)}
-    </div>
-
-    <div class="section">
-        <div class="section-title">Punteggi</div>
-        <div class="field"><span class="label">Noi:</span> <span class="value">${snapshot.puntiNoi}</span></div>
-        <div class="field"><span class="label">Loro:</span> <span class="value">${snapshot.puntiLoro}</span></div>
-    </div>
-</body>
-</html>`;
-}
-
-// Aggiorna automaticamente la finestra diagnostica ad ogni mossa
-const originalRegistraMossa = registraMossa;
-registraMossa = function (azione, dettagli = {}) {
-    originalRegistraMossa(azione, dettagli);
-    // Aggiorna la finestra diagnostica se aperta
-    setTimeout(aggiornaDiagnostica, 100);
-};
-
 // Chiudi tutte le finestre popup quando si chiude la pagina
 window.addEventListener('beforeunload', () => {
-    if (diagWindow && !diagWindow.closed) {
-        diagWindow.close();
-    }
-    if (detailWindow && !detailWindow.closed) {
-        detailWindow.close();
-    }
     // Chiudi finestra debug AI
     if (debugWindow && !debugWindow.closed) {
         debugWindow.close();
@@ -6102,6 +4911,11 @@ function init() {
     // Hook chiamato da iniziaPartita() dopo render():
     // mostra dealer badge, anima la distribuzione, avvia AI se primo giocatore non è umano
     window.burracoOnInizio = function () {
+        if (game.fastMode) {
+            if (typeof window._aggiornaTurnoFast === 'function') window._aggiornaTurnoFast();
+            if (!game.giocatori[game.giocatoreCorrente].isUmano) setTimeout(turnoAI, 0);
+            return;
+        }
         aggiornaDealerBadge();
         _mostraToastMazziere(function () {
             animaDealBurraco(function () {
@@ -6172,5 +4986,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if (!lang) lang = 'it';
     setLanguage(lang);
-    init();
+    // L'interstitial (se dovuto) precede init: game-layout.js consuma qui il flag
+    // _interstitial_pending scritto dal reload della mano precedente.
+    if (typeof window.waitForInterstitial === 'function') {
+        window.waitForInterstitial(init);
+    } else {
+        init();
+    }
 });

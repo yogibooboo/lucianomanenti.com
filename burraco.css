@@ -1178,6 +1178,24 @@ body {
     transform: scale(1.05);
 }
 
+/* Domanda di conferma centrata. Mirata sul paragrafo e non su .modal-content,
+   che e' condiviso con modal-nuova dove le opzioni restano allineate a sinistra. */
+#label-conferma-abbandono {
+    text-align: center;
+}
+
+/* Conferma distruttiva (abbandono partita): resta rosso anche in hover, dove
+   .btn-modal:hover rimetterebbe il gradiente giallo del tema. */
+#btn-conferma-si {
+    background: linear-gradient(180deg, #e01b45 0%, #a30a2e 100%);
+    border-color: #7a0620;
+    color: #fff;
+}
+
+#btn-conferma-si:hover {
+    background: linear-gradient(180deg, #f22a55 0%, #bb0d36 100%);
+}
+
 /* === PANNELLO FLOTTANTE GIOCATORE === */
 .pannello-flottante {
     position: fixed;

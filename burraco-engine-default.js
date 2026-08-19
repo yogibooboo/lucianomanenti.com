@@ -1,6 +1,6 @@
 // ============================================================================
 // MOTORE AI PREDEFINITO — burraco-engine-default.js
-// Dipende da: burraco-core-new.js (calcolaScoreOpz, varianti, generaAnalisiParallela)
+// Dipende da: burraco-core.js (calcolaScoreOpz, varianti, generaAnalisiParallela)
 // Contratto: riceve (giocatore, soloMano, verbose, fase)
 //            ritorna { scenario, opzIdx, opz, score, scarto, rispettaVincolo, analisiData }
 // Coefficienti: burraco-engine-default.json (fallback inline se il JSON non è disponibile)

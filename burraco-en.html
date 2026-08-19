@@ -6,8 +6,22 @@
         // Security fix for cross-origin window.opener exceptions
         (function() { try { if (!window.opener) return; var test = window.opener.document; if (!window.opener.game) { window.opener = null; } } catch(e) { window.opener = null; } })();
     </script>
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9335537153013492"
-        crossorigin="anonymous"></script>
+    <script>
+        // AdSense caricato via JS e non con un tag statico: in dev_mode la libreria
+        // non deve partire affatto. Serve leggere localStorage qui, prima del tag,
+        // perche' game-layout.js (che definisce devMode) viene caricato molto dopo.
+        // Senza questo, adsbygoogle.js si carica comunque e inserisce da se' uno slot
+        // "auto ads": in locale Google lo rifiuta con 403, ma nei test ONLINE quello
+        // slot verrebbe servito davvero, con impression reali sulle nostre pagine.
+        (function () {
+            try { if (localStorage.getItem('dev_mode') === '1') return; } catch (e) { }
+            var s = document.createElement('script');
+            s.async = true;
+            s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9335537153013492';
+            s.crossOrigin = 'anonymous';
+            document.head.appendChild(s);
+        })();
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     	<title>Play Free Burraco Online - lucianomanenti.com</title>
@@ -25,20 +39,27 @@
     <meta http-Equiv="Pragma" Content="no-cache">
     <meta http-Equiv="Expires" Content="0">
 
-    <link rel="stylesheet" href="burraco.css?v=4.17" />
+    <link rel="stylesheet" href="burraco.css?v=4.19" />
 
     <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
     <script>
+        // Come per AdSense: in dev_mode la libreria non viene caricata, cosi' le
+        // sessioni di test non finiscono nelle statistiche GA4. gtag() viene pero'
+        // definita SEMPRE, perche' il resto del codice la chiama per gli eventi:
+        // in dev_mode resta una funzione inerte che accumula solo in dataLayer.
         window.dataLayer = window.dataLayer || [];
         function gtag() { dataLayer.push(arguments); }
-        gtag('js', new Date());
-        gtag('config', 'G-WRBDRDQ4L8');
+        (function () {
+            try { if (localStorage.getItem('dev_mode') === '1') return; } catch (e) { }
+            var s = document.createElement('script');
+            s.async = true;
+            s.src = 'https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8';
+            document.head.appendChild(s);
+            gtag('js', new Date());
+            gtag('config', 'G-WRBDRDQ4L8');
+        })();
     </script>
     <script>
-        // Force English mode
-        window.currentLang = 'en';
-
         window.gameConfig = {
             gaPrefix: 'BUR_en_',
             hideLegalFooter: true,
@@ -54,8 +75,9 @@
                 en: '<!-- MESSAGE_EN_PLACEHOLDER -->'
             }
         };
+        window.currentLang = 'en';
     </script>
-    <!-- Sopprimi AdSense al cold load (prima della conferma modal): evita doppia impression -->
+    <!-- Suppress AdSense on cold load (before modal confirm): avoids double impression -->
     <script>window.adsenseShouldNotLoad = !localStorage.getItem('burraco_nuova');</script>
     <!-- Layout engine -->
     <script src="game-layout.js?v=4.6"></script>
@@ -65,17 +87,17 @@
 
     <div class="main-container">
         <div id="sidebar-left" class="sidebar">
-            <!-- Banner verranno inseriti qui da JS -->
+            <!-- Banners inserted here by JS -->
         </div>
         <div id="sidebar-right" class="sidebar">
-            <!-- Banner verranno inseriti qui da JS -->
+            <!-- Banners inserted here by JS -->
         </div>
 
         <div id="campogioco">
-            <!-- Schermo overlay per modali -->
+            <!-- Overlay screen for modals -->
             <div id="schermo"></div>
 
-            <!-- === PANNELLO TORNEO (punteggi + info) === -->
+            <!-- === TOURNAMENT PANEL (scores + info) === -->
             <div id="pannello-torneo">
                 <div id="punteggi">
                     <div class="punteggio-label"></div>
@@ -93,7 +115,7 @@
             <div id="dealer-badge-left"   class="dealer-badge" style="display:none;"></div>
             <div id="dealer-badge-right"  class="dealer-badge" style="display:none;"></div>
 
-            <!-- === COMPAGNO (top) === -->
+            <!-- === PARTNER (top) === -->
             <div id="area-compagno" class="area-giocatore">
                 <img id="avatar-compagno" class="avatar" src="" alt="">
                 <div id="nome-compagno" class="nome-giocatore">Partner</div>
@@ -101,7 +123,7 @@
                 <div id="ncarte-compagno" class="ncarte">0</div>
             </div>
 
-            <!-- === AVVERSARIO SINISTRA === -->
+            <!-- === OPPONENT LEFT === -->
             <div id="area-avversario-sx" class="area-giocatore laterale">
                 <img id="avatar-avv-sx" class="avatar" src="" alt="">
                 <div id="nome-avv-sx" class="nome-giocatore">Opponent 1</div>
@@ -109,7 +131,7 @@
                 <div id="ncarte-avv-sx" class="ncarte">0</div>
             </div>
 
-            <!-- === AVVERSARIO DESTRA === -->
+            <!-- === OPPONENT RIGHT === -->
             <div id="area-avversario-dx" class="area-giocatore laterale">
                 <img id="avatar-avv-dx" class="avatar" src="" alt="">
                 <div id="nome-avv-dx" class="nome-giocatore">Opponent 2</div>
@@ -117,7 +139,7 @@
                 <div id="ncarte-avv-dx" class="ncarte">0</div>
             </div>
 
-            <!-- === AREA COMBINAZIONI NOI (sinistra) === -->
+            <!-- === OUR MELDS AREA (left) === -->
             <div id="combinazioni-noi" class="area-combinazioni">
                 <div class="titolo-area">
                     <span class="titolo-nome" id="label-noi">Us</span>
@@ -131,7 +153,7 @@
                 </div>
             </div>
 
-            <!-- === AREA COMBINAZIONI AVVERSARI (destra) === -->
+            <!-- === OPPONENTS MELDS AREA (right) === -->
             <div id="combinazioni-loro" class="area-combinazioni">
                 <div class="titolo-area">
                     <span class="titolo-nome" id="label-loro">Them</span>
@@ -145,7 +167,7 @@
                 </div>
             </div>
 
-            <!-- === BARRA PUNTEGGI === -->
+            <!-- === SCORE BAR === -->
             <div id="barra-punteggi">
                 <div id="barra-noi"></div>
                 <div id="barra-loro"></div>
@@ -154,13 +176,13 @@
             <!-- === BANNER INFO === -->
             <div id="wip-banner" style="display:none"><img src="images/home/burraco.svg" alt=""></div>
 
-            <!-- === MAZZO === -->
+            <!-- === DECK === -->
             <div id="mazzo-info">
                 <span class="mazzo-count">0</span>
             </div>
             <div id="mazzo"></div>
 
-            <!-- === SCARTI === -->
+            <!-- === DISCARD PILE === -->
             <div id="scarti-container">
                 <div id="scarti-info">
                     <span class="titolo-nome" id="label-scarti">Discard</span>
@@ -180,7 +202,7 @@
                 <div id="pozzetto2" class="carta-pozzetto"></div>
             </div>
 
-            <!-- === GIOCATORE === -->
+            <!-- === PLAYER === -->
             <div id="area-giocatore" class="area-giocatore">
                 <div id="giocatore-info">
                     <span class="titolo-nome" id="label-giocatore">Player</span>
@@ -192,7 +214,7 @@
                 <div id="carte-giocatore" class="carte-container"></div>
             </div>
 
-            <!-- === PULSANTI === -->
+            <!-- === BUTTONS === -->
             <div style="position: absolute; top: 10px; left: 10px; z-index: 2000; display: flex; gap: 4px;">
                 <button onclick="window.location.href='burraco.html'" class="btn-lang" id="btn-lang-it" title="Italiano"
                     style="background: rgba(0,0,0,0.4); border: 1px solid #6b9b7a; color: white; border-radius: 4px; padding: 4px 10px; cursor: pointer; font-size: 14px; font-weight: bold; height: 32px; transition: all 0.2s;">IT</button>
@@ -203,12 +225,12 @@
             <div id="btn-undo" class="pulsante2"></div>
             <div id="btn-scoperte" class="pulsante2">FACE UP</div>
 
-            <!-- === PULSANTI ORDINAMENTO === -->
+            <!-- === SORT BUTTONS === -->
             <div id="btn-audio" class="pulsante-ordina" aria-label="Audio"></div>
             <div id="btn-ordina-numero" class="pulsante-ordina">123</div>
             <div id="btn-ordina-seme" class="pulsante-ordina">&hearts;&spades;</div>
 
-            <!-- === LINK ALTRI GIOCHI === -->
+            <!-- === OTHER GAMES LINKS === -->
             <div class="link-giochi">
                 <!-- Row 1: Empty to clear the card deck area -->
                 <div style="visibility: hidden;" class="pulsante-link"></div>
@@ -251,7 +273,7 @@
                     id="label-gestisci-cookie">Manage Cookies</a>
             </div>
 
-            <!-- === MODALI === -->
+            <!-- === MODALS === -->
             <div id="modal-nuova" class="modal">
                 <h2 id="modal-nuova-titolo">New Game</h2>
                 <div class="modal-content">
@@ -280,7 +302,45 @@
                     </div>
                 </div>
                 <button class="btn-modal" id="btn-inizia">START</button>
+                <!-- Escape routes out of the modal, all with ids distinct from the in-field ones
+                     (btn-lang-it/en, btn-istruzioni, btn-home-left): two elements sharing an
+                     id would break getElementById and document validity. -->
+                <!-- Language selectors top right, above the title. -->
+                <div style="position:absolute;right:12px;top:10px;display:flex;gap:4px">
+                    <button onclick="window.location.href='burraco.html'" class="btn-lang" id="btn-lang-it-modal"
+                        title="Italiano"
+                        style="background:rgba(0,0,0,0.4);border:1px solid #6b9b7a;color:white;border-radius:4px;padding:0 8px;cursor:pointer;font-size:11px;font-weight:bold;height:24px;line-height:22px;transition:all 0.2s">IT</button>
+                    <button onclick="window.location.href='burraco-en.html'" class="btn-lang active" id="btn-lang-en-modal"
+                        title="English"
+                        style="background:#ffd700;border:1px solid #ffd700;color:#2c3e50;border-radius:4px;padding:0 8px;cursor:pointer;font-size:11px;font-weight:bold;height:24px;line-height:22px;transition:all 0.2s">EN</button>
+                </div>
+                <!-- Shrunk copy of RULES: an <a> is enough here, the in-field version is a div
+                     only because burraco-ui.js attaches a handler to it. -->
+                <a href="regole-burraco-en.html" target="_blank" id="btn-istruzioni-modal" class="pulsante-link"
+                    style="position:absolute;left:12px;bottom:10px;width:88px;height:24px;line-height:20px;font-size:9px;margin:0;background:linear-gradient(180deg,#4a7c59 0%,#2d5a3d 100%);border-color:#6b9b7a">RULES</a>
+                <a href="index-en.html" id="btn-home-modal" class="pulsante-link pulsante-home"
+                    style="position:absolute;right:12px;bottom:10px;width:88px;height:24px;line-height:20px;font-size:9px;margin:0">ALL GAMES</a>
+                <button class="btn-modal" id="btn-avvia-automa" style="background:rgba(0,0,0,0.3);font-size:11px;padding:6px 16px;margin-top:4px;color:#aaa;border-color:#555">AVVIA AUTOMA</button>
             </div>
+
+            <!-- Confirm abandoning the game in progress (NEW button) -->
+            <div id="modal-conferma-nuova" class="modal" style="width:700px">
+                <h2 id="modal-conferma-nuova-titolo">New Game</h2>
+                <div class="modal-content">
+                    <p id="label-conferma-abbandono">Do you really want to abandon the game in progress?</p>
+                </div>
+                <div style="display:flex;gap:16px;justify-content:center">
+                    <button class="btn-modal" id="btn-conferma-no" style="width:260px">NO, CONTINUE</button>
+                    <button class="btn-modal" id="btn-conferma-si" style="width:260px">YES,
+                        NEW GAME</button>
+                </div>
+            </div>
+
+            <div id="automa-banner" style="display:none;position:fixed;bottom:60px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.85);color:#fff;padding:8px 18px;border-radius:20px;z-index:9000;font-size:13px;cursor:pointer;border:1px solid #4a4;user-select:none;text-align:center;line-height:1.5" title="Clicca per fermare"></div>
+
+            <div id="modal-automa-config" class="modal" style="width:460px;top:3%;transform:translateX(-50%);max-height:94vh;overflow-y:auto"></div>
+
+            <div id="fast-counter" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.92);border:2px solid #4a4;border-radius:14px;padding:24px 48px;z-index:9001;flex-direction:column;align-items:center;text-align:center;min-width:300px"></div>
 
             <div id="modal-vittoria" class="modal">
                 <h2 id="modal-vittoria-titolo">YOU WON!</h2>
@@ -302,6 +362,16 @@
                 <button class="btn-modal btn-nuova-partita" id="btn-nuova-s">NEW GAME</button>
             </div>
 
+            <!-- Decorative titles -->
+            <div id="titolo-gioco-loro" class="titolo-gioco">
+                <span class="titolo-burraco">BURRACO</span>
+                <span class="titolo-nome">Luciano</span>
+            </div>
+            <div id="titolo-gioco-noi" class="titolo-gioco">
+                <span class="titolo-burraco">BURRACO</span>
+                <span class="titolo-nome">Luciano</span>
+            </div>
+
         </div>
     </div>
 
@@ -319,9 +389,14 @@
 
     <!-- JS Files -->
     <script src="site.js?v=1.1"></script>
-    <script src="burraco-core.js?v=9.40"></script>
-    <script src="burraco-game.js?v=8.32"></script>
-    <script src="burraco-ui.js?v=11.1"></script>
+    <script src="burraco-core.js?v=10.0"></script>
+    <script src="burraco-engine-default.coeffs.js?v=1.0"></script>
+    <script src="burraco-engine-default.js?v=1.0"></script>
+    <script src="burraco-engine-b.coeffs.js?v=1.0"></script>
+    <script src="burraco-engine-b.js?v=1.0"></script>
+    <script src="burraco-mazzi-seed.js?v=1.0"></script>
+    <script src="burraco-game.js?v=9.2"></script>
+    <script src="burraco-ui.js?v=12.1"></script>
     <script>
         (function () {
             var nascosto = false;
@@ -344,6 +419,3 @@
 </body>
 
 </html>
-
-
-
