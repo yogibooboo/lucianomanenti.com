@@ -897,6 +897,16 @@ function mostraFine(nuovoRecord) {
         (esito === 1 ? 'esito-vittoria' : esito === 2 ? 'esito-sconfitta' : 'esito-pari');
     document.getElementById('schermo').style.display = 'block';
     box.style.display = 'flex';
+    if (typeof setupAmazonFinishBanner === 'function') {
+        setupAmazonFinishBanner('modale-fine', {
+            modalStyle: { overflow: 'visible' },
+            targetTop: 420,
+            applyModalTop: false,
+            bannerHeight: 300,
+            bannerTopOffset: 325,
+            leftOffset: 0
+        });
+    }
 }
 
 // === SALVATAGGIO ===
@@ -1150,6 +1160,16 @@ function init() {
         }
         document.getElementById('schermo').style.display = 'block';
         document.getElementById('confermatermina').style.display = 'flex';
+        if (typeof setupAmazonFinishBanner === 'function') {
+            setupAmazonFinishBanner('confermatermina', {
+                modalStyle: { overflow: 'visible' },
+                targetTop: 470,
+                applyModalTop: false,
+                bannerHeight: 300,
+                bannerTopOffset: 325,
+                leftOffset: 0
+            });
+        }
     });
     document.getElementById('btn-no-continua').addEventListener('click', chiudiModali);
     document.getElementById('btn-si-termina').addEventListener('click', function () {

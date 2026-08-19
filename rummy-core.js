@@ -350,6 +350,11 @@ var TRANSLATIONS = {
         'label-partita-punti':     'Partita a punti fino a:',
         'btn-inizia':              'INIZIA',
 
+        'modal-conferma-titolo':   'Nuova Partita',
+        'label-conferma-abbandono':'Vuoi davvero abbandonare la partita in corso?',
+        'btn-conferma-no':         'NO, CONTINUA',
+        'btn-conferma-si':         'SÌ, NUOVA PARTITA',
+
         'modal-vittoria-titolo':   'HAI VINTO!',
         'label-complimenti':       'Complimenti!',
         'label-punteggio-finale-v':'Punteggio finale:',
@@ -450,6 +455,11 @@ var TRANSLATIONS = {
         'label-mano-singola':      'Single hand',
         'label-partita-punti':     'Points match up to:',
         'btn-inizia':              'START',
+
+        'modal-conferma-titolo':   'New Game',
+        'label-conferma-abbandono':'Do you really want to abandon the current game?',
+        'btn-conferma-no':         'NO, CONTINUE',
+        'btn-conferma-si':         'YES, NEW GAME',
 
         'modal-vittoria-titolo':   'YOU WON!',
         'label-complimenti':       'Congratulations!',

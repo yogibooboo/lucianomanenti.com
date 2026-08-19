@@ -784,6 +784,16 @@ function mostraVittoria() {
     document.getElementById('schermo').style.display = 'block';
     document.getElementById('haivinto').style.display = 'flex';
     riproduciAudio('sounds/scala40/tada.mp3');
+    if (typeof setupAmazonFinishBanner === 'function') {
+        setupAmazonFinishBanner('haivinto', {
+            modalStyle: { overflow: 'visible' },
+            targetTop: 430,
+            applyModalTop: false,
+            bannerHeight: 300,
+            bannerTopOffset: 325,
+            leftOffset: 0
+        });
+    }
 }
 
 function mostraSconfitta() {
@@ -852,6 +862,16 @@ function init() {
         }
         document.getElementById('schermo').style.display = 'block';
         document.getElementById('confermatermina').style.display = 'flex';
+        if (typeof setupAmazonFinishBanner === 'function') {
+            setupAmazonFinishBanner('confermatermina', {
+                modalStyle: { overflow: 'visible' },
+                targetTop: 470,
+                applyModalTop: false,
+                bannerHeight: 300,
+                bannerTopOffset: 325,
+                leftOffset: 0
+            });
+        }
     });
     document.getElementById('btn-no-continua').addEventListener('click', chiudiModali);
     document.getElementById('btn-si-termina').addEventListener('click', function () {

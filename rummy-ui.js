@@ -26,6 +26,7 @@
             'modal-nuova-titolo', 'label-variante', 'label-gin-classico',
             'label-oklahoma-gin', 'label-tipo-partita', 'label-mano-singola',
             'label-partita-punti', 'btn-inizia',
+            'modal-conferma-titolo', 'label-conferma-abbandono', 'btn-conferma-no', 'btn-conferma-si',
             'modal-vittoria-titolo', 'label-complimenti', 'label-punteggio-finale-v', 'btn-nuova-v',
             'modal-sconfitta-titolo', 'label-peccato', 'label-punteggio-finale-p', 'btn-nuova-s',
             'label-layoff-istr', 'btn-conferma-layoff',
@@ -791,16 +792,48 @@
             });
         }
 
-        // New game button
-        var btnNuova = document.getElementById('btn-nuova');
-        if (btnNuova) btnNuova.addEventListener('click', function () {
+        // New game button. Ricarica la pagina, quindi la partita in corso e' persa
+        // senza rimedio: a partita viva si passa dalla modale di conferma (che porta
+        // anche il banner di fine partita), altrimenti si va dritti.
+        function _eseguiNuovaPartita() {
             localStorage.setItem('_rummy_prefs', JSON.stringify({
                 variante: game.variante,
                 tipoPartita: game.tipoPartita,
                 limitePartita: game.limitePartita
             }));
             location.reload();
+        }
+
+        var btnNuova = document.getElementById('btn-nuova');
+        if (btnNuova) btnNuova.addEventListener('click', function () {
+            if (game.fase === 'attesa' || game.fase === 'fine') {
+                _eseguiNuovaPartita();
+                return;
+            }
+            mostraModal('modal-conferma-nuova');
+            if (typeof setupAmazonFinishBanner === 'function') {
+                setupAmazonFinishBanner('modal-conferma-nuova', {
+                    modalStyle: { overflow: 'visible' },
+                    targetTop: 375,
+                    applyModalTop: false,
+                    bannerHeight: 250,
+                    bannerTopOffset: 265,
+                    bannerWidth: 700,
+                    leftOffset: -160
+                });
+            }
         });
+
+        var btnConfNo = document.getElementById('btn-conferma-no');
+        if (btnConfNo) btnConfNo.addEventListener('click', function () {
+            nascondiModal('modal-conferma-nuova');
+            // Il banner resterebbe parcheggiato nella modale nascosta: con AdSense
+            // reale e' un'unita' servita ma invisibile, meglio rimuoverla.
+            var vecchio = document.querySelector('#modal-conferma-nuova .finish-banner');
+            if (vecchio) vecchio.remove();
+        });
+        var btnConfSi = document.getElementById('btn-conferma-si');
+        if (btnConfSi) btnConfSi.addEventListener('click', _eseguiNuovaPartita);
 
         // Scoperte toggle
         var btnScoperte = document.getElementById('btn-scoperte');
