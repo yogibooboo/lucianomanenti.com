@@ -3017,10 +3017,53 @@ window.calcolaScoreOpz = function(opzIdx, silent, logCollector) {
     }
     function isFisica(c) { return !c.isJolly && !c.isPinella; }
 
+    // La carta finira' davvero a fare la matta dentro questa combo?
+    // Una pinella dello stesso seme che si incastra come 2 naturale in coda a una
+    // scala non sporca niente: allunga il burraco lasciandolo pulito, ed e' anzi
+    // un'ottima mossa. Il controllo replica il criterio di Combinazione.matteUsate
+    // (posizione logica del 2 + seme corrispondente) invece di chiamare
+    // puoAggiungereACombinazione, che passa da verificaCombinazione e scrive
+    // jollycomeNumero sulle carte vere: effetti collaterali dentro un punteggiatore
+    // che gira decine di volte per turno.
+    function faDaMatta(carta, combo) {
+        if (carta.isJolly) return true;
+        if (!carta.isPinella) return false;
+        if (!combo || combo.tipo !== 2 /* TIPO_SCALA */) return true;
+        if (carta.seme !== combo.seme) return true;
+        var nums = combo.carte.filter(isFisica).map(function(c) { return c.numero; });
+        if (nums.length === 0) return true;
+        // Naturale solo se la scala parte dal 3: il 2 le si attacca sotto.
+        return Math.min.apply(null, nums) !== 3;
+    }
+
     var totalScore = 0;
     var breakdown = [];
     var comboCurrentLen = {};
     comboSquadra.forEach(function(cb) { comboCurrentLen[cb.id] = cb.carte.length; });
+
+    // Proiezione di fine opzione per la penalita' H (matta su burraco pulito).
+    // Non basta guardare lo stato attuale della combo: un'opzione puo' portarla da
+    // 5 carte a burraco pulito con le calate naturali e POI appiccicarci la matta,
+    // e al momento del punteggio combo.isBurraco e' ancora false. Contiamo quindi
+    // quante carte naturali e quante matte avra' la combo a mosse concluse, cosi'
+    // la penalita' vede il burraco che l'opzione stessa sta creando. Indipendente
+    // dall'ordine delle mosse dentro l'array.
+    var _projNat = {}, _projMatte = {};
+    comboSquadra.forEach(function(cb) {
+        var _mm = cb.matteUsate.length;
+        _projMatte[cb.id] = _mm;
+        _projNat[cb.id] = cb.carte.length - _mm;
+    });
+    mosse.forEach(function(m) {
+        if (m.tipo !== 'calata' || !m.carta) return;
+        var _c = m.combo;
+        if (!_c && m.comboId !== undefined) {
+            _c = comboSquadra.find(function(cb) { return cb.id === m.comboId; });
+        }
+        if (!_c || _projNat[_c.id] === undefined) return;
+        if (faDaMatta(m.carta, _c)) _projMatte[_c.id]++;
+        else _projNat[_c.id]++;
+    });
 
     mosse.forEach(function(mossa) {
         var mossoScore = 0;
@@ -3133,6 +3176,24 @@ window.calcolaScoreOpz = function(opzIdx, silent, logCollector) {
                 var _penCM = cf.penCalataMatta !== undefined ? cf.penCalataMatta : 20;
                 mossoScore -= _penCM;
                 righe.push('  G) Penalità calata matta: -' + _penCM);
+            }
+
+            // Penalità sporcamento burraco pulito. Attaccare una matta a un burraco
+            // pulito lo declassa (200 -> 150 semipulito, o 100 sporco): l'ottava carta
+            // non porta nulla in cambio, perche' premioOltreBurraco vale 0. Senza questa
+            // voce il punteggiatore vedeva la mossa come quasi gratis e la matta finiva
+            // sul burraco invece che su un tris qualunque, dove sarebbe costata zero.
+            // Il coefficiente esisteva gia' ed era pure esposto come slider, ma veniva
+            // letto solo da valutaOpzione, che questo motore non chiama mai.
+            // Il test gira sulla proiezione di fine opzione (>=7 naturali e questa
+            // come unica matta): copre sia il burraco pulito gia' in tavola sia
+            // quello che l'opzione sta completando con le proprie calate.
+            // I burrachi gia' sporchi non entrano: hanno gia' una matta loro.
+            if (combo && faDaMatta(carta, combo) &&
+                _projNat[combo.id] >= 7 && _projMatte[combo.id] === 1) {
+                var _penBP = cf.penMattaSuBurracoPulito !== undefined ? cf.penMattaSuBurracoPulito : 100;
+                mossoScore -= _penBP;
+                righe.push('  H) Penalità matta su burraco pulito: -' + _penBP);
             }
 
             con.log('CALATA [' + nomeC(carta) + '] → combo#' + mossa.comboId + ' (' + lunghRisultante + 'c) → +' + mossoScore.toFixed(1));
