@@ -313,9 +313,13 @@ function iniziaPartita() {
         var _seed = window.BURRACO_MAZZI_SEEDS[_idx % window.BURRACO_MAZZI_SEEDS.length];
         window.seededShuffle(game.mazzo, _seed);
         game._seedDbIndex = _idx + 1;
+        // Il seme si segna QUI. Ricavarlo a fine mano dall'indice darebbe
+        // quello della mano dopo: l'indice e' gia' stato fatto avanzare.
+        game._semeUsato = _seed;
     } else {
         shuffle(game.mazzo);
         shuffle(game.mazzo);
+        game._semeUsato = null;      // mazzo non ripetibile: non c'e' niente da segnare
     }
 
     // Distribuisci carte
@@ -447,14 +451,33 @@ function creaGiocatori() {
     game.personaggiInGioco = personaggiSelezionati;
 
     // Assegna motore AI ai giocatori non umani
-    game.giocatori.forEach(function(g) {
-        if (!g.isUmano) g.engine = _getEngineById(
-            (game.autoRun && game.automaConfig)
-                ? (g.squadra === 0 ? (game.automaConfig.engineNoi  || 'A')
-                                   : (game.automaConfig.engineLoro || 'A'))
-                : 'A'
-        );
-    });
+    if (game.autoRun && game.automaConfig) {
+        // Automa: i motori li decide la configurazione della sessione
+        game.braccio = null;
+        game.giocatori.forEach(function(g) {
+            if (g.isUmano) return;
+            // L'id resta accanto alla funzione: la funzione dice come giocare,
+            // l'id dice CHI sta giocando, e a fine mano serve il secondo.
+            g.engineId = g.squadra === 0 ? (game.automaConfig.engineNoi  || 'A')
+                                         : (game.automaConfig.engineLoro || 'A');
+            g.engine   = _getEngineById(g.engineId);
+        });
+    } else {
+        // Partita reale: il braccio dice DOVE si siede il motore in prova.
+        // La squadra 0 e' quella della persona (li' l'unico automa e' il
+        // compagno), la squadra 1 sono i due avversari.
+        //   'B' -> squadra 1: il motore in prova gioca contro la persona
+        //   'C' -> squadra 0: il motore in prova e' il compagno
+        //   'A' -> nessuna delle due, e -1 non e' il numero di nessuna squadra
+        game.braccio = _estraiBraccio();
+        game.tsInizio = Date.now();
+        var squadraInProva = game.braccio === 'B' ? 1 : (game.braccio === 'C' ? 0 : -1);
+        game.giocatori.forEach(function(g) {
+            if (g.isUmano) return;
+            g.engineId = g.squadra === squadraInProva ? 'B' : 'A';
+            g.engine   = _getEngineById(g.engineId);
+        });
+    }
 
     // Log per debug
     game.giocatori.forEach((g) => {
@@ -1594,6 +1617,47 @@ function finePartita(haVintoNoi) {
         try { localStorage.setItem('burraco_torneo', JSON.stringify(game.torneo)); } catch (e) { }
     }
 
+    // ===== STATISTICHE =====
+    // Solo partite vere: l'automa macina migliaia di mani e falserebbe ogni
+    // confronto. L'unica eccezione e' il modo prova, che esiste solo in casa e
+    // solo col flag acceso (vedi burraco-stats.js) ed e' anzi il caso in cui
+    // l'automa DEVE registrare, perche' e' li' che si misura.
+    // Del consenso e dell'identificatore si occupa burraco-stats.js; qui si
+    // passano soltanto i fatti della mano. Il try non e' scaramantico: un
+    // errore nella raccolta non deve impedire di vedere il risultato.
+    if (window.BurracoStats && (!game.autoRun || window.BurracoStats.prova)) {
+        try {
+            window.BurracoStats.invia({
+                torneo_id: game.torneo ? (game.torneo.id || null) : null,
+                mano_num: game.torneo ? game.torneo.mano : 1,
+                modalita: game.modalita,
+                braccio: game.braccio || 'A',
+                // Chi ha dato le carte: chi comincia e' quello DOPO il mazziere,
+                // e cominciare per primi non e' neutro.
+                mazziere: typeof game.mazziere === 'number' ? game.mazziere : null,
+                // C'e' solo nelle prove a mazzi ripetibili, altrove e' null.
+                seme: typeof game._semeUsato === 'number' ? game._semeUsato : null,
+                // Chi ha giocato la mano, sedia per sedia.
+                motori: _motoriPerSedia(),
+                esito: vinceNoi ? 1 : 0,
+                punti_noi: game.puntiNoi,
+                punti_loro: game.puntiLoro,
+                // Chi ha chiuso, che non coincide con chi ha vinto:
+                // 1 = il giocatore, -1 = gli avversari, 0 = mazzo esaurito.
+                chiusura: haVintoNoi === null ? 0 : (haVintoNoi ? 1 : -1),
+                burrachi_noi: risultato.noi.burracos.map(b => b.tipo).join(','),
+                burrachi_loro: risultato.loro.burracos.map(b => b.tipo).join(','),
+                pozzetto_noi: risultato.noi.pozzettoNonPreso ? 0 : 1,
+                pozzetto_loro: risultato.loro.pozzettoNonPreso ? 0 : 1,
+                // Tetto a un giorno: una partita lasciata aperta tutta la notte
+                // verrebbe respinta dal server, e non dice niente di utile.
+                durata_s: game.tsInizio
+                    ? Math.min(86400, Math.round((Date.now() - game.tsInizio) / 1000))
+                    : 0
+            });
+        } catch (e) { }
+    }
+
     // ===== MOSTRA SCHERMATA RISULTATI =====
     if (!game.fastMode) mostraRisultatoFinale(risultato, vinceNoi);
 
@@ -2025,10 +2089,141 @@ var _fastTick = (function () {
     return function (fn) { _queue.push(fn); _mc.port2.postMessage(null); };
 })();
 
+// Interruttore dell'esperimento sulle partite reali.
+// Finche' e' false il braccio e' sempre 'A': il comportamento del gioco resta
+// identico a prima e nessun giocatore incontra il motore B.
+var AB_ATTIVO = true;
+
+// I TRE BRACCI
+//   'A'  nessuno modificato          - l'ancora
+//   'B'  i due avversari modificati  - il motore in prova gioca CONTRO la persona
+//   'C'  il compagno modificato      - il motore in prova gioca CON la persona
+//
+// Perche' tre e non due. In autoscontro un coefficiente puo' vincere solo
+// perche' sfrutta un punto cieco dell'altro motore, e da quei numeri non si
+// distingue una vera miglioria. Contro una persona invece B e C devono spostare
+// il margine della persona in direzioni OPPOSTE: se il motore e' davvero piu'
+// forte, in B la persona perde di piu' e in C vince di piu'. Se i due bracci si
+// muovono dalla stessa parte non stiamo misurando la forza del motore ma
+// qualcos'altro - mani piu' corte, punteggi piu' gonfi - e lo sappiamo.
+// Il confronto piu' sensibile e' proprio B contro C: se una sedia modificata
+// vale d, B ne ha due contro la persona (-2d sul suo margine) e C una a favore
+// (+d), quindi B e C distano 3d mentre A e B distano 2d - una volta e mezza,
+// non il doppio. 'A' serve a dire da che parte sta lo zero.
+var BRACCI = ['A', 'B', 'C'];
+var CHIAVE_BRACCIO = 'burraco_braccio';
+
+// Il braccio RUOTA, non si estrae a caso. Tre bracci contro le quattro
+// posizioni del mazziere, e 3 e 4 non hanno divisori comuni: in dodici mani si
+// passa una volta per ognuna delle dodici combinazioni braccio-mazziere, che a
+// sorte non succederebbe. Il contatore sta nel localStorage perche' ogni mano
+// e' un ricaricamento di pagina, come il mazziere.
+//
+// Il punto di partenza e' casuale e si fissa alla prima mano del browser: senza,
+// il braccio 'A' capiterebbe sempre alla prima mano di ogni giocatore, e le
+// prime mani non sono come le altre - si sta imparando, si abbandona di piu'.
+// Il contatore gira su 12 cosi' resta intero sia diviso 3 sia diviso 2.
+function _avanzaContatoreBraccio() {
+    var n;
+    try {
+        n = parseInt(localStorage.getItem(CHIAVE_BRACCIO), 10);
+        if (!(n >= 0)) n = Math.floor(Math.random() * 12);
+        localStorage.setItem(CHIAVE_BRACCIO, (n + 1) % 12);
+    } catch (e) {
+        // Senza localStorage la rotazione non puo' ricordarsi dov'era: si
+        // ripiega sul caso. E' meno efficiente, non falsa niente.
+        n = Math.floor(Math.random() * 12);
+    }
+    return n;
+}
+
+// Sceglie il braccio della mano che sta iniziando.
+function _estraiBraccio() {
+    if (!AB_ATTIVO) return 'A';
+    // Se questa mano non verra' registrata, l'esperimento non ha dove finire:
+    // far incontrare il motore in prova a chi passa di qui gli cambierebbe la
+    // partita senza che noi si impari niente. Durante il collaudo online la
+    // raccolta e' accesa solo sul nostro browser, e solo li' i bracci girano:
+    // per tutti gli altri il gioco resta quello di ieri.
+    if (window.BurracoStats && !window.BurracoStats.raccolta) return 'A';
+    if (typeof window.scegliBestOpzioneAI_B !== 'function') return 'A';
+    // In 1v1 il compagno non esiste: il braccio 'C' non avrebbe nessuna sedia
+    // dove applicarsi e produrrebbe righe identiche ad 'A' ma etichettate 'C'.
+    // Li' i bracci possibili sono due.
+    var lista = game.modalita === '2v2' ? BRACCI : ['A', 'B'];
+    return lista[_avanzaContatoreBraccio() % lista.length];
+}
+
 function _getEngineById(id) {
     if (id === 'B' && typeof window.scegliBestOpzioneAI_B === 'function')
         return window.scegliBestOpzioneAI_B;
     return scegliBestOpzioneAI;
+}
+
+// ---- Descrizione dei motori per le statistiche ------------------------------
+// Un motore e' identificato da due cose: la versione del codice che decide
+// (burraco-core.js) e i coefficienti con cui gira. Dei coefficienti si mandano
+// SOLO gli scostamenti dalla tabella di serie, perche' ricopiarne trentadue a
+// ogni mano sarebbe assurdo.
+//
+// Ma gli scostamenti si leggono solo sapendo da cosa si scostano, e la tabella
+// di serie e' un file che prima o poi cambiera'. Percio' la versione si porta
+// dietro un'impronta della tabella: "10.2/a3f1b2". Il giorno che un valore di
+// serie cambia, l'impronta cambia con lui e le mani nuove finiscono su una riga
+// nuova di burraco_motori, invece di essere lette col metro sbagliato.
+
+function _improntaCoeff(tab) {
+    var chiavi = Object.keys(tab).sort(), s = '';
+    for (var i = 0; i < chiavi.length; i++) s += chiavi[i] + '=' + tab[chiavi[i]] + ';';
+    var h = 5381;
+    for (var j = 0; j < s.length; j++) h = ((h * 33) ^ s.charCodeAt(j)) >>> 0;
+    return ('00000000' + h.toString(16)).slice(-8).slice(0, 6);
+}
+
+var _improntaBase = null;
+
+function _descriviMotore(id) {
+    var base = window.coeffScoreOpz || {};
+    var tab  = (id === 'B' && window.coeffScoreOpzB) ? window.coeffScoreOpzB : base;
+
+    if (_improntaBase === null) _improntaBase = _improntaCoeff(base);
+
+    // Solo le differenze. Un coefficiente lasciato al valore di serie non
+    // compare: e' l'assenza della chiave a dire "quello non l'ho toccato".
+    var p = {}, k;
+    for (k in tab) if (tab.hasOwnProperty(k) && tab[k] !== base[k]) p[k] = tab[k];
+    // Caso opposto: una variante a cui MANCA un coefficiente della tabella base.
+    // E' un errore di battitura, non una configurazione, ma se lo si tacesse la
+    // variante rotta sembrerebbe lo standard. Meglio che si veda nei dati.
+    for (k in base) if (base.hasOwnProperty(k) && !(k in tab)) p[k] = 'assente';
+
+    return {
+        v: (window.BurracoStats ? window.BurracoStats.versioneDi('burraco-core.js') : '') +
+           '/' + _improntaBase,
+        p: p
+    };
+}
+
+// Le sedie hanno nomi fissi nel database (noi, compagno, avv1, avv2) e non
+// seguono l'ordine del tavolo, che e' quello di creaGiocatori: 2v2 sta in
+// [bottom, left, top, right], 1v1 in [bottom, left]. La traduzione fra i due
+// ordini vive solo qui: la usa _motoriPerSedia per spedire, e il pannello
+// Ctrl+Alt+M per mostrare. Due elenchi scritti a mano prima o poi divergono, e
+// il primo a sbagliare sarebbe quello che nessuno rilegge.
+window._sedieDB = function () {
+    return game.modalita === '2v2'
+        ? ['noi', 'avv1', 'compagno', 'avv2']
+        : ['noi', 'avv1'];
+};
+
+function _motoriPerSedia() {
+    var sedie = window._sedieDB();
+    var m = {}, g = game.giocatori || [];
+    for (var i = 0; i < sedie.length && i < g.length; i++) {
+        if (g[i].isUmano) continue;          // sedia di una persona: resta vuota
+        m[sedie[i]] = _descriviMotore(g[i].engineId || 'A');
+    }
+    return m;
 }
 
 window._getAvailableEngines = function () {

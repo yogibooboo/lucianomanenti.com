@@ -430,7 +430,11 @@ function setupEventi() {
             localStorage.setItem('burraco_nuova', modalita);
             if (tipoPartita === 'torneo') {
                 // Nuova partita: sempre torneo fresco da zero
+                // id: serve solo a raggruppare le mani dello stesso torneo
+                // nelle statistiche. Nessun legame col dispositivo: e' nuovo
+                // a ogni torneo e muore con lui.
                 localStorage.setItem('burraco_torneo', JSON.stringify({
+                    id: Date.now().toString(36) + Math.random().toString(36).slice(2, 8),
                     limite: limiteTorneo, totNoi: 0, totLoro: 0, mano: 1
                 }));
             } else {
@@ -3029,6 +3033,242 @@ document.addEventListener('keydown', (e) => {
         setTimeout(nascondiMessaggio, 2000);
     }
 });
+
+// ============================================================================
+// CTRL+ALT+M - MOTORI IN TAVOLA
+// ============================================================================
+// Pannello di sola lettura: chi e' seduto dove, con quale motore, e cosa
+// finirebbe nella riga della mano se la mano finisse adesso. Non tocca niente,
+// non serve al gioco: serve a rispondere a "ma il motore B lo sta usando
+// qualcuno?" senza andare a caccia in console.
+//
+// Non ricopia nessun dato: legge game.giocatori, chiede i nomi delle sedie a
+// _sedieDB() e la descrizione dei motori a _motoriPerSedia(), cioe' esattamente
+// le funzioni che poi spediscono. Se un giorno una di quelle cambia, il
+// pannello cambia con lei invece di raccontare la versione di ieri.
+//
+// Il controllo che vale la pena guardare e' la colonna "fn": engineId e'
+// l'etichetta che va nel database, la funzione agganciata a g.engine e' quella
+// che decide davvero. Se le due non coincidono il database sta registrando una
+// bugia, e qui si vede in rosso.
+(function () {
+    'use strict';
+
+    var ID_PANNELLO = 'pannello-motori';
+
+    function esc(t) {
+        return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    // Quale funzione e' agganciata davvero a questa sedia, non quale etichetta.
+    function motoreReale(g) {
+        if (typeof window.scegliBestOpzioneAI_B === 'function' &&
+            g.engine === window.scegliBestOpzioneAI_B) return 'B';
+        if (typeof window.scegliBestOpzioneAI === 'function' &&
+            g.engine === window.scegliBestOpzioneAI) return 'A';
+        return g.engine ? '?' : '-';
+    }
+
+    function scostamenti(p) {
+        var k, out = [];
+        for (k in p) if (p.hasOwnProperty(k)) out.push(esc(k) + ':' + esc(p[k]));
+        return out.length ? out.join(' &middot; ')
+                          : '<span style="color:#888">tutto di serie</span>';
+    }
+
+    // Un identificatore fatto per essere copiato: monospazio, e user-select:all
+    // perche' basti un clic a prenderlo tutto. Sono dodici o sedici caratteri
+    // base36, e chi li detta a voce confonde 0 con o e 1 con l: si andrebbe a
+    // cercare in tabella una riga che non esiste.
+    function campoId(nome, valore, assente) {
+        var stile = 'font-family:monospace;font-size:12px;color:#fff;background:#000;' +
+                    'padding:1px 5px;border-radius:3px;' +
+                    '-webkit-user-select:all;user-select:all';
+        return '<tr><td style="padding:2px 10px 2px 0;color:#8ad;white-space:nowrap">' + nome +
+               '</td><td style="padding:2px 0">' +
+               (valore ? '<span style="' + stile + '">' + esc(valore) + '</span>'
+                       : '<span style="color:#888">' + assente + '</span>') +
+               '</td></tr>';
+    }
+
+    function costruisci() {
+        var g = (window.game && game.giocatori) || [];
+        var sedie = typeof window._sedieDB === 'function' ? window._sedieDB() : [];
+        var h = [];
+
+        h.push('<div style="color:#e8d870;font-weight:bold;margin-bottom:8px">Motori in tavola' +
+               ' <span style="color:#555;font-size:10px">Ctrl+Alt+M per chiudere</span></div>');
+
+        // Riga di contesto: le stesse cose che finiscono nelle colonne della mano.
+        var braccio = game.autoRun ? 'automa (nessun braccio)'
+                                   : (game.braccio || '<span style="color:#f66">non estratto</span>');
+        h.push('<div style="color:#aaa;margin-bottom:8px">' +
+               'modalita\' <b style="color:#fff">' + esc(game.modalita || '?') + '</b>' +
+               ' &middot; braccio <b style="color:#fff">' + braccio + '</b>' +
+               ' &middot; mazziere <b style="color:#fff">' +
+               (game.mazziere === undefined ? '?' : esc(game.mazziere)) + '</b>' +
+               ' &middot; seme <b style="color:#fff">' +
+               (game._semeUsato == null ? 'nessuno' : esc(game._semeUsato)) + '</b>' +
+               '</div>');
+
+        if (!g.length) {
+            h.push('<div style="color:#f66">Nessuna partita in corso.</div>');
+            return h.join('');
+        }
+
+        // ---- il tavolo ----
+        h.push('<table style="border-collapse:collapse;width:100%;margin-bottom:10px">');
+        h.push('<tr style="color:#8ad;border-bottom:1px solid #444">' +
+               '<th style="text-align:left;padding:2px 8px 4px 0">posto</th>' +
+               '<th style="text-align:left;padding:2px 8px 4px 0">nome</th>' +
+               '<th style="text-align:left;padding:2px 8px 4px 0">sq</th>' +
+               '<th style="text-align:left;padding:2px 8px 4px 0">chi</th>' +
+               '<th style="text-align:left;padding:2px 8px 4px 0">id</th>' +
+               '<th style="text-align:left;padding:2px 8px 4px 0">fn</th>' +
+               '<th style="text-align:left;padding:2px 0 4px 0">sedia DB</th></tr>');
+
+        for (var i = 0; i < g.length; i++) {
+            var p = g[i];
+            var id = p.isUmano ? '-' : (p.engineId || 'A');
+            var fn = p.isUmano ? '-' : motoreReale(p);
+            // Rosso quando l'etichetta che va nel database e la funzione che
+            // decide dicono due cose diverse.
+            var col = (id === fn) ? (id === 'B' ? '#e8d870' : '#6f6') : '#f66';
+            h.push('<tr style="border-bottom:1px solid #2a2a2a">' +
+                   '<td style="padding:3px 8px 3px 0;color:#888">' + i + '</td>' +
+                   '<td style="padding:3px 8px 3px 0">' + esc(p.nome || '') + '</td>' +
+                   '<td style="padding:3px 8px 3px 0;color:#888">' + esc(p.squadra) + '</td>' +
+                   '<td style="padding:3px 8px 3px 0;color:' +
+                       (p.isUmano ? '#8cf' : '#aaa') + '">' + (p.isUmano ? 'persona' : 'IA') + '</td>' +
+                   '<td style="padding:3px 8px 3px 0;color:' + col + ';font-weight:bold">' + id + '</td>' +
+                   '<td style="padding:3px 8px 3px 0;color:' + col + ';font-weight:bold">' + fn + '</td>' +
+                   '<td style="padding:3px 0;color:#888">' + esc(sedie[i] || '-') + '</td></tr>');
+        }
+        h.push('</table>');
+
+        // ---- cosa verrebbe spedito ----
+        h.push('<div style="color:#e8d870;margin-bottom:4px">Cosa andrebbe nella riga della mano</div>');
+        if (typeof window._motoriPerSedia !== 'function') {
+            h.push('<div style="color:#f66;margin-bottom:10px">_motoriPerSedia non disponibile.</div>');
+        } else {
+            var m = window._motoriPerSedia(), s, vuoto = true;
+            for (s in m) if (m.hasOwnProperty(s)) {
+                vuoto = false;
+                h.push('<div style="margin-bottom:3px"><span style="color:#8ad">' + esc(s) +
+                       '</span> <span style="color:#888">' + esc(m[s].v) + '</span> ' +
+                       scostamenti(m[s].p) + '</div>');
+            }
+            if (vuoto) h.push('<div style="color:#888">nessuna sedia di IA</div>');
+            h.push('<div style="color:#666;font-size:10px;margin:4px 0 10px 0">' +
+                   'Le sedie delle persone restano vuote: nel database sono NULL.</div>');
+        }
+
+        // ---- B rispetto ad A, anche quando in tavola non c'e' ----
+        var a = window.coeffScoreOpz || {}, b = window.coeffScoreOpzB;
+        h.push('<div style="color:#e8d870;margin-bottom:4px">Motore B rispetto ad A</div>');
+        if (!b) {
+            h.push('<div style="color:#888">Motore B non caricato.</div>');
+        } else {
+            var d = [], k;
+            for (k in b) if (b.hasOwnProperty(k) && b[k] !== a[k])
+                d.push(esc(k) + ' <span style="color:#888">' + esc(a[k]) + '&rarr;</span>' + esc(b[k]));
+            h.push('<div style="color:#ccc">' +
+                   (d.length ? d.length + ' coefficienti: ' + d.join(' &middot; ')
+                             : '<span style="color:#f66">identico ad A: l\'esperimento non misura niente</span>') +
+                   '</div>');
+        }
+
+        // ---- questa mano finira' in tabella? ----
+        var st = window.BurracoStats && window.BurracoStats.stato ? window.BurracoStats.stato() : null;
+        h.push('<div style="color:#e8d870;margin:10px 0 4px 0">Statistiche</div>');
+        if (!st) {
+            h.push('<div style="color:#f66">BurracoStats non caricato: questa mano non parte.</div>');
+        } else {
+            // Stesse condizioni di burraco-game.js e burraco-stats.js: senza
+            // raccolta non parte niente; con la raccolta, l'automa si registra
+            // solo col modo prova acceso e il gioco a mano sempre.
+            var parte = st.raccolta && (!game.autoRun || !!window.BurracoStats.prova);
+            var perche = !st.raccolta ? 'raccolta spenta su questo browser'
+                                      : 'automa senza modo prova';
+            h.push('<div style="color:#ccc">raccolta <b style="color:' +
+                   (st.raccolta ? '#6f6' : '#f66') + '">' +
+                   (st.raccolta ? 'accesa' : 'spenta') + '</b>' +
+                   ' &middot; consenso <b style="color:' +
+                   (st.consenso === true ? '#6f6' : st.consenso === false ? '#f66' : '#e8d870') + '">' +
+                   (st.consenso === null ? 'in attesa' : st.consenso ? 'si\'' : 'no') + '</b>' +
+                   ' &middot; automa <b style="color:#fff">' + (game.autoRun ? 'si\'' : 'no') + '</b>' +
+                   ' &middot; modo prova <b style="color:#fff">' + (st.prova ? 'acceso' : 'spento') + '</b>' +
+                   '</div>');
+            h.push('<div style="margin-top:3px;color:' + (parte ? '#6f6' : '#f66') + '">' +
+                   (parte ? 'Questa mano verra\' registrata.'
+                          : 'Questa mano NON verra\' registrata (' + perche + ').') + '</div>');
+            if (!st.raccolta) {
+                h.push('<div style="color:#888;font-size:10px;margin-top:2px">' +
+                       'Con la raccolta spenta i bracci non girano: tutti i motori restano su A.' +
+                       '</div>');
+            }
+
+            // ---- gli identificatori, per farsi segnalare le mani ----
+            // Servono a chi gioca per dire "questa riga e' mia" e farsi
+            // riconoscere le partite in tabella.
+            //
+            // Il punto delicato e' mostrare solo quello che finisce DAVVERO in
+            // tabella. Senza consenso `_spedisci` cancella giocatore_id e
+            // torneo_id dalla riga: stamparli lo stesso manderebbe a cercare
+            // righe che non esistono. mano_id invece resta sempre, anche nelle
+            // righe nude, e infatti e' l'unico che si puo' segnalare comunque -
+            // una mano per volta, senza poterle legare fra loro.
+            var conId    = st.consenso === true;
+            var idTorneo = (window.game && game.torneo && game.torneo.id) || null;
+
+            h.push('<div style="color:#e8d870;margin:10px 0 4px 0">Identificatori</div>');
+            h.push('<table style="border-collapse:collapse">');
+            h.push(campoId('giocatore', conId ? st.id : null,
+                           conId ? 'nessuno: si crea alla prima mano spedita'
+                                 : 'non registrato: senza consenso non parte'));
+            h.push(campoId('torneo', conId ? idTorneo : null,
+                           !conId ? 'non registrato: senza consenso non parte'
+                                  : 'nessuno: mano singola, non un torneo'));
+            h.push(campoId('ultima mano', st.ultimaMano,
+                           'nessuna mano ancora spedita da questa pagina'));
+            h.push('</table>');
+            h.push('<div style="color:#666;font-size:10px;margin-top:3px">' +
+                   'Un clic seleziona tutto l\'id: meglio incollarlo che dettarlo.' +
+                   (conId ? '' : ' Righe nude: si riconosce una mano per volta, non la partita.') +
+                   '</div>');
+        }
+
+        return h.join('');
+    }
+
+    document.addEventListener('keydown', function (e) {
+        if (!(e.ctrlKey && e.altKey && e.key && e.key.toLowerCase() === 'm')) return;
+        if (document.activeElement && (document.activeElement.tagName === 'INPUT' ||
+                                       document.activeElement.tagName === 'TEXTAREA')) return;
+        e.preventDefault();
+
+        // Stesso tasto per aprire e chiudere.
+        var aperto = document.getElementById(ID_PANNELLO);
+        if (aperto) { aperto.remove(); return; }
+
+        var d = document.createElement('div');
+        d.id = ID_PANNELLO;
+        // Larghezza fissa: l'elenco dei coefficienti e' una riga sola lunga
+        // quanto vuole, e senza un limite si porterebbe dietro tutto il
+        // pannello fino a coprire il tavolo. Qui va a capo.
+        d.style.cssText = 'position:fixed;top:20px;right:20px;background:rgba(0,0,0,0.92);' +
+            'border:1px solid #555;border-radius:8px;padding:14px;z-index:9999999;' +
+            'font-family:monospace;font-size:12px;line-height:1.5;color:#ddd;' +
+            'width:540px;max-width:92vw;max-height:88vh;overflow:auto;';
+        try {
+            d.innerHTML = costruisci();
+        } catch (err) {
+            // Un pannello diagnostico che fa cadere la partita sarebbe il colmo.
+            d.innerHTML = '<div style="color:#f66">Errore nel pannello: ' + esc(err.message) + '</div>';
+        }
+        document.body.appendChild(d);
+    });
+})();
 
 function getGiocatoreHTML(indiceGiocatore, ruolo, defaultScenario) {
     // Nota: questa funzione genera solo la shell della debug window.
