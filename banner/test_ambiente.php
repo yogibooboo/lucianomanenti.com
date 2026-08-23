@@ -162,7 +162,6 @@ if ($curl_ok) {
         $ms = round((microtime(true) - $t0) * 1000);
         $code = curl_getinfo($c, CURLINFO_HTTP_CODE);
         $err = curl_error($c);
-        curl_close($c);
         // qualsiasi risposta HTTP va bene: significa che l'host e' raggiungibile.
         // Un 400/403/405 e' normale su un endpoint POST interrogato senza dati.
         if ($err) {

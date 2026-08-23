@@ -180,7 +180,6 @@ if (!function_exists('aliChiamata')) {
             $api_response = curl_exec($ch);
             $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             $curl_err = curl_error($ch);
-            curl_close($ch);
 
             $api_data = ($api_response !== false) ? json_decode($api_response, true) : null;
 
@@ -312,7 +311,6 @@ if (!function_exists('amazonToken')) {
         $risposta = curl_exec($ch);
         $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $curl_err = curl_error($ch);
-        curl_close($ch);
 
         if ($risposta === false) {
             return array('token' => '', 'errore' => "connessione fallita: $curl_err");
@@ -366,7 +364,6 @@ if (!function_exists('amazonDettagliProdotti')) {
             $risposta = curl_exec($ch);
             $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             $curl_err = curl_error($ch);
-            curl_close($ch);
 
             if ($http_code == 429 && $tentativo < $max_tentativi - 1) {
                 $tentativo++;

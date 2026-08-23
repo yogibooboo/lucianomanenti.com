@@ -153,7 +153,6 @@ if ($ENABLE_AMAZON && !empty($input_data_amazon)) {
     $token_response = curl_exec($ch);
     $token_http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     $token_curl_error = curl_error($ch);
-    curl_close($ch);
 
     if ($token_http_code != 200) {
         log_msg("ERRORE: Impossibile ottenere il Token. HTTP Code: $token_http_code. Risposta: $token_response");
@@ -217,7 +216,6 @@ if ($ENABLE_AMAZON && !empty($input_data_amazon)) {
                     $api_response = curl_exec($ch2);
                     $api_http_code = curl_getinfo($ch2, CURLINFO_HTTP_CODE);
                     $api_curl_error = curl_error($ch2);
-                    curl_close($ch2);
 
                     if ($api_http_code == 429) {
                         $retry_count++;
@@ -443,7 +441,6 @@ if ($ENABLE_ALIEXPRESS && !empty($input_data_ali)) {
             $api_response = curl_exec($ch);
             $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             $ali_curl_error = curl_error($ch);
-            curl_close($ch);
 
             $api_data = ($api_response !== false) ? json_decode($api_response, true) : null;
 

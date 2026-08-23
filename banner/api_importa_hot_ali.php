@@ -53,7 +53,6 @@ function generateAliShortLink($source_url, $appKey, $appSecret, $trackingId) {
     curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($params));
     curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/x-www-form-urlencoded;charset=utf-8']);
     $api_response = curl_exec($ch);
-    curl_close($ch);
 
     if ($api_response && ($api_data = json_decode($api_response, true))) {
         $links = $api_data['aliexpress_affiliate_link_generate_response']['resp_result']['result']['promotion_links']['promotion_link'] ?? [];
@@ -164,7 +163,6 @@ foreach ($search_queries as $query) {
         curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/x-www-form-urlencoded;charset=utf-8']);
         $api_response = curl_exec($ch);
         $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
 
         if ($http_code != 200 || !($api_data = json_decode($api_response, true))) {
             continue;
