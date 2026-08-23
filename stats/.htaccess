@@ -1,0 +1,17 @@
+# Il config sta dentro il webroot perche' su Aruba non c'e' una cartella
+# sopra raggiungibile via FTP. Finche' Apache interpreta il PHP, chiederlo
+# restituisce una pagina vuota; questo blocco serve al caso in cui smetta
+# di farlo (modulo disattivato, errore di configurazione) e il file venga
+# servito come testo, password compresa.
+# Vale per stats-config.php e per stats-config.locale.php: il secondo non ha
+# segreti, ma non c'e' motivo di lasciarlo leggere e la regola cosi' non va
+# aggiornata il giorno in cui nasce una terza configurazione.
+<FilesMatch "^(stats-config.*\.php|.*\.sql)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>

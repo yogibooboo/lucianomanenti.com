@@ -60,3 +60,7 @@ banner/*.bak-*
 banner/phpmailer/
 banner/*.jpg
 banner/*.png
+
+# --- Cartella stats/ ---
+# Stessa regola dei banner: il codice si versiona, le credenziali no.
+stats/stats-config.php
