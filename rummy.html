@@ -12,8 +12,10 @@
     </script>
 
     <title>Gin Rummy Online Gratis - lucianomanenti.com</title>
-    <link rel="alternate" hreflang="it" href="rummy.html">
-    <link rel="alternate" hreflang="en" href="rummy-en.html">
+    <link rel="canonical" href="https://www.lucianomanenti.com/rummy.html">
+    <link rel="alternate" hreflang="it" href="https://www.lucianomanenti.com/rummy.html">
+    <link rel="alternate" hreflang="en" href="https://www.lucianomanenti.com/rummy-en.html">
+    <link rel="alternate" hreflang="x-default" href="https://www.lucianomanenti.com/rummy.html">
     <link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
     <link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
     <link rel="shortcut icon" href="favicon/favicon.ico">
@@ -27,7 +29,7 @@
     <meta http-Equiv="Pragma" Content="no-cache">
     <meta http-Equiv="Expires" Content="0">
 
-    <link rel="stylesheet" href="rummy.css?v=3.1" />
+    <link rel="stylesheet" href="rummy.css?v=3.2" />
 
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9335537153013492"
         crossorigin="anonymous"></script>
@@ -223,6 +225,17 @@
                     </div>
                 </div>
                 <button class="btn-modal" id="btn-inizia">INIZIA</button>
+
+                <!-- Vie di fuga dalla modale: finche' e' aperta copre il campo, quindi
+                     il cambio lingua in alto a sinistra e i link in fondo alla pagina
+                     sono irraggiungibili. Gli id sono distinti dai gemelli in campo. -->
+                <div class="lang-switch-modale">
+                    <a href="rummy.html" class="active" id="btn-lang-it-modale" title="Italiano">IT</a>
+                    <a href="rummy-en.html" id="btn-lang-en-modale" title="English">EN</a>
+                </div>
+                <a href="regole-rummy.html" target="_blank" rel="opener" id="btn-regole-modale"
+                    class="btn-angolo-modale sinistra">COME SI GIOCA</a>
+                <a href="index.html" id="btn-home-modale" class="btn-angolo-modale destra home">TUTTI I GIOCHI</a>
             </div>
 
             <!-- Conferma abbandono: il pulsante NUOVA ricarica la pagina, quindi la
@@ -273,7 +286,7 @@
 
     <!-- JS Files -->
     <script src="site.js?v=1.1"></script>
-    <script src="rummy-core.js?v=1.3"></script>
+    <script src="rummy-core.js?v=1.4"></script>
     <script src="rummy-game.js?v=1.3"></script>
     <script src="rummy-ui.js?v=3.0"></script>
     <script>

@@ -11,6 +11,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Campo Minato Online Gratis - lucianomanenti.com</title>
+    <link rel="canonical" href="https://www.lucianomanenti.com/minato.html">
+    <link rel="alternate" hreflang="it" href="https://www.lucianomanenti.com/minato.html">
+    <link rel="alternate" hreflang="en" href="https://www.lucianomanenti.com/minato-en.html">
+    <link rel="alternate" hreflang="x-default" href="https://www.lucianomanenti.com/minato.html">
     <link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
     <link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
     <link rel="shortcut icon" href="favicon/favicon.ico">
@@ -23,7 +27,7 @@
     <meta http-Equiv="Pragma" Content="no-cache">
     <meta http-Equiv="Expires" Content="0">
 
-    <link rel="stylesheet" href="minato.css?v=1.8" />
+    <link rel="stylesheet" href="minato.css?v=1.9" />
 
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
@@ -182,6 +186,17 @@
                 </div>
 
                 <button onclick="confermaEAvviaPartita()" class="btn-continua" style="width: 100%; max-width: 250px; margin: 0 auto; display: block;">INIZIA A GIOCARE</button>
+
+                <!-- Vie di fuga dalla modale: finche' e' aperta copre il campo, quindi
+                     il cambio lingua della fascia in alto e i link in fondo alla pagina
+                     sono irraggiungibili. Gli id sono distinti dai loro gemelli in campo. -->
+                <div class="lang-switch-modale">
+                    <a href="minato.html" class="active" id="btn-lang-it-modale" title="Italiano">IT</a>
+                    <a href="minato-en.html" id="btn-lang-en-modale" title="English">EN</a>
+                </div>
+                <a href="guida-minato.html" target="_blank" rel="opener" id="btn-regole-modale"
+                    class="btn-angolo-modale sinistra">COME SI GIOCA</a>
+                <a href="index.html" id="btn-home-modale" class="btn-angolo-modale destra home">TUTTI I GIOCHI</a>
             </div>
 
             <!-- 2. Modale Vittoria (bassa e larga, banner sopra) -->

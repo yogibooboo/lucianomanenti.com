@@ -618,6 +618,83 @@ a.pulsante-top {
     justify-content: flex-start;
 }
 
+/* Vie di fuga dalla modale d'inizio: la modale copre il campo, quindi il
+   cambio lingua e i due link della fascia in basso vanno replicati qui dentro,
+   altrimenti chi arriva sulla pagina non li vede finche' non inizia a giocare.
+   Gli id nell'HTML sono distinti da quelli in campo: due elementi con lo
+   stesso id romperebbero getElementById e la validita' del documento. */
+.lang-switch-modale {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    display: flex;
+    gap: 4px;
+    z-index: 1;
+}
+.lang-switch-modale a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 9px;
+    height: 24px;
+    text-decoration: none;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 11px;
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    transition: all 0.2s;
+    box-sizing: border-box;
+}
+.lang-switch-modale a.active {
+    background: #ffd700;
+    color: #1a1a2e;
+    border-color: #b8860b;
+}
+.lang-switch-modale a:hover:not(.active) {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.btn-angolo-modale {
+    position: absolute;
+    bottom: 10px;
+    height: 24px;
+    line-height: 22px;
+    padding: 0 10px;
+    font-size: 10px;
+    font-weight: bold;
+    text-decoration: none;
+    text-align: center;
+    border-radius: 4px;
+    box-sizing: border-box;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid #6b9b7a;
+    color: white;
+    transition: all 0.2s;
+}
+.btn-angolo-modale:hover {
+    background: rgba(0, 60, 20, 0.7);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+.btn-angolo-modale.sinistra { left: 12px; }
+.btn-angolo-modale.destra   { right: 12px; }
+
+/* TUTTI I GIOCHI si riconosce dal colore anche qui dentro: stesso arancio
+   del gemello nella fascia in fondo alla pagina (.pulsante-home-quadrati). */
+.btn-angolo-modale.home {
+    background: linear-gradient(135deg, #c9720f, #8a4a08);
+    border-color: #ffd700;
+    color: #fff;
+    white-space: nowrap;
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.35);
+}
+.btn-angolo-modale.home:hover {
+    background: linear-gradient(135deg, #e08514, #a3580a);
+    border-color: #ffd700;
+    box-shadow: 0 0 14px rgba(255, 215, 0, 0.65);
+}
+
 /* Intestazione di ogni gruppo di scelte nel modale di avvio */
 .gruppo-label {
     font-size: 11px;
