@@ -1,0 +1,7 @@
+# I file di testo stanno nel repository con terminatori LF: e' gia' cosi' per
+# TUTTI (git ls-files --eol dice i/lf ovunque), perche' core.autocrlf=true
+# normalizza in fase di commit. Quello che mancava era la meta' opposta: senza
+# questa riga ogni checkout li riscriverebbe in CRLF, e i 123 file che sul
+# disco sono LF risulterebbero cambiati riga per riga senza che nessuno li
+# abbia toccati. Con eol=lf le due meta' coincidono e l'avviso sparisce.
+* text=auto eol=lf

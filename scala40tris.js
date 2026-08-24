@@ -46,11 +46,14 @@ var translations = {
 		opz_nonscartareattaccanti: "Non si può scartare una carta che attacca a un tris o una scala in tavola (a meno che sia l'unica in mano)",
 		opz_unacartabasta: "Un tris o una scala può contenere anche una sola carta non jolly (se disattivata, ne servono almeno due, come da regolamento)",
 		opz_assosingolo: "L'asso rimasto da solo in mano a fine partita vale 1 punto anziché 11",
+		opz_scartosingolo: "Si può prendere la carta dagli scarti senza aver aperto, e tenerla, finché negli scarti c'è una carta sola",
+		opz_penalita100: "Chi non ha aperto paga 100 punti fissi anziché la somma delle carte in mano",
 		opz_escludiavversari: "Un avversario che ha superato il limite non gioca più le mani successive (punteggio congelato)",
 		badge_fisca: "regola FISCA",
 		badge_variante: "variante non ufficiale",
 		opz_nota_salvate: "Salvate sul dispositivo, valgono da subito.",
 		btn_chiudi: "CHIUDI",
+		btn_istruzioni: "ISTRUZIONI",
 		btn_nuovapartita: "NUOVA PARTITA",
 		btn_nuovo: "NUOVO / ",
 		audio_tuono: "Tuono",
@@ -92,11 +95,14 @@ var translations = {
 		opz_nonscartareattaccanti: "You cannot discard a card that attaches to a meld on the table (unless it is the only card in your hand)",
 		opz_unacartabasta: "A meld may contain a single non-joker card (if disabled, at least two are required, as per official rules)",
 		opz_assosingolo: "An ace left alone in your hand at the end of a game scores 1 point instead of 11",
+		opz_scartosingolo: "You may take the discarded card without having opened, and keep it, as long as the discard pile holds a single card",
+		opz_penalita100: "A player who has not opened pays a flat 100 points instead of the sum of the cards in hand",
 		opz_escludiavversari: "An opponent who exceeded the limit no longer plays the following hands (score frozen)",
 		badge_fisca: "FISCA rule",
 		badge_variante: "unofficial variant",
 		opz_nota_salvate: "Saved on this device, effective immediately.",
 		btn_chiudi: "CLOSE",
+		btn_istruzioni: "RULES",
 		btn_nuovapartita: "NEW GAME",
 		btn_nuovo: "NEW / ",
 		audio_tuono: "Thunder",
@@ -351,6 +357,8 @@ function creaframmentitris() {
 		$$.append(campo,
 			'<div id="formopzioni" class="formistruzioni">' +
 			'<h2 class="opzioni-titolo">' + t('opz_titolo') + '</h2>' +
+			/* Corpo scorrevole: titolo e pulsanti restano fermi ai due capi. */
+			'<div class="opzioni-corpo">' +
 			'<div class="opzioni-sezione">' +
 			'<div class="opzioni-etichetta">' + t('opz_avversari') + '</div>' +
 			'<div class="opzioni-radio">' +
@@ -374,9 +382,13 @@ function creaframmentitris() {
 			check('optunacartabasta', 'opz_unacartabasta', variante, true) +
 			check('optassosingolo', 'opz_assosingolo', variante, false) +
 			check('optescludiavversariesuperano', 'opz_escludiavversari', fisca, false) +
+			check('optscartosingolo', 'opz_scartosingolo', variante, false) +
+			check('optpenalita100', 'opz_penalita100', variante, false) +
 			'<div class="opzioni-nota">' + t('opz_nota_salvate') + '</div>' +
 			'</div>' +
+			'</div>' +
 			'<div class="opzioni-bottoni">' +
+			'<button id="optistruzioni" class="bottone3" type="button">' + t('btn_istruzioni') + '</button>' +
 			'<button class="bottone2" type="button">' + t('btn_chiudi') + '</button>' +
 			'<button class="bottone1" type="button">' + t('btn_nuovapartita') + '</button>' +
 			'</div>' +
@@ -810,6 +822,16 @@ var scala = {
 		   se rimasto da solo in mano a fine smazzata, vale 1 punto anziché
 		   11. Default off: la regola federale (sempre 11) resta invariata. */
 		this.assosingolo = (localStorage.getItem('scala40tris_assosingolo') === '1');
+		/* scartosingolo: variante non ufficiale (non FISCA), default off. Finché
+		   negli scarti c'è UNA carta sola si può raccogliere lo scarto senza aver
+		   aperto e senza doverlo giocare subito. Documentata da Pagat nella forma
+		   ristretta al primo di mano, e dalle FAQ Onmadesoft nella forma generale,
+		   che è questa. Vedi scartipesca (giocatore) e apesca (IA). */
+		this.scartosingolo = (localStorage.getItem('scala40tris_scartosingolo') === '1');
+		/* penalita100: variante non ufficiale, default off. Chi chiude la mano
+		   senza aver mai aperto paga 100 punti fissi invece della somma delle
+		   sue carte. Vedi puntifinemano. */
+		this.penalita100 = (localStorage.getItem('scala40tris_penalita100') === '1');
 
 		/* escludiavversariesuperano: variante non ufficiale, default off. Un
 		   avversario che ha già raggiunto/superato il limite non riceve più
@@ -1332,6 +1354,11 @@ var scala = {
 			window.open('regole-scala40' + langSuffix, '_blank');
 		});
 
+		$$.on('#optistruzioni', 'click', function () {
+			var langSuffix = (window.currentLang === 'en') ? '-en.html' : '.html';
+			window.open('regole-scala40' + langSuffix, '_blank');
+		});
+
 		$$.on('#opzioni', 'click', function () {
 			scala.apriopzioni();
 		});
@@ -1354,6 +1381,14 @@ var scala = {
 		$$.on('#optassosingolo', 'change', function (ev) {
 			scala.assosingolo = ev.target.checked;
 			localStorage.setItem('scala40tris_assosingolo', ev.target.checked ? '1' : '0');
+		});
+		$$.on('#optscartosingolo', 'change', function (ev) {
+			scala.scartosingolo = ev.target.checked;
+			localStorage.setItem('scala40tris_scartosingolo', ev.target.checked ? '1' : '0');
+		});
+		$$.on('#optpenalita100', 'change', function (ev) {
+			scala.penalita100 = ev.target.checked;
+			localStorage.setItem('scala40tris_penalita100', ev.target.checked ? '1' : '0');
 		});
 		$$.on('#optescludiavversariesuperano', 'change', function (ev) {
 			scala.escludiavversariesuperano = ev.target.checked;
@@ -2425,7 +2460,16 @@ var scala = {
 		if (check5) check5.checked = scala.assosingolo;
 		var check6 = document.getElementById('optescludiavversariesuperano');
 		if (check6) check6.checked = scala.escludiavversariesuperano;
+		var check7 = document.getElementById('optscartosingolo');
+		if (check7) check7.checked = scala.scartosingolo;
+		var check8 = document.getElementById('optpenalita100');
+		if (check8) check8.checked = scala.penalita100;
 		scala.mydialog("formopzioni", scala.nuovo3);
+		/* $$.show scrive display:block in linea e vincerebbe sul foglio di
+		   stile: il pannello va messo in colonna qui, dopo l'apertura, così i
+		   pulsanti restano ancorati in fondo e a scorrere è solo il corpo. */
+		var pannello = document.getElementById('formopzioni');
+		if (pannello) pannello.style.display = 'flex';
 	},
 
 	nuovo3: function () {
@@ -2837,14 +2881,33 @@ var scala = {
 		if (!this.f40giocatore) {
 			if (!this.fscartiprima40) { scala.myalert("gioco non ancora aperto"); return; }
 		}
-		this.fscartipesca = true;
+		/* Variante "scarti a una carta sola" (opzione scartosingolo, default off):
+		   finché negli scarti c'è UNA sola carta, chi non ha ancora aperto può
+		   raccogliere lo scarto e TENERLO, senza l'obbligo di aprire in quel
+		   turno. A saltare è l'obbligo, non il divieto: pescare dagli scarti
+		   senza aver aperto era già permesso (fscartiprima40), a patto di aprire
+		   subito, e quell'obbligo è proprio fscartipesca, che scarta() rilegge
+		   nella guardia dei 40 punti. Lasciandolo a false la carta resta in mano
+		   e lo scarto prosegue normale; annulla40 non la rimette negli scarti, ed è
+		   corretto, perché è stata presa senza condizioni.
+		   La condizione non nomina il "primo di mano" perché non serve: il mazzetto
+		   cresce solo quando qualcuno pesca dal mazzo, quindi da due carte non
+		   torna più a una e la finestra si chiude da sola al primo che pesca
+		   coperto. A inizio smazzata gli scarti hanno per forza una carta, e il primo
+		   di mano ci rientra sempre.
+		   Con l'opzione spenta liberadagliscarti è sempre false, e la riga sotto
+		   vale esattamente quanto la "fscartipesca = true" che sostituisce. */
+		var liberadagliscarti = (this.scartosingolo && (!this.f40giocatore) && (this.scarti.carte.length == 1));
+		this.fscartipesca = !liberadagliscarti;
 		this.pescato = true;
 		dascarti.play();
 		var presa = this.muovicarta(this.scarti, this.giocatore, "faceUp", "scartipesca");
 
 		/* Regola opzionale: la carta pescata dagli scarti va giocata nello
-		   stesso turno (render la evidenzia, scarta lo pretende). */
-		if (this.scartoimmediato) this.cartascartidagiocare = presa;
+		   stesso turno (render la evidenzia, scarta lo pretende). Non vale
+		   dentro la finestra degli scarti a una carta: lì la carta si tiene, e le
+		   due opzioni insieme si contraddirebbero. */
+		if (this.scartoimmediato && !liberadagliscarti) this.cartascartidagiocare = presa;
 
 		this.render();
 		return;
@@ -4234,6 +4297,23 @@ var scala = {
 				}
 			}
 
+			/* Variante "scarti a una carta sola" lato IA: con la finestra aperta
+			   l'avversario può prendere lo scarto e tenerlo anche senza aver
+			   aperto, ma lo fa solo per un jolly. Il motivo è che prendere lo
+			   scarto lascia gli scarti a una carta, cioè tiene la finestra aperta
+			   per il giocatore successivo, che si troverebbe servito il nostro
+			   scarto: solo il jolly vale quel prezzo. Pescare dal mazzo invece
+			   porta gli scarti a due carte e chiude la finestra per tutti.
+			   Qui non serve la prova-e-riavvolgi del blocco sotto, perché la
+			   carta si tiene comunque: si ricalca il ramo di chi ha già aperto. */
+			if (this.scartosingolo && (!this.f40avversario[avv]) && (this.scarti.carte.length == 1)
+				&& scarto && (scarto.numero > 49)) {
+				suona(dascarti);
+				this.muovicarta(this.scarti, this.campiavversario[avv], "faceDown", "apesca");
+				this.render();
+				return;
+			}
+
 			if ((!this.f40avversario[avv]) && (this.fscartiprima40)) {
 
 				var salvalog = scala.statostack.length;
@@ -4726,6 +4806,20 @@ var scala = {
 		return totale >= this.totalelimite;
 	},
 
+	/* Punti di fine mano di una mano residua. Con l'opzione penalita100 spenta
+	   è esattamente calcolapunti, come è sempre stato. Accesa, chi non ha
+	   aperto paga 100 fissi invece della somma: non è una penalità più pesante
+	   (tredici carte sommano in media un centinaio di punti), è una penalità
+	   senza varianza.
+	   La guardia su carte.length non è un dettaglio: un avversario escluso dal
+	   torneo (opzione escludiavversariesuperano) non riceve carte e resta con
+	   f40avversario a false, quindi senza guardia si vedrebbe addebitare 100
+	   punti a mano vuota, mano dopo mano. */
+	puntifinemano: function (carte, haaperto) {
+		if (this.penalita100 && (!haaperto) && (carte.length > 0)) return 100;
+		return this.calcolapunti(carte);
+	},
+
 	calcolatotali: function () {
 
 		/* Mano conclusa: il mazziere ruota al giocatore successivo
@@ -4743,10 +4837,10 @@ var scala = {
 			&& ((this.numeroavversari < 3) || (this.totaleavversario3 >= this.totalelimite))
 		) vintot = false;
 
-		this.totalegiocatore += this.calcolapunti(this.giocatore.carte);
-		this.totaleavversario1 += this.calcolapunti(this.avversario1.carte);
-		if (this.numeroavversari > 1) this.totaleavversario2 += this.calcolapunti(this.avversario2.carte);
-		if (this.numeroavversari > 2) this.totaleavversario3 += this.calcolapunti(this.avversario3.carte);
+		this.totalegiocatore += this.puntifinemano(this.giocatore.carte, this.f40giocatore);
+		this.totaleavversario1 += this.puntifinemano(this.avversario1.carte, this.f40avversario[0]);
+		if (this.numeroavversari > 1) this.totaleavversario2 += this.puntifinemano(this.avversario2.carte, this.f40avversario[1]);
+		if (this.numeroavversari > 2) this.totaleavversario3 += this.puntifinemano(this.avversario3.carte, this.f40avversario[2]);
 
 		if (this.totaleavversario1 < this.totalelimite) vintot = false;
 		if ((this.numeroavversari > 1) && (this.totaleavversario2 < this.totalelimite)) vintot = false;

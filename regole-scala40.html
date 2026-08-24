@@ -280,6 +280,11 @@
 						<em>(variante non ufficiale)</em>.</li>
 					<li><strong>Un avversario che ha superato il limite non gioca più le mani successive</strong>,
 						il punteggio resta congelato <em>(regola FISCA)</em>.</li>
+					<li><strong>Si può prendere la carta dagli scarti senza aver aperto</strong> — e tenerla —
+						finché negli scarti c'è una carta sola: appena il mazzetto arriva a due carte la
+						finestra si chiude <em>(variante non ufficiale)</em>.</li>
+					<li><strong>Chi non ha aperto paga 100 punti fissi</strong> anziché la somma delle carte che
+						ha in mano <em>(variante non ufficiale)</em>.</li>
 				</ul>
 				<p>Le opzioni scelte vengono salvate sul dispositivo e valgono dalla partita successiva.</p>
 
@@ -299,114 +304,6 @@
 			</div>
 
 			<p style="text-align: center;"><a href="#" onclick="goBack(); return false;" class="play-btn">Chiudi</a></p>
-		</div>
-
-		<div id="lang-en" style="display: none;">
-			<h1>Scala 40 Rules (Italian Rummy)</h1>
-
-			<p><strong>Scala 40</strong> (also known as Quaranta, or Italian Rummy) is one of the most popular card
-				games in Italy. It is played with two standard 52-card decks (104 cards + 4 Jokers) and the goal is to
-				get rid of all the cards in your hand by forming valid combinations.</p>
-
-			<h2>Objective</h2>
-			<p>Each player receives 13 cards. On each turn, you draw a card from the deck or the discard pile and try
-				to lay down combinations on the table. The winner is the first player to discard all their cards.</p>
-
-			<h2>Combinations</h2>
-			<ul>
-				<li><strong>Sets:</strong> three or four cards of the same value but different suits (e.g. 7 of hearts,
-					7 of diamonds, 7 of spades).</li>
-				<li><strong>Runs:</strong> three or more consecutive cards of the same suit (e.g. 5, 6, 7 of hearts).
-				</li>
-			</ul>
-			<p>The <strong>Joker</strong> can replace any card in a combination.</p>
-
-			<h2>Opening</h2>
-			<p>To lay down combinations for the first time, the total value of the cards must be at least 40 points
-				(hence the name). Face cards are worth 10 points, Aces are worth 11.</p>
-
-			<div id="istruzioni-classica-en">
-				<h2>How to play "Scala40 Luciano" (Classic Version)</h2>
-				<ul>
-					<li><strong>Draw from deck:</strong> click on the deck or in the "player" area.</li>
-					<li><strong>Draw from discard:</strong> click on the discard pile.</li>
-					<li><strong>Discard:</strong> right-click a card, drag it to the discard pile, or select it and then
-						click on the discard pile.</li>
-					<li><strong>Reorder cards:</strong> drag a card to the right of the card after which you want to place
-						it, or to the left of the first card.</li>
-					<li><strong>Form a set/run:</strong> click on the cards (which MUST BE IN THE CORRECT ORDER), then
-						click in the area above the player.</li>
-					<li><strong>Change Joker suit:</strong> when laying down a set with a joker, you can change the
-						joker's suit by clicking on it.</li>
-					<li><strong>Add to a set:</strong> drag the card to the desired position.</li>
-					<li><strong>Replace a Joker:</strong> drag the correct card onto the Joker's position until the joker
-						becomes highlighted.</li>
-					<li><strong>Change point limit:</strong> click on the corresponding field.</li>
-				</ul>
-
-				<h2>Buttons</h2>
-				<ul>
-					<li><strong>↩ (Undo):</strong> undo the most recent moves.</li>
-					<li><strong>FACE UP:</strong> play with open cards (for practice).</li>
-					<li><strong>OPPONENTS:</strong> choose the number of opponents (1, 2, or 3) and/or start a new game.</li>
-				</ul>
-			</div>
-
-			<div id="istruzioni-nuova-en" style="display: none;">
-				<h2>How to play "Scala40 Luciano" (New Version)</h2>
-				<ul>
-					<li><strong>Draw from deck:</strong> click on the deck or in the "player" area.</li>
-					<li><strong>Draw from discard:</strong> click on the discard pile.</li>
-					<li><strong>Discard:</strong> click a card to select it, then click on the discard pile
-						(or drag it to the discard pile).</li>
-					<li><strong>Reorder cards:</strong> drag a card to the desired position in your hand.</li>
-					<li><strong>Form a set/run:</strong> click on the cards in <strong>any order</strong> (no need to
-						select them in sequence anymore: the game figures out the correct run by itself), then click
-						on an empty spot in the player area, or on the "DEPOSIT" banner that appears.</li>
-					<li><strong>Change a set's Joker suit:</strong> when a joker laid down in a set has an ambiguous
-						suit (more than one suit still available), it stays highlighted with a dashed border and the
-						message "click the joker to change suit" appears: clicking it cycles to the next free suit.
-					</li>
-					<li><strong>Move a run's Joker to the other end:</strong> if a joker laid down at one end of a run
-						could equally sit at either end, it stays highlighted and the message "click the joker to
-						move it" appears: clicking it moves it to the other end. Both highlights and messages
-						disappear on your next move.</li>
-					<li><strong>Add to a set/run:</strong> drag the card onto the group on the table, or select it
-						and then click on the set/run you want to add it to.</li>
-					<li><strong>Replace a Joker:</strong> drag the correct card onto the Joker's position.</li>
-					<li><strong>Change point limit:</strong> click on the corresponding field.</li>
-				</ul>
-
-				<h2>Game options</h2>
-				<p>Clicking <strong>NEW</strong> (gear icon) opens the options panel, where you can choose the
-					number of opponents and enable/disable some optional rules:</p>
-				<ul>
-					<li><strong>A recovered joker must be played immediately:</strong> whoever recovers a joker must
-						play it in the same turn <em>(FISCA rule)</em>.</li>
-					<li><strong>The card drawn from the discard pile must be played immediately:</strong> whoever
-						draws from the discards must play that card in the same turn <em>(FISCA rule)</em>.</li>
-					<li><strong>You cannot discard a card that attaches to a meld:</strong> discarding a card that
-						connects to a set or run already on the table is forbidden, unless it is the only card left
-						in hand <em>(FISCA rule)</em>.</li>
-					<li><strong>A meld may contain a single non-joker card:</strong> if disabled, at least two are
-						required, as per official rules <em>(unofficial variant, enabled by default)</em>.</li>
-					<li><strong>An ace left alone in hand scores 1 point instead of 11</strong> at the end of the
-						game <em>(unofficial variant)</em>.</li>
-					<li><strong>An opponent who exceeded the limit no longer plays the following hands</strong>,
-						their score stays frozen <em>(FISCA rule)</em>.</li>
-				</ul>
-				<p>Your chosen options are saved on this device and apply starting from the next game.</p>
-
-				<h2>Buttons</h2>
-				<ul>
-					<li><strong>↩ (Undo):</strong> undo the most recent moves.</li>
-					<li><strong>FACE UP:</strong> play with open cards (for practice).</li>
-					<li><strong>NEW (gear icon):</strong> opens the options panel (opponents and optional rules)
-						and lets you start a new game.</li>
-				</ul>
-			</div>
-
-			<p style="text-align: center;"><a href="scala40-en.html" class="play-btn">Play Scala 40</a></p>
 		</div>
 	</div>
 
