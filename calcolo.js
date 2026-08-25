@@ -822,7 +822,7 @@ function clickMatrice(l, d, forzaAssegna) {
     if (assegnazioni[l] === d) {
         letteraSelezionata = l;
         selezioneAutomatica = false;
-        cancellaCifra();          // ripulisce anche le esclusioni che aveva generato
+        cancellaCifra(true);      // ripulisce anche le esclusioni che aveva generato
         return;
     }
 
@@ -1201,14 +1201,27 @@ function assegnaCifra(d) {
     controllaVittoria();
 }
 
-// Toglie la cifra alla lettera selezionata
-function cancellaCifra() {
+// Toglie la cifra alla lettera selezionata.
+// `daMatrice` dice che la selezione era solo il mezzo tecnico per arrivare qui
+// (riclick sull'incrocio col destro): in quel caso la lettera non deve restare
+// evidenziata, come già non resta dopo un'assegnazione o un annullamento. Con
+// una cifra sbagliata la cosa si notava piu' di tutte, perche' la lettera era
+// appena diventata rossa e restava poi accesa in giallo dappertutto. Dalla
+// tastiera invece la selezione e' voluta e resta: si e' li' per riscrivere.
+function cancellaCifra(daMatrice) {
     if (partitaFinita || letteraSelezionata === null) return;
     if (assegnazioni[letteraSelezionata] === undefined) return;
     salvaSnapshot(letteraSelezionata);
     delete assegnazioni[letteraSelezionata];
     // le esclusioni che quell'assegnazione aveva propagato non valgono più
     ricalcolaEsclusioniAuto();
+    // Un suggerimento che puntava a questa lettera ha finito il suo compito:
+    // lasciarlo acceso terrebbe la lettera evidenziata a vuoto.
+    annullaSuggerimento(true);
+    if (daMatrice) {
+        letteraSelezionata = null;
+        selezioneAutomatica = false;
+    }
     renderTutto();
     salvaPartita();
 }

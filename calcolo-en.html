@@ -11,6 +11,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Free Online Cross Figure Puzzle - lucianomanenti.com</title>
+    <link rel="canonical" href="https://www.lucianomanenti.com/calcolo-en.html">
+    <link rel="alternate" hreflang="it" href="https://www.lucianomanenti.com/calcolo.html">
+    <link rel="alternate" hreflang="en" href="https://www.lucianomanenti.com/calcolo-en.html">
+    <link rel="alternate" hreflang="x-default" href="https://www.lucianomanenti.com/calcolo.html">
     <link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
     <link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
     <link rel="shortcut icon" href="favicon/favicon.ico">
@@ -23,7 +27,7 @@
     <meta http-Equiv="Pragma" Content="no-cache">
     <meta http-Equiv="Expires" Content="0">
 
-    <link rel="stylesheet" href="calcolo.css?v=4.0" />
+    <link rel="stylesheet" href="calcolo.css?v=4.2" />
 
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
@@ -247,6 +251,16 @@
                     There are always 8, 9 or 10 letters in play: only the size of the numbers changes.<br>
                     Keyboard: 0-9 assigns, letters select, Ctrl+Z undoes.
                 </p>
+
+                <!-- See the Italian file: escape routes from the modal, which covers the
+                     board and hides the language switch and the bottom links. -->
+                <div class="lang-switch-modale">
+                    <a href="calcolo.html" id="btn-lang-it-modale" title="Italiano">IT</a>
+                    <a href="calcolo-en.html" class="active" id="btn-lang-en-modale" title="English">EN</a>
+                </div>
+                <a href="regole-calcolo-en.html" target="_blank" rel="opener" id="btn-regole-modale"
+                    class="btn-angolo-modale sinistra">HOW TO PLAY</a>
+                <a href="index-en.html" id="btn-home-modale" class="btn-angolo-modale destra home">ALL GAMES</a>
             </div>
 
             <!-- 2. Modale Vittoria (bassa e larga, banner sopra) -->
@@ -303,7 +317,7 @@
     <!-- Layout engine per ridimensionare la finestra del gioco -->
     <script src="game-layout.js?v=4.6"></script>
     <!-- Logica del Calcolo Enigmatico -->
-    <script src="calcolo.js?v=3.6"></script>
+    <script src="calcolo.js?v=3.7"></script>
     <script>
         (function () {
             var nascosto = false;

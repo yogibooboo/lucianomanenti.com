@@ -11,6 +11,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calcolo Enigmatico Luciano Online Gratis - lucianomanenti.com</title>
+    <link rel="canonical" href="https://www.lucianomanenti.com/calcolo.html">
+    <link rel="alternate" hreflang="it" href="https://www.lucianomanenti.com/calcolo.html">
+    <link rel="alternate" hreflang="en" href="https://www.lucianomanenti.com/calcolo-en.html">
+    <link rel="alternate" hreflang="x-default" href="https://www.lucianomanenti.com/calcolo.html">
     <link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
     <link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
     <link rel="shortcut icon" href="favicon/favicon.ico">
@@ -23,7 +27,7 @@
     <meta http-Equiv="Pragma" Content="no-cache">
     <meta http-Equiv="Expires" Content="0">
 
-    <link rel="stylesheet" href="calcolo.css?v=4.0" />
+    <link rel="stylesheet" href="calcolo.css?v=4.2" />
 
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
@@ -252,6 +256,18 @@
                     In gioco ci sono sempre 8, 9 o 10 lettere: cambia solo quanto sono grandi i numeri.<br>
                     Tastiera: 0-9 assegna, le lettere selezionano, Ctrl+Z annulla.
                 </p>
+
+                <!-- Vie di fuga dalla modale: finche' e' aperta copre il campo, quindi
+                     il cambio lingua della fascia in alto e i link in fondo alla pagina
+                     sono irraggiungibili. Stanno negli angoli, dove non rubano spazio
+                     alle scelte. Gli id sono distinti dai loro gemelli in campo. -->
+                <div class="lang-switch-modale">
+                    <a href="calcolo.html" class="active" id="btn-lang-it-modale" title="Italiano">IT</a>
+                    <a href="calcolo-en.html" id="btn-lang-en-modale" title="English">EN</a>
+                </div>
+                <a href="regole-calcolo.html" target="_blank" rel="opener" id="btn-regole-modale"
+                    class="btn-angolo-modale sinistra">ISTRUZIONI</a>
+                <a href="index.html" id="btn-home-modale" class="btn-angolo-modale destra home">TUTTI I GIOCHI</a>
             </div>
 
             <!-- 2. Modale Vittoria (bassa e larga, banner sopra) -->
@@ -276,7 +292,7 @@
             <!-- Link di navigazione ed utilità a fondo pagina -->
             <div class="link-utility-bottom">
                 <a href="aboutme.html" target="_blank" id="btn-scrivetemi-calcolo" class="pulsante-top">Scrivetemi</a>
-                <a href="regole-calcolo.html" target="_blank" rel="opener" id="btn-regole-top" class="pulsante-top">Come si Gioca</a>
+                <a href="regole-calcolo.html" target="_blank" rel="opener" id="btn-regole-top" class="pulsante-top">Istruzioni</a>
             </div>
 
             <!-- Link Legali (Privacy e Cookie) -->
@@ -308,7 +324,7 @@
     <!-- Layout engine per ridimensionare la finestra del gioco -->
     <script src="game-layout.js?v=4.6"></script>
     <!-- Logica del Calcolo Enigmatico -->
-    <script src="calcolo.js?v=3.6"></script>
+    <script src="calcolo.js?v=3.7"></script>
     <script>
         (function () {
             var nascosto = false;
