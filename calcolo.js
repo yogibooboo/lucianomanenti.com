@@ -33,7 +33,12 @@ const CALC_LANG = (window.currentLang === 'en') ? {
     errori: 'Mistakes',
     suggerimenti: 'Hints',
     resetChiedi: 'OK?',
-    nuovoRecord: ' — NEW ALL-TIME BEST!',
+    // Un record per periodo: si annuncia solo il piu' alto dei tre battuti.
+    record: {
+        all: '🏆 NEW ALL-TIME BEST!',
+        weekly: '🏆 BEST OF THE WEEK!',
+        daily: '🏆 BEST OF TODAY!'
+    },
     // Neutral names: levels change how wide the numbers are, and wider numbers
     // are not proven to be harder. Older keys stay listed so a game or a record
     // saved by a previous edition still shows a name instead of "undefined".
@@ -70,7 +75,12 @@ const CALC_LANG = (window.currentLang === 'en') ? {
     errori: 'Errori',
     suggerimenti: 'Suggerimenti',
     resetChiedi: 'OK?',
-    nuovoRecord: ' — NUOVO RECORD ASSOLUTO!',
+    // Un record per periodo: si annuncia solo il piu' alto dei tre battuti.
+    record: {
+        all: '🏆 NUOVO RECORD ASSOLUTO!',
+        weekly: '🏆 RECORD DELLA SETTIMANA!',
+        daily: '🏆 RECORD DI OGGI!'
+    },
     // Nomi neutri: i livelli cambiano l'ampiezza dei numeri, e non è dimostrato
     // che numeri più grandi rendano lo schema più difficile. Le chiavi vecchie
     // restano elencate perché una partita o un record salvato da un'edizione
@@ -655,20 +665,31 @@ function salvaRecords() {
     } catch (e) { /* storage non disponibile */ }
 }
 
-// Aggiorna i record con il tempo di vittoria; ritorna true se è nuovo record assoluto
+// Aggiorna i record con il tempo di vittoria e dice quali dei tre sono caduti.
+// I flag si calcolano PRIMA di sovrascrivere, e "battuto" vuol dire battuto
+// davvero: per il giorno e per la settimana serve un tempo precedente dello
+// stesso periodo, altrimenti la prima vittoria della giornata griderebbe al
+// record solo per essere arrivata per prima, e l'annuncio perderebbe valore.
+// Il record assoluto fa eccezione: la prima vittoria in assoluto e', a tutti
+// gli effetti, il miglior tempo di sempre.
 function aggiornaRecords(sec) {
     const r = records[difficolta] || (records[difficolta] = {});
     const oggi = chiaveOggi();
     const settimana = chiaveSettimana();
-    let nuovoAssoluto = false;
+
+    const battuti = {
+        all: !r.all || sec < r.all.sec,
+        weekly: !!(r.weekly && r.weekly.key === settimana && sec < r.weekly.sec),
+        daily: !!(r.daily && r.daily.key === oggi && sec < r.daily.sec)
+    };
 
     if (!r.daily || r.daily.key !== oggi || sec < r.daily.sec) r.daily = { key: oggi, sec: sec };
     if (!r.weekly || r.weekly.key !== settimana || sec < r.weekly.sec) r.weekly = { key: settimana, sec: sec };
-    if (!r.all || sec < r.all.sec) { r.all = { sec: sec, date: oggi }; nuovoAssoluto = true; }
+    if (!r.all || sec < r.all.sec) r.all = { sec: sec, date: oggi };
 
     salvaRecords();
     renderRecord();
-    return nuovoAssoluto;
+    return battuti;
 }
 
 function renderRecord() {
@@ -1582,11 +1603,22 @@ function controllaVittoria() {
     localStorage.removeItem('calcolo-save');
     riproduciAudio('sounds/scala40/tada.mp3');
 
-    const nuovoRecordAssoluto = aggiornaRecords(secondi);
+    // Dei tre record si annuncia solo il piu' alto caduto: dire insieme
+    // "assoluto" e "di oggi" non aggiunge niente, l'assoluto li implica.
+    const battuti = aggiornaRecords(secondi);
+    const record = battuti.all ? 'all' : (battuti.weekly ? 'weekly' : (battuti.daily ? 'daily' : null));
+
     document.getElementById('vittoria-messaggio').innerHTML = CALC_LANG.vittoria;
     document.getElementById('vittoria-dettagli').textContent =
-        CALC_LANG.riepilogo(difficolta, formattaTempo(secondi), erroriCount, hintCount) +
-        (nuovoRecordAssoluto ? CALC_LANG.nuovoRecord : '');
+        CALC_LANG.riepilogo(difficolta, formattaTempo(secondi), erroriCount, hintCount);
+
+    // Il record non e' piu' una coda del riepilogo: ha una fascia sua, e la
+    // modale cresce verso il basso per farle posto (il bordo alto resta dov'e',
+    // perche' sopra ci sta il banner).
+    const fascia = document.getElementById('vittoria-record');
+    fascia.textContent = record ? CALC_LANG.record[record] : '';
+    fascia.style.display = record ? 'block' : 'none';
+    document.getElementById('haivinto').classList.toggle('con-record', !!record);
 
     // Analytics fine partita
     if (typeof gtag === 'function') {
@@ -1604,6 +1636,10 @@ function controllaVittoria() {
     setTimeout(function () {
         document.getElementById('schermo').style.display = 'block';
         document.getElementById('haivinto').style.display = 'flex';
+        // L'applauso parte con la modale, non con il tada' della vittoria:
+        // sovrapposti si impastano, e cosi' il secondo suono arriva insieme
+        // alla fascia dorata che lo spiega.
+        if (record) riproduciAudio('sounds/scala40/applause.mp3');
         // Banner pubblicitario sopra la modale di vittoria (come in Sudoku)
         if (typeof setupAmazonFinishBanner === 'function') {
             setupAmazonFinishBanner('haivinto', {
