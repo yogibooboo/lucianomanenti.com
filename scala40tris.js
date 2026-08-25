@@ -874,6 +874,12 @@ var scala = {
 		this.f40avversario = [false, false, false];
 		this.f40giocatore = false;
 		this.fscartipesca = false;
+		/* Inibizione dell'annulla nella finestra fra lo scarto del giocatore
+		   e la partenza dello show degli avversari: in quel secondo il turno
+		   IA e' gia' programmato con un setTimeout che multiundo non puo'
+		   annullare, e riavvolgere le carte lascerebbe l'IA a giocare su uno
+		   stato che non esiste piu'. Si rialza a false in mossaavversario. */
+		this.undoinibito = false;
 		this.modale = false;
 
 		/* Mazziere: -1 = giocatore, 0..N-1 = avversario. Casuale alla
@@ -1215,6 +1221,7 @@ var scala = {
 			if (primo >= scala.numeroavversari) primo = -1;
 			if (primo >= 0) {
 				scala.iaimminente = true;
+				scala.undoinibito = true;
 				window.setTimeout(function () { scala.mossaavversario(primo); }, 800);
 			}
 
@@ -2147,6 +2154,7 @@ var scala = {
 		}
 		else {
 			this.iaimminente = true;
+			this.undoinibito = true;
 			window.setTimeout(function () { scala.mossaavversario(0); }, 1000);
 		}
 		this.render();
@@ -3674,6 +3682,8 @@ var scala = {
 	},
 
 	multiundo: function () {
+		/* Rifiuto silenzioso: vedi undoinibito. */
+		if (this.undoinibito) return;
 		/* Come in undo(): il registro attacchi NON si azzera, si conta soltanto.
 		   Contatore separato da undoturno perché i due pulsanti riavvolgono in
 		   modo diverso e la sonda deve poterli distinguere. */
@@ -3691,7 +3701,16 @@ var scala = {
 				if (scala.statostack[s].pescato) { trovato = true; break; }
 			}
 			if (trovato) {
-				while ((!this.pescato) && (scala.statostack.length > 0)) {
+				/* Si sbircia la bandierina della CIMA prima di toglierla, invece
+				   di guardare this.pescato, che cambia solo dopo il ripristino:
+				   cosi' la fotografia d'arresto resta nello stack e la riga qui
+				   sotto riapplica quella giusta, non quella sotto di lei (era il
+				   passo di troppo dell'undo dopo lo scarto). Ne segue anche che il
+				   ciclo si ferma per forza sul primo pescato=true incontrato: lo
+				   stack non puo' piu' svuotarsi, che era la causa materiale del
+				   ritorno a inizio mano risolto in v1.54. */
+				while ((scala.statostack.length > 0) &&
+					(!scala.statostack[scala.statostack.length - 1].pescato)) {
 					this.popstato();
 				}
 				/* Coerenza col ramo "if": lo stato d'arresto resta nello stack
@@ -3700,10 +3719,20 @@ var scala = {
 				if (scala.statostack.length > 0) this.popstato(-1, true);
 			}
 		}
-		if (scala.astato == TurnState.PLAYRENDER) {
-			scala.astato = TurnState.ABORTITO;
-			scala.turno = -1;
-		}
+		/* Senza condizioni: se siamo arrivati fin qui multiundo ha riavvolto
+		   fino alla pescata del giocatore, quindi tocca a lui qualunque cosa
+		   stesse facendo l'IA. Prima l'aborto era legato al solo PLAYRENDER e
+		   lasciava scoperti i ~10 ms in cui astato resta su NEXTAVV fra un
+		   avversario e il successivo: li' turno restava >= 0 e il setTimeout
+		   gia' in volo proseguiva lo show sulle carte riavvolte.
+		   ABORTITO e' il capolinea della macchina a stati (fa return senza
+		   riprogrammarsi), e serve insieme a turno: turno = -1 da solo farebbe
+		   dereferenziare campiavversario[-1] in NEXTAVV e in FINETURNO. Sul
+		   turno del giocatore, dove non c'e' nessun timeout in volo, e'
+		   innocuo: astato non lo rilegge nessuno finche' mossaavversario non
+		   lo rimette a INIZIO. */
+		scala.astato = TurnState.ABORTITO;
+		scala.turno = -1;
 		scala.iaimminente = false;
 		scala.jollymodificabili = [];
 		scala.jollyestremiswappabili = [];
@@ -3725,6 +3754,9 @@ var scala = {
 
 	/* Avvia il turno IA dall'avversario indicato (0 = avversario1). */
 	mossaavversario: function (start) {
+		/* Lo show comincia: da qui l'annulla torna lecito e riavvolge il
+		   replay, che e' la sola cosa ancora in corso. */
+		scala.undoinibito = false;
 		scala.iaimminente = false;
 		scala.avvinizio = start || 0;
 		scala.astato = TurnState.INIZIO;
