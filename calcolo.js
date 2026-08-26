@@ -761,6 +761,9 @@ function costruisciGriglia() {
             } else {
                 el.className = 'vuoto-calcolo';
             }
+            // I due punti hanno molto meno inchiostro di ×, − e +: senza un
+            // ritocco di corpo si perderebbero fra le celle.
+            if (el.textContent === ':') el.classList.add('segno-divisione');
             cont.appendChild(el);
         }
     }
@@ -768,7 +771,9 @@ function costruisciGriglia() {
 
 function simboloOp(op) {
     if (op === 'x') return '×';
-    if (op === ':') return '÷';
+    // I due punti al posto del ÷: a 21px il segno di divisione e' un piu'
+    // con due puntini sopra e sotto, e nello schema si scambiava per un +.
+    if (op === ':') return ':';
     if (op === '-') return '−';
     return op;
 }
@@ -1470,7 +1475,7 @@ function calcMostra() {
     // Riga di servizio: ricorda cosa si sta facendo mentre si digita il secondo
     // operando, altrimenti dopo tre tasti non si sa piu' se era un x o un +.
     if (op) {
-        const segni = { '+': '+', '-': '−', 'x': '×', ':': '÷' };
+        const segni = { '+': '+', '-': '−', 'x': '×', ':': ':' };
         op.textContent = (calcAccumulato !== null && calcOperatore)
             ? calcFormatta(calcArrotonda(calcAccumulato)) + ' ' + segni[calcOperatore] : '';
     }

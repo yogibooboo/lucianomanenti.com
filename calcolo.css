@@ -419,6 +419,19 @@ a.pulsante-top {
     color: #ffd700;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
 }
+/* Il segno di divisione: due punti e basta, perche' il ÷ a questo corpo
+   si leggeva come un +. Vanno pero' ingranditi, altrimenti accanto agli
+   altri segni sembrano uno sbaffo. */
+.segno-calcolo.segno-divisione {
+    font-size: 27px;
+    /* align-items:center centra la RIGA DI TESTO, non l'inchiostro: la
+       linea di base cade sotto la meta' della casella e i due punti, che
+       stanno tutti sopra la linea di base, finivano bassi rispetto al +
+       della colonna accanto. Lo scostamento e' visivo (position:relative),
+       quindi la griglia non si muove. */
+    position: relative;
+    top: -4px;
+}
 .segno-calcolo.segno-uguale {
     color: #ffffff;
     transition: color 0.2s, text-shadow 0.2s;
@@ -1070,6 +1083,10 @@ a.pulsante-top {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 6px;
+}
+/* Vedi .segno-calcolo.segno-divisione: stesso segno, stessa ragione. */
+.calc-t.calc-div {
+    font-size: 22px;
 }
 .calc-t {
     /* 41 e non 38: il pannello deve arrivare a coprire NUOVA PARTITA (che finisce
