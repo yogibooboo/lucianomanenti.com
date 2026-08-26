@@ -584,7 +584,7 @@ function showInterstitialIfDue(onClose) {
                             'event_category': 'Affiliate',
                             'amazon_deal_id': dealId,
                             'format': 'interstitial',
-                            'asin': deal.asin || '',
+                            'asin': deal.asin || deal.product_id || '',
                             'page_location': window.location.href,
                             'non_interaction': true
                         }, _scaleTelemetry()));
@@ -599,7 +599,7 @@ function showInterstitialIfDue(onClose) {
                             'event_category': 'Affiliate',
                             'amazon_deal_id': dealId,
                             'format': 'interstitial',
-                            'asin': deal.asin || '',
+                            'asin': deal.asin || deal.product_id || '',
                             'tempo_esposizione': exposureSeconds,
                             'page_location': window.location.href,
                             'non_interaction': false
@@ -2053,7 +2053,7 @@ function setupAmazonFinishBanner(formId, options) {
                     'event_category': 'Affiliate',
                     'amazon_deal_id': dealId,
                     'format': 'finish',
-                    'asin': deal.asin || '',
+                    'asin': deal.asin || deal.product_id || '',
                     'page_location': window.location.href,
                     'viewport_w': window.innerWidth,
                     'viewport_h': window.innerHeight,
@@ -2073,7 +2073,7 @@ function setupAmazonFinishBanner(formId, options) {
                     'event_category': 'Affiliate',
                     'amazon_deal_id': dealId,
                     'format': 'finish',
-                    'asin': deal.asin || '',
+                    'asin': deal.asin || deal.product_id || '',
                     'tempo_esposizione': exposureSeconds,
                     'page_location': window.location.href,
                     'viewport_w': window.innerWidth,
