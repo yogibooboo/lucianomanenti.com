@@ -8,7 +8,13 @@
 // COSA PARTE E QUANDO. La riga di una mano contiene punti, chiusura, burrachi,
 // pozzetti, mazziere, durata e chi era seduto dove: fatti di una partita a
 // carte, che non dicono niente di nessuno. L'IP non viene scritto da nessuna
-// parte (vedi stats/burraco.php). Quella riga parte sempre.
+// parte (vedi stats/burraco.php).
+//
+// RIACCESA il 29/08/2026, su tutte le mani. Era stata sospesa poche ore prima
+// perche' una POST per mano gonfia le pagine viste di SmarterStats; il freno
+// c'e' ed e' un numero solo (UNA_MANO_OGNI, piu' sotto), ma sta a 1 per scelta
+// - si registra tutto. La domanda a cui serve, adesso, e' quanto vince chi
+// gioca.
 //
 // Gli identificatori sono un'altra cosa. `giocatore_id` e `torneo_id` vivono
 // nel localStorage, e leggere o scrivere sul dispositivo di qualcuno e' proprio
@@ -126,10 +132,25 @@
     // tabella, una per braccio, motori orientati bene e nessuna riga persa;
     // da qui si raccoglie da chiunque.
     //
-    // Il flag resta, ma girato: adesso vale come interruttore di ESCLUSIONE.
-    // Serve a giocare una mano senza registrarla - e siccome con la raccolta
-    // spenta i bracci non girano (vedi `raccolta` piu' sotto), e' anche il modo
-    // di giocare una partita senza incontrare il motore in prova.
+    // Il flag e' stato girato tre volte. Il 23/08/2026 da "acceso per chi lo
+    // chiede" a "spento per chi si chiama fuori"; il 29/08 al mattino di nuovo a
+    // interruttore di inclusione, con la raccolta sospesa per tutti; il 29/08
+    // stesso rimesso a ESCLUSIONE, perche' la raccolta e' ripartita.
+    //
+    // La sospensione non era per privacy ne' per carico: ogni mano faceva una
+    // POST a /stats/burraco.php, e SmarterStats su Aruba la conta come una
+    // pagina vista. Le statistiche del sito diventavano illeggibili, gonfiate da
+    // una riga per mano giocata. Il rimedio non e' spegnere ma CAMPIONARE: vedi
+    // UNA_MANO_OGNI qui sotto.
+    //
+    // Conseguenza voluta e non ovvia: con la raccolta accesa i bracci
+    // tornerebbero a girare (vedi `raccolta` piu' sotto). Non e' quel che si
+    // vuole adesso - una percentuale di vittorie mescolata su tre bracci non e'
+    // la percentuale di niente - quindi l'esperimento si spegne dall'altro capo,
+    // con AB_ATTIVO = false in burraco-game.js.
+    //
+    // Per chiamarsi fuori su un browser: BurracoStats.accendiRaccolta(false),
+    // oppure burraco_stats_raccolta = '0' nel localStorage.
     //
     // NON si aggancia a dev_mode, che pure sarebbe stato comodo: dev_mode
     // impedisce il caricamento di adsbygoogle.js, e con lui non arriva il CMP.
@@ -138,11 +159,50 @@
     var CHIAVE_RACCOLTA = 'burraco_stats_raccolta';
 
     var _raccolta = (function () {
-        // In casa si raccoglie comunque: la chiave la si spegne per non
-        // registrare una partita vera, e in casa non ce ne sono.
-        if (_hostLocale()) return true;
+        // Il modo prova e' gia' un'accensione esplicita, e vale solo in casa:
+        // chi l'ha acceso vuole vedere scrivere, quindi non gli si chiede una
+        // seconda chiave.
+        if (_prova) return true;
+        // In casa come online si raccoglie da chiunque non si sia chiamato
+        // fuori. Se il localStorage non e' leggibile si raccoglie lo stesso:
+        // l'assenza di una risposta non e' un rifiuto, e chi rifiuta davvero non
+        // ha comunque nessun identificatore in ballo (vedi _spedisci).
         try { return localStorage.getItem(CHIAVE_RACCOLTA) !== '0'; } catch (e) { return true; }
     })();
+
+    // ------------------------------------------------------------------
+    // Quante mani si registrano
+    // ------------------------------------------------------------------
+    // Una mano ogni N, e **oggi N vale 1**: si registra tutto. Questo numero
+    // esiste perche' la raccolta e' gia' stata spenta una volta, il 29/08/2026,
+    // per un motivo che puo' tornare: ogni riga in tabella e' una POST a
+    // /stats/burraco.php, e SmarterStats su Aruba la conta come una pagina
+    // vista. Con ~3.500 mani al giorno erano ~3.500 pagine finte al giorno, e le
+    // statistiche del sito diventavano illeggibili.
+    //
+    // Se ricapita, il rimedio e' qui e non e' spegnere: campionare a caso NON
+    // sposta la percentuale di vittorie - un campione casuale di mani ha la
+    // stessa media dell'insieme, solo con l'errore standard piu' largo di radice
+    // di N - quindi mettere 4 divide il disturbo per quattro e lascia ~26.000
+    // mani al mese, che su una percentuale valgono tre decimi di punto.
+    //
+    // Attenzione se un giorno lo si alza: il campione e' per MANO, quindi di
+    // ogni persona si vedrebbe una frazione delle partite. La media resta
+    // giusta, il conteggio no - e una CLASSIFICA per giocatore si regge sul
+    // conteggio. In quel caso o resta a 1, o il campione si sposta sul giocatore
+    // invece che sulla mano.
+    //
+    // Nessun'altra parte del codice conosce questo numero, e il server non se ne
+    // accorge.
+    var UNA_MANO_OGNI = 1;
+
+    function _campionata() {
+        if (UNA_MANO_OGNI <= 1) return true;
+        // Il banco vuole tutte le mani: li' si misura, e li' le POST vanno al
+        // database di casa senza passare da Aruba.
+        if (_prova) return true;
+        return Math.random() * UNA_MANO_OGNI < 1;
+    }
 
     function _valuta(tc) {
         var p = (tc && tc.publisher && tc.publisher.consents) || {};
@@ -325,6 +385,12 @@
             // Serratura del collaudo, e sta qui e non solo nel gioco apposta:
             // finche' la raccolta e' spenta non parte niente, da nessuna via.
             if (!_raccolta) return;
+            // Il sorteggio si fa QUI e non in _spedisci: una mano scartata non
+            // deve nemmeno mettersi in coda ad aspettare il CMP, o resterebbe
+            // appesa a un consenso che non le serve piu'. E si azzera l'id
+            // dell'ultima mano, altrimenti il pannello Ctrl+Alt+M mostrerebbe
+            // quello della mano precedente e sembrerebbe registrata anche questa.
+            if (!_campionata()) { _ultimaMano = null; return; }
             // Gia' deciso, in un senso o nell'altro: si spedisce subito.
             if (_consenso !== null) { _spedisci(dati); return; }
             // Ancora in sospeso: si aspetta il CMP, ma solo per sapere se
@@ -339,12 +405,21 @@
         // si da' per dato comunque.
         prova: _prova,
 
-        // Vero se su questo browser le mani si registrano: in casa sempre, e
-        // online a meno che non ci si sia chiamati fuori. Lo legge anche burraco-game.js,
-        // che quando e' falso tiene tutti i motori su 'A': se non si raccoglie
-        // niente, far incontrare il motore in prova a chi passa di qui
-        // significherebbe cambiargli la partita senza imparare nulla.
+        // Vero se su questo browser le mani si registrano, cioe' per chiunque
+        // non si sia chiamato fuori. Non dice che LA SINGOLA mano partira': di
+        // quello decide il campione (vedi UNA_MANO_OGNI).
+        //
+        // Lo legge anche burraco-game.js, che quando e' falso tiene tutti i
+        // motori su 'A': se non si raccoglie niente, far incontrare il motore in
+        // prova a chi passa di qui significherebbe cambiargli la partita senza
+        // imparare nulla. Oggi quel ramo non si vede, perche' i bracci sono
+        // spenti da AB_ATTIVO.
         raccolta: _raccolta,
+
+        // Una mano ogni quante finisce in tabella. 1 = tutte. Serve a chi legge
+        // i numeri: le righe contate vanno moltiplicate per questo per risalire
+        // alle mani giocate davvero.
+        unaManoOgni: UNA_MANO_OGNI,
 
         // Versione di un file caricato, letta dal suo ?v=. Serve a chi compone
         // la descrizione dei motori: la versione del codice non deve stare
@@ -365,19 +440,17 @@
             return true;
         },
 
-        // Esclude QUESTO browser dalla raccolta: accendiRaccolta(false) per
-        // chiamarsi fuori, accendiRaccolta() per rientrare. Ora che si raccoglie
-        // da tutti e' l'unico verso che serve davvero - e con la raccolta spenta
-        // nemmeno i bracci girano, quindi e' anche il modo di giocare senza
-        // incontrare il motore in prova. In casa non ha effetto.
+        // Chiama fuori QUESTO browser dalla raccolta: accendiRaccolta(false) per
+        // smettere di registrare, accendiRaccolta() per tornare come tutti gli
+        // altri. Ora che si raccoglie da chiunque, e' lo spegnimento il verso
+        // che serve. Vale in casa come online.
         accendiRaccolta: function (acceso) {
             try {
                 if (acceso === false) localStorage.setItem(CHIAVE_RACCOLTA, '0');
                 else localStorage.removeItem(CHIAVE_RACCOLTA);
             } catch (e) { return false; }
             console.log('Raccolta statistiche ' + (acceso === false ? 'SPENTA' : 'ACCESA')
-                + ' su questo browser. Ricarica la pagina.'
-                + (_hostLocale() ? ' (In casa si raccoglie comunque.)' : ''));
+                + ' su questo browser. Ricarica la pagina.');
             return true;
         },
 
@@ -391,6 +464,9 @@
             return {
                 consenso: _consenso, id: _leggiId(), inAttesa: !!_inAttesa,
                 prova: _prova, raccolta: _raccolta, eventi: _diario.length,
+                unaManoOgni: UNA_MANO_OGNI,
+                // null anche quando la raccolta e' accesa: vuol dire che questa
+                // mano il campione non l'ha pescata.
                 ultimaMano: _ultimaMano
             };
         }

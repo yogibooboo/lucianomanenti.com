@@ -975,8 +975,18 @@ async function depositaCombinazioneAI(giocatore, mossa) {
         return;
     }
 
-    // Se resterebbe 0 o 1 carta, serve un burraco per chiudere
+    // Si chiude scartando l'ultima carta, non calandola. Senza piu' pozzetto da
+    // prendere, svuotare la mano con una calata non e' una chiusura: e' un turno
+    // finito senza lo scarto d'obbligo. Una carta va tenuta, e la scartera' la
+    // FASE 3. Col pozzetto ancora sul tavolo andare a zero e' invece legittimo -
+    // lo si prende e si continua senza scartare - e li' questa guardia tace.
     const carteRimanenti = giocatore.carte.length - carte.length;
+    if (carteRimanenti === 0 && game.pozzetti[giocatore.squadra].length === 0) {
+        console.log(`AI ${giocatore.nome}: blocco deposito, chiuderebbe senza scartare`);
+        return;
+    }
+
+    // Se resterebbe 0 o 1 carta, serve un burraco per chiudere
     if (carteRimanenti <= 1 && game.pozzetti[giocatore.squadra].length === 0) {
         const combinazioniSquadra = giocatore.squadra === 0 ? game.combinazioniNoi : game.combinazioniLoro;
         const haBurraco = combinazioniSquadra.some(c => c.isBurraco);
@@ -1048,8 +1058,151 @@ async function depositaCombinazioneAI(giocatore, mossa) {
     console.log(`AI ${giocatore.nome}: depositato ${risultato.tipo === TIPO_TRIS ? 'tris' : 'scala'} di ${carte.length} carte`);
 }
 
+// ----------------------------------------------------------------------------
+// Salvaguardia del burraco pulito.
+//
+// Il punteggiatore decide su una PROIEZIONE di fine opzione, che non sa vedere
+// due fenomeni: la pinella riassorbita (la carta vera libera la matta, che
+// scivola al suo posto naturale) e la pinella scalzata (una carta naturale
+// costringe la pinella a fare da tappabuchi). Risultato: ogni tanto l'IA
+// finisce una carta su un burraco che in QUESTO momento e' pulito e lo sporca,
+// che a chi guarda il tavolo sembra una papera anche quando i punti tornano.
+//
+// Qui non si tocca ne' il punteggiatore ne' il costruttore delle opzioni: si
+// guarda il tavolo vero un istante prima di posare la carta e, se c'e' un altro
+// posto legale, ci si sposta. Misurato su 8000 mani appaiate: sporcamenti
+// 17 -> 6 (e i sei che restano non avevano nessun altro posto), vittorie e
+// punti invariati.
+// ----------------------------------------------------------------------------
+
+// Che tipo di burraco verrebbe fuori mettendo 'carta' in 'combo'?
+// Si usano i getter veri della classe su un clone di comodo: il criterio e'
+// quello del gioco, non una copia che col tempo puo' divergere.
+function _simulaTipoBurraco(combo, carta) {
+    const finta = Object.create(Object.getPrototypeOf(combo));
+    finta.id = combo.id;
+    finta.tipo = combo.tipo;
+    finta.seme = combo.seme;
+    finta.numero = combo.numero;
+    finta.assoAlto = combo.assoAlto;
+
+    const clona = c => Object.assign(Object.create(Object.getPrototypeOf(c)), c);
+    let carte = combo.carte.map(clona);
+    carte.push(clona(carta));
+
+    if (combo.tipo === TIPO_SCALA) {
+        const v = verificaScala(carte);
+        if (v && v.valida) finta.assoAlto = v.assoAlto || false;
+        carte = ordinaScalaConJolly(carte, finta.assoAlto);
+    } else if (combo.tipo === TIPO_TRIS) {
+        carte = ordinaTrisConJolly(carte, combo.numero);
+    }
+    finta.carte = carte;
+    return finta.tipoBurraco;
+}
+
+// Graduatoria dei ripieghi: quanto e' innocuo il risultato.
+//  0 = ci finisce restando (o facendo) un burraco PULITO
+//  1 = non fa burraco: la carta sta li' senza sporcare niente
+//  2 = fa un burraco semipulito     3 = fa un burraco sporco
+function _rangoDestinazione(tipoDopo) {
+    if (tipoDopo === 'pulito') return 0;
+    if (tipoDopo === null || tipoDopo === undefined) return 1;
+    return tipoDopo === 'semipulito' ? 2 : 3;
+}
+
+// Tutti i posti legali per 'carta' fra le combinazioni della squadra, dal piu'
+// innocuo al meno. Si escludono le sostituzioni di matta (caso diverso, non e'
+// uno sporcamento) e i burrachi gia' puliti che verrebbero sporcati.
+// A parita' di rango vince la combinazione piu' lunga (piu' vicina al burraco).
+function _postiPerCarta(giocatore, carta, comboEsclusa) {
+    const combinazioniSquadra = (giocatore.squadra === 0 ? game.combinazioniNoi : game.combinazioniLoro) || [];
+    const posti = [];
+    for (const altra of combinazioniSquadra) {
+        if (!altra) continue;
+        if (comboEsclusa && altra.id === comboEsclusa.id) continue;
+        const dove = puoAggiungereACombinazione(carta, altra);
+        if (!dove || dove.sostituzione) continue;
+        const dopo = _simulaTipoBurraco(altra, carta);
+        if (altra.tipoBurraco === 'pulito' && dopo !== 'pulito') continue;
+        posti.push({ combo: altra, n: altra.carte.length, rango: _rangoDestinazione(dopo) });
+    }
+    posti.sort((a, b) => (a.rango !== b.rango) ? a.rango - b.rango : b.n - a.n);
+    return posti;
+}
+
+function _ricollocaSeSporcaPulito(giocatore, mossa) {
+    const carta = mossa.carta;
+    const combo = mossa.combo;
+    if (!carta || !combo) return;
+
+    // Nessuna precondizione su "e' una matta": conta solo il risultato, perche'
+    // anche una carta naturale puo' sporcare scalzando la pinella.
+    if (combo.tipoBurraco !== 'pulito') return;
+    if (_simulaTipoBurraco(combo, carta) === 'pulito') return;
+
+    let alternative = _postiPerCarta(giocatore, carta, combo);
+    if (!alternative.length) return;
+
+    // La guardia di chiusura di eseguiCalataAI (:1207) rifiuterebbe certi bersagli:
+    // meglio non proporglieli, altrimenti la calata salta del tutto.
+    if (giocatore.carte.length <= 2 && game.pozzetti[giocatore.squadra].length === 0) {
+        const combinazioniSquadra = (giocatore.squadra === 0 ? game.combinazioniNoi : game.combinazioniLoro) || [];
+        const haBurraco = combinazioniSquadra.some(c => c.isBurraco);
+        alternative = alternative.filter(a => haBurraco || a.combo.carte.length + 1 >= 7);
+        if (!alternative.length) return;
+    }
+
+    mossa.combo = alternative[0].combo;
+}
+
+// ----------------------------------------------------------------------------
+// La matta rimasta sola non si scarta: si attacca.
+//
+// A fine calate puo' restare in mano una carta sola, ed essere una matta.
+// Scartarla svuota la mano e porta al pozzetto DOPO lo scarto (FASE 4), che e'
+// l'esito peggiore: il pozzetto non si gioca piu' in questo turno e il jolly
+// finisce agli avversari. Attaccarla svuota la mano PRIMA (FASE 2): pozzetto,
+// rianalisi 'postPozzetto' e scarto scelto fra undici carte nuove.
+//
+// Nessun produttore di opzioni genera questa mossa (esploraCalate salta le
+// matte, VariantiB le esclude da 'avail', VariantiP pretende almeno una
+// non-matta fra le carte rimaste), quindi la si aggiunge qui, guardando il
+// tavolo vero come fa la salvaguardia del burraco pulito.
+function _mattaSolaDaAttaccare(giocatore) {
+    if (!giocatore || giocatore.carte.length !== 1) return null;
+    const carta = giocatore.carte[0];
+    if (!carta || !(carta.isJolly || carta.isPinella)) return null;
+
+    // Solo se svuotare la mano porta al POZZETTO, non alla chiusura. Senza
+    // queste due la FASE 2 andrebbe dritta a finePartita, scavalcando la
+    // guardia "non scartare l'ultima carta senza burraco" (:1434).
+    if (giocatore.haPozzetto) return null;
+    if (game.pozzetti[giocatore.squadra].length === 0) return null;
+
+    const posti = _postiPerCarta(giocatore, carta, null);
+    if (!posti.length) return null;
+    return { carta: carta, combo: posti[0].combo };
+}
+
+async function _attaccaMattaRimastaSola(giocatore) {
+    const mossa = _mattaSolaDaAttaccare(giocatore);
+    if (!mossa) return false;
+    console.log(`AI ${giocatore.nome}: matta rimasta sola, invece di scartarla la attacca`);
+    await eseguiCalataAI(giocatore, mossa);
+    return true;
+}
+
 // Esegue una calata (aggiunta carta a combinazione esistente) per AI
 async function eseguiCalataAI(giocatore, mossa) {
+    // Prima di tutto: se questa carta sporcherebbe un burraco pulito, si cerca
+    // un altro posto. Cambia solo il bersaglio, mai la carta.
+    try {
+        _ricollocaSeSporcaPulito(giocatore, mossa);
+    } catch (e) {
+        console.warn('AI: ricollocazione salvaguardia fallita', e);
+    }
+
     const carta = mossa.carta;
     const combo = mossa.combo;
     if (!carta || !combo) return;
@@ -1058,6 +1211,15 @@ async function eseguiCalataAI(giocatore, mossa) {
     const posizione = puoAggiungereACombinazione(carta, combo);
     if (!posizione) {
         console.log('AI: calata non valida');
+        return;
+    }
+
+    // Come in depositaCombinazioneAI: l'ultima carta si scarta, non si attacca.
+    // Qui la mano cala sempre di uno esatto, quindi una carta sola in mano vuol
+    // dire andare a zero. La matta rimasta sola non passa di qui a mani vuote:
+    // _mattaSolaDaAttaccare (:1170) si ferma gia' se il pozzetto non c'e' piu'.
+    if (giocatore.carte.length === 1 && game.pozzetti[giocatore.squadra].length === 0) {
+        console.log(`AI ${giocatore.nome}: blocco calata, chiuderebbe senza scartare`);
         return;
     }
 
@@ -1286,7 +1448,17 @@ async function turnoAI() {
         if (!cartaDaScartare || giocatore.carte.indexOf(cartaDaScartare) < 0) {
             cartaDaScartare = Strategia.scegliCartaDaScartare(giocatore);
         }
-        if (!cartaDaScartare) return;
+        // Niente da scartare: torna false come l'altro rifiuto qui sotto, cosi'
+        // il chiamante passa il turno invece di cadere in FASE 4 e chiudere senza
+        // scarto (era 'return' nudo, cioe' undefined, e il controllo === false non
+        // lo vedeva). Con le guardie delle calate non ci si dovrebbe piu' arrivare
+        // a mani vuote, e il warn lo segnala se succede lo stesso.
+        if (!cartaDaScartare) {
+            if (giocatore.carte.length === 0) {
+                console.warn(`AI ${giocatore.nome}: mano vuota allo scarto, una calata ha scavalcato la guardia`);
+            }
+            return false;
+        }
 
         // Non scartare l'ultima carta senza burraco
         if (giocatore.carte.length === 1 && game.pozzetti[giocatore.squadra].length === 0) {
@@ -1417,6 +1589,17 @@ async function turnoAI() {
         bestUsato = bestMazzo || best;
     }
 
+    // Ultimo ritocco prima di decidere se si scarta: se resta in mano la sola
+    // matta e ha un posto legale, la si attacca. La mano va a 0 e il controllo
+    // qui sotto porta al pozzetto senza scarto, che e' il ramo buono.
+    try {
+        if (await _attaccaMattaRimastaSola(giocatore)) {
+            if (!vivo()) return;
+        }
+    } catch (e) {
+        console.warn('AI: attacco della matta rimasta sola fallito', e);
+    }
+
     // ===== FASE 2: CONTROLLO 0 CARTE PRIMA DELLO SCARTO (pozzetto senza scarto) =====
     if (giocatore.carte.length === 0 && !giocatore.haPozzetto) {
         if (pescaPozzetto()) {
@@ -1445,6 +1628,9 @@ async function turnoAI() {
                 return;
             }
         } else {
+            // Mano a zero, pozzetto di squadra gia' andato: e' una chiusura senza
+            // scarto, e le guardie delle calate dovrebbero averla resa impossibile.
+            console.warn(`AI ${giocatore.nome}: chiusura senza scarto, una calata ha scavalcato la guardia`);
             finePartita(giocatore.squadra === 0);
             return;
         }
@@ -2092,7 +2278,18 @@ var _fastTick = (function () {
 // Interruttore dell'esperimento sulle partite reali.
 // Finche' e' false il braccio e' sempre 'A': il comportamento del gioco resta
 // identico a prima e nessun giocatore incontra il motore B.
-var AB_ATTIVO = true;
+//
+// SPENTO il 29/08/2026, a esperimento chiuso (8.319 mani il 25/08: il mazzetto
+// di otto coefficienti vale ~28 punti a mano per sedia). Sta spento perche' la
+// raccolta e' ripartita per un'altra domanda - quanto vince chi gioca - e con i
+// bracci accesi quella percentuale sarebbe la media di tre giochi diversi:
+// 54,5% col braccio A, 45,7% col B, 57,6% col C. La media non e' la percentuale
+// di niente, e un terzo delle persone si troverebbe davanti un motore piu'
+// forte senza che serva a misurare piu' nulla.
+//
+// Da riaccendere solo insieme a un esperimento nuovo, non "per non perdere il
+// codice": il codice resta qui comunque.
+var AB_ATTIVO = false;
 
 // I TRE BRACCI
 //   'A'  nessuno modificato          - l'ancora

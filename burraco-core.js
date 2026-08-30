@@ -54,6 +54,7 @@ const burracoTranslations = {
         'msg-pesca-attacco': 'Pescare prima di attaccare',
         'msg-scarto-vietato': 'Non puoi scartare la carta appena pescata dagli scarti',
         'msg-serve-burraco': 'Serve almeno un burraco per chiudere',
+        'msg-tieni-scarto': 'Tieni una carta da scartare per chiudere',
         'msg-mazzo-quasi-finito': 'Mazzo quasi esaurito! Ultimo turno!',
         'msg-pop-bloccato': 'Popup bloccato! Abilita i popup per questo sito.',
         
@@ -135,6 +136,7 @@ const burracoTranslations = {
         'msg-pesca-attacco': 'Draw before playing',
         'msg-scarto-vietato': 'You cannot discard the card you just drew from the discard pile',
         'msg-serve-burraco': 'You need at least one Burraco to close',
+        'msg-tieni-scarto': 'Keep one card to discard and close',
         'msg-mazzo-quasi-finito': 'Deck almost empty! Last turn!',
         'msg-pop-bloccato': 'Popup blocked! Please enable popups for this site.',
         
@@ -3767,6 +3769,17 @@ window._calcolaVariantiM = function(d, game, giocatoreIdx) {
         var opt = opzIdx === -1 ? wrapper : d.opzioniScenario[opzIdx];
         if (!opt || !opt.mosse) return;
 
+        // Le combinazioni come le lascia QUESTA opzione base, non come stanno ora
+        // sul tavolo. Chiedere "ci sta la matta?" alla fotografia di prima faceva
+        // nascere opzioni impossibili: una scala di 5 accetta una matta, ma se
+        // l'opzione le attacca due carte e una matta, la seconda matta non ci
+        // entra piu'. Quelle opzioni vincevano con un punteggio che nessuno
+        // poteva incassare, e per giunta zittivano la penalita' matta-su-burraco
+        // -pulito, che pretende UNA sola matta proiettata sulla combinazione.
+        var _projCombo = {};
+        var _pcM = window._proiettaComboConCalate(comboSquadra, opt.mosse || []);
+        comboSquadra.forEach(function(c, i) { _projCombo[c.id] = _pcM[i] || c; });
+
         // Carte rimanenti dopo questa opzione (escluse quelle usate)
         var carteRim = d.classifica.filter(function(r) {
             return origMano(r) && !(opt.carteUsate && opt.carteUsate.has(r.cartaRef.id));
@@ -3803,7 +3816,8 @@ window._calcolaVariantiM = function(d, game, giocatoreIdx) {
                 for (var ci = 0; ci < comboSquadra.length; ci++) {
                     var comboC = comboSquadra[ci];
                     if (comboUsateM.has(comboC.id)) continue;
-                    var puoAggM = _w.puoAggiungereACombinazione ? _w.puoAggiungereACombinazione(mattaM, comboC) : false;
+                    var comboProjM = _projCombo[comboC.id] || comboC;
+                    var puoAggM = _w.puoAggiungereACombinazione ? _w.puoAggiungereACombinazione(mattaM, comboProjM) : false;
                     if (puoAggM) { trovataM = comboC; break; }
                 }
                 if (!trovataM) { assegnazioniM = null; break; }
@@ -3837,7 +3851,8 @@ window._calcolaVariantiM = function(d, game, giocatoreIdx) {
             var matta = matteEntries[0].cartaRef;
             var targetCombos = isTwoRemaining ? comboSquadra : burracoTargets;
             targetCombos.forEach(function(combo) {
-                var puoAgg = _w.puoAggiungereACombinazione ? _w.puoAggiungereACombinazione(matta, combo) : false;
+                var comboProj = _projCombo[combo.id] || combo;
+                var puoAgg = _w.puoAggiungereACombinazione ? _w.puoAggiungereACombinazione(matta, comboProj) : false;
                 if (!puoAgg) return;
                 var mm = (opt.mosse || []).map(function(m) {
                     return m.carte ? Object.assign({}, m, { carte: m.carte.slice() }) : Object.assign({}, m);
@@ -3905,6 +3920,15 @@ window._calcolaVariantiP = function(d, game, giocatoreIdx) {
         var opt = opzIdx === -1 ? wrapper : d.opzioniScenario[opzIdx];
         if (!opt || !opt.mosse) return;
 
+        // Stessa ragione di _calcolaVariantiM: le combinazioni vanno guardate
+        // come le lascia QUESTA opzione base. Il comboUsate qui sotto conta solo
+        // le matte che aggiunge la P, non quelle che l'opzione base ha gia'
+        // appoggiato: senza la proiezione la seconda matta sulla stessa combo
+        // passa il controllo di legalita' e nasce un'opzione ineseguibile.
+        var _projCombo = {};
+        var _pcP = window._proiettaComboConCalate(comboSquadra, opt.mosse || []);
+        comboSquadra.forEach(function(c, i) { _projCombo[c.id] = _pcP[i] || c; });
+
         // Carte rimanenti dopo questa opzione
         var carteRim = d.classifica.filter(function(r) {
             return origMano(r) && !(opt.carteUsate && opt.carteUsate.has(r.cartaRef.id));
@@ -3924,7 +3948,8 @@ window._calcolaVariantiP = function(d, game, giocatoreIdx) {
             for (var ci = 0; ci < comboSquadra.length; ci++) {
                 var combo = comboSquadra[ci];
                 if (comboUsate.has(combo.id)) continue;
-                var puoAgg = _w.puoAggiungereACombinazione ? _w.puoAggiungereACombinazione(matta, combo) : false;
+                var comboProjP = _projCombo[combo.id] || combo;
+                var puoAgg = _w.puoAggiungereACombinazione ? _w.puoAggiungereACombinazione(matta, comboProjP) : false;
                 if (puoAgg) { trovata = combo; break; }
             }
             if (!trovata) { assegnazioni = null; break; }

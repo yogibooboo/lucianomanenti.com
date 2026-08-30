@@ -1636,6 +1636,15 @@ async function depositaCombinazione(e) {
 
     // Se depositare lascerebbe 0 o 1 carte (obbligato a scartare), serve un burraco
     const carteRimanenti = game.giocatori[0].carte.length - game.carteSelezionate.length;
+    // Si chiude scartando l'ultima carta, non calandola: senza piu' pozzetto da
+    // prendere, svuotare la mano calando non e' una chiusura, e' una mano finita
+    // senza lo scarto d'obbligo. Una carta va tenuta. Col pozzetto ancora li'
+    // andare a zero e' invece legittimo (si prende e si continua senza scartare).
+    if (carteRimanenti === 0 && game.pozzetti[0].length === 0) {
+        mostraMessaggio('Tieni una carta da scartare per chiudere', 'error');
+        setTimeout(nascondiMessaggio, 2000);
+        return;
+    }
     if (carteRimanenti <= 1 && game.pozzetti[0].length === 0) {
         const haBurracoEsistente = game.combinazioniNoi.some(c => c.isBurraco);
         const diventeraBurraco = game.carteSelezionate.length >= 7;
@@ -1727,6 +1736,11 @@ async function depositaCombinazione(e) {
         if (game.pozzetti[0].length > 0) {
             prendiPozzetto(0);
         } else {
+            // Ramo che non dovrebbe piu' esistere: la guardia qui sopra impedisce
+            // di calare l'ultima carta quando il pozzetto e' gia' andato. Se ci si
+            // arriva lo stesso qualche strada nuova ha scavalcato il controllo, e
+            // questa chiusura sarebbe senza scarto.
+            console.warn('Chiusura senza scarto: una strada ha scavalcato la guardia (deposita)');
             finePartita(true);
             return;
         }
@@ -1870,6 +1884,16 @@ function aggiungiCartaACombinazione(carta, combinazione, skipRenderAndSound = fa
             return;
         }
 
+        // L'ultima carta si scarta, non si attacca: vedi la nota in
+        // depositaCombinazione. Qui la mano cala sempre di uno esatto (la
+        // sostituzione della matta e' solo un flag nella storia, la matta non
+        // torna in mano), quindi una carta sola in mano vuol dire andare a zero.
+        if (game.giocatori[0].carte.length === 1 && game.pozzetti[0].length === 0) {
+            mostraMessaggio('Tieni una carta da scartare per chiudere', 'error');
+            setTimeout(nascondiMessaggio, 2000);
+            return;
+        }
+
         // Se resterebbe 0 o 1 carta (obbligato a scartare), serve un burraco
         if (game.giocatori[0].carte.length <= 2 && game.pozzetti[0].length === 0) {
             const haBurracoEsistente = game.combinazioniNoi.some(c => c.isBurraco);
@@ -1945,6 +1969,9 @@ function aggiungiCartaACombinazione(carta, combinazione, skipRenderAndSound = fa
             if (game.pozzetti[0].length > 0) {
                 prendiPozzetto(0);
             } else {
+                // Vedi la nota in depositaCombinazione: qui non ci si dovrebbe
+                // piu' arrivare, e arrivarci vuol dire chiudere senza scarto.
+                console.warn('Chiusura senza scarto: una strada ha scavalcato la guardia (attacco singolo)');
                 finePartita(true);
                 return;
             }
@@ -1971,6 +1998,13 @@ async function attaccaCarteSelezionateACombinazione(combinazione) {
 
     // Se attaccare lascerebbe 0 o 1 carte (obbligato a scartare), serve un burraco
     const carteRimanenti = game.giocatori[0].carte.length - game.carteSelezionate.length;
+    // Come sopra: senza piu' pozzetto da prendere, una carta resta in mano per
+    // lo scarto di chiusura.
+    if (carteRimanenti === 0 && game.pozzetti[0].length === 0) {
+        mostraMessaggio('Tieni una carta da scartare per chiudere', 'error');
+        setTimeout(nascondiMessaggio, 2000);
+        return false;
+    }
     if (carteRimanenti <= 1 && game.pozzetti[0].length === 0) {
         const haBurracoEsistente = game.combinazioniNoi.some(c => c.isBurraco);
         const diventeraBurraco = carteDaTestare.length >= 7;
@@ -2052,6 +2086,9 @@ async function attaccaCarteSelezionateACombinazione(combinazione) {
         if (game.pozzetti[0].length > 0) {
             prendiPozzetto(0);
         } else {
+            // Vedi la nota in depositaCombinazione: ramo che la guardia qui sopra
+            // dovrebbe aver reso irraggiungibile.
+            console.warn('Chiusura senza scarto: una strada ha scavalcato la guardia (attacco multiplo)');
             finePartita(true);
             return true;
         }
@@ -2659,6 +2696,7 @@ function mostraMessaggio(testo, tipo = 'info') {
         else if (lower === 'pescare prima di attaccare') msg = window.t('msg-pesca-attacco');
         else if (lower === 'non puoi scartare la carta appena pescata dagli scarti') msg = window.t('msg-scarto-vietato');
         else if (lower === 'serve almeno un burraco per chiudere') msg = window.t('msg-serve-burraco');
+        else if (lower === 'tieni una carta da scartare per chiudere') msg = window.t('msg-tieni-scarto');
         else if (lower === 'mazzo quasi esaurito! ultimo turno!') msg = window.t('msg-mazzo-quasi-finito');
         else {
             // Se non è una delle frasi fisse, prova a vedere se è già una chiave
