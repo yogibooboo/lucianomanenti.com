@@ -509,19 +509,19 @@ body {
    quelli dei giochi di carte, non solo sulle stesse colonne. Le righe di sinistra
    stanno a 247 + 52n (44 di pulsante + 8 di gap); il titolo musica occupa 24px
    piu' 18 di margine sopra e 10 sotto, piu' 8 di gap, cioe' 60 in tutto, quindi
-   partendo da 447 il primo pulsante cade a 507 = 247 + 52*5, in fila con
-   "Solitario Spider". Il blocco Altri Giochi qui sopra finisce esattamente a
-   447, per cui il valore va bene anche come stacco fra le due sezioni: se lassu' si
+   partendo da 499 il primo pulsante cade a 559 = 247 + 52*6, in fila con
+   "Solitario Klondike". Il blocco Altri Giochi qui sopra finisce esattamente a
+   499, per cui il valore va bene anche come stacco fra le due sezioni: se lassu' si
    aggiunge una riga (cioe' ogni DUE voci) questo sale di 52 e l'allineamento si
    conserva da solo, essendo 52 il passo delle righe.
    Attenzione: il blocco musica e' alto 156px con due righe e il footer comincia
    a 726, quindi non c'e' piu' il rischio di sovrapposizione che c'era prima. */
 .music-menu-container {
 	position: absolute;
-	/* 447 = 395 + 52: Altri Giochi e' passato da tre a quattro righe (aggiunti
-	   Battaglia Navale e Gioco dei Quadrati) e 52 e' il passo di una riga, quindi
-	   l'incolonnamento con i giochi di carte si conserva. */
-	top: 447px;
+	/* 499 = 447 + 52: Altri Giochi e' passato da quattro a cinque righe (aggiunto
+	   Codice Segreto, nona voce, che apre una riga nuova) e 52 e' il passo di una
+	   riga, quindi l'incolonnamento con i giochi di carte si conserva. */
+	top: 499px;
 	right: 48px;
 	width: 458px;
 	display: grid;

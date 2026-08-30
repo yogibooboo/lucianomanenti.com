@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
+	<script>
+		window.dataLayer = window.dataLayer || [];
+		function gtag() { dataLayer.push(arguments); }
+		gtag('js', new Date());
+		gtag('config', 'G-WRBDRDQ4L8');
+		window.currentLang = 'en';
+	</script>
+	<title>Secret Code Rules - How to Play</title>
+	<meta name="Description"
+		content="Secret Code rules: the deduction game where you crack a hidden row of colours. How to read the answer pegs, how to use the possibility matrix, and the tactics that get you there in few guesses.">
+	<link rel="alternate" hreflang="it" href="regole-codice-segreto.html">
+	<link rel="alternate" hreflang="en" href="regole-codice-segreto-en.html">
+	<link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
+	<link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
+	<link rel="shortcut icon" href="favicon/favicon.ico">
+	<link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+	<style>
+		body {
+			font-family: sans-serif;
+			line-height: 1.7;
+			max-width: 800px;
+			margin: 40px auto;
+			padding: 20px;
+			color: #333;
+			background-color: #f9f9f9;
+		}
+
+		h1 {
+			color: #2c3e50;
+			border-bottom: 2px solid #ffd700;
+			padding-bottom: 10px;
+		}
+
+		h2 {
+			color: #2c3e50;
+			margin-top: 30px;
+		}
+
+		h3 {
+			color: #2c3e50;
+			font-size: 1.1em;
+			margin-top: 20px;
+		}
+
+		.lang-switch {
+			text-align: right;
+			margin-bottom: 20px;
+		}
+
+		.lang-switch a {
+			display: inline-block;
+			padding: 6px 16px;
+			margin-left: 5px;
+			text-decoration: none;
+			border-radius: 5px;
+			font-weight: bold;
+			font-size: 14px;
+		}
+
+		.lang-switch a.active {
+			background: #2c3e50;
+			color: white;
+		}
+
+		.lang-switch a:not(.active) {
+			background: #ddd;
+			color: #333;
+			cursor: pointer;
+		}
+
+		.content-box {
+			background: white;
+			padding: 30px;
+			border-radius: 8px;
+			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+		}
+
+		.play-btn {
+			display: inline-block;
+			margin-top: 25px;
+			padding: 12px 30px;
+			background: #27ae60;
+			color: white;
+			text-decoration: none;
+			border-radius: 8px;
+			font-size: 18px;
+			font-weight: bold;
+		}
+
+		.nav-links {
+			text-align: center;
+			margin-top: 30px;
+			font-size: 14px;
+		}
+
+		.nav-links a {
+			color: #3498db;
+			text-decoration: none;
+			margin: 0 10px;
+		}
+
+		.banner {
+			width: 100%;
+			height: 150px;
+			background-image: url('images/home/castagne.jpg');
+			background-size: cover;
+			background-position: center;
+			border-radius: 8px;
+			margin: 20px 0;
+			box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+		}
+
+		.score-table {
+			width: 100%;
+			border-collapse: collapse;
+			margin-top: 10px;
+			margin-bottom: 20px;
+		}
+
+		.score-table th,
+		.score-table td {
+			border: 1px solid #ddd;
+			padding: 8px;
+			text-align: left;
+		}
+
+		.score-table th {
+			background-color: #f2f2f2;
+			font-weight: bold;
+		}
+
+		.highlight {
+			background-color: #fff9c4;
+			padding: 0 4px;
+		}
+
+		.mini-grid {
+			font-family: monospace;
+			font-size: 15px;
+			line-height: 1.5;
+			background: #f4f1e8;
+			border: 1px solid #ddd;
+			border-radius: 6px;
+			padding: 12px 20px;
+			display: inline-block;
+			white-space: pre;
+		}
+
+		/* Small stand-ins for the pegs and the answer pins */
+		.p {
+			display: inline-block;
+			width: 24px;
+			height: 24px;
+			line-height: 24px;
+			border-radius: 50%;
+			text-align: center;
+			font-weight: bold;
+			font-size: 12px;
+			border: 2px solid rgba(0, 0, 0, 0.5);
+			vertical-align: middle;
+			margin-right: 2px;
+		}
+
+		.pin-esatto,
+		.pin-presente {
+			display: inline-block;
+			width: 12px;
+			height: 12px;
+			border-radius: 50%;
+			vertical-align: middle;
+			margin: 0 2px;
+		}
+
+		.pin-esatto {
+			background: #f7f3e8;
+			border: 1px solid #999;
+		}
+
+		.pin-presente {
+			background: #14301c;
+			border: 1px solid #999;
+		}
+
+		.riga-ex {
+			margin: 6px 0;
+		}
+
+		.riga-ex .esito {
+			margin-left: 14px;
+			font-size: 14px;
+			color: #555;
+		}
+	</style>
+</head>
+
+<body>
+	<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+		<a href="#" id="btn-back" onclick="goBack(); return false;"
+			style="display: inline-block; padding: 6px 16px; background: #e74c3c; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 14px;">&#x2190;
+			Back</a>
+		<div class="lang-switch" style="margin-bottom: 0;">
+			<a href="regole-codice-segreto.html" id="btn-it">Italiano</a>
+			<a href="regole-codice-segreto-en.html" id="btn-en" class="active">English</a>
+		</div>
+	</div>
+
+	<div class="banner"></div>
+
+	<div class="content-box">
+		<h1>Secret Code Rules</h1>
+
+		<p><strong>Secret Code</strong> belongs to the family of two-number deduction games whose ancestor is the pencil-and-paper game known as <em>Bulls and Cows</em> &mdash; played since at least the nineteenth century, long before anyone printed it on a board. The computer hides a row of colours, you try to rebuild it, and after every guess you get <strong>two numbers only</strong>: how many colours you got right <em>and</em> put in the right place, and how many you got right but put somewhere else.</p>
+
+		<p>Luck has nothing to do with it. With those two numbers and a little method the code closes in on itself: every guess, even one that feels wasted, rules out a slice of the possibilities.</p>
+
+		<p style="background: #fff9c4; padding: 12px 16px; border-radius: 6px; border-left: 4px solid #ffd700;">
+			This game keeps evolving: new features and improvements are added regularly. If something doesn't work the way you expect, or you have a suggestion, write to
+			<a href="mailto:postmaster@lucianomanenti.com" style="color: #3498db;">postmaster@lucianomanenti.com</a>
+			&mdash; your feedback is welcome!
+		</p>
+
+		<h2>1. The aim</h2>
+		<p>The computer picks a row of <strong>4 or 5 slots</strong> and fills it with colours drawn from a palette of 6 or 8. You have to work out <strong>which colours</strong> and <strong>in what order</strong>, before you run out of guesses.</p>
+		<p>Every colour carries its own <strong>letter</strong>, <strong>A</strong> to <strong>H</strong>. That isn't decoration: it helps anyone who tells the shades apart poorly, and it is also the keyboard key that places that colour.</p>
+		<p>Everything on the board has its own kind of name, and no two clash: the <strong>slots of the code</strong> are numbered <strong>1, 2, 3&hellip;</strong> across the top of the columns, the <strong>guesses</strong> are <strong>R1, R2, R3&hellip;</strong> down the left edge, and the <strong>colours</strong> are the letters. The same numbers head the columns of the possibility matrix, in the same order, so moving between the two needs no translation.</p>
+
+		<h2>2. Reading the answer</h2>
+		<p>Small pins appear to the right of each guess. They are the only information the game gives you:</p>
+		<table class="score-table">
+			<tr>
+				<th style="width: 90px;">Pin</th>
+				<th>Meaning</th>
+			</tr>
+			<tr>
+				<td><span class="pin-esatto"></span> solid</td>
+				<td>a right colour, <strong>in the right slot</strong></td>
+			</tr>
+			<tr>
+				<td><span class="pin-presente"></span> dark</td>
+				<td>a colour that <strong>is in the code</strong>, but you put it elsewhere</td>
+			</tr>
+		</table>
+		<p class="highlight">Careful: the pins <strong>never say which slot they refer to</strong>. They are always listed in the same order (solid ones first, then dark ones), precisely so they don't give the position away. If they did, the game would be over in two moves.</p>
+
+		<h2>3. A worked example</h2>
+		<p>Say the hidden code is <strong>C &ndash; A &ndash; A &ndash; E</strong> (green, red, red, orange). Here are three guesses and their answers:</p>
+
+		<div class="riga-ex">
+			<span class="p" style="background:#e03131; color:#fff;">A</span>
+			<span class="p" style="background:#1c7ed6; color:#fff;">B</span>
+			<span class="p" style="background:#2f9e44; color:#fff;">C</span>
+			<span class="p" style="background:#f2d024; color:#333;">D</span>
+			<span class="esito"><span class="pin-presente"></span><span class="pin-presente"></span> &nbsp;none in place, two of colour only &mdash; red and green are in there, but neither is in place; blue and yellow are not in the code at all.</span>
+		</div>
+		<div class="riga-ex">
+			<span class="p" style="background:#2f9e44; color:#fff;">C</span>
+			<span class="p" style="background:#e03131; color:#fff;">A</span>
+			<span class="p" style="background:#f76707; color:#fff;">E</span>
+			<span class="p" style="background:#9c36b5; color:#fff;">F</span>
+			<span class="esito"><span class="pin-esatto"></span><span class="pin-esatto"></span><span class="pin-presente"></span> &nbsp;two in place, one of colour only &mdash; two slots are right, and a third colour is in the code but misplaced.</span>
+		</div>
+		<div class="riga-ex">
+			<span class="p" style="background:#2f9e44; color:#fff;">C</span>
+			<span class="p" style="background:#e03131; color:#fff;">A</span>
+			<span class="p" style="background:#e03131; color:#fff;">A</span>
+			<span class="p" style="background:#f76707; color:#fff;">E</span>
+			<span class="esito"><span class="pin-esatto"></span><span class="pin-esatto"></span><span class="pin-esatto"></span><span class="pin-esatto"></span> &nbsp;four solid: code cracked.</span>
+		</div>
+
+		<p>Look at the second guess: <strong>purple</strong> shows up in no pin at all, so it is ruled out of the whole code. And the first one says red is in there but <em>not</em> in slot 1. Two certainties, and no guessing involved.</p>
+
+		<h2>4. The three levels</h2>
+		<table class="score-table">
+			<tr>
+				<th>Level</th>
+				<th>Slots</th>
+				<th>Colours</th>
+				<th>Guesses</th>
+				<th>Combinations</th>
+			</tr>
+			<tr>
+				<td>Easy</td>
+				<td>4</td>
+				<td>6</td>
+				<td>10</td>
+				<td>1,296</td>
+			</tr>
+			<tr>
+				<td>Classic</td>
+				<td>4</td>
+				<td>8</td>
+				<td>10</td>
+				<td>4,096</td>
+			</tr>
+			<tr>
+				<td>Expert</td>
+				<td>5</td>
+				<td>8</td>
+				<td>12</td>
+				<td>32,768</td>
+			</tr>
+		</table>
+
+		<h3>Repeated colours</h3>
+		<p>The start dialog has a switch: <em>&laquo;The code may repeat the same colour&raquo;</em>. Switched on, the code can hold the same shade twice or three times &mdash; and that is where the game turns tricky, because a repeated colour yields fewer pins than you would expect. Switched off (as it starts out), every colour appears once only: far fewer combinations, and the possibility matrix does much more of the work for you.</p>
+
+		<h2>5. The possibility matrix</h2>
+		<p>It is the block of white cells in the middle: one <strong>column per slot</strong> of the code (1, 2, 3&hellip;, the same numbers that head the guess columns, in the same order), one <strong>row per colour</strong>, its letter written on the pill at the left. It is where you write down what you have already deduced, so you don't have to hold it in your head.</p>
+		<ul>
+			<li><strong>Click</strong> a cell: it crosses it out (&laquo;this slot cannot hold this colour&raquo;). A second click opens it again.</li>
+			<li><strong>Right-click</strong> (or turn on <em>Assign</em> mode and then click normally): pins that colour to that slot. The cell turns blue and the colour drops straight into the row you are building.</li>
+			<li>When a row is left with <strong>one colour</strong> not crossed out, the cell lights up gold: that deduction is closed.</li>
+		</ul>
+		<p class="highlight">The matrix is a <strong>notepad</strong>, not an oracle: the game keeps its hands off it and will happily let you cross out the right cell. Get a note wrong and the matrix will lead you astray &mdash; exactly as it would on paper. There are two checks, and each has to be asked for with its own checkbox: one looks only at <strong>the clues you have already been given</strong>, and hands you nothing you did not already hold; the other looks at <strong>the solution</strong>, and that is a real hint &mdash; which is why it starts switched off.</p>
+
+		<h2>6. The three checkboxes</h2>
+		<table class="score-table">
+			<tr>
+				<th style="width: 42%;">Option</th>
+				<th>What it does</th>
+			</tr>
+			<tr>
+				<td>Warn me if my notes contradict the clues</td>
+				<td>It compares the crosses and assignments you entered <strong>by hand</strong> with the answers you have received. If none of the still-possible combinations respects your notes, then one of those marks is certainly wrong: the message turns red and, when there is a single culprit, it names <strong>the slot and the colour</strong> to go back over, and that cell lights up red in the matrix. It never looks at the solution, only at the clues you already hold.</td>
+			</tr>
+			<tr>
+				<td>Show how many combinations are left</td>
+				<td>Counts, one by one, every row still consistent with every clue. It is the honest measure of how much you are narrowing things down: a good guess cuts the number several times over.</td>
+			</tr>
+			<tr>
+				<td>Warn me if my notes contradict the solution</td>
+				<td>This is the one place where the game really does look at the code, which is why it <strong>starts switched off</strong>. If you have crossed out the right colour for a slot, or assigned a wrong one, the message turns red and names <strong>the slot and the colour</strong> you got wrong, and that cell lights up red in the matrix. It does not tell you which colour is the right one: that is still yours to find.</td>
+			</tr>
+		</table>
+
+		<h2>7. The hint (and what it costs)</h2>
+		<p>The <strong>Hint</strong> button works in two steps, on the first slot you haven't settled yet:</p>
+		<ul>
+			<li><strong>First step:</strong> rules out two wrong colours for that slot. Costs <strong>+10 seconds</strong>.</li>
+			<li><strong>Second step:</strong> tells you the exact colour and assigns it. Costs <strong>+20 seconds</strong>.</li>
+		</ul>
+		<p>The panel always states the price <em>before</em> revealing anything: you can close it without paying. The seconds are added to the clock, so a record set with hints stays comparable with the others.</p>
+
+		<h2>8. Records</h2>
+		<p>The score in this game is the <strong>number of guesses</strong>; time is only the tie-breaker. The panel at the top right holds today's record, this week's and the all-time one, shown as <em>guesses &middot; time</em>.</p>
+		<p>Records are kept <strong>separately per level</strong> and per the repeated-colours rule: without repeats the space is far smaller, and mixing the two scores would mean nothing. They stay on your own computer: nobody sees them and nothing is sent anywhere. The little <strong>&#10226;</strong> button clears them, with a confirmation so you can't wipe them by accident.</p>
+
+		<h2>9. Keyboard shortcuts</h2>
+		<table class="score-table">
+			<tr>
+				<th style="width: 180px;">Key</th>
+				<th>Action</th>
+			</tr>
+			<tr>
+				<td><strong>A</strong> &hellip; <strong>H</strong></td>
+				<td>place that colour in the slot under the cursor. The digits <strong>1</strong>&hellip;<strong>8</strong> still work too, in palette order</td>
+			</tr>
+			<tr>
+				<td><strong>&larr;</strong> <strong>&rarr;</strong></td>
+				<td>move the cursor along the row</td>
+			</tr>
+			<tr>
+				<td><strong>&uarr;</strong> <strong>&darr;</strong></td>
+				<td>change the selected slot in the matrix</td>
+			</tr>
+			<tr>
+				<td><strong>Enter</strong></td>
+				<td>play the row</td>
+			</tr>
+			<tr>
+				<td><strong>Backspace</strong></td>
+				<td>remove the last colour placed</td>
+			</tr>
+			<tr>
+				<td><strong>Delete</strong></td>
+				<td>clear the whole row</td>
+			</tr>
+			<tr>
+				<td><strong>S</strong></td>
+				<td>turn <em>Assign</em> mode on or off (A is a colour now)</td>
+			</tr>
+			<tr>
+				<td><strong>Esc</strong></td>
+				<td>leave <em>Assign</em> mode, or close the hint</td>
+			</tr>
+		</table>
+
+		<h2>10. Three tips for closing in fast</h2>
+		<h3>The first guess is never wasted</h3>
+		<p>Whatever row you open with, it brings information back. Many players open with two pairs (say <em>A&nbsp;A&nbsp;B&nbsp;B</em>): the pin count tells you at once how many of those two shades are in play.</p>
+
+		<h3>Change one thing at a time</h3>
+		<p>Replay the same row with <strong>just two pegs swapped</strong> and the difference in the pins tells you something precise about those two slots. Change everything at once and you get a number you can't pin on anything.</p>
+
+		<h3>Keep your notes clean</h3>
+		<p>The matrix is where the game is really won, and it is also where it goes wrong: one cross too many and you spend the rest of the game deducing from a falsehood without noticing. The &laquo;warn me if my notes contradict the clues&raquo; checkbox exists for exactly that: leave it on until spotting it yourself becomes second nature. Playing a row that <em>cannot</em> be the code, on the other hand, is no mistake at all: it is often the best way to shake loose the fact you need.</p>
+
+		<p style="text-align: center;"><a href="#" onclick="goBack(); return false;" class="play-btn">Close</a></p>
+	</div>
+
+	<div class="banner"></div>
+
+	<div class="nav-links">
+		<a href="index-en.html">Home</a> |
+		<a href="codice-segreto-en.html">Secret Code</a> |
+		<a href="regole-calcolo-en.html">Number Puzzle</a> |
+		<a href="regole-sudoku-en.html">Sudoku</a> |
+		<a href="regole-scopa-en.html">Scopa</a> |
+		<a href="regole-burraco-en.html">Burraco</a> |
+		<a href="regole-scala40-en.html">Scala 40</a> |
+		<a href="regole-spider-en.html">Spider</a> |
+		<a href="privacy-en.html">Privacy</a> |
+		<a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)">Manage Cookies</a>
+	</div>
+
+	<p style="text-align: center; font-size: 0.8em; color: #999; margin-top: 10px;">
+		© 2026 Luciano Manenti
+	</p>
+
+	<script>
+		function goBack() {
+			window.close();
+		}
+		(function() {
+			var nascosto = false;
+			var observer = new MutationObserver(function() {
+				if (nascosto) return;
+				var divs = document.querySelectorAll('body > div');
+				for (var i = 0; i < divs.length; i++) {
+					if (divs[i].shadowRoot && !divs[i].className && (divs[i].getAttribute('style')||'').length > 5000) {
+						divs[i].style.setProperty('display', 'none', 'important');
+						nascosto = true;
+						observer.disconnect();
+						return;
+					}
+				}
+			});
+			observer.observe(document.body, { childList: true });
+		})();
+	</script>
+</body>
+
+</html>

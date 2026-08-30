@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
+	<script>
+		window.dataLayer = window.dataLayer || [];
+		function gtag() { dataLayer.push(arguments); }
+		gtag('js', new Date());
+		gtag('config', 'G-WRBDRDQ4L8');
+		window.currentLang = 'it';
+	</script>
+	<title>Regole di Codice Segreto - Come giocare</title>
+	<meta name="Description"
+		content="Regole di Codice Segreto: il gioco di deduzione in cui si indovina una fila di colori nascosta. Come si leggono i pin di risposta, come si usa la matrice delle possibilità e le tecniche per arrivare in pochi tentativi.">
+	<link rel="alternate" hreflang="it" href="regole-codice-segreto.html">
+	<link rel="alternate" hreflang="en" href="regole-codice-segreto-en.html">
+	<link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
+	<link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
+	<link rel="shortcut icon" href="favicon/favicon.ico">
+	<link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+	<style>
+		body {
+			font-family: sans-serif;
+			line-height: 1.7;
+			max-width: 800px;
+			margin: 40px auto;
+			padding: 20px;
+			color: #333;
+			background-color: #f9f9f9;
+		}
+
+		h1 {
+			color: #2c3e50;
+			border-bottom: 2px solid #ffd700;
+			padding-bottom: 10px;
+		}
+
+		h2 {
+			color: #2c3e50;
+			margin-top: 30px;
+		}
+
+		h3 {
+			color: #2c3e50;
+			font-size: 1.1em;
+			margin-top: 20px;
+		}
+
+		.lang-switch {
+			text-align: right;
+			margin-bottom: 20px;
+		}
+
+		.lang-switch a {
+			display: inline-block;
+			padding: 6px 16px;
+			margin-left: 5px;
+			text-decoration: none;
+			border-radius: 5px;
+			font-weight: bold;
+			font-size: 14px;
+		}
+
+		.lang-switch a.active {
+			background: #2c3e50;
+			color: white;
+		}
+
+		.lang-switch a:not(.active) {
+			background: #ddd;
+			color: #333;
+			cursor: pointer;
+		}
+
+		.content-box {
+			background: white;
+			padding: 30px;
+			border-radius: 8px;
+			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+		}
+
+		.play-btn {
+			display: inline-block;
+			margin-top: 25px;
+			padding: 12px 30px;
+			background: #27ae60;
+			color: white;
+			text-decoration: none;
+			border-radius: 8px;
+			font-size: 18px;
+			font-weight: bold;
+		}
+
+		.nav-links {
+			text-align: center;
+			margin-top: 30px;
+			font-size: 14px;
+		}
+
+		.nav-links a {
+			color: #3498db;
+			text-decoration: none;
+			margin: 0 10px;
+		}
+
+		.banner {
+			width: 100%;
+			height: 150px;
+			background-image: url('images/home/castagne.jpg');
+			background-size: cover;
+			background-position: center;
+			border-radius: 8px;
+			margin: 20px 0;
+			box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+		}
+
+		.score-table {
+			width: 100%;
+			border-collapse: collapse;
+			margin-top: 10px;
+			margin-bottom: 20px;
+		}
+
+		.score-table th,
+		.score-table td {
+			border: 1px solid #ddd;
+			padding: 8px;
+			text-align: left;
+		}
+
+		.score-table th {
+			background-color: #f2f2f2;
+			font-weight: bold;
+		}
+
+		.highlight {
+			background-color: #fff9c4;
+			padding: 0 4px;
+		}
+
+		.mini-grid {
+			font-family: monospace;
+			font-size: 15px;
+			line-height: 1.5;
+			background: #f4f1e8;
+			border: 1px solid #ddd;
+			border-radius: 6px;
+			padding: 12px 20px;
+			display: inline-block;
+			white-space: pre;
+		}
+
+		/* Pioli e pin riprodotti in piccolo, per spiegare a colpo d'occhio */
+		.p {
+			display: inline-block;
+			width: 24px;
+			height: 24px;
+			line-height: 24px;
+			border-radius: 50%;
+			text-align: center;
+			font-weight: bold;
+			font-size: 12px;
+			border: 2px solid rgba(0, 0, 0, 0.5);
+			vertical-align: middle;
+			margin-right: 2px;
+		}
+
+		.pin-esatto,
+		.pin-presente {
+			display: inline-block;
+			width: 12px;
+			height: 12px;
+			border-radius: 50%;
+			vertical-align: middle;
+			margin: 0 2px;
+		}
+
+		.pin-esatto {
+			background: #f7f3e8;
+			border: 1px solid #999;
+		}
+
+		.pin-presente {
+			background: #14301c;
+			border: 1px solid #999;
+		}
+
+		.riga-ex {
+			margin: 6px 0;
+		}
+
+		.riga-ex .esito {
+			margin-left: 14px;
+			font-size: 14px;
+			color: #555;
+		}
+	</style>
+</head>
+
+<body>
+	<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+		<a href="#" id="btn-back" onclick="goBack(); return false;"
+			style="display: inline-block; padding: 6px 16px; background: #e74c3c; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 14px;">&#x2190;
+			Indietro</a>
+		<div class="lang-switch" style="margin-bottom: 0;">
+			<a href="regole-codice-segreto.html" id="btn-it" class="active">Italiano</a>
+			<a href="regole-codice-segreto-en.html" id="btn-en">English</a>
+		</div>
+	</div>
+
+	<div class="banner"></div>
+
+	<div class="content-box">
+		<h1>Regole di Codice Segreto</h1>
+
+		<p><strong>Codice Segreto</strong> appartiene alla famiglia dei giochi di deduzione a due numeri, di cui l'antenato &egrave; il gioco carta e penna noto in inglese come <em>Bulls and Cows</em>: si gioca almeno dall'Ottocento, molto prima che qualcuno lo stampasse su un tabellone. Il computer nasconde una fila di colori, tu provi a ricostruirla, e dopo ogni tentativo ricevi <strong>due soli numeri</strong>: quanti colori hai indovinato <em>e</em> messo al posto giusto, e quanti hai indovinato ma messo nel posto sbagliato.</p>
+
+		<p>Non serve fortuna. Con quei due numeri, e un po' di metodo, il codice si stringe da solo: ogni tentativo, anche quello che sembra buttato, elimina un pezzo di possibilit&agrave;.</p>
+
+		<p style="background: #fff9c4; padding: 12px 16px; border-radius: 6px; border-left: 4px solid #ffd700;">
+			Questo gioco &egrave; in continua evoluzione: nuove funzionalit&agrave; e miglioramenti vengono aggiunti regolarmente. Se riscontri qualcosa che non funziona come previsto o hai suggerimenti, scrivici a
+			<a href="mailto:postmaster@lucianomanenti.com" style="color: #3498db;">postmaster@lucianomanenti.com</a>
+			&mdash; il tuo feedback &egrave; prezioso!
+		</p>
+
+		<h2>1. Scopo del gioco</h2>
+		<p>Il computer sceglie una fila di <strong>4 o 5 caselle</strong>, riempiendole con colori presi da una tavolozza di 6 o 8 tinte. Tu devi indovinare <strong>quali colori</strong> e <strong>in quale ordine</strong>, prima che finiscano i tentativi.</p>
+		<p>Ogni colore porta stampato sopra la sua <strong>lettera</strong>, da <strong>A</strong> a <strong>H</strong>. Non &egrave; un vezzo: serve a chi distingue male le tinte, ed &egrave; anche il tasto della tastiera che mette quel colore.</p>
+		<p>Sul tabellone ogni cosa ha il suo nome, e non se ne pestano i piedi: le <strong>caselle del codice</strong> sono numerate <strong>1, 2, 3&hellip;</strong> in testa alle colonne, i <strong>tentativi</strong> si chiamano <strong>R1, R2, R3&hellip;</strong> lungo il bordo sinistro, e i <strong>colori</strong> sono le lettere. Le stesse cifre tornano in testa alle colonne della matrice delle possibilit&agrave;, nello stesso ordine, cos&igrave; passare dall'una all'altra non richiede traduzioni.</p>
+
+		<h2>2. Come si legge la risposta</h2>
+		<p>A destra di ogni tentativo compaiono dei pallini piccoli. Sono l'unica informazione che il gioco ti d&agrave;:</p>
+		<table class="score-table">
+			<tr>
+				<th style="width: 90px;">Pin</th>
+				<th>Significato</th>
+			</tr>
+			<tr>
+				<td><span class="pin-esatto"></span> pieno</td>
+				<td>un colore giusto, <strong>nella casella giusta</strong></td>
+			</tr>
+			<tr>
+				<td><span class="pin-presente"></span> scuro</td>
+				<td>un colore che <strong>c'&egrave; nel codice</strong>, ma tu l'hai messo altrove</td>
+			</tr>
+		</table>
+		<p class="highlight">Attenzione: i pin <strong>non dicono a quale casella si riferiscono</strong>. Sono sempre elencati nello stesso ordine (prima i pieni, poi gli scuri), proprio per non tradire la posizione. Se cos&igrave; non fosse, il gioco finirebbe in due mosse.</p>
+
+		<h2>3. Un esempio</h2>
+		<p>Supponiamo che il codice nascosto sia <strong>C &ndash; A &ndash; A &ndash; E</strong> (verde, rosso, rosso, arancio). Ecco tre tentativi e i loro esiti:</p>
+
+		<div class="riga-ex">
+			<span class="p" style="background:#e03131; color:#fff;">A</span>
+			<span class="p" style="background:#1c7ed6; color:#fff;">B</span>
+			<span class="p" style="background:#2f9e44; color:#fff;">C</span>
+			<span class="p" style="background:#f2d024; color:#333;">D</span>
+			<span class="esito"><span class="pin-presente"></span><span class="pin-presente"></span> &nbsp;nessuno al posto giusto, due di solo colore &mdash; rosso e verde ci sono, ma nessuno &egrave; al suo posto; blu e giallo non ci sono affatto.</span>
+		</div>
+		<div class="riga-ex">
+			<span class="p" style="background:#2f9e44; color:#fff;">C</span>
+			<span class="p" style="background:#e03131; color:#fff;">A</span>
+			<span class="p" style="background:#f76707; color:#fff;">E</span>
+			<span class="p" style="background:#9c36b5; color:#fff;">F</span>
+			<span class="esito"><span class="pin-esatto"></span><span class="pin-esatto"></span><span class="pin-presente"></span> &nbsp;due al posto giusto, uno di solo colore &mdash; due caselle sono giuste, e c'&egrave; un terzo colore fuori posto.</span>
+		</div>
+		<div class="riga-ex">
+			<span class="p" style="background:#2f9e44; color:#fff;">C</span>
+			<span class="p" style="background:#e03131; color:#fff;">A</span>
+			<span class="p" style="background:#e03131; color:#fff;">A</span>
+			<span class="p" style="background:#f76707; color:#fff;">E</span>
+			<span class="esito"><span class="pin-esatto"></span><span class="pin-esatto"></span><span class="pin-esatto"></span><span class="pin-esatto"></span> &nbsp;quattro pieni: codice aperto.</span>
+		</div>
+
+		<p>Nota il secondo tentativo: <strong>viola</strong> non compare in nessun pin, quindi &egrave; escluso da tutto il codice. E il primo dice che il rosso c'&egrave; ma <em>non</em> in casella 1. Sono due deduzioni certe, ottenute senza indovinare niente.</p>
+
+		<h2>4. I tre livelli</h2>
+		<table class="score-table">
+			<tr>
+				<th>Livello</th>
+				<th>Caselle</th>
+				<th>Colori</th>
+				<th>Tentativi</th>
+				<th>Combinazioni</th>
+			</tr>
+			<tr>
+				<td>Facile</td>
+				<td>4</td>
+				<td>6</td>
+				<td>10</td>
+				<td>1.296</td>
+			</tr>
+			<tr>
+				<td>Classico</td>
+				<td>4</td>
+				<td>8</td>
+				<td>10</td>
+				<td>4.096</td>
+			</tr>
+			<tr>
+				<td>Esperto</td>
+				<td>5</td>
+				<td>8</td>
+				<td>12</td>
+				<td>32.768</td>
+			</tr>
+		</table>
+
+		<h3>Colori ripetuti</h3>
+		<p>Nella modale d'avvio c'&egrave; un interruttore: <em>&laquo;Il codice pu&ograve; ripetere lo stesso colore&raquo;</em>. Acceso, il codice pu&ograve; contenere due o tre volte la stessa tinta &mdash; ed &egrave; l&igrave; che il gioco diventa insidioso, perch&eacute; un colore ripetuto produce meno pin di quanti te ne aspetteresti. Spento (com'&egrave; all'inizio), ogni colore compare una volta sola: molte meno combinazioni, e la matrice delle possibilit&agrave; lavora molto di pi&ugrave; per te.</p>
+
+		<h2>5. La matrice delle possibilit&agrave;</h2>
+		<p>&Egrave; il blocco di caselle bianche al centro: una <strong>colonna per ogni casella del codice</strong> (1, 2, 3&hellip;, le stesse cifre che stanno in testa alle colonne dei tentativi, nello stesso ordine), una <strong>riga per ogni colore</strong>, con la sua lettera nella pastiglia a sinistra. Serve a scrivere quello che hai gi&agrave; dedotto, cos&igrave; non devi tenerlo a mente.</p>
+		<ul>
+			<li><strong>Click</strong> su un incrocio: lo barra (&laquo;in questa casella non pu&ograve; esserci questo colore&raquo;). Un secondo click lo riapre.</li>
+			<li><strong>Click destro</strong> (oppure il modo <em>Assegna</em> e poi un click normale): fissa quel colore in quella casella. La casella diventa blu e il colore finisce subito nella fila che stai componendo.</li>
+			<li>Quando su una riga resta <strong>un solo colore</strong> non barrato, la casella si accende in giallo: la deduzione &egrave; chiusa.</li>
+		</ul>
+		<p class="highlight">La matrice &egrave; un <strong>foglio di appunti</strong>, non un oracolo: di suo il gioco non ci mette le mani e ti lascia liberissimo di barrare la casella giusta. Se sbagli un appunto, la matrice ti porter&agrave; fuori strada &mdash; esattamente come su carta. I controlli sono due, e vanno chiesti tutti e due con la loro spunta: uno guarda solo <strong>gli indizi che hai gi&agrave; ricevuto</strong>, e non ti regala niente che non avessi gi&agrave; in mano; l'altro guarda <strong>la soluzione</strong>, ed &egrave; un aiuto vero &mdash; per questo parte spento.</p>
+
+		<h2>6. Le tre spunte a destra</h2>
+		<table class="score-table">
+			<tr>
+				<th style="width: 42%;">Opzione</th>
+				<th>Che cosa fa</th>
+			</tr>
+			<tr>
+				<td>Avvisami se i miei appunti contraddicono gli indizi</td>
+				<td>Confronta le crocette e le assegnazioni che hai messo <strong>a mano</strong> con le risposte gi&agrave; ricevute. Se nessuna delle combinazioni ancora possibili rispetta i tuoi segni, allora uno di quei segni &egrave; sbagliato di sicuro: il messaggio diventa rosso e, quando il colpevole &egrave; uno solo, ti dice <strong>quale casella e quale colore</strong> andare a rivedere, e quella cella si accende di rosso nella matrice. Non guarda mai la soluzione: solo gli indizi che hai gi&agrave; in mano.</td>
+			</tr>
+			<tr>
+				<td>Mostrami quante combinazioni restano</td>
+				<td>Conta, una per una, tutte le file ancora compatibili con tutti gli indizi. &Egrave; il modo pi&ugrave; onesto di vedere quanto stai stringendo: un buon tentativo taglia il numero di parecchie volte.</td>
+			</tr>
+			<tr>
+				<td>Avvisami se i miei appunti contraddicono la soluzione</td>
+				<td>&Egrave; l'unico punto in cui il gioco guarda davvero il codice, e per questo <strong>parte spenta</strong>. Se hai barrato il colore giusto di una casella, o ne hai assegnato uno sbagliato, il messaggio diventa rosso e ti dice <strong>quale casella e quale colore</strong> hai sbagliato a segnare, e quella cella si accende di rosso nella matrice. Non ti dice qual &egrave; il colore buono: quello resta da trovare.</td>
+			</tr>
+		</table>
+
+		<h2>7. Il suggerimento (e quanto costa)</h2>
+		<p>Il pulsante <strong>Suggerimento</strong> lavora in due tempi sulla prima casella che non hai ancora deciso:</p>
+		<ul>
+			<li><strong>Primo aiuto:</strong> scarta due colori sbagliati da quella casella. Costa <strong>+10 secondi</strong>.</li>
+			<li><strong>Secondo aiuto:</strong> ti dice il colore esatto e te lo assegna. Costa <strong>+20 secondi</strong>.</li>
+		</ul>
+		<p>Il pannello dice sempre quanto costa <em>prima</em> di scoprire l'aiuto: puoi chiudere senza pagare nulla. I secondi si sommano al cronometro, quindi un record ottenuto con i suggerimenti resta confrontabile con gli altri.</p>
+
+		<h2>8. I record</h2>
+		<p>Il punteggio di questo gioco &egrave; il <strong>numero di tentativi</strong>; il tempo serve solo come spareggio. Nel pannello in alto a destra trovi il record di oggi, quello della settimana e quello assoluto, nella forma <em>tentativi &middot; tempo</em>.</p>
+		<p>I record sono tenuti <strong>separati per livello</strong> e per la regola dei colori ripetuti: senza ripetizioni lo spazio &egrave; molto pi&ugrave; piccolo, e mescolare i due punteggi non avrebbe senso. Restano sul tuo computer: nessuno li vede e nessuno li invia da nessuna parte. Il pulsantino <strong>&#10226;</strong> li azzera, con una conferma per non cancellarli per sbaglio.</p>
+
+		<h2>9. Comandi da tastiera</h2>
+		<table class="score-table">
+			<tr>
+				<th style="width: 180px;">Tasto</th>
+				<th>Azione</th>
+			</tr>
+			<tr>
+				<td><strong>A</strong> &hellip; <strong>H</strong></td>
+				<td>mette quel colore nella casella indicata dal cursore. Funzionano ancora anche le cifre <strong>1</strong>&hellip;<strong>8</strong>, nell'ordine della tavolozza</td>
+			</tr>
+			<tr>
+				<td><strong>&larr;</strong> <strong>&rarr;</strong></td>
+				<td>sposta il cursore nella fila</td>
+			</tr>
+			<tr>
+				<td><strong>&uarr;</strong> <strong>&darr;</strong></td>
+				<td>cambia la casella selezionata nella matrice</td>
+			</tr>
+			<tr>
+				<td><strong>Invio</strong></td>
+				<td>gioca la fila</td>
+			</tr>
+			<tr>
+				<td><strong>Backspace</strong></td>
+				<td>cancella l'ultimo colore messo</td>
+			</tr>
+			<tr>
+				<td><strong>Canc</strong></td>
+				<td>svuota tutta la fila</td>
+			</tr>
+			<tr>
+				<td><strong>S</strong></td>
+				<td>arma o disarma il modo <em>Assegna</em> (la A ormai &egrave; un colore)</td>
+			</tr>
+			<tr>
+				<td><strong>Esc</strong></td>
+				<td>disarma il modo <em>Assegna</em>, oppure chiude il suggerimento</td>
+			</tr>
+		</table>
+
+		<h2>10. Tre consigli per stringere in fretta</h2>
+		<h3>Il primo tentativo non si spreca mai</h3>
+		<p>Qualunque fila giochi per prima, un'informazione la porta. Molti aprono con due coppie (per esempio <em>A&nbsp;A&nbsp;B&nbsp;B</em>): il numero di pin dice subito quante di quelle due tinte sono in gioco.</p>
+
+		<h3>Cambia una cosa sola</h3>
+		<p>Se rigiochi la stessa fila spostando <strong>due soli pioli</strong>, la differenza nei pin ti dice qualcosa di preciso su quelle due caselle. Cambiare tutto in una volta d&agrave; un numero difficile da attribuire.</p>
+
+		<h3>Tieni puliti gli appunti</h3>
+		<p>La matrice &egrave; dove si vince davvero, ed &egrave; anche dove si sbaglia: una crocetta di troppo e per il resto della partita deduci sul falso senza accorgertene. La spunta &laquo;avvisami se i miei appunti contraddicono gli indizi&raquo; esiste apposta: tienila accesa finch&eacute; non ti viene naturale accorgertene da solo. Giocare invece una fila che <em>non pu&ograve;</em> essere il codice non &egrave; affatto un errore: spesso &egrave; il modo migliore per far saltare fuori un dato che serve.</p>
+
+		<p style="text-align: center;"><a href="#" onclick="goBack(); return false;" class="play-btn">Chiudi</a></p>
+	</div>
+
+	<div class="banner"></div>
+
+	<div class="nav-links">
+		<a href="index.html">Home</a> |
+		<a href="codice-segreto.html">Codice Segreto</a> |
+		<a href="regole-calcolo.html">Calcolo Enigmatico</a> |
+		<a href="regole-sudoku.html">Sudoku</a> |
+		<a href="regole-scopa.html">Scopa</a> |
+		<a href="regole-burraco.html">Burraco</a> |
+		<a href="regole-scala40.html">Scala 40</a> |
+		<a href="regole-spider.html">Spider</a> |
+		<a href="privacy.html">Privacy</a> |
+		<a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)">Gestisci Cookie</a>
+	</div>
+
+	<p style="text-align: center; font-size: 0.8em; color: #999; margin-top: 10px;">
+		© 2026 Luciano Manenti
+	</p>
+
+	<script>
+		function goBack() {
+			window.close();
+		}
+		(function() {
+			var nascosto = false;
+			var observer = new MutationObserver(function() {
+				if (nascosto) return;
+				var divs = document.querySelectorAll('body > div');
+				for (var i = 0; i < divs.length; i++) {
+					if (divs[i].shadowRoot && !divs[i].className && (divs[i].getAttribute('style')||'').length > 5000) {
+						divs[i].style.setProperty('display', 'none', 'important');
+						nascosto = true;
+						observer.disconnect();
+						return;
+					}
+				}
+			});
+			observer.observe(document.body, { childList: true });
+		})();
+	</script>
+</body>
+
+</html>

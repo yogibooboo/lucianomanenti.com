@@ -1,0 +1,1383 @@
+/* ============================================================================
+   CODICE SEGRETO - Stili CSS
+   Stile feltro verde come Calcolo Enigmatico / Sudoku, campo fisso 1024x750.
+   Tre colonne: storico dei tentativi a sinistra, tavolozza e matrice delle
+   possibilita' al centro, record e comandi a destra.
+   ============================================================================ */
+
+/* === BASE & LAYOUT === */
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #1a5f2a;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.main-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+/* === SIDEBARS (per AdSense e layout) === */
+.sidebar {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    background: linear-gradient(135deg, #1a6b30 0%, #145524 50%, #0f4a1c 100%);
+    overflow-y: auto;
+    box-sizing: border-box;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    z-index: 1;
+    transition: opacity 0.3s ease;
+}
+#sidebar-left { left: 0; }
+#sidebar-right { right: 0; }
+
+/* === CAMPO DI GIOCO === */
+#campogioco {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 1024px;
+    height: 750px;
+    background: linear-gradient(135deg, #1a6b30 0%, #145524 50%, #0f4a1c 100%);
+    background-image: url(images/scala40/tappetoverde.png);
+    transform-origin: center center;
+    border-radius: 10px;
+    box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.4), 0 10px 30px rgba(0,0,0,0.5);
+    overflow: hidden;
+}
+
+/* === SCHERMO OVERLAY === */
+#schermo {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1024px;
+    height: 750px;
+    background-color: rgba(0, 0, 0, 0.65);
+    z-index: 30000;
+    display: none;
+}
+
+/* === TITOLO E BARRA SUPERIORE === */
+#titolo-gioco {
+    position: absolute;
+    top: 4px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #ffd700;
+    font-size: 24px;
+    font-family: 'Slackey', 'Outfit', sans-serif;
+    font-weight: bold;
+    z-index: 1000;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+    text-align: center;
+    line-height: 1.12;
+}
+
+.lang-switch-header {
+    position: absolute;
+    top: 8px;
+    left: 230px;
+    z-index: 10001;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.lang-switch-header a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 10px;
+    height: 32px;
+    text-decoration: none;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 12px;
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    transition: all 0.2s;
+    box-sizing: border-box;
+}
+.lang-switch-header a.active {
+    background: #ffd700;
+    color: #1a1a2e;
+    border-color: #b8860b;
+}
+.lang-switch-header a:hover:not(.active) {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.btn-audio-game {
+    width: 32px;
+    height: 32px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 20px;
+    background-color: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+.btn-audio-game:hover {
+    background-color: rgba(255, 255, 255, 0.25);
+}
+.btn-audio-game.muted {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.21.05-.42.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z'/%3E%3C/svg%3E");
+}
+
+#btn-audio {
+    position: relative;
+    z-index: 10001;
+}
+
+.pulsante-top {
+    height: 32px;
+    line-height: 32px;
+    background: rgba(0,0,0,0.4);
+    border: 1px solid #6b9b7a;
+    color: white;
+    border-radius: 4px;
+    padding: 0 10px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: bold;
+    transition: all 0.2s;
+    box-sizing: border-box;
+}
+.pulsante-top:hover {
+    background: rgba(0, 60, 20, 0.7);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+a.pulsante-top {
+    display: inline-block;
+    text-decoration: none;
+}
+
+.link-utility-bottom {
+    position: absolute;
+    top: 8px;
+    left: 15px;
+    display: flex;
+    gap: 6px;
+    z-index: 10001;
+}
+
+/* === PANNELLO RECORD (colonna destra, in cima) === */
+#pannello-record {
+    position: absolute;
+    top: 10px;
+    left: 702px;
+    width: 300px;
+    z-index: 50;
+    background: rgba(0, 40, 10, 0.55);
+    border: 2px solid rgba(100, 160, 110, 0.35);
+    border-radius: 10px;
+    padding: 8px 14px 10px;
+    box-sizing: border-box;
+    color: #fff;
+}
+.record-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    font-weight: bold;
+    color: #aed6ae;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 5px;
+}
+.btn-reset-record {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: #ccc;
+    border-radius: 4px;
+    font-size: 11px;
+    line-height: 1;
+    padding: 2px 8px;
+    margin-top: 3px;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-width: 32px;
+}
+.btn-reset-record:hover {
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.5);
+}
+.btn-reset-record.conferma {
+    background: #cc0c39;
+    color: #fff;
+    border-color: #990022;
+    font-weight: bold;
+}
+.record-righe {
+    display: flex;
+    justify-content: space-between;
+}
+.record-righe .info-blocco {
+    text-align: center;
+    flex: 1;
+}
+.record-righe .info-label {
+    font-size: 11px;
+    color: #aed6ae;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+/* "4 · 01:23": il record e' prima di tutto il numero di tentativi, il tempo fa
+   solo da spareggio. Piu' piccolo del gemello del Calcolo (16px) perche' qui
+   la riga porta due valori invece di uno. */
+.record-valore {
+    font-size: 14px;
+    font-weight: bold;
+    color: #7fd4ff;
+    margin-top: 2px;
+    white-space: nowrap;
+}
+
+/* ================= COLONNA SINISTRA: STORICO DEI TENTATIVI ================= */
+#pannello-tentativi {
+    position: absolute;
+    top: 96px;
+    left: 35px;
+    width: 340px;
+    box-sizing: border-box;
+    z-index: 50;
+    background: rgba(0, 40, 10, 0.55);
+    border: 2px solid rgba(100, 160, 110, 0.35);
+    border-radius: 10px;
+    padding: 8px 12px 10px;
+    color: #fff;
+}
+.tentativi-header {
+    display: flex;
+    align-items: center;
+    font-size: 11px;
+    font-weight: bold;
+    color: #aed6ae;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+}
+/* L'intestazione ricalca la geometria della riga di tentativo, altrimenti i
+   numeri di posizione non stanno sopra ai pioli che indicano. */
+.tentativi-header { gap: 6px; padding: 0 4px; }
+.tentativi-header .h-num { width: 26px; flex-shrink: 0; }
+.tentativi-header .h-posizioni { display: flex; gap: 4px; }
+.tentativi-header .h-pos { width: 40px; text-align: center; }
+.tentativi-header .h-risposta { margin-left: auto; width: 48px; text-align: center; }
+
+#lista-tentativi {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.riga-tentativo {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    height: 40px;
+    border-radius: 8px;
+    padding: 0 4px;
+    box-sizing: border-box;
+    transition: background-color 0.2s, box-shadow 0.2s;
+}
+/* La riga in composizione: e' l'unica su cui si puo' scrivere, e deve
+   distinguersi dalle passate senza urlare. Fondo appena schiarito e cornice
+   dorata, come tutto cio' che e' "attivo" negli altri giochi del sito. */
+.riga-tentativo.corrente {
+    background: rgba(255, 215, 0, 0.10);
+    box-shadow: inset 0 0 0 2px rgba(255, 215, 0, 0.55);
+}
+/* Righe non ancora giocate: restano in ombra, cosi' quanti tentativi restano
+   si vede a colpo d'occhio senza contarli. */
+.riga-tentativo.futura {
+    opacity: 0.35;
+}
+
+.num-tentativo {
+    width: 26px;
+    text-align: right;
+    font-size: 11px;
+    font-weight: bold;
+    color: #aed6ae;
+    flex-shrink: 0;
+}
+
+.pioli-riga {
+    display: flex;
+    gap: 4px;
+}
+
+/* === IL PIOLO ===
+   Cerchio di plastica: alone chiaro in alto per il volume, bordo scuro per
+   staccarlo dal feltro. La lettera al centro non e' un vezzo: e' l'unico modo
+   di leggere il codice se i colori non si distinguono (ed e' anche il tasto
+   della tastiera che mette quel colore). */
+.piolo {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    box-sizing: border-box;
+    border: 2px solid rgba(0, 0, 0, 0.55);
+    background: rgba(0, 0, 0, 0.35);
+    box-shadow: inset 0 3px 6px rgba(255,255,255,0.25), inset 0 -4px 8px rgba(0,0,0,0.35), 0 2px 4px rgba(0,0,0,0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: bold;
+    line-height: 1;
+    cursor: default;
+    padding: 0;
+    flex-shrink: 0;
+    transition: transform 0.12s, box-shadow 0.12s;
+}
+/* Buco vuoto: niente volume, e' un incavo. L'ombra interna lo fa sembrare
+   scavato invece che spento. */
+.piolo.vuoto {
+    background: rgba(10, 30, 16, 0.55);
+    border-color: rgba(0, 0, 0, 0.4);
+    box-shadow: inset 0 3px 7px rgba(0,0,0,0.6);
+    color: rgba(205, 232, 205, 0.35);
+    font-size: 13px;
+}
+/* Il numero e' scritto in chiaro o in scuro a seconda del colore sotto: sul
+   giallo e sul bianco un numero bianco sparirebbe. La classe la mette il JS. */
+.piolo.chiaro { color: rgba(0, 0, 0, 0.6); }
+.piolo.scuro  { color: rgba(255, 255, 255, 0.78); }
+
+/* I buchi della riga in composizione si cliccano: il click sposta il cursore,
+   il destro svuota. */
+.riga-tentativo.corrente .piolo { cursor: pointer; }
+.riga-tentativo.corrente .piolo:hover { transform: translateY(-2px); }
+/* Cursore: dove finira' il prossimo colore scelto. Pulsa come la lettera
+   suggerita del Calcolo Enigmatico. */
+.riga-tentativo.corrente .piolo.cursore {
+    animation: pulseCursore 0.9s ease infinite alternate;
+}
+@keyframes pulseCursore {
+    from { box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.95); }
+    to   { box-shadow: 0 0 0 5px rgba(255, 215, 0, 0.35); }
+}
+/* Casella indicata dal Suggerimento */
+.piolo.suggerito {
+    animation: pulseSugg 0.9s ease infinite alternate;
+}
+@keyframes pulseSugg {
+    from { box-shadow: 0 0 0 3px rgba(127, 212, 255, 0.95); }
+    to   { box-shadow: 0 0 0 6px rgba(127, 212, 255, 0.30); }
+}
+
+/* === LA RISPOSTA (i pin dell'indizio) ===
+   Blocco fisso a destra della riga: i pin stanno in griglia a 3 colonne, in
+   ordine - prima i neri, poi i bianchi, poi i buchi. L'ordine e' volutamente
+   privo di significato: dire QUALE casella e' giusta rovinerebbe il gioco. */
+.risposta {
+    margin-left: auto;
+    width: 48px;
+    flex-shrink: 0;
+    display: grid;
+    grid-template-columns: repeat(3, 12px);
+    gap: 4px;
+    justify-content: center;
+    align-content: center;
+}
+.pin {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    box-sizing: border-box;
+}
+/* Giusto e al posto giusto: il pallino pieno e chiaro, perche' e' il
+   risultato definitivo dei due e deve pesare di piu' a colpo d'occhio. */
+.pin.pin-esatto {
+    background: #f7f3e8;
+    border: 1px solid #8fa894;
+    box-shadow: 0 0 4px rgba(255,255,255,0.35);
+}
+/* Colore giusto, posto sbagliato: resta scuro, e' un mezzo risultato */
+.pin.pin-presente {
+    background: #14301c;
+    border: 1px solid #cfe6d3;
+    box-shadow: 0 0 4px rgba(0,0,0,0.6);
+}
+.pin.pin-vuoto {
+    background: rgba(0, 0, 0, 0.22);
+    border: 1px solid rgba(143, 168, 148, 0.30);
+}
+
+/* Legenda dei due pin, sotto lo storico. Senza, i due pallini restano un
+   rebus per chi non conosce il gioco. */
+.legenda-pin {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 8px;
+    font-size: 10px;
+    color: #cde8cd;
+    font-style: italic;
+}
+.legenda-pin span {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+/* ================= COLONNA CENTRALE ================= */
+#colonna-centro {
+    position: absolute;
+    top: 96px;
+    left: 390px;
+    width: 300px;
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.pannello {
+    background: rgba(0, 40, 10, 0.55);
+    border: 2px solid rgba(100, 160, 110, 0.35);
+    border-radius: 10px;
+    padding: 8px 12px 10px;
+    box-sizing: border-box;
+    color: #fff;
+}
+.pannello-titolo {
+    font-size: 11px;
+    font-weight: bold;
+    color: #aed6ae;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+}
+
+/* === TAVOLOZZA ===
+   Le pastiglie sono rettangoli e non cerchi di proposito: cosi' non si
+   confondono con i pioli sul tabellone, che sono l'altra cosa colorata a
+   schermo. Il numero sopra e' la scorciatoia da tastiera. */
+#tavolozza {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+}
+.btn-colore {
+    height: 40px;
+    border-radius: 8px;
+    border: 2px solid rgba(0, 0, 0, 0.5);
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    box-shadow: inset 0 3px 6px rgba(255,255,255,0.25), inset 0 -4px 8px rgba(0,0,0,0.3), 0 2px 5px rgba(0,0,0,0.4);
+    transition: transform 0.1s, box-shadow 0.12s, filter 0.12s;
+    padding: 0;
+}
+.btn-colore:hover { filter: brightness(1.15); transform: translateY(-2px); }
+.btn-colore:active { transform: translateY(0); }
+.btn-colore.chiaro { color: rgba(0, 0, 0, 0.6); }
+.btn-colore.scuro  { color: rgba(255, 255, 255, 0.8); }
+/* === COMANDI DELLA RIGA === */
+#riga-comandi {
+    display: flex;
+    gap: 8px;
+}
+#btn-prova {
+    flex: 1 1 0;
+    height: 46px;
+    font-size: 16px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #1a1a2e;
+    background: linear-gradient(180deg, #ffd700 0%, #b8860b 100%);
+    border: 2px solid #ffd700;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.15s;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+#btn-prova:hover:not(:disabled) {
+    filter: brightness(1.15);
+    transform: translateY(-1px);
+}
+/* Riga incompleta: il pulsante resta a schermo ma spento. Nasconderlo farebbe
+   ballare la colonna a ogni piolo messo o tolto. */
+#btn-prova:disabled {
+    opacity: 0.4;
+    cursor: default;
+    box-shadow: none;
+}
+#btn-svuota {
+    width: 92px;
+    height: 46px;
+    font-size: 12px;
+    font-weight: bold;
+    text-transform: uppercase;
+    color: white;
+    background: rgba(0, 40, 10, 0.6);
+    border: 2px solid #6b9b7a;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+#btn-svuota:hover {
+    background: rgba(0, 60, 20, 0.8);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+/* === MESSAGGIO DI STATO === */
+#messaggio-stato {
+    color: #fff;
+    font-size: 13px;
+    font-weight: bold;
+    text-align: center;
+    background: rgba(0, 40, 10, 0.6);
+    padding: 6px 10px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 32px;
+    line-height: 1.35;
+    transition: background-color 0.2s, color 0.2s;
+}
+#messaggio-stato.msg-giallo {
+    background: #ffd700;
+    color: #1a1a2e;
+    border-color: #b8860b;
+    text-shadow: none;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+}
+#messaggio-stato.msg-rosso {
+    background: #cc0c39;
+    color: #fff;
+    border-color: #990022;
+    text-shadow: none;
+    box-shadow: 0 0 15px rgba(204, 12, 57, 0.5);
+}
+#messaggio-stato.msg-verde {
+    background: #1e7a3c;
+    color: #fff;
+    border-color: #7ee787;
+    text-shadow: none;
+}
+
+/* === MATRICE DELLE POSSIBILITA' (colori x caselle) ===
+   Lo stesso strumento del Calcolo Enigmatico, con le stesse regole d'uso: una
+   colonna per casella del codice - le stesse cifre, nello stesso ordine, dello
+   storico dei tentativi - una riga per colore, e si lavora per esclusione. Qui pero' non c'e' nessuna verifica contro la soluzione: sono
+   appunti del giocatore, e sbagliarli fa parte del gioco. Su richiesta il gioco
+   li confronta con gli indizi gia' ricevuti, che e' un'altra cosa. */
+#pannello-matrice {
+    transition: border-color 0.2s, box-shadow 0.2s, background-color 0.2s;
+}
+/* Modo "assegna" armato: stessa cornice blu pulsante del Calcolo. */
+#pannello-matrice.pannello-assegna {
+    border-color: #7fd4ff;
+    background: rgba(0, 24, 60, 0.55);
+    box-shadow: 0 0 0 2px rgba(47, 111, 208, 0.55),
+                0 0 22px rgba(127, 212, 255, 0.75);
+    animation: pulseAssegna 1.1s ease-in-out infinite alternate;
+}
+@keyframes pulseAssegna {
+    from { box-shadow: 0 0 0 2px rgba(47, 111, 208, 0.45),
+                       0 0 14px rgba(127, 212, 255, 0.55); }
+    to   { box-shadow: 0 0 0 3px rgba(47, 111, 208, 0.75),
+                       0 0 30px rgba(127, 212, 255, 0.95); }
+}
+#matrice-possibilita {
+    display: grid;
+    gap: 3px;
+    align-items: center;
+}
+.mat-angolo { }
+/* Etichetta di riga: la pastiglia del colore con la sua lettera, alta quanto
+   una cella cosi' la riga si legge dritta */
+.mat-intestazione {
+    height: 24px;
+    border-radius: 4px;
+    border: 1px solid rgba(0,0,0,0.5);
+    text-align: center;
+    font-size: 11px;
+    font-weight: bold;
+    line-height: 22px;
+    transition: opacity 0.2s, filter 0.2s;
+}
+.mat-intestazione.chiaro { color: rgba(0,0,0,0.6); }
+.mat-intestazione.scuro  { color: rgba(255,255,255,0.85); }
+/* Colore gia' fissato su una casella, giocando senza ripetizioni: riga
+   chiusa, quel colore non puo' stare altrove. */
+.mat-intestazione.col-presa {
+    filter: grayscale(0.8) brightness(0.55);
+    opacity: 0.55;
+}
+/* Intestazione di colonna: il numero della casella nel codice, lo stesso che
+   sta in testa alle colonne dei tentativi */
+.btn-posizione {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 24px;
+    background: linear-gradient(180deg, #4a7c59 0%, #2d5a3d 100%);
+    border: 2px solid #6b9b7a;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.15s;
+    padding: 0;
+    font-size: 13px;
+    font-weight: bold;
+    color: #ffe9a8;
+}
+.btn-posizione:hover { filter: brightness(1.2); }
+.btn-posizione.selezionata {
+    background: linear-gradient(180deg, #ffd700 0%, #b8860b 100%);
+    border-color: #ffd700;
+    color: #1a1a2e;
+    box-shadow: 0 0 12px rgba(255, 215, 0, 0.6);
+}
+
+.mat-cella {
+    position: relative;
+    isolation: isolate;
+    height: 24px;
+    background: rgba(247, 243, 232, 0.92);
+    border: 1px solid #8fa894;
+    border-radius: 4px;
+    cursor: pointer;
+    padding: 0;
+    font-size: 19px;
+    font-weight: bold;
+    line-height: 1;
+    color: #14301c;
+    transition: background-color 0.12s, border-color 0.12s, transform 0.12s;
+}
+.mat-cella:hover {
+    background: #ffffff;
+    border-color: #ffd700;
+    transform: translateY(-1px);
+}
+/* Escluso a mano: la deduzione del giocatore, segno pieno */
+.mat-cella.mat-esclusa {
+    background: rgba(20, 48, 28, 0.55);
+    border-color: rgba(143, 168, 148, 0.35);
+    color: #cdf0d6;
+}
+/* Escluso di riflesso (da un'assegnazione o dall'opzione dei colori assenti):
+   stessa casella spenta, ma segno piu' leggero, perche' non l'ha ragionato il
+   giocatore */
+.mat-cella.mat-esclusa-auto {
+    background: rgba(20, 48, 28, 0.42);
+    border-color: rgba(143, 168, 148, 0.28);
+    color: #9fd0ad;
+    font-size: 16px;
+}
+/* Assegnato: quel colore va in quella casella, e finisce nella riga in
+   composizione */
+.mat-cella.mat-assegnata {
+    background: linear-gradient(180deg, #2f6fd0 0%, #1a4fa0 100%);
+    border-color: #7fd4ff;
+    color: #ffffff;
+    box-shadow: 0 0 10px rgba(127, 212, 255, 0.55);
+}
+.mat-cella.mat-col-sel:not(.mat-esclusa):not(.mat-esclusa-auto):not(.mat-assegnata) {
+    background: #fffbe6;
+    border-color: #d8c88a;
+}
+/* Unico colore rimasto per quella casella: la deduzione e' chiusa */
+.mat-cella.mat-unica {
+    background: #fff3b0;
+    border-color: #ffd700;
+    box-shadow: inset 0 0 0 2px rgba(255, 215, 0, 0.55);
+}
+/* Il segno che un avviso ha indicato come sbagliato. Vale per tutti e due i
+   controlli, quello sugli indizi e quello sulla soluzione, e deve avere la
+   meglio su qualunque altro stato della cella: da qui l'id nel selettore,
+   che batte le combinazioni di classi senza ricorrere a !important. */
+#matrice-possibilita .mat-cella.mat-sbagliata {
+    background: #b3121f;
+    border-color: #ff8080;
+    color: #ffffff;
+    animation: pulseSbagliata 0.9s ease-in-out infinite alternate;
+}
+@keyframes pulseSbagliata {
+    from { box-shadow: 0 0 0 2px rgba(255, 128, 128, 0.45), 0 0 8px rgba(255, 60, 60, 0.5); }
+    to   { box-shadow: 0 0 0 3px rgba(255, 128, 128, 0.85), 0 0 20px rgba(255, 60, 60, 0.95); }
+}
+
+/* === MODI DI CLICK SULLA MATRICE === */
+#modo-click {
+    display: flex;
+    flex-direction: row;
+    gap: 6px;
+}
+.modo-opzione {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 7px 4px;
+    border: 2px solid rgba(100, 160, 110, 0.35);
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.25);
+    color: #cde8cd;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.15s;
+    box-sizing: border-box;
+}
+.modo-opzione:hover { border-color: rgba(255, 255, 255, 0.45); }
+.modo-opzione input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+.modo-opzione .modo-simbolo { font-size: 14px; line-height: 1.15; }
+.modo-opzione .modo-testo { display: block; text-align: center; line-height: 1.15; }
+.modo-opzione .modo-scorciatoia {
+    display: block;
+    font-size: 10px;
+    font-weight: normal;
+    opacity: 0.75;
+    white-space: nowrap;
+    line-height: 1.1;
+}
+/* "Assegna" ha due righe di testo contro l'unica di "Escludi": ancorato in
+   alto, altrimenti i due simboli finiscono a quote diverse. */
+#modo-assegna { align-items: flex-start; }
+.modo-opzione.attivo {
+    background: linear-gradient(180deg, #ffd700 0%, #b8860b 100%);
+    border-color: #ffd700;
+    color: #1a1a2e;
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.45);
+}
+/* Come nel Calcolo: "assegna" armato prende il blu della casella assegnata,
+   perche' il colore anticipa il risultato invece di gridare al pericolo. */
+#modo-assegna.attivo {
+    background: linear-gradient(180deg, #2f6fd0 0%, #1a4fa0 100%);
+    border-color: #7fd4ff;
+    color: #ffffff;
+    box-shadow: 0 0 12px rgba(127, 212, 255, 0.7);
+}
+
+/* ================= COLONNA DESTRA: COMANDI ================= */
+#pannello-controlli {
+    position: absolute;
+    top: 118px;
+    left: 702px;
+    width: 300px;
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+#info-partita {
+    background: rgba(0, 40, 10, 0.55);
+    border: 2px solid rgba(100, 160, 110, 0.35);
+    border-radius: 10px;
+    padding: 10px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #fff;
+    font-size: 14px;
+}
+#info-partita .info-blocco {
+    text-align: center;
+    flex: 1;
+}
+#info-partita .info-label {
+    font-size: 11px;
+    color: #aed6ae;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+#info-partita .info-valore {
+    font-size: 18px;
+    font-weight: bold;
+    color: #ffd700;
+    margin-top: 2px;
+}
+/* Tentativi agli sgoccioli: il contatore diventa rosso. E' l'unica risorsa che
+   si consuma, e accorgersene tardi vuol dire perdere la partita. */
+#info-partita .info-valore.in-riserva { color: #ff7b72; }
+
+.btn-azione {
+    height: 44px;
+    font-size: 13px;
+    font-weight: bold;
+    color: white;
+    background: rgba(0, 40, 10, 0.6);
+    border: 2px solid #6b9b7a;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-transform: uppercase;
+}
+.btn-azione:hover {
+    background: rgba(0, 60, 20, 0.8);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+/* Pannello del suggerimento: copre la colonna dei tasti quando aperto */
+#pannello-hint {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: auto;
+    z-index: 60;
+    background: #10331c;
+    border: 2px solid #ffd700;
+    border-radius: 10px;
+    padding: 18px 16px;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 14px;
+    box-shadow: 0 0 25px rgba(0, 0, 0, 0.6);
+}
+#pannello-hint.aperto { display: flex; }
+#pannello-hint .hint-titolo {
+    font-size: 18px;
+    font-weight: bold;
+    color: #ffd700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+#hint-testo {
+    color: #fff;
+    font-size: 15px;
+    line-height: 1.5;
+    text-align: center;
+    padding: 0 4px;
+}
+#hint-testo b { color: #ffd700; }
+#hint-penalita {
+    color: #ff9f43;
+    font-size: 12px;
+    line-height: 1.4;
+    text-align: center;
+    padding: 0 4px;
+    font-style: italic;
+}
+#hint-penalita b { color: #ff6b6b; font-style: normal; }
+#hint-bottoni {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    align-items: center;
+}
+#hint-bottoni button {
+    width: 230px;
+    height: 46px;
+    font-size: 14px;
+    font-weight: bold;
+    color: white;
+    background: rgba(0, 40, 10, 0.6);
+    border: 2px solid #6b9b7a;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-transform: uppercase;
+}
+#hint-bottoni button:hover {
+    background: rgba(0, 60, 20, 0.8);
+    border-color: rgba(255, 255, 255, 0.6);
+}
+#hint-bottoni button:disabled {
+    opacity: 0.45;
+    cursor: default;
+}
+#btn-hint-applica {
+    background: linear-gradient(180deg, #ffd700 0%, #b8860b 100%) !important;
+    color: #1a1a2e !important;
+    border-color: #ffd700 !important;
+}
+#btn-hint-applica:hover { filter: brightness(1.1); }
+#btn-hint-chiudi { border-color: #990022 !important; }
+
+#opzioni {
+    background: rgba(0, 40, 10, 0.55);
+    border: 2px solid rgba(100, 160, 110, 0.35);
+    border-radius: 10px;
+    padding: 10px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+#opzioni label {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    color: #cde8cd;
+    font-size: 12px;
+    line-height: 1.35;
+    cursor: pointer;
+}
+#opzioni input[type="checkbox"] {
+    accent-color: #ffd700;
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    margin-top: 1px;
+    cursor: pointer;
+}
+
+#btn-nuova-partita {
+    height: 52px;
+    font-size: 18px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #1a1a2e;
+    background: linear-gradient(180deg, #ffd700 0%, #b8860b 100%);
+    border: 2px solid #ffd700;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    font-family: 'Segoe UI', sans-serif;
+}
+#btn-nuova-partita:hover {
+    filter: brightness(1.15);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 15px rgba(255, 215, 0, 0.3);
+}
+
+/* Riquadro affiliati rotante: come nel Calcolo Enigmatico, qui si resta a
+   lungo sulla stessa schermata e un banner fisso verrebbe ignorato. NON e'
+   uno slot AdSense: quelli non si rinfrescano mai da soli. */
+#banner-rotante {
+    width: 300px;
+    height: 250px;
+    box-sizing: border-box;
+    border-radius: 6px;
+    overflow: hidden;
+    background: rgba(0, 40, 10, 0.55);
+    border: 2px solid rgba(100, 160, 110, 0.35);
+}
+
+/* === MODALI E DIALOGHI === */
+.form-codice {
+    z-index: 40000;
+    position: absolute;
+    width: 500px;
+    height: 520px;
+    left: 262px;
+    top: 115px;
+    background-color: #1a4224;
+    background-image: url(images/scala40/tappetoverde.png);
+    border: 4px solid #b8860b;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+    box-sizing: border-box;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    padding: 25px;
+    color: white;
+    overflow: hidden;
+}
+.form-codice-title {
+    font-family: 'Slackey', 'Outfit', sans-serif;
+    font-size: 26px;
+    color: #ffd700;
+    margin-bottom: 18px;
+    text-shadow: 2px 2px 4px #000;
+    text-align: center;
+}
+#modale-inizio { justify-content: center; }
+
+.lang-switch-modale {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    display: flex;
+    gap: 4px;
+    z-index: 1;
+}
+.lang-switch-modale a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 9px;
+    height: 24px;
+    text-decoration: none;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 11px;
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    transition: all 0.2s;
+    box-sizing: border-box;
+}
+.lang-switch-modale a.active {
+    background: #ffd700;
+    color: #1a1a2e;
+    border-color: #b8860b;
+}
+.lang-switch-modale a:hover:not(.active) { background: rgba(255, 255, 255, 0.3); }
+
+.btn-angolo-modale {
+    position: absolute;
+    bottom: 10px;
+    height: 24px;
+    line-height: 22px;
+    padding: 0 10px;
+    font-size: 10px;
+    font-weight: bold;
+    text-decoration: none;
+    text-align: center;
+    white-space: nowrap;
+    border-radius: 4px;
+    box-sizing: border-box;
+    background-color: rgba(0, 40, 10, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #ccc;
+    transition: all 0.2s;
+}
+.btn-angolo-modale:hover {
+    color: #fff;
+    background-color: rgba(0, 60, 20, 0.7);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+.btn-angolo-modale.sinistra { left: 12px; }
+.btn-angolo-modale.destra   { right: 12px; }
+.btn-angolo-modale.home {
+    background: linear-gradient(135deg, #c9720f, #8a4a08);
+    border-color: #ffd700;
+    color: #fff;
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.35);
+}
+.btn-angolo-modale.home:hover {
+    color: #fff;
+    background: linear-gradient(135deg, #e08514, #a3580a);
+    border-color: #ffd700;
+    box-shadow: 0 0 14px rgba(255, 215, 0, 0.65);
+}
+
+.btn-opzione-sel {
+    background: #1f4068;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.6);
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: bold;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-width: 120px;
+    text-transform: uppercase;
+    opacity: 0.55;
+    filter: blur(0.5px);
+}
+.btn-opzione-sel.attiva {
+    background: linear-gradient(180deg, #ffd700 0%, #b8860b 100%);
+    border: 2px solid #ffd700;
+    color: #1a1a2e;
+    box-shadow: 0 0 12px rgba(255, 215, 0, 0.5);
+    opacity: 1;
+    filter: none;
+}
+.btn-opzione-sel:hover {
+    opacity: 0.85;
+    filter: none;
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.4);
+}
+.btn-opzione-sel.attiva:hover { filter: brightness(1.1); opacity: 1; }
+
+/* Interruttore delle ripetizioni nella modale d'avvio */
+#opz-ripetizioni {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 12px;
+    color: #cde8cd;
+    cursor: pointer;
+    margin-bottom: 16px;
+}
+#opz-ripetizioni input[type="checkbox"] {
+    accent-color: #ffd700;
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+.btn-continua {
+    padding: 10px 30px;
+    font-size: 15px;
+    font-weight: bold;
+    color: #2c3e50;
+    background: #ffd700;
+    border: 2px solid #b8860b;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+.btn-continua:hover {
+    background: #fff;
+    transform: scale(1.05);
+}
+
+/* Modali basse e larghe, col banner che sporge sopra */
+#confermatermina.modale-conferma {
+    width: 700px;
+    height: 180px;
+    left: 162px;
+    top: 470px;
+    padding: 24px 25px;
+    justify-content: center;
+    overflow: visible;
+}
+.conferma-bottoni {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+}
+#haivinto.modale-fine,
+#haiperso.modale-fine {
+    width: 700px;
+    height: 230px;
+    left: 162px;
+    top: 430px;
+    padding: 18px 25px;
+    justify-content: center;
+    overflow: visible;
+}
+/* Col record la modale cresce verso il BASSO: il bordo alto resta a 430, dove
+   setupAmazonFinishBanner ha gia' messo il banner. */
+#haivinto.modale-fine.con-record { height: 270px; }
+#vittoria-record {
+    display: none;
+    font-family: 'Slackey', 'Outfit', sans-serif;
+    font-size: 17px;
+    height: 30px;
+    line-height: 30px;
+    padding: 0 18px;
+    margin: 0 0 10px 0;
+    border-radius: 15px;
+    white-space: nowrap;
+    color: #3a2400;
+    background: linear-gradient(180deg, #ffe680 0%, #e0a800 100%);
+    border: 2px solid #fff3b0;
+    box-shadow: 0 0 14px rgba(255, 215, 0, 0.75);
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+    animation: battitoRecord 1.1s ease-in-out 3;
+}
+@keyframes battitoRecord {
+    0%, 100% { transform: scale(1);    box-shadow: 0 0 14px rgba(255, 215, 0, 0.75); }
+    50%      { transform: scale(1.06); box-shadow: 0 0 26px rgba(255, 215, 0, 1); }
+}
+
+.confirm-message {
+    font-family: 'Slackey', 'Outfit', sans-serif;
+    font-size: 22px;
+    color: white;
+    text-align: center;
+    text-shadow: 2px 2px 4px #000;
+    padding: 0 20px;
+    line-height: 1.3;
+}
+.dettagli-fine {
+    color: #ffd700;
+    font-size: 15px;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 12px;
+    text-shadow: 1px 1px 2px #000;
+}
+
+/* Il codice svelato nella modale di sconfitta: pioli veri e non numeri,
+   perche' e' proprio il codice che si voleva vedere. */
+.codice-svelato {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin: 8px 0 12px 0;
+}
+.codice-svelato .piolo {
+    width: 34px;
+    height: 34px;
+    font-size: 14px;
+}
+
+/* === LINK A FONDO PAGINA === */
+/* === PANNELLINO "VEDI LO SCHEMA" ===
+   Quando la modale di fine partita si toglie di mezzo restano solo questi due
+   comandi, in basso a sinistra sopra i link legali (che stanno a 12px) e
+   incolonnati con il pannello dei tentativi. Dopo una sconfitta il pannellino
+   si porta dietro anche il codice svelato: la modale che lo mostrava non c'e'
+   piu', ma e' l'unica cosa che si voleva ancora vedere. */
+#codice-minimal-panel {
+    position: absolute;
+    bottom: 42px;
+    left: 35px;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+#codice-minimal-panel .min-codice {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 12px;
+    border-radius: 10px;
+    background: rgba(0, 40, 10, 0.75);
+    border: 2px solid rgba(100, 160, 110, 0.45);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+    color: #fff;
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 13px;
+    font-weight: bold;
+}
+#codice-minimal-panel .min-pioli {
+    display: flex;
+    gap: 5px;
+}
+#codice-minimal-panel .piolo {
+    width: 28px;
+    height: 28px;
+    font-size: 13px;
+}
+#codice-minimal-panel button {
+    width: 180px;
+    height: 38px;
+    font-size: 13px;
+    font-weight: bold;
+    font-family: 'Segoe UI', sans-serif;
+    border-radius: 10px;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+    transition: filter 0.15s, transform 0.1s;
+}
+#codice-minimal-panel button:hover { filter: brightness(1.12); }
+#codice-minimal-panel button:active { transform: scale(0.96); }
+#codice-minimal-panel .btn-min-1 { background: #ffd700; color: #1a1a2e; border: 2px solid #cca300; }
+#codice-minimal-panel .btn-min-2 { background: #f0f0f0; color: #333; border: 2px solid #bbb; }
+
+.legal-links-codice {
+    position: absolute;
+    bottom: 12px;
+    left: 15px;
+    display: flex;
+    gap: 8px;
+    z-index: 100;
+    align-items: center;
+}
+.legal-links-codice a {
+    color: rgba(255, 255, 255, 0.6);
+    text-decoration: none;
+    font-size: 11px;
+    font-family: sans-serif;
+    transition: color 0.2s;
+}
+.legal-links-codice a:hover { color: #ffd700; }
+.legal-links-codice .sep { color: rgba(255, 255, 255, 0.3); font-size: 11px; }
+
+.link-giochi-codice {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    display: flex;
+    gap: 6px;
+    z-index: 100;
+}
+.pulsante-link-codice {
+    background-color: rgba(0, 40, 10, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    color: #ccc;
+    font-size: 11px;
+    padding: 4px 10px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+.pulsante-link-codice:hover {
+    color: #fff;
+    background-color: rgba(0, 60, 20, 0.7);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+.pulsante-home-codice {
+    background: linear-gradient(135deg, #c9720f, #8a4a08);
+    border-color: #ffd700;
+    color: #fff;
+    font-weight: bold;
+    white-space: nowrap;
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.35);
+}
+.pulsante-home-codice:hover {
+    color: #fff;
+    background: linear-gradient(135deg, #e08514, #a3580a);
+    border-color: #ffd700;
+    box-shadow: 0 0 14px rgba(255, 215, 0, 0.65);
+}
+
+/* === SPRITE PENALITA' "+Ns" === */
+.penalita-volante {
+    position: fixed;
+    transform: translate(-50%, -50%);
+    z-index: 9999;
+    pointer-events: none;
+    font-family: 'Slackey', 'Outfit', sans-serif;
+    font-size: 30px;
+    font-weight: bold;
+    color: #ff3b30;
+    text-shadow: 0 0 6px rgba(0, 0, 0, 0.8), 2px 2px 0 #7a0000;
+    animation: penalita-sali 2.6s ease-out forwards;
+}
+@keyframes penalita-sali {
+    0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+    8%   { opacity: 1; transform: translate(-50%, -70%) scale(1.15); }
+    16%  { transform: translate(-50%, -90%) scale(1); }
+    100% { opacity: 0; transform: translate(-50%, -390%) scale(1); }
+}
+
+/* Pallino appeso al puntatore col modo "assegna" armato: il modo dura una
+   mossa sola, quindi serve un segno addosso al cursore. */
+#sprite-assegna {
+    position: fixed;
+    left: 0;
+    top: 0;
+    margin: -22px 0 0 14px;
+    z-index: 9998;
+    pointer-events: none;
+    font-size: 40px;
+    line-height: 1;
+    color: #2f6fd0;
+    text-shadow: 0 0 6px #7fd4ff, 0 0 14px rgba(127, 212, 255, 0.8), 0 2px 3px rgba(0,0,0,0.8);
+    opacity: 0;
+    transition: opacity 0.12s;
+}
+#sprite-assegna.visibile { opacity: 1; }

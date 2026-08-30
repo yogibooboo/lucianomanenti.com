@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <script>
+        // Fix sicurezza per evitare crash da cross-origin su window.opener
+        (function() { try { if (!window.opener) return; var test = window.opener.document; if (!window.opener.game) { window.opener = null; } } catch(e) { window.opener = null; } })();
+    </script>
+    <script>
+        // AdSense caricato via JS e non con un tag statico: in dev_mode la libreria
+        // non deve partire affatto. Serve leggere localStorage qui, prima del tag,
+        // perche' game-layout.js (che definisce devMode) viene caricato molto dopo.
+        // Senza questo, adsbygoogle.js si carica comunque e inserisce da se' uno slot
+        // "auto ads": in locale Google lo rifiuta con 403, ma nei test ONLINE quello
+        // slot verrebbe servito davvero, con impression reali sulle nostre pagine.
+        (function () {
+            try { if (localStorage.getItem('dev_mode') === '1') return; } catch (e) { }
+            var s = document.createElement('script');
+            s.async = true;
+            s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9335537153013492';
+            s.crossOrigin = 'anonymous';
+            document.head.appendChild(s);
+        })();
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Codice Segreto Online Gratis - lucianomanenti.com</title>
+    <link rel="canonical" href="https://www.lucianomanenti.com/codice-segreto.html">
+    <link rel="alternate" hreflang="it" href="https://www.lucianomanenti.com/codice-segreto.html">
+    <link rel="alternate" hreflang="en" href="https://www.lucianomanenti.com/codice-segreto-en.html">
+    <link rel="alternate" hreflang="x-default" href="https://www.lucianomanenti.com/codice-segreto.html">
+    <link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
+    <link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
+    <link rel="shortcut icon" href="favicon/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+    <link rel="manifest" href="favicon/site.webmanifest">
+
+    <meta name="Description"
+        content="Gioca gratis a Codice Segreto: il computer nasconde una fila di colori, tu la indovini per deduzione. A ogni tentativo scopri quanti colori sono giusti e quanti al posto giusto.">
+    <meta http-Equiv="Cache-Control" Content="no-cache">
+    <meta http-Equiv="Pragma" Content="no-cache">
+    <meta http-Equiv="Expires" Content="0">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Slackey&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="codice-segreto.css?v=1.7" />
+
+    <!-- Google tag (gtag.js) -->
+    <script>
+        // Come per AdSense: in dev_mode la libreria non viene caricata, cosi' le
+        // sessioni di test non finiscono nelle statistiche GA4. gtag() viene pero'
+        // definita SEMPRE, perche' il resto del codice la chiama per gli eventi:
+        // in dev_mode resta una funzione inerte che accumula solo in dataLayer.
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        (function () {
+            try { if (localStorage.getItem('dev_mode') === '1') return; } catch (e) { }
+            var s = document.createElement('script');
+            s.async = true;
+            s.src = 'https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8';
+            document.head.appendChild(s);
+            gtag('js', new Date());
+            gtag('config', 'G-WRBDRDQ4L8');
+        })();
+    </script>
+    <script>
+        window.gameConfig = {
+            gaPrefix: 'CODICE_',
+            hideLegalFooter: true,
+            adsenseActive: true,
+            adsenseSlots: {
+                '300x600': '5266697442',
+                '160x600': '1167670336',
+                '300x250': '8471445288',
+                '160x250': '8663016975'
+            }
+        };
+        window.currentLang = 'it';
+    </script>
+</head>
+
+<body>
+
+    <div class="main-container">
+        <!-- Sidebar per annunci (gestite dal layout engine) -->
+        <div id="sidebar-left" class="sidebar"></div>
+        <div id="sidebar-right" class="sidebar"></div>
+
+        <!-- Campo di gioco principale centrato e riscalato -->
+        <div id="campogioco">
+            <!-- Schermo overlay per modali -->
+            <div id="schermo"></div>
+
+            <div class="lang-switch-header">
+                <a href="codice-segreto.html" class="active">IT</a>
+                <a href="codice-segreto-en.html">EN</a>
+                <div id="btn-audio" class="btn-audio-game" aria-label="Audio"></div>
+            </div>
+            <div id="titolo-gioco">Codice Segreto<br>Luciano</div>
+
+            <!-- ================= PANNELLO RECORD =================
+                 Il punteggio e' il numero di tentativi; il tempo fa da spareggio,
+                 per questo ogni casella mostra "tentativi · tempo". I record sono
+                 separati per difficolta' e per la regola delle ripetizioni. -->
+            <div id="pannello-record">
+                <div class="record-header">
+                    <span>RECORD — <span id="record-diff">--</span></span>
+                </div>
+                <div class="record-righe">
+                    <div class="info-blocco">
+                        <div class="info-label" id="lbl-record-day">Oggi</div>
+                        <div class="record-valore" id="record-day">–</div>
+                        <button class="btn-reset-record" id="btn-reset-day" title="Azzera il record di oggi">&#10226;</button>
+                    </div>
+                    <div class="info-blocco">
+                        <div class="info-label" id="lbl-record-week">Settimana</div>
+                        <div class="record-valore" id="record-week">–</div>
+                        <button class="btn-reset-record" id="btn-reset-week" title="Azzera il record della settimana">&#10226;</button>
+                    </div>
+                    <div class="info-blocco">
+                        <div class="info-label" id="lbl-record-all">Record</div>
+                        <div class="record-valore" id="record-all">–</div>
+                        <button class="btn-reset-record" id="btn-reset-all" title="Azzera il record assoluto">&#10226;</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= STORICO DEI TENTATIVI =================
+                 Una riga per tentativo: i pioli giocati a sinistra, i pin di
+                 risposta a destra. La riga dorata e' quella in composizione. -->
+            <div id="pannello-tentativi">
+                <div class="tentativi-header">
+                    <span class="h-num"></span>
+                    <span class="h-posizioni" id="intesta-posizioni"></span>
+                    <span class="h-risposta" id="intesta-esito">ESITO</span>
+                </div>
+                <div id="lista-tentativi"></div>
+                <div class="legenda-pin">
+                    <span><span class="pin pin-esatto"></span><span id="lbl-pin-esatto">al posto giusto</span></span>
+                    <span><span class="pin pin-presente"></span><span id="lbl-pin-presente">colore giusto, posto sbagliato</span></span>
+                </div>
+            </div>
+
+            <!-- ================= COLONNA CENTRALE ================= -->
+            <div id="colonna-centro">
+
+                <!-- Tavolozza: la lettera sulla pastiglia e' anche il tasto -->
+                <div class="pannello">
+                    <div class="pannello-titolo" id="lbl-tavolozza">COLORI</div>
+                    <div id="tavolozza"></div>
+                </div>
+
+                <div id="riga-comandi">
+                    <button id="btn-prova" disabled>PROVA</button>
+                    <button id="btn-svuota">SVUOTA</button>
+                </div>
+
+                <div id="messaggio-stato"></div>
+
+                <!-- Matrice delle possibilita': appunti del giocatore, una
+                     colonna per casella del codice (come nello storico dei
+                     tentativi) e una riga per colore. Il gioco non la confronta
+                     mai con la soluzione; con la spunta accesa guarda solo se i
+                     segni reggono agli indizi gia' ricevuti. -->
+                <div class="pannello" id="pannello-matrice">
+                    <div class="pannello-titolo" id="lbl-matrice">POSSIBILITÀ</div>
+                    <div id="matrice-possibilita"></div>
+                </div>
+
+                <div id="modo-click">
+                    <label class="modo-opzione attivo" id="modo-escludi">
+                        <input type="radio" name="modo-matrice" id="radio-escludi" checked>
+                        <span class="modo-simbolo">✕</span>
+                        <span>
+                            <span class="modo-testo" id="lbl-modo-escludi">Escludi</span>
+                            <span class="modo-scorciatoia" id="lbl-scorc-escludi">click</span>
+                        </span>
+                    </label>
+                    <label class="modo-opzione" id="modo-assegna">
+                        <input type="radio" name="modo-matrice" id="radio-assegna">
+                        <span class="modo-simbolo">●</span>
+                        <span>
+                            <span class="modo-testo" id="lbl-modo-assegna">Assegna</span>
+                            <span class="modo-scorciatoia" id="lbl-scorc-assegna">click destro</span>
+                        </span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- ================= COLONNA DESTRA ================= -->
+            <div id="pannello-controlli">
+
+                <div id="info-partita">
+                    <div class="info-blocco">
+                        <div class="info-label" id="lbl-tentativi">Tentativi</div>
+                        <div class="info-valore" id="info-tentativi">–</div>
+                    </div>
+                    <div class="info-blocco">
+                        <div class="info-label" id="lbl-tempo">Tempo</div>
+                        <div class="info-valore" id="info-tempo">00:00</div>
+                    </div>
+                </div>
+
+                <button id="btn-suggerimento" class="btn-azione">Suggerimento</button>
+
+                <!-- Il suggerimento e' a due livelli e costa tempo: il pannello
+                     dice sempre quanto costa PRIMA di scoprire l'aiuto. -->
+                <div id="pannello-hint">
+                    <div class="hint-titolo" id="hint-titolo">Suggerimento</div>
+                    <div id="hint-testo"></div>
+                    <div id="hint-penalita"></div>
+                    <div id="hint-bottoni">
+                        <button id="btn-hint-applica">Accetto</button>
+                        <button id="btn-hint-chiudi">Chiudi</button>
+                    </div>
+                </div>
+
+                <div id="opzioni">
+                    <label><input type="checkbox" id="chk-appunti"><span id="lbl-opt-appunti">Avvisami se i miei appunti contraddicono gli indizi</span></label>
+                    <label><input type="checkbox" id="chk-restanti"><span id="lbl-opt-restanti">Mostrami quante combinazioni restano possibili</span></label>
+                    <label><input type="checkbox" id="chk-soluzione"><span id="lbl-opt-soluzione">Avvisami se i miei appunti contraddicono la soluzione</span></label>
+                </div>
+
+                <button id="btn-nuova-partita">NUOVA PARTITA</button>
+
+                <!-- Riquadro affiliati rotante: NON e' uno slot AdSense, quindi
+                     puo' cambiare da solo senza violare nessuna policy. -->
+                <div id="banner-rotante"></div>
+            </div>
+
+            <!-- ================= MODALI ================= -->
+
+            <!-- 1. Scelta della difficolta' -->
+            <div id="modale-inizio" class="form-codice">
+                <div class="form-codice-title" id="titolo-inizio">Scegli la difficoltà</div>
+
+                <div style="display:flex; flex-direction:column; gap:10px; align-items:center; margin-bottom:18px;">
+                    <button id="btn-liv-facile" class="btn-opzione-sel attiva" style="min-width:220px;">Facile</button>
+                    <div id="desc-facile" style="font-size:11px; color:#cde8cd; margin-top:-6px;"></div>
+                    <button id="btn-liv-classico" class="btn-opzione-sel" style="min-width:220px;">Classico</button>
+                    <div id="desc-classico" style="font-size:11px; color:#cde8cd; margin-top:-6px;"></div>
+                    <button id="btn-liv-esperto" class="btn-opzione-sel" style="min-width:220px;">Esperto</button>
+                    <div id="desc-esperto" style="font-size:11px; color:#cde8cd; margin-top:-6px;"></div>
+                </div>
+
+                <label id="opz-ripetizioni">
+                    <input type="checkbox" id="chk-ripetizioni">
+                    <span id="lbl-ripetizioni">Il codice può ripetere lo stesso colore</span>
+                </label>
+
+                <div style="display:flex; gap:14px;">
+                    <button id="btn-riprendi" class="btn-continua" style="background-color:#f0f0f0; color:#333; border-color:#bbb;">Riprendi la partita</button>
+                    <button id="btn-continua" class="btn-continua">Inizia</button>
+                </div>
+
+                <!-- Vie di fuga dalla modale: finche' e' aperta copre il campo,
+                     quindi il cambio lingua in alto e i link in fondo alla pagina
+                     sono irraggiungibili. Stanno negli angoli. -->
+                <div class="lang-switch-modale">
+                    <a href="codice-segreto.html" class="active" id="btn-lang-it-modale" title="Italiano">IT</a>
+                    <a href="codice-segreto-en.html" id="btn-lang-en-modale" title="English">EN</a>
+                </div>
+                <a href="regole-codice-segreto.html" target="_blank" rel="opener" id="btn-regole-modale"
+                    class="btn-angolo-modale sinistra">ISTRUZIONI</a>
+                <a href="index.html" id="btn-home-modale" class="btn-angolo-modale destra home">TUTTI I GIOCHI</a>
+            </div>
+
+            <!-- 2. Vittoria (bassa e larga, banner sopra) -->
+            <div id="haivinto" class="form-codice modale-fine">
+                <div class="confirm-message" id="vittoria-titolo" style="margin:0 0 8px 0;">CODICE APERTO!</div>
+                <div id="vittoria-record"></div>
+                <div class="dettagli-fine" id="vittoria-dettagli"></div>
+                <div class="conferma-bottoni">
+                    <button id="btn-rivincita" class="btn-continua" style="width:260px; height:44px; font-size:16px;">NUOVA PARTITA</button>
+                    <button id="btn-vedi-schema" class="btn-continua" style="width:260px; height:44px; font-size:16px; background-color:#f0f0f0; color:#333; border-color:#bbb;">VEDI LO SCHEMA</button>
+                </div>
+            </div>
+
+            <!-- 3. Sconfitta: si mostra il codice, e' l'unica cosa che si voleva sapere -->
+            <div id="haiperso" class="form-codice modale-fine">
+                <div class="confirm-message" id="sconfitta-titolo" style="margin:0 0 6px 0;">Tentativi finiti</div>
+                <div class="dettagli-fine" id="lbl-codice-era" style="margin-bottom:4px;">Il codice era:</div>
+                <div class="codice-svelato" id="codice-svelato"></div>
+                <div class="conferma-bottoni">
+                    <button id="btn-rivincita-perso" class="btn-continua" style="width:260px; height:44px; font-size:16px;">NUOVA PARTITA</button>
+                    <button id="btn-vedi-schema-perso" class="btn-continua" style="width:260px; height:44px; font-size:16px; background-color:#f0f0f0; color:#333; border-color:#bbb;">VEDI LO SCHEMA</button>
+                </div>
+            </div>
+
+            <!-- 4. Conferma abbandono -->
+            <div id="confermatermina" class="form-codice modale-conferma">
+                <div class="confirm-message" id="conferma-testo" style="margin:0 0 18px 0;">Vuoi abbandonare la partita in corso?</div>
+                <div class="conferma-bottoni">
+                    <button id="btn-conferma-no" class="btn-continua" style="width:260px; height:44px; font-size:16px;">NO</button>
+                    <button id="btn-conferma-si" class="btn-continua" style="width:260px; height:44px; font-size:16px; background-color:#cc0c39; color:white; border-color:#990022;">SÌ</button>
+                </div>
+            </div>
+
+            <!-- Link di navigazione ed utilità a fondo pagina -->
+            <div class="link-utility-bottom">
+                <a href="aboutme.html" target="_blank" id="btn-scrivetemi-codice" class="pulsante-top">Scrivetemi</a>
+                <a href="regole-codice-segreto.html" target="_blank" rel="opener" id="btn-regole-top" class="pulsante-top">Istruzioni</a>
+            </div>
+
+            <!-- Link Legali (Privacy e Cookie) -->
+            <div class="legal-links-codice">
+                <a href="privacy.html" target="_blank" id="btn-privacy-codice">Privacy Policy</a>
+                <span class="sep">•</span>
+                <a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)" id="btn-cookie-codice">Gestisci Cookie</a>
+            </div>
+
+            <div class="link-giochi-codice">
+                <a href="calcolo.html" class="pulsante-link-codice">Calcolo</a>
+                <a href="sudoku.html" class="pulsante-link-codice">Sudoku</a>
+                <a href="scacchi.html" class="pulsante-link-codice">Scacchi</a>
+                <a href="dama.html" class="pulsante-link-codice">Dama</a>
+                <a href="scopa.html" class="pulsante-link-codice">Scopa</a>
+                <a href="briscola.html" class="pulsante-link-codice">Briscola</a>
+                <a href="burraco.html" class="pulsante-link-codice">Burraco</a>
+                <a href="scala40.html" class="pulsante-link-codice">Scala 40</a>
+                <a href="klondike.html" class="pulsante-link-codice">Klondike</a>
+                <a href="index.html" class="pulsante-link-codice pulsante-home-codice">TUTTI I GIOCHI</a>
+            </div>
+
+        </div><!-- /campogioco -->
+    </div>
+
+    <!-- Pallino appeso al puntatore quando il modo "assegna" e' armato -->
+    <div id="sprite-assegna">●</div>
+
+    <!-- Script condivisi dal sito -->
+    <script src="site.js?v=1.1"></script>
+    <!-- Layout engine per ridimensionare la finestra del gioco -->
+    <script src="game-layout.js?v=4.6"></script>
+    <!-- Logica del Codice Segreto -->
+    <script src="codice-segreto.js?v=2.1"></script>
+    <script>
+        (function () {
+            var nascosto = false;
+            var observer = new MutationObserver(function () {
+                if (nascosto) return;
+                var divs = document.querySelectorAll('body > div');
+                for (var i = 0; i < divs.length; i++) {
+                    if (divs[i].shadowRoot && !divs[i].className && (divs[i].getAttribute('style') || '').length > 5000) {
+                        divs[i].style.setProperty('display', 'none', 'important');
+                        nascosto = true;
+                        observer.disconnect();
+                        return;
+                    }
+                }
+            });
+            observer.observe(document.body, { childList: true });
+        })();
+    </script>
+</body>
+
+</html>
