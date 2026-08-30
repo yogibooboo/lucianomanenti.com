@@ -63,4 +63,8 @@ banner/*.png
 
 # --- Cartella stats/ ---
 # Stessa regola dei banner: il codice si versiona, le credenziali no.
+# Il file .locale e' quello del MySQL di Local: le credenziali del database non
+# escono da 127.0.0.1, ma dentro ci sono anche chiave_prova e chiave_export, e
+# quelle valgono anche online. Il repo e' pubblico.
 stats/stats-config.php
+stats/stats-config.locale.php
