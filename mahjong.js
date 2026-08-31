@@ -675,27 +675,30 @@
         }
     }
 
-    function isTileFree(tile, allTiles) {
+    function isTileFree(tile, fullBoard) {
         if (tile.removed) return false;
-        const board = allTiles || boardTiles;
+        const board = fullBoard || boardTiles;
 
-        if (tile.topCoverers) {
+        if (tile.topCoverers && board) {
             for (let i = 0; i < tile.topCoverers.length; i++) {
-                if (!board[tile.topCoverers[i]].removed) return false;
+                const coverer = board[tile.topCoverers[i]];
+                if (coverer && !coverer.removed) return false;
             }
             let leftBlocked = false;
             for (let i = 0; i < tile.leftBlockers.length; i++) {
-                if (!board[tile.leftBlockers[i]].removed) { leftBlocked = true; break; }
+                const blocker = board[tile.leftBlockers[i]];
+                if (blocker && !blocker.removed) { leftBlocked = true; break; }
             }
             let rightBlocked = false;
             for (let i = 0; i < tile.rightBlockers.length; i++) {
-                if (!board[tile.rightBlockers[i]].removed) { rightBlocked = true; break; }
+                const blocker = board[tile.rightBlockers[i]];
+                if (blocker && !blocker.removed) { rightBlocked = true; break; }
             }
             return !(leftBlocked && rightBlocked);
         }
 
         // Fallback
-        return !isTileBlockedFallback(tile, board);
+        return !isTileBlockedFallback(tile, (fullBoard || boardTiles));
     }
 
     function isTileBlockedFallback(tile, allTiles) {
@@ -771,7 +774,7 @@
 
         while (assignedCount < totalTiles && pairIndex < pairs.length) {
             const activeSlots = board.filter(t => !t.removed);
-            const freeSlots = activeSlots.filter(t => isTileFree(t, activeSlots));
+            const freeSlots = activeSlots.filter(t => isTileFree(t, board));
 
             if (freeSlots.length >= 2) {
                 // Scegli 2 slot liberi a caso
