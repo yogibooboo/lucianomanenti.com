@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
+	<script>
+		window.dataLayer = window.dataLayer || [];
+		function gtag() { dataLayer.push(arguments); }
+		gtag('js', new Date());
+		gtag('config', 'G-WRBDRDQ4L8');
+		window.currentLang = 'en';
+	</script>
+	<title>Classic Battleship Rules - How to Play</title>
+	<meta name="Description"
+		content="Complete guide to Classic 2-Player Battleship against the computer: 10-ship fleet composition, no-touch rule, firing turns, and hunting strategies.">
+	<link rel="alternate" hreflang="it" href="guida-battaglia-navale.html">
+	<link rel="alternate" hreflang="en" href="guida-battaglia-navale-en.html">
+	<link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
+	<link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
+	<link rel="shortcut icon" href="favicon/favicon.ico">
+	<link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+	<style>
+		body {
+			font-family: sans-serif;
+			line-height: 1.7;
+			max-width: 800px;
+			margin: 40px auto;
+			padding: 20px;
+			color: #333;
+			background-color: #f9f9f9;
+		}
+
+		h1 {
+			color: #2c3e50;
+			border-bottom: 2px solid #ffd700;
+			padding-bottom: 10px;
+		}
+
+		h2 {
+			color: #2c3e50;
+			margin-top: 30px;
+		}
+
+		h3 {
+			color: #2c3e50;
+			font-size: 1.1em;
+			margin-top: 20px;
+		}
+
+		.lang-switch {
+			text-align: right;
+			margin-bottom: 20px;
+		}
+
+		.lang-switch a {
+			display: inline-block;
+			padding: 6px 16px;
+			margin-left: 5px;
+			text-decoration: none;
+			border-radius: 5px;
+			font-weight: bold;
+			font-size: 14px;
+		}
+
+		.lang-switch a.active {
+			background: #2c3e50;
+			color: white;
+		}
+
+		.lang-switch a:not(.active) {
+			background: #ddd;
+			color: #333;
+			cursor: pointer;
+		}
+
+		.content-box {
+			background: white;
+			padding: 30px;
+			border-radius: 8px;
+			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+		}
+
+		.play-btn {
+			display: inline-block;
+			margin-top: 25px;
+			padding: 12px 30px;
+			background: #27ae60;
+			color: white;
+			text-decoration: none;
+			border-radius: 8px;
+			font-size: 18px;
+			font-weight: bold;
+			transition: background 0.2s;
+		}
+
+		.play-btn:hover {
+			background: #1e8449;
+		}
+
+		.nav-links {
+			text-align: center;
+			margin-top: 30px;
+			font-size: 14px;
+		}
+
+		.nav-links a {
+			color: #3498db;
+			text-decoration: none;
+			margin: 0 8px;
+		}
+
+		.nav-links a:hover {
+			text-decoration: underline;
+		}
+
+		.banner {
+			width: 100%;
+			height: 150px;
+			background-image: url('images/home/castagne.jpg');
+			background-size: cover;
+			background-position: center;
+			border-radius: 8px;
+			margin: 20px 0;
+			box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+		}
+
+		.ship-table {
+			width: 100%;
+			border-collapse: collapse;
+			margin: 15px 0;
+		}
+
+		.ship-table th,
+		.ship-table td {
+			border: 1px solid #ddd;
+			padding: 10px;
+			text-align: left;
+		}
+
+		.ship-table th {
+			background-color: #2c3e50;
+			color: white;
+		}
+
+		.highlight-box {
+			background: #eef7ee;
+			border-left: 4px solid #27ae60;
+			padding: 12px 18px;
+			margin: 18px 0;
+			border-radius: 0 6px 6px 0;
+		}
+
+		.feedback-box {
+			background: #fff9c4;
+			padding: 12px 16px;
+			border-radius: 6px;
+			border-left: 4px solid #ffd700;
+			margin: 18px 0;
+		}
+	</style>
+</head>
+
+<body>
+	<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+		<a href="#" id="btn-back" onclick="goBack(); return false;"
+			style="display: inline-block; padding: 6px 16px; background: #e74c3c; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 14px;">&#x2190;
+			Back</a>
+		<div class="lang-switch" style="margin-bottom: 0;">
+			<a href="guida-battaglia-navale.html" id="btn-it">Italiano</a>
+			<a href="guida-battaglia-navale-en.html" id="btn-en" class="active">English</a>
+		</div>
+	</div>
+
+	<div class="banner"></div>
+
+	<div class="content-box">
+		<div id="lang-en">
+			<h1>Classic Battleship Rules</h1>
+
+			<p><strong>Classic Battleship</strong> is one of the world's most famous and thrilling turn-based strategy and deduction games. The objective is simple: locate and sink all 10 ships in the enemy fleet before the computer manages to sink yours.</p>
+
+			<div class="feedback-box">
+				This game is continuously evolving: new features and refinements are added regularly. If you spot an issue or have suggestions, please contact us at
+				<a href="mailto:postmaster@lucianomanenti.com" style="color: #3498db;">postmaster@lucianomanenti.com</a>
+				&mdash; your feedback is greatly appreciated!
+			</div>
+
+			<h2>1. The Official Fleet Composition</h2>
+			<p>Each player commands a standard fleet of <strong>10 ships</strong> spanning a total of <strong>20 grid cells</strong> on a 10&times;10 board (coordinates A through J and 1 through 10):</p>
+			
+			<table class="ship-table">
+				<thead>
+					<tr>
+						<th>Ship Type</th>
+						<th>Quantity</th>
+						<th>Length</th>
+						<th>Total Cells</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td><strong>Battleship</strong></td>
+						<td>1</td>
+						<td>4 cells</td>
+						<td>4 cells</td>
+					</tr>
+					<tr>
+						<td><strong>Cruiser</strong></td>
+						<td>2</td>
+						<td>3 cells each</td>
+						<td>6 cells</td>
+					</tr>
+					<tr>
+						<td><strong>Destroyer</strong></td>
+						<td>3</td>
+						<td>2 cells each</td>
+						<td>6 cells</td>
+					</tr>
+					<tr>
+						<td><strong>Submarine</strong></td>
+						<td>4</td>
+						<td>1 cell each</td>
+						<td>4 cells</td>
+					</tr>
+				</tbody>
+			</table>
+
+			<h2>2. Fleet Deployment Phase</h2>
+			<p>Before battle commences, you must deploy all 10 ships onto your left grid (<strong>"Your Fleet"</strong>):</p>
+			<ul>
+				<li><strong>Orientation:</strong> Ships can be placed <strong>horizontally</strong> or <strong>vertically</strong>. Toggle orientation with <strong>Right-Click</strong>, the <strong>Spacebar</strong>, the <strong>R</strong> key, or the on-screen rotation button.</li>
+				<li><strong>Selecting Ships:</strong> Click any unplaced ship tag below the board to choose which ship to place first. The active ship pulses in bright gold.</li>
+				<li><strong>Moving and Removing Ships:</strong> Click any already deployed ship directly on the board to pick it up and relocate it, or click the red <strong>&times;</strong> on its tag to remove it.</li>
+				<li><strong>No-Touch Rule:</strong> Ships <em>must never touch each other</em>, not even diagonally. There must always be at least one cell of open water separating any two ships.</li>
+				<li><strong>Auto-Deploy:</strong> Click <strong>"Randomize"</strong> to generate a valid, randomized fleet deployment instantly.</li>
+			</ul>
+
+			<h2>3. Battle Phase & Combat Rules</h2>
+			<p>Once all ships are positioned and you press <strong>"Start Battle"</strong>, combat begins:</p>
+			<ul>
+				<li><strong>Firing:</strong> Click an unrevealed cell on the right grid (<strong>"Enemy Radar"</strong>) to take aim.</li>
+				<li><strong>Miss / Water (&bull;):</strong> If no enemy ship occupies that coordinate, the shot misses into open water (blue dot) and the turn passes to the opponent.</li>
+				<li><strong>Hit (&times;):</strong> If a ship is struck, the coordinate erupts in red. <em>Scoring a hit grants you an immediate bonus shot!</em></li>
+				<li><strong>Sunk (&empty;):</strong> Once all cells of an enemy ship are hit, the ship is sunk (skull marker). All surrounding water cells are automatically marked as safe water, as no other ship can touch it.</li>
+			</ul>
+
+			<div class="highlight-box">
+				<strong>Tactical Pro-Tip:</strong> Once you score your first hit on an unknown ship, fire at the 4 adjacent coordinates (North, South, East, West). As soon as a second hit connects, you have discovered the ship's axis: continue firing along that line in both directions until the vessel is completely destroyed!
+			</div>
+
+			<h2>4. AI Difficulty Settings</h2>
+			<p>You can test your skills against three distinct computer commanders:</p>
+			<ul>
+				<li><strong>Seaman (Easy):</strong> Fires randomly and follows basic scouting patterns.</li>
+				<li><strong>Captain (Medium):</strong> Systematically hunts and completes any damaged ship before scouting elsewhere.</li>
+				<li><strong>Admiral (Hard):</strong> Uses directional hunting and checkerboard parity scouting to locate and eliminate your fleet with ruthless efficiency.</li>
+			</ul>
+
+			<h2>5. Victory & Statistics</h2>
+			<p>The first player to destroy all 10 enemy ships wins the war! A complete summary of battle duration, shots fired, and accuracy percentage is displayed and stored in your browser's local stats.</p>
+
+			<p style="text-align: center;"><a href="#" onclick="goBack(); return false;" class="play-btn">Close</a></p>
+		</div>
+	</div>
+
+	<div class="banner"></div>
+
+	<div class="nav-links">
+		<a href="index.html">Home</a> |
+		<a href="battaglia-navale-en.html">Battleship</a> |
+		<a href="navale-en.html">Battleship Solitaire</a> |
+		<a href="calcolo-en.html">Cross Figure</a> |
+		<a href="minato-en.html">Minesweeper</a> |
+		<a href="sudoku-en.html">Sudoku</a> |
+		<a href="dama-en.html">Checkers</a> |
+		<a href="scacchi-en.html">Chess</a> |
+		<a href="privacy.html">Privacy</a> |
+		<a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)">Manage Cookies</a>
+	</div>
+
+	<p style="text-align: center; font-size: 0.8em; color: #999; margin-top: 10px;">
+		&copy; 2026 Luciano Manenti
+	</p>
+
+	<script>
+		function goBack() {
+			window.close();
+		}
+		(function () {
+			var nascosto = false;
+			var observer = new MutationObserver(function () {
+				if (nascosto) return;
+				var divs = document.querySelectorAll('body > div');
+				for (var i = 0; i < divs.length; i++) {
+					if (divs[i].shadowRoot && !divs[i].className && (divs[i].getAttribute('style') || '').length > 5000) {
+						divs[i].style.setProperty('display', 'none', 'important');
+						nascosto = true;
+						observer.disconnect();
+						return;
+					}
+				}
+			});
+			observer.observe(document.body, { childList: true });
+		})();
+	</script>
+</body>
+
+</html>

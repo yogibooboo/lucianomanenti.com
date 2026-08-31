@@ -1,0 +1,929 @@
+/* ============================================================================
+   BATTAGLIA NAVALE CLASSICA A 2 (vs Computer / 2 Giocatori) - Stili CSS
+   lucianomanenti.com
+   ============================================================================ */
+
+/* === BASE & LAYOUT === */
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #0f382c;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.main-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+/* === SIDEBARS (per AdSense e layout engine) === */
+.sidebar {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    background: linear-gradient(135deg, #134633 0%, #0d3224 50%, #082217 100%);
+    overflow-y: auto;
+    box-sizing: border-box;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    z-index: 1;
+    transition: opacity 0.3s ease;
+}
+#sidebar-left { left: 0; }
+#sidebar-right { right: 0; }
+
+/* === CAMPO DI GIOCO (1024x750) === */
+#campogioco {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 1024px;
+    height: 750px;
+    background: linear-gradient(135deg, #134633 0%, #0d3224 50%, #082217 100%);
+    background-image: url(images/scala40/tappetoverde.png);
+    transform-origin: center center;
+    border-radius: 10px;
+    box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.45), 0 10px 30px rgba(0,0,0,0.6);
+    overflow: hidden;
+}
+
+/* === OVERLAY MODALI === */
+#schermo {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1024px;
+    height: 750px;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 30000;
+    display: none;
+}
+
+/* === BARRA SUPERIORE & TITOLO === */
+.lang-switch-header {
+    position: absolute;
+    top: 8px;
+    left: 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    z-index: 1001;
+}
+
+.lang-switch-header a {
+    color: rgba(255, 255, 255, 0.7);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: bold;
+    padding: 3px 8px;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 4px;
+    background: rgba(0, 30, 20, 0.4);
+    transition: all 0.2s;
+}
+
+.lang-switch-header a:hover,
+.lang-switch-header a.active {
+    color: #ffd700;
+    border-color: #ffd700;
+    background: rgba(0, 50, 30, 0.7);
+}
+
+.btn-audio-game {
+    width: 28px;
+    height: 28px;
+    background: rgba(0, 30, 20, 0.5) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ffd700'%3E%3Cpath d='M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z'/%3E%3C/svg%3E") center/18px no-repeat;
+    border: 1px solid rgba(255, 215, 0, 0.4);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.btn-audio-game.muted {
+    background: rgba(0, 30, 20, 0.5) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ff5555'%3E%3Cpath d='M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z'/%3E%3C/svg%3E") center/18px no-repeat;
+    border-color: rgba(255, 85, 85, 0.5);
+}
+
+#titolo-gioco {
+    position: absolute;
+    top: 4px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #ffd700;
+    font-size: 20px;
+    font-family: 'Slackey', 'Outfit', sans-serif;
+    font-weight: bold;
+    z-index: 1000;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+    text-align: center;
+    line-height: 1.15;
+}
+
+/* === BARRA STATISTICHE / RECORD IN ALTO A DESTRA === */
+#pannello-stats-top {
+    position: absolute;
+    top: 6px;
+    right: 15px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(5, 25, 18, 0.65);
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    padding: 3px 12px;
+    border-radius: 6px;
+    z-index: 1000;
+}
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.stat-item-lbl {
+    font-size: 9px;
+    color: #a8d5ba;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.stat-item-val {
+    font-size: 13px;
+    font-weight: bold;
+    color: #ffd700;
+}
+
+/* === BARRA MESSAGGI DI STATO === */
+#messaggio-stato {
+    position: absolute;
+    top: 50px;
+    left: 20px;
+    right: 20px;
+    text-align: center;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 600;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.9);
+    background: rgba(6, 30, 20, 0.55);
+    border: 1px solid rgba(255, 215, 0, 0.2);
+    border-radius: 6px;
+    padding: 4px 10px;
+    box-sizing: border-box;
+    z-index: 100;
+    min-height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* === AREA DI GIOCO CENTRALE (DOPPIA GRIGLIA) === */
+#area-battaglia {
+    position: absolute;
+    top: 76px;
+    left: 16px;
+    width: 992px;
+    height: 620px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    box-sizing: border-box;
+}
+
+/* Griglie container */
+.settore-griglia {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 382px;
+}
+
+.titolo-settore {
+    font-size: 14px;
+    font-weight: bold;
+    color: #ffd700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 5px;
+    text-shadow: 1px 1px 3px #000;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.griglia-mare-box {
+    background: #0d2b3a;
+    background-image: linear-gradient(135deg, #09202c 0%, #123b50 100%);
+    border: 3px solid #b8860b;
+    border-radius: 8px;
+    padding: 5px;
+    box-shadow: inset 0 0 15px rgba(0,0,0,0.6), 0 6px 15px rgba(0,0,0,0.4);
+    box-sizing: border-box;
+}
+
+/* Tabella Griglia 10x10 con coordinate (caselle 34x34px) */
+.griglia-navale {
+    display: grid;
+    grid-template-columns: 26px repeat(10, 34px);
+    grid-template-rows: 26px repeat(10, 34px);
+    gap: 1px;
+    background-color: rgba(30, 80, 110, 0.4);
+}
+
+.coord-cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11.5px;
+    font-weight: bold;
+    color: #8ac0db;
+    background-color: rgba(7, 24, 34, 0.8);
+}
+
+.mare-cell {
+    width: 34px;
+    height: 34px;
+    background: #114258;
+    border: 1px solid #1a5874;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: default;
+    position: relative;
+    transition: background-color 0.15s, transform 0.1s;
+}
+
+/* Hover nel radar di attacco */
+#griglia-nemica .mare-cell.bersaglio-attivo {
+    cursor: crosshair;
+}
+#griglia-nemica .mare-cell.bersaglio-attivo:hover {
+    background-color: #27799e;
+    border-color: #ffd700;
+    box-shadow: inset 0 0 8px rgba(255, 215, 0, 0.8);
+    transform: scale(1.04);
+    z-index: 10;
+}
+
+/* Preview posizionamento flotta */
+.mare-cell.preview-valida {
+    background-color: rgba(46, 204, 113, 0.7) !important;
+    border-color: #2ecc71 !important;
+    box-shadow: inset 0 0 8px rgba(46, 204, 113, 0.8);
+}
+.mare-cell.preview-invalida {
+    background-color: rgba(231, 76, 60, 0.7) !important;
+    border-color: #e74c3c !important;
+    box-shadow: inset 0 0 8px rgba(231, 76, 60, 0.8);
+}
+.mare-cell.preview-sposta {
+    background: linear-gradient(135deg, #e67e22 0%, #d35400 100%) !important;
+    border-color: #ffd700 !important;
+    box-shadow: inset 0 0 10px rgba(255, 215, 0, 0.9);
+    cursor: pointer !important;
+}
+
+/* Caselle Nave Giocatore */
+.mare-cell.occupata-nave {
+    background: linear-gradient(135deg, #4b6584 0%, #2f3640 100%);
+    border: 1px solid #778ca3;
+    cursor: pointer;
+}
+.mare-cell.occupata-nave::after {
+    content: "";
+    width: 14px;
+    height: 14px;
+    background: #718093;
+    border-radius: 3px;
+    opacity: 0.6;
+}
+
+/* Quando la nave è colpita o affondata, rimuovi il quadratino interno preesistente */
+.mare-cell.esito-colpito::after,
+.mare-cell.esito-affondato::after {
+    display: none !important;
+    content: none !important;
+}
+
+/* Stati Caselle: ACQUA */
+.mare-cell.esito-acqua {
+    background: #0d2836 !important;
+    border-color: #071720 !important;
+}
+.mare-cell.esito-acqua::before {
+    content: "•";
+    color: #4bcffa;
+    font-size: 26px;
+    line-height: 1;
+    text-shadow: 0 0 6px #4bcffa;
+}
+
+/* Stati Caselle: COLPITO */
+.mare-cell.esito-colpito {
+    background: linear-gradient(135deg, #b71540 0%, #6f1e29 100%) !important;
+    border-color: #e55039 !important;
+    animation: flash-colpo 0.3s ease-out;
+}
+.mare-cell.esito-colpito::before {
+    content: "✕";
+    color: #ffdd59;
+    font-size: 19px;
+    font-weight: 900;
+    text-shadow: 0 0 8px #ff3838;
+}
+
+/* Stati Caselle: AFFONDATO */
+.mare-cell.esito-affondato {
+    background: linear-gradient(135deg, #3d0309 0%, #1a0104 100%) !important;
+    border-color: #ff3838 !important;
+}
+.mare-cell.esito-affondato::before {
+    content: "☠";
+    color: #ff3838;
+    font-size: 18px;
+    text-shadow: 0 0 10px #ff3838;
+}
+
+@keyframes flash-colpo {
+    0% { transform: scale(1.4); filter: brightness(2); }
+    100% { transform: scale(1); filter: brightness(1); }
+}
+
+/* Barra Mini-Flotta (indicatori navi sotto le griglie) */
+.box-mini-flotta {
+    width: 100%;
+    margin-top: 8px;
+    background: rgba(6, 26, 18, 0.6);
+    border: 1px solid rgba(255, 215, 0, 0.2);
+    border-radius: 6px;
+    padding: 6px 10px;
+    box-sizing: border-box;
+}
+.mini-flotta-titolo {
+    font-size: 11px;
+    font-weight: bold;
+    color: #a8d5ba;
+    margin-bottom: 4px;
+    text-align: center;
+}
+.lista-navi-status {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 4px 6px;
+}
+.nave-tag {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(15, 50, 36, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 4px;
+    padding: 3px 6px;
+    font-size: 10px;
+    color: #dcdde1;
+    transition: all 0.2s;
+}
+
+/* Stati delle navi in fase di posizionamento */
+.nave-tag.da-piazzare {
+    cursor: pointer;
+    background: rgba(20, 60, 45, 0.6);
+    border-color: rgba(75, 207, 250, 0.4);
+    color: #4bcffa;
+}
+.nave-tag.da-piazzare:hover {
+    background: rgba(20, 80, 60, 0.9);
+    border-color: #4bcffa;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(75, 207, 250, 0.3);
+}
+
+.nave-tag.in-posizionamento {
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.25) 0%, rgba(184, 134, 11, 0.35) 100%);
+    border: 1.5px solid #ffd700;
+    color: #ffd700;
+    font-weight: bold;
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.5);
+    transform: scale(1.03);
+}
+.nave-tag.in-posizionamento .punto-nave {
+    background: #ffd700;
+    box-shadow: 0 0 4px #ffd700;
+}
+
+.nave-tag.piazzata {
+    background: rgba(46, 204, 113, 0.15);
+    border-color: rgba(46, 204, 113, 0.5);
+    color: #a8e6cf;
+    cursor: pointer;
+}
+.nave-tag.piazzata:hover {
+    background: rgba(231, 76, 60, 0.25);
+    border-color: #e74c3c;
+    color: #ff7675;
+}
+.nave-tag.piazzata .punto-nave {
+    background: #2ecc71;
+}
+.nave-tag.piazzata:hover .punto-nave {
+    background: #e74c3c;
+}
+
+.nave-tag-rimuovi {
+    font-weight: bold;
+    font-size: 13px;
+    margin-left: 2px;
+    line-height: 1;
+    color: #ff7675;
+}
+
+.nave-tag-sel-badge {
+    color: #ffd700;
+    font-weight: bold;
+    font-size: 11px;
+}
+
+.nave-tag.affondata {
+    background: rgba(183, 21, 64, 0.3);
+    border-color: #e55039;
+    color: #e55039;
+    text-decoration: line-through;
+    opacity: 0.6;
+}
+.nave-tag-punti {
+    display: flex;
+    gap: 2px;
+}
+.punto-nave {
+    width: 6px;
+    height: 6px;
+    background: #3498db;
+    border-radius: 1px;
+}
+.nave-tag.affondata .punto-nave {
+    background: #e74c3c;
+}
+
+/* === COLONNA CENTRALE / CONTROLLI BATTALIA === */
+#colonna-centrale {
+    width: 216px;
+    height: 630px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding-top: 2px;
+    box-sizing: border-box;
+}
+
+/* Pannello Fase Schieramento */
+#pannello-schieramento {
+    width: 100%;
+    background: rgba(6, 28, 20, 0.8);
+    border: 2px solid #b8860b;
+    border-radius: 8px;
+    padding: 10px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    flex: 0 0 auto;
+}
+.schieramento-titolo {
+    font-size: 12px;
+    font-weight: bold;
+    color: #ffd700;
+    text-align: center;
+    text-transform: uppercase;
+}
+.info-posizionamento {
+    font-size: 11px;
+    color: #fff;
+    text-align: center;
+    line-height: 1.3;
+}
+.btn-ruota-direzione {
+    width: 100%;
+    padding: 7px;
+    font-size: 12px;
+    font-weight: bold;
+    color: #1a1a2e;
+    background: #4bcffa;
+    border: 1px solid #0fbcf9;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.btn-ruota-direzione:hover {
+    background: #fff;
+    transform: translateY(-1px);
+}
+
+.btn-secondario-navale {
+    width: 100%;
+    padding: 6px;
+    font-size: 11px;
+    font-weight: bold;
+    color: #fff;
+    background: #2f3542;
+    border: 1px solid #57606f;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.btn-secondario-navale:hover {
+    background: #57606f;
+}
+
+.btn-avvia-battaglia {
+    width: 100%;
+    padding: 10px;
+    font-size: 13px;
+    font-weight: bold;
+    color: #1a1a2e;
+    background: linear-gradient(180deg, #2ed573 0%, #1e90ff 100%);
+    border: 2px solid #2ed573;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 10px rgba(46, 213, 115, 0.4);
+}
+.btn-avvia-battaglia:disabled {
+    background: #57606f;
+    border-color: #747d8c;
+    color: #a4b0be;
+    cursor: not-allowed;
+    box-shadow: none;
+    opacity: 0.6;
+}
+.btn-avvia-battaglia:not(:disabled):hover {
+    filter: brightness(1.15);
+    transform: translateY(-2px);
+}
+
+/* Pannello Controlli Battaglia in Corso */
+#pannello-battaglia-attiva {
+    width: 100%;
+    background: rgba(6, 28, 20, 0.8);
+    border: 2px solid #b8860b;
+    border-radius: 8px;
+    padding: 10px;
+    box-sizing: border-box;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    flex: 0 0 auto;
+}
+.box-turno-corrente {
+    width: 100%;
+    padding: 6px;
+    text-align: center;
+    font-size: 12px;
+    font-weight: bold;
+    border-radius: 4px;
+}
+.box-turno-corrente.turno-tuo {
+    background: rgba(46, 213, 115, 0.25);
+    border: 1px solid #2ed573;
+    color: #2ed573;
+}
+.box-turno-corrente.turno-nemico {
+    background: rgba(255, 71, 87, 0.25);
+    border: 1px solid #ff4757;
+    color: #ff6b81;
+}
+
+.log-tiri-box {
+    width: 100%;
+    height: 90px;
+    background: #081d15;
+    border: 1px solid rgba(255, 215, 0, 0.2);
+    border-radius: 4px;
+    padding: 5px;
+    box-sizing: border-box;
+    font-size: 10px;
+    color: #c8d6e5;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column-reverse;
+    line-height: 1.4;
+}
+
+#btn-nuova-partita-side {
+    width: 100%;
+    padding: 8px;
+    font-size: 12px;
+    font-weight: bold;
+    color: #1a1a2e;
+    background: #ffd700;
+    border: 2px solid #b8860b;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+#btn-nuova-partita-side:hover {
+    background: #fff;
+    transform: translateY(-1px);
+}
+
+/* ================= RIQUADRO AFFILIATI ROTANTE =================
+   Occupa tutto lo spazio verticale utile fino in fondo alla colonna. */
+#banner-rotante {
+    width: 216px;
+    height: 385px;
+    flex: 1 1 auto;
+    box-sizing: border-box;
+    border-radius: 6px;
+    overflow: hidden;
+    background: rgba(0, 40, 10, 0.55);
+    border: 2px solid rgba(100, 160, 110, 0.35);
+    margin-top: 4px;
+}
+
+/* === MODALI & POPUP === */
+.form-calcolo {
+    z-index: 40000;
+    position: absolute;
+    width: 500px;
+    left: 262px;
+    top: 110px;
+    background-color: #113622;
+    background-image: url(images/scala40/tappetoverde.png);
+    border: 4px solid #b8860b;
+    border-radius: 12px;
+    box-shadow: 0 10px 35px rgba(0,0,0,0.7);
+    box-sizing: border-box;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px;
+    color: white;
+    overflow: hidden;
+}
+
+#modale-inizio {
+    padding: 24px 20px 44px 20px;
+}
+
+.form-calcolo-title {
+    font-family: 'Slackey', 'Outfit', sans-serif;
+    font-size: 24px;
+    color: #ffd700;
+    margin-bottom: 16px;
+    text-shadow: 2px 2px 4px #000;
+    text-align: center;
+}
+
+.btn-opzione-sel {
+    background: #194034;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.7);
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: bold;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-width: 220px;
+    text-transform: uppercase;
+}
+.btn-opzione-sel.attiva {
+    background: linear-gradient(180deg, #ffd700 0%, #b8860b 100%);
+    border: 2px solid #ffd700;
+    color: #1a1a2e;
+    box-shadow: 0 0 12px rgba(255, 215, 0, 0.5);
+}
+.btn-opzione-sel:hover {
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.4);
+}
+.btn-opzione-sel.attiva:hover {
+    filter: brightness(1.1);
+}
+
+.btn-continua {
+    padding: 10px 30px;
+    font-size: 15px;
+    font-weight: bold;
+    color: #2c3e50;
+    background: #ffd700;
+    border: 2px solid #b8860b;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+.btn-continua:hover {
+    background: #fff;
+    transform: scale(1.03);
+}
+
+/* Selettore Lingua nell'angolo alto a destra della modale d'avvio */
+.lang-switch-modale {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    display: flex;
+    gap: 4px;
+    z-index: 1;
+}
+.lang-switch-modale a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 9px;
+    height: 24px;
+    text-decoration: none;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 11px;
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    transition: all 0.2s;
+    box-sizing: border-box;
+}
+.lang-switch-modale a.active {
+    background: #ffd700;
+    color: #1a1a2e;
+    border-color: #b8860b;
+}
+.lang-switch-modale a:hover:not(.active) {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* Vie di fuga negli angoli bassi della modale d'avvio */
+.btn-angolo-modale {
+    position: absolute;
+    bottom: 10px;
+    height: 24px;
+    line-height: 22px;
+    padding: 0 10px;
+    font-size: 10px;
+    font-weight: bold;
+    text-decoration: none;
+    text-align: center;
+    white-space: nowrap;
+    border-radius: 4px;
+    box-sizing: border-box;
+    background-color: rgba(0, 40, 10, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #ccc;
+    transition: all 0.2s;
+}
+.btn-angolo-modale:hover {
+    color: #fff;
+    background-color: rgba(0, 60, 20, 0.7);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+.btn-angolo-modale.sinistra { left: 12px; }
+.btn-angolo-modale.destra   { right: 12px; }
+
+.btn-angolo-modale.home {
+    background: linear-gradient(135deg, #c9720f, #8a4a08);
+    border-color: #ffd700;
+    color: #fff;
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.35);
+}
+.btn-angolo-modale.home:hover {
+    color: #fff;
+    background: linear-gradient(135deg, #e08514, #a3580a);
+    border-color: #ffd700;
+    box-shadow: 0 0 14px rgba(255, 215, 0, 0.65);
+}
+
+/* Modale fine partita / vittoria (bassa e larga, con banner pubblicitario sopra) */
+#haivinto.modale-vittoria {
+    width: 700px;
+    height: 210px;
+    left: 162px;
+    top: 430px;
+    padding: 20px 25px;
+    justify-content: center;
+    overflow: visible;
+}
+.confirm-message {
+    font-family: 'Slackey', 'Outfit', sans-serif;
+    font-size: 22px;
+    color: white;
+    text-align: center;
+    margin-bottom: 12px;
+    text-shadow: 2px 2px 4px #000;
+}
+.conferma-bottoni {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+/* Modale conferma nuova partita (bassa e larga, con banner pubblicitario sopra) */
+#confermatermina.modale-conferma {
+    width: 700px;
+    height: 180px;
+    left: 162px;
+    top: 470px;
+    padding: 24px 25px;
+    justify-content: center;
+    overflow: visible;
+}
+
+/* === FOOTER E LINK GIOCHI === */
+.legal-links-calcolo {
+    position: absolute;
+    bottom: 8px;
+    left: 15px;
+    display: flex;
+    gap: 8px;
+    z-index: 100;
+    align-items: center;
+}
+.legal-links-calcolo a:not(.pulsante-link-calcolo) {
+    color: rgba(255, 255, 255, 0.6);
+    text-decoration: none;
+    font-size: 11px;
+    font-family: sans-serif;
+    transition: color 0.2s;
+}
+.legal-links-calcolo a:not(.pulsante-link-calcolo):hover {
+    color: #ffd700;
+}
+.legal-links-calcolo .sep {
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 11px;
+}
+
+.link-giochi-calcolo {
+    position: absolute;
+    bottom: 6px;
+    right: 10px;
+    display: flex;
+    gap: 4px;
+    z-index: 100;
+}
+.pulsante-link-calcolo {
+    background-color: rgba(0, 40, 20, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    color: #ccc;
+    font-size: 10.5px;
+    padding: 3px 8px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+.pulsante-link-calcolo:hover {
+    color: #fff;
+    background-color: rgba(0, 60, 30, 0.7);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+.pulsante-home-calcolo {
+    background: linear-gradient(135deg, #c9720f, #8a4a08);
+    border-color: #ffd700;
+    color: #fff;
+    font-weight: bold;
+    white-space: nowrap;
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.35);
+}
+.pulsante-home-calcolo:hover {
+    color: #fff;
+    background: linear-gradient(135deg, #e08514, #a3580a);
+    box-shadow: 0 0 14px rgba(255, 215, 0, 0.65);
+}
+.pulsante-link-calcolo {
+    background-color: rgba(0, 40, 20, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    color: #ccc;
+    font-size: 10.5px;
+    padding: 3px 8px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+.pulsante-link-calcolo:hover {
+    color: #fff;
+    background-color: rgba(0, 60, 30, 0.7);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+.pulsante-home-calcolo {
+    background: linear-gradient(135deg, #c9720f, #8a4a08);
+    border-color: #ffd700;
+    color: #fff;
+    font-weight: bold;
+    white-space: nowrap;
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.35);
+}
+.pulsante-home-calcolo:hover {
+    color: #fff;
+    background: linear-gradient(135deg, #e08514, #a3580a);
+    box-shadow: 0 0 14px rgba(255, 215, 0, 0.65);
+}

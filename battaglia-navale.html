@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9335537153013492"
+        crossorigin="anonymous"></script>
+    <script>
+        // Fix sicurezza per evitare crash da cross-origin su window.opener
+        (function() { try { if (!window.opener) return; var test = window.opener.document; if (!window.opener.game) { window.opener = null; } } catch(e) { window.opener = null; } })();
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Battaglia Navale Classica a 2 Online Gratis - lucianomanenti.com</title>
+    <link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
+    <link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
+    <link rel="shortcut icon" href="favicon/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+    <link rel="manifest" href="favicon/site.webmanifest">
+
+    <meta name="Description"
+        content="Gioca gratis alla classica Battaglia Navale a 2 contro il computer: schiera la tua flotta di 10 navi e affonda la flotta nemica prima che affondino la tua!">
+    <meta http-Equiv="Cache-Control" Content="no-cache">
+    <meta http-Equiv="Pragma" Content="no-cache">
+    <meta http-Equiv="Expires" Content="0">
+
+    <link rel="stylesheet" href="battaglia-navale.css?v=1.8" />
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-WRBDRDQ4L8');
+    </script>
+    <script>
+        window.gameConfig = {
+            gaPrefix: 'BATT_NAVALE_',
+            hideLegalFooter: true,
+            adsenseActive: true,
+            adsenseSlots: {
+                '300x600': '5266697442',
+                '160x600': '1167670336',
+                '300x250': '8471445288',
+                '160x250': '8663016975'
+            }
+        };
+        window.currentLang = 'it';
+    </script>
+</head>
+
+<body>
+
+    <div class="main-container">
+        <!-- Sidebar per annunci AdSense (gestite dal layout engine) -->
+        <div id="sidebar-left" class="sidebar"></div>
+        <div id="sidebar-right" class="sidebar"></div>
+
+        <!-- Campo di gioco principale 1024x750 -->
+        <div id="campogioco">
+            <!-- Schermo overlay per modali -->
+            <div id="schermo"></div>
+
+            <div class="lang-switch-header">
+                <a href="battaglia-navale.html" class="active">IT</a>
+                <a href="battaglia-navale-en.html">EN</a>
+                <div id="btn-audio" class="btn-audio-game" aria-label="Audio"></div>
+            </div>
+
+            <div id="titolo-gioco">Battaglia Navale Classica<br>Luciano</div>
+
+            <!-- Pannello Statistiche in alto a destra -->
+            <div id="pannello-stats-top">
+                <div class="stat-item">
+                    <span class="stat-item-lbl">Vinte</span>
+                    <span class="stat-item-val" id="stat-vinte">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-item-lbl">Perse</span>
+                    <span class="stat-item-val" id="stat-perse">0</span>
+                </div>
+            </div>
+
+            <!-- Barra messaggi di stato -->
+            <div id="messaggio-stato">Caricamento...</div>
+
+            <!-- ================= AREA CENTRALE BATTAGLIA ================= -->
+            <div id="area-battaglia">
+
+                <!-- SETTORE SINISTRA: LA TUA FLOTTA (DIFESA) -->
+                <div class="settore-griglia">
+                    <div class="titolo-settore">🛡️ La tua Flotta</div>
+                    <div class="griglia-mare-box">
+                        <div id="griglia-giocatore" class="griglia-navale"></div>
+                    </div>
+                    <div class="box-mini-flotta">
+                        <div class="mini-flotta-titolo">Stato Navi Alleate</div>
+                        <div id="lista-navi-player" class="lista-navi-status"></div>
+                    </div>
+                </div>
+
+                <!-- COLONNA CENTRALE: CONTROLLI & BANNER -->
+                <div id="colonna-centrale">
+
+                    <!-- Pannello Schieramento (attivo in fase 1) -->
+                    <div id="pannello-schieramento">
+                        <div class="schieramento-titolo">Schieramento Flotta</div>
+                        <div id="info-posizionamento-testo" class="info-posizionamento">Caricamento...</div>
+                        <button id="btn-ruota-direzione" class="btn-ruota-direzione">Orientamento: Orizzontale ➔</button>
+                        <button id="btn-casuale-flotta" class="btn-secondario-navale">🎲 Disponi a caso</button>
+                        <button id="btn-azzera-flotta" class="btn-secondario-navale">↺ Svuota Griglia</button>
+                        <button id="btn-avvia-battaglia" class="btn-avvia-battaglia" disabled>INIZIA LA BATTAGLIA ⚔️</button>
+                    </div>
+
+                    <!-- Pannello Battaglia (attivo in fase 2) -->
+                    <div id="pannello-battaglia-attiva">
+                        <div id="box-turno-stato" class="box-turno-corrente turno-tuo">🎯 TUO TURNO</div>
+                        <div style="font-size: 11px; font-weight: bold; color: #ffd700; margin-top: 2px;">Diario di Bordo:</div>
+                        <div id="log-tiri" class="log-tiri-box"></div>
+                        <button id="btn-nuova-partita-side">NUOVA PARTITA</button>
+                    </div>
+
+                    <!-- Banner Affiliati Rotante -->
+                    <div id="banner-rotante"></div>
+
+                </div>
+
+                <!-- SETTORE DESTRA: RADAR NEMICO (ATTACCO) -->
+                <div class="settore-griglia">
+                    <div class="titolo-settore">🎯 Radar Nemico</div>
+                    <div class="griglia-mare-box">
+                        <div id="griglia-nemica" class="griglia-navale"></div>
+                    </div>
+                    <div class="box-mini-flotta">
+                        <div class="mini-flotta-titolo">Flotta Nemica da Affondare</div>
+                        <div id="lista-navi-enemy" class="lista-navi-status"></div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- ================= MODALI ED OVERLAY ================= -->
+
+            <!-- 1. Modale Inizio Gioco -->
+            <div id="modale-inizio" class="form-calcolo">
+                <div class="form-calcolo-title">Battaglia Navale Classica</div>
+
+                <div style="margin-bottom: 18px; text-align: center;">
+                    <div style="font-size: 13px; font-weight: bold; margin-bottom: 12px; color: #ffd700; text-transform: uppercase;">Livello Computer:</div>
+                    <div style="display: flex; flex-direction: column; justify-content: center; gap: 10px; align-items: center;">
+                        <button id="btn-diff-facile" onclick="selezionaDifficolta('facile')" class="btn-opzione-sel">MARINAIO &mdash; Facile</button>
+                        <button id="btn-diff-medio" onclick="selezionaDifficolta('medio')" class="btn-opzione-sel attiva">CAPITANO &mdash; Medio</button>
+                        <button id="btn-diff-difficile" onclick="selezionaDifficolta('difficile')" class="btn-opzione-sel">AMMIRAGLIO &mdash; Difficile</button>
+                    </div>
+                </div>
+
+                <button onclick="confermaEAvviaPartita()" class="btn-continua" style="width: 100%; max-width: 250px; margin: 0 auto 15px auto; display: block;">SCHIERA LA FLOTTA</button>
+
+                <p style="font-size: 11px; color: #cde8cd; text-align: center; margin: 0 auto 6px auto; max-width: 320px; line-height: 1.4;">
+                    10 navi da posizionare (non possono toccarsi).<br>
+                    <b>Click sx:</b> piazza/sposta &bull; <b>Click dx, Spazio o R:</b> ruota.<br>
+                    Clicca sulla flotta per selezionare o rimuovere.
+                </p>
+
+                <!-- Vie di fuga dalla modale come in Calcolo Enigmatico -->
+                <div class="lang-switch-modale">
+                    <a href="battaglia-navale.html" class="active" id="btn-lang-it-modale" title="Italiano">IT</a>
+                    <a href="battaglia-navale-en.html" id="btn-lang-en-modale" title="English">EN</a>
+                </div>
+                <a href="guida-battaglia-navale.html" target="_blank" rel="opener" id="btn-regole-modale"
+                    class="btn-angolo-modale sinistra">ISTRUZIONI</a>
+                <a href="index.html" id="btn-home-modale" class="btn-angolo-modale destra home">TUTTI I GIOCHI</a>
+            </div>
+
+            <!-- 2. Modale Vittoria / Sconfitta -->
+            <div id="haivinto" class="form-calcolo modale-vittoria">
+                <div class="confirm-message" id="vittoria-messaggio" style="margin: 0 0 8px 0; line-height: 1.3;">COMPLIMENTI!</div>
+                <div id="vittoria-dettagli" style="color: #ffd700; font-size: 14px; font-weight: bold; text-align: center; margin-bottom: 16px; text-shadow: 1px 1px 2px #000;"></div>
+                <div class="conferma-bottoni">
+                    <button onclick="location.reload()" class="btn-continua" style="width: 240px; height: 44px; font-size: 15px;">NUOVA PARTITA</button>
+                    <button id="btn-vedi-schema" class="btn-continua" style="width: 240px; height: 44px; font-size: 15px; background-color: #f0f0f0; color: #333; border-color: #bbb;">GUARDA LE GRIGLIE</button>
+                </div>
+            </div>
+
+            <!-- 3. Modale Conferma Abbandono Partita -->
+            <div id="confermatermina" class="form-calcolo modale-conferma">
+                <div class="confirm-message" style="margin: 0 0 18px 0; line-height: 1.4; font-size: 20px;">Vuoi davvero abbandonare la battaglia in corso?</div>
+                <div class="conferma-bottoni">
+                    <button id="btn-no-continua" class="btn-continua" style="width: 240px; height: 42px; font-size: 15px;">NO, CONTINUA</button>
+                    <button onclick="location.reload()" id="btn-si-termina" class="btn-continua" style="width: 240px; height: 42px; font-size: 15px; background-color: #cc0c39; color: white; border-color: #990022;">SÌ, NUOVA PARTITA</button>
+                </div>
+            </div>
+
+            <!-- Link Legali & Utilità (sinistra) -->
+            <div class="legal-links-calcolo">
+                <a href="privacy.html" target="_blank">Privacy Policy</a>
+                <span class="sep">•</span>
+                <a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)">Gestisci Cookie</a>
+                <span class="sep" style="margin: 0 2px;">•</span>
+                <a href="guida-battaglia-navale.html" target="_blank" rel="opener" class="pulsante-link-calcolo">Istruzioni</a>
+                <a href="aboutme.html" target="_blank" class="pulsante-link-calcolo">Scrivetemi</a>
+            </div>
+
+            <!-- Link Giochi (destra) -->
+            <div class="link-giochi-calcolo">
+                <a href="navale.html" class="pulsante-link-calcolo">Navale Solitario</a>
+                <a href="dama.html" class="pulsante-link-calcolo">Dama</a>
+                <a href="scacchi.html" class="pulsante-link-calcolo">Scacchi</a>
+                <a href="scopa.html" class="pulsante-link-calcolo">Scopa</a>
+                <a href="briscola.html" class="pulsante-link-calcolo">Briscola</a>
+                <a href="minato.html" class="pulsante-link-calcolo">Campo Minato</a>
+                <a href="sudoku.html" class="pulsante-link-calcolo">Sudoku</a>
+                <a href="index.html" class="pulsante-link-calcolo pulsante-home-calcolo">TUTTI I GIOCHI</a>
+            </div>
+
+        </div><!-- /campogioco -->
+    </div>
+
+    <!-- Script condivisi dal sito -->
+    <script src="site.js?v=1.1"></script>
+    <!-- Layout engine per ridimensionare la finestra del gioco -->
+    <script src="game-layout.js?v=4.6"></script>
+    <!-- Logica della Battaglia Navale a 2 -->
+    <script src="battaglia-navale.js?v=1.7"></script>
+    <script>
+        (function () {
+            var nascosto = false;
+            var observer = new MutationObserver(function () {
+                if (nascosto) return;
+                var divs = document.querySelectorAll('body > div');
+                for (var i = 0; i < divs.length; i++) {
+                    if (divs[i].shadowRoot && !divs[i].className && (divs[i].getAttribute('style') || '').length > 5000) {
+                        divs[i].style.setProperty('display', 'none', 'important');
+                        nascosto = true;
+                        observer.disconnect();
+                        return;
+                    }
+                }
+            });
+            observer.observe(document.body, { childList: true });
+        })();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,766 @@
+/* ============================================================================
+   MAHJONG SOLITARIO (SHANGHAI) - Stile Grafico & Layout 1024x750
+   lucianomanenti.com
+   ============================================================================ */
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #0b1f14;
+    color: #ffffff;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.main-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+/* === SIDEBARS (per AdSense, Amazon e layout engine) === */
+.sidebar {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    background: linear-gradient(135deg, #134633 0%, #0d3224 50%, #082217 100%);
+    overflow-y: auto;
+    box-sizing: border-box;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    z-index: 1;
+    transition: opacity 0.3s ease;
+}
+#sidebar-left { left: 0; }
+#sidebar-right { right: 0; }
+
+/* ================= CAMPO DI GIOCO 1024 x 750 ================= */
+#campogioco {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 1024px;
+    height: 750px;
+    transform-origin: center center;
+    background: radial-gradient(circle at 50% 45%, #184e36 0%, #0d2f20 65%, #071911 100%);
+    border: 4px solid #b8860b;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.85), inset 0 0 80px rgba(0, 0, 0, 0.6);
+    overflow: hidden;
+}
+
+/* Sfondo con trama a stuoia orientale sottile */
+#campogioco::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+        radial-gradient(rgba(255, 215, 0, 0.04) 1px, transparent 1px),
+        radial-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+    background-size: 24px 24px;
+    background-position: 0 0, 12px 12px;
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* ================= HEADER BAR SUPERIORE ================= */
+#header-mahjong {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 60px;
+    background: linear-gradient(180deg, rgba(10, 30, 20, 0.95) 0%, rgba(10, 30, 20, 0.75) 100%);
+    border-bottom: 2px solid #b8860b;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 10px;
+    z-index: 50;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+    box-sizing: border-box;
+}
+
+.header-left, .header-center, .header-right {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+#titolo-gioco {
+    font-size: 17px;
+    font-weight: bold;
+    color: #ffd700;
+    text-shadow: 1px 2px 4px #000, 0 0 10px rgba(255, 215, 0, 0.4);
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+
+#titolo-gioco span.badge-schema {
+    font-size: 10px;
+    font-weight: 600;
+    background: rgba(184, 134, 11, 0.35);
+    border: 1px solid #ffd700;
+    color: #fff;
+    padding: 2px 6px;
+    border-radius: 8px;
+    text-shadow: none;
+    letter-spacing: 0;
+    white-space: nowrap;
+}
+
+/* Indicatori Info (Tempo, Tessere, Coppie, Punti) */
+.info-pill {
+    background: rgba(0, 0, 0, 0.55);
+    border: 1px solid rgba(255, 215, 0, 0.35);
+    border-radius: 6px;
+    padding: 3px 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 54px;
+    box-sizing: border-box;
+}
+
+.info-pill-lbl {
+    font-size: 9px;
+    text-transform: uppercase;
+    color: #9eccaa;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    line-height: 1;
+    margin-bottom: 2px;
+}
+
+.info-pill-val {
+    font-size: 14px;
+    font-weight: bold;
+    color: #ffffff;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+}
+
+.info-pill-val.gold {
+    color: #ffd700;
+    text-shadow: 0 0 8px rgba(255, 215, 0, 0.5);
+}
+
+/* Pulsanti Barra Superiore */
+.btn-azione-top {
+    background: linear-gradient(180deg, #2b6a4b 0%, #17422c 100%);
+    border: 1px solid #57a77a;
+    border-radius: 6px;
+    color: #ffffff;
+    font-size: 11.5px;
+    font-weight: bold;
+    padding: 5px 9px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.15s ease;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    white-space: nowrap;
+}
+
+.btn-azione-top:hover:not(:disabled) {
+    background: linear-gradient(180deg, #388a62 0%, #1e573a 100%);
+    border-color: #ffd700;
+    color: #ffd700;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+}
+
+.btn-azione-top:active:not(:disabled) {
+    transform: translateY(1px);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.4);
+}
+
+.btn-azione-top:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    filter: grayscale(80%);
+}
+
+.btn-azione-top.active-toggle {
+    background: linear-gradient(180deg, #ffd700 0%, #d49b00 100%);
+    color: #1a3324;
+    border-color: #fff;
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
+}
+
+/* Switch Lingua & Audio */
+.lang-switch-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.lang-switch-header a {
+    color: #cde8cd;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 4px 8px;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.4);
+    transition: all 0.2s ease;
+}
+
+.lang-switch-header a.active, .lang-switch-header a:hover {
+    background: #ffd700;
+    color: #111;
+    border-color: #ffd700;
+}
+
+.btn-audio-game {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.5) url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23ffd700"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>') no-repeat center center;
+    background-size: 20px 20px;
+    border: 1px solid rgba(255, 215, 0, 0.4);
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.btn-audio-game:hover {
+    border-color: #ffd700;
+    transform: scale(1.05);
+}
+
+.btn-audio-game.muted {
+    background: rgba(0, 0, 0, 0.5) url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23e74c3c"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>') no-repeat center center;
+    background-size: 20px 20px;
+    border-color: #e74c3c;
+}
+
+/* ================= AREA TAVOLO MAHJONG ================= */
+#area-tavolo {
+    position: absolute;
+    top: 60px;
+    left: 0;
+    width: 1024px;
+    height: 654px;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+}
+
+#board-container {
+    position: relative;
+    width: 960px;
+    height: 600px;
+    margin: auto;
+}
+
+/* ================= STILE DELLE TESSERE 3D ================= */
+.mahjong-tile {
+    position: absolute;
+    width: 52px;
+    height: 68px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: transform 0.12s cubic-bezier(0.2, 0, 0.2, 1), box-shadow 0.12s ease, filter 0.12s ease;
+    user-select: none;
+    transform-origin: center center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Retro/Bordo Verde/Avorio a strati 3D */
+.mahjong-tile-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    border-radius: 6px;
+    background: #fdfbf7;
+    /* Effetto avorio lucido */
+    background: linear-gradient(135deg, #ffffff 0%, #faf6ee 45%, #ece4d2 100%);
+    border: 1px solid #d5caa8;
+    border-top: 1px solid #ffffff;
+    border-left: 1px solid #ffffff;
+    box-shadow: 
+        inset 1px 1px 2px rgba(255, 255, 255, 0.9),
+        inset -1px -1px 2px rgba(160, 140, 100, 0.35);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 3px;
+}
+
+/* Base / Spessore 3D della tessera in verde giada */
+.mahjong-tile::before {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: -4px;
+    width: 100%;
+    height: 100%;
+    border-radius: 6px;
+    background: linear-gradient(to right, #13462f 0%, #1e6946 50%, #2f8e62 100%);
+    border-bottom: 2px solid #0b2b1d;
+    border-left: 1px solid #3ca573;
+    z-index: -1;
+}
+
+/* Ombra dinamica a terra a seconda del livello Z */
+.mahjong-tile[data-layer="0"] {
+    box-shadow: -4px 6px 7px rgba(0, 0, 0, 0.45);
+}
+.mahjong-tile[data-layer="1"] {
+    box-shadow: -6px 9px 10px rgba(0, 0, 0, 0.55);
+}
+.mahjong-tile[data-layer="2"] {
+    box-shadow: -8px 12px 14px rgba(0, 0, 0, 0.65);
+}
+.mahjong-tile[data-layer="3"] {
+    box-shadow: -10px 15px 18px rgba(0, 0, 0, 0.75);
+}
+.mahjong-tile[data-layer="4"] {
+    box-shadow: -12px 18px 22px rgba(0, 0, 0, 0.85);
+}
+
+/* Tessere libere / giocabili (con evidenziazione opzionale attiva) */
+.highlight-free .mahjong-tile.tile-free .mahjong-tile-inner {
+    box-shadow: 
+        inset 1px 1px 2px rgba(255, 255, 255, 0.9),
+        inset -1px -1px 2px rgba(160, 140, 100, 0.35),
+        0 0 0 2px rgba(255, 215, 0, 0.75);
+}
+
+/* Tessere bloccate (leggermente oscurate quando l'evidenziazione è attiva o al passaggio mouse) */
+.highlight-free .mahjong-tile.tile-blocked {
+    filter: brightness(0.72) saturate(0.85);
+    cursor: not-allowed;
+}
+
+/* Hover su tessera libera */
+.mahjong-tile.tile-free:hover {
+    transform: translate(2px, -3px) scale(1.03);
+    z-index: 1000 !important;
+}
+
+.mahjong-tile.tile-free:hover .mahjong-tile-inner {
+    border-color: #ffd700;
+    box-shadow: 
+        inset 1px 1px 3px rgba(255, 255, 255, 1),
+        0 0 10px rgba(255, 215, 0, 0.6);
+}
+
+/* Tessera Selezionata */
+.mahjong-tile.tile-selected {
+    transform: translate(2px, -6px) scale(1.06);
+    z-index: 1500 !important;
+}
+
+.mahjong-tile.tile-selected .mahjong-tile-inner {
+    border: 2px solid #ffd700;
+    background: linear-gradient(135deg, #ffffff 0%, #fffbf0 50%, #f7e6b5 100%);
+    box-shadow: 
+        inset 1px 1px 3px rgba(255, 255, 255, 1),
+        0 0 16px rgba(255, 215, 0, 0.9),
+        0 0 25px rgba(255, 180, 0, 0.6);
+}
+
+/* Suggerimento (Hint) lampeggiante */
+.mahjong-tile.tile-hint {
+    animation: pulseHint 0.8s infinite alternate ease-in-out;
+    z-index: 1200 !important;
+}
+
+@keyframes pulseHint {
+    0% {
+        transform: translate(0, 0) scale(1);
+        filter: drop-shadow(0 0 4px #00ffff);
+    }
+    100% {
+        transform: translate(2px, -5px) scale(1.08);
+        filter: drop-shadow(0 0 18px #00ffff) drop-shadow(0 0 8px #ffd700);
+    }
+}
+
+/* Animazione di rimozione coppia abbinata */
+.mahjong-tile.tile-removing {
+    pointer-events: none;
+    animation: matchDisappear 0.35s forwards cubic-bezier(0.2, 0.8, 0.3, 1);
+    z-index: 2000 !important;
+}
+
+@keyframes matchDisappear {
+    0% {
+        transform: translate(0, 0) scale(1.06);
+        opacity: 1;
+    }
+    50% {
+        transform: translate(0, -15px) scale(1.18);
+        opacity: 0.9;
+        filter: brightness(1.5) drop-shadow(0 0 15px #ffd700);
+    }
+    100% {
+        transform: translate(0, -30px) scale(0.6);
+        opacity: 0;
+        filter: brightness(2);
+    }
+}
+
+/* Contenuto Grafico della Tessera */
+.tile-face {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+.tile-svg {
+    width: 44px;
+    height: 54px;
+    display: block;
+}
+
+.tile-corner-hint {
+    position: absolute;
+    top: 1px;
+    left: 2px;
+    font-size: 8px;
+    font-weight: 800;
+    color: #666;
+    line-height: 1;
+    opacity: 0.65;
+}
+
+/* ================= MODALI ED OVERLAY ================= */
+#schermo {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1024px;
+    height: 750px;
+    background-color: rgba(0, 0, 0, 0.78);
+    backdrop-filter: blur(4px);
+    z-index: 30000;
+}
+
+.form-calcolo {
+    position: absolute;
+    width: 500px;
+    left: 262px;
+    top: 110px;
+    background: radial-gradient(circle at 50% 30%, #1a4d35 0%, #0d2c1e 100%);
+    border: 4px solid #b8860b;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.9), 0 0 25px rgba(255, 215, 0, 0.35);
+    box-sizing: border-box;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px;
+    color: #ffffff;
+    z-index: 40000;
+    text-align: center;
+    overflow: hidden;
+}
+
+#modale-inizio {
+    padding: 24px 20px 44px 20px;
+}
+
+.form-calcolo-title {
+    font-size: 26px;
+    font-weight: bold;
+    color: #ffd700;
+    text-shadow: 2px 2px 4px #000, 0 0 10px rgba(255, 215, 0, 0.5);
+    margin-bottom: 16px;
+    letter-spacing: 1px;
+}
+
+.confirm-message {
+    font-family: 'Slackey', 'Outfit', sans-serif;
+    font-size: 22px;
+    color: white;
+    text-align: center;
+    margin-bottom: 10px;
+    text-shadow: 2px 2px 4px #000;
+}
+
+/* Griglia Selezione Schema */
+.grid-schemi {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.btn-schema-sel {
+    background: rgba(0, 0, 0, 0.4);
+    border: 2px solid #2e7d52;
+    border-radius: 8px;
+    padding: 10px 8px;
+    color: #cde8cd;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.btn-schema-sel span.icon {
+    font-size: 22px;
+}
+
+.btn-schema-sel span.sub {
+    font-size: 10px;
+    font-weight: normal;
+    color: #a0c4a0;
+}
+
+.btn-schema-sel:hover {
+    border-color: #ffd700;
+    color: #fff;
+    background: rgba(40, 100, 65, 0.5);
+}
+
+.btn-schema-sel.attiva {
+    border-color: #ffd700;
+    background: linear-gradient(180deg, #3d8f63 0%, #1f5438 100%);
+    color: #ffd700;
+    box-shadow: 0 0 12px rgba(255, 215, 0, 0.4);
+}
+
+.btn-continua {
+    background: linear-gradient(180deg, #ffd700 0%, #d49b00 100%);
+    border: 2px solid #fff;
+    color: #11291b;
+    font-size: 15px;
+    font-weight: bold;
+    padding: 10px 24px;
+    border-radius: 6px;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5), 0 0 15px rgba(255, 215, 0, 0.4);
+    transition: all 0.15s ease;
+    letter-spacing: 0.5px;
+}
+
+.btn-continua:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6), 0 0 22px rgba(255, 215, 0, 0.7);
+}
+
+.btn-continua:active {
+    transform: translateY(1px);
+}
+
+/* Modale Fine Partita / Vittoria (bassa e larga per ospitare il finish banner) */
+#haivinto.modale-vittoria {
+    width: 700px;
+    height: 210px;
+    left: 162px;
+    top: 430px;
+    padding: 20px 25px;
+    justify-content: center;
+    overflow: visible;
+}
+
+/* Modale Conferma Nuova Partita / Abbandono / Rimescola (bassa e larga per il finish banner) */
+#confermatermina.modale-conferma,
+#confermarimescola.modale-conferma {
+    width: 700px;
+    height: 180px;
+    left: 162px;
+    top: 470px;
+    padding: 24px 25px;
+    justify-content: center;
+    overflow: visible;
+}
+
+.conferma-bottoni {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+/* Vie di fuga e link modale */
+.lang-switch-modale {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    display: flex;
+    gap: 4px;
+}
+
+.lang-switch-modale a {
+    color: #a0c4a0;
+    text-decoration: none;
+    font-size: 11px;
+    font-weight: bold;
+    padding: 3px 6px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.lang-switch-modale a.active {
+    background: #ffd700;
+    color: #111;
+    border-color: #ffd700;
+}
+
+/* Vie di fuga negli angoli bassi della modale d'avvio */
+.btn-angolo-modale {
+    position: absolute;
+    bottom: 10px;
+    height: 24px;
+    line-height: 22px;
+    padding: 0 10px;
+    font-size: 10px;
+    font-weight: bold;
+    text-decoration: none;
+    text-align: center;
+    white-space: nowrap;
+    border-radius: 4px;
+    box-sizing: border-box;
+    background-color: rgba(0, 40, 10, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #ccc;
+    transition: all 0.2s;
+}
+.btn-angolo-modale:hover {
+    color: #fff;
+    background-color: rgba(0, 60, 20, 0.7);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+.btn-angolo-modale.sinistra { left: 12px; }
+.btn-angolo-modale.destra   { right: 12px; }
+
+.btn-angolo-modale.home {
+    background: linear-gradient(135deg, #c9720f, #8a4a08);
+    border-color: #ffd700;
+    color: #fff;
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.35);
+}
+.btn-angolo-modale.home:hover {
+    color: #fff;
+    background: linear-gradient(135deg, #e08514, #a3580a);
+    border-color: #ffd700;
+    box-shadow: 0 0 14px rgba(255, 215, 0, 0.65);
+}
+
+/* ================= FOOTER / LINK DI NAVIGAZIONE ================= */
+.legal-links-calcolo {
+    position: absolute;
+    bottom: 8px;
+    left: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    z-index: 40;
+}
+
+.legal-links-calcolo a {
+    color: #a0c4a0;
+    text-decoration: none;
+    transition: color 0.15s ease;
+}
+
+.legal-links-calcolo a:hover {
+    color: #ffd700;
+    text-decoration: underline;
+}
+
+.legal-links-calcolo .sep {
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.link-giochi-calcolo {
+    position: absolute;
+    bottom: 8px;
+    right: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    z-index: 40;
+}
+
+.pulsante-link-calcolo {
+    color: #ffd700;
+    text-decoration: none;
+    background: rgba(0, 0, 0, 0.45);
+    border: 1px solid rgba(255, 215, 0, 0.35);
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+    transition: all 0.15s ease;
+}
+
+.pulsante-link-calcolo:hover {
+    background: #ffd700;
+    color: #111;
+    border-color: #ffd700;
+}
+
+.pulsante-home-calcolo {
+    background: rgba(184, 134, 11, 0.4);
+    border-color: #ffd700;
+}
+
+/* Banner Notifica Sovrapposto Veloce (ad es. "Nessuna mossa rimasta") */
+#toast-notifica {
+    position: absolute;
+    top: 75px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-20px);
+    background: rgba(15, 30, 20, 0.95);
+    border: 2px solid #ffd700;
+    color: #ffd700;
+    font-size: 14px;
+    font-weight: bold;
+    padding: 8px 20px;
+    border-radius: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6), 0 0 10px rgba(255, 215, 0, 0.4);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+    z-index: 300;
+}
+
+#toast-notifica.visibile {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+}

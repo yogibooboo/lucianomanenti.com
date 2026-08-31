@@ -14,7 +14,7 @@
 	</script>
 	<title>Giochi di Carte Gratuiti Online (... e non solo) - lucianomanenti.com</title>
 	<meta name="Description"
-		content="Gioca gratis online a Scala 40, Gin Rummy, Machiavelli, Burraco, Scopa, Briscola, Solitari Spider e Klondike, Sudoku, Calcolo Enigmatico, Codice Segreto, Campo Minato, Dama, Scacchi e Mulino. Include ear training musicale (intervalli e accordi) e un metronomo avanzato.">
+		content="Gioca gratis online a Scala 40, Gin Rummy, Machiavelli, Burraco, Scopa, Briscola, Solitari Spider e Klondike, Mahjong Solitario, Sudoku, Calcolo Enigmatico, Codice Segreto, Campo Minato, Battaglia Navale Classica, Solitario Navale, Dama, Scacchi e Mulino. Include ear training musicale (intervalli e accordi) e un metronomo avanzato.">
 	<link rel="alternate" hreflang="it" href="info.html">
 	<link rel="alternate" hreflang="en" href="info-en.html">
 	<link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
@@ -302,11 +302,29 @@
 			</div>
 
 			<div class="game-card">
+				<h3><a href="battaglia-navale.html">Battaglia Navale Classica Luciano</a></h3>
+				<p>La celebre battaglia navale a due giocatori giocabile gratis online contro il computer: disponi la tua flotta regolamentare di 10 navi (1 Corazzata, 2 Incrociatori, 3 Cacciatorpediniere, 4 Sottomarini) con rotazione rapida (click destro o tasto spazio), spostamento/rimozione e regola del non contatto, oppure opta per lo schieramento casuale istantaneo. Fai fuoco a turno sul radar nemico, guadagna un colpo bonus a ogni bersaglio centrato e affonda tutti i vascelli avversari prima che annientino la tua flotta. Tre livelli di difficolt&agrave; (Marinaio, Capitano, Ammiraglio) con intelligenza artificiale dotata di caccia direzionale e ricerca a scacchiera, statistiche salvate e layout a tutto schermo.</p>
+				<div class="links">
+					<a href="battaglia-navale.html" class="btn-play">Gioca</a>
+					<a href="guida-battaglia-navale.html" class="btn-rules" target="_blank" rel="opener">Regole</a>
+				</div>
+			</div>
+
+			<div class="game-card">
 				<h3><a href="navale.html">Battaglia Navale Solitario Luciano</a></h3>
 				<p>Non la battaglia navale a due giocatori, ma il <strong>solitario logico</strong>: la flotta &egrave; nascosta in un'unica disposizione possibile e va trovata ragionando, non sparando a caso. I numeri a bordo griglia dicono quante caselle di nave ci sono in ogni riga e colonna, e da l&igrave; si deduce tutto per esclusione. Tre formati (6&times;6, 8&times;8 e 10&times;10), click sinistro per l'acqua e destro per la nave, suggerimenti con la spiegazione del ragionamento, annullamento mosse, record dei tempi migliori e salvataggio automatico.</p>
 				<div class="links">
 					<a href="navale.html" class="btn-play">Gioca</a>
 					<a href="guida-navale.html" class="btn-rules" target="_blank" rel="opener">Regole</a>
+				</div>
+			</div>
+
+			<div class="game-card">
+				<h3><a href="mahjong.html">Mahjong Luciano</a></h3>
+				<p>Il celebre solitario di abbinamento tessere (noto come <strong>Shanghai Mahjong</strong>): 144 tessere 3D multilivello (Pallini, Bamb&ugrave;, Caratteri, Venti, Draghi, Fiori e Stagioni). Abbina a due a due le tessere libere uguali per liberare l'intero tavolo. Include 4 layout selezionabili (La Tartaruga Classica, Piramide, Fortezza, Arena), generatore di partite <strong>sempre risolvibili con la logica</strong>, evidenziazione delle tessere libere, suggerimenti, annullamento mosse, rimescolamento anti-stallo, effetti sonori realistici e salvataggio statistiche.</p>
+				<div class="links">
+					<a href="mahjong.html" class="btn-play">Gioca</a>
+					<a href="guida-mahjong.html" class="btn-rules" target="_blank" rel="opener">Regole</a>
 				</div>
 			</div>
 
@@ -334,12 +352,14 @@
 				<ul>
 					<li><strong><a href="musica/intervalli/" style="color:#2c3e50;">Ear Training — Intervalli</a></strong>: allena l'orecchio riconoscendo gli intervalli musicali (dalla 2ª minore all'11ª giusta), con pentagramma, tastiera interattiva e 5 livelli di difficoltà.</li>
 					<li><strong><a href="musica/accordi/" style="color:#2c3e50;">Ear Training — Accordi</a></strong>: riconosci gli accordi (maggiori, minori, di settima, jazz e altro) con supporto per inversioni e modalità tastiera.</li>
+					<li><strong><a href="musica/scale/" style="color:#2c3e50;">Ear Training — Scale</a></strong>: allena l'orecchio sul riconoscimento delle scale musicali (maggiori, minori, pentatoniche, blues e modali).</li>
 					<li><strong><a href="metronome.html" style="color:#2c3e50;">Metronomo</a></strong>: aspetto realistico con pendolo oscillante, selezione metro (2/4, 3/4, 4/4 ecc.), toni differenziati e swing. Ideale per ogni strumentista.</li>
 				</ul>
 				<div class="links">
 					<a href="musica/" class="btn-play">Apri</a>
 					<a href="musica/intervalli/guida-intervalli.html" class="btn-rules" target="_blank" rel="opener">Guida Intervalli</a>
 					<a href="musica/accordi/guida-accordi.html" class="btn-rules" target="_blank" rel="opener">Guida Accordi</a>
+					<a href="musica/scale/guida-scale.html" class="btn-rules" target="_blank" rel="opener">Guida Scale</a>
 					<a href="guida-metronomo.html" class="btn-rules" target="_blank" rel="opener">Guida Metronomo</a>
 				</div>
 			</div>
@@ -366,7 +386,11 @@
 
 	<script>
 		function goBack() {
-			window.location.href = 'index.html';
+			if (window.opener) {
+				window.close();
+			} else {
+				window.location.href = 'index.html';
+			}
 		}
 
 		(function() {
@@ -389,4 +413,3 @@
 </body>
 
 </html>
->

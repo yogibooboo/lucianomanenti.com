@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
+	<script>
+		window.dataLayer = window.dataLayer || [];
+		function gtag() { dataLayer.push(arguments); }
+		gtag('js', new Date());
+		gtag('config', 'G-WRBDRDQ4L8');
+		window.currentLang = 'it';
+	</script>
+	<title>Regole della Battaglia Navale Classica - Come si gioca</title>
+	<meta name="Description"
+		content="Guida completa alle regole della Battaglia Navale Classica a 2 contro il computer: composizione della flotta di 10 navi, regola del non contatto, turni di fuoco e strategie di caccia.">
+	<link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
+	<link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
+	<link rel="shortcut icon" href="favicon/favicon.ico">
+	<link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+	<style>
+		body {
+			font-family: sans-serif;
+			line-height: 1.7;
+			max-width: 800px;
+			margin: 40px auto;
+			padding: 20px;
+			color: #333;
+			background-color: #f9f9f9;
+		}
+
+		h1 {
+			color: #2c3e50;
+			border-bottom: 2px solid #ffd700;
+			padding-bottom: 10px;
+		}
+
+		h2 {
+			color: #2c3e50;
+			margin-top: 30px;
+		}
+
+		h3 {
+			color: #2c3e50;
+			font-size: 1.1em;
+			margin-top: 20px;
+		}
+
+		.lang-switch {
+			text-align: right;
+			margin-bottom: 20px;
+		}
+
+		.lang-switch a {
+			display: inline-block;
+			padding: 6px 16px;
+			margin-left: 5px;
+			text-decoration: none;
+			border-radius: 5px;
+			font-weight: bold;
+			font-size: 14px;
+		}
+
+		.lang-switch a.active {
+			background: #2c3e50;
+			color: white;
+		}
+
+		.lang-switch a:not(.active) {
+			background: #ddd;
+			color: #333;
+			cursor: pointer;
+		}
+
+		.content-box {
+			background: white;
+			padding: 30px;
+			border-radius: 8px;
+			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+		}
+
+		.play-btn {
+			display: inline-block;
+			margin-top: 25px;
+			padding: 12px 30px;
+			background: #27ae60;
+			color: white;
+			text-decoration: none;
+			border-radius: 8px;
+			font-size: 18px;
+			font-weight: bold;
+			transition: background 0.2s;
+		}
+
+		.play-btn:hover {
+			background: #1e8449;
+		}
+
+		.nav-links {
+			text-align: center;
+			margin-top: 30px;
+			font-size: 14px;
+		}
+
+		.nav-links a {
+			color: #3498db;
+			text-decoration: none;
+			margin: 0 8px;
+		}
+
+		.nav-links a:hover {
+			text-decoration: underline;
+		}
+
+		.banner {
+			width: 100%;
+			height: 150px;
+			background-image: url('images/home/castagne.jpg');
+			background-size: cover;
+			background-position: center;
+			border-radius: 8px;
+			margin: 20px 0;
+			box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+		}
+
+		.ship-table {
+			width: 100%;
+			border-collapse: collapse;
+			margin: 15px 0;
+		}
+
+		.ship-table th,
+		.ship-table td {
+			border: 1px solid #ddd;
+			padding: 10px;
+			text-align: left;
+		}
+
+		.ship-table th {
+			background-color: #2c3e50;
+			color: white;
+		}
+
+		.highlight-box {
+			background: #eef7ee;
+			border-left: 4px solid #27ae60;
+			padding: 12px 18px;
+			margin: 18px 0;
+			border-radius: 0 6px 6px 0;
+		}
+
+		.feedback-box {
+			background: #fff9c4;
+			padding: 12px 16px;
+			border-radius: 6px;
+			border-left: 4px solid #ffd700;
+			margin: 18px 0;
+		}
+	</style>
+</head>
+
+<body>
+	<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+		<a href="#" id="btn-back" onclick="goBack(); return false;"
+			style="display: inline-block; padding: 6px 16px; background: #e74c3c; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 14px;">&#x2190;
+			Indietro</a>
+		<div class="lang-switch" style="margin-bottom: 0;">
+			<a href="guida-battaglia-navale.html" id="btn-it" class="active">Italiano</a>
+			<a href="guida-battaglia-navale-en.html" id="btn-en">English</a>
+		</div>
+	</div>
+
+	<div class="banner"></div>
+
+	<div class="content-box">
+		<div id="lang-it">
+			<h1>Regole della Battaglia Navale Classica a 2</h1>
+
+			<p>La <strong>Battaglia Navale Classica</strong> &egrave; uno dei pi&ugrave; famosi ed emozionanti giochi di strategia e deduzione a turni. Lo scopo del gioco &egrave; individuare ed affondare tutte le 10 navi della flotta avversaria prima che il computer riesca ad affondare la tua.</p>
+
+			<div class="feedback-box">
+				Questo gioco &egrave; in continua evoluzione: nuove funzionalit&agrave; e miglioramenti vengono aggiunti regolarmente. Se riscontri qualcosa che non funziona come previsto o hai suggerimenti, scrivici a
+				<a href="mailto:postmaster@lucianomanenti.com" style="color: #3498db;">postmaster@lucianomanenti.com</a>
+				&mdash; il tuo feedback &egrave; prezioso!
+			</div>
+
+			<h2>1. La Flotta Regolamentare</h2>
+			<p>Ciascun giocatore dispone di una flotta standard di <strong>10 navi</strong> per un totale di <strong>20 caselle</strong> distribuite su una griglia 10&times;10 (coordinate da A a J e da 1 a 10):</p>
+			
+			<table class="ship-table">
+				<thead>
+					<tr>
+						<th>Tipo di Nave</th>
+						<th>Quantit&agrave;</th>
+						<th>Dimensione</th>
+						<th>Totale Caselle</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td><strong>Corazzata</strong></td>
+						<td>1</td>
+						<td>4 caselle</td>
+						<td>4 caselle</td>
+					</tr>
+					<tr>
+						<td><strong>Incrociatore</strong></td>
+						<td>2</td>
+						<td>3 caselle ciascuno</td>
+						<td>6 caselle</td>
+					</tr>
+					<tr>
+						<td><strong>Cacciatorpediniere</strong></td>
+						<td>3</td>
+						<td>2 caselle ciascuno</td>
+						<td>6 caselle</td>
+					</tr>
+					<tr>
+						<td><strong>Sottomarino</strong></td>
+						<td>4</td>
+						<td>1 casella ciascuno</td>
+						<td>4 caselle</td>
+					</tr>
+				</tbody>
+			</table>
+
+			<h2>2. Fase di Schieramento della Flotta</h2>
+			<p>Prima di iniziare la sfida, devi disporre le tue 10 navi sulla griglia di sinistra (<strong>"La tua Flotta"</strong>):</p>
+			<ul>
+				<li><strong>Orientamento:</strong> Le navi possono essere posizionate in <strong>orizzontale</strong> o in <strong>verticale</strong>. Puoi cambiare l'orientamento con il <strong>tasto destro del mouse</strong>, con la <strong>barra spaziatrice</strong>, con il tasto <strong>R</strong> oppure con il pulsante a video.</li>
+				<li><strong>Scelta della nave:</strong> Clicca su uno dei riquadri azzurri delle navi nell'elenco in basso per selezionare quale posizionare. La nave attiva &egrave; evidenziata in oro pulsante.</li>
+				<li><strong>Spostare o rimuovere navi:</strong> Clicca su una nave gi&agrave; schierata sulla griglia per raccoglierla e spostarla in una nuova posizione, oppure premi la <strong>&times;</strong> rossa sul suo tag in basso per toglierla dalla griglia.</li>
+				<li><strong>Regola del non contatto:</strong> Le navi <em>non possono toccarsi</em>, n&eacute; per lato n&eacute; in diagonale. C'&egrave; sempre almeno una casella di mare libero a separare le imbarcazioni.</li>
+				<li><strong>Disposizione Automatica:</strong> Se preferisci passare subito all'azione, premi <strong>"Disponi a caso"</strong> per generare istantaneamente uno schieramento valido.</li>
+			</ul>
+
+			<h2>3. Fase di Battaglia e Turni di Fuoco</h2>
+			<p>Una volta completato lo schieramento e premuto <strong>"Inizia la Battaglia"</strong>, si aprono le ostilit&agrave;:</p>
+			<ul>
+				<li><strong>Sparare:</strong> Clicca su una casella non ancora esplorata della griglia di destra (<strong>"Radar Nemico"</strong>).</li>
+				<li><strong>Acqua (&bull;):</strong> Se nella casella non &egrave; presente alcuna imbarcazione nemica, il colpo finisce in mare (indicatore azzurro) e il turno passa all'avversario.</li>
+				<li><strong>Colpito (&times;):</strong> Se colpisci una nave avversaria, la casella si accende di rosso. <em>Chi fa centro ha diritto a sparare di nuovo!</em></li>
+				<li><strong>Affondato (&empty;):</strong> Quando tutte le caselle di una nave sono state colpite, la nave &egrave; affondata. Le caselle attorno alla nave affondata vengono automaticamente contrassegnate come acqua, poich&eacute; nessuna altra nave pu&ograve; trovarsi a contatto con essa.</li>
+			</ul>
+
+			<div class="highlight-box">
+				<strong>Consiglio Strategico:</strong> Quando metti a segno un colpo su una nave nemica, esplora le 4 caselle adiacenti (Nord, Sud, Est, Ovest). Non appena registri un secondo centro, hai individuato l'asse della nave: continua a sparare lungo la stessa linea in entrambe le direzioni fino ad affondarla del tutto!
+			</div>
+
+			<h2>4. Livelli di Difficolt&agrave; dell'IA</h2>
+			<p>Puoi scegliere fra tre gradi di abilit&agrave; del computer:</p>
+			<ul>
+				<li><strong>Marinaio (Facile):</strong> Spara principalmente a caso e con strategie esplorative semplici.</li>
+				<li><strong>Capitano (Medio):</strong> Appena colpisce una tua nave, avvia una caccia mirata nei paraggi finch&eacute; non la affonda completamente.</li>
+				<li><strong>Ammiraglio (Difficile):</strong> Applica una caccia direzionale implacabile e usa la tecnica della scacchiera a parit&agrave; per scovare le tue navi nel minor numero di colpi possibile.</li>
+			</ul>
+
+			<h2>5. Fine Partita e Statistiche</h2>
+			<p>Il vincitore &egrave; il primo che distrugge tutte le 10 navi avversarie. Al termine viene mostrato il resoconto completo con il tempo impiegato, il numero di colpi e la percentuale di precisione, aggiornando le tue statistiche personali di vittorie e sconfitte salvate nel browser.</p>
+
+			<p style="text-align: center;"><a href="#" onclick="goBack(); return false;" class="play-btn">Chiudi</a></p>
+		</div>
+	</div>
+
+	<div class="banner"></div>
+
+	<div class="nav-links">
+		<a href="index.html">Home</a> |
+		<a href="battaglia-navale.html">Battaglia Navale</a> |
+		<a href="navale.html">Navale Solitario</a> |
+		<a href="calcolo.html">Calcolo Enigmatico</a> |
+		<a href="minato.html">Campo Minato</a> |
+		<a href="sudoku.html">Sudoku</a> |
+		<a href="dama.html">Dama</a> |
+		<a href="scacchi.html">Scacchi</a> |
+		<a href="privacy.html">Privacy</a> |
+		<a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)">Gestisci Cookie</a>
+	</div>
+
+	<p style="text-align: center; font-size: 0.8em; color: #999; margin-top: 10px;">
+		&copy; 2026 Luciano Manenti
+	</p>
+
+	<script>
+		function goBack() {
+			window.close();
+		}
+		(function () {
+			var nascosto = false;
+			var observer = new MutationObserver(function () {
+				if (nascosto) return;
+				var divs = document.querySelectorAll('body > div');
+				for (var i = 0; i < divs.length; i++) {
+					if (divs[i].shadowRoot && !divs[i].className && (divs[i].getAttribute('style') || '').length > 5000) {
+						divs[i].style.setProperty('display', 'none', 'important');
+						nascosto = true;
+						observer.disconnect();
+						return;
+					}
+				}
+			});
+			observer.observe(document.body, { childList: true });
+		})();
+	</script>
+</body>
+
+</html>

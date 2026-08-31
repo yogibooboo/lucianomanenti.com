@@ -518,10 +518,10 @@ body {
    a 726, quindi non c'e' piu' il rischio di sovrapposizione che c'era prima. */
 .music-menu-container {
 	position: absolute;
-	/* 499 = 447 + 52: Altri Giochi e' passato da quattro a cinque righe (aggiunto
-	   Codice Segreto, nona voce, che apre una riga nuova) e 52 e' il passo di una
-	   riga, quindi l'incolonnamento con i giochi di carte si conserva. */
-	top: 499px;
+	/* 551 = 499 + 52: Altri Giochi e' passato da cinque a sei righe (aggiunto
+	   Mahjong Solitario, undicesima voce, che sposta Codice Segreto sulla sesta riga)
+	   e 52 e' il passo esatto di una riga (44px altezza + 8px gap). */
+	top: 551px;
 	right: 48px;
 	width: 458px;
 	display: grid;

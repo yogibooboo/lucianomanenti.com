@@ -120,6 +120,11 @@
 		<priority>0.9</priority>
 	</url>
 	<url>
+		<loc>https://lucianomanenti.com/battaglia-navale.html</loc>
+		<lastmod>2026-08-30</lastmod>
+		<priority>0.9</priority>
+	</url>
+	<url>
 		<loc>https://lucianomanenti.com/navale.html</loc>
 		<lastmod>2026-08-16</lastmod>
 		<priority>0.9</priority>
@@ -143,6 +148,11 @@
 		<loc>https://lucianomanenti.com/sudoku.html</loc>
 		<lastmod>2026-08-12</lastmod>
 		<priority>0.9</priority>
+	</url>
+	<url>
+		<loc>https://lucianomanenti.com/guida-battaglia-navale.html</loc>
+		<lastmod>2026-08-30</lastmod>
+		<priority>0.7</priority>
 	</url>
 	<url>
 		<loc>https://lucianomanenti.com/regole-briscola.html</loc>
@@ -202,6 +212,26 @@
 	<url>
 		<loc>https://lucianomanenti.com/regole-sudoku.html</loc>
 		<lastmod>2026-08-02</lastmod>
+		<priority>0.7</priority>
+	</url>
+	<url>
+		<loc>https://lucianomanenti.com/battaglia-navale.html</loc>
+		<lastmod>2026-08-31</lastmod>
+		<priority>0.9</priority>
+	</url>
+	<url>
+		<loc>https://lucianomanenti.com/guida-battaglia-navale.html</loc>
+		<lastmod>2026-08-31</lastmod>
+		<priority>0.7</priority>
+	</url>
+	<url>
+		<loc>https://lucianomanenti.com/mahjong.html</loc>
+		<lastmod>2026-08-31</lastmod>
+		<priority>0.9</priority>
+	</url>
+	<url>
+		<loc>https://lucianomanenti.com/guida-mahjong.html</loc>
+		<lastmod>2026-08-31</lastmod>
 		<priority>0.7</priority>
 	</url>
 
@@ -324,6 +354,11 @@
 		<priority>0.9</priority>
 	</url>
 	<url>
+		<loc>https://lucianomanenti.com/battaglia-navale-en.html</loc>
+		<lastmod>2026-08-30</lastmod>
+		<priority>0.9</priority>
+	</url>
+	<url>
 		<loc>https://lucianomanenti.com/navale-en.html</loc>
 		<lastmod>2026-08-16</lastmod>
 		<priority>0.9</priority>
@@ -347,6 +382,11 @@
 		<loc>https://lucianomanenti.com/sudoku-en.html</loc>
 		<lastmod>2026-08-12</lastmod>
 		<priority>0.9</priority>
+	</url>
+	<url>
+		<loc>https://lucianomanenti.com/guida-battaglia-navale-en.html</loc>
+		<lastmod>2026-08-30</lastmod>
+		<priority>0.7</priority>
 	</url>
 	<url>
 		<loc>https://lucianomanenti.com/regole-briscola-en.html</loc>
@@ -406,6 +446,26 @@
 	<url>
 		<loc>https://lucianomanenti.com/regole-sudoku-en.html</loc>
 		<lastmod>2026-08-02</lastmod>
+		<priority>0.7</priority>
+	</url>
+	<url>
+		<loc>https://lucianomanenti.com/battaglia-navale-en.html</loc>
+		<lastmod>2026-08-31</lastmod>
+		<priority>0.9</priority>
+	</url>
+	<url>
+		<loc>https://lucianomanenti.com/guida-battaglia-navale-en.html</loc>
+		<lastmod>2026-08-31</lastmod>
+		<priority>0.7</priority>
+	</url>
+	<url>
+		<loc>https://lucianomanenti.com/mahjong-en.html</loc>
+		<lastmod>2026-08-31</lastmod>
+		<priority>0.9</priority>
+	</url>
+	<url>
+		<loc>https://lucianomanenti.com/guida-mahjong-en.html</loc>
+		<lastmod>2026-08-31</lastmod>
 		<priority>0.7</priority>
 	</url>
 </urlset>
