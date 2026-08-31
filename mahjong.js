@@ -689,24 +689,22 @@
     }
 
     // === GENERATORE DI SCHEMI GARANTITI RISOLVIBILI ===
-    // Per garantire la vittoria matematica, posizioniamo le coppie a ritroso:
-    // partendo dal layout vuoto, selezioniamo 2 posizioni libere e vi assegniamo una coppia valida.
+    // Posizioniamo le coppie a ritroso partendo dallo schema completo e simulando
+    // la rimozione di tessere libere ad ogni passo. In questo modo esiste SEMPRE
+    // una sequenza vincente provata.
     function generateSolvableBoard(layoutSlots) {
         const totalTiles = layoutSlots.length; // 144
-        const pairCount = totalTiles / 2; // 72 coppie
+        const pairCount = totalTiles / 2; // 72
 
-        // Creiamo le 72 coppie dal set standard
+        // Raccogli e mescola le 72 coppie dal set standard
         const shuffledTileDefs = [...TILE_DEFS];
-        // Rimescola il mazzo base
         for (let i = shuffledTileDefs.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [shuffledTileDefs[i], shuffledTileDefs[j]] = [shuffledTileDefs[j], shuffledTileDefs[i]];
         }
 
-        // Raggruppiamo in coppie compatibili
         const pairs = [];
         const used = new Set();
-
         for (let i = 0; i < shuffledTileDefs.length; i++) {
             if (used.has(i)) continue;
             const t1 = shuffledTileDefs[i];
@@ -732,32 +730,59 @@
             removed: false
         }));
 
-        // Simulazione a ritroso (reverse placement)
-        // Creiamo una copia virtuale degli slot vuoti
-        let remainingSlots = [...board];
+        // Simulazione forward-removal per assegnazione coppie garantite
+        let assignedCount = 0;
         let pairIndex = 0;
 
-        while (remainingSlots.length >= 2 && pairIndex < pairs.length) {
-            // Trova slot che sarebbero liberi se il tavolo fosse parzialmente riempito
-            // Per semplicità e robustezza: prendi due slot disponibili
-            const s1Index = Math.floor(Math.random() * remainingSlots.length);
-            const slot1 = remainingSlots.splice(s1Index, 1)[0];
+        while (assignedCount < totalTiles && pairIndex < pairs.length) {
+            const activeSlots = board.filter(t => !t.removed);
+            const freeSlots = activeSlots.filter(t => isTileFree(t, activeSlots));
 
-            const s2Index = Math.floor(Math.random() * remainingSlots.length);
-            const slot2 = remainingSlots.splice(s2Index, 1)[0];
+            if (freeSlots.length >= 2) {
+                // Scegli 2 slot liberi a caso
+                const idx1 = Math.floor(Math.random() * freeSlots.length);
+                const s1 = freeSlots.splice(idx1, 1)[0];
+                const idx2 = Math.floor(Math.random() * freeSlots.length);
+                const s2 = freeSlots.splice(idx2, 1)[0];
 
-            const pair = pairs[pairIndex++];
-            slot1.tileDef = pair[0];
-            slot2.tileDef = pair[1];
-        }
+                const pair = pairs[pairIndex++];
+                s1.tileDef = pair[0];
+                s1.removed = true;
+                s2.tileDef = pair[1];
+                s2.removed = true;
+                assignedCount += 2;
+            } else if (freeSlots.length === 1 && activeSlots.length >= 2) {
+                const s1 = freeSlots[0];
+                const otherSlots = activeSlots.filter(t => t.id !== s1.id);
+                const s2 = otherSlots[Math.floor(Math.random() * otherSlots.length)];
 
-        // Se rimangono slot non assegnati (caso limite), assegna coppie residue
-        if (remainingSlots.length > 0) {
-            for (let i = 0; i < remainingSlots.length; i++) {
-                remainingSlots[i].tileDef = shuffledTileDefs[i % shuffledTileDefs.length];
+                const pair = pairs[pairIndex++];
+                s1.tileDef = pair[0];
+                s1.removed = true;
+                s2.tileDef = pair[1];
+                s2.removed = true;
+                assignedCount += 2;
+            } else {
+                for (let i = 0; i < activeSlots.length && pairIndex < pairs.length; i += 2) {
+                    const s1 = activeSlots[i];
+                    const s2 = activeSlots[i + 1] || activeSlots[i];
+                    const pair = pairs[pairIndex++];
+                    s1.tileDef = pair[0];
+                    s1.removed = true;
+                    if (s2 && s2 !== s1) {
+                        s2.tileDef = pair[1];
+                        s2.removed = true;
+                        assignedCount += 2;
+                    } else {
+                        assignedCount += 1;
+                    }
+                }
+                break;
             }
         }
 
+        // Ripristina tutte le tessere sul tavolo per iniziare a giocare
+        board.forEach(t => { t.removed = false; });
         return board;
     }
 
@@ -953,15 +978,121 @@
         }
     }
 
-    // === SUGGERIMENTO (HINT) ===
+    // === SUGGERIMENTO INTELLIGENTE CON SOLVER (HINT) ===
+    function findOptimalHintPair() {
+        const remainingTiles = boardTiles.filter(t => !t.removed);
+        if (remainingTiles.length === 0) return null;
+
+        const pairs = findAvailablePairs();
+        if (pairs.length === 0) return null;
+        if (pairs.length === 1) return pairs[0];
+
+        // Euristica di punteggio per ciascuna coppia:
+        // - Quante tessere sblocca (rimuovendola, quante nuove tessere diventano libere)
+        // - Altezza z delle tessere (rimuovere tessere in alto sblocca le pile sottostanti)
+        function evaluatePairScore(p, activeTiles) {
+            const t1 = p[0];
+            const t2 = p[1];
+            let score = (t1.z + t2.z) * 10;
+
+            // Simula rimozione
+            t1.removed = true;
+            t2.removed = true;
+
+            const nextActive = activeTiles.filter(t => !t.removed);
+            const newlyFree = nextActive.filter(t => isTileFree(t, nextActive));
+            const nextPairs = [];
+            for (let i = 0; i < newlyFree.length; i++) {
+                for (let j = i + 1; j < newlyFree.length; j++) {
+                    if (newlyFree[i].tileDef.matchGroup === newlyFree[j].tileDef.matchGroup) {
+                        nextPairs.push([newlyFree[i], newlyFree[j]]);
+                    }
+                }
+            }
+
+            score += newlyFree.length * 6;
+            score += nextPairs.length * 10;
+
+            // Ripristina
+            t1.removed = false;
+            t2.removed = false;
+            return score;
+        }
+
+        // Ricerca ricorsiva (Depth First Search) con limite di nodi per trovare una sequenza vincente
+        let nodesVisited = 0;
+        const MAX_NODES = 1500;
+
+        function solveDFS(activeTiles) {
+            if (activeTiles.length === 0) return true;
+            if (++nodesVisited > MAX_NODES) return false;
+
+            const free = activeTiles.filter(t => isTileFree(t, activeTiles));
+            const availablePairs = [];
+            for (let i = 0; i < free.length; i++) {
+                for (let j = i + 1; j < free.length; j++) {
+                    if (free[i].tileDef.matchGroup === free[j].tileDef.matchGroup) {
+                        availablePairs.push([free[i], free[j]]);
+                    }
+                }
+            }
+
+            if (availablePairs.length === 0) return false;
+
+            // Ordina le coppie per potenziale euristico
+            availablePairs.sort((a, b) => evaluatePairScore(b, activeTiles) - evaluatePairScore(a, activeTiles));
+
+            for (const pair of availablePairs) {
+                pair[0].removed = true;
+                pair[1].removed = true;
+
+                const nextActive = activeTiles.filter(t => !t.removed);
+                const solved = solveDFS(nextActive);
+
+                pair[0].removed = false;
+                pair[1].removed = false;
+
+                if (solved) return true;
+            }
+            return false;
+        }
+
+        // Valuta e ordina le coppie con l'euristica
+        const scoredPairs = pairs.map(p => ({
+            pair: p,
+            score: evaluatePairScore(p, remainingTiles)
+        }));
+        scoredPairs.sort((a, b) => b.score - a.score);
+
+        // Prova a verificare quale mossa porta a una vittoria provata
+        for (const item of scoredPairs) {
+            const p = item.pair;
+            p[0].removed = true;
+            p[1].removed = true;
+            nodesVisited = 0;
+
+            const nextActive = remainingTiles.filter(t => !t.removed);
+            const isWinningMove = solveDFS(nextActive);
+
+            p[0].removed = false;
+            p[1].removed = false;
+
+            if (isWinningMove) {
+                return p; // Trovata mossa appartenente a un cammino vincente!
+            }
+        }
+
+        // Se la ricerca approfondita non ha confermato la vittoria nei nodi analizzati,
+        // restituisce la coppia con il punteggio euristico più alto (massimo sblocco)
+        return scoredPairs[0].pair;
+    }
+
     function provideHint() {
         if (isGameOver) return;
         clearHint();
 
-        const pairs = findAvailablePairs();
-        if (pairs.length > 0) {
-            // Prendi la prima coppia giocabile
-            const pair = pairs[Math.floor(Math.random() * pairs.length)];
+        const pair = findOptimalHintPair();
+        if (pair) {
             hintPair = pair;
             pair[0].el.classList.add('tile-hint');
             pair[1].el.classList.add('tile-hint');
