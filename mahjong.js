@@ -643,50 +643,82 @@
         }
     }
 
-    // === ALGORITMO DI RILEVAMENTO TESSERE LIBERE / GIOCABILI ===
-    // Una tessera è libera se:
-    // 1. Non ha nessuna tessera al livello Z+1 che la sovrappone (anche parzialmente).
-    // 2. Ha almeno un lato lungo (Sinistro o Destro) completamente libero al proprio livello Z.
+    // === ALGORITMO DI RILEVAMENTO TESSERE LIBERE / GIOCABILI (ULTRA OTTIMIZZATO) ===
+    // Precalcola i vicini per rendere i controlli istantanei (O(1))
+    function precalculateTopology(board) {
+        for (let i = 0; i < board.length; i++) {
+            const t = board[i];
+            t.index = i;
+            t.topCoverers = [];
+            t.leftBlockers = [];
+            t.rightBlockers = [];
 
-    function isTileBlocked(tile, allTiles) {
-        if (tile.removed) return true;
-
-        const activeTiles = allTiles.filter(t => !t.removed && t.id !== tile.id);
-
-        // 1. Controllo sovrapposizione dall'alto (livello Z > tile.z)
-        // Poiché una tessera occupa 2x2 mezze coordinate:
-        // C'è sovrapposizione se |x1 - x2| < 2 e |y1 - y2| < 2 con z2 > z1
-        for (const other of activeTiles) {
-            if (other.z > tile.z) {
-                if (Math.abs(other.x - tile.x) < 2 && Math.abs(other.y - tile.y) < 2) {
-                    return true; // Coperta da sopra
+            for (let j = 0; j < board.length; j++) {
+                if (i === j) continue;
+                const other = board[j];
+                // 1. Coverer da sopra: z > t.z e |x - other.x| < 2 e |y - other.y| < 2
+                if (other.z > t.z) {
+                    if (Math.abs(other.x - t.x) < 2 && Math.abs(other.y - t.y) < 2) {
+                        t.topCoverers.push(j);
+                    }
+                }
+                // 2. Bloccanti laterali: stesso livello z e |y - other.y| < 2
+                if (other.z === t.z && Math.abs(other.y - t.y) < 2) {
+                    if (other.x === t.x - 2) {
+                        t.leftBlockers.push(j);
+                    }
+                    if (other.x === t.x + 2) {
+                        t.rightBlockers.push(j);
+                    }
                 }
             }
         }
-
-        // 2. Controllo blocchi laterali al medesimo livello Z (o livelli inferiori adiacenti)
-        // Lato Sinistro: tessera con x2 = tile.x - 2 e |y1 - y2| < 2 al livello tile.z
-        // Lato Destro: tessera con x2 = tile.x + 2 e |y1 - y2| < 2 al livello tile.z
-        let leftBlocked = false;
-        let rightBlocked = false;
-
-        for (const other of activeTiles) {
-            if (other.z === tile.z && Math.abs(other.y - tile.y) < 2) {
-                if (other.x === tile.x - 2) {
-                    leftBlocked = true;
-                }
-                if (other.x === tile.x + 2) {
-                    rightBlocked = true;
-                }
-            }
-        }
-
-        // Se entrambi i lati sono bloccati, la tessera non è libera
-        return leftBlocked && rightBlocked;
     }
 
     function isTileFree(tile, allTiles) {
-        return !isTileBlocked(tile, allTiles);
+        if (tile.removed) return false;
+        const board = allTiles || boardTiles;
+
+        if (tile.topCoverers) {
+            for (let i = 0; i < tile.topCoverers.length; i++) {
+                if (!board[tile.topCoverers[i]].removed) return false;
+            }
+            let leftBlocked = false;
+            for (let i = 0; i < tile.leftBlockers.length; i++) {
+                if (!board[tile.leftBlockers[i]].removed) { leftBlocked = true; break; }
+            }
+            let rightBlocked = false;
+            for (let i = 0; i < tile.rightBlockers.length; i++) {
+                if (!board[tile.rightBlockers[i]].removed) { rightBlocked = true; break; }
+            }
+            return !(leftBlocked && rightBlocked);
+        }
+
+        // Fallback
+        return !isTileBlockedFallback(tile, board);
+    }
+
+    function isTileBlockedFallback(tile, allTiles) {
+        if (tile.removed) return true;
+        const activeTiles = allTiles.filter(t => !t.removed && t.id !== tile.id);
+
+        for (const other of activeTiles) {
+            if (other.z > tile.z) {
+                if (Math.abs(other.x - tile.x) < 2 && Math.abs(other.y - tile.y) < 2) {
+                    return true;
+                }
+            }
+        }
+
+        let leftBlocked = false;
+        let rightBlocked = false;
+        for (const other of activeTiles) {
+            if (other.z === tile.z && Math.abs(other.y - tile.y) < 2) {
+                if (other.x === tile.x - 2) leftBlocked = true;
+                if (other.x === tile.x + 2) rightBlocked = true;
+            }
+        }
+        return leftBlocked && rightBlocked;
     }
 
     // === GENERATORE DI SCHEMI GARANTITI RISOLVIBILI ===
@@ -730,6 +762,8 @@
             tileDef: null,
             removed: false
         }));
+
+        precalculateTopology(board);
 
         // Simulazione forward-removal per assegnazione coppie garantite
         let assignedCount = 0;
@@ -979,36 +1013,117 @@
         }
     }
 
+    // === BITMASK DELLO STATO TESSERE RIMOSSE (BigInt 144 bit) ===
+    function getBoardBitmask(tiles) {
+        const board = tiles || boardTiles;
+        let mask = 0n;
+        for (let i = 0; i < board.length; i++) {
+            if (board[i].removed) {
+                mask |= (1n << BigInt(i));
+            }
+        }
+        return mask;
+    }
+
     // Euristica di punteggio per ciascuna coppia:
     // - Quante tessere sblocca (rimuovendola, quante nuove tessere diventano libere)
     // - Altezza z delle tessere (rimuovere tessere in alto sblocca le pile sottostanti)
     function evaluatePairScore(p, activeTiles) {
         const t1 = p[0];
         const t2 = p[1];
-        let score = (t1.z + t2.z) * 10;
+        let score = (t1.z + t2.z) * 15;
 
         // Simula rimozione
         t1.removed = true;
         t2.removed = true;
 
         const nextActive = activeTiles.filter(t => !t.removed);
-        const newlyFree = nextActive.filter(t => isTileFree(t, nextActive));
-        const nextPairs = [];
-        for (let i = 0; i < newlyFree.length; i++) {
-            for (let j = i + 1; j < newlyFree.length; j++) {
-                if (newlyFree[i].tileDef.matchGroup === newlyFree[j].tileDef.matchGroup) {
-                    nextPairs.push([newlyFree[i], newlyFree[j]]);
+        let newlyFreeCount = 0;
+        let nextPairCount = 0;
+        const nextFree = [];
+
+        for (let i = 0; i < nextActive.length; i++) {
+            if (isTileFree(nextActive[i], boardTiles)) {
+                newlyFreeCount++;
+                nextFree.push(nextActive[i]);
+            }
+        }
+
+        for (let i = 0; i < nextFree.length; i++) {
+            for (let j = i + 1; j < nextFree.length; j++) {
+                if (nextFree[i].tileDef.matchGroup === nextFree[j].tileDef.matchGroup) {
+                    nextPairCount++;
                 }
             }
         }
 
-        score += newlyFree.length * 6;
-        score += nextPairs.length * 10;
+        score += newlyFreeCount * 8 + nextPairCount * 12;
 
         // Ripristina
         t1.removed = false;
         t2.removed = false;
         return score;
+    }
+
+    // === MOTORE SOLVER DFS ULTRA-RAPIDO CON MEMOIZATION (BigInt Dead-Ends) ===
+    function runDFSSolver(remainingTiles, maxNodes = 35000) {
+        let nodesVisited = 0;
+        let timedOut = false;
+        const deadEnds = new Set();
+
+        function search(activeTiles) {
+            if (activeTiles.length === 0) return true; // Tavolo ripulito!
+            if (++nodesVisited > maxNodes) {
+                timedOut = true;
+                return false;
+            }
+
+            const mask = getBoardBitmask();
+            if (deadEnds.has(mask)) return false;
+
+            const free = activeTiles.filter(t => isTileFree(t, boardTiles));
+            const availablePairs = [];
+            for (let i = 0; i < free.length; i++) {
+                for (let j = i + 1; j < free.length; j++) {
+                    if (free[i].tileDef.matchGroup === free[j].tileDef.matchGroup) {
+                        availablePairs.push([free[i], free[j]]);
+                    }
+                }
+            }
+
+            if (availablePairs.length === 0) {
+                deadEnds.add(mask);
+                return false;
+            }
+
+            // Ordina le coppie per potenziale euristico
+            availablePairs.sort((a, b) => evaluatePairScore(b, activeTiles) - evaluatePairScore(a, activeTiles));
+
+            for (let k = 0; k < availablePairs.length; k++) {
+                const pair = availablePairs[k];
+                pair[0].removed = true;
+                pair[1].removed = true;
+
+                const nextActive = activeTiles.filter(t => !t.removed);
+                const solved = search(nextActive);
+
+                pair[0].removed = false;
+                pair[1].removed = false;
+
+                if (solved === true) return true;
+                if (timedOut) return false;
+            }
+
+            if (!timedOut) {
+                deadEnds.add(mask);
+            }
+            return false;
+        }
+
+        const result = search(remainingTiles);
+        if (result === true) return { status: 'SOLVABLE', nodes: nodesVisited };
+        if (timedOut) return { status: 'INCONCLUSIVE', nodes: nodesVisited };
+        return { status: 'UNSOLVABLE', nodes: nodesVisited };
     }
 
     // === SUGGERIMENTO INTELLIGENTE CON SOLVER (HINT) ===
@@ -1019,44 +1134,6 @@
         const pairs = findAvailablePairs();
         if (pairs.length === 0) return null;
         if (pairs.length === 1) return pairs[0];
-
-        // Ricerca ricorsiva (Depth First Search) con limite di nodi per trovare una sequenza vincente
-        let nodesVisited = 0;
-        const MAX_NODES = 2000;
-
-        function solveDFS(activeTiles) {
-            if (activeTiles.length === 0) return true;
-            if (++nodesVisited > MAX_NODES) return false;
-
-            const free = activeTiles.filter(t => isTileFree(t, activeTiles));
-            const availablePairs = [];
-            for (let i = 0; i < free.length; i++) {
-                for (let j = i + 1; j < free.length; j++) {
-                    if (free[i].tileDef.matchGroup === free[j].tileDef.matchGroup) {
-                        availablePairs.push([free[i], free[j]]);
-                    }
-                }
-            }
-
-            if (availablePairs.length === 0) return false;
-
-            // Ordina le coppie per potenziale euristico
-            availablePairs.sort((a, b) => evaluatePairScore(b, activeTiles) - evaluatePairScore(a, activeTiles));
-
-            for (const pair of availablePairs) {
-                pair[0].removed = true;
-                pair[1].removed = true;
-
-                const nextActive = activeTiles.filter(t => !t.removed);
-                const solved = solveDFS(nextActive);
-
-                pair[0].removed = false;
-                pair[1].removed = false;
-
-                if (solved) return true;
-            }
-            return false;
-        }
 
         // Valuta e ordina le coppie con l'euristica
         const scoredPairs = pairs.map(p => ({
@@ -1070,21 +1147,19 @@
             const p = item.pair;
             p[0].removed = true;
             p[1].removed = true;
-            nodesVisited = 0;
 
             const nextActive = remainingTiles.filter(t => !t.removed);
-            const isWinningMove = solveDFS(nextActive);
+            const solverResult = runDFSSolver(nextActive, 10000);
 
             p[0].removed = false;
             p[1].removed = false;
 
-            if (isWinningMove) {
-                return p; // Trovata mossa appartenente a un cammino vincente!
+            if (solverResult.status === 'SOLVABLE') {
+                return p; // Trovata mossa appartenente a un cammino vincente provato!
             }
         }
 
-        // Se la ricerca approfondita non ha confermato la vittoria nei nodi analizzati,
-        // restituisce la coppia con il punteggio euristico più alto (massimo sblocco)
+        // Se nessuna è confermata al 100% nei nodi analizzati, restituisce la migliore per euristica
         return scoredPairs[0].pair;
     }
 
@@ -1116,9 +1191,6 @@
     }
 
     // === CONTROLLO DI RISOLVIBILITÀ DEL TAVOLO IN TEMPO REALE ===
-    // 'SOLVABLE': percorso vincente confermato
-    // 'UNSOLVABLE': TUTTI i rami portano a vicolo cieco
-    // 'INCONCLUSIVE': ricerca limitata nel tempo, nessun falso allarme
     function testBoardSolvability() {
         const remainingTiles = boardTiles.filter(t => !t.removed);
         if (remainingTiles.length === 0) return 'SOLVABLE';
@@ -1126,52 +1198,8 @@
         const pairs = findAvailablePairs();
         if (pairs.length === 0) return 'UNSOLVABLE';
 
-        let nodesVisited = 0;
-        let timedOut = false;
-        const MAX_NODES = 2500;
-
-        function solveDFS(activeTiles) {
-            if (activeTiles.length === 0) return true;
-            if (++nodesVisited > MAX_NODES) {
-                timedOut = true;
-                return false;
-            }
-
-            const free = activeTiles.filter(t => isTileFree(t, activeTiles));
-            const availablePairs = [];
-            for (let i = 0; i < free.length; i++) {
-                for (let j = i + 1; j < free.length; j++) {
-                    if (free[i].tileDef.matchGroup === free[j].tileDef.matchGroup) {
-                        availablePairs.push([free[i], free[j]]);
-                    }
-                }
-            }
-
-            if (availablePairs.length === 0) return false;
-
-            // Ordina con euristica
-            availablePairs.sort((a, b) => evaluatePairScore(b, activeTiles) - evaluatePairScore(a, activeTiles));
-
-            for (const pair of availablePairs) {
-                pair[0].removed = true;
-                pair[1].removed = true;
-
-                const nextActive = activeTiles.filter(t => !t.removed);
-                const solved = solveDFS(nextActive);
-
-                pair[0].removed = false;
-                pair[1].removed = false;
-
-                if (solved) return true;
-                if (timedOut) return false;
-            }
-            return false;
-        }
-
-        const solved = solveDFS(remainingTiles);
-        if (solved) return 'SOLVABLE';
-        if (timedOut) return 'INCONCLUSIVE';
-        return 'UNSOLVABLE';
+        const res = runDFSSolver(remainingTiles, 35000);
+        return res.status;
     }
 
     // === AGGIORNAMENTO UI & STATI TESSERE ===
