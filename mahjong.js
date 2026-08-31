@@ -979,6 +979,38 @@
         }
     }
 
+    // Euristica di punteggio per ciascuna coppia:
+    // - Quante tessere sblocca (rimuovendola, quante nuove tessere diventano libere)
+    // - Altezza z delle tessere (rimuovere tessere in alto sblocca le pile sottostanti)
+    function evaluatePairScore(p, activeTiles) {
+        const t1 = p[0];
+        const t2 = p[1];
+        let score = (t1.z + t2.z) * 10;
+
+        // Simula rimozione
+        t1.removed = true;
+        t2.removed = true;
+
+        const nextActive = activeTiles.filter(t => !t.removed);
+        const newlyFree = nextActive.filter(t => isTileFree(t, nextActive));
+        const nextPairs = [];
+        for (let i = 0; i < newlyFree.length; i++) {
+            for (let j = i + 1; j < newlyFree.length; j++) {
+                if (newlyFree[i].tileDef.matchGroup === newlyFree[j].tileDef.matchGroup) {
+                    nextPairs.push([newlyFree[i], newlyFree[j]]);
+                }
+            }
+        }
+
+        score += newlyFree.length * 6;
+        score += nextPairs.length * 10;
+
+        // Ripristina
+        t1.removed = false;
+        t2.removed = false;
+        return score;
+    }
+
     // === SUGGERIMENTO INTELLIGENTE CON SOLVER (HINT) ===
     function findOptimalHintPair() {
         const remainingTiles = boardTiles.filter(t => !t.removed);
@@ -988,41 +1020,9 @@
         if (pairs.length === 0) return null;
         if (pairs.length === 1) return pairs[0];
 
-        // Euristica di punteggio per ciascuna coppia:
-        // - Quante tessere sblocca (rimuovendola, quante nuove tessere diventano libere)
-        // - Altezza z delle tessere (rimuovere tessere in alto sblocca le pile sottostanti)
-        function evaluatePairScore(p, activeTiles) {
-            const t1 = p[0];
-            const t2 = p[1];
-            let score = (t1.z + t2.z) * 10;
-
-            // Simula rimozione
-            t1.removed = true;
-            t2.removed = true;
-
-            const nextActive = activeTiles.filter(t => !t.removed);
-            const newlyFree = nextActive.filter(t => isTileFree(t, nextActive));
-            const nextPairs = [];
-            for (let i = 0; i < newlyFree.length; i++) {
-                for (let j = i + 1; j < newlyFree.length; j++) {
-                    if (newlyFree[i].tileDef.matchGroup === newlyFree[j].tileDef.matchGroup) {
-                        nextPairs.push([newlyFree[i], newlyFree[j]]);
-                    }
-                }
-            }
-
-            score += newlyFree.length * 6;
-            score += nextPairs.length * 10;
-
-            // Ripristina
-            t1.removed = false;
-            t2.removed = false;
-            return score;
-        }
-
         // Ricerca ricorsiva (Depth First Search) con limite di nodi per trovare una sequenza vincente
         let nodesVisited = 0;
-        const MAX_NODES = 1500;
+        const MAX_NODES = 2000;
 
         function solveDFS(activeTiles) {
             if (activeTiles.length === 0) return true;
@@ -1116,19 +1116,26 @@
     }
 
     // === CONTROLLO DI RISOLVIBILITÀ DEL TAVOLO IN TEMPO REALE ===
-    function isCurrentBoardSolvable() {
+    // 'SOLVABLE': percorso vincente confermato
+    // 'UNSOLVABLE': TUTTI i rami portano a vicolo cieco
+    // 'INCONCLUSIVE': ricerca limitata nel tempo, nessun falso allarme
+    function testBoardSolvability() {
         const remainingTiles = boardTiles.filter(t => !t.removed);
-        if (remainingTiles.length === 0) return true;
+        if (remainingTiles.length === 0) return 'SOLVABLE';
 
         const pairs = findAvailablePairs();
-        if (pairs.length === 0) return false;
+        if (pairs.length === 0) return 'UNSOLVABLE';
 
         let nodesVisited = 0;
-        const MAX_NODES = 1200;
+        let timedOut = false;
+        const MAX_NODES = 2500;
 
         function solveDFS(activeTiles) {
             if (activeTiles.length === 0) return true;
-            if (++nodesVisited > MAX_NODES) return false;
+            if (++nodesVisited > MAX_NODES) {
+                timedOut = true;
+                return false;
+            }
 
             const free = activeTiles.filter(t => isTileFree(t, activeTiles));
             const availablePairs = [];
@@ -1142,6 +1149,9 @@
 
             if (availablePairs.length === 0) return false;
 
+            // Ordina con euristica
+            availablePairs.sort((a, b) => evaluatePairScore(b, activeTiles) - evaluatePairScore(a, activeTiles));
+
             for (const pair of availablePairs) {
                 pair[0].removed = true;
                 pair[1].removed = true;
@@ -1153,11 +1163,15 @@
                 pair[1].removed = false;
 
                 if (solved) return true;
+                if (timedOut) return false;
             }
             return false;
         }
 
-        return solveDFS(remainingTiles);
+        const solved = solveDFS(remainingTiles);
+        if (solved) return 'SOLVABLE';
+        if (timedOut) return 'INCONCLUSIVE';
+        return 'UNSOLVABLE';
     }
 
     // === AGGIORNAMENTO UI & STATI TESSERE ===
@@ -1196,8 +1210,8 @@
         const checkUnsolvable = document.getElementById('check-alert-unsolvable');
         if (checkUnsolvable && checkUnsolvable.checked && remainingTiles.length > 0 && pairs.length > 0 && !isGameOver) {
             if (moveHistory.length > 0) {
-                const solvable = isCurrentBoardSolvable();
-                if (!solvable) {
+                const status = testBoardSolvability();
+                if (status === 'UNSOLVABLE') {
                     setTimeout(() => {
                         showToast(TXT.unsolvableWarning);
                         playSound('locked');
@@ -1597,8 +1611,8 @@
             checkAlertUnsolvable.addEventListener('change', () => {
                 localStorage.setItem('mahjong_alert_unsolvable', checkAlertUnsolvable.checked ? '1' : '0');
                 if (checkAlertUnsolvable.checked && moveHistory.length > 0) {
-                    const solvable = isCurrentBoardSolvable();
-                    if (!solvable) {
+                    const status = testBoardSolvability();
+                    if (status === 'UNSOLVABLE') {
                         showToast(TXT.unsolvableWarning);
                     }
                 }
