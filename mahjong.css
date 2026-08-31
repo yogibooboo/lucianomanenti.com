@@ -18,7 +18,7 @@ html, body {
     width: 100%;
     overflow: hidden;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #0b1f14;
+    background-color: #1a5f2a;
     color: #ffffff;
     -webkit-touch-callout: none;
     -webkit-user-select: none;
@@ -38,7 +38,7 @@ html, body {
     position: absolute;
     top: 0;
     height: 100%;
-    background: linear-gradient(135deg, #134633 0%, #0d3224 50%, #082217 100%);
+    background: linear-gradient(135deg, #1a6b30 0%, #145524 50%, #0f4a1c 100%);
     overflow-y: auto;
     box-sizing: border-box;
     display: none;
@@ -58,28 +58,12 @@ html, body {
     width: 1024px;
     height: 750px;
     transform-origin: center center;
-    background: radial-gradient(circle at 50% 45%, #184e36 0%, #0d2f20 65%, #071911 100%);
+    background: linear-gradient(135deg, #1a6b30 0%, #145524 50%, #0f4a1c 100%);
+    background-image: url(images/scala40/tappetoverde.png);
     border: 4px solid #b8860b;
-    border-radius: 12px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.85), inset 0 0 80px rgba(0, 0, 0, 0.6);
+    border-radius: 10px;
+    box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.4), 0 10px 30px rgba(0, 0, 0, 0.5);
     overflow: hidden;
-}
-
-/* Sfondo con trama a stuoia orientale sottile */
-#campogioco::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-image: 
-        radial-gradient(rgba(255, 215, 0, 0.04) 1px, transparent 1px),
-        radial-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px);
-    background-size: 24px 24px;
-    background-position: 0 0, 12px 12px;
-    pointer-events: none;
-    z-index: 1;
 }
 
 /* ================= HEADER BAR SUPERIORE ================= */
