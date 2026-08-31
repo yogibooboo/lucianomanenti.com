@@ -27,7 +27,7 @@
     <meta http-Equiv="Pragma" Content="no-cache">
     <meta http-Equiv="Expires" Content="0">
 
-    <link rel="stylesheet" href="mahjong.css?v=1.5" />
+    <link rel="stylesheet" href="mahjong.css?v=1.6" />
 
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
@@ -113,6 +113,12 @@
             <!-- ================= AREA TAVOLO MAHJONG ================= -->
             <div id="area-tavolo">
                 <div id="board-container"></div>
+
+                <!-- Checkbox sempre visibile per rilevamento risolvibilità -->
+                <label class="control-toggle-solvability" id="lbl-check-risolvibile" title="Avvisa immediatamente se una mossa rende la partita impossibile da vincere">
+                    <input type="checkbox" id="check-alert-unsolvable">
+                    <span>Avvisa se non più risolvibile</span>
+                </label>
             </div>
 
             <!-- ================= MODALI ED OVERLAY ================= -->
@@ -222,7 +228,7 @@
     <!-- Layout engine per il ridimensionamento responsivo del gioco -->
     <script src="game-layout.js?v=4.6"></script>
     <!-- Logica di Gioco del Mahjong -->
-    <script src="mahjong.js?v=1.6"></script>
+    <script src="mahjong.js?v=1.7"></script>
     <script>
         (function () {
             var nascosto = false;

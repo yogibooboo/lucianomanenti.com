@@ -22,7 +22,8 @@
         shuffled: isEn ? 'Board shuffled!' : 'Tavolo rimescolato!',
         victoryTitle: isEn ? 'VICTORY! BOARD CLEARED!' : 'VITTORIA! TAVOLO COMPLETATO!',
         victoryMsg: isEn ? 'Congratulations! You cleared all 144 tiles.' : 'Complimenti! Hai rimosso tutte le 144 tessere.',
-        newGameConfirm: isEn ? 'Do you want to start a new game?' : 'Vuoi iniziare una nuova partita?'
+        newGameConfirm: isEn ? 'Do you want to start a new game?' : 'Vuoi iniziare una nuova partita?',
+        unsolvableWarning: isEn ? '⚠️ Warning: the board is no longer solvable! Use Undo or Shuffle.' : '⚠️ Attenzione: il gioco non è più risolvibile! Usa Annulla o Rimescola.'
     };
 
     // === DEFINIZIONE TESSERE & SEMI (144 Tessere in totale) ===
@@ -1114,6 +1115,51 @@
         hintPair = [];
     }
 
+    // === CONTROLLO DI RISOLVIBILITÀ DEL TAVOLO IN TEMPO REALE ===
+    function isCurrentBoardSolvable() {
+        const remainingTiles = boardTiles.filter(t => !t.removed);
+        if (remainingTiles.length === 0) return true;
+
+        const pairs = findAvailablePairs();
+        if (pairs.length === 0) return false;
+
+        let nodesVisited = 0;
+        const MAX_NODES = 1200;
+
+        function solveDFS(activeTiles) {
+            if (activeTiles.length === 0) return true;
+            if (++nodesVisited > MAX_NODES) return false;
+
+            const free = activeTiles.filter(t => isTileFree(t, activeTiles));
+            const availablePairs = [];
+            for (let i = 0; i < free.length; i++) {
+                for (let j = i + 1; j < free.length; j++) {
+                    if (free[i].tileDef.matchGroup === free[j].tileDef.matchGroup) {
+                        availablePairs.push([free[i], free[j]]);
+                    }
+                }
+            }
+
+            if (availablePairs.length === 0) return false;
+
+            for (const pair of availablePairs) {
+                pair[0].removed = true;
+                pair[1].removed = true;
+
+                const nextActive = activeTiles.filter(t => !t.removed);
+                const solved = solveDFS(nextActive);
+
+                pair[0].removed = false;
+                pair[1].removed = false;
+
+                if (solved) return true;
+            }
+            return false;
+        }
+
+        return solveDFS(remainingTiles);
+    }
+
     // === AGGIORNAMENTO UI & STATI TESSERE ===
     function updateBoardStateUI() {
         const remainingTiles = boardTiles.filter(t => !t.removed);
@@ -1145,6 +1191,20 @@
         if (elPunti) elPunti.textContent = gameScore;
         if (btnUndo) btnUndo.disabled = (moveHistory.length === 0);
         if (btnHint) btnHint.disabled = (pairs.length === 0);
+
+        // Se l'opzione "Avvisa se non più risolvibile" è attiva
+        const checkUnsolvable = document.getElementById('check-alert-unsolvable');
+        if (checkUnsolvable && checkUnsolvable.checked && remainingTiles.length > 0 && pairs.length > 0 && !isGameOver) {
+            if (moveHistory.length > 0) {
+                const solvable = isCurrentBoardSolvable();
+                if (!solvable) {
+                    setTimeout(() => {
+                        showToast(TXT.unsolvableWarning);
+                        playSound('locked');
+                    }, 350);
+                }
+            }
+        }
 
         // Se non ci sono mosse e rimangono tessere, avvisa
         if (remainingTiles.length > 0 && pairs.length === 0 && !isGameOver) {
@@ -1526,6 +1586,23 @@
                 document.getElementById('schermo').style.display = 'none';
                 document.getElementById('confermarimescola').style.display = 'none';
                 shuffleRemainingTiles();
+            });
+        }
+
+        // Checkbox Avviso Risolvibilità
+        const checkAlertUnsolvable = document.getElementById('check-alert-unsolvable');
+        if (checkAlertUnsolvable) {
+            const savedAlert = localStorage.getItem('mahjong_alert_unsolvable') === '1';
+            checkAlertUnsolvable.checked = savedAlert;
+            checkAlertUnsolvable.addEventListener('change', () => {
+                localStorage.setItem('mahjong_alert_unsolvable', checkAlertUnsolvable.checked ? '1' : '0');
+                if (checkAlertUnsolvable.checked && moveHistory.length > 0) {
+                    const solvable = isCurrentBoardSolvable();
+                    if (!solvable) {
+                        showToast(TXT.unsolvableWarning);
+                    }
+                }
+                playSound('select');
             });
         }
 
