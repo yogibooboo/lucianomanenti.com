@@ -1,6 +1,21 @@
 // ============================================================================
 // COEFFICIENTI MOTORE AI — B
 //
+// 01/09/2026 — ATTENZIONE: QUESTA TABELLA ORA È IDENTICA A QUELLA DI SERIE.
+// Gli otto coefficienti sono stati promossi in burraco-engine-default.coeffs.js,
+// quindi B non si scosta più da niente. Oggi non fa danni perché i bracci sono
+// spenti (AB_ATTIVO = false in burraco-game.js), ma chi riaccendesse
+// l'esperimento senza prima mettere qui dei valori NUOVI otterrebbe un
+// esperimento nullo che sembra funzionare: tre bracci che giocano tutti allo
+// stesso modo, e nel database `parametri` vuoto su tutti e tre — cioè B
+// indistinguibile da A. Il file resta come impalcatura per il prossimo
+// esperimento, non come una variante viva.
+//
+// Il giro naturale sarebbe quello mai fatto: togliere un coefficiente per
+// volta dagli otto per sapere quale porta il peso (vedi la nota in fondo).
+//
+// --- storia, da qui in giù ---
+//
 // 22/08/2026: ripristinati gli OTTO valori che erano annotati nel commento
 // "era N", cioè la combinazione trovata a maggio tarando i coefficienti tutti
 // insieme (i guadagni del singolo parametro NON si sommano: questa è una
