@@ -1748,8 +1748,6 @@ function eseguiPresaGiocatore() {
         const eScopa = carteTavolo.length === 0 && !ultimaManoDelRound;
         if (variante === 'bresciana' && preseTavolo.length === 1 && ultimaCartaCalataTavolo && preseTavolo[0].id === ultimaCartaCalataTavolo.id) {
             creaNotificaPicca('giocatore', eScopa);
-            piccateRoundTu++;
-            if (eScopa) scopeRoundTu++;
         } else if (eScopa) {
             creaNotificaScopa('giocatore');
         }
@@ -1794,10 +1792,14 @@ function _creaBanner(className, testo, durata = 2000) {
     return banner;
 }
 
+function isTeamTu(chi) {
+    return chi === 'giocatore' || chi === 'compagno';
+}
+
 function creaNotificaScopa(chi) {
     riproduciAudio("sounds/scala40/magic.mp3");
 
-    if (chi === 'giocatore') scopeRoundTu++;
+    if (isTeamTu(chi)) scopeRoundTu++;
     else scopeRoundPC++;
 
     aggiornaDettaglioProgressivo();
@@ -1807,8 +1809,13 @@ function creaNotificaScopa(chi) {
 function creaNotificaPicca(chi, conScopa) {
     riproduciAudio("sounds/scala40/magic.mp3");
 
-    if (chi === 'giocatore') piccateRoundTu++;
-    else piccateRoundPC++;
+    if (isTeamTu(chi)) {
+        piccateRoundTu++;
+        if (conScopa) scopeRoundTu++;
+    } else {
+        piccateRoundPC++;
+        if (conScopa) scopeRoundPC++;
+    }
 
     _creaBanner('notifica-scopa', conScopa ? 'PICCA E SCOPA!' : 'PICCA!', 2000);
     aggiornaDettaglioProgressivo();
@@ -1842,11 +1849,12 @@ function verificaNapola(chi) {
     }
 
     // Controlla se la sequenza del giocatore corrente si è allungata
-    const cimaPrec = chi === 'giocatore' ? _napolaCimaPrec.tu : _napolaCimaPrec.pc;
-    const prese = chi === 'giocatore' ? cartePreseTu : cartePresePC;
+    const isTu = isTeamTu(chi);
+    const cimaPrec = isTu ? _napolaCimaPrec.tu : _napolaCimaPrec.pc;
+    const prese = isTu ? cartePreseTu : cartePresePC;
     const cimaNuova = calcolaCimaNapola(prese);
     if (cimaNuova > cimaPrec) {
-        if (chi === 'giocatore') _napolaCimaPrec.tu = cimaNuova;
+        if (isTu) _napolaCimaPrec.tu = cimaNuova;
         else _napolaCimaPrec.pc = cimaNuova;
         const testo = isEn ? `NAPOLA TO ${cimaNuova}!` : `NAPOLA FINO AL ${cimaNuova}!`;
         riproduciAudio(cimaPrec === 0 ? "sounds/scala40/magic.mp3" : "sounds/scala40/chimes.mp3");
@@ -1857,7 +1865,8 @@ function verificaNapola(chi) {
 
 function verificaPuntoSpade(chi, nSpadePresiQuestaMossa) {
     if (nSpadePresiQuestaMossa === 0) return;
-    const prese = chi === 'giocatore' ? cartePreseTu : cartePresePC;
+    const isTu = isTeamTu(chi);
+    const prese = isTu ? cartePreseTu : cartePresePC;
     const totaleSpade = prese.filter(c => c.suit === SEME_SPADE_BRESCIANE).length;
     const precedente = totaleSpade - nSpadePresiQuestaMossa;
     if (precedente < 7 && totaleSpade >= 7) {
@@ -1897,7 +1906,7 @@ function creaNotificaSettebello(chi) {
     floatText.textContent = '+1 Settebello';
     
     // Floating position
-    if (chi === 'giocatore') {
+    if (isTeamTu(chi)) {
         floatText.style.bottom = '180px';
         floatText.style.left = '48%';
     } else {
@@ -1912,20 +1921,13 @@ function creaNotificaSettebello(chi) {
 }
 
 function creaNotificaQuadri(chi, quanti, silenziato, simboloOverride) {
-    // Disattivato l'audio ding per la cattura delle quadri (mantenendo solo la notifica visiva)
-    /*
-    if (!silenziato) {
-        riproduciAudio("sounds/scala40/ding.mp3");
-    }
-    */
     const container = document.getElementById('campogioco');
     
-    // Wrapper per posizionarlo grossomodo al centro dello schermo (orizzontalmente 50%)
-    // senza rompere il transform dell'animazione di salita.
     const wrapper = document.createElement('div');
     wrapper.style.position = 'absolute';
     wrapper.style.left = '50%';
-    if (chi === 'giocatore') {
+    const isTu = isTeamTu(chi);
+    if (isTu) {
         wrapper.style.top = '56%'; // Centro-basso (Noi)
     } else {
         wrapper.style.top = '40%'; // Centro-alto (Loro)
@@ -1938,12 +1940,12 @@ function creaNotificaQuadri(chi, quanti, silenziato, simboloOverride) {
     const floatText = document.createElement('div');
     floatText.className = 'punti-floating';
     floatText.style.position = 'relative';
-    floatText.style.fontSize = '38px'; // Ancora più grande e visibile
-    floatText.style.color = '#ff3344'; // Rosso neon
+    floatText.style.fontSize = '38px';
+    floatText.style.color = '#ff3344';
     floatText.style.textShadow = '2px 2px 2px #000, 0 0 10px #ff3344, 0 0 20px #ff0000, 0 0 30px #ff0000';
     let testoSeme;
     let totale;
-    const prese = chi === 'giocatore' ? cartePreseTu : cartePresePC;
+    const prese = isTu ? cartePreseTu : cartePresePC;
     if (simboloOverride) {
         testoSeme = simboloOverride === 'S'
             ? (window.currentLang === 'en' ? 'Swords' : 'Spade')
@@ -2799,8 +2801,6 @@ function eseguiMossaComputer(giocatoreIdx) {
             const eScopa = carteTavolo.length === 0 && !ultimaManoDelRound;
             if (variante === 'bresciana' && preseTavolo.length === 1 && ultimaCartaCalataTavolo && preseTavolo[0].id === ultimaCartaCalataTavolo.id) {
                 creaNotificaPicca(chiIA, eScopa);
-                if (isNoi) piccateRoundTu++; else piccateRoundPC++;
-                if (eScopa) (isNoi ? (scopeRoundTu++) : (scopeRoundPC++));
             } else if (eScopa) {
                 creaNotificaScopa(chiIA);
             }
