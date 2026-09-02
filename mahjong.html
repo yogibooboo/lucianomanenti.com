@@ -27,7 +27,7 @@
     <meta http-Equiv="Pragma" Content="no-cache">
     <meta http-Equiv="Expires" Content="0">
 
-    <link rel="stylesheet" href="mahjong.css?v=1.7" />
+    <link rel="stylesheet" href="mahjong.css?v=2.6" />
 
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
@@ -114,6 +114,15 @@
             <div id="area-tavolo">
                 <div id="board-container"></div>
 
+                <!-- Banner descrittivo della tessera selezionata -->
+                <div id="tile-info-banner" class="tile-info-banner" aria-live="polite">
+                    <span id="tile-info-icon" class="tile-info-icon">🀄</span>
+                    <div class="tile-info-text">
+                        <div id="tile-info-title" class="tile-info-title"></div>
+                        <div id="tile-info-desc" class="tile-info-desc"></div>
+                    </div>
+                </div>
+
                 <!-- Checkbox sempre visibile per rilevamento risolvibilità -->
                 <label class="control-toggle-solvability" id="lbl-check-risolvibile" title="Avvisa immediatamente se una mossa rende la partita impossibile da vincere">
                     <input type="checkbox" id="check-alert-unsolvable">
@@ -127,31 +136,8 @@
             <div id="modale-inizio" class="form-calcolo">
                 <div class="form-calcolo-title">Mahjong Luciano</div>
 
-                <div style="font-size: 13px; font-weight: bold; margin-bottom: 12px; color: #ffd700; text-transform: uppercase;">
-                    Scegli lo Schema di Gioco:
-                </div>
-
-                <div class="grid-schemi">
-                    <button id="btn-schema-turtle" onclick="selezionaSchema('turtle')" class="btn-schema-sel attiva">
-                        <span class="icon">🐢</span>
-                        <span>La Tartaruga</span>
-                        <span class="sub">144 tessere &bull; Classico</span>
-                    </button>
-                    <button id="btn-schema-pyramid" onclick="selezionaSchema('pyramid')" class="btn-schema-sel">
-                        <span class="icon">🔺</span>
-                        <span>Piramide</span>
-                        <span class="sub">144 tessere &bull; Medio</span>
-                    </button>
-                    <button id="btn-schema-castle" onclick="selezionaSchema('castle')" class="btn-schema-sel">
-                        <span class="icon">🏯</span>
-                        <span>Fortezza</span>
-                        <span class="sub">144 tessere &bull; Tattico</span>
-                    </button>
-                    <button id="btn-schema-arena" onclick="selezionaSchema('arena')" class="btn-schema-sel">
-                        <span class="icon">🏟️</span>
-                        <span>Arena</span>
-                        <span class="sub">144 tessere &bull; Aperto</span>
-                    </button>
+                <div style="font-size: 14px; font-weight: bold; margin-bottom: 18px; color: #ffd700; text-transform: uppercase;">
+                    La Tartaruga &bull; Classico a 144 tessere
                 </div>
 
                 <button onclick="confermaEAvviaPartita()" class="btn-continua" style="width: 100%; max-width: 250px; margin: 0 auto 15px auto; display: block;">INIZIA A GIOCARE 🀄</button>
@@ -228,7 +214,7 @@
     <!-- Layout engine per il ridimensionamento responsivo del gioco -->
     <script src="game-layout.js?v=4.6"></script>
     <!-- Logica di Gioco del Mahjong -->
-    <script src="mahjong.js?v=2.0"></script>
+    <script src="mahjong.js?v=2.8"></script>
     <script>
         (function () {
             var nascosto = false;

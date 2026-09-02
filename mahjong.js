@@ -23,7 +23,9 @@
         victoryTitle: isEn ? 'VICTORY! BOARD CLEARED!' : 'VITTORIA! TAVOLO COMPLETATO!',
         victoryMsg: isEn ? 'Congratulations! You cleared all 144 tiles.' : 'Complimenti! Hai rimosso tutte le 144 tessere.',
         newGameConfirm: isEn ? 'Do you want to start a new game?' : 'Vuoi iniziare una nuova partita?',
-        unsolvableWarning: isEn ? '⚠️ Warning: the board is no longer solvable! Use Undo or Shuffle.' : '⚠️ Attenzione: il gioco non è più risolvibile! Usa Annulla o Rimescola.'
+        unsolvableWarning: isEn ? '⚠️ Warning: the board is no longer solvable! Use Undo or Shuffle.' : '⚠️ Attenzione: il gioco non è più risolvibile! Usa Annulla o Rimescola.',
+        flowerBadge: isEn ? 'FLOWER' : 'FIORE',
+        seasonBadge: isEn ? 'SEASON' : 'STAGIONE'
     };
 
     // === DEFINIZIONE TESSERE & SEMI (144 Tessere in totale) ===
@@ -179,18 +181,20 @@
             const char = CHINESE_FLOWERS[value];
             cornerLabel = '🌸';
             innerContent = `
-                <circle cx="22" cy="18" r="8" fill="#e91e63" opacity="0.85"/>
-                <circle cx="16" cy="22" r="5" fill="#ff4081" opacity="0.85"/>
-                <circle cx="28" cy="22" r="5" fill="#ff4081" opacity="0.85"/>
-                <circle cx="22" cy="18" r="3" fill="#ffd700"/>
-                <text x="22" y="45" font-family="'SimHei', 'Microsoft YaHei', sans-serif" font-size="16" font-weight="bold" fill="#c2185b" text-anchor="middle">${char}</text>
+                <circle cx="22" cy="15" r="6.5" fill="#e91e63" opacity="0.85"/>
+                <circle cx="17" cy="19" r="4.5" fill="#ff4081" opacity="0.85"/>
+                <circle cx="27" cy="19" r="4.5" fill="#ff4081" opacity="0.85"/>
+                <circle cx="22" cy="15" r="2.5" fill="#ffd700"/>
+                <text x="22" y="37" font-family="'SimHei', 'Microsoft YaHei', sans-serif" font-size="15" font-weight="bold" fill="#c2185b" text-anchor="middle">${char}</text>
+                <text x="22" y="49" font-family="system-ui, -apple-system, sans-serif" font-size="7" font-weight="900" fill="#9c27b0" text-anchor="middle" letter-spacing="0.5">${TXT.flowerBadge}</text>
             `;
         } else if (type === 'season') {
             const char = CHINESE_SEASONS[value];
             cornerLabel = '🍂';
             innerContent = `
-                <path d="M 22 10 Q 30 18 22 28 Q 14 18 22 10 Z" fill="#ff9800" stroke="#e65100" stroke-width="1"/>
-                <text x="22" y="45" font-family="'SimHei', 'Microsoft YaHei', sans-serif" font-size="16" font-weight="bold" fill="#e65100" text-anchor="middle">${char}</text>
+                <path d="M 22 8 Q 29 15 22 23 Q 15 15 22 8 Z" fill="#ff9800" stroke="#e65100" stroke-width="1"/>
+                <text x="22" y="37" font-family="'SimHei', 'Microsoft YaHei', sans-serif" font-size="15" font-weight="bold" fill="#e65100" text-anchor="middle">${char}</text>
+                <text x="22" y="49" font-family="system-ui, -apple-system, sans-serif" font-size="6.5" font-weight="900" fill="#d84315" text-anchor="middle" letter-spacing="0.5">${TXT.seasonBadge}</text>
             `;
         }
 
@@ -380,121 +384,6 @@
             slots.push({ x: 13, y: 7, z: 4 });
 
             return slots.slice(0, 144);
-        },
-
-        pyramid: function () {
-            // Schema Piramide
-            const slots = [];
-            // Livello 0: 8x8 = 64
-            for (let y = 1; y <= 15; y += 2) {
-                for (let x = 7; x <= 21; x += 2) {
-                    slots.push({ x, y, z: 0 });
-                }
-            }
-            // Livello 1: 6x6 = 36
-            for (let y = 3; y <= 13; y += 2) {
-                for (let x = 9; x <= 19; x += 2) {
-                    slots.push({ x, y, z: 1 });
-                }
-            }
-            // Livello 2: 4x4 = 16
-            for (let y = 5; y <= 11; y += 2) {
-                for (let x = 11; x <= 17; x += 2) {
-                    slots.push({ x, y, z: 2 });
-                }
-            }
-            // Livello 3: 2x2 = 4
-            for (let y = 7; y <= 9; y += 2) {
-                for (let x = 13; x <= 15; x += 2) {
-                    slots.push({ x, y, z: 3 });
-                }
-            }
-            // Basi esterne aggiuntive (24 tessere per arrivare a 144 esatte)
-            const wings = [
-                {x: 3, y: 1}, {x: 5, y: 1}, {x: 23, y: 1}, {x: 25, y: 1},
-                {x: 3, y: 5}, {x: 5, y: 5}, {x: 23, y: 5}, {x: 25, y: 5},
-                {x: 3, y: 9}, {x: 5, y: 9}, {x: 23, y: 9}, {x: 25, y: 9},
-                {x: 3, y: 13}, {x: 5, y: 13}, {x: 23, y: 13}, {x: 25, y: 13},
-                {x: 1, y: 7}, {x: 27, y: 7},
-                {x: 13, y: 7, z: 4}, // Vertice 144
-                {x: 15, y: 7, z: 4},
-                {x: 7, y: 7, z: 1}, {x: 21, y: 7, z: 1},
-                {x: 14, y: 7, z: 5}, {x: 14, y: 8, z: 5}
-            ];
-            wings.forEach(w => slots.push({ x: w.x, y: w.y, z: w.z || 0 }));
-            return slots.slice(0, 144);
-        },
-
-        castle: function () {
-            // Fortezza con 4 torri e corte centrale
-            const slots = [];
-            // Torri 4 angoli a 3 piani
-            const towerBases = [
-                {x0: 4, y0: 1}, {x0: 20, y0: 1},
-                {x0: 4, y0: 11}, {x0: 20, y0: 11}
-            ];
-            towerBases.forEach(tb => {
-                for (let z = 0; z < 3; z++) {
-                    for (let dy = 0; dy < 4; dy += 2) {
-                        for (let dx = 0; dx < 4; dx += 2) {
-                            slots.push({ x: tb.x0 + dx, y: tb.y0 + dy, z });
-                        }
-                    }
-                }
-            });
-            // Mura di collegamento e cortile
-            for (let x = 8; x <= 18; x += 2) {
-                slots.push({ x, y: 2, z: 0 }, { x, y: 2, z: 1 });
-                slots.push({ x, y: 12, z: 0 }, { x, y: 12, z: 1 });
-            }
-            for (let y = 4; y <= 10; y += 2) {
-                slots.push({ x: 5, y, z: 0 }, { x: 5, y, z: 1 });
-                slots.push({ x: 21, y, z: 0 }, { x: 21, y, z: 1 });
-            }
-            // Maschio centrale
-            for (let y = 6; y <= 8; y += 2) {
-                for (let x = 11; x <= 15; x += 2) {
-                    slots.push({ x, y, z: 0 }, { x, y, z: 1 }, { x, y, z: 2 });
-                }
-            }
-            // Riempi fino a 144 se necessario
-            while (slots.length < 144) {
-                slots.push({ x: 2 + (slots.length % 26), y: 7, z: 0 });
-            }
-            return slots.slice(0, 144);
-        },
-
-        arena: function () {
-            // Arena con cerchi concentrici
-            const slots = [];
-            for (let x = 2; x <= 26; x += 2) {
-                slots.push({ x, y: 1, z: 0 }, { x, y: 13, z: 0 });
-            }
-            for (let y = 3; y <= 11; y += 2) {
-                slots.push({ x: 2, y, z: 0 }, { x: 26, y, z: 0 });
-            }
-            // Secondo cerchio
-            for (let x = 4; x <= 24; x += 2) {
-                slots.push({ x, y: 3, z: 1 }, { x, y: 11, z: 1 });
-            }
-            for (let y = 5; y <= 9; y += 2) {
-                slots.push({ x: 4, y, z: 1 }, { x: 24, y, z: 1 });
-            }
-            // Terzo cerchio
-            for (let x = 6; x <= 22; x += 2) {
-                slots.push({ x, y: 5, z: 2 }, { x, y: 9, z: 2 });
-            }
-            for (let y = 6; y <= 8; y += 2) {
-                slots.push({ x: 6, y, z: 2 }, { x: 22, y, z: 2 });
-            }
-            // Centro
-            for (let x = 8; x <= 20; x += 2) {
-                slots.push({ x, y: 7, z: 3 });
-            }
-            while (slots.length < 144) {
-                slots.push({ x: 10 + (slots.length % 10), y: 7, z: 0 });
-            }
-            return slots.slice(0, 144);
         }
     };
 
@@ -532,8 +421,8 @@
     const TILE_HEIGHT = 68;
     const HALF_X = 26; // larghezza mezza cella
     const HALF_Y = 34; // altezza mezza cella
-    const LAYER_OFFSET_X = -4; // spostamento visuale 3D per layer
-    const LAYER_OFFSET_Y = -4;
+    const LAYER_OFFSET_X = 0; // Piani perfettamente centrati (zero disassamento)
+    const LAYER_OFFSET_Y = 0;
 
     // === INIZIALIZZAZIONE AUDIO WEB AUDIO API ===
     function getAudioContext() {
@@ -939,6 +828,7 @@
     function selectTile(tile) {
         selectedTile = tile;
         if (tile.el) tile.el.classList.add('tile-selected');
+        showTileDescription(tile);
     }
 
     function clearSelection() {
@@ -946,10 +836,101 @@
             selectedTile.el.classList.remove('tile-selected');
         }
         selectedTile = null;
+        hideTileDescription();
+    }
+
+    // === DESCRIZIONE INFORMATIVA TESSERA SELEZIONATA ===
+    function showTileDescription(tile) {
+        const banner = document.getElementById('tile-info-banner');
+        if (!banner || !tile || !tile.tileDef) return;
+
+        const iconEl = document.getElementById('tile-info-icon');
+        const titleEl = document.getElementById('tile-info-title');
+        const descEl = document.getElementById('tile-info-desc');
+
+        const def = tile.tileDef;
+        let icon = '🀄';
+        let title = def.name;
+        let desc = '';
+
+        // Conta le tessere gemelle/compatibili ancora sul tavolo
+        const activeMatches = boardTiles.filter(t => !t.removed && t.id !== tile.id && t.tileDef.matchGroup === def.matchGroup);
+        const freeCount = activeMatches.filter(t => isTileFree(t, boardTiles)).length;
+
+        let remInfo = '';
+        if (isEn) {
+            remInfo = activeMatches.length === 1 
+                ? `1 other on board${freeCount > 0 ? ' (FREE!)' : ''}` 
+                : `${activeMatches.length} others on board${freeCount > 0 ? ` (${freeCount} free)` : ''}`;
+        } else {
+            remInfo = activeMatches.length === 1 
+                ? `1 altra sul tavolo${freeCount > 0 ? ' (LIBERA!)' : ''}` 
+                : `${activeMatches.length} altre sul tavolo${freeCount > 0 ? ` (${freeCount} libere)` : ''}`;
+        }
+
+        if (def.type === 'pin') {
+            icon = '⚪';
+            title = `${def.value} ${isEn ? 'Dots' : 'Pallini'}`;
+            desc = isEn 
+                ? `Dots Suit • Match with identical ${def.value} Dots • ${remInfo}`
+                : `Seme dei Pallini • Si abbina con un altro ${def.value} Pallini • ${remInfo}`;
+        } else if (def.type === 'sou') {
+            icon = '🎋';
+            title = `${def.value} ${isEn ? 'Bamboo' : 'Bambù'}`;
+            desc = isEn 
+                ? `Bamboo Suit • Match with identical ${def.value} Bamboo • ${remInfo}`
+                : `Seme del Bambù • Si abbina con un altro ${def.value} Bambù • ${remInfo}`;
+        } else if (def.type === 'man') {
+            icon = '萬';
+            const ch = CHINESE_NUMS[def.value] || '';
+            title = `${def.value} ${isEn ? 'Characters' : 'Caratteri'} (${ch}萬)`;
+            desc = isEn 
+                ? `Characters Suit • Match with identical ${def.value} Characters • ${remInfo}`
+                : `Seme dei Caratteri • Si abbina con un altro ${def.value} Caratteri • ${remInfo}`;
+        } else if (def.type === 'wind') {
+            icon = '🧭';
+            const ch = CHINESE_WINDS[def.value] || '';
+            title = `${def.name} (${ch})`;
+            desc = isEn 
+                ? `Honours (Winds) • Match with identical ${def.name} • ${remInfo}`
+                : `Onori (I 4 Venti) • Si abbina con un altro ${def.name} • ${remInfo}`;
+        } else if (def.type === 'dragon') {
+            icon = '🐉';
+            const ch = CHINESE_DRAGONS[def.value] || '白';
+            title = `${def.name} (${ch})`;
+            desc = isEn 
+                ? `Superior Honours (Dragons) • Match with identical ${def.name} • ${remInfo}`
+                : `Onori Supremi (I 3 Draghi) • Si abbina con un altro ${def.name} • ${remInfo}`;
+        } else if (def.type === 'flower') {
+            icon = '🌸';
+            const ch = CHINESE_FLOWERS[def.value] || '';
+            title = `${def.name} (${ch})`;
+            desc = isEn 
+                ? `Special Flowers • Matches with ANY other Flower • ${remInfo}`
+                : `Fiori Speciali • Si abbina con QUALSIASI altro Fiore • ${remInfo}`;
+        } else if (def.type === 'season') {
+            icon = '🍂';
+            const ch = CHINESE_SEASONS[def.value] || '';
+            title = `${def.name} (${ch})`;
+            desc = isEn 
+                ? `Special Seasons • Matches with ANY other Season • ${remInfo}`
+                : `Stagioni Speciali • Si abbina con QUALSIASI altra Stagione • ${remInfo}`;
+        }
+
+        if (iconEl) iconEl.textContent = icon;
+        if (titleEl) titleEl.textContent = title;
+        if (descEl) descEl.textContent = desc;
+        banner.classList.add('visibile');
+    }
+
+    function hideTileDescription() {
+        const banner = document.getElementById('tile-info-banner');
+        if (banner) banner.classList.remove('visibile');
     }
 
     function matchTiles(t1, t2) {
         playSound('match');
+        hideTileDescription();
 
         // Calcola combo e punteggio
         const now = Date.now();
@@ -1168,13 +1149,19 @@
 
     function provideHint() {
         if (isGameOver) return;
-        clearHint();
+        // BISTABILE: se c'è già un suggerimento attivo, un nuovo click lo annulla
+        if (hintPair.length > 0) {
+            clearHint();
+            return;
+        }
 
         const pair = findOptimalHintPair();
         if (pair) {
             hintPair = pair;
             pair[0].el.classList.add('tile-hint');
             pair[1].el.classList.add('tile-hint');
+            const btnHint = document.getElementById('btn-hint');
+            if (btnHint) btnHint.classList.add('active');
             playSound('select');
 
             // Penalità minima di 30 punti per il suggerimento
@@ -1191,6 +1178,8 @@
             if (t.el) t.el.classList.remove('tile-hint');
         });
         hintPair = [];
+        const btnHint = document.getElementById('btn-hint');
+        if (btnHint) btnHint.classList.remove('active');
     }
 
     // === CONTROLLO DI RISOLVIBILITÀ DEL TAVOLO IN TEMPO REALE ===
@@ -1210,7 +1199,7 @@
         const remainingTiles = boardTiles.filter(t => !t.removed);
         const pairs = findAvailablePairs();
 
-        // Aggiorna classi CSS (tile-free vs tile-blocked)
+        // Aggiorna classi CSS (tile-free vs tile-blocked e adiacenze per facce 3D)
         boardTiles.forEach(tile => {
             if (!tile.removed && tile.el) {
                 const free = isTileFree(tile, boardTiles);
@@ -1221,6 +1210,22 @@
                     tile.el.classList.remove('tile-free');
                     tile.el.classList.add('tile-blocked');
                 }
+
+                // Controllo adiacenze perimetrali sullo stesso livello Z:
+                const hasLeftSameLevel = boardTiles.some(o => !o.removed && o.z === tile.z && o.x === tile.x - 2 && Math.abs(o.y - tile.y) < 2);
+                const hasRightSameLevel = boardTiles.some(o => !o.removed && o.z === tile.z && o.x === tile.x + 2 && Math.abs(o.y - tile.y) < 2);
+                const hasTopSameLevel = boardTiles.some(o => !o.removed && o.z === tile.z && o.y === tile.y - 2 && Math.abs(o.x - tile.x) < 2);
+                const hasBottomSameLevel = boardTiles.some(o => !o.removed && o.z === tile.z && o.y === tile.y + 2 && Math.abs(o.x - tile.x) < 2);
+
+                tile.el.classList.toggle('has-left-neighbor', hasLeftSameLevel);
+                tile.el.classList.toggle('has-right-neighbor', hasRightSameLevel);
+                tile.el.classList.toggle('has-top-neighbor', hasTopSameLevel);
+                tile.el.classList.toggle('has-bottom-neighbor', hasBottomSameLevel);
+
+                tile.el.classList.toggle('no-left-border', !hasLeftSameLevel);
+                tile.el.classList.toggle('no-right-border', !hasRightSameLevel);
+                tile.el.classList.toggle('no-top-border', !hasTopSameLevel);
+                tile.el.classList.toggle('no-bottom-border', !hasBottomSameLevel);
             }
         });
 
@@ -1386,6 +1391,7 @@
         });
 
         boardTiles = board;
+        precalculateTopology(boardTiles);
         updateBoardStateUI();
     }
 
@@ -1410,6 +1416,7 @@
         // Reset variabili
         isGameOver = false;
         selectedTile = null;
+        hideTileDescription();
         hintPair = [];
         moveHistory = [];
         gameScore = 0;
@@ -1433,9 +1440,6 @@
     // === GESTIONE MODALI & VIE DI FUGA ===
     window.apriModaleInizio = function () {
         document.querySelectorAll('#campogioco .finish-banner').forEach(b => b.remove());
-        if (typeof window.selezionaSchema === 'function') {
-            window.selezionaSchema(activeLayout || 'turtle');
-        }
         const schermo = document.getElementById('schermo');
         const modale = document.getElementById('modale-inizio');
         const modaleVinto = document.getElementById('haivinto');
@@ -1448,20 +1452,12 @@
         if (modale) modale.style.display = 'flex';
     };
 
-    window.selezionaSchema = function (schemaKey) {
-        activeLayout = schemaKey;
-        try {
-            localStorage.setItem('mahjong_selected_layout', schemaKey);
-        } catch (e) { }
-        document.querySelectorAll('.btn-schema-sel').forEach(btn => {
-            btn.classList.remove('attiva');
-        });
-        const activeBtn = document.getElementById(`btn-schema-${schemaKey}`);
-        if (activeBtn) activeBtn.classList.add('attiva');
+    window.selezionaSchema = function () {
+        activeLayout = 'turtle';
     };
 
     window.confermaEAvviaPartita = function () {
-        startNewGame(activeLayout);
+        startNewGame('turtle');
     };
 
     window.chiediNuovaPartita = function () {

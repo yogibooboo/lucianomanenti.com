@@ -195,6 +195,44 @@
 			font-style: italic;
 			line-height: 1.3;
 		}
+
+		.tile-badge {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			background: #fffdf5;
+			border: 1px solid #d5caa8;
+			border-radius: 4px;
+			padding: 2px 7px;
+			margin: 2px 3px;
+			font-family: "Noto Serif SC", "SimSun", "Microsoft YaHei", serif;
+			font-size: 14.5px;
+			font-weight: bold;
+			box-shadow: 1px 1px 2px rgba(0,0,0,0.08);
+			vertical-align: middle;
+		}
+		.tile-badge.red { color: #c0392b; }
+		.tile-badge.green { color: #27ae60; }
+		.tile-badge.blue { color: #1976d2; }
+		.tile-badge.dark { color: #2c3e50; }
+		.tile-badge.flower { color: #c2185b; background: #fff0f5; border-color: #f8bbd0; }
+		.tile-badge.season { color: #d35400; background: #fff8e1; border-color: #ffe082; }
+
+		.layer-tag {
+			display: inline-block;
+			padding: 2px 8px;
+			border-radius: 4px;
+			font-weight: bold;
+			font-size: 12px;
+			color: white;
+			margin: 2px 4px 2px 0;
+			vertical-align: middle;
+		}
+		.layer-0 { background: #7f8c8d; }
+		.layer-1 { background: #1ea751; }
+		.layer-2 { background: #1976d2; }
+		.layer-3 { background: #d81b60; }
+		.layer-4 { background: #f57f17; }
 	</style>
 </head>
 
@@ -250,14 +288,14 @@
 				💡 <strong>Consiglio:</strong> Puoi premere il pulsante <strong>"👁️ Libere"</strong> nella barra superiore del gioco per illuminare all'istante tutte le tessere attualmente giocabili!
 			</div>
 
-			<h2>2. Composizione del Mazzo (144 Tessere)</h2>
-			<p>Il set classico &egrave; composto da 144 tessere suddivise in Semi, Onori e Tessere Speciali:</p>
+			<h2>2. Composizione del Mazzo e Simboli delle Tessere (144 Tessere)</h2>
+			<p>Il set classico &egrave; composto da 144 tessere suddivise in Semi numerici, Onori (Venti e Draghi) e Tessere Speciali (Fiori e Stagioni). Nel nostro gioco ogni tessera &egrave; arricchita con indici e simboli per un riconoscimento immediato:</p>
 
 			<table class="tile-table">
 				<thead>
 					<tr>
 						<th>Famiglia</th>
-						<th>Tessere</th>
+						<th>Simboli e Tessere</th>
 						<th>Quantit&agrave;</th>
 						<th>Regola di Abbinamento</th>
 					</tr>
@@ -265,57 +303,69 @@
 				<tbody>
 					<tr>
 						<td><strong>Cerchi / Pallini (Pin)</strong></td>
-						<td>Numeri da 1 a 9</td>
+						<td id="tile-cell-pin"></td>
 						<td>36 (4 per tipo)</td>
 						<td>Si abbinano solo per numero identico (es. 5 con 5)</td>
 					</tr>
 					<tr>
 						<td><strong>Bamb&ugrave; (Sou)</strong></td>
-						<td>Numeri da 1 a 9 (1 &egrave; l'Uccello)</td>
+						<td id="tile-cell-sou"></td>
 						<td>36 (4 per tipo)</td>
-						<td>Si abbinano solo per numero identico</td>
+						<td>Si abbinano solo per numero identico (l'1 &egrave; l'iconico Pavone)</td>
 					</tr>
 					<tr>
 						<td><strong>Caratteri (Man)</strong></td>
-						<td>Ideogrammi da 1 a 9</td>
+						<td id="tile-cell-man"></td>
 						<td>36 (4 per tipo)</td>
 						<td>Si abbinano solo per numero identico</td>
 					</tr>
 					<tr>
-						<td><strong>Venti (Onori)</strong></td>
-						<td>Est, Sud, Ovest, Nord</td>
+						<td><strong>I 4 Venti (Onori)</strong></td>
+						<td id="tile-cell-wind"></td>
 						<td>16 (4 per tipo)</td>
-						<td>Si abbinano solo con lo stesso punto cardinale</td>
+						<td>Si abbinano solo con lo stesso punto cardinale identico</td>
 					</tr>
 					<tr>
-						<td><strong>Draghi (Onori)</strong></td>
-						<td>Rosso (中), Verde (發), Bianco (白)</td>
+						<td><strong>I 3 Draghi (Onori Supremi)</strong></td>
+						<td id="tile-cell-dragon"></td>
 						<td>12 (4 per tipo)</td>
-						<td>Si abbinano solo con lo stesso drago/colore</td>
+						<td>Si abbinano solo con lo stesso colore di drago identico</td>
 					</tr>
 					<tr>
-						<td><strong>Fiori (Speciali)</strong></td>
-						<td>Prugna, Orchidea, Crisantemo, Bamb&ugrave;</td>
+						<td><strong>I 4 Fiori (Speciali)</strong></td>
+						<td id="tile-cell-flower"></td>
 						<td>4 (1 ciascuno)</td>
-						<td><strong>Qualsiasi Fiore si abbina con qualsiasi altro Fiore</strong></td>
+						<td><strong>Qualsiasi Fiore si abbina con QUALSIASI altro Fiore!</strong> (es. Prugna con Orchidea)</td>
 					</tr>
 					<tr>
-						<td><strong>Stagioni (Speciali)</strong></td>
-						<td>Primavera, Estate, Autunno, Inverno</td>
+						<td><strong>Le 4 Stagioni (Speciali)</strong></td>
+						<td id="tile-cell-season"></td>
 						<td>4 (1 ciascuno)</td>
-						<td><strong>Qualsiasi Stagione si abbina con qualsiasi altra Stagione</strong></td>
+						<td><strong>Qualsiasi Stagione si abbina con QUALSIASI altra Stagione!</strong> (es. Autunno con Primavera)</td>
 					</tr>
 				</tbody>
 			</table>
 
-			<h2>3. Schemi di Gioco e Difficolt&agrave;</h2>
-			<p>Puoi metterti alla prova con 4 schemi iconici a difficolt&agrave; crescente:</p>
+			<h2>3. Lo Schema di Gioco: La Tartaruga</h2>
+			<p>
+				<strong>Mahjong Luciano</strong> adotta la celeberrima configurazione classica a forma di <strong>Tartaruga di Shanghai</strong>, composta da 144 tessere disposte su 5 livelli di quota progressivi a formare una piramide terrazzata.
+			</p>
+
+			<h3>Riconoscimento Immediato dei Livelli (Profili Perimetrali Colorati)</h3>
+			<p>
+				Per consentire una perfetta percezione della profondit&agrave; e dell'ordine di sovrapposizione delle tessere senza affaticare la vista, ogni piano sopraelevato &egrave; incorniciato da un distintivo <strong>profilo perimetrale colorato</strong> sullo scalino esterno esposto:
+			</p>
 			<ul>
-				<li>🐢 <strong>La Tartaruga:</strong> La classica disposizione piramidale a 5 livelli di Shanghai (144 tessere).</li>
-				<li>🔺 <strong>Piramide:</strong> Struttura compatta con vertice centrale che richiede di scalare i livelli gradualmente.</li>
-				<li>🏯 <strong>Fortezza:</strong> Schema a 4 torri angolari e corte centrale, ideale per una pianificazione tattica.</li>
-				<li>🏟️ <strong>Arena:</strong> Terrazze concentriche aperte con molte tessere giocabili fin dalle prime mosse.</li>
+				<li><span class="layer-tag layer-0">Livello 0 (Base a terra)</span>: 87 tessere a contatto con il tavolo, con il classico profilo avorio naturale.</li>
+				<li><span class="layer-tag layer-1">Livello 1 (1° scalino)</span>: Blocco centrale 6&times;6 (36 tessere), contornato da una linea <strong>Verde Smeraldo</strong> ad alto contrasto.</li>
+				<li><span class="layer-tag layer-2">Livello 2 (2° scalino)</span>: Blocco intermedio 4&times;4 (16 tessere), contornato da una linea <strong>Blu Zaffiro</strong>.</li>
+				<li><span class="layer-tag layer-3">Livello 3 (3° scalino)</span>: Blocco superiore 2&times;2 (4 tessere), contornato da una linea <strong>Rubino / Magenta</strong>.</li>
+				<li><span class="layer-tag layer-4">Livello 4 (Cima)</span>: La tessera singola al vertice della piramide, racchiusa da una cornice <strong>Oro Imperiale</strong>.</li>
 			</ul>
+
+			<div class="highlight-box">
+				🔍 <strong>Descrizione Tessera in Tempo Reale:</strong> Quando clicchi su una qualsiasi tessera libera, in basso al centro del tavolo compare all'istante un <strong>badge informativo</strong> che ne mostra il nome completo, l'ideogramma, la famiglia di appartenenza, la regola di abbinamento e il conteggio di quante tessere gemelle o compatibili sono ancora presenti sul tavolo (evidenziando se sono gi&agrave; libere e pronte da giocare!).
+			</div>
 
 			<h2>4. Garanzia di Risolvibilit&agrave; e Solver Intelligente</h2>
 			<p>Nel Mahjong tradizionale a distribuzione casuale, molte partite risultano impossibili da completare a causa di blocchi strutturali. In <strong>Mahjong Luciano</strong>:</p>
@@ -376,6 +426,174 @@
 				}
 			});
 			observer.observe(document.body, { childList: true });
+		})();
+	</script>
+	<script>
+		(function renderGuideTiles() {
+			const isEn = window.currentLang === 'en';
+			const CHINESE_NUMS = { 1: '一', 2: '二', 3: '三', 4: '四', 5: '五', 6: '六', 7: '七', 8: '八', 9: '九' };
+			const CHINESE_WINDS = { east: '東', south: '南', west: '西', north: '北' };
+			const CHINESE_DRAGONS = { red: '中', green: '發', white: '白' };
+			const CHINESE_FLOWERS = { plum: '梅', orchid: '蘭', chrysanthemum: '菊', bamboo: '竹' };
+			const CHINESE_SEASONS = { spring: '春', summer: '夏', autumn: '秋', winter: '冬' };
+
+			function dot(cx, cy, r, fill, innerFill = '#fff') {
+				return `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${fill}" stroke="#000" stroke-width="0.5"/>
+						<circle cx="${cx}" cy="${cy}" r="${r * 0.4}" fill="${innerFill}"/>`;
+			}
+
+			function renderPinSVG(val) {
+				const C_BLUE = '#1b4d89', C_RED = '#c41212', C_GREEN = '#15733d';
+				if (val === 1) {
+					return `<circle cx="22" cy="27" r="14" fill="${C_RED}" stroke="#b8860b" stroke-width="1.5"/>
+							<circle cx="22" cy="27" r="8" fill="#ffd700"/>
+							<circle cx="22" cy="27" r="3" fill="${C_RED}"/>`;
+				}
+				if (val === 2) return dot(22, 16, 6, C_GREEN) + dot(22, 38, 6, C_BLUE);
+				if (val === 3) return dot(12, 14, 5, C_BLUE) + dot(22, 27, 5, C_RED) + dot(32, 40, 5, C_GREEN);
+				if (val === 4) return dot(13, 16, 5.5, C_BLUE) + dot(31, 16, 5.5, C_GREEN) + dot(13, 38, 5.5, C_GREEN) + dot(31, 38, 5.5, C_BLUE);
+				if (val === 5) return dot(12, 15, 5, C_BLUE) + dot(32, 15, 5, C_GREEN) + dot(22, 27, 5.5, C_RED) + dot(12, 39, 5, C_GREEN) + dot(32, 39, 5, C_BLUE);
+				if (val === 6) return dot(13, 14, 4.5, C_GREEN) + dot(31, 14, 4.5, C_GREEN) + dot(13, 27, 4.5, C_RED) + dot(31, 27, 4.5, C_RED) + dot(13, 40, 4.5, C_RED) + dot(31, 40, 4.5, C_RED);
+				if (val === 7) return dot(10, 13, 4, C_GREEN) + dot(22, 17, 4, C_GREEN) + dot(34, 21, 4, C_GREEN) + dot(14, 33, 4.5, C_RED) + dot(30, 33, 4.5, C_RED) + dot(14, 43, 4.5, C_RED) + dot(30, 43, 4.5, C_RED);
+				if (val === 8) return dot(13, 12, 4, C_BLUE) + dot(31, 12, 4, C_BLUE) + dot(13, 22, 4, C_BLUE) + dot(31, 22, 4, C_BLUE) + dot(13, 32, 4, C_BLUE) + dot(31, 32, 4, C_BLUE) + dot(13, 42, 4, C_BLUE) + dot(31, 42, 4, C_BLUE);
+				if (val === 9) return dot(11, 13, 4.5, C_GREEN) + dot(22, 13, 4.5, C_BLUE) + dot(33, 13, 4.5, C_RED) + dot(11, 27, 4.5, C_GREEN) + dot(22, 27, 4.5, C_BLUE) + dot(33, 27, 4.5, C_RED) + dot(11, 41, 4.5, C_GREEN) + dot(22, 41, 4.5, C_BLUE) + dot(33, 41, 4.5, C_RED);
+				return '';
+			}
+
+			function stick(x, y, w, h, fill) {
+				return `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="2" fill="${fill}" stroke="#09381c" stroke-width="0.6"/>
+						<line x1="${x}" y1="${y + h/2}" x2="${x + w}" y2="${y + h/2}" stroke="#fff" stroke-width="0.8"/>`;
+			}
+
+			function renderSouSVG(val) {
+				const C_GREEN = '#15733d', C_RED = '#c41212', C_BLUE = '#1b4d89';
+				if (val === 1) {
+					return `<path d="M 22 10 C 26 14 30 18 28 26 C 26 34 18 36 15 42 C 20 40 26 40 31 43 C 27 34 26 22 22 10 Z" fill="${C_GREEN}"/>
+							<circle cx="18" cy="18" r="5" fill="${C_RED}"/>
+							<circle cx="17" cy="17" r="1.5" fill="#fff"/>
+							<path d="M 18 23 C 14 26 12 33 16 38" stroke="${C_BLUE}" stroke-width="2" fill="none"/>
+							<path d="M 28 26 L 35 22 M 28 30 L 37 30 M 27 34 L 35 37" stroke="${C_GREEN}" stroke-width="1.8"/>`;
+				}
+				if (val === 2) return stick(19, 10, 6, 15, C_GREEN) + stick(19, 29, 6, 15, C_BLUE);
+				if (val === 3) return stick(19, 9, 6, 14, C_BLUE) + stick(13, 29, 6, 15, C_GREEN) + stick(25, 29, 6, 15, C_GREEN);
+				if (val === 4) return stick(13, 10, 5.5, 15, C_BLUE) + stick(25, 10, 5.5, 15, C_GREEN) + stick(13, 29, 5.5, 15, C_GREEN) + stick(25, 29, 5.5, 15, C_BLUE);
+				if (val === 5) return stick(12, 10, 5, 14, C_GREEN) + stick(27, 10, 5, 14, C_BLUE) + stick(19.5, 20, 5, 14, C_RED) + stick(12, 30, 5, 14, C_BLUE) + stick(27, 30, 5, 14, C_GREEN);
+				if (val === 6) return stick(11, 10, 5, 14, C_GREEN) + stick(19.5, 10, 5, 14, C_GREEN) + stick(28, 10, 5, 14, C_GREEN) + stick(11, 30, 5, 14, C_BLUE) + stick(19.5, 30, 5, 14, C_BLUE) + stick(28, 30, 5, 14, C_BLUE);
+				if (val === 7) return stick(19.5, 8, 5, 12, C_RED) + stick(11, 22, 5, 12, C_GREEN) + stick(19.5, 22, 5, 12, C_GREEN) + stick(28, 22, 5, 12, C_GREEN) + stick(11, 36, 5, 12, C_BLUE) + stick(19.5, 36, 5, 12, C_BLUE) + stick(28, 36, 5, 12, C_BLUE);
+				if (val === 8) {
+					return `<g transform="translate(4, 2)">
+						${stick(8, 8, 4.5, 12, C_GREEN)}${stick(15, 8, 4.5, 12, C_GREEN)}${stick(22, 8, 4.5, 12, C_GREEN)}
+						${stick(8, 22, 4.5, 12, C_BLUE)}${stick(22, 22, 4.5, 12, C_BLUE)}
+						${stick(8, 36, 4.5, 12, C_GREEN)}${stick(15, 36, 4.5, 12, C_GREEN)}${stick(22, 36, 4.5, 12, C_GREEN)}
+					</g>`;
+				}
+				if (val === 9) {
+					return stick(11, 9, 5, 11, C_RED) + stick(19.5, 9, 5, 11, C_BLUE) + stick(28, 9, 5, 11, C_GREEN) +
+						   stick(11, 22, 5, 11, C_RED) + stick(19.5, 22, 5, 11, C_BLUE) + stick(28, 22, 5, 11, C_GREEN) +
+						   stick(11, 35, 5, 11, C_RED) + stick(19.5, 35, 5, 11, C_BLUE) + stick(28, 35, 5, 11, C_GREEN);
+				}
+				return '';
+			}
+
+			function renderTileCard(type, val, label) {
+				let inner = '', corner = '';
+				if (type === 'pin') {
+					corner = val;
+					inner = renderPinSVG(val);
+				} else if (type === 'sou') {
+					corner = val;
+					inner = renderSouSVG(val);
+				} else if (type === 'man') {
+					corner = val;
+					const ch = CHINESE_NUMS[val];
+					inner = `<text x="22" y="24" font-family="'SimHei', 'Microsoft YaHei', sans-serif" font-size="20" font-weight="bold" fill="#1b4d89" text-anchor="middle">${ch}</text>
+							 <text x="22" y="44" font-family="'SimHei', 'Microsoft YaHei', sans-serif" font-size="18" font-weight="bold" fill="#b22222" text-anchor="middle">萬</text>`;
+				} else if (type === 'wind') {
+					corner = val.charAt(0).toUpperCase();
+					inner = `<text x="22" y="37" font-family="'SimHei', 'Microsoft YaHei', sans-serif" font-size="28" font-weight="bold" fill="#1a3320" text-anchor="middle">${CHINESE_WINDS[val]}</text>`;
+				} else if (type === 'dragon') {
+					corner = val.charAt(0).toUpperCase();
+					if (val === 'red') inner = `<text x="22" y="38" font-family="'SimHei', 'Microsoft YaHei', sans-serif" font-size="30" font-weight="bold" fill="#c41212" text-anchor="middle">中</text>`;
+					else if (val === 'green') inner = `<text x="22" y="38" font-family="'SimHei', 'Microsoft YaHei', sans-serif" font-size="28" font-weight="bold" fill="#0d7c3d" text-anchor="middle">發</text>`;
+					else inner = `<rect x="7" y="10" width="30" height="34" rx="3" fill="none" stroke="#1b4d89" stroke-width="3" />
+								  <rect x="11" y="14" width="22" height="26" fill="#f8f8ff" stroke="#4a89dc" stroke-width="1.5" stroke-dasharray="3,2"/>`;
+				} else if (type === 'flower') {
+					corner = '🌸';
+					inner = `<circle cx="22" cy="15" r="6.5" fill="#e91e63" opacity="0.85"/>
+							 <circle cx="17" cy="19" r="4.5" fill="#ff4081" opacity="0.85"/>
+							 <circle cx="27" cy="19" r="4.5" fill="#ff4081" opacity="0.85"/>
+							 <circle cx="22" cy="15" r="2.5" fill="#ffd700"/>
+							 <text x="22" y="37" font-family="'SimHei', 'Microsoft YaHei', sans-serif" font-size="15" font-weight="bold" fill="#c2185b" text-anchor="middle">${CHINESE_FLOWERS[val]}</text>
+							 <text x="22" y="49" font-family="system-ui, sans-serif" font-size="7" font-weight="900" fill="#9c27b0" text-anchor="middle">${isEn ? 'FLOWER' : 'FIORE'}</text>`;
+				} else if (type === 'season') {
+					corner = '🍂';
+					inner = `<path d="M 22 8 Q 29 15 22 23 Q 15 15 22 8 Z" fill="#ff9800" stroke="#e65100" stroke-width="1"/>
+							 <text x="22" y="37" font-family="'SimHei', 'Microsoft YaHei', sans-serif" font-size="15" font-weight="bold" fill="#e65100" text-anchor="middle">${CHINESE_SEASONS[val]}</text>
+							 <text x="22" y="49" font-family="system-ui, sans-serif" font-size="6.5" font-weight="900" fill="#d84315" text-anchor="middle">${isEn ? 'SEASON' : 'STAGIONE'}</text>`;
+				}
+
+				return `
+					<div style="display: inline-flex; flex-direction: column; align-items: center; margin: 3px 2px; vertical-align: top;">
+						<div style="width: 36px; height: 48px; background: #fffdf5; border: 1.5px solid #d5caa8; border-radius: 5px; box-shadow: 1px 2px 4px rgba(0,0,0,0.18), inset 1px 1px 1px #fff; position: relative; overflow: hidden;">
+							<span style="position: absolute; top: 1px; left: 2px; font-size: 8px; font-weight: bold; color: #555; line-height: 1;">${corner}</span>
+							<svg viewBox="0 0 44 54" style="width: 100%; height: 100%; display: block;">${inner}</svg>
+						</div>
+						<span style="font-size: 10px; color: #555; margin-top: 2px; font-weight: 500;">${label || ''}</span>
+					</div>
+				`;
+			}
+
+			const pinEl = document.getElementById('tile-cell-pin');
+			if (pinEl) {
+				let h = ''; for (let i = 1; i <= 9; i++) h += renderTileCard('pin', i, i);
+				pinEl.innerHTML = h;
+			}
+			const souEl = document.getElementById('tile-cell-sou');
+			if (souEl) {
+				let h = ''; for (let i = 1; i <= 9; i++) h += renderTileCard('sou', i, i);
+				souEl.innerHTML = h;
+			}
+			const manEl = document.getElementById('tile-cell-man');
+			if (manEl) {
+				let h = ''; for (let i = 1; i <= 9; i++) h += renderTileCard('man', i, i);
+				manEl.innerHTML = h;
+			}
+			const windEl = document.getElementById('tile-cell-wind');
+			if (windEl) {
+				let h = '';
+				const winds = isEn 
+					? [['east', 'East'], ['south', 'South'], ['west', 'West'], ['north', 'North']]
+					: [['east', 'Est'], ['south', 'Sud'], ['west', 'Ovest'], ['north', 'Nord']];
+				winds.forEach(([w, l]) => h += renderTileCard('wind', w, l));
+				windEl.innerHTML = h;
+			}
+			const dragEl = document.getElementById('tile-cell-dragon');
+			if (dragEl) {
+				let h = '';
+				const dragons = isEn
+					? [['red', 'Red'], ['green', 'Green'], ['white', 'White']]
+					: [['red', 'Rosso'], ['green', 'Verde'], ['white', 'Bianco']];
+				dragons.forEach(([d, l]) => h += renderTileCard('dragon', d, l));
+				dragEl.innerHTML = h;
+			}
+			const flowEl = document.getElementById('tile-cell-flower');
+			if (flowEl) {
+				let h = '';
+				const flowers = isEn
+					? [['plum', 'Plum'], ['orchid', 'Orchid'], ['chrysanthemum', 'Chrys.'], ['bamboo', 'Bamboo']]
+					: [['plum', 'Prugna'], ['orchid', 'Orchidea'], ['chrysanthemum', 'Crisant.'], ['bamboo', 'Bambù']];
+				flowers.forEach(([f, l]) => h += renderTileCard('flower', f, l));
+				flowEl.innerHTML = h;
+			}
+			const seasEl = document.getElementById('tile-cell-season');
+			if (seasEl) {
+				let h = '';
+				const seasons = isEn
+					? [['spring', 'Spring'], ['summer', 'Summer'], ['autumn', 'Autumn'], ['winter', 'Winter']]
+					: [['spring', 'Primavera'], ['summer', 'Estate'], ['autumn', 'Autunno'], ['winter', 'Inverno']];
+				seasons.forEach(([s, l]) => h += renderTileCard('season', s, l));
+				seasEl.innerHTML = h;
+			}
 		})();
 	</script>
 </body>
