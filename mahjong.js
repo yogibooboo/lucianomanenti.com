@@ -437,7 +437,7 @@
     }
 
     function playSound(type) {
-        if (!audioEnabled) return;
+        if (window.audioMuted || !audioEnabled) return;
         try {
             const ctx = getAudioContext();
             if (!ctx) return;
@@ -1517,18 +1517,22 @@
     function initEvents() {
         loadGlobalStats();
 
-        // Tasto Audio
+        // Tasto Audio (sincronizzato globalmente via site.js con gli altri giochi)
+        if (typeof window.initAudioToggle === 'function') {
+            window.initAudioToggle('#btn-audio');
+        }
         const btnAudio = document.getElementById('btn-audio');
         if (btnAudio) {
-            if (!audioEnabled) btnAudio.classList.add('muted');
             btnAudio.addEventListener('click', () => {
-                audioEnabled = !audioEnabled;
+                if (typeof window.audioMuted !== 'undefined') {
+                    audioEnabled = !window.audioMuted;
+                } else {
+                    audioEnabled = !audioEnabled;
+                    btnAudio.classList.toggle('muted', !audioEnabled);
+                }
                 localStorage.setItem('mahjong_audio', audioEnabled ? '1' : '0');
                 if (audioEnabled) {
-                    btnAudio.classList.remove('muted');
                     playSound('select');
-                } else {
-                    btnAudio.classList.add('muted');
                 }
             });
         }
