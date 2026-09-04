@@ -264,6 +264,7 @@
         var curLeftX = seed.x;
         var curRightX_L = null;
         var dir_L = -1; // -1 = verso sinistra, 1 = verso destra nella riga sopra
+        var firstInRow_L = false; // vero solo per la tessera subito dopo il raccordo
 
         for (var l = seedIndex - 1; l >= 0; l--) {
             var tL = chain[l];
@@ -284,6 +285,7 @@
                     // La riga superiore parte allineata a sinistra con la tessera verticale
                     curRightX_L = tL.x;
                     dir_L = 1; // ora ci si muove a destra nella riga sopra!
+                    firstInRow_L = true;
                 } else {
                     tL.orientation = tL.isDouble ? 'vertical' : 'horizontal';
                     var tw = tL.isDouble ? 36 : 72;
@@ -298,8 +300,16 @@
                 tL.orientation = tL.isDouble ? 'vertical' : 'horizontal';
                 var tw = tL.isDouble ? 36 : 72;
                 // La prima tessera si appoggia sopra il raccordo (curRightX_L), le successive a distanza di 2px
-                tL.x = (curRightX_L === chain[l + 1].x) ? curRightX_L : (curRightX_L + 2);
-                tL.y = curRowCenterY_L - (tL.isDouble ? 36 : 18);
+                tL.x = firstInRow_L ? curRightX_L : (curRightX_L + 2);
+                // Una doppia e' alta 72px: se e' la prima della riga occupa la stessa colonna del
+                // raccordo (il cui bordo alto sta a curRowCenterY_L + 20) e centrandosi sulla riga
+                // lo invaderebbe di 16px. Si appoggia quindi sul raccordo e sporge verso l'alto.
+                if (tL.isDouble && firstInRow_L) {
+                    tL.y = curRowCenterY_L - 54;
+                } else {
+                    tL.y = curRowCenterY_L - (tL.isDouble ? 36 : 18);
+                }
+                firstInRow_L = false;
                 if (tL.isDouble) {
                     tL.renderA = tL.leftVal;
                     tL.renderB = tL.rightVal;
@@ -316,6 +326,7 @@
         var curRightX = seed.x + (seed.isDouble ? 36 : 72);
         var curLeftX_R = null;
         var dir_R = 1; // 1 = verso destra, -1 = verso sinistra nella riga inferiore
+        var firstInRow_R = false; // vero solo per la tessera subito dopo il raccordo
 
         for (var r = seedIndex + 1; r < chain.length; r++) {
             var tR = chain[r];
@@ -336,6 +347,7 @@
                     // La riga inferiore parte allineata a destra con il bordo destro della tessera verticale
                     curLeftX_R = tR.x + 36;
                     dir_R = -1; // ora ci si muove a sinistra nella riga sotto!
+                    firstInRow_R = true;
                 } else {
                     tR.orientation = tR.isDouble ? 'vertical' : 'horizontal';
                     var tw = tR.isDouble ? 36 : 72;
@@ -350,9 +362,15 @@
                 tR.orientation = tR.isDouble ? 'vertical' : 'horizontal';
                 var tw = tR.isDouble ? 36 : 72;
                 // La prima tessera si appoggia sotto il raccordo (curLeftX_R - tw), le successive a distanza di 2px
-                var isFirstInRow = (curLeftX_R === chain[r - 1].x + 36);
-                tR.x = isFirstInRow ? (curLeftX_R - tw) : (curLeftX_R - tw - 2);
-                tR.y = curRowCenterY_R - (tR.isDouble ? 36 : 18);
+                tR.x = firstInRow_R ? (curLeftX_R - tw) : (curLeftX_R - tw - 2);
+                // Speculare al ramo sinistro: la doppia in prima posizione si appoggia sotto il
+                // raccordo e sporge verso il basso invece di centrarsi sulla riga.
+                if (tR.isDouble && firstInRow_R) {
+                    tR.y = curRowCenterY_R - 18;
+                } else {
+                    tR.y = curRowCenterY_R - (tR.isDouble ? 36 : 18);
+                }
+                firstInRow_R = false;
                 if (tR.isDouble) {
                     tR.renderA = tR.leftVal;
                     tR.renderB = tR.rightVal;
@@ -923,21 +941,28 @@
         STATE.boneyard[index] = null;
 
         var playerHandEl = document.getElementById('player-hand-container');
-        var handCoords = playerHandEl ? getCoordsRelativeToCampogioco(playerHandEl) : { x: 500, y: 620, width: 300, height: 80 };
-        var targetX = handCoords.x + Math.min(handCoords.width, (STATE.playerHand.length * 46));
-        var targetY = handCoords.y + 4;
 
         STATE.isAnimating = true;
-        renderBoneyard();
+
+        // La mano e' un flex centrato: la posizione finale della nuova tessera non si puo'
+        // calcolare dal bordo sinistro del contenitore. La inseriamo subito, la rendiamo
+        // invisibile e ne misuriamo il posto vero, cosi' il volo atterra dove resta.
+        STATE.playerHand.push(drawn);
+        renderHands();
+
+        var landingEl = playerHandEl ? playerHandEl.children[STATE.playerHand.length - 1] : null;
+        var targetCoords = landingEl
+            ? getCoordsRelativeToCampogioco(landingEl)
+            : { x: 500, y: 624, width: 44, height: 88 };
+        if (landingEl) landingEl.style.visibility = 'hidden';
 
         animateTileFlight(
             startCoords,
-            { x: targetX, y: targetY, width: 38, height: 76 },
+            targetCoords,
             drawn,
             'vertical',
             false,
             function () {
-                STATE.playerHand.push(drawn);
                 playSoundClack();
                 STATE.isAnimating = false;
                 setStatusMessage(isEn ? 'You drew a tile.' : 'Hai pescato una tessera.', false);
@@ -1075,21 +1100,26 @@
                 STATE.boneyard[cpuSlot] = null; // Lascia il buco
 
                 var cpuHandEl = document.getElementById('cpu-hand-container');
-                var cpuHandCoords = cpuHandEl ? getCoordsRelativeToCampogioco(cpuHandEl) : { x: 500, y: 50, width: 300, height: 80 };
-                var targetX = cpuHandCoords.x + Math.min(cpuHandCoords.width, (STATE.cpuHand.length * 46));
-                var targetY = cpuHandCoords.y;
 
                 STATE.isAnimating = true;
-                renderBoneyard();
+
+                // Stessa cosa della mano del giocatore: posto vero misurato, non stimato.
+                STATE.cpuHand.push(drawn);
+                renderHands();
+
+                var landingEl = cpuHandEl ? cpuHandEl.children[STATE.cpuHand.length - 1] : null;
+                var targetCoords = landingEl
+                    ? getCoordsRelativeToCampogioco(landingEl)
+                    : { x: 500, y: 50, width: 38, height: 76 };
+                if (landingEl) landingEl.style.visibility = 'hidden';
 
                 animateTileFlight(
                     startCoords,
-                    { x: targetX, y: targetY, width: 38, height: 76 },
+                    targetCoords,
                     drawn,
                     'vertical',
                     !STATE.cpuFaceUp,
                     function () {
-                        STATE.cpuHand.push(drawn);
                         playSoundClack();
                         STATE.isAnimating = false;
                         setStatusMessage(TXT.cpuDrew, false);
