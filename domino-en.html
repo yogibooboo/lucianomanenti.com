@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9335537153013492"
+        crossorigin="anonymous"></script>
+    <script>
+        // Security fix to prevent cross-origin crashes on window.opener
+        (function() { try { if (!window.opener) return; var test = window.opener.document; if (!window.opener.game) { window.opener = null; } } catch(e) { window.opener = null; } })();
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Domino Luciano - Free Online Game - lucianomanenti.com</title>
+    <link rel="canonical" href="https://www.lucianomanenti.com/domino-en.html">
+    <link rel="alternate" hreflang="it" href="https://www.lucianomanenti.com/domino.html">
+    <link rel="alternate" hreflang="en" href="https://www.lucianomanenti.com/domino-en.html">
+    <link rel="alternate" hreflang="x-default" href="https://www.lucianomanenti.com/domino.html">
+    <link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
+    <link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
+    <link rel="shortcut icon" href="favicon/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+    <link rel="manifest" href="favicon/site.webmanifest">
+
+    <meta name="Description"
+        content="Play free online Domino Luciano: challenge the computer in Draw Domino or Block Domino. 3D tactile ivory tiles, 3 AI difficulty levels, hints, and undo support.">
+    <meta http-Equiv="Cache-Control" Content="no-cache">
+    <meta http-Equiv="Pragma" Content="no-cache">
+    <meta http-Equiv="Expires" Content="0">
+
+    <link rel="stylesheet" href="domino.css?v=2.0" />
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-WRBDRDQ4L8');
+    </script>
+    <script>
+        window.gameConfig = {
+            gaPrefix: 'DOMINO_',
+            hideLegalFooter: true,
+            adsenseActive: true,
+            adsenseSlots: {
+                '300x600': '5266697442',
+                '160x600': '1167670336',
+                '300x250': '8471445288',
+                '160x250': '8663016975'
+            }
+        };
+        window.currentLang = 'en';
+    </script>
+</head>
+
+<body>
+
+    <div class="main-container">
+        <!-- Sidebars for AdSense & Amazon ads (handled by layout engine) -->
+        <div id="sidebar-left" class="sidebar"></div>
+        <div id="sidebar-right" class="sidebar"></div>
+
+        <!-- Main game board 1024x750 -->
+        <div id="campogioco">
+            <!-- Modal overlay screen -->
+            <div id="schermo"></div>
+
+            <!-- ================= TOP HEADER BAR ================= -->
+            <div id="header-domino">
+                <div class="header-left">
+                    <div id="titolo-gioco">
+                        🁠 Domino Luciano <span class="badge-modalita" id="modalita-badge">Draw Mode</span>
+                    </div>
+                </div>
+
+                <div class="header-center">
+                    <div class="info-pill">
+                        <span class="info-pill-lbl">Round</span>
+                        <span class="info-pill-val" id="stat-manche">1</span>
+                    </div>
+                    <div class="info-pill">
+                        <span class="info-pill-lbl">You</span>
+                        <span class="info-pill-val gold" id="stat-punti-tu">0</span>
+                    </div>
+                    <div class="info-pill">
+                        <span class="info-pill-lbl">CPU</span>
+                        <span class="info-pill-val" id="stat-punti-cpu">0</span>
+                    </div>
+                </div>
+
+                <div class="header-right">
+                    <button id="btn-scoperte" onclick="toggleManiScoperte()" class="btn-azione-top" title="Show/hide opponent's tiles">👁 Face Up</button>
+                    <button id="btn-hint" onclick="mostraSuggerimento()" class="btn-azione-top" title="Suggest a valid move (H)">💡 Hint</button>
+                    <button id="btn-undo" onclick="annullaUltimaMossa()" class="btn-azione-top" title="Undo last move (Z)" disabled>↩️ Undo</button>
+                    <button id="btn-new-game" onclick="apriConfermaNuova()" class="btn-azione-top" style="border-color: #ffd700; color: #ffd700;">New</button>
+
+                    <div class="lang-switch-header">
+                        <a href="domino.html">IT</a>
+                        <a href="domino-en.html" class="active">EN</a>
+                        <div id="btn-audio" class="btn-audio-game" aria-label="Audio"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Banner status message -->
+            <div id="messaggio-stato-domino">Loading...</div>
+
+            <!-- ================= BOARD AREA ================= -->
+            <div id="area-tavolo-domino">
+                <!-- CPU hand at top -->
+                <div id="area-cpu">
+                    <div class="player-tag">💻 Computer</div>
+                    <div id="cpu-hand-container" class="hand-container"></div>
+                </div>
+
+                <!-- Central snake surface -->
+                <div id="board-surface">
+                    <div id="chain-container"></div>
+                </div>
+
+                <!-- Player Hand and Boneyard at bottom -->
+                <div id="area-giocatore">
+                    <div id="boneyard-box">
+                        <div class="boneyard-header">
+                            <span class="boneyard-title-text">🎲 Boneyard</span>
+                            <span id="boneyard-count" class="boneyard-badge">14</span>
+                            <button id="btn-pesca-passa" onclick="eseguiPescaOPassa()" class="btn-pesca-passa-inline" style="display: none;">Pass</button>
+                        </div>
+                        <div id="boneyard-tiles-container" class="boneyard-tiles-container"></div>
+                    </div>
+
+                    <div id="player-hand-container"></div>
+                </div>
+            </div>
+
+            <!-- ================= MODALS & OVERLAYS ================= -->
+
+            <!-- 1. Start Game Modal -->
+            <div id="modale-inizio" class="form-domino">
+                <div class="form-domino-title">Domino Luciano</div>
+
+                <div class="opzione-gruppo">
+                    <div class="opzione-lbl">Game Mode:</div>
+                    <div class="opzioni-pulsanti">
+                        <button id="btn-mode-pesca" onclick="selezionaModalita('draw')" class="btn-opzione-sel attiva">DRAW DOMINO</button>
+                        <button id="btn-mode-blocchi" onclick="selezionaModalita('block')" class="btn-opzione-sel">BLOCK DOMINO</button>
+                    </div>
+                </div>
+
+                <div class="opzione-gruppo">
+                    <div class="opzione-lbl">Match Format:</div>
+                    <div class="opzioni-pulsanti">
+                        <button id="btn-tgt-1" onclick="selezionaTarget(1)" class="btn-opzione-sel">SINGLE ROUND</button>
+                        <button id="btn-tgt-50" onclick="selezionaTarget(50)" class="btn-opzione-sel attiva">50 POINTS</button>
+                        <button id="btn-tgt-100" onclick="selezionaTarget(100)" class="btn-opzione-sel">100 POINTS</button>
+                    </div>
+                </div>
+
+                <div class="opzione-gruppo">
+                    <div class="opzione-lbl">AI Difficulty:</div>
+                    <div class="opzioni-pulsanti">
+                        <button id="btn-diff-facile" onclick="selezionaDifficolta('facile')" class="btn-opzione-sel">EASY</button>
+                        <button id="btn-diff-medio" onclick="selezionaDifficolta('medio')" class="btn-opzione-sel attiva">MEDIUM</button>
+                        <button id="btn-diff-difficile" onclick="selezionaDifficolta('difficile')" class="btn-opzione-sel">HARD</button>
+                    </div>
+                </div>
+
+                <button onclick="confermaEAvviaPartita()" class="btn-continua" style="width: 220px;">START GAME 🁠</button>
+
+                <div class="lang-switch-modale">
+                    <a href="domino.html" title="Italiano">IT</a>
+                    <a href="domino-en.html" class="active" title="English">EN</a>
+                </div>
+                <a href="guida-domino-en.html" target="_blank" rel="opener" id="btn-regole-modale" class="btn-angolo-modale sinistra">RULES</a>
+                <a href="index-en.html" id="btn-home-modale" class="btn-angolo-modale destra home">ALL GAMES</a>
+            </div>
+
+            <!-- 2. Round End Modal -->
+            <div id="modale-fine-manche" class="form-domino modale-fine">
+                <div class="confirm-message" id="fine-messaggio" style="margin: 0 0 4px 0; line-height: 1.2; font-size: 20px;">ROUND FINISHED!</div>
+                <div id="fine-dettagli" style="color: #ffd700; font-size: 13px; text-align: center; margin-bottom: 4px;"></div>
+                <div id="fine-tabella-container"></div>
+                <div class="conferma-bottoni">
+                    <button id="btn-prossima-manche" class="btn-continua" style="width: 240px; height: 38px; font-size: 14.5px; padding: 6px 16px; margin-top: 4px;">NEXT ROUND ➡️</button>
+                </div>
+            </div>
+
+            <!-- 3. Confirm New Game Modal -->
+            <div id="confermatermina" class="form-domino modale-conferma">
+                <div class="confirm-message" style="margin: 0 0 18px 0; line-height: 1.4; font-size: 20px;">Do you really want to start a new game?</div>
+                <div class="conferma-bottoni">
+                    <button onclick="chiudiModali()" class="btn-continua" style="width: 240px; height: 42px; font-size: 15px; background: #555; border-color: #777; color: white;">NO, CONTINUE</button>
+                    <button onclick="location.reload()" class="btn-continua" style="width: 240px; height: 42px; font-size: 15px; background-color: #cc0c39; color: white; border-color: #990022;">YES, NEW GAME</button>
+                </div>
+            </div>
+
+            <!-- ================= FOOTER LINKS ================= -->
+            <div class="legal-links-domino">
+                <a href="privacy-en.html" target="_blank">Privacy Policy</a>
+                <span class="sep">•</span>
+                <a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)">Manage Cookies</a>
+                <span class="sep">•</span>
+                <a href="guida-domino-en.html" target="_blank" rel="opener" class="pulsante-link-domino">Instructions</a>
+                <a href="aboutme-en.html" target="_blank" class="pulsante-link-domino">Write to Me</a>
+            </div>
+
+            <div class="link-giochi-domino">
+                <a href="mahjong-en.html" class="pulsante-link-domino">Mahjong</a>
+                <a href="dama-en.html" class="pulsante-link-domino">Checkers</a>
+                <a href="scacchi-en.html" class="pulsante-link-domino">Chess</a>
+                <a href="mulino-en.html" class="pulsante-link-domino">Nine Men's Morris</a>
+                <a href="quadrati-en.html" class="pulsante-link-domino">Dots and Boxes</a>
+                <a href="scopa-en.html" class="pulsante-link-domino">Scopa</a>
+                <a href="index-en.html" class="pulsante-link-domino pulsante-home-domino">ALL GAMES</a>
+            </div>
+
+        </div><!-- /campogioco -->
+    </div>
+
+    <!-- Shared site scripts -->
+    <script src="site.js?v=1.1"></script>
+    <!-- Responsive layout engine -->
+    <script src="game-layout.js?v=4.6"></script>
+    <!-- Domino Game Engine -->
+    <script src="domino.js?v=2.4"></script>
+    <script>
+        (function () {
+            var nascosto = false;
+            var observer = new MutationObserver(function () {
+                if (nascosto) return;
+                var divs = document.querySelectorAll('body > div');
+                for (var i = 0; i < divs.length; i++) {
+                    if (divs[i].shadowRoot && !divs[i].className && (divs[i].getAttribute('style') || '').length > 5000) {
+                        divs[i].style.setProperty('display', 'none', 'important');
+                        nascosto = true;
+                        observer.disconnect();
+                        return;
+                    }
+                }
+            });
+            observer.observe(document.body, { childList: true });
+        })();
+    </script>
+</body>
+
+</html>

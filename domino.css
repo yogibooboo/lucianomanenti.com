@@ -1,0 +1,1132 @@
+/* ============================================================================
+   DOMINO LUCIANO - Stile Grafico & Layout 1024x750
+   lucianomanenti.com
+   ============================================================================ */
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #1a5f2a;
+    color: #ffffff;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.main-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+/* === SIDEBARS (AdSense, Amazon & layout engine) === */
+.sidebar {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    background: linear-gradient(135deg, #1a6b30 0%, #145524 50%, #0f4a1c 100%);
+    overflow-y: auto;
+    box-sizing: border-box;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    z-index: 1;
+    transition: opacity 0.3s ease;
+}
+#sidebar-left { left: 0; }
+#sidebar-right { right: 0; }
+
+/* ================= CAMPO DI GIOCO 1024 x 750 ================= */
+#campogioco {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 1024px;
+    height: 750px;
+    transform-origin: center center;
+    background: linear-gradient(135deg, #1a6b30 0%, #145524 50%, #0f4a1c 100%);
+    background-image: url(images/scala40/tappetoverde.png);
+    border: 4px solid #b8860b;
+    border-radius: 10px;
+    box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.45), 0 10px 30px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
+}
+
+/* ================= HEADER BAR SUPERIORE ================= */
+#header-domino {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 56px;
+    background: linear-gradient(180deg, rgba(10, 30, 20, 0.95) 0%, rgba(10, 30, 20, 0.8) 100%);
+    border-bottom: 2px solid #b8860b;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 12px;
+    z-index: 50;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+    box-sizing: border-box;
+}
+
+.header-left, .header-center, .header-right {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+#titolo-gioco {
+    font-size: 16px;
+    font-weight: bold;
+    color: #ffd700;
+    text-shadow: 1px 2px 4px #000, 0 0 10px rgba(255, 215, 0, 0.35);
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    font-family: 'Slackey', 'Outfit', sans-serif;
+}
+
+#titolo-gioco span.badge-modalita {
+    font-size: 10px;
+    font-weight: 600;
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    background: rgba(184, 134, 11, 0.35);
+    border: 1px solid #ffd700;
+    color: #fff;
+    padding: 2px 6px;
+    border-radius: 8px;
+    text-shadow: none;
+    letter-spacing: 0;
+    white-space: nowrap;
+}
+
+/* Indicatori Pill (Punteggio, Turno, Monte) */
+.info-pill {
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(255, 215, 0, 0.4);
+    border-radius: 14px;
+    padding: 3px 9px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+}
+
+.info-pill-lbl {
+    color: #cde8cd;
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+}
+
+.info-pill-val {
+    color: #ffffff;
+    font-weight: bold;
+    font-size: 13px;
+    min-width: 14px;
+    text-align: center;
+}
+
+.info-pill-val.gold {
+    color: #ffd700;
+}
+
+.info-pill-val.turn-you {
+    color: #55efc4;
+}
+
+.info-pill-val.turn-cpu {
+    color: #ff7675;
+}
+
+/* Pulsanti Barra Superiore */
+.btn-azione-top {
+    background: linear-gradient(180deg, #2a5a3a 0%, #183e25 100%);
+    border: 1px solid #5a9e6f;
+    color: #e8f5e9;
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    white-space: nowrap;
+}
+
+.btn-azione-top:hover:not(:disabled) {
+    background: linear-gradient(180deg, #38784e 0%, #205030 100%);
+    border-color: #ffd700;
+    color: #ffd700;
+    transform: translateY(-1px);
+}
+
+.btn-azione-top:active:not(:disabled) {
+    transform: translateY(1px);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+
+.btn-azione-top.attivo {
+    background: linear-gradient(180deg, #ffd700 0%, #d49b00 100%);
+    border-color: #ffffff;
+    color: #11291b;
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
+    font-weight: bold;
+}
+
+.btn-azione-top:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    border-color: #444;
+}
+
+/* Language switcher & audio in header */
+.lang-switch-header {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: 4px;
+}
+
+.lang-switch-header a {
+    color: #cde8cd;
+    text-decoration: none;
+    font-size: 11px;
+    font-weight: bold;
+    padding: 3px 6px;
+    height: 26px;
+    line-height: 18px;
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.4);
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+}
+
+.lang-switch-header a.active,
+.lang-switch-header a:hover {
+    background: #ffd700;
+    color: #111;
+    border-color: #ffd700;
+}
+
+.btn-audio-game {
+    width: 26px;
+    height: 26px;
+    border-radius: 4px;
+    background: rgba(0, 30, 20, 0.5) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ffd700'%3E%3Cpath d='M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z'/%3E%3C/svg%3E") center/16px no-repeat;
+    border: 1px solid rgba(255, 215, 0, 0.4);
+    cursor: pointer;
+    transition: all 0.2s;
+    flex-shrink: 0;
+    box-sizing: border-box;
+    margin-left: 3px;
+}
+
+.btn-audio-game:hover {
+    transform: scale(1.08);
+}
+
+.btn-audio-game.muted {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23aaa'%3E%3Cpath d='M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z'/%3E%3C/svg%3E");
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* ================= BANNER MESSAGGI DI STATO ================= */
+#messaggio-stato-domino {
+    position: absolute;
+    top: 58px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(10, 30, 20, 0.9);
+    border: 1px solid rgba(255, 215, 0, 0.6);
+    border-radius: 20px;
+    padding: 3px 18px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #ffffff;
+    text-shadow: 1px 1px 2px #000;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4);
+    z-index: 45;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+    transition: all 0.25s ease;
+}
+
+#messaggio-stato-domino.evidenziato {
+    background: rgba(40, 90, 50, 0.95);
+    border-color: #ffd700;
+    color: #ffd700;
+    transform: translateX(-50%) scale(1.05);
+}
+
+/* ================= AREA DI GIOCO CENTRALE ================= */
+#area-tavolo-domino {
+    position: absolute;
+    top: 56px;
+    bottom: 0;
+    left: 0;
+    width: 1024px;
+    height: 694px;
+    box-sizing: border-box;
+}
+
+/* ================= AREA COMPUTER (ALTO) ================= */
+#area-cpu {
+    position: absolute;
+    top: 42px;
+    left: 20px;
+    right: 20px;
+    height: 80px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    z-index: 20;
+}
+
+.player-tag {
+    font-size: 13px;
+    font-weight: bold;
+    color: #ffd700;
+    text-shadow: 1px 1px 3px #000;
+    margin: 0;
+    padding: 6px 12px;
+    background: rgba(0, 0, 0, 0.45);
+    border: 1px solid rgba(255, 215, 0, 0.35);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+
+.hand-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+}
+
+#cpu-hand-container .domino-tile {
+    width: 38px;
+    height: 76px;
+}
+
+#cpu-hand-container .domino-tile .domino-pip {
+    width: 6px;
+    height: 6px;
+}
+
+#cpu-hand-container .domino-tile .domino-spinner {
+    width: 4.5px;
+    height: 4.5px;
+}
+
+#cpu-hand-container .domino-tile.tile-back::after {
+    font-size: 20px;
+}
+
+/* ================= TAVOLO DELLA CATENA / SNAKE ================= */
+#board-surface {
+    position: absolute;
+    top: 130px;
+    left: 16px;
+    width: 992px;
+    height: 374px;
+    background: rgba(0, 20, 10, 0.22);
+    border: 1px dashed rgba(255, 215, 0, 0.2);
+    border-radius: 12px;
+    overflow: hidden;
+    z-index: 10;
+}
+
+#chain-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: auto;
+}
+
+/* ================= AREA GIOCATORE & MONTE (BASSO) ================= */
+#area-giocatore {
+    position: absolute;
+    bottom: 42px;
+    left: 16px;
+    right: 16px;
+    height: 110px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 12px;
+    background: linear-gradient(180deg, rgba(5, 25, 15, 0.75) 0%, rgba(5, 20, 10, 0.9) 100%);
+    border: 1.5px solid rgba(255, 215, 0, 0.4);
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+    z-index: 25;
+}
+
+/* Blocco Monte / Boneyard (Tessere grandi a posizioni fisse con buco) */
+#boneyard-box {
+    position: absolute;
+    bottom: 6px;
+    left: 10px;
+    width: 298px;
+    height: 188px;
+    padding: 5px 6px;
+    background: linear-gradient(180deg, rgba(8, 28, 18, 0.92) 0%, rgba(4, 18, 10, 0.97) 100%);
+    border: 1.5px solid rgba(255, 215, 0, 0.45);
+    border-radius: 10px;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.65);
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 30;
+}
+
+.boneyard-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    height: 22px;
+    padding: 0 4px;
+    box-sizing: border-box;
+}
+
+.boneyard-title-text {
+    font-size: 11.5px;
+    font-weight: bold;
+    color: #ffd700;
+    text-shadow: 1px 1px 2px #000;
+    letter-spacing: 0.5px;
+}
+
+.boneyard-badge {
+    background: rgba(0, 0, 0, 0.65);
+    border: 1px solid rgba(255, 215, 0, 0.5);
+    border-radius: 10px;
+    padding: 1px 7px;
+    font-size: 11.5px;
+    color: #fff;
+    font-weight: bold;
+    min-width: 18px;
+    text-align: center;
+}
+
+.btn-pesca-passa-inline {
+    background: linear-gradient(180deg, #ffd700 0%, #d49b00 100%);
+    color: #11291b;
+    border: 1px solid #fff;
+    border-radius: 4px;
+    padding: 2px 10px;
+    font-size: 11.5px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+    transition: all 0.15s ease;
+    animation: passPulse 1.2s infinite alternate;
+}
+
+.btn-pesca-passa-inline:hover {
+    background: linear-gradient(180deg, #ffe44d 0%, #e0aa00 100%);
+    transform: scale(1.05);
+}
+
+@keyframes passPulse {
+    0% { transform: scale(1); box-shadow: 0 0 4px rgba(255,215,0,0.5); }
+    100% { transform: scale(1.06); box-shadow: 0 0 10px rgba(255,215,0,0.9); }
+}
+
+/* Griglia fissa a 14 slot del monte (2 righe x 7 colonne, tessere 36x72) */
+.boneyard-tiles-container {
+    display: grid;
+    grid-template-columns: repeat(7, 36px);
+    grid-template-rows: repeat(2, 72px);
+    gap: 6px 5px;
+    width: 100%;
+    height: 154px;
+    align-content: center;
+    justify-content: center;
+    box-sizing: border-box;
+}
+
+/* Slot fisso (contiene la tessera oppure il buco vuoto) */
+.boneyard-slot {
+    width: 36px;
+    height: 72px;
+    border-radius: 6px;
+    position: relative;
+    box-sizing: border-box;
+}
+
+.boneyard-slot.empty-slot {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1.5px dashed rgba(255, 215, 0, 0.22);
+    box-shadow: inset 1px 2px 5px rgba(0, 0, 0, 0.75);
+}
+
+.boneyard-tile {
+    width: 36px;
+    height: 72px;
+    border-radius: 6px;
+    background: linear-gradient(145deg, #1b263b 0%, #0d1b2a 100%);
+    border: 1px solid #415a77;
+    box-shadow: 1px 2px 5px rgba(0, 0, 0, 0.55), inset 0 1px 1px rgba(255, 255, 255, 0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    cursor: default;
+    position: relative;
+    user-select: none;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.boneyard-tile::after {
+    content: '🁠';
+    font-size: 20px;
+    color: #778da9;
+    opacity: 0.65;
+}
+
+/* Quando il giocatore può/deve pescare */
+.boneyard-tile.can-draw {
+    cursor: pointer;
+    border-color: #ffd700;
+    box-shadow: 0 0 7px rgba(255, 215, 0, 0.8), 1px 2px 5px rgba(0, 0, 0, 0.5);
+    animation: drawGlow 1.5s infinite alternate;
+}
+
+.boneyard-tile.can-draw:hover {
+    transform: translateY(-4px) scale(1.12);
+    border-color: #ffffff;
+    box-shadow: 0 0 14px rgba(255, 215, 0, 1), 0 5px 10px rgba(0, 0, 0, 0.7);
+    z-index: 10;
+}
+
+@keyframes drawGlow {
+    0% { border-color: rgba(255, 215, 0, 0.6); box-shadow: 0 0 5px rgba(255, 215, 0, 0.4); }
+    100% { border-color: #ffd700; box-shadow: 0 0 10px rgba(255, 215, 0, 0.95); }
+}
+
+.boneyard-tile.cpu-drawing {
+    animation: cpuDrawAnim 0.4s ease;
+}
+
+@keyframes cpuDrawAnim {
+    0% { transform: scale(1); }
+    50% { transform: translateY(-5px) scale(1.25); border-color: #ff7675; box-shadow: 0 0 14px #ff7675; }
+    100% { transform: scale(1); }
+}
+
+/* Animazione di volo per lo spostamento delle tessere */
+.animating-flight-tile {
+    position: absolute !important;
+    pointer-events: none !important;
+    z-index: 9999 !important;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.8), 0 0 16px rgba(255, 215, 0, 0.7) !important;
+    will-change: transform, width, height, opacity;
+}
+
+/* Mano giocatore */
+#player-hand-container {
+    margin-left: 310px;
+    width: calc(100% - 320px);
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 4px 10px;
+    box-sizing: border-box;
+}
+
+/* ================= ESTETICA DELLE TESSERE DOMINO (3D REALISTICHE) ================= */
+.domino-tile {
+    position: relative;
+    background: linear-gradient(145deg, #ffffff 0%, #f4eee2 50%, #e8decb 100%);
+    border: 1px solid #c8b99c;
+    border-radius: 6px;
+    box-shadow: 2px 3px 7px rgba(0, 0, 0, 0.55), inset 1px 1px 1px #ffffff, inset -1px -1px 2px #d4c5a9;
+    cursor: pointer;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
+    display: flex;
+    user-select: none;
+    box-sizing: border-box;
+}
+
+/* Dimensioni verticali standard per le tessere in mano */
+.domino-tile.vertical {
+    width: 44px;
+    height: 88px;
+    flex-direction: column;
+}
+
+/* Dimensioni orizzontali standard */
+.domino-tile.horizontal {
+    width: 88px;
+    height: 44px;
+    flex-direction: row;
+}
+
+/* Tessere sul tavolo (leggermente più compatte per un layout a catena fluido) */
+.domino-tile.board-tile.vertical {
+    width: 36px;
+    height: 72px;
+    position: absolute;
+}
+
+.domino-tile.board-tile.horizontal {
+    width: 72px;
+    height: 36px;
+    position: absolute;
+}
+
+/* Metà tessera (quadrante) */
+.domino-half {
+    position: relative;
+    flex: 1;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    padding: 3px;
+    box-sizing: border-box;
+    align-items: center;
+    justify-items: center;
+}
+
+/* Solco divisorio inciso (Groove) */
+.domino-tile.vertical .domino-divider {
+    height: 2px;
+    width: 82%;
+    margin: 0 auto;
+    background: #b5a282;
+    box-shadow: inset 0 1px 1px rgba(0,0,0,0.5), 0 1px 0 rgba(255,255,255,0.7);
+    border-radius: 1px;
+}
+
+.domino-tile.horizontal .domino-divider {
+    width: 2px;
+    height: 82%;
+    margin: auto 0;
+    background: #b5a282;
+    box-shadow: inset 1px 0 1px rgba(0,0,0,0.5), 1px 0 0 rgba(255,255,255,0.7);
+    border-radius: 1px;
+}
+
+/* Perno centrale in ottone (Brass Spinner) */
+.domino-spinner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #fff1a8 0%, #d4af37 60%, #8c6d1f 100%);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
+    z-index: 4;
+}
+
+/* Puntini (Pips) */
+.domino-pip {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #3a3a3a 0%, #111111 75%, #000000 100%);
+    box-shadow: inset 1px 1px 2px rgba(0, 0, 0, 0.8), 0 1px 1px rgba(255, 255, 255, 0.6);
+    pointer-events: none;
+}
+
+.board-tile .domino-pip {
+    width: 5.5px;
+    height: 5.5px;
+}
+
+/* Retro tessera (CPU / Boneyard) */
+.domino-tile.tile-back {
+    background: linear-gradient(145deg, #1b263b 0%, #0d1b2a 100%);
+    border: 1px solid #415a77;
+    cursor: default;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.domino-tile.tile-back::after {
+    content: '🁠';
+    font-size: 20px;
+    color: #778da9;
+    opacity: 0.6;
+}
+
+/* Stato tessere del giocatore */
+.domino-tile.playable {
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.75), 2px 3px 8px rgba(0, 0, 0, 0.6);
+    border-color: #ffd700;
+}
+
+.domino-tile.playable:hover {
+    transform: translateY(-8px) scale(1.05);
+    box-shadow: 0 0 16px rgba(255, 215, 0, 0.95), 3px 6px 12px rgba(0, 0, 0, 0.7);
+    border-color: #ffffff;
+    z-index: 10;
+}
+
+.domino-tile.selected {
+    transform: translateY(-12px) scale(1.08);
+    box-shadow: 0 0 20px #00ffcc, 4px 8px 16px rgba(0, 0, 0, 0.8);
+    border-color: #00ffcc;
+    z-index: 15;
+}
+
+.domino-tile.unplayable {
+    filter: brightness(0.72) contrast(0.9);
+    cursor: not-allowed;
+}
+
+.domino-tile.hint-highlight {
+    animation: pulse-hint 1.2s infinite alternate;
+}
+
+@keyframes pulse-hint {
+    0% { box-shadow: 0 0 6px #00e5ff; }
+    100% { box-shadow: 0 0 22px #00e5ff, 0 0 35px #00e5ff; transform: translateY(-8px) scale(1.06); }
+}
+
+/* ================= INDICATORI ESTREMITÀ LIBERE (DROP TARGETS) ================= */
+.drop-target {
+    position: absolute;
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(0, 255, 204, 0.5) 0%, rgba(0, 255, 204, 0.15) 70%, transparent 100%);
+    border: 2px dashed #00ffcc;
+    transform: translate(-50%, -50%);
+    cursor: pointer;
+    z-index: 30;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: target-glow 1s infinite alternate;
+}
+
+.drop-target::after {
+    content: '+';
+    font-size: 24px;
+    font-weight: bold;
+    color: #ffffff;
+    text-shadow: 0 0 8px #00ffcc;
+}
+
+@keyframes target-glow {
+    0% { transform: translate(-50%, -50%) scale(0.9); opacity: 0.75; }
+    100% { transform: translate(-50%, -50%) scale(1.15); opacity: 1; }
+}
+
+/* ================= MODALI ED OVERLAY ================= */
+#schermo {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1024px;
+    height: 750px;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 30000;
+    display: none;
+}
+
+.form-domino {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 480px;
+    max-width: 90%;
+    background: linear-gradient(180deg, #163d23 0%, #0d2816 100%);
+    border: 3px solid #ffd700;
+    border-radius: 12px;
+    padding: 24px 28px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), inset 0 0 20px rgba(0,0,0,0.5);
+    z-index: 30001;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    box-sizing: border-box;
+    text-align: center;
+}
+
+.form-domino-title {
+    font-family: 'Slackey', 'Outfit', sans-serif;
+    font-size: 24px;
+    color: #ffd700;
+    margin-bottom: 14px;
+    text-shadow: 2px 2px 4px #000;
+}
+
+.opzione-gruppo {
+    width: 100%;
+    margin-bottom: 14px;
+}
+
+.opzione-lbl {
+    font-size: 13px;
+    font-weight: bold;
+    color: #ffd700;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    letter-spacing: 0.5px;
+}
+
+.opzioni-pulsanti {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btn-opzione-sel {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1.5px solid #5a9e6f;
+    color: #cde8cd;
+    padding: 7px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.btn-opzione-sel:hover {
+    border-color: #ffd700;
+    color: #ffd700;
+}
+
+.btn-opzione-sel.attiva {
+    background: linear-gradient(180deg, #ffd700 0%, #d49b00 100%);
+    border-color: #ffffff;
+    color: #11291b;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+}
+
+.btn-continua {
+    background: linear-gradient(180deg, #27ae60 0%, #1e8449 100%);
+    border: 2px solid #52be80;
+    color: #ffffff;
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+    transition: all 0.15s ease;
+    margin-top: 10px;
+}
+
+.btn-continua:hover {
+    background: linear-gradient(180deg, #2ecc71 0%, #27ae60 100%);
+    border-color: #ffd700;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.5);
+}
+
+.btn-continua:active {
+    transform: translateY(1px);
+}
+
+/* Modale Fine Partita / Vittoria (bassa e larga per ospitare il finish banner sopra) */
+#modale-fine-manche.modale-fine {
+    width: 700px;
+    height: 232px;
+    left: 162px;
+    top: 420px;
+    transform: none;
+    padding: 14px 25px;
+    justify-content: center;
+    overflow: visible;
+}
+
+/* Tabella punteggi fine manche (righe: Precedente, Manche, Totale) */
+.tabella-punti-domino {
+    width: 480px;
+    max-width: 95%;
+    border-collapse: collapse;
+    margin: 4px 0 6px 0;
+    font-size: 13px;
+    background: rgba(0, 0, 0, 0.45);
+    border: 1px solid rgba(255, 215, 0, 0.35);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.5);
+}
+
+.tabella-punti-domino th,
+.tabella-punti-domino td {
+    padding: 4px 14px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.tabella-punti-domino th {
+    background: rgba(0, 0, 0, 0.55);
+    color: #ffd700;
+    font-size: 11.5px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.tabella-punti-domino td.lbl-riga {
+    font-weight: 600;
+    text-align: left;
+    color: #cde8cd;
+    padding-left: 14px;
+}
+
+.tabella-punti-domino tr.riga-totale {
+    background: rgba(255, 215, 0, 0.12);
+    border-top: 1.5px solid rgba(255, 215, 0, 0.4);
+}
+
+.tabella-punti-domino tr.riga-totale td.lbl-riga {
+    color: #ffd700;
+    font-weight: bold;
+}
+
+.tabella-punti-domino .val-tu {
+    color: #55efc4;
+    font-weight: bold;
+}
+
+.tabella-punti-domino .val-cpu {
+    color: #ff7675;
+    font-weight: bold;
+}
+
+.tabella-punti-domino .val-manche {
+    color: #ffd700;
+    font-weight: bold;
+}
+
+.tabella-punti-domino .val-tot {
+    font-weight: bold;
+    font-size: 14.5px;
+}
+
+/* Modale Conferma Nuova Partita / Abbandono (bassa e larga per il finish banner sopra) */
+#confermatermina.modale-conferma {
+    width: 700px;
+    height: 180px;
+    left: 162px;
+    top: 470px;
+    transform: none;
+    padding: 24px 25px;
+    justify-content: center;
+    overflow: visible;
+}
+
+.conferma-bottoni {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.confirm-message {
+    font-size: 24px;
+    font-weight: bold;
+    color: #ffd700;
+    font-family: 'Slackey', 'Outfit', sans-serif;
+    text-shadow: 2px 2px 6px #000;
+    margin-bottom: 12px;
+    text-align: center;
+}
+
+/* Vie di fuga negli angoli bassi della modale d'avvio */
+.btn-angolo-modale {
+    position: absolute;
+    bottom: 10px;
+    height: 24px;
+    line-height: 22px;
+    padding: 0 10px;
+    font-size: 10.5px;
+    font-weight: bold;
+    text-decoration: none;
+    text-align: center;
+    white-space: nowrap;
+    border-radius: 4px;
+    box-sizing: border-box;
+    background-color: rgba(0, 40, 10, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #ccc;
+    transition: all 0.2s;
+}
+
+.btn-angolo-modale:hover {
+    color: #fff;
+    background-color: rgba(0, 60, 20, 0.7);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.btn-angolo-modale.sinistra { left: 12px; }
+.btn-angolo-modale.destra   { right: 12px; }
+
+.btn-angolo-modale.home {
+    background: linear-gradient(135deg, #c9720f, #8a4a08);
+    border: 1px solid #ffd700;
+    color: #fff;
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.35);
+}
+
+.btn-angolo-modale.home:hover {
+    color: #fff;
+    background: linear-gradient(135deg, #e08514, #a3580a);
+    border-color: #ffd700;
+    box-shadow: 0 0 14px rgba(255, 215, 0, 0.65);
+}
+
+/* Selettore lingua modale */
+.lang-switch-modale {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    display: flex;
+    gap: 4px;
+}
+
+.lang-switch-modale a {
+    color: #a0c4a0;
+    text-decoration: none;
+    font-size: 11px;
+    font-weight: bold;
+    padding: 3px 6px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.3);
+    transition: all 0.2s ease;
+}
+
+.lang-switch-modale a.active,
+.lang-switch-modale a:hover {
+    background: #ffd700;
+    color: #111;
+    border-color: #ffd700;
+}
+
+/* ================= FOOTER / LINK UTILI IN BASSO ================= */
+.legal-links-domino {
+    position: absolute;
+    bottom: 5px;
+    left: 12px;
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.6);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    z-index: 100;
+}
+
+.legal-links-domino a:not(.pulsante-link-domino) {
+    color: rgba(255, 255, 255, 0.65);
+    text-decoration: none;
+    font-size: 11px;
+    font-family: sans-serif;
+    transition: color 0.2s;
+}
+
+.legal-links-domino a:not(.pulsante-link-domino):hover {
+    color: #ffd700;
+}
+
+.legal-links-domino .sep {
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 11px;
+}
+
+.link-giochi-domino {
+    position: absolute;
+    bottom: 5px;
+    right: 12px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    z-index: 100;
+}
+
+.pulsante-link-domino {
+    background-color: rgba(0, 40, 20, 0.65);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 4px;
+    color: #ffd700;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 7px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.pulsante-link-domino:hover {
+    background-color: rgba(0, 60, 30, 0.85);
+    border-color: #ffd700;
+    color: #ffffff;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
+}
+
+.pulsante-home-domino {
+    background: linear-gradient(135deg, #c9720f, #8a4a08);
+    border-color: #ffd700;
+    color: #ffffff;
+    font-weight: bold;
+    white-space: nowrap;
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.35);
+}
+
+.pulsante-home-domino:hover {
+    color: #ffffff;
+    background: linear-gradient(135deg, #e08514, #a3580a);
+    box-shadow: 0 0 14px rgba(255, 215, 0, 0.65);
+}
+
+/* Animazione tessera giocata */
+@keyframes placeTileAnim {
+    0% { transform: scale(1.2); opacity: 0.5; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.tile-anim-place {
+    animation: placeTileAnim 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
