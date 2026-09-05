@@ -1546,6 +1546,17 @@
 
     // ─── INIZIALIZZAZIONE GIOCO ALL'AVVIO ──────────────────────────────────
     function init() {
+        // Se l'overlay dell'interstitial è presente a schermo, aspetta la sua chiusura
+        if (document.getElementById('interstitial-overlay')) {
+            var checkOverlay = setInterval(function () {
+                if (!document.getElementById('interstitial-overlay')) {
+                    clearInterval(checkOverlay);
+                    init();
+                }
+            }, 100);
+            return;
+        }
+
         canvas = document.getElementById('tetra-canvas');
         if (canvas) {
             canvas.width = COLS * BLOCK_SIZE;
@@ -1579,15 +1590,19 @@
             nextCtx = nextCanvas.getContext('2d');
         }
 
-        var btnAudio = document.getElementById('btn-audio');
-        if (btnAudio) {
-            if (window.audioMuted) btnAudio.classList.add('muted');
-            btnAudio.addEventListener('click', function () {
-                window.audioMuted = !window.audioMuted;
-                localStorage.setItem('site-audio-muted', window.audioMuted);
+        if (window.initAudioToggle) {
+            window.initAudioToggle('#btn-audio');
+        } else {
+            var btnAudio = document.getElementById('btn-audio');
+            if (btnAudio) {
                 if (window.audioMuted) btnAudio.classList.add('muted');
-                else btnAudio.classList.remove('muted');
-            });
+                btnAudio.addEventListener('click', function () {
+                    window.audioMuted = !window.audioMuted;
+                    localStorage.setItem('site-audio-muted', window.audioMuted);
+                    if (window.audioMuted) btnAudio.classList.add('muted');
+                    else btnAudio.classList.remove('muted');
+                });
+            }
         }
 
         caricaRecords();
@@ -1600,7 +1615,14 @@
         initTouchControls();
         updateStatsUI();
 
+        // Assicuriamoci che il layout si adegui
+        if (typeof adjustLayout === 'function') {
+            adjustLayout();
+        }
+
         // Avvia Riquadro Affiliati Rotante (pubblicità adattabile) come in Battaglia Navale e Calcolo
+        // Parte da qui e non da DOMContentLoaded perché init attende la chiusura dell'interstitial:
+        // ruotare mentre l'overlay copre la pagina conterebbe impression mai viste.
         if (typeof setupRotatingAffiliateBanner === 'function') {
             var boxAff = document.getElementById('banner-rotante');
             if (boxAff) {
