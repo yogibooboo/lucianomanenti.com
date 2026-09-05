@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
+	<script>
+		window.dataLayer = window.dataLayer || [];
+		function gtag() { dataLayer.push(arguments); }
+		gtag('js', new Date());
+		gtag('config', 'G-WRBDRDQ4L8');
+		window.currentLang = 'en';
+	</script>
+	<title>Tetra Luciano Rules - How to Play & Strategies</title>
+	<meta name="Description"
+		content="Complete guide to Tetra Luciano rules: polyomino tetromino shapes, SRS rotations, scoring system, Marathon, 40-Line Sprint, and strategies to reach high scores.">
+	<link rel="alternate" hreflang="it" href="guida-tetra.html">
+	<link rel="alternate" hreflang="en" href="guida-tetra-en.html">
+	<link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
+	<link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
+	<link rel="shortcut icon" href="favicon/favicon.ico">
+	<link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+	<style>
+		body {
+			font-family: sans-serif;
+			line-height: 1.7;
+			max-width: 800px;
+			margin: 40px auto;
+			padding: 20px;
+			color: #333;
+			background-color: #f9f9f9;
+		}
+
+		h1 {
+			color: #2c3e50;
+			border-bottom: 2px solid #ffd700;
+			padding-bottom: 10px;
+		}
+
+		h2 {
+			color: #2c3e50;
+			margin-top: 30px;
+		}
+
+		h3 {
+			color: #2c3e50;
+			font-size: 1.1em;
+			margin-top: 20px;
+		}
+
+		.lang-switch {
+			text-align: right;
+			margin-bottom: 20px;
+		}
+
+		.lang-switch a {
+			display: inline-block;
+			padding: 6px 16px;
+			margin-left: 5px;
+			text-decoration: none;
+			border-radius: 5px;
+			font-weight: bold;
+			font-size: 14px;
+		}
+
+		.lang-switch a.active {
+			background: #2c3e50;
+			color: white;
+		}
+
+		.lang-switch a:not(.active) {
+			background: #ddd;
+			color: #333;
+			cursor: pointer;
+		}
+
+		.content-box {
+			background: white;
+			padding: 30px;
+			border-radius: 8px;
+			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+		}
+
+		.play-btn {
+			display: inline-block;
+			margin-top: 25px;
+			padding: 12px 30px;
+			background: #27ae60;
+			color: white;
+			text-decoration: none;
+			border-radius: 8px;
+			font-size: 18px;
+			font-weight: bold;
+			transition: background 0.2s;
+			cursor: pointer;
+		}
+
+		.play-btn:hover {
+			background: #219150;
+		}
+
+		.score-table, .controls-table {
+			width: 100%;
+			border-collapse: collapse;
+			margin: 15px 0;
+		}
+
+		.score-table th, .score-table td,
+		.controls-table th, .controls-table td {
+			border: 1px solid #ddd;
+			padding: 8px 12px;
+			text-align: left;
+		}
+
+		.score-table th, .controls-table th {
+			background-color: #f2f2f2;
+			color: #2c3e50;
+		}
+
+		.kbd {
+			display: inline-block;
+			padding: 2px 6px;
+			background: #eee;
+			border: 1px solid #ccc;
+			border-radius: 4px;
+			font-family: monospace;
+			font-size: 12px;
+		}
+	</style>
+</head>
+
+<body>
+
+	<div class="lang-switch">
+		<a href="guida-tetra.html">Italiano</a>
+		<a href="guida-tetra-en.html" class="active">English</a>
+	</div>
+
+	<div class="content-box">
+		<h1>Tetra Luciano Rules & Guide</h1>
+
+		<p><strong>Tetra</strong> is the iconic geometric falling-block puzzle game. The objective is to position falling shapes (called <em>tetrominoes</em> or <em>polyominoes</em>) to complete full horizontal rows, clearing them from the matrix and scoring points before the board stacks up to the top.</p>
+
+		<h2>The 7 Tetrominoes</h2>
+		<p>Each piece is composed of 4 square blocks configured into distinct shapes with standard color coding:</p>
+		<ul>
+			<li><strong>I (Cyan):</strong> The 4-block straight line, the only piece capable of scoring a 4-line <em>TETRA!</em>.</li>
+			<li><strong>O (Yellow):</strong> The 2x2 square.</li>
+			<li><strong>T (Purple):</strong> The versatile T-shape used for advanced maneuvers like T-Spins.</li>
+			<li><strong>L (Orange) & J (Blue):</strong> The two mirror L-shaped hook pieces.</li>
+			<li><strong>S (Green) & Z (Red):</strong> The two snake / step pieces.</li>
+		</ul>
+
+		<h2>Game Controls</h2>
+		<table class="controls-table">
+			<tr><th>Action</th><th>Keyboard</th><th>Touch / Mobile</th></tr>
+			<tr><td>Move Left / Right</td><td><span class="kbd">←</span> <span class="kbd">→</span> or <span class="kbd">A</span> <span class="kbd">D</span></td><td>Buttons ◀ ▶</td></tr>
+			<tr><td>Rotate Clockwise</td><td><span class="kbd">↑</span> or <span class="kbd">X</span> / <span class="kbd">W</span></td><td>Button ↻</td></tr>
+			<tr><td>Rotate Counter-Clockwise</td><td><span class="kbd">Z</span> or <span class="kbd">Ctrl</span></td><td>Button ↺</td></tr>
+			<tr><td>Soft Drop</td><td><span class="kbd">↓</span> or <span class="kbd">S</span></td><td>Button ▼</td></tr>
+			<tr><td>Hard Drop (Instant)</td><td><span class="kbd">Space</span></td><td>Button ⚡</td></tr>
+			<tr><td>Hold Piece</td><td><span class="kbd">C</span> or <span class="kbd">Shift</span></td><td>Button 🔄</td></tr>
+			<tr><td>Pause / Resume</td><td><span class="kbd">P</span> or <span class="kbd">Esc</span></td><td>Button ⏸️</td></tr>
+		</table>
+
+		<h2>Game Modes</h2>
+		<h3>1. Marathon (Classic)</h3>
+		<p>Play without time limits. The speed increases automatically every 10 cleared lines, advancing to the next level. The goal is to reach the highest score possible.</p>
+
+		<h3>2. Sprint 40 Lines (Time Attack)</h3>
+		<p>Clear 40 lines in the fastest time possible. The timer tracks tenths of a second: balance speed and precision to set a new personal record!</p>
+
+		<h3>3. Ultra 2 Minutes (Score Attack)</h3>
+		<p>You have exactly 120 seconds to score as many points as possible. Maximize your score using 4-line Tetra clears and consecutive combos.</p>
+
+		<h2>Scoring Table</h2>
+		<table class="score-table">
+			<tr><th>Action</th><th>Base Points</th><th>With Level (Multiplier)</th></tr>
+			<tr><td>Single line clear</td><td>100</td><td>100 × Level</td></tr>
+			<tr><td>Double line clear</td><td>300</td><td>300 × Level</td></tr>
+			<tr><td>Triple line clear</td><td>500</td><td>500 × Level</td></tr>
+			<tr><td>TETRA! (4 lines)</td><td>800</td><td>800 × Level</td></tr>
+			<tr><td>Back-to-Back Bonus (Consecutive Tetra)</td><td>+50% bonus</td><td>1200 × Level</td></tr>
+			<tr><td>T-Spin</td><td>400 - 1600</td><td>Up to 1600 × Level</td></tr>
+			<tr><td>Soft Drop / Hard Drop</td><td>1 pt / line</td><td>2 pt / line (Hard)</td></tr>
+		</table>
+
+		<h2>Tips & Strategies</h2>
+		<ul>
+			<li><strong>Keep your stack flat:</strong> Avoid building deep wells or spires that make future piece placement difficult.</li>
+			<li><strong>Use the Hold queue:</strong> If you get a piece that doesn't fit well or you want to save a straight I-bar for a 4-line Tetra, pressing <span class="kbd">C</span> will save your run.</li>
+			<li><strong>Watch the Next preview:</strong> Plan ahead by checking the upcoming pieces to build optimal placements in advance.</li>
+		</ul>
+
+		<div style="text-align: center;">
+			<a href="tetra-en.html" class="play-btn">🎮 PLAY TETRA NOW</a>
+		</div>
+	</div>
+
+</body>
+
+</html>

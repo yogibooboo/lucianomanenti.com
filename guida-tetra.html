@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
+	<script>
+		window.dataLayer = window.dataLayer || [];
+		function gtag() { dataLayer.push(arguments); }
+		gtag('js', new Date());
+		gtag('config', 'G-WRBDRDQ4L8');
+		window.currentLang = 'it';
+	</script>
+	<title>Regole di Tetra Luciano - Come si gioca e strategie</title>
+	<meta name="Description"
+		content="Guida completa alle regole di Tetra Luciano: forme dei tetramini, rotazioni SRS, sistema di punteggio, modalità Maratona, Sprint e strategie per fare record.">
+	<link rel="alternate" hreflang="it" href="guida-tetra.html">
+	<link rel="alternate" hreflang="en" href="guida-tetra-en.html">
+	<link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
+	<link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
+	<link rel="shortcut icon" href="favicon/favicon.ico">
+	<link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+	<style>
+		body {
+			font-family: sans-serif;
+			line-height: 1.7;
+			max-width: 800px;
+			margin: 40px auto;
+			padding: 20px;
+			color: #333;
+			background-color: #f9f9f9;
+		}
+
+		h1 {
+			color: #2c3e50;
+			border-bottom: 2px solid #ffd700;
+			padding-bottom: 10px;
+		}
+
+		h2 {
+			color: #2c3e50;
+			margin-top: 30px;
+		}
+
+		h3 {
+			color: #2c3e50;
+			font-size: 1.1em;
+			margin-top: 20px;
+		}
+
+		.lang-switch {
+			text-align: right;
+			margin-bottom: 20px;
+		}
+
+		.lang-switch a {
+			display: inline-block;
+			padding: 6px 16px;
+			margin-left: 5px;
+			text-decoration: none;
+			border-radius: 5px;
+			font-weight: bold;
+			font-size: 14px;
+		}
+
+		.lang-switch a.active {
+			background: #2c3e50;
+			color: white;
+		}
+
+		.lang-switch a:not(.active) {
+			background: #ddd;
+			color: #333;
+			cursor: pointer;
+		}
+
+		.content-box {
+			background: white;
+			padding: 30px;
+			border-radius: 8px;
+			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+		}
+
+		.play-btn {
+			display: inline-block;
+			margin-top: 25px;
+			padding: 12px 30px;
+			background: #27ae60;
+			color: white;
+			text-decoration: none;
+			border-radius: 8px;
+			font-size: 18px;
+			font-weight: bold;
+			transition: background 0.2s;
+			cursor: pointer;
+		}
+
+		.play-btn:hover {
+			background: #219150;
+		}
+
+		.score-table, .controls-table {
+			width: 100%;
+			border-collapse: collapse;
+			margin: 15px 0;
+		}
+
+		.score-table th, .score-table td,
+		.controls-table th, .controls-table td {
+			border: 1px solid #ddd;
+			padding: 8px 12px;
+			text-align: left;
+		}
+
+		.score-table th, .controls-table th {
+			background-color: #f2f2f2;
+			color: #2c3e50;
+		}
+
+		.kbd {
+			display: inline-block;
+			padding: 2px 6px;
+			background: #eee;
+			border: 1px solid #ccc;
+			border-radius: 4px;
+			font-family: monospace;
+			font-size: 12px;
+		}
+		.banner {
+			width: 100%;
+			height: 150px;
+			background-image: url('images/home/castagne.jpg');
+			background-size: cover;
+			background-position: center;
+			border-radius: 8px;
+			margin: 20px 0;
+			box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+		}
+
+		.nav-links {
+			text-align: center;
+			margin-top: 30px;
+			font-size: 14px;
+		}
+
+		.nav-links a {
+			color: #3498db;
+			text-decoration: none;
+			margin: 0 8px;
+		}
+	</style>
+</head>
+
+<body>
+
+	<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+		<a href="#" id="btn-back" onclick="goBack(); return false;"
+			style="display: inline-block; padding: 6px 16px; background: #e74c3c; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 14px;">&#x2190; Indietro</a>
+		<div class="lang-switch" style="margin-bottom: 0;">
+			<a href="guida-tetra.html" class="active">Italiano</a>
+			<a href="guida-tetra-en.html">English</a>
+		</div>
+	</div>
+
+	<div class="banner"></div>
+
+	<div class="content-box">
+		<h1>Guida e Regole di Tetra Luciano</h1>
+
+		<p><strong>Tetra</strong> è il celebre rompicapo geometrico di blocchi a incastro. Lo scopo del gioco è posizionare i blocchi geometrici in caduta (i <em>tetramini</em>) per completare righe orizzontali piene, facendole scomparire e accumulando punti prima che la matrice si riempia fino alla cima.</p>
+
+		<h2>I 7 Tetramini</h2>
+		<p>Ogni tessera è composta da 4 blocchi quadrati disposti in forme uniche, ciascuna contraddistinta da un colore standard:</p>
+		<ul>
+			<li><strong>I (Azzurro):</strong> La barra dritta di 4 blocchi, l'unica capace di completare 4 linee contemporaneamente (<em>TETRA!</em>).</li>
+			<li><strong>O (Giallo):</strong> Il quadrato 2x2.</li>
+			<li><strong>T (Viola):</strong> La forma a T, versatile e usata per manovre avanzate (T-Spin).</li>
+			<li><strong>L (Arancione) & J (Blu):</strong> I due ganci speculari a forma di L.</li>
+			<li><strong>S (Verde) & Z (Rosso):</strong> Le due forme a serpente / scalino.</li>
+		</ul>
+
+		<h2>Comandi di Gioco</h2>
+		<table class="controls-table">
+			<tr><th>Azione</th><th>Tastiera</th><th>Touch / Mobile</th></tr>
+			<tr><td>Muovi a Sinistra / Destra</td><td><span class="kbd">←</span> <span class="kbd">→</span> oppure <span class="kbd">A</span> <span class="kbd">D</span></td><td>Pulsanti ◀ ▶</td></tr>
+			<tr><td>Ruota in Senso Orario</td><td><span class="kbd">↑</span> oppure <span class="kbd">X</span> / <span class="kbd">W</span></td><td>Pulsante ↻</td></tr>
+			<tr><td>Ruota in Senso Antiorario</td><td><span class="kbd">Z</span> oppure <span class="kbd">Ctrl</span></td><td>Pulsante ↺</td></tr>
+			<tr><td>Discesa Rapida (Soft Drop)</td><td><span class="kbd">↓</span> oppure <span class="kbd">S</span></td><td>Pulsante ▼</td></tr>
+			<tr><td>Caduta Istantanea (Hard Drop)</td><td><span class="kbd">Spazio</span></td><td>Pulsante ⚡</td></tr>
+			<tr><td>Scambia / Trattieni (Hold)</td><td><span class="kbd">C</span> oppure <span class="kbd">Shift</span></td><td>Pulsante 🔄</td></tr>
+			<tr><td>Pausa / Riprendi</td><td><span class="kbd">P</span> oppure <span class="kbd">Esc</span></td><td>Pulsante ⏸️</td></tr>
+		</table>
+
+		<h2>Modalità di Gioco</h2>
+		<h3>1. Maratona (Classica)</h3>
+		<p>Gioca senza limiti di tempo. La velocità aumenta automaticamente ogni 10 righe completate, passando al livello successivo. L'obiettivo è totalizzare il punteggio più alto possibile.</p>
+
+		<h3>2. Sprint 40 Righe (Time Attack)</h3>
+		<p>Completa 40 righe nel minor tempo possibile. Il cronometro misura i decimi di secondo: trova la combinazione ideale tra velocità e precisione per battere il record!</p>
+
+		<h3>3. Ultra 2 Minuti (Score Attack)</h3>
+		<p>Hai esattamente 120 secondi per totalizzare il massimo dei punti possibili. Sfrutta le cancellazioni quadruple e le combo consecutive per massimizzare il punteggio.</p>
+
+		<h2>Tabella Punteggi</h2>
+		<table class="score-table">
+			<tr><th>Azione</th><th>Punti Base</th><th>Con Livello (Moltiplicatore)</th></tr>
+			<tr><td>Singola riga</td><td>100</td><td>100 × Livello</td></tr>
+			<tr><td>Doppia riga</td><td>300</td><td>300 × Livello</td></tr>
+			<tr><td>Tripla riga</td><td>500</td><td>500 × Livello</td></tr>
+			<tr><td>TETRA! (4 righe)</td><td>800</td><td>800 × Livello</td></tr>
+			<tr><td>Back-to-Back (Tetra consecutivi)</td><td>+50% bonus</td><td>1200 × Livello</td></tr>
+			<tr><td>T-Spin</td><td>400 - 1600</td><td>Fino a 1600 × Livello</td></tr>
+			<tr><td>Soft Drop / Hard Drop</td><td>1 pt / riga</td><td>2 pt / riga (Hard)</td></tr>
+		</table>
+
+		<h2>Consigli Strategici</h2>
+		<ul>
+			<li><strong>Mantieni la superficie piatta:</strong> Evita di creare voragini o torri isolate che rendono difficile posizionare le tessere successive.</li>
+			<li><strong>Usa la funzione Hold:</strong> Se ricevi una tessera scomoda in un momento critico o una barra I che vuoi conservare per il Tetra, premere <span class="kbd">C</span> ti salverà la partita.</li>
+			<li><strong>Guarda l'anteprima (Next):</strong> Pianificare in anticipo guardando i prossimi pezzi ti permette di costruire incastri perfetti.</li>
+		</ul>
+
+		<p style="text-align: center;"><a href="#" onclick="goBack(); return false;" class="play-btn">Chiudi</a></p>
+	</div>
+
+	<div class="banner"></div>
+
+	<div class="nav-links">
+		<a href="index.html">Tutti i giochi</a> |
+		<a href="tetra.html">Tetra</a> |
+		<a href="scorciatoie.html">Scorciatoie</a> |
+		<a href="sudoku.html">Sudoku</a> |
+		<a href="quadrati.html">Quadrati</a> |
+		<a href="calcolo.html">Calcolo Enigmatico</a> |
+		<a href="dama.html">Dama</a>
+	</div>
+
+	<p style="text-align: center; font-size: 0.8em; color: #999; margin-top: 10px;">
+		© 2026 Luciano Manenti
+	</p>
+
+	<script>
+		function goBack() {
+			if (window.history.length > 1) {
+				window.history.back();
+			}
+			window.close();
+		}
+	</script>
+</body>
+
+</html>

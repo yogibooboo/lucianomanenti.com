@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9335537153013492"
+        crossorigin="anonymous"></script>
+    <script>
+        // Security fix to prevent crashes from cross-origin on window.opener
+        (function() { try { if (!window.opener) return; var test = window.opener.document; if (!window.opener.game) { window.opener = null; } } catch(e) { window.opener = null; } })();
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tetra Luciano - Free Online Game - lucianomanenti.com</title>
+    <link rel="canonical" href="https://www.lucianomanenti.com/tetra-en.html">
+    <link rel="alternate" hreflang="it" href="https://www.lucianomanenti.com/tetra.html">
+    <link rel="alternate" hreflang="en" href="https://www.lucianomanenti.com/tetra-en.html">
+    <link rel="alternate" hreflang="x-default" href="https://www.lucianomanenti.com/tetra.html">
+    <link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
+    <link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
+    <link rel="shortcut icon" href="favicon/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+    <link rel="manifest" href="favicon/site.webmanifest">
+
+    <meta name="Description"
+        content="Play Tetra Luciano free online: the classic falling-block polyomino puzzle game featuring elegant visuals, SRS rotations, Hold queue, next piece previews, Marathon, 40-Line Sprint, and Ultra modes.">
+    <meta http-Equiv="Cache-Control" Content="no-cache">
+    <meta http-Equiv="Pragma" Content="no-cache">
+    <meta http-Equiv="Expires" Content="0">
+
+    <link rel="stylesheet" href="tetra.css?v=1.8" />
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-WRBDRDQ4L8');
+    </script>
+    <script>
+        window.gameConfig = {
+            gaPrefix: 'TETRA_',
+            hideLegalFooter: true,
+            adsenseActive: true,
+            adsenseSlots: {
+                '300x600': '5266697442',
+                '160x600': '1167670336',
+                '300x250': '8471445288',
+                '160x250': '8663016975'
+            }
+        };
+        window.currentLang = 'en';
+    </script>
+</head>
+
+<body>
+
+    <div class="main-container">
+        <!-- Sidebars for AdSense & Amazon (managed by layout engine) -->
+        <div id="sidebar-left" class="sidebar"></div>
+        <div id="sidebar-right" class="sidebar"></div>
+
+        <!-- Main game board 1024x750 -->
+        <div id="campogioco">
+            <!-- Overlay screen for modals -->
+            <div id="schermo"></div>
+
+            <!-- ================= HEADER BAR ================= -->
+            <div id="header-tetra">
+                <div class="header-left">
+                    <div id="titolo-gioco">
+                        🕹️ Tetra Luciano <span class="badge-modalita" id="modalita-badge">Marathon</span>
+                    </div>
+                </div>
+
+                <div class="header-center">
+                    <div class="info-pill">
+                        <span class="info-pill-lbl">Score</span>
+                        <span class="info-pill-val gold" id="stat-score">0</span>
+                    </div>
+                    <div class="info-pill">
+                        <span class="info-pill-lbl">Lines</span>
+                        <span class="info-pill-val cyan" id="stat-lines">0</span>
+                    </div>
+                    <div class="info-pill">
+                        <span class="info-pill-lbl">Level</span>
+                        <span class="info-pill-val" id="stat-level">1</span>
+                    </div>
+                    <div class="info-pill">
+                        <span class="info-pill-lbl">Best</span>
+                        <span class="info-pill-val gold" id="stat-record">0</span>
+                    </div>
+                </div>
+
+                <div class="header-right">
+                    <button id="btn-ghost" onclick="toggleGhost()" class="btn-azione-top attivo" title="Toggle ghost piece shadow">👁 Ghost</button>
+                    <button id="btn-controlli" onclick="apriModaleControlli()" class="btn-azione-top" title="View keyboard controls">⌨️ Controls</button>
+                    <button id="btn-pausa" onclick="togglePause()" class="btn-azione-top" title="Pause game (P / Esc)">⏸️ Pause</button>
+                    <button id="btn-new-game" onclick="apriConfermaNuova()" class="btn-azione-top" style="border-color: #ffd700; color: #ffd700;">New</button>
+
+                    <div class="lang-switch-header">
+                        <a href="tetra.html">IT</a>
+                        <a href="tetra-en.html" class="active">EN</a>
+                        <div id="btn-audio" class="btn-audio-game" aria-label="Audio"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Status message banner -->
+            <div id="messaggio-stato-tetra">Tetra Luciano</div>
+
+            <!-- ================= TETRA TABLE AREA ================= -->
+            <div id="area-tavolo-tetra">
+                <div class="tetra-layout">
+
+                    <!-- Left Panel: Hold, Piece Stats and Records -->
+                    <div class="tetra-side-panel">
+                        <div class="tetra-box tetra-box-clickable" onclick="holdPieceAction()" title="Click to hold/swap piece (or press C / Shift)" style="cursor: pointer;">
+                            <div class="tetra-box-title">🔄 Hold (C)</div>
+                            <canvas id="hold-canvas" class="tetra-preview-canvas" width="100" height="70"></canvas>
+                        </div>
+
+                        <!-- Sudoku-style Record Card: Today / Week / All-Time -->
+                        <div class="tetra-box tetra-record-card" id="pannello-record-tetra">
+                            <div class="record-card-header">
+                                <span class="tetra-box-title" style="margin-bottom: 0;">🏆 RECORDS</span>
+                                <span class="record-mode-badge" id="record-mode-lbl">MARATHON</span>
+                            </div>
+                            <div class="record-righe-tetra">
+                                <div class="record-col-tetra">
+                                    <div class="record-lbl-tetra">Today</div>
+                                    <div class="record-val-tetra" id="record-oggi">0</div>
+                                    <button class="btn-reset-record-tetra" data-tipo="daily" title="Reset today's record">&#10226;</button>
+                                </div>
+                                <div class="record-col-tetra">
+                                    <div class="record-lbl-tetra">Week</div>
+                                    <div class="record-val-tetra" id="record-settimana">0</div>
+                                    <button class="btn-reset-record-tetra" data-tipo="weekly" title="Reset this week's record">&#10226;</button>
+                                </div>
+                                <div class="record-col-tetra">
+                                    <div class="record-lbl-tetra">All-Time</div>
+                                    <div class="record-val-tetra" id="record-assoluto">0</div>
+                                    <button class="btn-reset-record-tetra" data-tipo="all" title="Reset all-time record">&#10226;</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="tetra-box" style="padding: 6px 10px;">
+                            <div class="tetra-box-title">📊 Pieces</div>
+                            <div class="tetra-stats-list">
+                                <div class="tetra-stat-row"><span class="tetra-stat-name" style="color: #00d2d3;">■ I (Line)</span><span class="tetra-stat-count" id="stat-piece-I">0</span></div>
+                                <div class="tetra-stat-row"><span class="tetra-stat-name" style="color: #2e86de;">■ J (Hook)</span><span class="tetra-stat-count" id="stat-piece-J">0</span></div>
+                                <div class="tetra-stat-row"><span class="tetra-stat-name" style="color: #ff9f43;">■ L (Hook)</span><span class="tetra-stat-count" id="stat-piece-L">0</span></div>
+                                <div class="tetra-stat-row"><span class="tetra-stat-name" style="color: #feca57;">■ O (Square)</span><span class="tetra-stat-count" id="stat-piece-O">0</span></div>
+                                <div class="tetra-stat-row"><span class="tetra-stat-name" style="color: #1dd1a1;">■ S (Snake)</span><span class="tetra-stat-count" id="stat-piece-S">0</span></div>
+                                <div class="tetra-stat-row"><span class="tetra-stat-name" style="color: #9b59b6;">■ T (Cross)</span><span class="tetra-stat-count" id="stat-piece-T">0</span></div>
+                                <div class="tetra-stat-row"><span class="tetra-stat-name" style="color: #ff6b6b;">■ Z (Snake)</span><span class="tetra-stat-count" id="stat-piece-Z">0</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Center: 10x20 Canvas Board -->
+                    <div class="tetra-board-wrapper">
+                        <canvas id="tetra-canvas" width="280" height="560"></canvas>
+                        <div id="tetra-action-banner">TETRA!</div>
+                    </div>
+
+                    <!-- Right Panel: Next Pieces, Time and Responsive / Rotating Banner -->
+                    <div class="tetra-side-panel tetra-side-panel-right">
+                        <div class="tetra-box">
+                            <div class="tetra-box-title">⏭️ Next</div>
+                            <canvas id="next-canvas" class="tetra-preview-canvas" width="100" height="190"></canvas>
+                        </div>
+
+                        <!-- Time Box: only shown in time-based modes (Sprint 40L & Ultra 2 Min) -->
+                        <div class="tetra-box" id="box-tempo-container" style="display: none;">
+                            <div class="tetra-box-title" id="lbl-tempo-box">⏱️ Time</div>
+                            <div class="tetra-box-val accent" id="stat-tempo">00:00.0</div>
+                        </div>
+
+                        <!-- Rotating Affiliate Banner / Responsive Ad -->
+                        <div id="banner-rotante"></div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- ================= TOUCH CONTROLS FOR MOBILE ================= -->
+            <div id="touch-controls-tetra">
+                <div class="touch-cluster">
+                    <button id="touch-left" class="btn-touch" aria-label="Left">◀</button>
+                    <button id="touch-right" class="btn-touch" aria-label="Right">▶</button>
+                    <button id="touch-down" class="btn-touch" aria-label="Down">▼</button>
+                </div>
+                <div class="touch-cluster">
+                    <button id="touch-hold" class="btn-touch" aria-label="Hold Piece">🔄</button>
+                    <button id="touch-rot-ccw" class="btn-touch" aria-label="Rotate CCW">↺</button>
+                    <button id="touch-rot-cw" class="btn-touch" aria-label="Rotate CW">↻</button>
+                    <button id="touch-hard" class="btn-touch large" style="background: rgba(184, 134, 11, 0.4); border-color: #ffd700;" aria-label="Hard Drop">⚡</button>
+                </div>
+            </div>
+
+            <!-- ================= MODALS & OVERLAYS ================= -->
+
+            <!-- 1. Start Game / Mode Selection Modal -->
+            <div id="modale-inizio" class="form-tetra">
+                <div class="form-tetra-title">🕹️ Tetra Luciano</div>
+
+                <div class="opzione-gruppo">
+                    <div class="opzione-lbl">Game Mode:</div>
+                    <div class="opzioni-pulsanti">
+                        <button id="btn-mode-marathon" onclick="selezionaModalita('marathon')" class="btn-opzione-sel attiva">MARATHON</button>
+                        <button id="btn-mode-sprint" onclick="selezionaModalita('sprint')" class="btn-opzione-sel">SPRINT (40 L)</button>
+                        <button id="btn-mode-ultra" onclick="selezionaModalita('ultra')" class="btn-opzione-sel">ULTRA (2 MIN)</button>
+                    </div>
+                </div>
+
+                <div class="opzione-gruppo">
+                    <div class="opzione-lbl">Starting Level:</div>
+                    <div class="opzioni-pulsanti">
+                        <button id="btn-lvl-1" onclick="selezionaLivelloIniziale(1)" class="btn-opzione-sel attiva">LV 1</button>
+                        <button id="btn-lvl-5" onclick="selezionaLivelloIniziale(5)" class="btn-opzione-sel">LV 5</button>
+                        <button id="btn-lvl-10" onclick="selezionaLivelloIniziale(10)" class="btn-opzione-sel">LV 10</button>
+                        <button id="btn-lvl-15" onclick="selezionaLivelloIniziale(15)" class="btn-opzione-sel">LV 15</button>
+                    </div>
+                </div>
+
+                <button onclick="avviaNuovaPartita()" class="btn-continua" style="width: 220px;">PLAY NOW 🕹️</button>
+
+                <div class="lang-switch-modale">
+                    <a href="tetra.html" title="Italiano">IT</a>
+                    <a href="tetra-en.html" class="active" title="English">EN</a>
+                </div>
+                <a href="guida-tetra-en.html" target="_blank" rel="opener" id="btn-regole-modale" class="btn-angolo-modale sinistra">INSTRUCTIONS</a>
+                <a href="index-en.html" id="btn-home-modale" class="btn-angolo-modale destra home">ALL GAMES</a>
+            </div>
+
+            <!-- 2. Pause Modal -->
+            <div id="modale-pausa" class="form-tetra">
+                <div class="form-tetra-title">⏸️ GAME PAUSED</div>
+                <div style="font-size: 14px; color: #cde8cd; margin-bottom: 20px; text-align: center;">Press resume or P / Esc to continue playing.</div>
+                <button onclick="togglePause()" class="btn-continua" style="width: 220px;">RESUME ▶️</button>
+            </div>
+
+            <!-- 3. Game Over / Records Modal -->
+            <div id="modale-fine" class="form-tetra modale-fine-tetra">
+                <div class="fine-titolo" id="fine-titolo">GAME OVER!</div>
+                <div id="badge-nuovo-record" class="badge-record" style="display: none;">🏆 NEW PERSONAL RECORD!</div>
+
+                <div class="fine-stats-grid">
+                    <div class="fine-stat-card">
+                        <div class="lbl">Score</div>
+                        <div class="val gold" id="fine-val-punti">0</div>
+                    </div>
+                    <div class="fine-stat-card">
+                        <div class="lbl">Lines Cleared</div>
+                        <div class="val" id="fine-val-righe">0</div>
+                    </div>
+                    <div class="fine-stat-card">
+                        <div class="lbl">Level Reached</div>
+                        <div class="val" id="fine-val-livello">1</div>
+                    </div>
+                    <div class="fine-stat-card">
+                        <div class="lbl">Time Played</div>
+                        <div class="val" id="fine-val-tempo">00:00.0</div>
+                    </div>
+                </div>
+
+                <button onclick="apriModaleInizio()" class="btn-continua" style="width: 240px;">PLAY AGAIN 🔄</button>
+            </div>
+
+            <!-- 4. Confirm New Game Modal -->
+            <div id="confermatermina" class="form-tetra modale-conferma">
+                <div class="form-tetra-title" style="font-size: 20px;">Restart current game?</div>
+                <div style="font-size: 13.5px; color: #cde8cd; margin-bottom: 16px; text-align: center;">The ongoing game will be reset.</div>
+                <div class="conferma-bottoni" style="display: flex; gap: 10px; width: 100%;">
+                    <button onclick="chiudiModali()" class="btn-opzione-sel" style="padding: 10px;">CANCEL</button>
+                    <button onclick="apriModaleInizio()" class="btn-continua" style="margin-top: 0; padding: 10px; flex: 1; background: #e74c3c; border-color: #c0392b;">NEW GAME</button>
+                </div>
+            </div>
+
+            <!-- 5. Controls Guide Modal -->
+            <div id="modale-controlli" class="form-tetra">
+                <div class="form-tetra-title">⌨️ Game Controls</div>
+                <table class="controlli-tabella">
+                    <tr><td>Move Left / Right:</td><td><span class="key-badge">←</span> <span class="key-badge">→</span> or <span class="key-badge">A</span> <span class="key-badge">D</span></td></tr>
+                    <tr><td>Rotate Clockwise:</td><td><span class="key-badge">↑</span> or <span class="key-badge">X</span> / <span class="key-badge">W</span></td></tr>
+                    <tr><td>Rotate Counter-Clockwise:</td><td><span class="key-badge">Z</span> or <span class="key-badge">Ctrl</span></td></tr>
+                    <tr><td>Soft Drop:</td><td><span class="key-badge">↓</span> or <span class="key-badge">S</span></td></tr>
+                    <tr><td>Hard Drop (Instant):</td><td><span class="key-badge">Space</span></td></tr>
+                    <tr><td>Hold Piece:</td><td><span class="key-badge">C</span> or <span class="key-badge">Shift</span></td></tr>
+                    <tr><td>Pause / Resume:</td><td><span class="key-badge">P</span> or <span class="key-badge">Esc</span></td></tr>
+                </table>
+                <button onclick="chiudiModali()" class="btn-continua" style="width: 180px;">CLOSE</button>
+            </div>
+
+            <!-- ================= FOOTER LINKS ================= -->
+            <!-- Legal links (Privacy Policy and Manage Cookies) and Info on bottom left -->
+            <div class="legal-links-tetra">
+                <a href="privacy-en.html" target="_blank">Privacy Policy</a>
+                <span class="sep">•</span>
+                <a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)">Manage Cookies</a>
+                <span class="sep">•</span>
+                <a href="guida-tetra-en.html" target="_blank" rel="opener" class="pulsante-link-tetra">Instructions</a>
+                <a href="aboutme-en.html" target="_blank" class="pulsante-link-tetra">Contact Me</a>
+            </div>
+
+            <div class="link-giochi-tetra">
+                <a href="scala40-en.html" class="pulsante-link-tetra">Scala 40</a>
+                <a href="burraco-en.html" class="pulsante-link-tetra">Burraco</a>
+                <a href="sudoku-en.html" class="pulsante-link-tetra">Sudoku</a>
+                <a href="domino-en.html" class="pulsante-link-tetra">Domino</a>
+                <a href="mahjong-en.html" class="pulsante-link-tetra">Mahjong</a>
+                <a href="dama-en.html" class="pulsante-link-tetra">Checkers</a>
+                <a href="scacchi-en.html" class="pulsante-link-tetra">Chess</a>
+                <a href="minato-en.html" class="pulsante-link-tetra">Minesweeper</a>
+                <a href="quadrati-en.html" class="pulsante-link-tetra">Dots and Boxes</a>
+                <a href="index-en.html" class="pulsante-link-tetra pulsante-home-tetra">ALL GAMES</a>
+            </div>
+
+        </div><!-- /campogioco -->
+    </div>
+
+    <!-- Shared scripts -->
+    <script src="site.js?v=1.1"></script>
+    <!-- Responsive layout engine -->
+    <script src="game-layout.js?v=4.6"></script>
+    <!-- Tetra game engine -->
+    <script src="tetra.js?v=1.6"></script>
+    <script>
+        (function () {
+            var hidden = false;
+            var observer = new MutationObserver(function () {
+                if (hidden) return;
+                var divs = document.querySelectorAll('body > div');
+                for (var i = 0; i < divs.length; i++) {
+                    if (divs[i].shadowRoot && !divs[i].className && (divs[i].getAttribute('style') || '').length > 5000) {
+                        divs[i].style.setProperty('display', 'none', 'important');
+                        hidden = true;
+                        observer.disconnect();
+                        return;
+                    }
+                }
+            });
+            observer.observe(document.body, { childList: true });
+        })();
+    </script>
+</body>
+
+</html>

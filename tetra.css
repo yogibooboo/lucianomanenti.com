@@ -1,0 +1,969 @@
+/* ============================================================================
+   TETRA LUCIANO - Stile Grafico & Layout 1024x750
+   lucianomanenti.com
+   ============================================================================ */
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #1a5f2a;
+    color: #ffffff;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.main-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+/* === SIDEBARS (AdSense, Amazon & layout engine) === */
+.sidebar {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    background: linear-gradient(135deg, #1a6b30 0%, #145524 50%, #0f4a1c 100%);
+    overflow-y: auto;
+    box-sizing: border-box;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    z-index: 1;
+    transition: opacity 0.3s ease;
+}
+#sidebar-left { left: 0; }
+#sidebar-right { right: 0; }
+
+/* ================= CAMPO DI GIOCO 1024 x 750 ================= */
+#campogioco {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 1024px;
+    height: 750px;
+    transform-origin: center center;
+    background: linear-gradient(135deg, #1f7336 0%, #175d2b 50%, #104820 100%);
+    background-image: radial-gradient(circle at center, rgba(46, 204, 113, 0.15) 0%, rgba(10, 45, 20, 0.45) 100%), url(images/scala40/tappetoverde.png);
+    border: 4px solid #b8860b;
+    border-radius: 10px;
+    box-shadow: inset 0 0 80px rgba(0, 0, 0, 0.35), 0 10px 30px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
+}
+
+/* ================= HEADER BAR SUPERIORE ================= */
+#header-tetra {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 56px;
+    background: linear-gradient(180deg, rgba(14, 52, 26, 0.95) 0%, rgba(10, 40, 20, 0.9) 100%);
+    border-bottom: 2px solid #b8860b;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 12px;
+    z-index: 50;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.35);
+    box-sizing: border-box;
+}
+
+.header-left, .header-center, .header-right {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+#titolo-gioco {
+    font-size: 16px;
+    font-weight: bold;
+    color: #ffd700;
+    text-shadow: 1px 2px 4px #000, 0 0 10px rgba(255, 215, 0, 0.35);
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    font-family: 'Slackey', 'Outfit', sans-serif;
+}
+
+#titolo-gioco span.badge-modalita {
+    font-size: 10px;
+    font-weight: 600;
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    background: rgba(184, 134, 11, 0.35);
+    border: 1px solid #ffd700;
+    color: #fff;
+    padding: 2px 6px;
+    border-radius: 8px;
+    text-shadow: none;
+    letter-spacing: 0;
+    white-space: nowrap;
+}
+
+/* Indicatori /* Pillole info (Punti, Righe, Livello, Record) */
+.info-pill {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: rgba(0, 45, 18, 0.65);
+    border: 1px solid rgba(100, 180, 120, 0.45);
+    border-radius: 6px;
+    padding: 3px 10px;
+    min-width: 65px;
+}
+
+.info-pill-lbl {
+    font-size: 10px;
+    color: #aed6ae;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    line-height: 1;
+}
+
+.info-pill-val {
+    font-size: 15px;
+    font-weight: bold;
+    color: #ffffff;
+    line-height: 1.2;
+}
+
+.info-pill-val.gold { color: #ffd700; }
+.info-pill-val.cyan { color: #55efc4; }
+
+/* Pulsanti azione top bar */
+.btn-azione-top {
+    height: 32px;
+    padding: 0 10px;
+    background: rgba(0, 45, 18, 0.65);
+    border: 1px solid #6b9b7a;
+    color: #ffffff;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.btn-azione-top:hover {
+    background: rgba(0, 75, 30, 0.85);
+    border-color: rgba(255, 255, 255, 0.5);
+    color: #fff;
+}
+
+.btn-azione-top.attivo {
+    background: linear-gradient(180deg, #ffd700 0%, #b8860b 100%);
+    border-color: #ffd700;
+    color: #1a1a2e;
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+    font-weight: bold;
+}
+
+.btn-azione-top:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    border-color: #444;
+}
+
+/* Language switcher & audio in header */
+.lang-switch-header {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: 4px;
+}
+
+.lang-switch-header a {
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 11px;
+    font-weight: bold;
+    padding: 3px 6px;
+    height: 26px;
+    line-height: 18px;
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.15);
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+}
+
+.lang-switch-header a.active,
+.lang-switch-header a:hover {
+    background: #ffd700;
+    color: #1a1a2e;
+    border-color: #ffd700;
+}
+
+.btn-audio-game {
+    width: 26px;
+    height: 26px;
+    border-radius: 4px;
+    background: rgba(0, 45, 18, 0.65) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ffd700'%3E%3Cpath d='M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z'/%3E%3C/svg%3E") center/16px no-repeat;
+    border: 1px solid rgba(255, 215, 0, 0.4);
+    cursor: pointer;
+    transition: all 0.2s;
+    flex-shrink: 0;
+    box-sizing: border-box;
+    margin-left: 3px;
+}
+
+.btn-audio-game:hover {
+    transform: scale(1.08);
+}
+
+.btn-audio-game.muted {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23aaa'%3E%3Cpath d='M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z'/%3E%3C/svg%3E");
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* ================= BANNER NOTIFICHE STATO ================= */
+#messaggio-stato-tetra {
+    position: absolute;
+    top: 64px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 45, 18, 0.7);
+    border: 1px solid rgba(255, 215, 0, 0.6);
+    border-radius: 20px;
+    padding: 3px 20px;
+    font-size: 13px;
+    font-weight: bold;
+    color: #ffffff;
+    letter-spacing: 0.5px;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.6);
+    z-index: 45;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    transition: all 0.25s ease;
+}
+
+/* ================= AREA PRINCIPALE DI GIOCO ================= */
+#area-tavolo-tetra {
+    position: absolute;
+    top: 96px;
+    left: 0;
+    width: 100%;
+    height: 590px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    z-index: 10;
+}
+
+.tetra-layout {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 24px;
+    position: relative;
+}
+
+/* --- PANNELLI LATERALI (SINISTRO E DESTRO) --- */
+.tetra-side-panel {
+    width: 180px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.tetra-box {
+    background: rgba(0, 45, 18, 0.65);
+    border: 2px solid rgba(100, 180, 120, 0.45);
+    border-radius: 8px;
+    padding: 10px 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3), inset 0 0 15px rgba(0, 0, 0, 0.25);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.tetra-box.tetra-box-clickable {
+    transition: transform 0.15s, border-color 0.15s, background-color 0.15s, box-shadow 0.15s;
+}
+
+.tetra-box.tetra-box-clickable:hover {
+    border-color: #ffd700;
+    background: rgba(0, 65, 28, 0.8);
+    box-shadow: 0 0 14px rgba(255, 215, 0, 0.4);
+    transform: translateY(-1px);
+}
+
+.tetra-box-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: #ffd700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+    text-shadow: 1px 1px 2px #000;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.tetra-box-val {
+    font-size: 20px;
+    font-weight: bold;
+    color: #ffffff;
+    font-family: 'Outfit', 'Segoe UI', sans-serif;
+    text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
+}
+
+.tetra-box-val.gold {
+    color: #ffd700;
+}
+
+.tetra-box-val.accent {
+    color: #55efc4;
+}
+
+/* Pannello Record Stile Sudoku */
+.tetra-record-card {
+    width: 100%;
+    padding: 8px 6px 10px;
+}
+
+.record-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 6px;
+    padding: 0 4px;
+}
+
+.record-mode-badge {
+    font-size: 9.5px;
+    font-weight: bold;
+    color: #ffd700;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 215, 0, 0.4);
+    border-radius: 4px;
+    padding: 1px 5px;
+    letter-spacing: 0.5px;
+}
+
+.record-righe-tetra {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    gap: 2px;
+}
+
+.record-col-tetra {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.record-lbl-tetra {
+    font-size: 10px;
+    color: #aed6ae;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    line-height: 1;
+}
+
+.record-val-tetra {
+    font-size: 13.5px;
+    font-weight: bold;
+    color: #ffd700;
+    margin: 3px 0 2px;
+    font-family: 'Outfit', 'Segoe UI', sans-serif;
+    white-space: nowrap;
+}
+
+.btn-reset-record-tetra {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: #ccc;
+    border-radius: 4px;
+    font-size: 10px;
+    line-height: 1;
+    padding: 2px 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-width: 24px;
+    height: 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-reset-record-tetra:hover {
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.6);
+    background: rgba(0, 60, 25, 0.8);
+}
+
+.btn-reset-record-tetra.conferma {
+    background: #cc0c39;
+    color: #fff;
+    border-color: #990022;
+    font-weight: bold;
+    font-size: 9px;
+    padding: 2px 4px;
+}
+
+.tetra-preview-canvas {
+    background: rgba(10, 36, 18, 0.7);
+    border-radius: 6px;
+    border: 1px solid rgba(100, 180, 120, 0.35);
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.4);
+}
+
+/* Statistiche tessere (pezzi posizionati I, J, L, O, S, T, Z) */
+.tetra-stats-list {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 4px;
+}
+
+.tetra-stat-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 11px;
+    padding: 2px 5px;
+    border-radius: 4px;
+    background: rgba(0, 35, 14, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.tetra-stat-name {
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.tetra-stat-count {
+    color: #ffd700;
+    font-weight: bold;
+}
+
+.tetra-side-panel.tetra-side-panel-right {
+    width: 250px;
+}
+
+/* Riquadro affiliati rotante / banner adattabile colonna destra */
+#banner-rotante {
+    width: 250px;
+    height: 250px;
+    box-sizing: border-box;
+    border-radius: 8px;
+    overflow: hidden;
+    background: rgba(0, 45, 18, 0.65);
+    border: 2px solid rgba(100, 180, 120, 0.45);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3), inset 0 0 15px rgba(0, 0, 0, 0.25);
+    display: flex;
+    flex-direction: column;
+}
+
+/* --- GRIGLIA CENTRALE (CANVAS TETRA) --- */
+.tetra-board-wrapper {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#tetra-canvas {
+    background: linear-gradient(180deg, #0e3019 0%, #092412 100%);
+    border: 3px solid #b8860b;
+    border-radius: 6px;
+    box-shadow: 0 0 25px rgba(0, 0, 0, 0.5), inset 0 0 30px rgba(0, 0, 0, 0.5);
+    display: block;
+}
+
+/* Banner combo / azione speciale (T-SPIN, TETRA!, BACK TO BACK) */
+#tetra-action-banner {
+    position: absolute;
+    top: 40%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.95), rgba(255, 140, 0, 0.95));
+    color: #111;
+    padding: 8px 20px;
+    border-radius: 8px;
+    font-size: 20px;
+    font-weight: 900;
+    font-family: 'Slackey', 'Outfit', sans-serif;
+    letter-spacing: 1px;
+    text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.6);
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.8), 0 5px 15px rgba(0, 0, 0, 0.5);
+    z-index: 40;
+    pointer-events: none;
+    opacity: 0;
+    transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.25s ease;
+    white-space: nowrap;
+    text-align: center;
+}
+
+#tetra-action-banner.show {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+}
+
+/* ================= CONTROLLI TOUCH PER MOBILE ================= */
+#touch-controls-tetra {
+    position: absolute;
+    bottom: 48px;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    padding: 0 30px;
+    box-sizing: border-box;
+    z-index: 30;
+    pointer-events: none;
+}
+
+.touch-cluster {
+    display: flex;
+    gap: 8px;
+    pointer-events: auto;
+}
+
+.btn-touch {
+    width: 54px;
+    height: 54px;
+    border-radius: 12px;
+    background: rgba(10, 35, 20, 0.8);
+    border: 2px solid rgba(255, 215, 0, 0.5);
+    color: #ffd700;
+    font-size: 20px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+    touch-action: manipulation;
+    transition: transform 0.1s, background 0.1s;
+}
+
+.btn-touch:active {
+    transform: scale(0.92);
+    background: rgba(255, 215, 0, 0.3);
+    border-color: #ffd700;
+}
+
+.btn-touch.large {
+    width: 62px;
+    height: 62px;
+    font-size: 24px;
+}
+
+.btn-touch-lbl {
+    font-size: 9px;
+    font-weight: 600;
+    color: #fff;
+    margin-top: -2px;
+    text-transform: uppercase;
+}
+
+/* ================= MODALI ED OVERLAY ================= */
+#schermo {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(3px);
+    z-index: 60;
+    display: none;
+}
+
+.form-tetra {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #1a4224;
+    background-image: radial-gradient(circle at center, rgba(35, 120, 55, 0.4) 0%, rgba(10, 45, 20, 0.7) 100%), url(images/scala40/tappetoverde.png);
+    border: 4px solid #b8860b;
+    border-radius: 12px;
+    padding: 24px 30px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6), inset 0 0 25px rgba(0, 0, 0, 0.4);
+    z-index: 70;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    color: #fff;
+    max-width: 520px;
+    width: 90%;
+    box-sizing: border-box;
+}
+
+.form-tetra-title {
+    font-size: 24px;
+    font-weight: bold;
+    color: #ffd700;
+    text-shadow: 2px 2px 4px #000;
+    font-family: 'Slackey', 'Outfit', sans-serif;
+    margin-bottom: 16px;
+    text-align: center;
+}
+
+.opzione-gruppo {
+    width: 100%;
+    margin-bottom: 14px;
+}
+
+.opzione-lbl {
+    font-size: 13px;
+    font-weight: bold;
+    color: #cde8cd;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.opzioni-pulsanti {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+    justify-content: center;
+}
+
+.btn-opzione-sel {
+    flex: 1;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #fff;
+    padding: 8px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+}
+
+.btn-opzione-sel:hover {
+    background: rgba(255, 215, 0, 0.2);
+    border-color: #ffd700;
+    color: #ffd700;
+}
+
+.btn-opzione-sel.attiva {
+    background: linear-gradient(180deg, #ffd700 0%, #d49b00 100%);
+    border-color: #ffffff;
+    color: #11291b;
+    font-weight: bold;
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+.btn-continua {
+    background: linear-gradient(180deg, #2ecc71 0%, #27ae60 100%);
+    border: 2px solid #2ecc71;
+    color: #ffffff;
+    font-weight: bold;
+    font-size: 16px;
+    padding: 10px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+    transition: all 0.2s;
+    margin-top: 10px;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.btn-continua:hover {
+    transform: translateY(-2px);
+    background: linear-gradient(180deg, #3eed84 0%, #2ecc71 100%);
+    box-shadow: 0 6px 20px rgba(46, 204, 113, 0.4);
+}
+
+.btn-continua:active {
+    transform: translateY(1px);
+}
+
+/* Modale fine partita (bassa e larga per il banner pubblicitario finish sopra) */
+#modale-fine.modale-fine-tetra {
+    width: 700px;
+    max-width: 700px;
+    height: 230px;
+    left: 162px;
+    top: 430px;
+    transform: none;
+    padding: 18px 24px;
+    justify-content: center;
+    overflow: visible; /* permette al banner di comparire sopra */
+    text-align: center;
+}
+
+#confermatermina.modale-conferma {
+    width: 700px;
+    max-width: 700px;
+    height: 180px;
+    left: 162px;
+    top: 470px;
+    transform: none;
+    padding: 24px 25px;
+    justify-content: center;
+    overflow: visible; /* permette al banner di comparire sopra */
+}
+
+.fine-titolo {
+    font-size: 24px;
+    font-weight: 900;
+    color: #ffd700;
+    font-family: 'Slackey', 'Outfit', sans-serif;
+    margin-bottom: 6px;
+}
+
+.fine-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    width: 100%;
+    margin: 8px 0 12px 0;
+}
+
+.fine-stat-card {
+    background: rgba(0, 35, 15, 0.6);
+    border: 1px solid rgba(100, 180, 120, 0.35);
+    border-radius: 6px;
+    padding: 6px 4px;
+}
+
+.fine-stat-card .lbl {
+    font-size: 10px;
+    color: #cde8cd;
+    text-transform: uppercase;
+}
+
+.fine-stat-card .val {
+    font-size: 16px;
+    font-weight: bold;
+    color: #ffffff;
+    margin-top: 2px;
+}
+
+.fine-stat-card .val.gold {
+    color: #ffd700;
+}
+
+.badge-record {
+    background: #e74c3c;
+    color: #fff;
+    font-size: 11px;
+    font-weight: bold;
+    padding: 2px 8px;
+    border-radius: 10px;
+    display: inline-block;
+    margin-bottom: 6px;
+    animation: pulseRecord 1s infinite alternate;
+}
+
+@keyframes pulseRecord {
+    from { transform: scale(1); }
+    to { transform: scale(1.08); box-shadow: 0 0 10px rgba(231, 76, 60, 0.8); }
+}
+
+/* Modale guida controlli */
+.controlli-tabella {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0 16px 0;
+    font-size: 12.5px;
+}
+
+.controlli-tabella td {
+    padding: 5px 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.controlli-tabella td:first-child {
+    font-weight: bold;
+    color: #ffd700;
+    text-align: right;
+    width: 45%;
+}
+
+.key-badge {
+    background: #222;
+    border: 1px solid #777;
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-family: monospace;
+    font-size: 11px;
+    color: #fff;
+    box-shadow: 0 2px 0 #111;
+}
+
+/* Switch lingua e link nei modali */
+.lang-switch-modale {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    display: flex;
+    gap: 4px;
+    z-index: 2;
+}
+
+.lang-switch-modale a {
+    color: #cde8cd;
+    text-decoration: none;
+    font-size: 11px;
+    font-weight: bold;
+    padding: 3px 6px;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.4);
+    transition: all 0.2s ease;
+}
+
+.lang-switch-modale a.active,
+.lang-switch-modale a:hover {
+    background: #ffd700;
+    color: #111;
+    border-color: #ffd700;
+}
+
+.btn-angolo-modale {
+    position: absolute;
+    bottom: 12px;
+    font-size: 11px;
+    font-weight: bold;
+    color: #cde8cd;
+    text-decoration: none;
+    padding: 4px 10px;
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.2s;
+}
+
+.btn-angolo-modale:hover {
+    color: #ffd700;
+    border-color: #ffd700;
+}
+
+.btn-angolo-modale.sinistra { left: 14px; }
+.btn-angolo-modale.destra { right: 14px; }
+
+.btn-angolo-modale.home {
+    background: linear-gradient(135deg, #c9720f, #8a4a08);
+    border: 1px solid #ffd700;
+    color: #ffd700;
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.35);
+}
+
+.btn-angolo-modale.home:hover {
+    color: #ffffff;
+    background: linear-gradient(135deg, #e08514, #a3580a);
+    border-color: #ffd700;
+    box-shadow: 0 0 14px rgba(255, 215, 0, 0.65);
+}
+
+/* ================= FOOTER LINKS ================= */
+.legal-links-tetra {
+    position: absolute;
+    bottom: 6px;
+    left: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    z-index: 20;
+}
+
+.legal-links-tetra a:not(.pulsante-link-tetra) {
+    color: rgba(255, 255, 255, 0.65);
+    text-decoration: none;
+    font-family: sans-serif;
+    font-size: 11px;
+    transition: color 0.15s;
+}
+
+.legal-links-tetra a:not(.pulsante-link-tetra):hover {
+    color: #ffd700;
+}
+
+.legal-links-tetra .sep {
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 11px;
+}
+
+.link-giochi-tetra {
+    position: absolute;
+    bottom: 6px;
+    right: 12px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    z-index: 20;
+}
+
+.link-giochi-tetra a {
+    color: #cde8cd;
+    text-decoration: none;
+    transition: color 0.15s;
+}
+
+.link-giochi-tetra a:hover {
+    color: #ffd700;
+}
+
+.pulsante-link-tetra {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    text-decoration: none;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 10.5px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+}
+
+.pulsante-link-tetra:hover {
+    background-color: rgba(0, 60, 30, 0.85);
+    border-color: #ffd700;
+    color: #ffffff;
+    transform: translateY(-1px);
+}
+
+.pulsante-home-tetra {
+    background: linear-gradient(135deg, #c9720f, #8a4a08);
+    border-color: #ffd700;
+    color: #ffd700 !important;
+}
+
+.pulsante-home-tetra:hover {
+    color: #ffffff !important;
+    background: linear-gradient(135deg, #e08514, #a3580a);
+}

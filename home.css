@@ -295,29 +295,24 @@ body {
 /* Titoli delle colonne menu */
 .menu-title {
 	font-family: 'Slackey', sans-serif;
-	font-size: 22px;
+	font-size: 20px;
 	color: #ffd700;
 	text-align: center;
 	text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9);
-	margin-bottom: 12px;
+	margin-bottom: 6px;
 	margin-top: 0;
 }
 
 .menu-title-music {
 	font-family: 'Outfit', 'Open Sans', sans-serif;
-	font-size: 19px;
+	font-size: 17px;
 	font-weight: bold;
 	letter-spacing: 0.5px;
 	color: #ffd700;
 	text-align: center;
 	text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9);
-	/* Titolo centrato nel vano fra l'ultimo pulsante di Altri Giochi e il primo
-	   della musica. Attenzione: sotto al titolo si somma anche il gap del
-	   contenitore, che da quando la musica e' su due colonne vale 8px e non piu'
-	   12, quindi per avere 18px da entrambi i lati il margine inferiore va messo
-	   a 10 (10 + 8 di gap) contro i 18 di quello superiore. */
-	margin-bottom: 10px;
-	margin-top: 18px;
+	margin-bottom: 4px;
+	margin-top: 6px;
 }
 
 /* Menu dei giochi con pulsanti moderni.
@@ -331,12 +326,12 @@ body {
    la precedenza sull'allineamento con l'intestazione. */
 .game-menu-container {
 	position: absolute;
-	top: 195px;
+	top: 176px;
 	left: 48px;
 	width: 422px;
 	display: flex;
 	flex-direction: column;
-	gap: 8px;
+	gap: 6px;
 	z-index: 10;
 }
 
@@ -345,16 +340,16 @@ body {
 	align-items: center;
 	justify-content: center;
 	width: 100%;
-	height: 44px;
+	height: 39px;
 	background: rgba(0, 65, 0, 0.75);
 	border: 3px solid rgba(255, 255, 255, 0.85);
-	border-radius: 14px;
+	border-radius: 12px;
 	color: #ffffff;
 	font-family: 'Slackey', sans-serif;
-	font-size: 22px;
+	font-size: 20px;
 	text-decoration: none;
 	text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
-	box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+	box-shadow: 0 5px 12px rgba(0, 0, 0, 0.4);
 	transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 	cursor: pointer;
 	box-sizing: border-box;
@@ -409,9 +404,7 @@ body {
 /* Pulsante Info moderno e rettangolare */
 .info-btn {
 	position: absolute;
-	bottom: 30px;
-	/* Stesso bordo sinistro dei pulsanti dei giochi di carte, che da quando le
-	   colonne hanno spazi uguali partono da 48 e non piu' da 100. */
+	bottom: 26px;
 	left: 48px;
 	z-index: 1000;
 	display: flex;
@@ -419,13 +412,13 @@ body {
 	justify-content: center;
 	gap: 6px;
 	width: 120px;
-	height: 38px;
+	height: 34px;
 	background: rgba(0, 65, 0, 0.75);
 	border: 2px solid rgba(255, 255, 255, 0.85);
 	border-radius: 10px;
 	color: #ffffff;
 	font-family: 'Outfit', 'Open Sans', sans-serif;
-	font-size: 16px;
+	font-size: 15px;
 	font-weight: 600;
 	letter-spacing: 0.5px;
 	text-decoration: none;
@@ -451,82 +444,43 @@ body {
 
 .info-btn .info-icon {
 	font-family: 'Outfit', sans-serif;
-	font-size: 19px;
+	font-size: 18px;
 	line-height: 1;
 }
 
 /* Altri Giochi (colonna destra, sopra la musica).
-   Due colonne invece di una da quando le voci sono sei: in colonna singola il
-   blocco sarebbe cresciuto di 46px spingendo la musica sotto il footer, mentre
-   cosi' le sei voci stanno in tre righe e il blocco si accorcia. I pulsanti
-   restano larghi 225 come prima: il contenitore passa da 225 a 458 (225+8+225)
-   e, restando ancorato a right:94, il suo bordo sinistro scende da 705 a 472.
-   Per questo .game-menu-container e' stato spostato da left:100 a left:52.
-   Il titolo sta su tutta la larghezza (grid-column: 1 / -1). */
+   Due colonne a griglia, 7 righe con Tetra. */
 .other-games-container {
 	position: absolute;
-	/* Stesso top del blocco dei giochi di carte: i due titoli sono cosi' sulla
-	   stessa riga e, avendo i pulsanti la stessa altezza (44) e lo stesso gap
-	   (8), anche le righe di pulsanti si corrispondono una a una. */
-	top: 195px;
-	/* 48 = lo spazio comune ai tre vuoti, vedi il commento della geometria
-	   sopra .game-menu-container. Il blocco va quindi da 518 a 976. */
+	top: 176px;
 	right: 48px;
 	width: 458px;
 	display: grid;
 	grid-template-columns: 225px 225px;
-	gap: 8px;
+	gap: 6px;
 	z-index: 10;
 }
 
 .other-games-container .menu-title {
-	/* Il titolo occupa tutta la larghezza del blocco, non solo la prima colonna. */
 	grid-column: 1 / -1;
-	/* I 12px di .menu-title sono lasciati apposta: sotto al titolo si somma il
-	   gap del contenitore, 8px sia qui che nella colonna di sinistra, quindi lo
-	   stacco totale e' 20 da entrambe le parti e le prime righe di pulsanti
-	   partono alla stessa quota. */
 }
 
-/* Stessa altezza dei pulsanti di sinistra (44), cosi' le righe delle due
-   colonne si corrispondono. L'altezza era scesa a 38 quando le voci stavano in
-   colonna singola e il blocco rischiava di spingere la musica sotto il footer;
-   con due colonne lo spazio in verticale e' abbondante e il vincolo e' sparito.
-   Il font resta piu' piccolo di quello di sinistra (18 contro 22) perche' qui i
-   pulsanti sono larghi 225 invece di 422 e "Calcolo Enigmatico" a 22px non ci
-   starebbe: e' il testo piu' lungo della sezione ed e' lui a fissare il limite. */
 .other-games-container .game-btn {
-	height: 44px;
-	font-size: 18px;
-	border-radius: 12px;
+	height: 39px;
+	font-size: 16.5px;
+	border-radius: 10px;
 }
 
 /* Menu Musica con pulsanti caldi color legno/ambra.
-   Stessa griglia a due colonne di Altri Giochi qui sopra - stesso right, stessa
-   larghezza, stesse colonne da 225 - cosi' i pulsanti musicali sono incolonnati
-   con quelli dei giochi e le due sezioni sembrano un blocco solo.
-   Il "top" e' scelto perche' i pulsanti musicali cadano sulle STESSE righe di
-   quelli dei giochi di carte, non solo sulle stesse colonne. Le righe di sinistra
-   stanno a 247 + 52n (44 di pulsante + 8 di gap); il titolo musica occupa 24px
-   piu' 18 di margine sopra e 10 sotto, piu' 8 di gap, cioe' 60 in tutto, quindi
-   partendo da 499 il primo pulsante cade a 559 = 247 + 52*6, in fila con
-   "Solitario Klondike". Il blocco Altri Giochi qui sopra finisce esattamente a
-   499, per cui il valore va bene anche come stacco fra le due sezioni: se lassu' si
-   aggiunge una riga (cioe' ogni DUE voci) questo sale di 52 e l'allineamento si
-   conserva da solo, essendo 52 il passo delle righe.
-   Attenzione: il blocco musica e' alto 156px con due righe e il footer comincia
-   a 726, quindi non c'e' piu' il rischio di sovrapposizione che c'era prima. */
+   Posizionato a top: 527px, subito dopo la 7a riga di Altri Giochi. */
 .music-menu-container {
 	position: absolute;
-	/* 551 = 499 + 52: Altri Giochi e' passato da cinque a sei righe (aggiunto
-	   Mahjong Solitario, undicesima voce, che sposta Codice Segreto sulla sesta riga)
-	   e 52 e' il passo esatto di una riga (44px altezza + 8px gap). */
-	top: 551px;
+	top: 527px;
 	right: 48px;
 	width: 458px;
 	display: grid;
 	grid-template-columns: 225px 225px;
-	gap: 8px;
+	gap: 6px;
 	z-index: 10;
 }
 
@@ -534,27 +488,25 @@ body {
 	grid-column: 1 / -1;
 }
 
-/* Alti 44 come i pulsanti dei giochi, sopra e a sinistra: stando ora tutti
-   sulla stessa griglia a due colonne, un'altezza diversa si sarebbe notata. */
 .music-btn {
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	width: 100%;
-	height: 44px;
+	height: 39px;
 	background-color: #5a2e0a;
 	background-image: url('images/wood2.png');
 	background-repeat: repeat;
 	border: 3px solid rgba(255, 255, 255, 0.85);
-	border-radius: 12px;
+	border-radius: 10px;
 	color: #ffd700;
 	font-family: 'Outfit', 'Open Sans', sans-serif;
-	font-size: 18px;
+	font-size: 16.5px;
 	font-weight: 600;
 	letter-spacing: 0.5px;
 	text-decoration: none;
 	text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.9);
-	box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+	box-shadow: 0 5px 12px rgba(0, 0, 0, 0.4);
 	transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 	cursor: pointer;
 	box-sizing: border-box;
