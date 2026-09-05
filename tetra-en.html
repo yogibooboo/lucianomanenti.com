@@ -266,7 +266,7 @@
                     </div>
                 </div>
 
-                <button onclick="apriModaleInizio()" class="btn-continua" style="width: 240px;">PLAY AGAIN 🔄</button>
+                <button onclick="location.reload()" class="btn-continua" style="width: 240px;">PLAY AGAIN 🔄</button>
             </div>
 
             <!-- 4. Confirm New Game Modal -->
@@ -274,8 +274,8 @@
                 <div class="form-tetra-title" style="font-size: 20px;">Restart current game?</div>
                 <div style="font-size: 13.5px; color: #cde8cd; margin-bottom: 16px; text-align: center;">The ongoing game will be reset.</div>
                 <div class="conferma-bottoni" style="display: flex; gap: 10px; width: 100%;">
-                    <button onclick="chiudiModali()" class="btn-opzione-sel" style="padding: 10px;">CANCEL</button>
-                    <button onclick="apriModaleInizio()" class="btn-continua" style="margin-top: 0; padding: 10px; flex: 1; background: #e74c3c; border-color: #c0392b;">NEW GAME</button>
+                    <button onclick="chiudiModali()" id="btn-no-continua" class="btn-opzione-sel" style="padding: 10px;">CANCEL</button>
+                    <button onclick="location.reload()" id="btn-si-termina" class="btn-continua" style="margin-top: 0; padding: 10px; flex: 1; background: #e74c3c; border-color: #c0392b;">NEW GAME</button>
                 </div>
             </div>
 
@@ -288,21 +288,21 @@
                     <tr><td>Rotate Counter-Clockwise:</td><td><span class="key-badge">Z</span> or <span class="key-badge">Ctrl</span></td></tr>
                     <tr><td>Soft Drop:</td><td><span class="key-badge">↓</span> or <span class="key-badge">S</span></td></tr>
                     <tr><td>Hard Drop (Instant):</td><td><span class="key-badge">Space</span></td></tr>
-                    <tr><td>Hold Piece:</td><td><span class="key-badge">C</span> or <span class="key-badge">Shift</span></td></tr>
+                    <tr><td>Hold Piece / Swap:</td><td><span class="key-badge">C</span> or <span class="key-badge">Shift</span></td></tr>
                     <tr><td>Pause / Resume:</td><td><span class="key-badge">P</span> or <span class="key-badge">Esc</span></td></tr>
                 </table>
                 <button onclick="chiudiModali()" class="btn-continua" style="width: 180px;">CLOSE</button>
             </div>
 
             <!-- ================= FOOTER LINKS ================= -->
-            <!-- Legal links (Privacy Policy and Manage Cookies) and Info on bottom left -->
+            <!-- Legal Links (Privacy Policy & Cookie Management) and Info bottom-left -->
             <div class="legal-links-tetra">
-                <a href="privacy-en.html" target="_blank">Privacy Policy</a>
+                <a href="privacy.html" target="_blank">Privacy Policy</a>
                 <span class="sep">•</span>
-                <a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)">Manage Cookies</a>
+                <a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)">Cookie Management</a>
                 <span class="sep">•</span>
                 <a href="guida-tetra-en.html" target="_blank" rel="opener" class="pulsante-link-tetra">Instructions</a>
-                <a href="aboutme-en.html" target="_blank" class="pulsante-link-tetra">Contact Me</a>
+                <a href="aboutme.html" target="_blank" class="pulsante-link-tetra">Contact</a>
             </div>
 
             <div class="link-giochi-tetra">
@@ -326,7 +326,7 @@
     <!-- Responsive layout engine -->
     <script src="game-layout.js?v=4.6"></script>
     <!-- Tetra game engine -->
-    <script src="tetra.js?v=1.7"></script>
+    <script src="tetra.js?v=1.8"></script>
     <script>
         (function () {
             var hidden = false;

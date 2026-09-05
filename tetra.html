@@ -266,7 +266,7 @@
                     </div>
                 </div>
 
-                <button onclick="apriModaleInizio()" class="btn-continua" style="width: 240px;">GIOCA ANCORA 🔄</button>
+                <button onclick="location.reload()" class="btn-continua" style="width: 240px;">GIOCA ANCORA 🔄</button>
             </div>
 
             <!-- 4. Modale Conferma Nuova Partita -->
@@ -274,8 +274,8 @@
                 <div class="form-tetra-title" style="font-size: 20px;">Ricominciare la partita?</div>
                 <div style="font-size: 13.5px; color: #cde8cd; margin-bottom: 16px; text-align: center;">La partita in corso verrà interrotta.</div>
                 <div class="conferma-bottoni" style="display: flex; gap: 10px; width: 100%;">
-                    <button onclick="chiudiModali()" class="btn-opzione-sel" style="padding: 10px;">ANNULLA</button>
-                    <button onclick="apriModaleInizio()" class="btn-continua" style="margin-top: 0; padding: 10px; flex: 1; background: #e74c3c; border-color: #c0392b;">NUOVA PARTITA</button>
+                    <button onclick="chiudiModali()" id="btn-no-continua" class="btn-opzione-sel" style="padding: 10px;">ANNULLA</button>
+                    <button onclick="location.reload()" id="btn-si-termina" class="btn-continua" style="margin-top: 0; padding: 10px; flex: 1; background: #e74c3c; border-color: #c0392b;">NUOVA PARTITA</button>
                 </div>
             </div>
 
@@ -326,7 +326,7 @@
     <!-- Layout engine per ridimensionamento responsivo -->
     <script src="game-layout.js?v=4.6"></script>
     <!-- Motore di Gioco Tetra -->
-    <script src="tetra.js?v=1.7"></script>
+    <script src="tetra.js?v=1.8"></script>
     <script>
         (function () {
             var nascosto = false;
