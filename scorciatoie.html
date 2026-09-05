@@ -270,6 +270,24 @@
     <script src="game-layout.js?v=4.6"></script>
     <!-- Logica di gioco Scorciatoie -->
     <script src="scorciatoie.js?v=2.1"></script>
+    <script>
+        (function () {
+            var nascosto = false;
+            var observer = new MutationObserver(function () {
+                if (nascosto) return;
+                var divs = document.querySelectorAll('body > div');
+                for (var i = 0; i < divs.length; i++) {
+                    if (divs[i].shadowRoot && !divs[i].className && (divs[i].getAttribute('style') || '').length > 5000) {
+                        divs[i].style.setProperty('display', 'none', 'important');
+                        nascosto = true;
+                        observer.disconnect();
+                        return;
+                    }
+                }
+            });
+            observer.observe(document.body, { childList: true });
+        })();
+    </script>
 </body>
 
 </html>
