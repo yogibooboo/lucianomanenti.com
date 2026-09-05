@@ -1,0 +1,577 @@
+/* ============================================================================
+   SCORCIATOIE - Stili CSS integrati con game-layout.js
+   Tabellone esteso su tutto campogioco (1024x750) con barra inferiore compatta
+   ============================================================================ */
+
+/* === BASE & LAYOUT === */
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #1a5f2a;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.main-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+/* === SIDEBARS (per AdSense e layout) === */
+.sidebar {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    background: linear-gradient(135deg, #1a6b30 0%, #145524 50%, #0f4a1c 100%);
+    overflow-y: auto;
+    box-sizing: border-box;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    z-index: 1;
+    transition: opacity 0.3s ease;
+}
+#sidebar-left { left: 0; }
+#sidebar-right { right: 0; }
+
+/* === CAMPO DI GIOCO PRINCIPALE (1024 x 750 fisso riscalato) === */
+#campogioco {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 1024px;
+    height: 750px;
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    background-image: url(images/scala40/tappetoverde.png);
+    transform-origin: center center;
+    border-radius: 10px;
+    box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.5), 0 10px 30px rgba(0,0,0,0.6);
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+/* === SCHERMO OVERLAY PER MODALI === */
+#schermo {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1024px;
+    height: 750px;
+    background-color: rgba(0, 0, 0, 0.65);
+    z-index: 30000;
+    display: none;
+}
+
+/* === BARRA SUPERIORE & HEADER === */
+.lang-switch-header {
+    position: absolute;
+    top: 8px;
+    left: 14px;
+    z-index: 10001;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.lang-switch-header a {
+    color: #cbd5e1;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+.lang-switch-header a.active {
+    background: #ffd700;
+    color: #1e293b;
+    border-color: #ffd700;
+}
+
+#btn-audio {
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    background: url(images/volume-on.png) no-repeat center center / contain;
+    display: inline-block;
+}
+#btn-audio.audio-off {
+    background-image: url(images/volume-off.png);
+    opacity: 0.6;
+}
+
+#titolo-gioco {
+    position: absolute;
+    top: 4px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #ffd700;
+    font-size: 22px;
+    font-family: 'Slackey', 'Outfit', sans-serif;
+    font-weight: bold;
+    z-index: 1000;
+    text-shadow: 1px 2px 4px rgba(0, 0, 0, 0.9), 0 0 12px rgba(255, 215, 0, 0.4);
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.header-badge-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(15, 23, 42, 0.85);
+    padding: 3px 10px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    font-size: 11px;
+    color: #e2e8f0;
+    white-space: nowrap;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+
+.header-badge-right {
+    position: absolute;
+    top: 7px;
+    right: 14px;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(15, 23, 42, 0.85);
+    padding: 3px 10px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    font-size: 11px;
+    color: #cbd5e1;
+    white-space: nowrap;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+
+.player-score-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: 600;
+}
+
+.player-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0;
+}
+
+/* === AREA TABELLONE CANVAS (OCCUPA IL MASSIMO DELLO SPAZIO) === */
+#area-tabellone {
+    position: absolute;
+    top: 40px;
+    left: 12px;
+    width: 1000px;
+    height: 585px;
+    background: #fbfbfa;
+    border-radius: 8px;
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1), 0 4px 12px rgba(0,0,0,0.35);
+    border: 2px solid #cbd5e1;
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+#gameCanvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    cursor: default;
+}
+
+/* === BARRA INFERIORE COMPATTA (ALTA IL MINIMO NECESSARIO) === */
+#barra-inferiore {
+    position: absolute;
+    top: 630px;
+    left: 12px;
+    width: 1000px;
+    height: 82px;
+    background: rgba(15, 23, 42, 0.88);
+    backdrop-filter: blur(4px);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    display: grid;
+    grid-template-columns: 280px 1fr 240px;
+    align-items: center;
+    padding: 6px 12px;
+    box-sizing: border-box;
+    z-index: 100;
+    gap: 10px;
+}
+
+/* 1. Mini Cronaca in Basso a Sinistra */
+.mini-cronaca-wrap {
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 3px;
+    overflow-y: auto;
+    max-height: 70px;
+    padding-right: 4px;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 6px;
+    padding: 4px 6px;
+    box-sizing: border-box;
+}
+
+.mini-cronaca-entry {
+    font-size: 11px;
+    line-height: 1.35;
+    color: #cbd5e1;
+    padding: 2px 4px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.04);
+    border-left: 2.5px solid #64748b;
+    word-break: break-word;
+}
+
+.mini-cronaca-entry.highlight { background: rgba(245, 158, 11, 0.2); border-left-color: #f59e0b; color: #fde68a; font-weight: 600; }
+.mini-cronaca-entry.danger { background: rgba(239, 68, 68, 0.25); border-left-color: #ef4444; color: #fca5a5; font-weight: 600; }
+.mini-cronaca-entry.success { background: rgba(34, 197, 94, 0.2); border-left-color: #22c55e; color: #86efac; font-weight: 600; }
+
+/* 2. Dadi e Azione Lancio Centrale */
+.center-action-area {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+
+.mini-dice-group {
+    display: flex;
+    gap: 6px;
+}
+
+.dice {
+    width: 38px;
+    height: 38px;
+    background: #ffffff;
+    border-radius: 8px;
+    border: 1.5px solid #334155;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25), inset 0 -2px 0 rgba(0,0,0,0.1);
+    display: grid;
+    grid-template: repeat(3, 1fr) / repeat(3, 1fr);
+    padding: 3px;
+    position: relative;
+    box-sizing: border-box;
+}
+
+.dice.rolling {
+    animation: shakeDice 0.22s infinite alternate ease-in-out;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4), 0 0 8px rgba(255, 215, 0, 0.5);
+}
+
+@keyframes shakeDice {
+    0% { transform: rotate(-12deg) scale(1.12) translateY(-2px); }
+    50% { transform: rotate(10deg) scale(1.08) translateY(2px); }
+    100% { transform: rotate(-8deg) scale(1.14) translateY(-1px); }
+}
+
+.pip {
+    display: block;
+    width: 6px;
+    height: 6px;
+    background-color: #0f172a;
+    border-radius: 50%;
+    margin: auto;
+    visibility: hidden;
+}
+
+.dice[data-val="1"] .pip:nth-child(5) { visibility: visible; }
+.dice[data-val="2"] .pip:nth-child(1), .dice[data-val="2"] .pip:nth-child(9) { visibility: visible; }
+.dice[data-val="3"] .pip:nth-child(1), .dice[data-val="3"] .pip:nth-child(5), .dice[data-val="3"] .pip:nth-child(9) { visibility: visible; }
+.dice[data-val="4"] .pip:nth-child(1), .dice[data-val="4"] .pip:nth-child(3), .dice[data-val="4"] .pip:nth-child(7), .dice[data-val="4"] .pip:nth-child(9) { visibility: visible; }
+.dice[data-val="5"] .pip:nth-child(1), .dice[data-val="5"] .pip:nth-child(3), .dice[data-val="5"] .pip:nth-child(5), .dice[data-val="5"] .pip:nth-child(7), .dice[data-val="5"] .pip:nth-child(9) { visibility: visible; }
+.dice[data-val="6"] .pip:nth-child(1), .dice[data-val="6"] .pip:nth-child(3), .dice[data-val="6"] .pip:nth-child(4), .dice[data-val="6"] .pip:nth-child(6), .dice[data-val="6"] .pip:nth-child(7), .dice[data-val="6"] .pip:nth-child(9) { visibility: visible; }
+
+.btn-roll-main {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 700;
+    padding: 8px 18px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.4);
+    transition: all 0.15s ease;
+    white-space: nowrap;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+}
+
+.btn-roll-main:hover:not(:disabled) {
+    background: linear-gradient(135deg, #1d4ed8, #1e40af);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.5);
+}
+
+.btn-roll-main.holding {
+    background: linear-gradient(135deg, #eab308, #ca8a04) !important;
+    color: #0f172a !important;
+    transform: scale(0.96) !important;
+    box-shadow: 0 0 14px rgba(234, 179, 8, 0.75) !important;
+}
+
+.btn-roll-main:disabled {
+    background: #475569;
+    cursor: not-allowed;
+    opacity: 0.6;
+    box-shadow: none;
+}
+
+.dice-result-badge {
+    font-size: 11px;
+    color: #ffd700;
+    font-weight: bold;
+    min-width: 60px;
+    text-align: center;
+}
+
+/* 3. Pulsanti Azioni e Pannelli a Destra */
+.right-actions-group {
+    display: flex;
+    gap: 6px;
+    justify-content: flex-end;
+}
+
+.btn-action-bar {
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #f1f5f9;
+    border-radius: 5px;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 6px 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.btn-action-bar:hover {
+    background: rgba(255, 255, 255, 0.25);
+    border-color: #ffd700;
+    color: #ffffff;
+}
+
+.btn-action-bar.gold {
+    background: linear-gradient(135deg, #c9720f, #8a4a08);
+    border-color: #ffd700;
+    color: #ffffff;
+}
+.btn-action-bar.gold:hover {
+    background: linear-gradient(135deg, #e08514, #a3580a);
+}
+
+/* === LINK LEGALI E GIOCHI A FONDO PAGINA === */
+.legal-links-scorciatoie {
+    position: absolute;
+    bottom: 4px;
+    left: 14px;
+    display: flex;
+    gap: 8px;
+    z-index: 100;
+    align-items: center;
+}
+
+.legal-links-scorciatoie a {
+    color: rgba(255, 255, 255, 0.6);
+    text-decoration: none;
+    font-size: 11px;
+    font-family: sans-serif;
+    transition: color 0.2s;
+}
+
+.legal-links-scorciatoie a:hover {
+    color: #ffd700;
+}
+
+.legal-links-scorciatoie .sep {
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 11px;
+}
+
+.link-giochi-scorciatoie {
+    position: absolute;
+    bottom: 4px;
+    right: 14px;
+    display: flex;
+    gap: 5px;
+    z-index: 100;
+}
+
+.pulsante-link-scorc {
+    background-color: rgba(0, 40, 10, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+    color: #ccc;
+    font-size: 10px;
+    padding: 2px 7px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.pulsante-link-scorc:hover {
+    color: #fff;
+    background-color: rgba(0, 60, 20, 0.7);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.pulsante-home-scorc {
+    background: linear-gradient(135deg, #c9720f, #8a4a08);
+    border-color: #ffd700;
+    color: #fff;
+    font-weight: bold;
+}
+
+/* === MODALI FORM GIOCO (Stile uniforme del sito) === */
+.form-scorciatoie {
+    z-index: 40000;
+    position: absolute;
+    width: 650px;
+    max-height: 540px;
+    left: 187px;
+    top: 105px;
+    background-color: #1a4224;
+    background-image: url(images/scala40/tappetoverde.png);
+    border: 4px solid #b8860b;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+    box-sizing: border-box;
+    display: none;
+    flex-direction: column;
+    padding: 20px 24px;
+    color: #f8fafc;
+    overflow: hidden;
+}
+
+.form-scorciatoie-title {
+    font-family: 'Slackey', 'Outfit', sans-serif;
+    font-size: 22px;
+    color: #ffd700;
+    text-align: center;
+    margin-bottom: 14px;
+    text-shadow: 2px 2px 4px #000;
+}
+
+.form-body-scroll {
+    overflow-y: auto;
+    max-height: 400px;
+    padding-right: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.form-row {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.form-label-title {
+    font-size: 13px;
+    font-weight: bold;
+    color: #ffd700;
+}
+
+.btn-continua {
+    padding: 10px 24px;
+    font-size: 14px;
+    font-weight: bold;
+    color: #1e293b;
+    background: #ffd700;
+    border: 2px solid #b8860b;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+
+.btn-continua:hover {
+    background: #fff;
+    transform: scale(1.04);
+}
+
+/* Modale conferma nuova partita: bassa e larga, con banner pubblicitario sopra */
+#confermatermina.modale-conferma {
+    width: 700px;
+    min-height: 180px;
+    height: auto;
+    left: 162px;
+    top: 470px;
+    padding: 24px 25px;
+    justify-content: center;
+    overflow: visible; /* il banner sporge sopra la modale */
+}
+.conferma-bottoni {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+/* Modale fine manche / torneo: bassa e larga, con banner pubblicitario sopra */
+#finepartita.modale-fine {
+    width: 700px;
+    min-height: 230px;
+    height: auto;
+    left: 162px;
+    top: 420px;
+    padding: 18px 24px;
+    justify-content: center;
+    overflow: visible; /* il banner sporge sopra la modale */
+}
+
+.confirm-message {
+    font-family: 'Slackey', 'Outfit', sans-serif;
+    font-size: 22px;
+    color: white;
+    text-align: center;
+    margin-bottom: 10px;
+    text-shadow: 2px 2px 4px #000;
+    padding: 0 10px;
+}
+
+/* Elenco Cronaca */
+.log-box-modal {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 6px;
+    padding: 8px;
+    max-height: 180px;
+    overflow-y: auto;
+    font-size: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.log-entry {
+    padding: 3px 6px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.05);
+    border-left: 3px solid #64748b;
+}
+
+.log-entry.highlight { background: rgba(245, 158, 11, 0.2); border-left-color: #f59e0b; color: #fde68a; }
+.log-entry.danger { background: rgba(239, 68, 68, 0.2); border-left-color: #ef4444; color: #fca5a5; }
+.log-entry.success { background: rgba(34, 197, 94, 0.2); border-left-color: #22c55e; color: #86efac; }

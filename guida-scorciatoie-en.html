@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
+	<script>
+		window.dataLayer = window.dataLayer || [];
+		function gtag() { dataLayer.push(arguments); }
+		gtag('js', new Date());
+		gtag('config', 'G-WRBDRDQ4L8');
+		window.currentLang = 'en';
+	</script>
+	<title>Shortcuts Rules - How to Play & Strategies</title>
+	<meta name="Description"
+		content="Complete guide and rules for Shortcuts: the strategy board game on a graph-paper grid with forks, shortcuts, traps, directional arrows, and point tournament mode.">
+	<link rel="alternate" hreflang="it" href="guida-scorciatoie.html">
+	<link rel="alternate" hreflang="en" href="guida-scorciatoie-en.html">
+	<link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
+	<link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
+	<link rel="shortcut icon" href="favicon/favicon.ico">
+	<link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+	<style>
+		body {
+			font-family: sans-serif;
+			line-height: 1.7;
+			max-width: 800px;
+			margin: 40px auto;
+			padding: 20px;
+			color: #333;
+			background-color: #f9f9f9;
+		}
+
+		h1 {
+			color: #2c3e50;
+			border-bottom: 2px solid #ffd700;
+			padding-bottom: 10px;
+		}
+
+		h2 {
+			color: #2c3e50;
+			margin-top: 30px;
+		}
+
+		h3 {
+			color: #2c3e50;
+			font-size: 1.1em;
+			margin-top: 20px;
+		}
+
+		.lang-switch {
+			text-align: right;
+			margin-bottom: 20px;
+		}
+
+		.lang-switch a {
+			display: inline-block;
+			padding: 6px 16px;
+			margin-left: 5px;
+			text-decoration: none;
+			border-radius: 5px;
+			font-weight: bold;
+			font-size: 14px;
+		}
+
+		.lang-switch a.active {
+			background: #2c3e50;
+			color: white;
+		}
+
+		.lang-switch a:not(.active) {
+			background: #ddd;
+			color: #333;
+			cursor: pointer;
+		}
+
+		.content-box {
+			background: white;
+			padding: 30px;
+			border-radius: 8px;
+			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+		}
+
+		.banner {
+			width: 100%;
+			height: 150px;
+			background-image: url('images/home/castagne.jpg');
+			background-size: cover;
+			background-position: center;
+			border-radius: 8px;
+			margin: 20px 0;
+			box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+		}
+
+		.play-btn {
+			display: inline-block;
+			margin-top: 25px;
+			padding: 12px 30px;
+			background: #27ae60;
+			color: white;
+			text-decoration: none;
+			border-radius: 8px;
+			font-size: 18px;
+			font-weight: bold;
+			transition: background 0.2s;
+			cursor: pointer;
+		}
+
+		.play-btn:hover {
+			background: #219150;
+		}
+
+		.nav-links {
+			text-align: center;
+			margin-top: 30px;
+			font-size: 14px;
+		}
+
+		.nav-links a {
+			color: #3498db;
+			text-decoration: none;
+			margin: 0 8px;
+		}
+
+		.track-legend-table {
+			width: 100%;
+			border-collapse: collapse;
+			margin: 15px 0;
+		}
+
+		.track-legend-table th, .track-legend-table td {
+			border: 1px solid #ddd;
+			padding: 8px 12px;
+			text-align: left;
+		}
+
+		.track-legend-table th {
+			background-color: #f2f2f2;
+			color: #2c3e50;
+		}
+
+		.color-badge {
+			display: inline-block;
+			width: 14px;
+			height: 14px;
+			border-radius: 3px;
+			vertical-align: middle;
+			margin-right: 6px;
+			border: 1px solid rgba(0,0,0,0.3);
+		}
+
+		.regola-chiave {
+			background: #eef7ee;
+			border-left: 4px solid #27ae60;
+			padding: 12px 18px;
+			margin: 18px 0;
+		}
+	</style>
+</head>
+
+<body>
+
+	<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+		<a href="#" id="btn-back" onclick="goBack(); return false;"
+			style="display: inline-block; padding: 6px 16px; background: #e74c3c; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 14px;">&#x2190; Back</a>
+		<div class="lang-switch" style="margin-bottom: 0;">
+			<a href="guida-scorciatoie.html">Italiano</a>
+			<a href="guida-scorciatoie-en.html" class="active">English</a>
+		</div>
+	</div>
+
+	<div class="banner"></div>
+
+	<div class="content-box">
+		<h1>Shortcuts &mdash; Rules and Game Guide</h1>
+
+		<div style="background: #fdfaf3; border-left: 4px solid #f59e0b; padding: 14px 18px; margin: 18px 0; font-style: italic; border-radius: 0 8px 8px 0; line-height: 1.65; color: #475569;">
+			<p style="margin-top: 0;">This game comes from a memory of my youth that is very dear to me. I invented it as a boy to play with my brothers and friends: I would take classic sheets of graph paper, grab a ruler and colored pens, and spend hours mapping out circuits full of forks, shortcuts, and sneaky traps.</p>
+			<p>Sometimes I would tape multiple sheets together to build huge, sprawling boards, where we’d spend entire afternoons rolling dice, overtaking each other on the last turn, and sharing great laughs.</p>
+			<p style="margin-bottom: 0;">Bringing this game to life today in a digital edition is a powerful rush of nostalgia for me. I truly hope it brings you the same simple, genuine fun we shared during those carefree afternoons.</p>
+		</div>
+
+		<p><strong>Shortcuts</strong> is a strategy board game played on a graph-paper grid (3&times;3 block visual layout). Players roll dice and navigate their tokens along a circuit filled with forks, shortcuts, detour loops, and tricky traps that can send pieces backwards!</p>
+
+		<h2>1. The Board and Tracks</h2>
+		<p>The circuit features several distinct colored tracks:</p>
+
+		<table class="track-legend-table">
+			<thead>
+				<tr>
+					<th>Track</th>
+					<th>Color</th>
+					<th>Feature &amp; Effect</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td><strong>Main Track</strong></td>
+					<td><span class="color-badge" style="background: #1e293b;"></span> Black / White</td>
+					<td>The main 100-cell circuit leading from start (cell 0) to finish (cell 99).</td>
+				</tr>
+				<tr>
+					<td><strong>Green Shortcut</strong></td>
+					<td><span class="color-badge" style="background: #16a34a;"></span> Emerald / Lime Green</td>
+					<td>Cuts curves and loops to gain valuable lead distance.</td>
+				</tr>
+				<tr>
+					<td><strong>Orange Detour</strong></td>
+					<td><span class="color-badge" style="background: #ea580c;"></span> Orange</td>
+					<td>A longer loop that delays progress toward the finish line.</td>
+				</tr>
+				<tr>
+					<td><strong>Red Trap</strong></td>
+					<td><span class="color-badge" style="background: #dc2626;"></span> Red</td>
+					<td>A deceptive loop that sends tokens backwards toward earlier cells!</td>
+				</tr>
+				<tr>
+					<td><strong>Purple Junction</strong></td>
+					<td><span class="color-badge" style="background: #9333ea;"></span> Purple</td>
+					<td>Cross-track bridge connecting different board areas.</td>
+				</tr>
+				<tr>
+					<td><strong>Teal Turbo</strong></td>
+					<td><span class="color-badge" style="background: #06b6d4;"></span> Teal / Cyan</td>
+					<td>High-speed expressway leading directly toward the final straight.</td>
+				</tr>
+				<tr>
+					<td><strong>Pink &amp; Amber Bridges</strong></td>
+					<td><span class="color-badge" style="background: #ec4899;"></span> Pink / Amber</td>
+					<td>Rapid diagonal connectors and shortcuts.</td>
+				</tr>
+			</tbody>
+		</table>
+
+		<h2>2. How to Play</h2>
+		<ol>
+			<li>On each turn, roll <strong>two 6-sided dice</strong>.</li>
+			<li>Your piece moves forward by the <strong>sum of the two dice</strong>.</li>
+			<li><strong>Double Roll:</strong> Rolling doubles (e.g. 4-4, 5-5) grants an immediate extra roll!</li>
+		</ol>
+
+		<div class="regola-chiave">
+			<h3 style="margin-top:0;">3. Junction &amp; Fork Rules</h3>
+			<p>Junctions and forks are marked with <strong>fine directional arrows inside cells</strong>:</p>
+			<ul>
+				<li>If a piece <strong>stops exactly on a cell with an arrow</strong>, on its next turn it will follow the arrow direction!</li>
+				<li>If a piece passes over the cell without stopping, it continues straight on its current track.</li>
+				<li><strong>Heading Indicator:</strong> The triangular arrow tip on your piece shows which direction it will move on the next step.</li>
+			</ul>
+		</div>
+
+		<h2>4. Tournament Mode &amp; Scoring System</h2>
+		<p>The game features a multi-round <strong>Tournament Mode</strong> (e.g. 1000 points target):</p>
+		<ul>
+			<li><strong>Winner's Score:</strong> The first player to reach the finish line (cell 99) wins the round and receives <strong>100 points</strong>.</li>
+			<li><strong>Other Players' Scores:</strong> All other players receive points equal to the <strong>value of the last black main track cell they touched</strong> (from 0 to 98).</li>
+			<li><strong>Tournament Champion:</strong> Points accumulate round by round. The first player to reach or exceed the target score becomes the <strong>Tournament Champion</strong>!</li>
+		</ul>
+
+		<h2>5. Game Options &amp; Customization</h2>
+		<p>Clicking the <strong>✨ New Game</strong> button allows you to fully configure your game:</p>
+
+		<div class="regola-chiave">
+			<h3 style="margin-top:0;">👥 Players &amp; Participants</h3>
+			<ul>
+				<li><strong>Player Count:</strong> Play with 2, 3, or 4 players on the board.</li>
+				<li><strong>Humans &amp; Bots:</strong> Set each player as a <strong>Human (👤)</strong> or <strong>Computer Bot (🤖)</strong>, with customizable player names.</li>
+			</ul>
+		</div>
+
+		<div class="regola-chiave">
+			<h3 style="margin-top:0;">🏆 Tournament Target</h3>
+			<ul>
+				<li><strong>1000 Points Tournament (Default):</strong> The standard multi-round competition.</li>
+				<li><strong>500 Points Tournament:</strong> Medium duration (~5 rounds).</li>
+				<li><strong>300 Points Sprint:</strong> Fast-paced challenge (~3 rounds).</li>
+				<li><strong>2000 Points Marathon:</strong> An extended tournament endurance race.</li>
+				<li><strong>Single Match:</strong> No cumulative scoring; the game ends as soon as a player crosses the finish line.</li>
+			</ul>
+		</div>
+
+		<div class="regola-chiave">
+			<h3 style="margin-top:0;">⚙️ Gameplay Variants</h3>
+			<ul>
+				<li><strong>Double Roll Grants Extra Turn (Enabled by default):</strong> Rolling doubles (e.g. 4-4, 6-6) gives you an immediate bonus roll.</li>
+				<li><strong>Exact Finish Required (Bounce-back):</strong> If enabled, crossing the finish line requires an exact count to land on cell 99. Any excess roll steps cause your piece to bounce backwards! If disabled, reaching or exceeding 99 wins.</li>
+				<li><strong>Junction Exit Behavior:</strong>
+					<ul>
+						<li><em>Switch to intersecting track (Default):</em> Stopping on a junction routes your piece onto the intersecting branch track on your next turn.</li>
+						<li><em>Follow own color arrow:</em> Stopping on a junction follows the arrow associated with the track color you arrived from.</li>
+					</ul>
+				</li>
+			</ul>
+		</div>
+
+		<h2>6. Controls &amp; Live Status Bar</h2>
+		<ul>
+			<li><strong>Top-Left:</strong> Displays current match number and real-time horizontal cumulative tournament scores.</li>
+			<li><strong>Top-Right:</strong> Displays the value of the last black main track cell touched by each player in the active round.</li>
+			<li><strong>Auto-play (Bottom bar):</strong> Checkbox to run all dice rolls and moves automatically, ideal for watching bot matches or fast simulations.</li>
+			<li><strong>Audio (Top-Left):</strong> Toggle sound effects on or off.</li>
+			<li><strong>Live Chronicle (Bottom-Left):</strong> Real-time event log recording all rolls, junction events, and victories.</li>
+		</ul>
+
+		<p style="text-align: center;"><a href="#" onclick="goBack(); return false;" class="play-btn">Close</a></p>
+	</div>
+
+	<div class="banner"></div>
+
+	<div class="nav-links">
+		<a href="index-en.html">All Games</a> |
+		<a href="scorciatoie-en.html">Shortcuts</a> |
+		<a href="tetra-en.html">Tetra</a> |
+		<a href="sudoku-en.html">Sudoku</a> |
+		<a href="quadrati-en.html">Dots &amp; Boxes</a> |
+		<a href="dama-en.html">Checkers</a>
+	</div>
+
+	<p style="text-align: center; font-size: 0.8em; color: #999; margin-top: 10px;">
+		&copy; 2026 Luciano Manenti
+	</p>
+
+	<script>
+		function goBack() {
+			if (window.history.length > 1) {
+				window.history.back();
+			}
+			window.close();
+		}
+	</script>
+</body>
+
+</html>

@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9335537153013492"
+        crossorigin="anonymous"></script>
+    <script>
+        // Security fix to prevent crashes from cross-origin on window.opener
+        (function() { try { if (!window.opener) return; var test = window.opener.document; if (!window.opener.game) { window.opener = null; } } catch(e) { window.opener = null; } })();
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shortcuts Luciano - Graph-Paper Board Game - lucianomanenti.com</title>
+    <link rel="canonical" href="https://www.lucianomanenti.com/scorciatoie-en.html">
+    <link rel="alternate" hreflang="it" href="https://www.lucianomanenti.com/scorciatoie.html">
+    <link rel="alternate" hreflang="en" href="https://www.lucianomanenti.com/scorciatoie-en.html">
+    <link rel="alternate" hreflang="x-default" href="https://www.lucianomanenti.com/scorciatoie.html">
+    <link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
+    <link rel="shortcut icon" href="favicon/favicon.ico">
+
+    <meta name="Description"
+        content="Play Shortcuts free online: the graph-paper strategy board game with winding tracks, shortcuts, detours, reverse traps, and directional pieces.">
+    <meta http-Equiv="Cache-Control" Content="no-cache">
+    <meta http-Equiv="Pragma" Content="no-cache">
+    <meta http-Equiv="Expires" Content="0">
+
+    <link rel="stylesheet" href="scorciatoie.css?v=2.1" />
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-WRBDRDQ4L8');
+    </script>
+    <script>
+        window.gameConfig = {
+            gaPrefix: 'SHORTCUTS_',
+            hideLegalFooter: true,
+            adsenseActive: true,
+            adsenseSlots: {
+                '300x600': '5266697442',
+                '160x600': '1167670336',
+                '300x250': '8471445288',
+                '160x250': '8663016975'
+            }
+        };
+        window.currentLang = 'en';
+    </script>
+</head>
+
+<body>
+
+    <div class="main-container">
+        <!-- Sidebar for ads managed by layout engine (game-layout.js) -->
+        <div id="sidebar-left" class="sidebar"></div>
+        <div id="sidebar-right" class="sidebar"></div>
+
+        <!-- Main centered and scaled game arena -->
+        <div id="campogioco">
+            <!-- Modal overlay screen -->
+            <div id="schermo"></div>
+
+            <!-- Header Campogioco -->
+            <div class="lang-switch-header">
+                <a href="scorciatoie.html">IT</a>
+                <a href="scorciatoie-en.html" class="active">EN</a>
+                <div id="btn-audio" class="btn-audio-game" aria-label="Audio"></div>
+                <!-- Real-time tournament scores horizontally on top-left -->
+                <div id="header-totale-punti" class="header-badge-group"></div>
+            </div>
+            <div id="titolo-gioco">📐 Shortcuts Luciano</div>
+            <!-- Last black cell value on top-right -->
+            <div id="header-casella-nera" class="header-badge-right"></div>
+
+            <!-- ================= CANVAS BOARD AREA ================= -->
+            <div id="area-tabellone">
+                <canvas id="gameCanvas" width="1200" height="702"></canvas>
+            </div>
+
+            <!-- ================= COMPACT BOTTOM BAR ================= -->
+            <div id="barra-inferiore">
+
+                <!-- 1. Real-time Live Chronicle -->
+                <div class="mini-cronaca-wrap" id="miniCronacaBox">
+                    <!-- Populated dynamically by JS -->
+                </div>
+
+                <!-- 2. Central Dice & Roll Button -->
+                <div class="center-action-area">
+                    <div class="mini-dice-group">
+                        <div class="dice" id="dice1" data-val="3">
+                            <span class="pip"></span><span class="pip"></span><span class="pip"></span>
+                            <span class="pip"></span><span class="pip"></span><span class="pip"></span>
+                            <span class="pip"></span><span class="pip"></span><span class="pip"></span>
+                        </div>
+                        <div class="dice" id="dice2" data-val="4">
+                            <span class="pip"></span><span class="pip"></span><span class="pip"></span>
+                            <span class="pip"></span><span class="pip"></span><span class="pip"></span>
+                            <span class="pip"></span><span class="pip"></span><span class="pip"></span>
+                        </div>
+                    </div>
+
+                    <div class="dice-result-badge" id="diceResultText">Tot: 7</div>
+
+                    <button id="btnRollDice" class="btn-roll-main">🎲 ROLL DICE</button>
+
+                    <label style="display: flex; align-items: center; gap: 4px; font-size: 11px; color: #cbd5e1; cursor: pointer;">
+                        <input type="checkbox" id="chkAutoPlayMini">
+                        <span>Auto-play</span>
+                    </label>
+                </div>
+
+                <!-- 3. Actions & Modals -->
+                <div class="right-actions-group">
+                    <a href="guida-scorciatoie-en.html" target="_blank" rel="opener" id="btn-istruzioni-gioco" class="btn-action-bar" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">📖 Instructions</a>
+                    <button id="btn-nuova-partita" class="btn-action-bar gold">✨ New Game</button>
+                </div>
+
+            </div>
+
+            <!-- ================= MODALS & OVERLAYS ================= -->
+
+            <!-- 1. New Game Modal -->
+            <div id="modale-nuova" class="form-scorciatoie">
+                <div class="form-scorciatoie-title">New Game of Shortcuts</div>
+                <div class="form-body-scroll">
+                    <div class="form-row">
+                        <label class="form-label-title" for="numPlayersSelect">Number of Players:</label>
+                        <select id="numPlayersSelect" class="input-text" onchange="updatePlayerConfigRows()" style="padding: 6px; border-radius: 4px;">
+                            <option value="2">2 Players</option>
+                            <option value="3" selected>3 Players</option>
+                            <option value="4">4 Players</option>
+                        </select>
+                    </div>
+
+                    <div class="form-row">
+                        <label class="form-label-title">Participants:</label>
+                        <div id="playersConfigRows" style="display: flex; flex-direction: column; gap: 6px;">
+                            <div style="display: grid; grid-template-columns: 24px 1fr 100px; gap: 6px; align-items: center;">
+                                <div style="width: 20px; height: 20px; border-radius: 50%; background: #e11d48;"></div>
+                                <input type="text" id="pname_0" value="You (P1)" style="padding: 4px 8px; border-radius: 4px; border: 1px solid #94a3b8;">
+                                <select id="ptype_0" style="padding: 4px; border-radius: 4px;"><option value="human" selected>👤 Human</option><option value="bot">🤖 Bot</option></select>
+                            </div>
+                            <div style="display: grid; grid-template-columns: 24px 1fr 100px; gap: 6px; align-items: center;">
+                                <div style="width: 20px; height: 20px; border-radius: 50%; background: #2563eb;"></div>
+                                <input type="text" id="pname_1" value="Computer 1" style="padding: 4px 8px; border-radius: 4px; border: 1px solid #94a3b8;">
+                                <select id="ptype_1" style="padding: 4px; border-radius: 4px;"><option value="human">👤 Human</option><option value="bot" selected>🤖 Bot</option></select>
+                            </div>
+                            <div style="display: grid; grid-template-columns: 24px 1fr 100px; gap: 6px; align-items: center;">
+                                <div style="width: 20px; height: 20px; border-radius: 50%; background: #16a34a;"></div>
+                                <input type="text" id="pname_2" value="Computer 2" style="padding: 4px 8px; border-radius: 4px; border: 1px solid #94a3b8;">
+                                <select id="ptype_2" style="padding: 4px; border-radius: 4px;"><option value="human">👤 Human</option><option value="bot" selected>🤖 Bot</option></select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-row" style="border-top: 1px solid rgba(255,255,255,0.15); padding-top: 8px;">
+                        <label class="form-label-title" for="selTournamentTarget">Tournament Mode &amp; Target:</label>
+                        <select id="selTournamentTarget" style="padding: 5px; border-radius: 4px; width: 100%; font-size: 12px;">
+                            <option value="1000" selected>🏆 1000 Points Tournament (First to reach 1000 pts wins - 100 pts per win)</option>
+                            <option value="500">🏆 500 Points Tournament (5 wins)</option>
+                            <option value="300">🏆 300 Points Sprint Tournament (3 wins)</option>
+                            <option value="2000">🏆 2000 Points Marathon Tournament</option>
+                            <option value="0">🎲 Single Game (No cumulative score)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-row" style="border-top: 1px solid rgba(255,255,255,0.15); padding-top: 8px;">
+                        <label class="form-label-title">Gameplay Variants:</label>
+                        <label style="display: flex; align-items: center; gap: 6px; font-size: 12px; cursor: pointer;">
+                            <input type="checkbox" id="chkDoubleExtra" checked>
+                            <span>Rolling doubles (e.g. 4-4) grants an extra roll</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 6px; font-size: 12px; cursor: pointer;">
+                            <input type="checkbox" id="chkExactFinish">
+                            <span>Exact count required at finish line (bounce-back)</span>
+                        </label>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
+                            <label for="selBranchExitMode" style="font-size: 12px; color: #cbd5e1;">Stop on junctions &amp; crossings:</label>
+                            <select id="selBranchExitMode" style="padding: 3px 6px; font-size: 11px; border-radius: 4px;">
+                                <option value="cross" selected>Switch to intersecting track (default)</option>
+                                <option value="own">Follow own color arrow</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 14px;">
+                    <button class="btn-continua" style="background: #475569; border-color: #64748b; color: white;" onclick="ScorciatoieGame.closeModals()">Cancel</button>
+                    <button class="btn-continua" id="btnStartCustomGame">Start Game / Tournament</button>
+                </div>
+            </div>
+
+            <!-- 2. Game / Leg Over Modal (compact & wide, banner above) -->
+            <div id="finepartita" class="form-scorciatoie modale-fine">
+                <div class="confirm-message" id="fine-messaggio" style="margin: 0 0 6px 0; line-height: 1.2;">🏆 VICTORY!</div>
+                <div id="fine-dettagli" style="color: #ffd700; font-size: 14px; font-weight: bold; text-align: center; margin-bottom: 8px; text-shadow: 1px 1px 2px #000;">
+                    Crossed the finish line first!
+                </div>
+                <!-- Dynamic Tournament Standings Table -->
+                <div id="fine-classifica-torneo" style="margin-bottom: 10px; background: rgba(15,23,42,0.7); border-radius: 6px; padding: 6px 10px; border: 1px solid rgba(255,255,255,0.1); font-size: 12px; max-height: 110px; overflow-y: auto;"></div>
+                <div class="conferma-bottoni" style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                    <button class="btn-continua" id="btn-prossima-manche" style="background: linear-gradient(135deg, #16a34a, #15803d); border-color: #22c55e; color: white;">NEXT LEG ➔</button>
+                    <button class="btn-continua" style="background: rgba(0,40,10,0.6); color: white; border-color: #6b9b7a;" onclick="ScorciatoieGame.closeModals()">VIEW BOARD</button>
+                    <button class="btn-continua" onclick="location.reload()">NEW TOURNAMENT</button>
+                </div>
+            </div>
+
+            <!-- 3. Confirm Abandon Modal (compact & wide, banner above) -->
+            <div id="confermatermina" class="form-scorciatoie modale-conferma">
+                <div class="confirm-message" style="margin: 0 0 16px 0; line-height: 1.3; font-size: 22px;">Do you really want to quit the current game?</div>
+                <div class="conferma-bottoni">
+                    <button id="btn-no-continua" class="btn-continua" style="width: 240px; height: 44px; font-size: 15px;" onclick="ScorciatoieGame.closeModals()">NO, KEEP PLAYING</button>
+                    <button id="btn-si-termina" class="btn-continua" style="width: 240px; height: 44px; font-size: 15px; background-color: #cc0c39; color: white; border-color: #990022;" onclick="location.reload()">YES, NEW GAME</button>
+                </div>
+            </div>
+
+            <!-- Legal Links (Privacy & Cookies) -->
+            <div class="legal-links-scorciatoie">
+                <a href="privacy-en.html" target="_blank">Privacy Policy</a>
+                <span class="sep">&#8226;</span>
+                <a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)">Manage Cookies</a>
+                <span class="sep">&#8226;</span>
+                <a href="aboutme-en.html" target="_blank">Write to Me</a>
+            </div>
+
+            <!-- Other Games Links -->
+            <div class="link-giochi-scorciatoie">
+                <a href="scacchi-en.html" class="pulsante-link-scorc">Chess</a>
+                <a href="dama-en.html" class="pulsante-link-scorc">Checkers</a>
+                <a href="quadrati-en.html" class="pulsante-link-scorc">Dots &amp; Boxes</a>
+                <a href="domino-en.html" class="pulsante-link-scorc">Domino</a>
+                <a href="sudoku-en.html" class="pulsante-link-scorc">Sudoku</a>
+                <a href="index-en.html" class="pulsante-link-scorc pulsante-home-scorc">ALL GAMES</a>
+            </div>
+
+        </div><!-- /campogioco -->
+    </div><!-- /main-container -->
+
+    <script>
+        function updatePlayerConfigRows() {
+            const count = parseInt(document.getElementById('numPlayersSelect').value, 10);
+            const container = document.getElementById('playersConfigRows');
+            const colors = ['#e11d48', '#2563eb', '#16a34a', '#d97706'];
+            container.innerHTML = '';
+            for (let i = 0; i < count; i++) {
+                const isFirst = (i === 0);
+                const row = document.createElement('div');
+                row.style.display = 'grid';
+                row.style.gridTemplateColumns = '24px 1fr 100px';
+                row.style.gap = '6px';
+                row.style.alignItems = 'center';
+                row.innerHTML = `
+                    <div style="width: 20px; height: 20px; border-radius: 50%; background: ${colors[i]};"></div>
+                    <input type="text" id="pname_${i}" value="${isFirst ? 'You (P1)' : 'Computer ' + i}" style="padding: 4px 8px; border-radius: 4px; border: 1px solid #94a3b8;">
+                    <select id="ptype_${i}" style="padding: 4px; border-radius: 4px;">
+                        <option value="human" ${isFirst ? 'selected' : ''}>👤 Human</option>
+                        <option value="bot" ${!isFirst ? 'selected' : ''}>🤖 Bot</option>
+                    </select>
+                `;
+                container.appendChild(row);
+            }
+        }
+    </script>
+
+    <!-- Shared site scripts -->
+    <script src="site.js?v=1.1"></script>
+    <!-- Layout engine -->
+    <script src="game-layout.js?v=4.6"></script>
+    <!-- Shortcuts game engine -->
+    <script src="scorciatoie.js?v=2.1"></script>
+</body>
+
+</html>

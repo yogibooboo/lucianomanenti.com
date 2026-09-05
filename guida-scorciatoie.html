@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
+	<script>
+		window.dataLayer = window.dataLayer || [];
+		function gtag() { dataLayer.push(arguments); }
+		gtag('js', new Date());
+		gtag('config', 'G-WRBDRDQ4L8');
+		window.currentLang = 'it';
+	</script>
+	<title>Regole di Scorciatoie Luciano - Come si gioca e strategie</title>
+	<meta name="Description"
+		content="Guida completa e regole di Scorciatoie Luciano: il gioco da tavolo su carta a quadretti con bivi, scorciatoie, trappole, frecce direzionali e torneo a punti.">
+	<link rel="alternate" hreflang="it" href="guida-scorciatoie.html">
+	<link rel="alternate" hreflang="en" href="guida-scorciatoie-en.html">
+	<link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
+	<link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
+	<link rel="shortcut icon" href="favicon/favicon.ico">
+	<link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+	<style>
+		body {
+			font-family: sans-serif;
+			line-height: 1.7;
+			max-width: 800px;
+			margin: 40px auto;
+			padding: 20px;
+			color: #333;
+			background-color: #f9f9f9;
+		}
+
+		h1 {
+			color: #2c3e50;
+			border-bottom: 2px solid #ffd700;
+			padding-bottom: 10px;
+		}
+
+		h2 {
+			color: #2c3e50;
+			margin-top: 30px;
+		}
+
+		h3 {
+			color: #2c3e50;
+			font-size: 1.1em;
+			margin-top: 20px;
+		}
+
+		.lang-switch {
+			text-align: right;
+			margin-bottom: 20px;
+		}
+
+		.lang-switch a {
+			display: inline-block;
+			padding: 6px 16px;
+			margin-left: 5px;
+			text-decoration: none;
+			border-radius: 5px;
+			font-weight: bold;
+			font-size: 14px;
+		}
+
+		.lang-switch a.active {
+			background: #2c3e50;
+			color: white;
+		}
+
+		.lang-switch a:not(.active) {
+			background: #ddd;
+			color: #333;
+			cursor: pointer;
+		}
+
+		.content-box {
+			background: white;
+			padding: 30px;
+			border-radius: 8px;
+			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+		}
+
+		.banner {
+			width: 100%;
+			height: 150px;
+			background-image: url('images/home/castagne.jpg');
+			background-size: cover;
+			background-position: center;
+			border-radius: 8px;
+			margin: 20px 0;
+			box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+		}
+
+		.play-btn {
+			display: inline-block;
+			margin-top: 25px;
+			padding: 12px 30px;
+			background: #27ae60;
+			color: white;
+			text-decoration: none;
+			border-radius: 8px;
+			font-size: 18px;
+			font-weight: bold;
+			transition: background 0.2s;
+			cursor: pointer;
+		}
+
+		.play-btn:hover {
+			background: #219150;
+		}
+
+		.nav-links {
+			text-align: center;
+			margin-top: 30px;
+			font-size: 14px;
+		}
+
+		.nav-links a {
+			color: #3498db;
+			text-decoration: none;
+			margin: 0 8px;
+		}
+
+		.track-legend-table {
+			width: 100%;
+			border-collapse: collapse;
+			margin: 15px 0;
+		}
+
+		.track-legend-table th, .track-legend-table td {
+			border: 1px solid #ddd;
+			padding: 8px 12px;
+			text-align: left;
+		}
+
+		.track-legend-table th {
+			background-color: #f2f2f2;
+			color: #2c3e50;
+		}
+
+		.color-badge {
+			display: inline-block;
+			width: 14px;
+			height: 14px;
+			border-radius: 3px;
+			vertical-align: middle;
+			margin-right: 6px;
+			border: 1px solid rgba(0,0,0,0.3);
+		}
+
+		.regola-chiave {
+			background: #eef7ee;
+			border-left: 4px solid #27ae60;
+			padding: 12px 18px;
+			margin: 18px 0;
+		}
+	</style>
+</head>
+
+<body>
+
+	<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+		<a href="#" id="btn-back" onclick="goBack(); return false;"
+			style="display: inline-block; padding: 6px 16px; background: #e74c3c; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 14px;">&#x2190; Indietro</a>
+		<div class="lang-switch" style="margin-bottom: 0;">
+			<a href="guida-scorciatoie.html" class="active">Italiano</a>
+			<a href="guida-scorciatoie-en.html">English</a>
+		</div>
+	</div>
+
+	<div class="banner"></div>
+
+	<div class="content-box">
+		<h1>Scorciatoie Luciano &mdash; Regole e Guida di Gioco</h1>
+
+		<div style="background: #fdfaf3; border-left: 4px solid #f59e0b; padding: 14px 18px; margin: 18px 0; font-style: italic; border-radius: 0 8px 8px 0; line-height: 1.65; color: #475569;">
+			<p style="margin-top: 0;">Questo gioco nasce da un ricordo di giovent&ugrave; a cui sono molto legato. L'ho inventato da ragazzino per giocare insieme ai miei fratelli e agli amici: prendevo i classici fogli di protocollo a quadretti, impugnavo penne colorate e righello e passavo il tempo a tracciare piste piene di bivi, scorciatoie vantaggiose e trappole beffarde.</p>
+			<p>A volte incollavo insieme pi&ugrave; fogli con lo scotch per creare tabelloni enormi, su cui poi passavamo interi pomeriggi tra risate, sfide all'ultimo lancio di dadi e rimonte spettacolari.</p>
+			<p style="margin-bottom: 0;">Rivedere e pubblicare oggi questo gioco in formato digitale &egrave; per me una potente e bellissima ondata di nostalgia. Spero davvero di cuore che possa regalare anche a voi lo stesso genuino divertimento di quei pomeriggi spensierati.</p>
+		</div>
+
+		<p><strong>Scorciatoie</strong> &egrave; un gioco da tavolo strategico su carta a quadretti (layout grafico 3&times;3 blocchi). I giocatori si sfidano lanciando i dadi e muovendo le proprie pedine lungo un percorso ricco di bivi, scorciatoie vantaggiose, anelli insidiosi e trappole che possono rispedire la pedina indietro!</p>
+
+		<h2>1. Il Tabellone e i Percorsi</h2>
+		<p>Il circuito &egrave; disegnato su una griglia millimetrata a blocchi ed &egrave; composto da vari percorsi colorati:</p>
+
+		<table class="track-legend-table">
+			<thead>
+				<tr>
+					<th>Percorso</th>
+					<th>Colore</th>
+					<th>Caratteristica &amp; Effetto</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td><strong>Percorso Principale</strong></td>
+					<td><span class="color-badge" style="background: #1e293b;"></span> Nero / Bianco</td>
+					<td>La via maestra di 100 caselle (da 0 al traguardo 99).</td>
+				</tr>
+				<tr>
+					<td><strong>Scorciatoia Verde</strong></td>
+					<td><span class="color-badge" style="background: #16a34a;"></span> Verde Smeraldo / Lime</td>
+					<td>Taglia curve e anelli permettendo di guadagnare molte caselle di vantaggio.</td>
+				</tr>
+				<tr>
+					<td><strong>Allungatoia Arancione</strong></td>
+					<td><span class="color-badge" style="background: #ea580c;"></span> Arancione</td>
+					<td>Un anello pi&ugrave; lungo che rallenta l'avanzata verso il traguardo.</td>
+				</tr>
+				<tr>
+					<td><strong>Trappola Rossa</strong></td>
+					<td><span class="color-badge" style="background: #dc2626;"></span> Rosso</td>
+					<td>Anello ingannevole che rispedisce la pedina indietro verso le caselle di partenza!</td>
+				</tr>
+				<tr>
+					<td><strong>Raccordo Viola</strong></td>
+					<td><span class="color-badge" style="background: #9333ea;"></span> Viola</td>
+					<td>Innesto trasversale che unisce sezioni diverse del tabellone.</td>
+				</tr>
+				<tr>
+					<td><strong>Turbo Ciano</strong></td>
+					<td><span class="color-badge" style="background: #06b6d4;"></span> Ciano Brillante</td>
+					<td>Tratto veloce ad alto scorrimento verso il rettilineo finale.</td>
+				</tr>
+				<tr>
+					<td><strong>Raccordo Rosa &amp; Ambra</strong></td>
+					<td><span class="color-badge" style="background: #ec4899;"></span> Rosa / Ambra</td>
+					<td>Scorciatoie diagonali e raccordi rapidi di collegamento.</td>
+				</tr>
+			</tbody>
+		</table>
+
+		<h2>2. Come si Gioca</h2>
+		<ol>
+			<li>A ogni turno, il giocatore lancia <strong>due dadi</strong> da 6 facce.</li>
+			<li>La pedina avanza di un numero di caselle pari alla <strong>somma dei due dadi</strong>.</li>
+			<li><strong>Tiro Doppio:</strong> se entrambi i dadi mostrano lo stesso valore (es. 4-4, 5-5), il giocatore ottiene immediatamente un tiro supplementare!</li>
+		</ol>
+
+		<div class="regola-chiave">
+			<h3 style="margin-top:0;">3. La Regola dei Bivi &amp; Incroci</h3>
+			<p>Sulla griglia sono presenti bivi e incroci a 4 vie segnalati da <strong>frecce sottili disegnate nelle caselle</strong>:</p>
+			<ul>
+				<li>Se una pedina <strong>si ferma esattamente sopra la casella con la freccia</strong> al termine del lancio, al turno successivo seguir&agrave; la direzione indicata dall'incrocio!</li>
+				<li>Se invece la pedina transita oltre la casella senza fermarvisi, continuer&agrave; dritta sul tracciato su cui sta viaggiando.</li>
+				<li><strong>Direzione visibile:</strong> La punta triangolare colorata della pedina indica in ogni istante la direzione verso cui compir&agrave; il prossimo passo.</li>
+			</ul>
+		</div>
+
+		<h2>4. Modalit&agrave; Torneo e Sistema di Punteggio</h2>
+		<p>Il gioco &egrave; organizzato in un <strong>Torneo a Manche</strong> con limite di punti (ad esempio 1000 punti):</p>
+		<ul>
+			<li><strong>Punti al Vincitore:</strong> Il primo giocatore che taglia il traguardo a scacchi (casella 99) vince la manche e riceve <strong>100 punti</strong>.</li>
+			<li><strong>Punti agli Avversari:</strong> A ciascun altro giocatore viene assegnato un punteggio pari al <strong>valore dell'ultima casella nera del percorso principale toccata</strong> durante la manche (da 0 a 98).</li>
+			<li><strong>Campione del Torneo:</strong> I punti si accumulano di manche in manche. Il primo giocatore che raggiunge o supera il punteggio target (es. 1000 pt) viene incoronato <strong>Campione del Torneo</strong>!</li>
+		</ul>
+
+		<h2>5. Opzioni e Personalizzazione della Partita</h2>
+		<p>Cliccando sul pulsante <strong>✨ Nuova Partita</strong> &egrave; possibile personalizzare ogni aspetto del gioco:</p>
+
+		<div class="regola-chiave">
+			<h3 style="margin-top:0;">👥 Giocatori &amp; Partecipanti</h3>
+			<ul>
+				<li><strong>Numero di giocatori:</strong> Da 2 a 4 giocatori contemporaneamente sul tabellone.</li>
+				<li><strong>Umani e Bot:</strong> Ciascun giocatore pu&ograve; essere impostato come <strong>Umano (👤)</strong> oppure <strong>Computer / Bot (🤖)</strong>, con possibilit&agrave; di personalizzare il nome di ciascun partecipante.</li>
+			</ul>
+		</div>
+
+		<div class="regola-chiave">
+			<h3 style="margin-top:0;">🏆 Obiettivo del Torneo</h3>
+			<ul>
+				<li><strong>Torneo a 1000 Punti (Predefinito):</strong> La formula classica, vince chi raggiunge per primo 1000 punti.</li>
+				<li><strong>Torneo a 500 Punti:</strong> Sfida di media durata (circa 5 manche).</li>
+				<li><strong>Torneo Sprint a 300 Punti:</strong> Partita breve e intensa (circa 3 manche).</li>
+				<li><strong>Torneo Marathon a 2000 Punti:</strong> Una lunga maratona a tappe.</li>
+				<li><strong>Partita Singola:</strong> Nessun punteggio cumulativo; la partita si conclude appena un giocatore taglia il traguardo.</li>
+			</ul>
+		</div>
+
+		<div class="regola-chiave">
+			<h3 style="margin-top:0;">⚙️ Varianti di Regolamento</h3>
+			<ul>
+				<li><strong>Tiro Doppio Supplementare (Attivo di default):</strong> Se ottieni lo stesso valore su entrambi i dadi (es. 4-4, 6-6), hai diritto a un lancio extra consecutivo. Disattivando l'opzione, il turno passa normalmente all'avversario.</li>
+				<li><strong>Arrivo con Punteggio Esatto (Rimbalzo):</strong> Se attivato, per tagliare il traguardo occorre fare la cifra esatta per finire sulla casella 99. Se il punteggio dei dadi supera la casella finale, la pedina avanza fino al 99 e <em>rimbalza indietro</em> per i passi in eccesso! Se disattivato, basta eguagliare o superare il 99.</li>
+				<li><strong>Regola di Sosta su Bivi &amp; Incroci:</strong>
+					<ul>
+						<li><em>Svolta sul percorso incrociato (Predefinito):</em> Fermandosi esattamente su un incrocio si imbocca il percorso traversale/incrociato (es. dal percorso nero si svolta sulla diramazione colorata; arrivando dalla diramazione ci si innesta sul nero).</li>
+						<li><em>Segui la freccia del proprio colore:</em> Fermandosi sull'incrocio si segue la freccia contrassegnata con il colore del tracciato da cui si &egrave; arrivati.</li>
+					</ul>
+				</li>
+			</ul>
+		</div>
+
+		<h2>6. Comandi e Barra di Stato</h2>
+		<ul>
+			<li><strong>In alto a sinistra:</strong> Mostra in tempo reale la manche in corso e la classifica orizzontale sintetica con i punti cumulativi di tutti i giocatori.</li>
+			<li><strong>In alto a destra:</strong> Mostra in tempo reale il valore dell'ultima casella nera del percorso principale toccata da ciascuna pedina.</li>
+			<li><strong>Auto-play (Barra inferiore):</strong> Casella di spunta per far scorrere automaticamente tutti i turni e le mosse, ideale per osservare partite tra bot o simulare manche veloci.</li>
+			<li><strong>Audio (In alto a sinistra):</strong> Icona per silenziare o riattivare gli effetti sonori.</li>
+			<li><strong>Cronaca in tempo reale:</strong> Nel box in basso a sinistra viene registrata la cronologia di tutti i tiri, bivi imboccati e vittorie.</li>
+		</ul>
+
+		<p style="text-align: center;"><a href="#" onclick="goBack(); return false;" class="play-btn">Chiudi</a></p>
+	</div>
+
+	<div class="banner"></div>
+
+	<div class="nav-links">
+		<a href="index.html">Tutti i giochi</a> |
+		<a href="scorciatoie.html">Scorciatoie</a> |
+		<a href="tetra.html">Tetra</a> |
+		<a href="sudoku.html">Sudoku</a> |
+		<a href="quadrati.html">Quadrati</a> |
+		<a href="calcolo.html">Calcolo Enigmatico</a> |
+		<a href="dama.html">Dama</a>
+	</div>
+
+	<p style="text-align: center; font-size: 0.8em; color: #999; margin-top: 10px;">
+		&copy; 2026 Luciano Manenti
+	</p>
+
+	<script>
+		function goBack() {
+			if (window.history.length > 1) {
+				window.history.back();
+			}
+			window.close();
+		}
+	</script>
+</body>
+
+</html>
