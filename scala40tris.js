@@ -4442,6 +4442,23 @@ var scala = {
 
 			if (!this.f40avversario[avv]) { if (this.verifica40(avv)) this.f40avversario[avv] = true; }
 			while ((this.f40avversario[avv]) && (this.trispossibili.length > 0)) {
+				/* Guardia di avanzamento: se un giro non toglie nemmeno una
+				   carta dalla mano non ne toglierà mai nessuna, e il ciclo
+				   gira per sempre piantando il browser. Succede quando la mano
+				   scende a ESATTAMENTE 3 carte che formano una combinazione:
+				   lo splice qui sopra (che serve a non restare senza carte da
+				   scartare) la riduce a 2, scartatris esce subito su
+				   "ncarte < 3" senza calare niente, e calcolatrispossibili
+				   rigenera la stessa identica lista dalla stessa identica
+				   mano. Riprodotto con KC KQ KF QC QQ QF: cala le donne, poi
+				   si pianta sui re. Vale anche per l'altra uscita silenziosa
+				   di scartatris, quella su esito non valido (riga 2602).
+				   Uscire non perde niente: il corpo del ciclo è deterministico
+				   rispetto alla mano (cancellapuntietris azzera tutti i
+				   punteggi, calcolatrispossibili riassegna la lista da zero,
+				   cercacoppie ricostruisce le coppie), quindi a mano invariata
+				   il giro successivo rifarebbe le stesse identiche cose. */
+				var primalungh = this.campiavversario[avv].carte.length;
 				if (this.trispossibili[0].length == this.campiavversario[avv].carte.length) this.trispossibili[0].splice(0, 1);
 				this.scartatris(this.trispossibili[0]);
 				this.cancellapuntietris(avv);
@@ -4450,6 +4467,7 @@ var scala = {
 
 				this.cercacoppie(avv);
 				this.ottimizzacoppie();
+				if (this.campiavversario[avv].carte.length == primalungh) break;
 			}
 			while ((this.f40avversario[avv]) && (this.jollydausare > 0) && (this.coppie.length > 0)) {
 				this.trisconjolly(avv, giaaperto);
