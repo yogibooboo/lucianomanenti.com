@@ -4243,7 +4243,19 @@ var scala = {
 		}
 	},
 
-	trisconjolly: function (avv) {
+	/* Vero se in mano all'avversario c'e' almeno una carta di quel seme con
+	   uno dei due numeri cercati. Sola lettura, non tocca i punteggi:
+	   serve a trisconjolly per scegliere da che parte mettere il jolly. */
+	cercainmano: function (avv, seme, numeroa, numerob) {
+		var carte = this.campiavversario[avv].carte;
+		for (var i = 0; i < carte.length; i++) {
+			if (carte[i].seme != seme) continue;
+			if ((carte[i].numero == numeroa) || (carte[i].numero == numerob)) return true;
+		}
+		return false;
+	},
+
+	trisconjolly: function (avv, testapermessa) {
 		this.ordinacarte(this.campiavversario[avv]);
 		var jolly = this.campiavversario[avv].carte[this.campiavversario[avv].carte.length - 1];
 		var tempor = this.coppie[0];
@@ -4274,9 +4286,26 @@ var scala = {
 					tris.push(tempor.carta2);
 				}
 				else {
+					/* Coppia consecutiva: il jolly e' legale sia in coda (numero+1)
+					   sia in testa (numero-1), e finora finiva sempre in coda. Se
+					   uno solo dei due lati sblocca una carta che si ha GIA' in
+					   mano, si sceglie quello: con 2P 4P 5P e un jolly la scala
+					   3P-4P-5P si fa attaccare il 2P da gestisciattaccabili e la
+					   mano si chiude, la scala 4P-5P-6P no (segnalato da un
+					   giocatore, set 2026). Si guarda solo la mano e non il tavolo:
+					   e' la riparazione di un'anomalia, non una strategia nuova.
+					   Nessuna aritmetica oltre il K o sotto l'asso: i numeri fuori
+					   da 1..13 non trovano carte e quel lato risulta non
+					   sbloccante, che e' il default prudente. */
+					var seme = tempor.carta1.seme;
+					var n1 = tempor.carta1.numero, n2 = tempor.carta2.numero;
+					var incoda = this.cercainmano(avv, seme, n1 - 1, n2 + 2);
+					var intesta = testapermessa && (n1 > 1) && !incoda &&
+						this.cercainmano(avv, seme, n1 - 2, n2 + 1);
+					if (intesta) tris.push(jolly);
 					tris.push(tempor.carta1);
 					tris.push(tempor.carta2);
-					tris.push(jolly);
+					if (!intesta) tris.push(jolly);
 				}
 			}
 		}
@@ -4379,6 +4408,15 @@ var scala = {
 	alavora: function (avv) {
 		this.ordinacarte(this.campiavversario[avv]);
 		this.cancellapuntietris(avv);
+		/* Il jolly di una scala puo' stare in testa o in coda; la scelta e'
+		   concessa solo a chi ha gia' calato nei turni precedenti, perche'
+		   verifica40 conta la coppia col jolly IN CODA (punticonjolly =
+		   numero*3+3): spostarlo in testa toglie 3 punti al totale e
+		   un'apertura gia' dichiarata valida potrebbe scendere sotto i 40.
+		   Non si usa f40avversario perche' anche apesca lo alza, nello
+		   stesso turno; le carte sul tavolo invece ci sono solo se la
+		   calata e' gia' avvenuta. */
+		var giaaperto = (this.campitrisavversario[avv].carte.length > 0);
 		if (this.campiavversario[avv].carte.length > 3) {
 			this.calcolatrispossibili(avv);
 			this.ottimizzatris();
@@ -4397,7 +4435,7 @@ var scala = {
 				this.ottimizzacoppie();
 			}
 			while ((this.f40avversario[avv]) && (this.jollydausare > 0) && (this.coppie.length > 0)) {
-				this.trisconjolly(avv);
+				this.trisconjolly(avv, giaaperto);
 				this.jollydausare--;
 			}
 		}
@@ -4441,7 +4479,7 @@ var scala = {
 				&& (this.campiavversario[avv].carte.length > 3)
 				&& (this.campiavversario[avv].carte[this.campiavversario[avv].carte.length - 1].numero > 49)
 				&& (this.coppie.length > 0)) {
-				this.trisconjolly(avv);
+				this.trisconjolly(avv, giaaperto);
 				this.cercacoppie(avv);
 				this.ottimizzacoppie();
 			}
