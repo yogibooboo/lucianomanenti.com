@@ -4600,10 +4600,45 @@ var scala = {
 				for (var i = 1; i < 4; i++) tris.push(this.campiavversario[avv].carte[i]);
 				if (this.analizzatris(tris).valido) this.scartatris(tris);
 			}
-			if ((this.campiavversario[avv].carte.length == 5) && (this.campiavversario[avv].carte[3].numero > 49)) {
-				var tris = [];
-				for (var i = 2; i < 5; i++) tris.push(this.campiavversario[avv].carte[i]);
-				if (this.analizzatris(tris).valido) this.scartatris(tris);
+			/* Con 5 carte in mano il candidato non è più il blocco di coda
+			   preso alla cieca (carte[2..4]): con 2 carte reali e 3 jolly quello
+			   sono tre jolly e basta, analizzatris lo boccia e l'IA restava con
+			   75 punti di jolly in mano senza chiudere, pur avendo il tris
+			   [reale + 3 jolly] a portata di mano (segnalato da un giocatore,
+			   ago 2026). Si costruisce invece [una carta reale + TUTTI i jolly]:
+			   con 3R+2J coincide esattamente con carte[2..4], quindi quel caso
+			   non cambia di una virgola; con 2R+3J diventa il tris di 4 che
+			   svuota la mano e chiude. Ed è l'ultimo caso possibile: analizzatris
+			   tenta la lettura TRIS solo sotto le 5 carte, quindi [1 reale + N
+			   jolly] non supera mai N=3. La regola "almeno 2 carte reali" non si
+			   interroga qui: ci pensa analizzatris, che boccia il tris e manda al
+			   ripiego. */
+			if (this.campiavversario[avv].carte.length == 5) {
+				var mano5 = this.campiavversario[avv].carte;
+				var jolly5 = [], reali5 = [];
+				for (var i = 0; i < 5; i++) {
+					if (mano5[i].numero > 49) jolly5.push(mano5[i]);
+					else reali5.push(mano5[i]);
+				}
+				if (jolly5.length > 1) {
+					var tris = [reali5[reali5.length - 1]].concat(jolly5);
+					if (this.analizzatris(tris).valido) this.scartatris(tris);
+					else if (jolly5.length > 2) {
+						/* Ripiego quando il tris non si può fare: o perché è attiva
+						   la regola "almeno 2 carte reali", o perché i jolly sono
+						   quattro e nessuna lettura li regge. Tenerli in mano costa
+						   75 o 100 punti (i jolly nel mazzo sono quattro, quindi a
+						   cinque carte una carta reale c'è sempre).
+						   Si attaccano al tavolo con piazzajolly, che prova testa e
+						   coda su tutti i tavoli e VALIDA con analizzatris, al
+						   contrario di attaccajolly che non verifica niente; si
+						   lascia sempre una carta in mano da scartare. */
+						for (var i = 0; i < jolly5.length; i++) {
+							if (this.campiavversario[avv].carte.length < 2) break;
+							this.piazzajolly(jolly5[i], null, ESEGUI);
+						}
+					}
+				}
 			}
 
 			var carta;
