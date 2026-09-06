@@ -32,30 +32,38 @@
         willFollow: isEn ? 'Will follow:' : 'Seguirà:',
         ownArrow: isEn ? 'own color arrow' : 'freccia del proprio colore',
         crossArrow: isEn ? 'intersecting track arrow' : 'freccia del percorso incrociato',
-        mancheScoreReason: isEn ? 'Leg Victory (100 pts)' : 'Vittoria Manche (100 pt)',
+        mancheScoreReason: isEn ? 'Game Victory (100 pts)' : 'Vittoria Mano (100 pt)',
         lastBlackReason: isEn ? 'Last black cell' : 'Ultima casella nera',
-        tournamentChampionTitle: isEn ? '🏆 TOURNAMENT CHAMPION!' : '🏆 CAMPIONE DEL TORNEO!',
-        tournamentChampionDetails: isEn ? 'reaches %s pts and wins the tournament!' : 'raggiunge %s pt e trionfa nel torneo!',
-        tournamentChampionLog: isEn ? 'IS THE TOURNAMENT CHAMPION with %s pts!' : 'È IL CAMPIONE DEL TORNEO con %s pt!',
-        legVictoryTitle: isEn ? '🏆 LEG %m VICTORY!' : '🏆 VITTORIA MANCHE %m!',
+        tournamentChampionTitle: isEn ? '🏆 TOURNAMENT CHAMPION!' : '🏆 VINCITORE DELLA PARTITA!',
+        tournamentChampionDetails: isEn ? 'reaches %s pts and wins the tournament!' : 'raggiunge %s pt e vince la partita!',
+        tournamentChampionLog: isEn ? 'IS THE TOURNAMENT CHAMPION with %s pts!' : 'HA VINTO LA PARTITA con %s pt!',
+        tournamentLossTitle: isEn ? '💀 TOURNAMENT LOST!' : '💀 PARTITA PERSA!',
+        tournamentLossDetails: isEn ? 'reaches %s pts and wins the tournament!' : 'raggiunge %s pt e vince la partita!',
+        legVictoryTitle: isEn ? '🏆 GAME %m VICTORY!' : '🏆 VITTORIA MANO %m!',
         legVictoryDetails: isEn ? 'crosses the finish line (+100 pts)! Points awarded for last black cells.' : 'taglia il traguardo (+100 pt)! Assegnati i punti delle ultime caselle nere.',
-        nextLegBtn: isEn ? 'NEXT LEG (L%m) ➔' : 'PROSSIMA MANCHE (M%m) ➔',
-        legFinishedLog: isEn ? 'Leg %m concluded: %w (+100 pts), opponents awarded their last black cells!' : 'Manche %m conclusa: %w (+100 pt), avversari premiati con le loro ultime caselle nere!',
-        standingsTitle: isEn ? '📊 Leg Points & Standings (Target: %t pts)' : '📊 Punteggi Manche & Classifica Generale (Obiettivo: %t pt)',
+        legLossTitle: isEn ? '❌ GAME %m LOST!' : '❌ MANO %m PERSA!',
+        legLossDetails: isEn ? 'crosses the finish line (+100 pts). Points awarded for last black cells.' : 'ha tagliato il traguardo (+100 pt). Assegnati i punti delle ultime caselle nere.',
+        nextLegBtn: isEn ? 'NEXT GAME ➔' : 'PROSSIMA MANO ➔',
+        legFinishedLog: isEn ? 'Game %m concluded: %w (+100 pts), opponents awarded their last black cells!' : 'Mano %m conclusa: %w (+100 pt), avversari premiati con le loro ultime caselle nere!',
+        standingsTitle: isEn ? '📊 Game Points & Standings (Target: %t pts)' : '📊 Punti Mano & Classifica Generale (Obiettivo: %t pt)',
         thPlayer: isEn ? 'Player' : 'Giocatore',
-        thLegPoints: isEn ? 'Leg Points' : 'Punti Manche',
+        thLegPoints: isEn ? 'Game Points' : 'Punti Mano',
         thTotal: isEn ? 'Total' : 'Totale',
         thRemaining: isEn ? 'Remaining' : 'Mancanti',
-        championBadge: isEn ? '👑 CHAMPION' : '👑 CAMPIONE',
+        championBadge: isEn ? '👑 CHAMPION' : '👑 VINCITORE',
         singleWinTitle: isEn ? '🏆 %w WINS!' : '🏆 HA VINTO %w!',
         singleWinDetails: isEn ? 'First to cross the checkered finish line!' : 'Ha tagliato per primo il traguardo a scacchi!',
         singleWinLog: isEn ? '🏆 VICTORY! %w wins the game!' : '🏆 VITTORIA! %w vince la partita!',
+        singleLossTitle: isEn ? '💀 DEFEAT!' : '💀 HAI PERSO!',
+        singleLossDetails: isEn ? '%w crossed the checkered finish line first!' : '%w ha tagliato per primo il traguardo a scacchi!',
+        singleLossLog: isEn ? '💀 %w won the game!' : '💀 %w ha vinto la partita!',
         headerLastBlack: isEn ? '⬛ Last Black:' : '⬛ Ultime Nere:',
-        headerMatchPrefix: isEn ? '🏆 L%m:' : '🏆 M%m:',
-        newTournamentLog: isEn ? '🏆 %t pts Tournament! Leg %m begins. %p\'s turn.' : '🏆 Torneo a %t pt! Inizia la Manche %m. Turno di %p.',
+        headerMatchPrefix: isEn ? '🏆 G%m:' : '🏆 M%m:',
+        newTournamentLog: isEn ? '🏆 %t pts Tournament! Game %m begins. %p\'s turn.' : '🏆 Partita a %t pt! Inizia la Mano %m. Turno di %p.',
         newSingleGameLog: isEn ? '🎮 New game! %p starts.' : '🎮 Nuova partita! Inizia %p.',
         pointsAwarded: isEn ? 'receives +%p pts' : 'riceve +%p pt',
-        tournamentPoints: isEn ? 'Tournament points:' : 'Punti torneo:'
+        tournamentPoints: isEn ? 'Tournament points:' : 'Punti partita:',
+        backToResultsBtn: isEn ? '🏆 BACK TO RESULTS' : '🏆 TORNA AI RISULTATI'
     };
 
     // Colori Percorsi
@@ -157,15 +165,15 @@
         };
 
         // 5. COLLEGAMENTO AZZURRO (BLUE SHORTCUT)
-        // Stacca da Orange[8] (bx=0, by=9), scende lungo il bordo (bx=0, by=10..13) e va verso destra (bx=1..6, by=13) innestandosi a Main[70] (bx=7, by=13)
+        // Stacca da Orange[8] (bx=0, by=9), scende lungo il bordo (bx=0, by=10..12) e va verso destra (bx=1..6, by=12) innestandosi a Main[69] (bx=7, by=12)
         let bluePoints = [];
-        bluePoints.push(...makeBlockLine(0, 10, 0, 13)); // 0..(0,10), 1..(0,11), 2..(0,12), 3..(0,13)
-        bluePoints.push(...makeBlockLine(1, 13, 6, 13));  // 4..(1,13) .. 9..(6,13)
+        bluePoints.push(...makeBlockLine(0, 10, 0, 12)); // 0..(0,10), 1..(0,11), 2..(0,12)
+        bluePoints.push(...makeBlockLine(1, 12, 6, 12));  // 3..(1,12) .. 8..(6,12)
         tracks['blue_shortcut'] = {
             id: 'blue_shortcut',
             colorKey: 'blue_shortcut',
             points: bluePoints,
-            confluence: { targetTrack: 'main', targetStep: 70, targetDir: 1 },
+            confluence: { targetTrack: 'main', targetStep: 69, targetDir: 1 },
             startConfluence: { targetTrack: 'orange_detour', targetStep: 8, targetDir: 1 }
         };
 
@@ -269,6 +277,7 @@
                 branchColorKey: 'green_short',
                 mainArrowDir: 'right',
                 mainColorKey: 'main',
+                stepDelta: 18,
                 label: isEn ? 'Green Shortcut (forward)' : 'Scorciatoia Verde (avanti)'
             },
             // 1b. Rientro Scorciatoia Verde (A RITROSO: se ci atterri da Main, vai su a ritroso!)
@@ -283,6 +292,7 @@
                 mainArrowDir: 'left',
                 mainColorKey: 'main',
                 isTrap: true,
+                stepDelta: -24,
                 label: isEn ? 'Green Shortcut reverse (Trap!)' : 'Scorciatoia Verde a ritroso (Trappola!)'
             },
             // 2. Inizio Raccordo Viola (in avanti)
@@ -296,6 +306,7 @@
                 branchColorKey: 'purple_cross',
                 mainArrowDir: 'right',
                 mainColorKey: 'main',
+                stepDelta: 30,
                 label: isEn ? 'Purple Crossing (forward)' : 'Raccordo Viola (avanti)'
             },
             // 2b. Raccordo Viola (A RITROSO: da Main 45 sali indietro a ritroso!)
@@ -310,6 +321,7 @@
                 mainArrowDir: 'right',
                 mainColorKey: 'main',
                 isTrap: true,
+                stepDelta: -42,
                 label: isEn ? 'Purple Crossing reverse (Trap!)' : 'Raccordo Viola a ritroso (Trappola!)'
             },
             // 2c. Incrocio a 4 vie (Casella 22: incrocio tra Main e Viola)
@@ -326,6 +338,7 @@
                 is4Way: true,
                 mainNext: { track: 'main', step: 23, dir: 1 },
                 branchNext: { track: 'purple_cross', step: 3, dir: 1 },
+                stepDelta: 21,
                 label: isEn ? '4-Way Crossing (22)' : 'Incrocio a 4 vie (22)'
             },
             // 2d. Incrocio a 4 vie arrivando dal ramo viola (step 2)
@@ -343,6 +356,7 @@
                 skipDrawing: true, // frecce già disegnate da 2c
                 mainNext: { track: 'main', step: 23, dir: 1 },
                 branchNext: { track: 'purple_cross', step: 3, dir: 1 },
+                stepDelta: -20,
                 label: isEn ? '4-Way Crossing (from Purple)' : 'Incrocio a 4 vie (dal Viola)'
             },
             // 3. Inizio Allungatoia Arancione (in avanti)
@@ -356,6 +370,7 @@
                 branchColorKey: 'orange_detour',
                 mainArrowDir: 'left',
                 mainColorKey: 'main',
+                stepDelta: -4,
                 label: isEn ? 'Orange Detour' : 'Allungatoia Arancione'
             },
             // 3b. Allungatoia Arancione (A RITROSO: da Main 35 entri a sinistra a ritroso!)
@@ -370,6 +385,7 @@
                 mainArrowDir: 'right',
                 mainColorKey: 'main',
                 isTrap: true,
+                stepDelta: -18,
                 label: isEn ? 'Orange Detour reverse (Trap!)' : 'Allungatoia a ritroso'
             },
             // 3c. Bivio Azzurro da Allungatoia Arancione (casella 8: svolta in giù verso il basso!)
@@ -383,20 +399,22 @@
                 branchColorKey: 'blue_shortcut',
                 mainArrowDir: 'right',
                 mainColorKey: 'orange_detour',
-                label: isEn ? 'Blue Shortcut (forward to 70)' : 'Scorciatoia Azzurra (avanti verso 70)'
+                stepDelta: 26,
+                label: isEn ? 'Blue Shortcut (forward to 69)' : 'Scorciatoia Azzurra (avanti verso 69)'
             },
-            // 3d. Confluenza Azzurra a ritroso da Main[70] (se atterri su Main 70, puoi risalire l'azzurro verso arancione 8!)
+            // 3d. Confluenza Azzurra a ritroso da Main[69] (se atterri su Main 69, puoi risalire l'azzurro verso arancione 8!)
             {
                 fromTrack: 'main',
-                fromStep: 70,
+                fromStep: 69,
                 toTrack: 'blue_shortcut',
                 toStep: bluePoints.length - 1,
                 stepDir: -1,
                 branchArrowDir: 'left',
                 branchColorKey: 'blue_shortcut',
-                mainArrowDir: 'right',
+                mainArrowDir: 'down',
                 mainColorKey: 'main',
                 isTrap: true,
+                stepDelta: -36,
                 label: isEn ? 'Blue Shortcut reverse (Trap towards Orange!)' : 'Scorciatoia Azzurra a ritroso (Trappola verso Arancione!)'
             },
             // 3e. Incrocio a 4 vie (Casella 32: incrocio tra Main e Allungatoia Arancione)
@@ -413,6 +431,7 @@
                 is4Way: true,
                 mainNext: { track: 'main', step: 33, dir: 1 },
                 branchNext: { track: 'orange_detour', step: 4, dir: 1 },
+                stepDelta: -3,
                 label: isEn ? '4-Way Crossing (32)' : 'Incrocio a 4 vie (32)'
             },
             // 3f. Incrocio a 4 vie arrivando dal ramo arancione (step 3)
@@ -430,6 +449,7 @@
                 skipDrawing: true,
                 mainNext: { track: 'main', step: 33, dir: 1 },
                 branchNext: { track: 'orange_detour', step: 4, dir: 1 },
+                stepDelta: 5,
                 label: isEn ? '4-Way Crossing (from Orange)' : 'Incrocio a 4 vie (dall\'Arancione)'
             },
             // 4. Inizio Trappola Rossa (in avanti per riportare indietro a 17)
@@ -444,6 +464,7 @@
                 mainArrowDir: 'right',
                 mainColorKey: 'main',
                 isTrap: true,
+                stepDelta: -36,
                 label: isEn ? 'Red Trap (return to 17!)' : 'Trappola Rossa (ritorno a 17!)'
             },
             // 4b. Trappola Rossa (A RITROSO da 17: salto in avanti verso 50!)
@@ -457,6 +478,7 @@
                 branchColorKey: 'red_trap',
                 mainArrowDir: 'left',
                 mainColorKey: 'main',
+                stepDelta: 30,
                 label: isEn ? 'Red Shortcut forward (leap to 50!)' : 'Scorciatoia Rossa in avanti (salto a 50!)'
             },
             // 5. Inizio Turbo Ciano (in avanti)
@@ -470,6 +492,7 @@
                 branchColorKey: 'cyan_turbo',
                 mainArrowDir: 'left',
                 mainColorKey: 'main',
+                stepDelta: 10,
                 label: isEn ? 'Cyan Turbo (forward)' : 'Turbo Ciano (avanti)'
             },
             // 5b. Turbo Ciano (A RITROSO da 91: trappola che riporta a 65!)
@@ -484,6 +507,7 @@
                 mainArrowDir: 'up',
                 mainColorKey: 'main',
                 isTrap: true,
+                stepDelta: -42,
                 label: isEn ? 'Cyan Turbo reverse (Trap!)' : 'Turbo Ciano a ritroso (Trappola!)'
             },
             // 5c. Incrocio a 4 vie (Casella 55: incrocio tra Main e Turbo Ciano)
@@ -500,6 +524,7 @@
                 is4Way: true,
                 mainNext: { track: 'main', step: 56, dir: 1 },
                 branchNext: { track: 'cyan_turbo', step: 10, dir: 1 },
+                stepDelta: 31,
                 label: isEn ? '4-Way Crossing (55)' : 'Incrocio a 4 vie (55)'
             },
             // 5d. Incrocio a 4 vie arrivando dal Turbo Ciano (step 9)
@@ -517,6 +542,7 @@
                 skipDrawing: true,
                 mainNext: { track: 'main', step: 56, dir: 1 },
                 branchNext: { track: 'cyan_turbo', step: 10, dir: 1 },
+                stepDelta: -30,
                 label: isEn ? '4-Way Crossing (from Cyan Turbo)' : 'Incrocio a 4 vie (dal Turbo Ciano)'
             },
             // 6. Inizio Raccordo Verde Lime (in avanti da Main 53 verso 97)
@@ -530,6 +556,7 @@
                 branchColorKey: 'lime_express',
                 mainArrowDir: 'down',
                 mainColorKey: 'main',
+                stepDelta: 34,
                 label: isEn ? 'Lime Express Link (towards 97!)' : 'Raccordo Lime Express (verso 97!)'
             },
             // 6b. Rientro Verde Lime a ritroso (da Main 97 a ritroso verso 53!)
@@ -544,6 +571,7 @@
                 mainArrowDir: 'up',
                 mainColorKey: 'main',
                 isTrap: true,
+                stepDelta: -54,
                 label: isEn ? 'Lime Express reverse (Trap towards 53!)' : 'Lime Express a ritroso (Trappola verso 53!)'
             },
             // 7. Inizio Scorciatoia Rosa (da Main 57 a 81)
@@ -557,6 +585,7 @@
                 branchColorKey: 'pink_express',
                 mainArrowDir: 'left',
                 mainColorKey: 'main',
+                stepDelta: 22,
                 label: isEn ? 'Pink Shortcut (towards 81!)' : 'Scorciatoia Rosa (verso 81!)'
             },
             // 7b. Rientro Scorciatoia Rosa a ritroso (da Main 81 verso 57)
@@ -571,6 +600,7 @@
                 mainArrowDir: 'right',
                 mainColorKey: 'main',
                 isTrap: true,
+                stepDelta: -26,
                 label: isEn ? 'Pink Shortcut reverse (Trap towards 57!)' : 'Scorciatoia Rosa a ritroso (Trappola verso 57!)'
             },
             // 8. Inizio Raccordo Ambra (da Main 38 a 68)
@@ -584,6 +614,7 @@
                 branchColorKey: 'amber_link',
                 mainArrowDir: 'up',
                 mainColorKey: 'main',
+                stepDelta: 26,
                 label: isEn ? 'Amber Link (towards 68!)' : 'Raccordo Ambra (verso 68!)'
             },
             // 8b. Rientro Raccordo Ambra a ritroso (da Main 68 verso 38)
@@ -598,6 +629,7 @@
                 mainArrowDir: 'down',
                 mainColorKey: 'main',
                 isTrap: true,
+                stepDelta: -34,
                 label: isEn ? 'Amber Link reverse (Trap towards 38!)' : 'Raccordo Ambra a ritroso (Trappola verso 38!)'
             },
             // 9. Inizio Discesa Turchese (da Main 15 a 52)
@@ -611,6 +643,7 @@
                 branchColorKey: 'teal_direct',
                 mainArrowDir: 'down',
                 mainColorKey: 'main',
+                stepDelta: 30,
                 label: isEn ? 'Teal Direct Drop (towards 52!)' : 'Discesa Turchese (verso 52!)'
             },
             // 9b. Rientro Discesa Turchese a ritroso (da Main 52 verso 15)
@@ -625,6 +658,7 @@
                 mainArrowDir: 'right',
                 mainColorKey: 'main',
                 isTrap: true,
+                stepDelta: -44,
                 label: isEn ? 'Teal Direct Drop reverse (Trap towards 15!)' : 'Discesa Turchese a ritroso (Trappola verso 15!)'
             },
             // 10. Inizio Ponte Corallo (da Turchese 2 a Verde Chiaro / Lime 7)
@@ -638,6 +672,7 @@
                 branchColorKey: 'coral_bridge',
                 mainArrowDir: 'down',
                 mainColorKey: 'teal_direct',
+                stepDelta: 42,
                 label: isEn ? 'Coral Bridge (from Teal to Lime)' : 'Ponte Corallo (da Turchese a Lime)'
             },
             // 10b. Rientro Ponte Corallo a ritroso (da Lime 7 verso Turchese 2)
@@ -652,6 +687,7 @@
                 mainArrowDir: 'right',
                 mainColorKey: 'lime_express',
                 isTrap: true,
+                stepDelta: -42,
                 label: isEn ? 'Coral Bridge reverse (Trap towards Teal!)' : 'Ponte Corallo a ritroso (Trappola verso Turchese!)'
             }
         ];
@@ -769,22 +805,47 @@
             osc.stop(now + 0.36);
         },
 
-        playVictory() {
-            if (!this.isEnabled || !this.ctx) return;
-            const notes = [523.25, 659.25, 783.99, 1046.50];
-            const now = this.ctx.currentTime;
-            notes.forEach((freq, idx) => {
-                const osc = this.ctx.createOscillator();
-                const gain = this.ctx.createGain();
-                osc.type = 'triangle';
-                osc.frequency.setValueAtTime(freq, now + idx * 0.12);
-                gain.gain.setValueAtTime(0.3, now + idx * 0.12);
-                gain.gain.exponentialRampToValueAtTime(0.01, now + idx * 0.12 + 0.3);
-                osc.connect(gain);
-                gain.connect(this.ctx.destination);
-                osc.start(now + idx * 0.12);
-                osc.stop(now + idx * 0.12 + 0.32);
+        audioCache: {},
+
+        playAudioFile(src) {
+            if (!this.isEnabled) return;
+            try {
+                if (!this.audioCache[src]) {
+                    this.audioCache[src] = new Audio(src);
+                }
+                const audio = this.audioCache[src];
+                audio.currentTime = 0;
+                audio.play().catch(() => {});
+            } catch (e) {}
+        },
+
+        stopAllAudio() {
+            Object.values(this.audioCache).forEach(a => {
+                try {
+                    a.pause();
+                    a.currentTime = 0;
+                } catch (e) {}
             });
+        },
+
+        playHandWin() {
+            this.stopAllAudio();
+            this.playAudioFile('sounds/scala40/tada.mp3');
+        },
+
+        playHandLoss() {
+            this.stopAllAudio();
+            this.playAudioFile('sounds/scala40/haiperso.mp3');
+        },
+
+        playMatchWin() {
+            this.stopAllAudio();
+            this.playAudioFile('sounds/scala40/applause.mp3');
+        },
+
+        playMatchLoss() {
+            this.stopAllAudio();
+            this.playAudioFile('sounds/scala40/lacrimosa.mp3');
         }
     };
 
@@ -1011,6 +1072,7 @@
         },
 
         startNewGame(playersConfig, isNextMatchOfTournament = false) {
+            SoundEngine.stopAllAudio();
             if (!isNextMatchOfTournament) {
                 this.tournament.currentMatch = 1;
                 this.tournament.scores = {};
@@ -1030,6 +1092,8 @@
                 lastBlackCell: 0,
                 trackId: 'main',
                 stepIdx: 0,
+                prevTrackId: 'main',
+                prevStepIdx: 0,
                 renderX: 0,
                 renderY: 0,
                 headingAngle: 0,
@@ -1049,6 +1113,15 @@
             this.isRolling = false;
             this.isMoving = false;
             this.isGameOver = false;
+
+            const btnRoll = document.getElementById('btnRollDice');
+            if (btnRoll) {
+                btnRoll.style.background = '';
+                btnRoll.style.borderColor = '';
+                btnRoll.disabled = false;
+                btnRoll.textContent = TXT.rollDiceBtn;
+            }
+
             this.eventLogs = [];
             const miniLog = document.getElementById('miniCronacaBox');
             if (miniLog) miniLog.innerHTML = '';
@@ -1180,7 +1253,11 @@
         },
 
         startHoldingRoll() {
-            if (this.isRolling || this.isMoving || this.isGameOver) return;
+            if (this.isRolling || this.isMoving) return;
+            if (this.isGameOver) {
+                this.openModal('finepartita');
+                return;
+            }
             const current = this.players[this.currentPlayerIdx];
             if (current && current.isBot && !this.autoPlay) return;
 
@@ -1319,7 +1396,6 @@
 
         executeMove(player, totalSteps, isDouble) {
             this.isMoving = true;
-            player.originTrackId = player.trackId;
             let stepsRemaining = totalSteps;
             const stepDuration = 180;
 
@@ -1328,6 +1404,9 @@
                     this.finishMove(player, isDouble);
                     return;
                 }
+
+                const prevTrack = player.trackId;
+                const prevStep = player.stepIdx;
 
                 let nextTrackId = player.trackId;
                 let nextStep;
@@ -1344,15 +1423,42 @@
                     nextStep = player.stepIdx + nextDir;
 
                     if (nextDir === 1) {
-                        if (nextStep >= currentTrack.points.length) {
-                            if (currentTrack.isFinish) {
-                                player.stepIdx = currentTrack.points.length - 1;
-                                this.handleVictory(player);
-                                return;
-                            } else if (currentTrack.confluence) {
+                        if (currentTrack.isFinish && nextStep >= currentTrack.points.length - 1) {
+                            player.prevTrackId = prevTrack;
+                            player.prevStepIdx = prevStep;
+                            player.trackId = nextTrackId;
+                            player.stepIdx = currentTrack.points.length - 1;
+                            player.stepDir = nextDir;
+                            player.headingAngle = this.calculateHeading(player);
+                            player.lastBlackCell = player.stepIdx;
+
+                            SoundEngine.playStep();
+                            this.updatePlayersUI();
+                            this.updateHeaderUI();
+                            this.handleVictory(player);
+                            return;
+                        } else if (nextStep >= currentTrack.points.length) {
+                            if (currentTrack.confluence) {
                                 nextTrackId = currentTrack.confluence.targetTrack;
                                 nextStep = currentTrack.confluence.targetStep;
                                 nextDir = currentTrack.confluence.targetDir || 1;
+
+                                const confTrack = this.tracksData.tracks[nextTrackId];
+                                if (confTrack && confTrack.isFinish && nextStep >= confTrack.points.length - 1) {
+                                    player.prevTrackId = prevTrack;
+                                    player.prevStepIdx = prevStep;
+                                    player.trackId = nextTrackId;
+                                    player.stepIdx = confTrack.points.length - 1;
+                                    player.stepDir = nextDir;
+                                    player.headingAngle = this.calculateHeading(player);
+                                    player.lastBlackCell = player.stepIdx;
+
+                                    SoundEngine.playStep();
+                                    this.updatePlayersUI();
+                                    this.updateHeaderUI();
+                                    this.handleVictory(player);
+                                    return;
+                                }
                             }
                         }
                     } else if (nextDir === -1) {
@@ -1369,6 +1475,9 @@
                     }
                 }
 
+                player.prevTrackId = prevTrack;
+                player.prevStepIdx = prevStep;
+
                 player.trackId = nextTrackId;
                 player.stepIdx = nextStep;
                 player.stepDir = nextDir;
@@ -1383,6 +1492,11 @@
                 this.updatePlayersUI();
                 this.updateHeaderUI();
 
+                if (player.trackId === 'main' && player.stepIdx >= 99) {
+                    this.handleVictory(player);
+                    return;
+                }
+
                 setTimeout(advanceOneStep, stepDuration);
             };
 
@@ -1391,6 +1505,12 @@
 
         finishMove(player, isDouble) {
             this.isMoving = false;
+
+            // Se la pedina si trova sul traguardo finale (casella 99), vittoria immediata
+            if (player.trackId === 'main' && player.stepIdx >= 99) {
+                this.handleVictory(player);
+                return;
+            }
 
             // Controlla se la pedina si è fermata esattamente su un incrocio/bivio
             const junction = this.tracksData.junctions.find(
@@ -1410,9 +1530,9 @@
                 const mainNext = normalizeRoute(junction.mainNext) || { toTrack: junction.fromTrack, toStep: junction.fromStep + 1, stepDir: 1 };
                 const branchNext = normalizeRoute(junction.branchNext) || { toTrack: junction.toTrack, toStep: junction.toStep, stepDir: junction.stepDir || 1 };
 
-                // Determina quale rotta appartiene al proprio tracciato di provenienza e quale al tracciato incrociato
-                const originTrack = player.originTrackId || player.trackId;
-                const isFromMainTrack = (originTrack === junction.mainColorKey || (originTrack === 'main' && !junction.skipDrawing));
+                // La provenienza effettiva è il colore/tracciato dell'ultima casella immediatamente precedente
+                const enterFromTrack = player.prevTrackId || player.trackId;
+                const isFromMainTrack = (enterFromTrack === junction.mainColorKey || (enterFromTrack === 'main' && !junction.skipDrawing) || (enterFromTrack === junction.fromTrack));
                 const ownRoute = isFromMainTrack ? mainNext : branchNext;
                 const crossRoute = isFromMainTrack ? branchNext : mainNext;
 
@@ -1428,13 +1548,23 @@
 
                 SoundEngine.playJunction(junction.isTrap);
 
+                // Mostra il badge/sprite fluttuante quando si imbocca la deviazione (uscita da un tracciato)
+                if (chosen.toTrack !== player.trackId && junction.stepDelta !== undefined) {
+                    this.spawnStepDeltaSprite(player.trackId, player.stepIdx, junction.stepDelta);
+                }
+
+                const displayDelta = -junction.stepDelta;
+                const deltaTag = (junction.stepDelta !== undefined && chosen.toTrack !== player.trackId)
+                    ? ` (${displayDelta > 0 ? '+' : ''}${displayDelta} ${isEn ? (Math.abs(displayDelta) === 1 ? 'step' : 'steps') : (Math.abs(displayDelta) === 1 ? 'passo' : 'passi')})`
+                    : '';
+
                 const modeLabel = (this.options.branchExitMode === 'own') ? TXT.ownArrow : TXT.crossArrow;
                 if (junction.isTrap) {
-                    this.logEvent(`⚠️ OUCH! ${player.name} ${TXT.isAtJunction} ${junction.label}! ${TXT.willFollow} ${modeLabel}`, 'danger');
+                    this.logEvent(`⚠️ OUCH! ${player.name} ${TXT.isAtJunction} ${junction.label}${deltaTag}! ${TXT.willFollow} ${modeLabel}`, 'danger');
                 } else if (junction.is4Way) {
-                    this.logEvent(`✨ ${isEn ? '4-WAY CROSSING!' : 'INCROCIO 4 VIE!'} ${player.name} ${TXT.isAtJunction} ${junction.label}! ${TXT.willFollow} ${modeLabel}`, 'highlight');
+                    this.logEvent(`✨ ${isEn ? '4-WAY CROSSING!' : 'INCROCIO 4 VIE!'} ${player.name} ${TXT.isAtJunction} ${junction.label}${deltaTag}! ${TXT.willFollow} ${modeLabel}`, 'highlight');
                 } else {
-                    this.logEvent(`✨ ${isEn ? 'JUNCTION!' : 'BIVIO!'} ${player.name} ${TXT.isAtJunction} ${junction.label}! ${TXT.willFollow} ${modeLabel}`, 'highlight');
+                    this.logEvent(`✨ ${isEn ? 'JUNCTION!' : 'BIVIO!'} ${player.name} ${TXT.isAtJunction} ${junction.label}${deltaTag}! ${TXT.willFollow} ${modeLabel}`, 'highlight');
                 }
                 this.updatePlayersUI();
             }
@@ -1466,12 +1596,14 @@
             this.isGameOver = true;
             this.isMoving = false;
             winner.isWinner = true;
-            SoundEngine.playVictory();
 
             const modalMsg = document.getElementById('fine-messaggio');
             const modalDetails = document.getElementById('fine-dettagli');
             const leaderboardBox = document.getElementById('fine-classifica-torneo');
             const btnNextMatch = document.getElementById('btn-prossima-manche');
+
+            const hasHuman = this.players.some(p => !p.isBot);
+            const isHumanWinner = !winner.isBot;
 
             if (this.tournament.enabled) {
                 // Al vincitore vengono assegnati 100 punti
@@ -1494,22 +1626,45 @@
                 const topPlayer = sortedPlayers[0];
                 const topScore = this.tournament.scores[topPlayer.name] || 0;
                 const isChampion = topScore >= this.tournament.targetPoints;
+                const isHumanChampion = !topPlayer.isBot;
 
                 if (isChampion) {
                     this.tournament.isFinished = true;
                     this.tournament.champion = topPlayer;
-                    if (modalMsg) modalMsg.textContent = TXT.tournamentChampionTitle;
-                    if (modalDetails) modalDetails.textContent = `🏅 ${topPlayer.name.toUpperCase()} ${TXT.tournamentChampionDetails.replace('%s', topScore)}`;
                     if (btnNextMatch) btnNextMatch.style.display = 'none';
-                    this.logEvent(`👑 ${topPlayer.name} ${TXT.tournamentChampionLog.replace('%s', topScore)}`, 'success');
+
+                    if (hasHuman && !isHumanChampion) {
+                        // Partita persa dall'umano (vinta dal bot)
+                        if (modalMsg) modalMsg.textContent = TXT.tournamentLossTitle;
+                        if (modalDetails) modalDetails.textContent = `💀 ${topPlayer.name.toUpperCase()} ${TXT.tournamentLossDetails.replace('%s', topScore)}`;
+                        this.logEvent(`💀 ${topPlayer.name} ${TXT.tournamentChampionLog.replace('%s', topScore)}`, 'warning');
+                        SoundEngine.playMatchLoss();
+                    } else {
+                        // Partita vinta dall'umano (o partita fra bot)
+                        if (modalMsg) modalMsg.textContent = TXT.tournamentChampionTitle;
+                        if (modalDetails) modalDetails.textContent = `🏅 ${topPlayer.name.toUpperCase()} ${TXT.tournamentChampionDetails.replace('%s', topScore)}`;
+                        this.logEvent(`👑 ${topPlayer.name} ${TXT.tournamentChampionLog.replace('%s', topScore)}`, 'success');
+                        SoundEngine.playMatchWin();
+                    }
                 } else {
-                    if (modalMsg) modalMsg.textContent = TXT.legVictoryTitle.replace('%m', this.tournament.currentMatch);
-                    if (modalDetails) modalDetails.textContent = `🎉 ${winner.name} ${TXT.legVictoryDetails}`;
                     if (btnNextMatch) {
                         btnNextMatch.style.display = 'inline-block';
                         btnNextMatch.textContent = TXT.nextLegBtn.replace('%m', this.tournament.currentMatch + 1);
                     }
-                    this.logEvent(TXT.legFinishedLog.replace('%m', this.tournament.currentMatch).replace('%w', winner.name), 'success');
+
+                    if (hasHuman && !isHumanWinner) {
+                        // Mano persa dall'umano (vinta dal bot)
+                        if (modalMsg) modalMsg.textContent = TXT.legLossTitle.replace('%m', this.tournament.currentMatch);
+                        if (modalDetails) modalDetails.textContent = `🤖 ${winner.name} ${TXT.legLossDetails}`;
+                        this.logEvent(TXT.legFinishedLog.replace('%m', this.tournament.currentMatch).replace('%w', winner.name), 'warning');
+                        SoundEngine.playHandLoss();
+                    } else {
+                        // Mano vinta dall'umano (o mano fra bot)
+                        if (modalMsg) modalMsg.textContent = TXT.legVictoryTitle.replace('%m', this.tournament.currentMatch);
+                        if (modalDetails) modalDetails.textContent = `🎉 ${winner.name} ${TXT.legVictoryDetails}`;
+                        this.logEvent(TXT.legFinishedLog.replace('%m', this.tournament.currentMatch).replace('%w', winner.name), 'success');
+                        SoundEngine.playHandWin();
+                    }
                 }
 
                 // Renderizza la tabella classifica del torneo
@@ -1554,11 +1709,20 @@
                     leaderboardBox.innerHTML = tableHtml;
                 }
             } else {
-                if (modalMsg) modalMsg.textContent = TXT.singleWinTitle.replace('%w', winner.name.toUpperCase());
-                if (modalDetails) modalDetails.textContent = TXT.singleWinDetails;
-                if (leaderboardBox) leaderboardBox.style.display = 'none';
                 if (btnNextMatch) btnNextMatch.style.display = 'none';
-                this.logEvent(TXT.singleWinLog.replace('%w', winner.name), 'success');
+                if (leaderboardBox) leaderboardBox.style.display = 'none';
+
+                if (hasHuman && !isHumanWinner) {
+                    if (modalMsg) modalMsg.textContent = TXT.singleLossTitle;
+                    if (modalDetails) modalDetails.textContent = TXT.singleLossDetails.replace('%w', winner.name);
+                    this.logEvent(TXT.singleLossLog.replace('%w', winner.name), 'warning');
+                    SoundEngine.playMatchLoss();
+                } else {
+                    if (modalMsg) modalMsg.textContent = TXT.singleWinTitle.replace('%w', winner.name.toUpperCase());
+                    if (modalDetails) modalDetails.textContent = TXT.singleWinDetails;
+                    this.logEvent(TXT.singleWinLog.replace('%w', winner.name), 'success');
+                    SoundEngine.playMatchWin();
+                }
             }
 
             this.openModal('finepartita');
@@ -1592,11 +1756,11 @@
                     const score = this.tournament.enabled ? (this.tournament.scores[p.name] || 0) : (p.score || 0);
                     const sName = getShortName(p.name);
                     return `<span class="player-score-chip" style="color: ${p.color};">
-                        <span class="player-dot" style="background: ${p.color};"></span>${sName}: <b style="color: #ffd700;">${score}</b> pt
+                        <span class="player-dot" style="background: ${p.color};"></span>${sName}: <b style="color: #0f172a;">${score}</b> pt
                     </span>`;
-                }).join('<span style="color: rgba(255,255,255,0.3); margin: 0 2px;">|</span>');
+                }).join('<span style="color: rgba(0,0,0,0.22); margin: 0 2px;">|</span>');
 
-                const prefix = this.tournament.enabled ? `<span style="color: #ffd700; font-weight: bold; margin-right: 2px;">${TXT.headerMatchPrefix.replace('%m', this.tournament.currentMatch)}</span> ` : '';
+                const prefix = this.tournament.enabled ? `<span style="color: #b45309; font-weight: bold; margin-right: 2px;">${TXT.headerMatchPrefix.replace('%m', this.tournament.currentMatch)}</span> ` : '';
                 totalBox.innerHTML = prefix + totalItems;
             }
 
@@ -1605,11 +1769,11 @@
                     const blackVal = (p.lastBlackCell !== undefined) ? p.lastBlackCell : 0;
                     const sName = getShortName(p.name);
                     return `<span class="player-score-chip" style="color: ${p.color};">
-                        <span class="player-dot" style="background: ${p.color};"></span>${sName}: <b style="color: #fff;">${blackVal}</b>
+                        <span class="player-dot" style="background: ${p.color};"></span>${sName}: <b style="color: #0f172a;">${blackVal}</b>
                     </span>`;
-                }).join('<span style="color: rgba(255,255,255,0.3); margin: 0 2px;">|</span>');
+                }).join('<span style="color: rgba(0,0,0,0.22); margin: 0 2px;">|</span>');
 
-                blackBox.innerHTML = `<span style="color: #94a3b8; font-weight: bold; margin-right: 2px;">${TXT.headerLastBlack}</span> ` + blackItems;
+                blackBox.innerHTML = `<span style="color: #475569; font-weight: bold; margin-right: 2px;">${TXT.headerLastBlack}</span> ` + blackItems;
             }
         },
 
@@ -1617,14 +1781,22 @@
             const btnRoll = document.getElementById('btnRollDice');
 
             if (this.isGameOver) {
-                if (btnRoll) btnRoll.disabled = true;
+                if (btnRoll) {
+                    btnRoll.disabled = false;
+                    btnRoll.classList.remove('holding');
+                    btnRoll.style.background = 'linear-gradient(135deg, #ca8a04, #a16207)';
+                    btnRoll.style.borderColor = '#ffd700';
+                    btnRoll.textContent = TXT.backToResultsBtn;
+                }
                 this.updateHeaderUI();
+                this.updatePlayersUI();
                 return;
             }
 
-            const current = this.players[this.currentPlayerIdx];
-
             if (btnRoll) {
+                btnRoll.style.background = '';
+                btnRoll.style.borderColor = '';
+                const current = this.players[this.currentPlayerIdx];
                 if (current.isBot && !this.autoPlay) {
                     btnRoll.disabled = true;
                     btnRoll.textContent = TXT.computerWaiting;
@@ -1687,10 +1859,12 @@
             ctx.fillRect(0, 0, w, h);
 
             this.drawGridBackground(ctx, w, h);
+            this.drawFinishDistanceHistograms(ctx);
             this.drawAllTracks(ctx);
             this.drawJunctionArrows(ctx); // Frecce sottili a penna
             this.drawStartFinishMarkers(ctx);
             this.drawPlayers(ctx);
+            this.drawFloatingSprites(ctx);
         },
 
         drawGridBackground(ctx, w, h) {
@@ -2002,6 +2176,247 @@
                 ctx.fillText(p.name.charAt(0).toUpperCase(), x, y);
                 ctx.restore();
             });
+        },
+
+        floatingSprites: [],
+
+        spawnStepDeltaSprite(trackId, stepIdx, delta) {
+            if (delta === 0 || delta === undefined) return;
+            const pos = this.getCellCenterPx(trackId, stepIdx);
+            if (!this.floatingSprites) this.floatingSprites = [];
+            const isGain = (delta > 0);
+            // Segno invertito come richiesto (es. -18 per 18 passi risparmiati/guadagnati, +36 per trappola/allungatoia)
+            const displayDelta = -delta;
+            const sign = (displayDelta > 0) ? '+' : '';
+            const stepWord = isEn ? (Math.abs(delta) === 1 ? 'step' : 'steps') : (Math.abs(delta) === 1 ? 'passo' : 'passi');
+            const icon = isGain ? '⚡' : '⚠️';
+            const text = `${icon} ${sign}${displayDelta} ${stepWord}`;
+
+            this.floatingSprites.push({
+                x: pos.x,
+                y: pos.y,
+                text: text,
+                isGain: isGain,
+                startTime: performance.now(),
+                endTime: performance.now() + 2400
+            });
+        },
+
+        drawFloatingSprites(ctx) {
+            if (!this.floatingSprites || this.floatingSprites.length === 0) return;
+            const now = performance.now();
+            this.floatingSprites = this.floatingSprites.filter(s => now < s.endTime);
+
+            this.floatingSprites.forEach(s => {
+                const elapsed = now - s.startTime;
+                const total = s.endTime - s.startTime;
+                const progress = Math.min(1, elapsed / total);
+
+                // Pop-in con lieve rimbalzo
+                let scale = 1;
+                if (progress < 0.12) {
+                    scale = 0.4 + (progress / 0.12) * 0.75;
+                } else if (progress < 0.22) {
+                    scale = 1.15 - ((progress - 0.12) / 0.10) * 0.15;
+                }
+
+                // Dissolvenza finale nell'ultimo 25% del tempo
+                let alpha = 1;
+                if (progress > 0.75) {
+                    alpha = 1 - (progress - 0.75) / 0.25;
+                }
+
+                // Fluttuazione verso l'alto
+                const curY = s.y - (progress * 38);
+                const curX = s.x;
+
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, Math.min(1, alpha));
+                ctx.translate(curX, curY);
+                ctx.scale(scale, scale);
+
+                ctx.font = 'bold 12.5px system-ui, -apple-system, sans-serif';
+                const metrics = ctx.measureText(s.text);
+                const padX = 10;
+                const badgeW = metrics.width + padX * 2;
+                const badgeH = 24;
+                const bx = -badgeW / 2;
+                const by = -badgeH - 14;
+
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.45)';
+                ctx.shadowBlur = 8;
+                ctx.shadowOffsetY = 3;
+
+                // Corpo del badge con bordi arrotondati
+                ctx.beginPath();
+                const r = 12;
+                if (ctx.roundRect) {
+                    ctx.roundRect(bx, by, badgeW, badgeH, r);
+                } else {
+                    ctx.moveTo(bx + r, by);
+                    ctx.arcTo(bx + badgeW, by, bx + badgeW, by + badgeH, r);
+                    ctx.arcTo(bx + badgeW, by + badgeH, bx, by + badgeH, r);
+                    ctx.arcTo(bx, by + badgeH, bx, by, r);
+                    ctx.arcTo(bx, by, bx + badgeW, by, r);
+                    ctx.closePath();
+                }
+                ctx.fillStyle = s.isGain ? '#15803d' : '#b91c1c';
+                ctx.fill();
+
+                ctx.lineWidth = 1.8;
+                ctx.strokeStyle = s.isGain ? '#86efac' : '#fca5a5';
+                ctx.stroke();
+
+                // Freccia indicatrice a fumetto verso il basso
+                ctx.beginPath();
+                ctx.moveTo(-5, by + badgeH);
+                ctx.lineTo(0, by + badgeH + 5);
+                ctx.lineTo(5, by + badgeH);
+                ctx.closePath();
+                ctx.fillStyle = s.isGain ? '#15803d' : '#b91c1c';
+                ctx.fill();
+
+                // Testo con delta passi
+                ctx.shadowColor = 'transparent';
+                ctx.fillStyle = '#ffffff';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(s.text, 0, by + badgeH / 2);
+
+                ctx.restore();
+            });
+        },
+
+        calculateStepsFromPosition(trackId, stepIdx, stepDir = 1, visited = new Set()) {
+            if (trackId === 'main') {
+                return Math.max(0, 99 - stepIdx);
+            }
+            const key = `${trackId}:${stepIdx}:${stepDir}`;
+            if (visited.has(key)) return 99; // Evita eventuali cicli ricorsivi
+            visited.add(key);
+
+            const currentTrack = this.tracksData ? this.tracksData.tracks[trackId] : null;
+            if (!currentTrack) return 99;
+
+            let branchRemaining = 0;
+            if (stepDir === 1) {
+                branchRemaining = Math.max(0, currentTrack.points.length - 1 - stepIdx);
+                if (currentTrack.confluence) {
+                    const conf = currentTrack.confluence;
+                    if (conf.targetTrack === 'main') {
+                        return Math.max(0, branchRemaining + 1 + (99 - conf.targetStep));
+                    } else {
+                        // Ramo secondario (es. ponte corallo -> lime express)
+                        const nextSteps = this.calculateStepsFromPosition(conf.targetTrack, conf.targetStep, conf.targetDir || 1, visited);
+                        return Math.max(0, branchRemaining + 1 + nextSteps);
+                    }
+                }
+            } else {
+                // Percorso a ritroso (trappola)
+                branchRemaining = Math.max(0, stepIdx);
+                if (currentTrack.startConfluence) {
+                    const conf = currentTrack.startConfluence;
+                    if (conf.targetTrack === 'main') {
+                        return Math.max(0, branchRemaining + 1 + (99 - conf.targetStep));
+                    } else {
+                        const nextSteps = this.calculateStepsFromPosition(conf.targetTrack, conf.targetStep, conf.targetDir || 1, visited);
+                        return Math.max(0, branchRemaining + 1 + nextSteps);
+                    }
+                }
+            }
+
+            return 99;
+        },
+
+        getStepsToFinish(player) {
+            if (player.isWinner || (player.trackId === 'main' && player.stepIdx >= 99)) return 0;
+
+            // Se la pedina si trova su un bivio e ha già programmato la deviazione (nextBranch)
+            if (player.nextBranch) {
+                const stepsFromBranch = this.calculateStepsFromPosition(
+                    player.nextBranch.toTrack,
+                    player.nextBranch.toStep,
+                    player.nextBranch.stepDir || 1
+                );
+                return Math.max(0, 1 + stepsFromBranch);
+            }
+
+            return this.calculateStepsFromPosition(player.trackId, player.stepIdx, player.stepDir || 1);
+        },
+
+        drawFinishDistanceHistograms(ctx) {
+            if (!this.players || this.players.length === 0) return;
+
+            const x = 15;
+            const y = 604;
+            const w = 310;
+            const h = 88;
+            const r = 6;
+
+            ctx.save();
+
+            // Sfondo card istogrammi
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.08)';
+            ctx.shadowBlur = 6;
+            ctx.shadowOffsetY = 2;
+
+            ctx.beginPath();
+            if (ctx.roundRect) {
+                ctx.roundRect(x, y, w, h, r);
+            } else {
+                ctx.rect(x, y, w, h);
+            }
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.94)';
+            ctx.fill();
+
+            ctx.lineWidth = 1.2;
+            ctx.strokeStyle = '#cbd5e1';
+            ctx.stroke();
+
+            ctx.shadowColor = 'transparent';
+
+            const n = this.players.length;
+            const padX = 14;
+            const padY = 12;
+            const barX = x + padX;
+            const barW = w - (padX * 2);
+            const availH = h - (padY * 2);
+            const rowHeight = availH / n;
+            const barH = (n === 4) ? 10 : (n === 3 ? 12 : 14);
+
+            this.players.forEach((p, idx) => {
+                const rowY = y + padY + idx * rowHeight + (rowHeight / 2);
+                const barY = rowY - barH / 2;
+                const stepsLeft = this.getStepsToFinish(p);
+                // La barra mostra quanti passi mancano al traguardo (a inizio mano è piena, man mano che si avanza si accorcia)
+                const missingRatio = Math.max(0, Math.min(1, stepsLeft / 99));
+                const fillW = missingRatio * barW;
+
+                // 1. Sfondo tracciato barra
+                ctx.beginPath();
+                if (ctx.roundRect) {
+                    ctx.roundRect(barX, barY, barW, barH, barH / 2);
+                } else {
+                    ctx.rect(barX, barY, barW, barH);
+                }
+                ctx.fillStyle = '#e2e8f0';
+                ctx.fill();
+
+                // 2. Barra riempita (passi mancanti) col colore del giocatore
+                if (fillW > 0) {
+                    const cornerR = Math.min(barH / 2, fillW / 2);
+                    ctx.beginPath();
+                    if (ctx.roundRect) {
+                        ctx.roundRect(barX, barY, fillW, barH, cornerR);
+                    } else {
+                        ctx.rect(barX, barY, fillW, barH);
+                    }
+                    ctx.fillStyle = p.color;
+                    ctx.fill();
+                }
+            });
+
+            ctx.restore();
         }
     };
 

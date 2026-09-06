@@ -24,7 +24,7 @@
     <meta http-Equiv="Pragma" Content="no-cache">
     <meta http-Equiv="Expires" Content="0">
 
-    <link rel="stylesheet" href="scorciatoie.css?v=2.2" />
+    <link rel="stylesheet" href="scorciatoie.css?v=2.3" />
 
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
@@ -70,7 +70,7 @@
                 <!-- Real-time tournament scores horizontally on top-left -->
                 <div id="header-totale-punti" class="header-badge-group"></div>
             </div>
-            <div id="titolo-gioco">📐 Shortcuts Luciano</div>
+            <div id="titolo-gioco">Shortcuts Luciano 📐</div>
             <!-- Last black cell value on top-right -->
             <div id="header-casella-nera" class="header-badge-right"></div>
 
@@ -106,7 +106,7 @@
 
                     <button id="btnRollDice" class="btn-roll-main">🎲 ROLL DICE</button>
 
-                    <label style="display: flex; align-items: center; gap: 4px; font-size: 11px; color: #cbd5e1; cursor: pointer;">
+                    <label class="lbl-autoplay">
                         <input type="checkbox" id="chkAutoPlayMini">
                         <span>Auto-play</span>
                     </label>
@@ -125,6 +125,10 @@
 
             <!-- 1. New Game Modal -->
             <div id="modale-nuova" class="form-scorciatoie">
+                <div class="lang-switch-modale">
+                    <a href="scorciatoie.html" title="Italiano">IT</a>
+                    <a href="scorciatoie-en.html" class="active" title="English">EN</a>
+                </div>
                 <div class="form-scorciatoie-title">New Game of Shortcuts</div>
                 <div class="form-body-scroll">
                     <div class="form-row">
@@ -177,8 +181,8 @@
                             <input type="checkbox" id="chkExactFinish">
                             <span>Exact count required at finish line (bounce-back)</span>
                         </label>
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
-                            <label for="selBranchExitMode" style="font-size: 12px; color: #cbd5e1;">Stop on junctions &amp; crossings:</label>
+                        <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px; font-size: 12px;">
+                            <label for="selBranchExitMode" style="cursor: pointer;">Stop on junctions &amp; crossings:</label>
                             <select id="selBranchExitMode" style="padding: 3px 6px; font-size: 11px; border-radius: 4px;">
                                 <option value="cross" selected>Switch to intersecting track (default)</option>
                                 <option value="own">Follow own color arrow</option>
@@ -187,13 +191,16 @@
                     </div>
                 </div>
 
-                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 14px;">
-                    <button class="btn-continua" style="background: #475569; border-color: #64748b; color: white;" onclick="ScorciatoieGame.closeModals()">Cancel</button>
-                    <button class="btn-continua" id="btnStartCustomGame">Start Game / Tournament</button>
+                <div style="display: flex; align-items: center; justify-content: center; margin-top: 14px; margin-bottom: 24px; position: relative;">
+                    <button class="btn-continua" id="btnStartCustomGame" style="margin: 0 auto;">Start Game / Tournament</button>
+                    <button class="btn-continua" style="background: #475569; border-color: #64748b; color: white; position: absolute; right: 0;" onclick="ScorciatoieGame.closeModals()">Cancel</button>
                 </div>
+
+                <a href="guida-scorciatoie-en.html" target="_blank" rel="opener" id="btn-regole-modale" class="btn-angolo-modale sinistra">INSTRUCTIONS</a>
+                <a href="index-en.html" id="btn-home-modale" class="btn-angolo-modale destra home">ALL GAMES</a>
             </div>
 
-            <!-- 2. Game / Leg Over Modal (compact & wide, banner above) -->
+            <!-- 2. Game Over Modal (compact & wide, banner above) -->
             <div id="finepartita" class="form-scorciatoie modale-fine">
                 <div class="confirm-message" id="fine-messaggio" style="margin: 0 0 6px 0; line-height: 1.2;">🏆 VICTORY!</div>
                 <div id="fine-dettagli" style="color: #ffd700; font-size: 14px; font-weight: bold; text-align: center; margin-bottom: 8px; text-shadow: 1px 1px 2px #000;">
@@ -202,9 +209,9 @@
                 <!-- Dynamic Tournament Standings Table -->
                 <div id="fine-classifica-torneo" style="margin-bottom: 10px; background: rgba(15,23,42,0.7); border-radius: 6px; padding: 6px 10px; border: 1px solid rgba(255,255,255,0.1); font-size: 12px; max-height: 110px; overflow-y: auto;"></div>
                 <div class="conferma-bottoni" style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
-                    <button class="btn-continua" id="btn-prossima-manche" style="background: linear-gradient(135deg, #16a34a, #15803d); border-color: #22c55e; color: white;">NEXT LEG ➔</button>
                     <button class="btn-continua" style="background: rgba(0,40,10,0.6); color: white; border-color: #6b9b7a;" onclick="ScorciatoieGame.closeModals()">VIEW BOARD</button>
-                    <button class="btn-continua" onclick="location.reload()">NEW TOURNAMENT</button>
+                    <button class="btn-continua" id="btn-prossima-manche" style="background: linear-gradient(135deg, #ca8a04, #a16207); border-color: #ffd700; color: white;">NEXT GAME ➔</button>
+                    <button class="btn-continua" style="background: linear-gradient(135deg, #16a34a, #15803d); border-color: #22c55e; color: white;" onclick="ScorciatoieGame.requestNewGame()">NEW TOURNAMENT</button>
                 </div>
             </div>
 
@@ -217,22 +224,28 @@
                 </div>
             </div>
 
-            <!-- Legal Links (Privacy & Cookies) -->
+            <!-- Legal Links (Privacy & Cookies) and Contact -->
             <div class="legal-links-scorciatoie">
                 <a href="privacy-en.html" target="_blank">Privacy Policy</a>
                 <span class="sep">&#8226;</span>
                 <a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)">Manage Cookies</a>
                 <span class="sep">&#8226;</span>
-                <a href="aboutme-en.html" target="_blank">Write to Me</a>
+                <a href="aboutme-en.html" target="_blank" class="pulsante-link-scorc">Write to Me</a>
             </div>
 
             <!-- Other Games Links -->
             <div class="link-giochi-scorciatoie">
+                <a href="spider-en.html" class="pulsante-link-scorc">Spider</a>
+                <a href="klondike-en.html" class="pulsante-link-scorc">Klondike</a>
+                <a href="scala40-en.html" class="pulsante-link-scorc">Scala 40</a>
+                <a href="burraco-en.html" class="pulsante-link-scorc">Burraco</a>
+                <a href="machiavelli-en.html" class="pulsante-link-scorc">Machiavelli</a>
+                <a href="briscola-en.html" class="pulsante-link-scorc">Briscola</a>
+                <a href="scopa-en.html" class="pulsante-link-scorc">Scopa</a>
+                <a href="sudoku-en.html" class="pulsante-link-scorc">Sudoku</a>
                 <a href="scacchi-en.html" class="pulsante-link-scorc">Chess</a>
                 <a href="dama-en.html" class="pulsante-link-scorc">Checkers</a>
                 <a href="quadrati-en.html" class="pulsante-link-scorc">Dots &amp; Boxes</a>
-                <a href="domino-en.html" class="pulsante-link-scorc">Domino</a>
-                <a href="sudoku-en.html" class="pulsante-link-scorc">Sudoku</a>
                 <a href="index-en.html" class="pulsante-link-scorc pulsante-home-scorc">ALL GAMES</a>
             </div>
 
@@ -270,7 +283,7 @@
     <!-- Layout engine -->
     <script src="game-layout.js?v=4.6"></script>
     <!-- Shortcuts game engine -->
-    <script src="scorciatoie.js?v=2.2"></script>
+    <script src="scorciatoie.js?v=2.3"></script>
     <script>
         (function () {
             var nascosto = false;

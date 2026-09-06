@@ -24,7 +24,7 @@
     <meta http-Equiv="Pragma" Content="no-cache">
     <meta http-Equiv="Expires" Content="0">
 
-    <link rel="stylesheet" href="scorciatoie.css?v=2.2" />
+    <link rel="stylesheet" href="scorciatoie.css?v=2.3" />
 
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
@@ -70,7 +70,7 @@
                 <!-- Totale attuale punteggi in orizzontale in alto a sinistra -->
                 <div id="header-totale-punti" class="header-badge-group"></div>
             </div>
-            <div id="titolo-gioco">📐 Scorciatoie Luciano</div>
+            <div id="titolo-gioco">Scorciatoie Luciano 📐</div>
             <!-- Valore ultima casella nera toccata in alto a destra -->
             <div id="header-casella-nera" class="header-badge-right"></div>
 
@@ -106,7 +106,7 @@
 
                     <button id="btnRollDice" class="btn-roll-main">🎲 LANCIA I DADI</button>
 
-                    <label style="display: flex; align-items: center; gap: 4px; font-size: 11px; color: #cbd5e1; cursor: pointer;">
+                    <label class="lbl-autoplay">
                         <input type="checkbox" id="chkAutoPlayMini">
                         <span>Auto-play</span>
                     </label>
@@ -125,6 +125,10 @@
 
             <!-- 1. Modale Nuova Partita -->
             <div id="modale-nuova" class="form-scorciatoie">
+                <div class="lang-switch-modale">
+                    <a href="scorciatoie.html" class="active" title="Italiano">IT</a>
+                    <a href="scorciatoie-en.html" title="English">EN</a>
+                </div>
                 <div class="form-scorciatoie-title">Nuova Partita a Scorciatoie</div>
                 <div class="form-body-scroll">
                     <div class="form-row">
@@ -157,13 +161,13 @@
                         </div>
                     </div>
                     <div class="form-row" style="border-top: 1px solid rgba(255,255,255,0.15); padding-top: 8px;">
-                        <label class="form-label-title" for="selTournamentTarget">Modalità &amp; Obiettivo Torneo:</label>
+                        <label class="form-label-title" for="selTournamentTarget">Modalità &amp; Obiettivo Partita:</label>
                         <select id="selTournamentTarget" style="padding: 5px; border-radius: 4px; width: 100%; font-size: 12px;">
-                            <option value="1000" selected>🏆 Torneo a 1000 Punti (Vince chi arriva prima a 1000 pt - 100 pt a vittoria)</option>
-                            <option value="500">🏆 Torneo a 500 Punti (5 vittorie)</option>
-                            <option value="300">🏆 Torneo Sprint a 300 Punti (3 vittorie)</option>
-                            <option value="2000">🏆 Torneo Marathon a 2000 Punti</option>
-                            <option value="0">🎲 Partita Singola (Senza punteggio cumulativo)</option>
+                            <option value="1000" selected>🏆 Partita a 1000 Punti (Vince chi arriva prima a 1000 pt - 100 pt a vittoria)</option>
+                            <option value="500">🏆 Partita a 500 Punti (5 vittorie)</option>
+                            <option value="300">🏆 Partita Sprint a 300 Punti (3 vittorie)</option>
+                            <option value="2000">🏆 Partita Marathon a 2000 Punti</option>
+                            <option value="0">🎲 Mano Singola (Senza punteggio cumulativo)</option>
                         </select>
                     </div>
 
@@ -177,8 +181,8 @@
                             <input type="checkbox" id="chkExactFinish">
                             <span>Arrivo con punteggio esatto al traguardo (rimbalzo)</span>
                         </label>
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
-                            <label for="selBranchExitMode" style="font-size: 12px; color: #cbd5e1;">Sosta su bivi &amp; incroci:</label>
+                        <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px; font-size: 12px;">
+                            <label for="selBranchExitMode" style="cursor: pointer;">Sosta su bivi &amp; incroci:</label>
                             <select id="selBranchExitMode" style="padding: 3px 6px; font-size: 11px; border-radius: 4px;">
                                 <option value="cross" selected>Svolta sul percorso incrociato (predefinito)</option>
                                 <option value="own">Segui la freccia del proprio colore</option>
@@ -187,24 +191,27 @@
                     </div>
                 </div>
 
-                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 14px;">
-                    <button class="btn-continua" style="background: #475569; border-color: #64748b; color: white;" onclick="ScorciatoieGame.closeModals()">Annulla</button>
-                    <button class="btn-continua" id="btnStartCustomGame">Inizia Partita / Torneo</button>
+                <div style="display: flex; align-items: center; justify-content: center; margin-top: 14px; margin-bottom: 24px; position: relative;">
+                    <button class="btn-continua" id="btnStartCustomGame" style="margin: 0 auto;">Inizia Partita</button>
+                    <button class="btn-continua" style="background: #475569; border-color: #64748b; color: white; position: absolute; right: 0;" onclick="ScorciatoieGame.closeModals()">Annulla</button>
                 </div>
+
+                <a href="guida-scorciatoie.html" target="_blank" rel="opener" id="btn-regole-modale" class="btn-angolo-modale sinistra">ISTRUZIONI</a>
+                <a href="index.html" id="btn-home-modale" class="btn-angolo-modale destra home">TUTTI I GIOCHI</a>
             </div>
 
-            <!-- 2. Modale Fine Partita / Manche Torneo (bassa e larga, banner sopra) -->
+            <!-- 2. Modale Fine Mano / Partita (bassa e larga, banner sopra) -->
             <div id="finepartita" class="form-scorciatoie modale-fine">
                 <div class="confirm-message" id="fine-messaggio" style="margin: 0 0 6px 0; line-height: 1.2;">🏆 VITTORIA!</div>
                 <div id="fine-dettagli" style="color: #ffd700; font-size: 14px; font-weight: bold; text-align: center; margin-bottom: 8px; text-shadow: 1px 1px 2px #000;">
                     Ha tagliato il traguardo per primo!
                 </div>
-                <!-- Classifica Torneo Dinamica -->
+                <!-- Classifica Partita Dinamica -->
                 <div id="fine-classifica-torneo" style="margin-bottom: 10px; background: rgba(15,23,42,0.7); border-radius: 6px; padding: 6px 10px; border: 1px solid rgba(255,255,255,0.1); font-size: 12px; max-height: 110px; overflow-y: auto;"></div>
                 <div class="conferma-bottoni" style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
-                    <button class="btn-continua" id="btn-prossima-manche" style="background: linear-gradient(135deg, #16a34a, #15803d); border-color: #22c55e; color: white;">PROSSIMA MANCHE ➔</button>
                     <button class="btn-continua" style="background: rgba(0,40,10,0.6); color: white; border-color: #6b9b7a;" onclick="ScorciatoieGame.closeModals()">VEDI IL TABELLONE</button>
-                    <button class="btn-continua" onclick="location.reload()">NUOVO TORNEO</button>
+                    <button class="btn-continua" id="btn-prossima-manche" style="background: linear-gradient(135deg, #ca8a04, #a16207); border-color: #ffd700; color: white;">PROSSIMA MANO ➔</button>
+                    <button class="btn-continua" style="background: linear-gradient(135deg, #16a34a, #15803d); border-color: #22c55e; color: white;" onclick="ScorciatoieGame.requestNewGame()">NUOVA PARTITA</button>
                 </div>
             </div>
 
@@ -217,22 +224,28 @@
                 </div>
             </div>
 
-            <!-- Link Legali (Privacy e Cookie) -->
+            <!-- Link Legali (Privacy e Cookie) e Scrivetemi -->
             <div class="legal-links-scorciatoie">
                 <a href="privacy.html" target="_blank">Privacy Policy</a>
                 <span class="sep">&#8226;</span>
                 <a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)">Gestisci Cookie</a>
                 <span class="sep">&#8226;</span>
-                <a href="aboutme.html" target="_blank">Scrivetemi</a>
+                <a href="aboutme.html" target="_blank" class="pulsante-link-scorc">Scrivetemi</a>
             </div>
 
             <!-- Link ad Altri Giochi -->
             <div class="link-giochi-scorciatoie">
+                <a href="spider.html" class="pulsante-link-scorc">Spider</a>
+                <a href="klondike.html" class="pulsante-link-scorc">Klondike</a>
+                <a href="scala40.html" class="pulsante-link-scorc">Scala 40</a>
+                <a href="burraco.html" class="pulsante-link-scorc">Burraco</a>
+                <a href="machiavelli.html" class="pulsante-link-scorc">Machiavelli</a>
+                <a href="briscola.html" class="pulsante-link-scorc">Briscola</a>
+                <a href="scopa.html" class="pulsante-link-scorc">Scopa</a>
+                <a href="sudoku.html" class="pulsante-link-scorc">Sudoku</a>
                 <a href="scacchi.html" class="pulsante-link-scorc">Scacchi</a>
                 <a href="dama.html" class="pulsante-link-scorc">Dama</a>
                 <a href="quadrati.html" class="pulsante-link-scorc">Quadrati</a>
-                <a href="scopa.html" class="pulsante-link-scorc">Scopa</a>
-                <a href="sudoku.html" class="pulsante-link-scorc">Sudoku</a>
                 <a href="index.html" class="pulsante-link-scorc pulsante-home-scorc">TUTTI I GIOCHI</a>
             </div>
 
@@ -270,7 +283,7 @@
     <!-- Layout engine per ridimensionare il campogioco a schermo e gestire sidebars -->
     <script src="game-layout.js?v=4.6"></script>
     <!-- Logica di gioco Scorciatoie -->
-    <script src="scorciatoie.js?v=2.2"></script>
+    <script src="scorciatoie.js?v=2.3"></script>
     <script>
         (function () {
             var nascosto = false;
