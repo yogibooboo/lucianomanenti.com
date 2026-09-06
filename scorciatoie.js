@@ -664,6 +664,10 @@
         ctx: null,
         enabled: true,
 
+        get isEnabled() {
+            return this.enabled && !window.audioMuted;
+        },
+
         init() {
             if (!this.ctx && (window.AudioContext || window.webkitAudioContext)) {
                 const AudioCtx = window.AudioContext || window.webkitAudioContext;
@@ -679,7 +683,7 @@
         },
 
         playDiceRoll() {
-            if (!this.enabled || !this.ctx) return;
+            if (!this.isEnabled || !this.ctx) return;
             const now = this.ctx.currentTime;
             for (let i = 0; i < 4; i++) {
                 const osc = this.ctx.createOscillator();
@@ -696,7 +700,7 @@
         },
 
         playDiceRattle() {
-            if (!this.enabled || !this.ctx) return;
+            if (!this.isEnabled || !this.ctx) return;
             const now = this.ctx.currentTime;
             const osc = this.ctx.createOscillator();
             const gain = this.ctx.createGain();
@@ -711,7 +715,7 @@
         },
 
         playDiceDrop() {
-            if (!this.enabled || !this.ctx) return;
+            if (!this.isEnabled || !this.ctx) return;
             const now = this.ctx.currentTime;
             [220, 170, 130].forEach((freq, i) => {
                 const osc = this.ctx.createOscillator();
@@ -728,7 +732,7 @@
         },
 
         playStep() {
-            if (!this.enabled || !this.ctx) return;
+            if (!this.isEnabled || !this.ctx) return;
             const now = this.ctx.currentTime;
             const osc = this.ctx.createOscillator();
             const gain = this.ctx.createGain();
@@ -744,7 +748,7 @@
         },
 
         playJunction(isTrap) {
-            if (!this.enabled || !this.ctx) return;
+            if (!this.isEnabled || !this.ctx) return;
             const now = this.ctx.currentTime;
             const osc = this.ctx.createOscillator();
             const gain = this.ctx.createGain();
@@ -766,7 +770,7 @@
         },
 
         playVictory() {
-            if (!this.enabled || !this.ctx) return;
+            if (!this.isEnabled || !this.ctx) return;
             const notes = [523.25, 659.25, 783.99, 1046.50];
             const now = this.ctx.currentTime;
             notes.forEach((freq, idx) => {
@@ -835,6 +839,11 @@
             this.canvas.width = BOARD_WIDTH;
             this.canvas.height = BOARD_HEIGHT;
 
+            // Inizializzazione audio toggle globale (come in Sudoku)
+            if (window.initAudioToggle) {
+                window.initAudioToggle('#btn-audio');
+            }
+
             this.tracksData = generateTracks();
             this.setupEvents();
             this.startNewGame([
@@ -892,14 +901,6 @@
                     this.releaseRoll();
                 }
             });
-
-            const btnAudio = document.getElementById('btn-audio');
-            if (btnAudio) {
-                btnAudio.addEventListener('click', () => {
-                    SoundEngine.enabled = !SoundEngine.enabled;
-                    btnAudio.classList.toggle('audio-off', !SoundEngine.enabled);
-                });
-            }
 
             const btnNew = document.getElementById('btn-nuova-partita');
             if (btnNew) {
