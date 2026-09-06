@@ -230,7 +230,7 @@ html, body {
     border: 1px solid rgba(255, 255, 255, 0.18);
     box-shadow: 0 4px 12px rgba(0,0,0,0.4);
     display: grid;
-    grid-template-columns: 280px 1fr 240px;
+    grid-template-columns: 260px 1fr 280px;
     align-items: center;
     padding: 6px 12px;
     box-sizing: border-box;

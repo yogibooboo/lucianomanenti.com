@@ -853,6 +853,9 @@
             ]);
 
             this.startRenderLoop();
+
+            // Mostra la modale delle opzioni/inizio gioco all'avvio
+            this.openModal('modale-nuova');
         },
 
         setupEvents() {
@@ -901,6 +904,11 @@
                     this.releaseRoll();
                 }
             });
+
+            const btnOptions = document.getElementById('btn-opzioni-gioco');
+            if (btnOptions) {
+                btnOptions.addEventListener('click', () => this.openModal('modale-nuova'));
+            }
 
             const btnNew = document.getElementById('btn-nuova-partita');
             if (btnNew) {
@@ -971,6 +979,13 @@
             document.querySelectorAll('.form-scorciatoie').forEach(m => m.style.display = 'none');
             // Rimuove i banner delle modali per evitare annunci duplicati o obsoleti alla riapertura
             document.querySelectorAll('#campogioco .finish-banner').forEach(function (b) { b.remove(); });
+
+            if (this.players && this.players[this.currentPlayerIdx]) {
+                const cur = this.players[this.currentPlayerIdx];
+                if ((cur.isBot || this.autoPlay) && !this.isMoving && !this.isRolling && !this.isGameOver) {
+                    setTimeout(() => this.triggerBotOrAutoTurn(), 400);
+                }
+            }
         },
 
         awardPoints(player, points, reason = '') {
@@ -1441,6 +1456,8 @@
         },
 
         triggerBotOrAutoTurn() {
+            const schermo = document.getElementById('schermo');
+            if (schermo && schermo.style.display === 'block') return;
             if (this.isRolling || this.isMoving || this.isGameOver) return;
             this.rollDice();
         },
