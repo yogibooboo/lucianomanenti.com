@@ -1781,6 +1781,23 @@ var scala = {
 		var tris = [];
 		var indicetris = 0;
 
+		/* La carta si attacca solo se il blocco continua a leggersi com'era
+		   stato calato: analizzatris dice se le carte stanno insieme, non se
+		   stanno insieme NELLO STESSO MODO. Un blocco corto e ambiguo (una
+		   carta vera più jolly) viene letto TRIS, perché il ramo TRIS è
+		   tentato per primo e solo finché ncarte < 5, e i suoi jolly prendono
+		   il nome di quel numero. Attaccando il 5C al blocco 4C+J+J il blocco
+		   diventava di colpo la scala 4-5-6-7C, mentre i jolly continuavano a
+		   chiamarsi 4P e 4F e ogni carta restava marcata TRIS; un ulteriore
+		   jolly attaccato lì finiva nel ramo TRIS di aggiungitris con l'esito
+		   di una scala, dove semidausare è vuoto, e ne usciva etichettato
+		   "undefined4" (segnalato da un giocatore, set 2026). L'IA non era
+		   toccata: calcolacarteattaccabili ridiscrimina sul tipo lettura per
+		   lettura (riga 3999). Le scale non perdono nulla, si allungano come
+		   prima: qui cade solo il ribaltamento di tipo di un blocco già in
+		   tavola. */
+		var stessotipo = function (e) { return e.valido && (e.tipotris == tipotris); };
+
 		for (var i = 0; i < cont.carte.length; i++) {
 			if (cont.carte[i].ntris == ntris) {
 				if (i == indice) indicetris = tris.length;
@@ -1821,12 +1838,12 @@ var scala = {
 			if (indicetris == 0) {
 				tris.splice(0, 0, carta);
 				esito = this.analizzatris(tris);
-				if (esito.valido) { this.aggiungitris(cont, indice, carta, cartasel, esegui, esito); return true; }
+				if (stessotipo(esito)) { this.aggiungitris(cont, indice, carta, cartasel, esegui, esito); return true; }
 			}
 			else if (indicetris == tris.length - 1) {
 				tris.splice(tris.length, 0, carta);
 				esito = this.analizzatris(tris);
-				if (esito.valido) { this.aggiungitris(cont, indice + 1, carta, cartasel, esegui, esito); return true; }
+				if (stessotipo(esito)) { this.aggiungitris(cont, indice + 1, carta, cartasel, esegui, esito); return true; }
 			}
 			return false;
 		}
@@ -1840,20 +1857,20 @@ var scala = {
 		if (left) {
 			tris.splice(indicetris, 0, carta);
 			esito = this.analizzatris(tris);
-			if (esito.valido) { this.aggiungitris(cont, indice, carta, cartasel, esegui, esito); return true; }
+			if (stessotipo(esito)) { this.aggiungitris(cont, indice, carta, cartasel, esegui, esito); return true; }
 			tris.splice(indicetris, 1);
 			tris.splice(indicetris + 1, 0, carta);
 			esito = this.analizzatris(tris);
-			if (esito.valido) { this.aggiungitris(cont, indice + 1, carta, cartasel, esegui, esito); return true; }
+			if (stessotipo(esito)) { this.aggiungitris(cont, indice + 1, carta, cartasel, esegui, esito); return true; }
 		}
 		else {
 			tris.splice(indicetris + 1, 0, carta);
 			esito = this.analizzatris(tris);
-			if (esito.valido) { this.aggiungitris(cont, indice + 1, carta, cartasel, esegui, esito); return true; }
+			if (stessotipo(esito)) { this.aggiungitris(cont, indice + 1, carta, cartasel, esegui, esito); return true; }
 			tris.splice(indicetris + 1, 1);
 			tris.splice(indicetris, 0, carta);
 			esito = this.analizzatris(tris);
-			if (esito.valido) { this.aggiungitris(cont, indice, carta, cartasel, esegui, esito); return true; }
+			if (stessotipo(esito)) { this.aggiungitris(cont, indice, carta, cartasel, esegui, esito); return true; }
 		}
 		return false;
 	},
