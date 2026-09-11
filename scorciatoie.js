@@ -907,6 +907,37 @@
 
             this.tracksData = generateTracks();
             this.setupEvents();
+
+            // Controllo ripristino torneo da sessionStorage (dopo reload per prossima mano)
+            let savedTournament = null;
+            try {
+                const raw = sessionStorage.getItem('scorciatoie_torneo_in_corso');
+                if (raw) {
+                    sessionStorage.removeItem('scorciatoie_torneo_in_corso');
+                    savedTournament = JSON.parse(raw);
+                }
+            } catch (e) {
+                console.error('Errore ripristino torneo Scorciatoie:', e);
+            }
+
+            if (savedTournament && savedTournament.tournament && savedTournament.players) {
+                this.tournament = Object.assign(this.tournament, savedTournament.tournament);
+                if (savedTournament.options) {
+                    this.options = Object.assign(this.options, savedTournament.options);
+                }
+                if (savedTournament.autoPlay !== undefined) {
+                    this.autoPlay = savedTournament.autoPlay;
+                    const chkAuto = document.getElementById('chkAutoPlayMini');
+                    if (chkAuto) chkAuto.checked = this.autoPlay;
+                }
+
+                this.syncOptionsToForm();
+                this.startNewGame(savedTournament.players, true);
+                this.startRenderLoop();
+                // La mano successiva parte subito: non mostrare la modale delle opzioni
+                return;
+            }
+
             this.startNewGame([
                 { name: TXT.defaultPlayer1, color: PLAYER_COLORS[0], isBot: false },
                 { name: TXT.defaultComputer + '1', color: PLAYER_COLORS[1], isBot: true },
@@ -917,6 +948,36 @@
 
             // Mostra la modale delle opzioni/inizio gioco all'avvio
             this.openModal('modale-nuova');
+        },
+
+        syncOptionsToForm() {
+            try {
+                const numSelect = document.getElementById('numPlayersSelect');
+                if (numSelect && this.players && this.players.length) {
+                    numSelect.value = String(this.players.length);
+                    if (typeof updatePlayerConfigRows === 'function') {
+                        updatePlayerConfigRows();
+                    }
+                    this.players.forEach((p, i) => {
+                        const nameInput = document.getElementById(`pname_${i}`);
+                        const typeSelect = document.getElementById(`ptype_${i}`);
+                        if (nameInput && p.name) nameInput.value = p.name;
+                        if (typeSelect) typeSelect.value = p.isBot ? 'bot' : 'human';
+                    });
+                }
+                const chkDouble = document.getElementById('chkDoubleExtra');
+                if (chkDouble && this.options) chkDouble.checked = !!this.options.doubleRollExtra;
+                const chkExact = document.getElementById('chkExactFinish');
+                if (chkExact && this.options) chkExact.checked = !!this.options.exactFinish;
+                const selBranch = document.getElementById('selBranchExitMode');
+                if (selBranch && this.options && this.options.branchExitMode) selBranch.value = this.options.branchExitMode;
+                const selTarget = document.getElementById('selTournamentTarget');
+                if (selTarget && this.tournament) {
+                    selTarget.value = this.tournament.enabled ? String(this.tournament.targetPoints) : '0';
+                }
+            } catch (e) {
+                console.error('Errore syncOptionsToForm:', e);
+            }
         },
 
         setupEvents() {
@@ -1004,22 +1065,26 @@
 
         requestNewGame() {
             if (this.isGameOver) {
-                this.openModal('modale-nuova');
+                this.confirmRestart();
             } else {
                 this.openModal('confermatermina');
             }
         },
 
         openModal(id) {
-            this.closeModals();
-            const el = document.getElementById(id);
             const schermo = document.getElementById('schermo');
+            document.querySelectorAll('.form-scorciatoie').forEach(m => m.style.display = 'none');
+            document.querySelectorAll('#campogioco .finish-banner').forEach(function (b) { b.remove(); });
+
+            const el = document.getElementById(id);
             if (el && schermo) {
                 schermo.style.display = 'block';
                 el.style.display = 'flex';
 
                 if (id === 'finepartita' || id === 'confermatermina') {
                     const targetTop = (id === 'confermatermina') ? 470 : 420;
+                    el.style.top = targetTop + 'px';
+                    el.style.overflow = 'visible';
                     if (typeof setupAmazonFinishBanner === 'function') {
                         setupAmazonFinishBanner(id, {
                             modalStyle: { overflow: 'visible' },
@@ -1061,19 +1126,54 @@
         startNextTournamentMatch() {
             if (!this.tournament.enabled || this.tournament.isFinished) return;
             this.tournament.currentMatch++;
-            this.closeModals();
+
+            const btnNextMatch = document.getElementById('btn-prossima-manche');
+            if (btnNextMatch) {
+                btnNextMatch.disabled = true;
+                btnNextMatch.style.opacity = '0.5';
+            }
 
             const playersConfig = this.players.map(p => ({
                 name: p.name,
                 color: p.color,
                 isBot: p.isBot
             }));
-            this.startNewGame(playersConfig, true);
+
+            try {
+                sessionStorage.setItem('scorciatoie_torneo_in_corso', JSON.stringify({
+                    tournament: this.tournament,
+                    options: this.options,
+                    players: playersConfig,
+                    autoPlay: this.autoPlay
+                }));
+            } catch (e) {
+                console.error('Impossibile salvare lo stato del torneo in sessionStorage:', e);
+            }
+
+            if (typeof window.reloadWithInterstitial === 'function') {
+                window.reloadWithInterstitial();
+            } else {
+                location.reload();
+            }
+        },
+
+        confirmRestart() {
+            try {
+                sessionStorage.removeItem('scorciatoie_torneo_in_corso');
+            } catch (e) {}
+            if (typeof window.reloadWithInterstitial === 'function') {
+                window.reloadWithInterstitial();
+            } else {
+                location.reload();
+            }
         },
 
         startNewGame(playersConfig, isNextMatchOfTournament = false) {
             SoundEngine.stopAllAudio();
             if (!isNextMatchOfTournament) {
+                try {
+                    sessionStorage.removeItem('scorciatoie_torneo_in_corso');
+                } catch (e) {}
                 this.tournament.currentMatch = 1;
                 this.tournament.scores = {};
                 this.tournament.isFinished = false;
@@ -1150,6 +1250,9 @@
         },
 
         startCustomGameFromForm() {
+            try {
+                sessionStorage.removeItem('scorciatoie_torneo_in_corso');
+            } catch (e) {}
             const count = parseInt(document.getElementById('numPlayersSelect').value, 10);
             const doubleRoll = document.getElementById('chkDoubleExtra').checked;
             const exactFin = document.getElementById('chkExactFinish').checked;
@@ -1725,9 +1828,12 @@
                 }
             }
 
-            this.openModal('finepartita');
             this.updateHeaderUI();
             this.updateTurnUI();
+
+            setTimeout(() => {
+                this.openModal('finepartita');
+            }, 600);
         },
 
         updateDiceUI(d1, d2, isRollingAnim) {
