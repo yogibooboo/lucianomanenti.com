@@ -3,6 +3,36 @@
 // Editare direttamente questo file per modificare la strategia dell'AI.
 // Viene caricato prima di burraco-engine-default.js tramite tag <script>.
 //
+// 11/09/2026 - penScartoTrisPozzo da 9 a 24, e il termine in burraco-core.js
+// ora vede anche le SCALE (un 6 di fiori buttato sopra 5F e 7F lascia li' una
+// scala bell'e' pronta, e la scala di tre e' un regalo esattamente come il
+// tris). Il coefficiente e' lo stesso per tris e scala: le due penalita' non si
+// sommano, una carta che fa tutt'e due prende quella del tris.
+// Misurato su 1.200 mani appaiate contro la stessa tabella coi due coefficienti
+// a zero: scarti sporchi dal 13,3% al 6,2%, scale nel monte da 14 a 1, tris da
+// 77 a 5, esiti 598 contro 600 (netto -2 con errore standard 35). Il 24 non
+// costa niente rispetto al 9, cambia solo i tris residui (12 invece di 5 ogni
+// 16.500 scarti); si adotta perche' il tris nel monte e' punti pronti per chi
+// pesca dopo, mentre la coppia e' esteticamente accettabile.
+//
+// 11/09/2026 - RIPROVATO penScarto6c coi coefficienti nuovi. Il valore basso
+// resta quello giusto: 5 / 10 / 15 / 20 / 25 contro la base 5 danno margine
+// +2,8 / +2,0 / -2,5 / -13,1 / -13,8 punti a mano, e il 25 confermato su 8.000
+// mani appaiate a -13,4 con errore standard 4,3 (t -3,1, mani vinte 3.842
+// contro 4.137). Nessuna gobba nascosta sopra il 5: non riprovarlo.
+// Griglia in scratchpad/griglia-pen6c.csv.
+//
+// 10/09/2026 - AGGIUNTI penScartoCoppiaPozzo (3) e penScartoTrisPozzo (9).
+// L'IA non guardava mai dentro il monte scarti e buttava il 7 sopra il 7: una
+// cosa che si vede, perche' il monte si prende tutto intero ed e' visibile
+// tutto. Misurati al banco appaiato (scratchpad/bench-pozzo.js) su 24.000 mani
+// con lo stesso database di mazzi: gli scarti che cadono su una carta uguale
+// passano dal 12,8% al 6,2% - il difetto si dimezza - e il margine e' +2,5
+// punti a mano con errore standard 3,9, cioe' indistinguibile da zero.
+// Non si guadagna: non si perde, e il difetto si vede molto meno.
+// I valori sopra 4 tagliano di piu' ma cominciano a costare punti (a 6 il
+// margine e' -6,8 su due griglie indipendenti), percio' 3 e non di piu'.
+//
 // 01/09/2026 - PROMOSSI GLI OTTO COEFFICIENTI. Sono le righe che qui sotto
 // portano il commento "promosso 01/09". Venivano da burraco-engine-b.coeffs.js,
 // dove stavano dal 22/08 in attesa di essere misurati sul campo.
@@ -59,6 +89,8 @@ window.coeffScoreOpz = {
     penScarto4c:                  3,  // Penalità per scartare carta che completerebbe combo avversaria a 4 — promosso 01/09 (era 7)
     penScartoCalabile:            7,  // Penalità per scartare carta calabile su combo propria a terra
     penScartoMatta:              50,  // Penalità pesante per scartare una matta
+    penScartoCoppiaPozzo:         3,  // Penalità se la carta forma una COPPIA nel monte scarti — misurato 10/09/2026
+    penScartoTrisPozzo:          24,  // Penalità se la carta forma un TRIS o una SCALA nel monte scarti — alzato 11/09/2026 (era 9)
 
     // --- BONUS SOTTRAZIONE AVVERSARIO ---
     // Applicati quando una carta giocata impedisce all'avversario di raggiungere quella lunghezza

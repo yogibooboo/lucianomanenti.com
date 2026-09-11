@@ -1,17 +1,50 @@
 // ============================================================================
 // COEFFICIENTI MOTORE AI — B
 //
-// 01/09/2026 — ATTENZIONE: QUESTA TABELLA ORA È IDENTICA A QUELLA DI SERIE.
+// 11/09/2026 — B È TORNATA UNA VARIANTE VIVA, e stavolta è il CONTROLLO.
+// In prova c'è la penalità sugli scarti che sporcano il monte
+// (penScartoCoppiaPozzo / penScartoTrisPozzo, il termine sta in
+// burraco-core.js dentro calcolaScartoPer). Il verso è rovesciato rispetto agli
+// esperimenti di agosto: la variante NUOVA sta nella tabella di SERIE e qui c'è
+// quella VECCHIA, coi due coefficienti a zero.
+//
+// Perché in questo verso. La penalità è la correzione estetica: l'IA non butta
+// più il 7 sopra il 7. Mettendola di serie la vedono subito anche tutti quelli
+// che il braccio non ce l'hanno mai (fuori UE, ad blocker, chi si è chiamato
+// fuori dalla raccolta), e il motore imbruttito compare solo in 3 sedie su 12.
+// Il contrasto che si misura è identico, cambia solo il segno: qui d è l'effetto
+// di TOGLIERE il termine, quindi in B (due avversari senza) la persona dovrebbe
+// fare MEGLIO e in C (compagno senza) PEGGIO. Se si muovono dalla stessa parte
+// non stiamo misurando questo.
+//
+// Attenzione a non leggerlo come "B è il motivo in prova": nel database
+// `parametri` porterà {"penScartoCoppiaPozzo":0,"penScartoTrisPozzo":0}, cioè
+// la sottrazione, non l'aggiunta.
+//
+// Che cosa aspettarsi. Al banco appaiato il termine NON sposta i punti
+// (+2,5 ± 3,9 su 8.000 mani), quindi è quasi certo che online non si veda
+// nessuna differenza: questa è una prova di NON inferiorità, serve a mettere un
+// tetto al costo, non a trovare un guadagno. L'unica ragione per cui potrebbe
+// uscire qualcosa è che il banco fa giocare automi contro automi, mentre il
+// regalo lasciato nel monte lo raccoglie una PERSONA, che magari lo sfrutta
+// meglio. Vedi la nota in burraco-game.js sopra AB_ATTIVO.
+//
+// --- prima di oggi ---
+//
+// 10/09/2026 — aggiunti anche qui penScartoCoppiaPozzo e penScartoTrisPozzo,
+// con gli stessi valori di serie, proprio per NON creare una variante: B deve
+// restare identico ad A finche' qualcuno non decide che cosa provare.
+//
+// 01/09/2026 — ATTENZIONE: QUESTA TABELLA ERA IDENTICA A QUELLA DI SERIE.
 // Gli otto coefficienti sono stati promossi in burraco-engine-default.coeffs.js,
-// quindi B non si scosta più da niente. Oggi non fa danni perché i bracci sono
-// spenti (AB_ATTIVO = false in burraco-game.js), ma chi riaccendesse
-// l'esperimento senza prima mettere qui dei valori NUOVI otterrebbe un
+// quindi B non si scostava più da niente. Non faceva danni perché i bracci erano
+// spenti (AB_ATTIVO = false in burraco-game.js), ma chi avesse riacceso
+// l'esperimento senza prima mettere qui dei valori NUOVI avrebbe ottenuto un
 // esperimento nullo che sembra funzionare: tre bracci che giocano tutti allo
 // stesso modo, e nel database `parametri` vuoto su tutti e tre — cioè B
-// indistinguibile da A. Il file resta come impalcatura per il prossimo
-// esperimento, non come una variante viva.
+// indistinguibile da A. È la trappola che il blocco dell'11/09 evita.
 //
-// Il giro naturale sarebbe quello mai fatto: togliere un coefficiente per
+// Il giro naturale resta quello mai fatto: togliere un coefficiente per
 // volta dagli otto per sapere quale porta il peso (vedi la nota in fondo).
 //
 // --- storia, da qui in giù ---
@@ -70,6 +103,8 @@ window.coeffScoreOpzB = {
     penScarto4c:                  3,  // Penalità per scartare carta che completerebbe combo avversaria a 4 — combinazione 22/08 (di serie 7)
     penScartoCalabile:            7,  // Penalità per scartare carta calabile su combo propria a terra
     penScartoMatta:              50,  // Penalità pesante per scartare una matta
+    penScartoCoppiaPozzo:         0,  // A ZERO DI PROPOSITO — è la variante in prova, vedi in testa al file (11/09/2026)
+    penScartoTrisPozzo:           0,  // A ZERO DI PROPOSITO — è la variante in prova, vedi in testa al file (11/09/2026)
 
     // --- BONUS SOTTRAZIONE AVVERSARIO ---
     // Applicati quando una carta giocata impedisce all'avversario di raggiungere quella lunghezza

@@ -3345,6 +3345,37 @@ window.calcolaScartoPer = function(opzIdx, _silent, comboSquadraOverride) {
         connettivita[r.cartaRef.id] = conn;
     });
 
+    // Quante carte per numero ci sono gia' nel monte scarti. Serve per non
+    // buttare un 7 sopra un 7: il monte si prende TUTTO INTERO
+    // (burraco-game.js) ed e' visibile per intero, quindi una coppia lasciata
+    // li' e' un regalo al primo che pesca, e per giunta si vede.
+    // Le matte non contano, come nella connettivita' qui sopra.
+    // Stesso discorso per le scale: un 6F buttato sopra 5F e 7F lascia li' una
+    // scala bell'e' pronta. Indicizzo i numeri presenti nel monte seme per seme;
+    // l'Asso vale 1 oppure 14, come in tutto il resto del motore.
+    var _monte = {}, _monteSeme = {};
+    (game.scarti || []).forEach(function(c) {
+        if (!c || c.isJolly || c.isPinella) return;
+        _monte[c.numero] = (_monte[c.numero] || 0) + 1;
+        if (!c.seme) return;
+        var s = _monteSeme[c.seme] || (_monteSeme[c.seme] = {});
+        s[c.numero] = true;
+        if (c.numero === 1) s[14] = true;
+    });
+    // La carta chiuderebbe una scala di 3+ gia' presente nel monte?
+    var _faScalaNelMonte = function(carta) {
+        var s = carta.seme && _monteSeme[carta.seme];
+        if (!s) return false;
+        var valori = carta.numero === 1 ? [1, 14] : [carta.numero];
+        for (var k = 0; k < valori.length; k++) {
+            var v = valori[k];
+            if (s[v - 2] && s[v - 1]) return true;   // due vicini sotto
+            if (s[v - 1] && s[v + 1]) return true;   // uno per parte
+            if (s[v + 1] && s[v + 2]) return true;   // due vicini sopra
+        }
+        return false;
+    };
+
     var nomeC = function(r) { return Strategia && Strategia.nomeCarta ? Strategia.nomeCarta(r.cartaRef) : (r.cartaRef.numero + r.cartaRef.seme); };
     var scoreFase3 = fase1.map(function(r) {
         var score = 0;
@@ -3365,6 +3396,24 @@ window.calcolaScartoPer = function(opzIdx, _silent, comboSquadraOverride) {
         }
         var nPropri = pericoliPropri[r.cartaRef.id] || 0;
         if (nPropri > 0) { var sProp = -(nPropri * (cf.penScartoCalabile || 7)); score += sProp; righe.push('  calabile propri(' + nPropri + '): ' + sProp.toFixed(1)); }
+        if (!r.isMatta) {
+            var _gem = _monte[r.cartaRef.numero] || 0;
+            var _sca = _faScalaNelMonte(r.cartaRef);
+            // Non si sommano: se la carta fa sia coppia sia scala vale la
+            // penalita' piu' grave, che e' quella del tris.
+            var sMonte = 0, _etM = '';
+            if (_gem >= 2 || _sca) {
+                sMonte = -(cf.penScartoTrisPozzo || 0);
+                _etM = (_gem >= 2) ? 'tris(' + (_gem + 1) + ')' : 'scala';
+            } else if (_gem === 1) {
+                sMonte = -(cf.penScartoCoppiaPozzo || 0);
+                _etM = 'coppia';
+            }
+            if (sMonte) {
+                score += sMonte;
+                righe.push('  monte ' + _etM + ': ' + sMonte.toFixed(1));
+            }
+        }
         if (r.isMatta) { var sPenM = -(cf.penScartoMatta || 50); score += sPenM; righe.push('  pen. scarto matta: ' + sPenM); }
         return { r: r, score: score, righe: righe };
     });

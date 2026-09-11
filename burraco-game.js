@@ -2287,9 +2287,48 @@ var _fastTick = (function () {
 // di niente, e un terzo delle persone si troverebbe davanti un motore piu'
 // forte senza che serva a misurare piu' nulla.
 //
-// Da riaccendere solo insieme a un esperimento nuovo, non "per non perdere il
-// codice": il codice resta qui comunque.
-var AB_ATTIVO = false;
+// RIACCESO l'11/09/2026 per l'esperimento nuovo: la penalita' sugli scarti che
+// sporcano il monte (penScartoCoppiaPozzo 3 / penScartoTrisPozzo 24, piu' le
+// scale). Il verso e' rovesciato rispetto ad agosto - la variante nuova sta
+// nella tabella di SERIE, il controllo senza il termine sta in
+// burraco-engine-b.coeffs.js - quindi i segni si leggono al contrario: in 'B'
+// (due avversari senza il termine) la persona dovrebbe fare MEGLIO, in 'C'
+// (compagno senza) PEGGIO. Il perche' del verso sta in testa a quel file.
+//
+// Che cosa ci si aspetta, detto prima per non ingannarsi dopo. Al banco
+// appaiato il termine non sposta i punti: +2,5 con errore standard 3,9 su
+// 8.000 mani. Se d fosse davvero quello, servirebbero ~66.000 mani per
+// separarlo da zero (gli otto coefficienti di agosto valevano d ~28 e ne sono
+// bastate 8.319 per uno z di 8). Quindi questa e' una prova di NON inferiorita':
+// il risultato utile e' un TETTO al costo, del tipo "toglie al massimo mezzo
+// punto percentuale di vittorie".
+//
+// Ritmo misurato l'11/09/2026 giorno per giorno (esporta.php?conta=1 con da=a):
+// feriali 4.554 mani, weekend 3.250, cioe' il weekend rende il 29% in meno.
+// Media settimanale ~4.180: 20.000 mani sono cinque giorni, le 66.000 due
+// settimane e mezzo. Non prendere la media di una finestra che contiene un
+// numero di sabati diverso da due - e' il conto che avevo sbagliato io.
+// Il weekend non falsa il confronto, solo il calendario: il braccio ruota
+// DENTRO ogni browser, quindi un giorno fiacco sposta le tre colonne insieme e
+// i contrasti restano appaiati nel giorno. E' la differenza fra questo disegno
+// e il confronto 9.11 -> 9.12, che invece era esposto al calendario.
+//
+// L'unica ragione per cui potrebbe uscire un segnale vero: il banco fa giocare
+// automi contro automi, e il regalo lasciato nel monte lo raccoglie il giocatore
+// dopo. Online quel giocatore e' spesso una PERSONA, che il monte lo guarda
+// davvero. Se il termine vale piu' contro gli umani che contro gli automi, e'
+// qui che si vede e il banco non poteva dirlo.
+//
+// Nota sul disegno: la penalita' non e' una "forza della sedia" generica, aiuta
+// chi siede DOPO. Ma il conto torna lo stesso nel rapporto 2:1, perche' il
+// vicino di sinistra del compagno e' un avversario e i vicini dei due avversari
+// sono la persona e il compagno. Il test di falsificazione a tre bracci resta
+// valido.
+//
+// Da rispegnere a esperimento chiuso, e prima di tornare a misurare "quanto
+// vince chi gioca": con i bracci accesi quella percentuale e' la media di tre
+// giochi diversi.
+var AB_ATTIVO = true;
 
 // I TRE BRACCI
 //   'A'  nessuno modificato          - l'ancora

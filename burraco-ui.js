@@ -4832,7 +4832,32 @@ function getGiocatoreHTML(indiceGiocatore, ruolo, defaultScenario) {
             con.groupEnd();
 
             // FASE 3: Scoring ex-novo
-            con.group('FASE 3 — Scoring ex-novo  (A:decentralizzazione | B:connettivita | C:pericolo avv | D:utile propria)');
+            // Stesso conteggio del monte che fa il motore in burraco-core.js:
+            // se questa spiegazione non lo rifacesse, il pannello mostrerebbe
+            // una classifica diversa da quella su cui l'IA decide davvero.
+            var _monte = {}, _monteSeme = {};
+            (game.scarti || []).forEach(function(c) {
+                if (!c || c.isJolly || c.isPinella) return;
+                _monte[c.numero] = (_monte[c.numero] || 0) + 1;
+                if (!c.seme) return;
+                var s = _monteSeme[c.seme] || (_monteSeme[c.seme] = {});
+                s[c.numero] = true;
+                if (c.numero === 1) s[14] = true;
+            });
+            var _faScalaNelMonte = function(carta) {
+                var s = carta.seme && _monteSeme[carta.seme];
+                if (!s) return false;
+                var valori = carta.numero === 1 ? [1, 14] : [carta.numero];
+                for (var k = 0; k < valori.length; k++) {
+                    var v = valori[k];
+                    if (s[v - 2] && s[v - 1]) return true;   // due vicini sotto
+                    if (s[v - 1] && s[v + 1]) return true;   // uno per parte
+                    if (s[v + 1] && s[v + 2]) return true;   // due vicini sopra
+                }
+                return false;
+            };
+
+            con.group('FASE 3 — Scoring ex-novo  (A:decentralizzazione | B:connettivita | C:pericolo avv | D:utile propria | E:monte scarti)');
             var scoreFase3 = fase1.map(function(r) {
                 var score = 0; var righe = [];
                 var centralita = Strategia.getCentralita ? Strategia.getCentralita(r.cartaRef.numero) : 0.5;
@@ -4860,6 +4885,21 @@ function getGiocatoreHTML(indiceGiocatore, ruolo, defaultScenario) {
                     score += penProp;
                     righe.push('  D) Utile propria combo: ' + propri.map(function(p) { return '['+p.desc+'] +1→'+p.lunghezza+p.tipo; }).join(', ') + '  =>  ' + penProp.toFixed(1));
                 } else { righe.push('  D) Utile propria combo: nessuna'); }
+                var gem = r.isMatta ? 0 : (_monte[r.cartaRef.numero] || 0);
+                var sca = r.isMatta ? false : _faScalaNelMonte(r.cartaRef);
+                if (gem > 0 || sca) {
+                    var cf3 = window.coeffScoreOpz;
+                    // Non si sommano: se la carta fa sia coppia sia scala vale
+                    // la penalita' piu' grave, che e' quella del tris.
+                    var grave = (gem >= 2 || sca);
+                    var penMonte = -(grave ? (cf3.penScartoTrisPozzo || 0) : (cf3.penScartoCoppiaPozzo || 0));
+                    if (penMonte) { score += penMonte; }
+                    var che = gem >= 2 ? 'formerebbe un TRIS o meglio (' + gem + ' uguali nel monte)'
+                            : sca && gem === 1 ? 'formerebbe una COPPIA e una SCALA'
+                            : sca ? 'chiuderebbe una SCALA di tre nel monte'
+                            : 'formerebbe una COPPIA (1 uguale nel monte)';
+                    righe.push('  E) Monte scarti: ' + che + '  =>  ' + penMonte.toFixed(1));
+                } else { righe.push('  E) Monte scarti: pulito'); }
                 con.log(r.carta + '  =>  SCORE = ' + score.toFixed(1));
                 righe.forEach(function(riga) { con.log(riga); });
                 return { r: r, score: score };
@@ -4929,7 +4969,9 @@ function getGiocatoreHTML(indiceGiocatore, ruolo, defaultScenario) {
                 ['penScarto5c',       'Pen. scarto → avv 5c',           0,  50,   1],
                 ['penScarto4c',       'Pen. scarto → avv ≤4c',          0,  30,   1],
                 ['penScartoCalabile', 'Pen. scarto calabile su propria', 0,  30,   1],
-                ['penScartoMatta',    'Pen. scarto matta',               0, 200,   5]
+                ['penScartoMatta',    'Pen. scarto matta',               0, 200,   5],
+                ['penScartoCoppiaPozzo', 'Pen. coppia nel monte scarti', 0,  20,   1],
+                ['penScartoTrisPozzo',   'Pen. tris/scala nel monte',    0,  40,   1]
             ];
             var campiVari = [
                 ['premioMazzo',        'Premio mazzo (pesca dal mazzo)',       0,  50, 1],
@@ -4974,7 +5016,7 @@ function getGiocatoreHTML(indiceGiocatore, ruolo, defaultScenario) {
 
         window.applicaCoefficienti = function(gIdx, scen) {
             var cf = window.coeffScoreOpz;
-            ['valCarte','premioTris','premioScala','premioTrisEstremo','premio4c','premio5c','premio6c','premioBurraco','premioOltreBurraco','penMattaBase','penCartaOrfana','premioLiberaMattaInterna','premioLiberaMattaBordo','premioMattaSolitaria','penCalataMatta','penMattaSuBurracoPulito','premioPrimoBurraco','bonusAvv4c','bonusAvv5c','bonusAvv6c','bonusAvv7c','bonusAvv8c','coeffScartoDecent','coeffScartoConn','penScarto6c','penScarto5c','penScarto4c','penScartoCalabile','premioMazzo','premioPozzetto'].forEach(function(k) {
+            ['valCarte','premioTris','premioScala','premioTrisEstremo','premio4c','premio5c','premio6c','premioBurraco','premioOltreBurraco','penMattaBase','penCartaOrfana','premioLiberaMattaInterna','premioLiberaMattaBordo','premioMattaSolitaria','penCalataMatta','penMattaSuBurracoPulito','premioPrimoBurraco','bonusAvv4c','bonusAvv5c','bonusAvv6c','bonusAvv7c','bonusAvv8c','coeffScartoDecent','coeffScartoConn','penScarto6c','penScarto5c','penScarto4c','penScartoCalabile','penScartoCoppiaPozzo','penScartoTrisPozzo','premioMazzo','premioPozzetto'].forEach(function(k) {
                 var el = document.getElementById('coeff-' + k);
                 if (el) cf[k] = parseFloat(el.value) || 0;
             });
