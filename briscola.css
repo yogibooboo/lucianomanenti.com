@@ -58,25 +58,6 @@ html, body {
     overflow: hidden;
 }
 
-/* Filigrana sul tappeto: avviso versione prototipale, sotto a tutti gli elementi di gioco */
-.filigrana-proto {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 85%;
-    transform: translate(-50%, -50%) rotate(-16deg);
-    text-align: center;
-    font-size: 30px;
-    font-weight: bold;
-    line-height: 1.5;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    color: rgba(255, 255, 255, 0.4);
-    pointer-events: none;
-    user-select: none;
-    z-index: 1;
-}
-
 /* === SCHERMO OVERLAY === */
 #schermo {
     position: absolute;
@@ -149,7 +130,7 @@ html, body {
     align-items: center;
     gap: 6px;
 }
-.lang-switch-header a {
+.lang-switch-header a, .modale-inizio-lang a {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -165,12 +146,12 @@ html, body {
     transition: all 0.2s;
     box-sizing: border-box;
 }
-.lang-switch-header a.active {
+.lang-switch-header a.active, .modale-inizio-lang a.active {
     background: #ffd700;
     color: #1a1a2e;
     border-color: #b8860b;
 }
-.lang-switch-header a:hover:not(.active) {
+.lang-switch-header a:hover:not(.active), .modale-inizio-lang a:hover:not(.active) {
     background: rgba(255, 255, 255, 0.3);
 }
 
@@ -614,12 +595,6 @@ a.pulsante-top {
 #campogioco.turno-giocatore #mano-basso .carta {
     cursor: pointer;
 }
-#campogioco.mani-scoperte #mano-alto .carta,
-#campogioco.mani-scoperte #mano-sinistra .carta,
-#campogioco.mani-scoperte #mano-destra .carta {
-    box-shadow: 0 0 0 2px #ffd700, 2px 2px 5px rgba(0, 0, 0, 0.3);
-}
-
 #campogioco.turno-giocatore #mano-basso .carta:hover {
     transform: translateY(-14px);
     box-shadow: 0 0 0 3px #ffd700, 0 6px 14px rgba(0, 0, 0, 0.5);
@@ -806,6 +781,38 @@ a.pulsante-top {
     top: 550px;
     left: 30px;
 }
+/* Carte del seme di briscola: pallino azzurro nell'angolo. Sta su ::before
+   per non toccare ::after (formiche della carta vincente). Nelle mani
+   laterali le carte sono ruotate di 90 gradi in senso orario e si
+   sovrappongono dal basso: resta visibile la striscia in alto sullo
+   schermo, cioe' il bordo sinistro del div, quindi il pallino va in
+   basso a sinistra (a schermo: in alto a sinistra). */
+.carta.briscola::before {
+    content: '';
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: #2f7df6;
+    box-shadow: 0 0 0 2px #fff, 0 1px 3px rgba(0, 0, 0, 0.4);
+    pointer-events: none;
+}
+.carta.briscola.orizzontale::before {
+    top: auto;
+    right: auto;
+    bottom: 5px;
+    left: 5px;
+}
+/* La briscola sotto il mazzo e' ruotata ma coperta a sinistra dal dorso:
+   il pallino torna in alto a destra del div (a schermo: in basso a destra). */
+.carta.briscola.carta-briscola::before {
+    top: 5px;
+    right: 5px;
+    bottom: auto;
+    left: auto;
+}
 .carta-briscola {
     position: absolute !important;
     top: 0px;
@@ -881,6 +888,30 @@ a.pulsante-top {
 
 #modale-inizio {
     justify-content: center;
+}
+
+/* Angoli della modale iniziale: lingua in alto a destra, regole in basso a
+   sinistra, uscita verso il sito in basso a destra — stessi stili della barra
+   di gioco (.lang-switch-header a, .pulsante-top, .pulsante-home-briscola). */
+.modale-inizio-lang {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.modale-inizio-regole {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+}
+.modale-inizio-home {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    text-decoration: none;
+    white-space: nowrap;
 }
 
 .btn-opzione-sel {
