@@ -495,16 +495,12 @@ html, body {
     box-shadow: inset 1px 2px 5px rgba(0, 0, 0, 0.75);
 }
 
+.domino-tile.boneyard-tile,
+.domino-tile.boneyard-tile.vertical,
 .boneyard-tile {
     width: 36px;
     height: 72px;
     border-radius: 6px;
-    background: linear-gradient(145deg, #1b263b 0%, #0d1b2a 100%);
-    border: 1px solid #415a77;
-    box-shadow: 1px 2px 5px rgba(0, 0, 0, 0.55), inset 0 1px 1px rgba(255, 255, 255, 0.25);
-    display: flex;
-    align-items: center;
-    justify-content: center;
     box-sizing: border-box;
     cursor: default;
     position: relative;
@@ -512,7 +508,16 @@ html, body {
     transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
 }
 
-.boneyard-tile::after {
+.boneyard-tile.tile-back {
+    background: linear-gradient(145deg, #1b263b 0%, #0d1b2a 100%);
+    border: 1px solid #415a77;
+    box-shadow: 1px 2px 5px rgba(0, 0, 0, 0.55), inset 0 1px 1px rgba(255, 255, 255, 0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.boneyard-tile.tile-back::after {
     content: '🁠';
     font-size: 20px;
     color: #778da9;
@@ -669,7 +674,8 @@ html, body {
     pointer-events: none;
 }
 
-.board-tile .domino-pip {
+.board-tile .domino-pip,
+.boneyard-tile .domino-pip {
     width: 5.5px;
     height: 5.5px;
 }

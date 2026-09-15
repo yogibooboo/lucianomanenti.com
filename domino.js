@@ -662,8 +662,9 @@
                     if (!tileData) {
                         slotEl.classList.add('empty-slot');
                     } else {
-                        var bTile = document.createElement('div');
-                        bTile.className = 'domino-tile tile-back boneyard-tile';
+                        var isBoneyardHidden = !STATE.cpuFaceUp && !STATE.roundOver;
+                        var bTile = createTileElement(tileData, 'vertical', isBoneyardHidden);
+                        bTile.classList.add('boneyard-tile');
                         bTile.dataset.boneyardIndex = idx;
 
                         if (canDraw) {
