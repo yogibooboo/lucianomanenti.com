@@ -361,13 +361,22 @@ a.pulsante-top {
 }
 
 /* Ogni carattere della cella è un suo span: lettere e cifre si distinguono
-   a colpo d'occhio e la lettera selezionata si evidenzia ovunque compaia */
+   a colpo d'occhio e la lettera selezionata si evidenzia ovunque compaia.
+   Ogni span ha la STESSA larghezza, come in un font a spaziatura fissa: cosi'
+   unita', decine e centinaia cadono sulla stessa verticale in tutte le celle
+   di una colonna, anche fra una lettera e una cifra, e il conto in colonna si
+   legge davvero. Un vero monospazio avrebbe dato lo stesso incolonnamento ma
+   avrebbe tolto il corsivo alle lettere e le cifre allineate di Book Antiqua.
+   22px: la M in corsivo grassetto a 23px e' larga ~21.6, e 4 x 22 = 88 sta
+   nei 90 utili (100 - 2x2 di bordo - 6 di padding a destra). */
 .cella-calcolo .ch {
     display: inline-block;
+    width: 22px;
+    text-align: center;
     font-size: 23px;   /* sceso con la cella: 4 cifre a 23px stanno nei 94px utili */
     font-weight: 700;
     line-height: 1;
-    padding: 2px 1px;
+    padding: 2px 0;
     border-radius: 4px;
     transition: background-color 0.15s, color 0.15s;
 }
@@ -378,12 +387,18 @@ a.pulsante-top {
 }
 .cella-calcolo .ch-cifra {
     color: #1a4fa0;
-    /* Serif come le lettere, ma NON Georgia: Georgia ha le cifre "old-style",
-       cioe' disegnate come minuscole. 6 e 8 salgono quanto una maiuscola, 0-1-2
-       restano bassi, 3-4-5-7-9 scendono pure sotto la linea di base: in un
-       numero come 23 si vede benissimo. Book Antiqua (e i ripieghi qui sotto)
-       ha invece le cifre allineate, alte come la maiuscola di Georgia. */
-    font-family: 'Book Antiqua', Palatino, 'Segoe UI', sans-serif;
+    /* NON Georgia: ha le cifre "old-style", disegnate come minuscole. 6 e 8
+       salgono quanto una maiuscola, 0-1-2 restano bassi, 3-4-5-7-9 scendono
+       pure sotto la linea di base: in un numero come 23 si vede benissimo.
+       E nemmeno Book Antiqua, che c'era prima: da quando ogni carattere ha la
+       sua casella da 22px le sue cifre (~12px a 23px) ci ballavano dentro,
+       strette accanto alle lettere. Verdana ha le cifre piu' larghe che ci
+       siano fra i font di sistema (~0.64em, cioe' ~15px a 24px), allineate,
+       e alte quanto la maiuscola di Georgia. Il sans oltretutto le stacca
+       ancora meglio dal corsivo serif delle lettere. DejaVu Sans e' il
+       ripiego su Android, dove Verdana non c'e': stesse proporzioni. */
+    font-family: Verdana, 'DejaVu Sans', Tahoma, sans-serif;
+    font-size: 24px;
 }
 .cella-calcolo .ch-selezionata {
     background: #ffd700;
