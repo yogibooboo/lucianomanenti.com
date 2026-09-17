@@ -142,6 +142,56 @@
 
 
 -- ===========================================================================
+-- RISULTATO -- misurato il 10/09/2026 su 39.292 mani di 9.12 contro 11.319
+--              di 9.11 (braccio A, 2v2). LA PREVISIONE E' CONFERMATA.
+-- ===========================================================================
+--
+--   metrica              9.11     9.12    delta   atteso        z   esito
+--   chiude noi %        56,93    50,79    -6,14     -6,4    -11,6   centrato
+--   vinte %             55,75    51,02    -4,73     -4,0     -8,9   centrato
+--   pozzetto loro %     77,07    83,23    +6,15     +8,1    +14,1   confermato
+--   margine punti       33,11    -0,97   -34,08      -28     -8,0   confermato
+--   pozzetto noi %      83,95    82,08    -1,86     -3,9     -4,7   meta' effetto
+--   punti totali (ctrl) 910,0    902,6     -7,4        0     -2,7   vedi sotto
+--   durata s            300,0    288,5    -11,5     -100     -0,7   nullo
+--   mazzo esaurito %     1,07     0,17    -0,90       --     -9,1   fuori previsione
+--   burrachi/mano        1,95     1,95    +0,01       --       --   fermo
+--
+-- Cinque metriche su cinque si muovono nel verso previsto, e tre centrano
+-- anche la misura. Il margine passa da +33 a zero: il tavolo e' diventato
+-- pari. Gli otto coefficienti valgono quello che l'esperimento diceva.
+--
+-- IL CONTROLLO NEGATIVO NON E' MOSSO, malgrado lo z. Contando le mani come
+-- indipendenti punti_totali da' z = -2,7, ma i punti totali derivano da soli
+-- giorno per giorno DENTRO una stessa versione: la 9.7 va da 896,7 a 913,8,
+-- la 9.12 da 885,4 a 908,2. Prendendo il GIORNO come unita' (4 giorni di
+-- 9.11 contro 10 di 9.12) il confronto da' t = -1,8, sotto soglia. Vale per
+-- tutte le metriche qui sopra: gli z sono ottimisti perche' il giorno e' un
+-- fattore vero. Gli effetti grossi (z oltre 8) sopravvivono comunque; quelli
+-- sotto 3 vanno letti come non conclusivi.
+--
+-- LA CODA DELLA CACHE NON C'E' STATA: fra la prima mano di 9.12
+-- (01/09 18:36) e l'ultima di 9.11 (05/09 14:12) ci sono solo 8 mani di 9.11.
+-- Il controllo contemporaneo della query 6 stavolta non e' disponibile, e il
+-- confronto resta esposto al calendario. E' il limite principale di questa
+-- misura.
+--
+-- DURATA: la caduta di ~100 s prevista dal banco non c'e'. La durata scende
+-- di 11 s, dentro la deriva gia' nota (308 -> 282 s a parita' di motore).
+-- Non e' un indicatore utilizzabile, come gia' annotato.
+--
+-- MAZZO ESAURITO: 1,07% -> 0,17%, sei volte meno. Non era prevedibile perche'
+-- la metrica era gia' quasi a pavimento, ma va nel verso giusto: si va fuori
+-- di piu'.
+--
+-- CONSEGUENZA DI PRODOTTO: il giocatore umano vince ora il 51,0% delle mani
+-- invece del 55,7%. E' ancora sopra la meta', ma il margine di ~33 punti che
+-- aveva e' sparito. Se un giorno arrivassero segnalazioni di gioco troppo
+-- difficile, la causa e' questa e la data e' l'1/09/2026.
+-- ---------------------------------------------------------------------------
+
+
+-- ===========================================================================
 -- 0.  IGIENE -- da lanciare per prima, e da rilanciare dopo la pubblicazione
 --     Quante mani per versione del gioco, da quando a quando, con quale
 --     braccio. Nota utile vista l'1/09: la 9.7 ha continuato a produrre mani

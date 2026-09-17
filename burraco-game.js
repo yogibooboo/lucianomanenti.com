@@ -2328,6 +2328,16 @@ var _fastTick = (function () {
 // Da rispegnere a esperimento chiuso, e prima di tornare a misurare "quanto
 // vince chi gioca": con i bracci accesi quella percentuale e' la media di tre
 // giochi diversi.
+// 17/09/2026 - SECONDO GIRO, tutto quello che c'e' scritto sopra parla del
+// PRIMO (monte scarti, verso rovesciato) ed e' storia: leggerlo con attenzione
+// perche' i segni erano invertiti e adesso non lo sono piu'.
+// In prova adesso: penScarto4c/5c/6c da 3/3/5 a 2/4/7 piu' moltScartoSostMatta
+// a 1,5, tutto dentro burraco-engine-b.coeffs.js, cioe' la variante nuova sta
+// in B e la tabella di serie resta sul motore gia' validato. Quindi d e'
+// l'effetto di AVERE il pacchetto: in B la persona dovrebbe fare PEGGIO, in C
+// MEGLIO. Dettagli e numeri del banco in testa a burraco-engine-b.coeffs.js.
+// La versione del gioco sale a 9.14 apposta, per separare nel database le mani
+// del secondo giro da quelle del primo senza doversi fidare del solo motore.
 var AB_ATTIVO = true;
 
 // I TRE BRACCI

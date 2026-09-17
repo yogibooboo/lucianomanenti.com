@@ -3,6 +3,20 @@
 // Editare direttamente questo file per modificare la strategia dell'AI.
 // Viene caricato prima di burraco-engine-default.js tramite tag <script>.
 //
+// 17/09/2026 - AGGIUNTO moltScartoSostMatta, qui SPENTO (vale 1).
+// Il termine sta in burraco-core.js dentro calcolaScartoPer: quando lo scarto
+// non si limita ad allungare una combinazione avversaria ma prende il posto di
+// una matta, la penalita' penScarto4c/5c/6c viene moltiplicata. La matta non
+// torna in mano all'avversario (burraco-ui.js:1889): resta dentro e si sposta,
+// quindi la combinazione cresce E conserva un jolly mobile. E' lo stesso evento
+// per cui il motore si paga premioLiberaMatta* quando e' lui a calare, e finora
+// non aveva il segno opposto.
+// Frequenza misurata prima di toccare qualunque coefficiente (sonda-matta.js,
+// 1.200 mani): 0,79 regali a mano, nel 47% delle mani, 5,8% degli scarti - di
+// cui l'87% sostituzioni interne e i due terzi su un TRIS, per questo il malus
+// non e' ristretto alle scale come il premio gemello.
+// La variante in prova online da oggi (2/4/7 + x1,5) sta in B, vedi quel file.
+//
 // 11/09/2026 - penScartoTrisPozzo da 9 a 24, e il termine in burraco-core.js
 // ora vede anche le SCALE (un 6 di fiori buttato sopra 5F e 7F lascia li' una
 // scala bell'e' pronta, e la scala di tre e' un regalo esattamente come il
@@ -87,6 +101,7 @@ window.coeffScoreOpz = {
     penScarto6c:                  5,  // Penalità per scartare carta che completerebbe combo avversaria a 6 — promosso 01/09 (era 25)
     penScarto5c:                  3,  // Penalità per scartare carta che completerebbe combo avversaria a 5 — promosso 01/09 (era 15)
     penScarto4c:                  3,  // Penalità per scartare carta che completerebbe combo avversaria a 4 — promosso 01/09 (era 7)
+    moltScartoSostMatta:          1,  // Moltiplicatore su penScarto4c/5c/6c quando lo scarto sostituisce una matta avversaria. 1 = SPENTO: la variante viva sta in burraco-engine-b.coeffs.js
     penScartoCalabile:            7,  // Penalità per scartare carta calabile su combo propria a terra
     penScartoMatta:              50,  // Penalità pesante per scartare una matta
     penScartoCoppiaPozzo:         3,  // Penalità se la carta forma una COPPIA nel monte scarti — misurato 10/09/2026

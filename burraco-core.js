@@ -3307,8 +3307,18 @@ window.calcolaScartoPer = function(opzIdx, _silent, comboSquadraOverride) {
     candidati.forEach(function(r) {
         var pericoli = [];
         comboAvversarie.forEach(function(combo) {
-            if (!combo.isBurraco && _isAttaccabileAdAvversario(r.cartaRef, combo))
-                pericoli.push({ lunghezza: combo.carte.length + 1 });
+            if (combo.isBurraco || !_isAttaccabileAdAvversario(r.cartaRef, combo)) return;
+            // La carta puo' anche prendere il posto di una matta. La matta NON
+            // torna in mano all'avversario: resta nella combinazione e si
+            // sposta (burraco-ui.js:1889), quindi la combinazione cresce E
+            // conserva un jolly mobile. E' lo stesso evento per cui il motore
+            // si paga premioLiberaMatta* quando e' lui a calare (riga ~3157):
+            // qui c'e' il malus simmetrico, che prima mancava.
+            var _agg = _w.puoAggiungereACombinazione ? _w.puoAggiungereACombinazione(r.cartaRef, combo) : null;
+            pericoli.push({
+                lunghezza: combo.carte.length + 1,
+                sostituzione: !!(_agg && _agg.sostituzione)
+            });
         });
         pericoliAvversari[r.cartaRef.id] = pericoli;
     });
@@ -3389,10 +3399,23 @@ window.calcolaScartoPer = function(opzIdx, _silent, comboSquadraOverride) {
         if (conn > 0) { var sConn = -(conn * (cf.coeffScartoConn || 8)); score += sConn; righe.push('  conn(' + conn.toFixed(1) + '): ' + sConn.toFixed(1)); }
         var pericoli = pericoliAvversari[r.cartaRef.id] || [];
         if (pericoli.length > 0) {
-            var peggiore = pericoli.reduce(function(w, p) { return p.lunghezza > w.lunghezza ? p : w; }, pericoli[0]);
-            var pen = peggiore.lunghezza >= 6 ? -(cf.penScarto6c || 25) : peggiore.lunghezza === 5 ? -(cf.penScarto5c || 15) : -(cf.penScarto4c || 5);
+            // Una penalita' sola, la piu' grave: se la carta serve a due
+            // combinazioni avversarie l'avversario ne usera' comunque una.
+            // Il peggiore si sceglie sulla PENALITA', non sulla lunghezza:
+            // col moltiplicatore un 4c che regala una matta puo' pesare piu'
+            // di un 5c secco.
+            var _moltSost = cf.moltScartoSostMatta != null ? cf.moltScartoSostMatta : 1.5;
+            var peggiore = null, _peggio = -1;
+            pericoli.forEach(function(p) {
+                var b = p.lunghezza >= 6 ? (cf.penScarto6c || 25) : p.lunghezza === 5 ? (cf.penScarto5c || 15) : (cf.penScarto4c || 5);
+                if (p.sostituzione) b *= _moltSost;
+                if (b > _peggio) { _peggio = b; peggiore = p; }
+            });
+            var pen = -_peggio;
             score += pen;
-            righe.push('  pericolo avv ' + peggiore.lunghezza + 'c: ' + pen);
+            righe.push('  pericolo avv ' + peggiore.lunghezza + 'c' +
+                       (peggiore.sostituzione ? ' +sost.matta x' + _moltSost : '') +
+                       ': ' + pen.toFixed(1));
         }
         var nPropri = pericoliPropri[r.cartaRef.id] || 0;
         if (nPropri > 0) { var sProp = -(nPropri * (cf.penScartoCalabile || 7)); score += sProp; righe.push('  calabile propri(' + nPropri + '): ' + sProp.toFixed(1)); }

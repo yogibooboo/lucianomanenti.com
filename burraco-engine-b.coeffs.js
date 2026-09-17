@@ -1,39 +1,51 @@
 // ============================================================================
 // COEFFICIENTI MOTORE AI — B
 //
-// 11/09/2026 — B È TORNATA UNA VARIANTE VIVA, e stavolta è il CONTROLLO.
-// In prova c'è la penalità sugli scarti che sporcano il monte
-// (penScartoCoppiaPozzo / penScartoTrisPozzo, il termine sta in
-// burraco-core.js dentro calcolaScartoPer). Il verso è rovesciato rispetto agli
-// esperimenti di agosto: la variante NUOVA sta nella tabella di SERIE e qui c'è
-// quella VECCHIA, coi due coefficienti a zero.
+// 17/09/2026 — NUOVO ESPERIMENTO, e il verso torna QUELLO NORMALE.
+// In prova c'è il pacchetto sugli scarti pericolosi:
+//     penScarto4c/5c/6c  3/3/5 → 2/4/7   (base "scalata")
+//     moltScartoSostMatta  1 → 1,5       (malus se lo scarto sostituisce una matta)
+// La variante NUOVA sta QUI, la tabella di serie resta sul motore già validato.
+// Quindi d è l'effetto di AVERE il pacchetto: in B (due avversari con la
+// variante) la persona dovrebbe fare PEGGIO e in C (compagno con la variante)
+// MEGLIO. È il contrario di come si leggeva l'esperimento di settembre: non
+// riusare quella nota senza cambiare i segni.
 //
-// Perché in questo verso. La penalità è la correzione estetica: l'IA non butta
-// più il 7 sopra il 7. Mettendola di serie la vedono subito anche tutti quelli
-// che il braccio non ce l'hanno mai (fuori UE, ad blocker, chi si è chiamato
-// fuori dalla raccolta), e il motore imbruttito compare solo in 3 sedie su 12.
-// Il contrasto che si misura è identico, cambia solo il segno: qui d è l'effetto
-// di TOGLIERE il termine, quindi in B (due avversari senza) la persona dovrebbe
-// fare MEGLIO e in C (compagno senza) PEGGIO. Se si muovono dalla stessa parte
-// non stiamo misurando questo.
+// Perché stavolta non si inverte. A settembre la variante nuova stava di serie
+// perché era una correzione estetica vistosa (l'IA che butta il 7 sopra il 7) e
+// conveniva darla subito a tutti. Qui no: 2/4/7 vale +4,30 ± 11,11 punti a mano
+// al banco, cioè non è dimostrato, e x1,5 taglia i regali di matta solo del
+// 13,8% (contro il 53% di quella correzione). Il default resta dov'è e il
+// rischio sta in 3 sedie su 12.
 //
-// Attenzione a non leggerlo come "B è il motivo in prova": nel database
-// `parametri` porterà {"penScartoCoppiaPozzo":0,"penScartoTrisPozzo":0}, cioè
-// la sottrazione, non l'aggiunta.
+// Che cosa aspettarsi. Al banco appaiato il pacchetto contro il motore attuale
+// dà +1,56 ± 11,20 punti a mano su 1.200 mani (scratchpad/griglia-molt-matta.csv):
+// indistinguibile da zero, come al solito. È ancora una prova di NON
+// inferiorità. La ragione per cui online potrebbe vedersi qualcosa che al banco
+// non si vede è la solita: il regalo della matta al banco lo raccoglie un
+// automa, online lo raccoglie una PERSONA.
 //
-// Che cosa aspettarsi. Al banco appaiato il termine NON sposta i punti
-// (+2,5 ± 3,9 su 8.000 mani), quindi è quasi certo che online non si veda
-// nessuna differenza: questa è una prova di NON inferiorità, serve a mettere un
-// tetto al costo, non a trovare un guadagno. L'unica ragione per cui potrebbe
-// uscire qualcosa è che il banco fa giocare automi contro automi, mentre il
-// regalo lasciato nel monte lo raccoglie una PERSONA, che magari lo sfrutta
-// meglio. Vedi la nota in burraco-game.js sopra AB_ATTIVO.
+// Le due parti del pacchetto, misurate separatamente al banco (1.200 mani
+// appaiate ciascuna, scratchpad/griglia-penscarto-scalati.csv e
+// griglia-molt-matta.csv e sonda-molt-confronto.csv):
+//     2/4/7 da solo          +4,30 ± 11,11
+//     x1,5 sopra 2/4/7       -0,23 ± 11,10   e -13,8% regali di matta
+//     x2   sopra 2/4/7       -3,87 ± 11,08   — troppo, scartato
+//     x1,2 sopra 2/4/7       -6,1% regali    — metà del beneficio, nessuna soglia
+//     x1,5 sopra 3/3/5       -0,69 ± 11,23   — piatto: senza base scalata non morde
+// Vanno insieme come un pacchetto solo perché separarli chiederebbe un quarto
+// braccio; se il pacchetto perde, il sospettato numero uno è il moltiplicatore.
 //
 // --- prima di oggi ---
 //
-// 10/09/2026 — aggiunti anche qui penScartoCoppiaPozzo e penScartoTrisPozzo,
-// con gli stessi valori di serie, proprio per NON creare una variante: B deve
-// restare identico ad A finche' qualcuno non decide che cosa provare.
+// 11/09/2026 — esperimento sul monte scarti (penScartoCoppiaPozzo /
+// penScartoTrisPozzo tenuti a zero qui, variante nuova di serie, verso
+// rovesciato). CHIUSO il 17/09 senza segnale, come previsto: serviva arrivare a
+// ~66.000 mani per separare da zero un effetto da +2,5 punti e non ci si è
+// arrivati. I due coefficienti sono stati riallineati ai valori di serie.
+// Nota metodologica che vale ancora: `parametri` nel database porta la
+// DIFFERENZA rispetto alla tabella di serie, quindi "B" non vuol dire "il
+// motivo in prova" — va sempre letto che cosa c'è scritto dentro.
 //
 // 01/09/2026 — ATTENZIONE: QUESTA TABELLA ERA IDENTICA A QUELLA DI SERIE.
 // Gli otto coefficienti sono stati promossi in burraco-engine-default.coeffs.js,
@@ -98,13 +110,14 @@ window.coeffScoreOpzB = {
     // --- SCARTO ---
     coeffScartoDecent:            3,  // Peso della decentralizzazione nella scelta dello scarto (favorisce scarti di carte non centrali)
     coeffScartoConn:              4,  // Penalità per scartare carte connesse ad altre in mano
-    penScarto6c:                  5,  // Penalità per scartare carta che completerebbe combo avversaria a 6 — combinazione 22/08 (di serie 25)
-    penScarto5c:                  3,  // Penalità per scartare carta che completerebbe combo avversaria a 5 — combinazione 22/08 (di serie 15)
-    penScarto4c:                  3,  // Penalità per scartare carta che completerebbe combo avversaria a 4 — combinazione 22/08 (di serie 7)
+    penScarto6c:                    7,  // IN PROVA 17/09 - base scalata (di serie 5)
+    penScarto5c:                    4,  // IN PROVA 17/09 - base scalata (di serie 3)
+    penScarto4c:                    2,  // IN PROVA 17/09 - base scalata (di serie 3)
+    moltScartoSostMatta:          1.5,  // IN PROVA 17/09 - malus x1,5 se lo scarto sostituisce una matta avversaria (di serie 1, spento)
     penScartoCalabile:            7,  // Penalità per scartare carta calabile su combo propria a terra
     penScartoMatta:              50,  // Penalità pesante per scartare una matta
-    penScartoCoppiaPozzo:         0,  // A ZERO DI PROPOSITO — è la variante in prova, vedi in testa al file (11/09/2026)
-    penScartoTrisPozzo:           0,  // A ZERO DI PROPOSITO — è la variante in prova, vedi in testa al file (11/09/2026)
+    penScartoCoppiaPozzo:           3,  // riallineato al valore di serie: l'esperimento monte-scarti si chiude qui (17/09)
+    penScartoTrisPozzo:            24,  // riallineato al valore di serie: l'esperimento monte-scarti si chiude qui (17/09)
 
     // --- BONUS SOTTRAZIONE AVVERSARIO ---
     // Applicati quando una carta giocata impedisce all'avversario di raggiungere quella lunghezza
