@@ -1,0 +1,1236 @@
+/* ============================================================================
+   TRESSETTE & CIAPANÒ - Stili CSS
+   Stile feltro verde coordinato con Briscola e Scopa, layout 1024x750px
+   Sprite carte condivisi (napoletane / bresciane / francesi)
+   Supporto ventaglio fino a 10 carte per giocatore
+   Tabelloni specifici per Tressette a coppie e Ciapanò a 4 giocatori
+   ============================================================================ */
+
+/* === BASE & LAYOUT === */
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #1a5f2a;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.main-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+/* === SIDEBARS (per AdSense e layout engine) === */
+.sidebar {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    background: linear-gradient(135deg, #1a6b30 0%, #145524 50%, #0f4a1c 100%);
+    overflow-y: auto;
+    box-sizing: border-box;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    z-index: 1;
+    transition: opacity 0.3s ease;
+}
+#sidebar-left { left: 0; }
+#sidebar-right { right: 0; }
+
+/* === CAMPO DI GIOCO === */
+#campogioco {
+    --mano-alto-top: 36px;
+    --mano-alto-h: 140px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 1024px;
+    height: 750px;
+    background: linear-gradient(135deg, #1a6b30 0%, #145524 50%, #0f4a1c 100%);
+    background-image: url(images/scala40/tappetoverde.png);
+    transform-origin: center center;
+    border-radius: 10px;
+    box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.4), 0 10px 30px rgba(0,0,0,0.5);
+    overflow: hidden;
+}
+
+/* Filigrana avviso modalità */
+.filigrana-proto {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 85%;
+    transform: translate(-50%, -50%) rotate(-14deg);
+    text-align: center;
+    font-size: 28px;
+    font-weight: bold;
+    line-height: 1.4;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: rgba(255, 255, 255, 0.08);
+    pointer-events: none;
+    user-select: none;
+    z-index: 1;
+}
+
+/* === SCHERMO OVERLAY === */
+#schermo {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1024px;
+    height: 750px;
+    background-color: rgba(0, 0, 0, 0.65);
+    z-index: 30000;
+    display: none;
+}
+
+/* === TITOLO E BARRA SUPERIORE === */
+#titolo-gioco {
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #ffd700;
+    font-size: 26px;
+    font-family: 'Slackey', 'Outfit', sans-serif;
+    font-weight: bold;
+    z-index: 1000;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+    white-space: nowrap;
+}
+
+#messaggio-stato {
+    position: absolute;
+    bottom: 192px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #fff;
+    font-size: 15px;
+    font-weight: bold;
+    text-align: center;
+    background: rgba(0, 40, 10, 0.75);
+    padding: 5px 18px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    z-index: 100;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    pointer-events: none;
+    white-space: nowrap;
+}
+#campogioco.bresciane #messaggio-stato {
+    bottom: 214px;
+}
+
+/* Lingua, Audio e Nuova Partita Header */
+.lang-switch-header {
+    position: absolute;
+    top: 10px;
+    left: 15px;
+    z-index: 1001;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.lang-switch-header a, .modale-inizio-lang a {
+    color: #ffd700;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 0 8px;
+    height: 28px;
+    line-height: 26px;
+    border: 1px solid rgba(255, 215, 0, 0.4);
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.4);
+    transition: all 0.2s;
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.lang-switch-header a.active, .modale-inizio-lang a.active {
+    background: #ffd700;
+    color: #1a1a2e;
+    border-color: #b8860b;
+}
+.lang-switch-header a:hover:not(.active), .modale-inizio-lang a:hover:not(.active) {
+    background: rgba(255, 215, 0, 0.2);
+}
+
+.btn-audio-game {
+    width: 28px;
+    height: 28px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 18px;
+    background-color: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    box-sizing: border-box;
+}
+.btn-audio-game:hover {
+    background-color: rgba(255, 255, 255, 0.25);
+}
+.btn-audio-game.muted {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.21.05-.42.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z'/%3E%3C/svg%3E");
+}
+
+#btn-audio {
+    position: relative;
+    z-index: 10001;
+}
+
+/* Pulsante Nuova Partita (allineato nella riga superiore) */
+#btn-nuova-partita {
+    height: 28px;
+    line-height: 26px;
+    padding: 0 10px;
+    font-size: 11px;
+    font-weight: bold;
+    font-family: 'Slackey', 'Outfit', sans-serif;
+    color: #1a1a2e;
+    background: linear-gradient(180deg, #ffd700 0%, #d4af37 100%);
+    border: 1px solid #b8860b;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+#btn-nuova-partita:hover {
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(0,0,0,0.4);
+}
+
+/* Pulsanti in alto a destra */
+.pulsanti-top-destra {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    display: flex;
+    gap: 6px;
+    z-index: 1001;
+}
+
+.pulsante-top {
+    background: rgba(0, 40, 10, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: #e0e0e0;
+    font-size: 11px;
+    font-weight: bold;
+    padding: 4px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    height: 28px;
+    line-height: 18px;
+    box-sizing: border-box;
+}
+.pulsante-top:hover {
+    background: rgba(0, 60, 20, 0.8);
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.5);
+}
+.pulsante-top:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* === COLONNA SINISTRA (Punti & Bilancio) === */
+#colonna-sinistra {
+    position: absolute;
+    top: calc(var(--mano-alto-top) + var(--mano-alto-h) + 10px);
+    left: 82px;
+    width: 200px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 50;
+}
+
+#pannello-punti {
+    position: relative;
+    width: 100%;
+    background: rgba(0, 40, 10, 0.65);
+    border: 2px solid rgba(100, 160, 110, 0.45);
+    border-radius: 10px;
+    padding: 7px 10px 8px;
+    box-sizing: border-box;
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    font-size: 11px;
+}
+
+.punti-main-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    font-weight: bold;
+    color: #aed6ae;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid rgba(174, 214, 174, 0.25);
+    padding-bottom: 3px;
+    margin-bottom: 4px;
+}
+.punti-main-header .badge-smazzata {
+    color: #ffd700;
+    font-size: 10px;
+}
+
+.sezione-titolo-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 9.5px;
+    text-transform: uppercase;
+    color: #ffd700;
+    letter-spacing: 0.5px;
+    font-weight: bold;
+    margin: 4px 0 2px;
+    border-bottom: 1px dashed rgba(255, 255, 255, 0.15);
+    padding-bottom: 1px;
+}
+.sezione-titolo-bar.partita-bar {
+    margin-top: 6px;
+}
+.sezione-titolo-bar .target-tag {
+    color: #b0cbb0;
+    font-weight: normal;
+    text-transform: none;
+    font-size: 9.5px;
+}
+
+.griglia-punti-smazzata {
+    display: grid;
+    grid-template-columns: 1fr 48px 48px;
+    row-gap: 2px;
+    column-gap: 4px;
+    align-items: center;
+    font-size: 10.5px;
+    line-height: 1.35;
+}
+.col-head-punti {
+    font-size: 10px;
+    font-weight: bold;
+    text-align: right;
+    color: #aed6ae;
+    padding-bottom: 1px;
+}
+.col-head-punti.noi { color: #7fff7f; }
+.col-head-punti.loro { color: #ffd700; }
+
+.row-label-punti {
+    color: #d0e5d0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.row-label-punti.totale-label {
+    font-weight: bold;
+    color: #aed6ae;
+}
+
+.val-punti {
+    text-align: right;
+    font-weight: bold;
+    color: #fff;
+}
+.val-punti.noi-col { color: #7fff7f; }
+.val-punti.loro-col { color: #ffd700; }
+.val-punti.accusa-val {
+    color: #ffd700;
+    text-shadow: 0 0 6px rgba(255, 215, 0, 0.4);
+}
+.val-punti.totale-val {
+    color: #7fe07f;
+    font-size: 11px;
+}
+
+/* Sezione Partita */
+.partita-totali-row {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 3px 2px 1px;
+}
+.partita-squadra-blocco {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 60px;
+}
+.partita-sq-nome {
+    font-size: 10px;
+    color: #aed6ae;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+.partita-sq-nome.in-testa {
+    color: #7fff7f;
+}
+.partita-sq-val {
+    font-size: 15px;
+    color: #ffd700;
+    font-weight: bold;
+    line-height: 1.2;
+}
+.partita-sq-val.in-testa {
+    color: #7fff7f;
+    text-shadow: 0 0 6px rgba(127, 255, 127, 0.4);
+}
+.partita-separatore {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.3);
+    font-weight: bold;
+}
+
+/* Sotto-tabellino Ciapanò */
+.ciapano-punti-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 10.5px;
+}
+.ciapano-punti-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1px 0;
+}
+.ciapano-punti-row.tu span:first-child {
+    color: #7fff7f;
+    font-weight: bold;
+}
+.ciapano-punti-row.in-testa span:first-child {
+    color: #7fff7f;
+}
+.ciapano-val-penalita {
+    font-weight: bold;
+    color: #ff8f8f;
+}
+.ciapano-val-minimo {
+    font-weight: bold;
+    color: #7fff7f;
+}
+.ciapano-bastoni-note {
+    font-size: 9.5px;
+    color: #ffd700;
+    margin-left: 2px;
+}
+
+/* === PANNELLO STATISTICHE (dentro la colonna) === */
+#pannello-stats {
+    position: relative;
+    width: 100%;
+    background: rgba(0, 40, 10, 0.6);
+    border: 2px solid rgba(100, 160, 110, 0.4);
+    border-radius: 10px;
+    padding: 6px 12px 8px;
+    box-sizing: border-box;
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+.stats-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    font-weight: bold;
+    color: #aed6ae;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+}
+#btn-reset-stats {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: #ccc;
+    border-radius: 4px;
+    font-size: 11px;
+    line-height: 1;
+    padding: 2px 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+#btn-reset-stats:hover {
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.5);
+}
+.stats-righe {
+    display: flex;
+    justify-content: space-between;
+}
+.stats-righe .info-blocco {
+    text-align: center;
+    flex: 1;
+}
+.stats-righe .info-label {
+    font-size: 10px;
+    color: #aed6ae;
+    text-transform: uppercase;
+}
+.stat-valore {
+    font-size: 16px;
+    font-weight: bold;
+    margin-top: 1px;
+}
+#stat-vinte { color: #7fe07f; }
+#stat-perse { color: #ff8f8f; }
+#stat-patte { color: #ffd700; }
+
+/* === CARTE & SPRITE === */
+.carta {
+    position: relative;
+    width: 89px;
+    height: 120px;
+    background-image: url(images/scala40/carte_napoletane.png?v=4);
+    background-size: 1509px 480px;
+    border-radius: 6px;
+    box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.35);
+    flex-shrink: 0;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+    cursor: default;
+}
+.carta.coperta {
+    background-position: -1420px 0; /* dorso */
+    cursor: default;
+}
+.carta.orizzontale {
+    transform: rotate(90deg);
+}
+
+/* Temi carte */
+#campogioco.napoletane .carta {
+    background-image: url(images/scala40/carte_napoletane.png?v=4);
+    background-size: 1509px 480px;
+}
+#campogioco.francesi .carta {
+    background-image: url(images/scala40/conjollyplus.png?v=2);
+    background-size: 1541px 480px;
+}
+#campogioco.bresciane .carta {
+    background-image: url(images/scala40/carte_bresciane.png?v=3);
+    background-size: 1811px 576px;
+    width: 72px;
+    height: 144px;
+}
+#campogioco.bresciane .carta.coperta {
+    background-position: -1721.25px 0;
+}
+
+/* Evidenziazione carta giocabile vs non-giocabile (obbligo di risposta a seme) */
+.carta.non-giocabile {
+    opacity: 0.65;
+    filter: brightness(0.85);
+    cursor: not-allowed !important;
+}
+.carta.giocabile {
+    cursor: pointer;
+}
+.carta.giocabile:hover {
+    transform: translateY(-20px);
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.5), 0 0 10px rgba(255, 215, 0, 0.6);
+    z-index: 200 !important;
+}
+
+/* Carta che apre la presa (oro) */
+.carta.carta-apertura {
+    box-shadow: 0 0 0 2px #ffd700, 2px 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+/* Carta vincente della presa animata con marching ants ciano */
+.carta.cartavincente::after {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    border-radius: 8px;
+    pointer-events: none;
+    background-image:
+        repeating-linear-gradient(90deg, #00ffff 0 8px, #000000 8px 16px),
+        repeating-linear-gradient(90deg, #00ffff 0 8px, #000000 8px 16px),
+        repeating-linear-gradient(0deg, #00ffff 0 8px, #000000 8px 16px),
+        repeating-linear-gradient(0deg, #00ffff 0 8px, #000000 8px 16px);
+    background-size: 100% 3px, 100% 3px, 3px 100%, 3px 100%;
+    background-position: 0 0, 16px 100%, 0 16px, 100% 0;
+    background-repeat: no-repeat;
+    animation: marciapresa 0.6s linear infinite;
+}
+@keyframes marciapresa {
+    to { background-position: 16px 0, 0 100%, 0 0, 100% 16px; }
+}
+
+/* === MANI DEI GIOCATORI === */
+/* Mano del giocatore in basso (fino a 10 carte sovrapposte) */
+/* Mano del giocatore in basso (leggera sovrapposizione per larghezza compatta) */
+#mano-basso {
+    position: absolute;
+    bottom: 39px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    height: 140px;
+    padding: 0 8px 8px 8px;
+    box-sizing: border-box;
+    z-index: 30;
+    border: 2px solid rgba(100, 160, 110, 0.3);
+    border-radius: 12px;
+    background: rgba(0, 40, 10, 0.45);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    gap: 0;
+}
+#mano-basso.turno-attivo {
+    border-color: #ffd700;
+    box-shadow: 0 0 18px rgba(255, 215, 0, 0.55);
+}
+
+/* Carte avvicinate con leggera sovrapposizione (-6px) */
+#mano-basso .carta {
+    margin-left: -6px;
+}
+#mano-basso .carta:first-child {
+    margin-left: 0;
+}
+#campogioco.bresciane #mano-basso {
+    height: 164px;
+}
+#campogioco.bresciane #mano-basso .carta {
+    margin-left: -4px;
+}
+#campogioco.bresciane #mano-basso .carta:first-child {
+    margin-left: 0;
+}
+
+/* Mani degli avversari */
+#mano-alto {
+    position: absolute;
+    top: var(--mano-alto-top);
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    height: var(--mano-alto-h);
+    padding: 0 8px 8px 8px;
+    box-sizing: border-box;
+    border: 2px solid rgba(100, 160, 110, 0.3);
+    border-radius: 12px;
+    background: rgba(0, 40, 10, 0.45);
+    z-index: 10;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    gap: 0;
+}
+#mano-alto .carta {
+    transform: none;
+    margin-left: -6px;
+    box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.35);
+}
+#mano-alto .carta:first-child {
+    margin-left: 0;
+}
+#mano-alto.turno-attivo {
+    border-color: #ffd700;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.55);
+}
+#campogioco.bresciane {
+    --mano-alto-h: 164px;
+}
+#campogioco.bresciane #mano-alto {
+    height: var(--mano-alto-h);
+}
+#campogioco.bresciane #mano-alto .carta {
+    margin-left: -4px;
+}
+#campogioco.bresciane #mano-alto .carta:first-child {
+    margin-left: 0;
+}
+
+#mano-sinistra, #mano-destra {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 120px;
+    padding: 0;
+    box-sizing: border-box;
+    border: 2px solid rgba(100, 160, 110, 0.3);
+    background: rgba(0, 40, 10, 0.45);
+    z-index: 10;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+#mano-sinistra {
+    left: 0;
+    top: calc(50% + 10px);
+    transform: translate(-50%, -50%);
+    border-left: none;
+    border-radius: 0 12px 12px 0;
+}
+#mano-destra {
+    right: 0;
+    top: calc(50% - 10px);
+    transform: translate(50%, -50%);
+    border-right: none;
+    border-radius: 12px 0 0 12px;
+}
+
+#mano-sinistra.turno-attivo, #mano-destra.turno-attivo {
+    border-color: #ffd700;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.55);
+}
+
+#mano-sinistra .carta {
+    transform: rotate(90deg);
+    transform-origin: center center;
+    margin-top: -75px;
+}
+#mano-destra .carta {
+    transform: rotate(-90deg);
+    transform-origin: center center;
+    margin-top: -75px;
+}
+#mano-sinistra .carta:first-child, #mano-destra .carta:first-child {
+    margin-top: -15px;
+}
+#mano-sinistra .carta:last-child, #mano-destra .carta:last-child {
+    margin-bottom: -15px;
+}
+
+#campogioco.bresciane #mano-sinistra,
+#campogioco.bresciane #mano-destra {
+    width: 144px;
+    padding: 0;
+}
+#campogioco.bresciane #mano-sinistra .carta {
+    transform: rotate(90deg);
+    transform-origin: center center;
+    margin-top: -106px;
+}
+#campogioco.bresciane #mano-destra .carta {
+    transform: rotate(-90deg);
+    transform-origin: center center;
+    margin-top: -106px;
+}
+#campogioco.bresciane #mano-sinistra .carta:first-child,
+#campogioco.bresciane #mano-destra .carta:first-child {
+    margin-top: -36px;
+}
+#campogioco.bresciane #mano-sinistra .carta:last-child,
+#campogioco.bresciane #mano-destra .carta:last-child {
+    margin-bottom: -36px;
+}
+
+/* === AVATAR DEI GIOCATORI === */
+.avatar-blocco {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 40;
+}
+.avatar-blocco img {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 2px solid #ffd700;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+    background: #000;
+    object-fit: cover;
+}
+.avatar-blocco .nome-avatar {
+    margin-top: 3px;
+    font-size: 11px;
+    font-weight: bold;
+    color: #fff;
+    text-shadow: 1px 1px 3px #000;
+    background: rgba(0, 40, 10, 0.7);
+    padding: 1px 8px;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.2);
+    white-space: nowrap;
+}
+
+#avatar-alto {
+    top: 36px;
+    left: calc(50% + 230px);
+}
+#avatar-sinistra {
+    top: 50%;
+    left: 10px;
+}
+#avatar-destra {
+    top: 50%;
+    right: 10px;
+}
+#avatar-basso {
+    bottom: 39px;
+    left: calc(50% - 370px);
+}
+
+/* === DEALER BADGE (MAZZIERE) === */
+.avatar-blocco .dealer-badge {
+    margin-top: 3px;
+    font-size: 10px;
+    font-weight: bold;
+    color: #fff;
+    background: #c06020;
+    border: 1px solid #ffd700;
+    border-radius: 4px;
+    padding: 1px 6px;
+    z-index: 10;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    white-space: nowrap;
+    pointer-events: none;
+    line-height: 1.3;
+}
+
+/* === TAVOLO DELLE PRESE (CENTRO) === */
+#tavolo-presa {
+    position: absolute;
+    top: 48%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 320px;
+    height: 270px;
+    z-index: 20;
+    pointer-events: none;
+}
+
+.slot-carta {
+    position: absolute;
+    width: 89px;
+    height: 120px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+#campogioco.bresciane #tavolo-presa {
+    height: 320px;
+    top: 47%;
+}
+#campogioco.bresciane .slot-carta {
+    width: 72px;
+    height: 144px;
+}
+
+#slot-basso {
+    bottom: 5px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+#slot-alto {
+    top: 5px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+#slot-sinistra {
+    top: 50%;
+    left: 15px;
+    transform: translateY(-50%);
+}
+#slot-destra {
+    top: 50%;
+    right: 15px;
+    transform: translateY(-50%);
+}
+
+/* Cursore interattivo per click fine mano */
+#campogioco.in-attesa-fine-presa {
+    cursor: pointer;
+}
+#campogioco.in-attesa-fine-presa #tavolo-presa {
+    cursor: pointer;
+}
+
+/* Mazzo e tallone (per modalità 1 contro 1 a 2 giocatori) */
+#mazzo-blocco {
+    position: absolute;
+    top: 50%;
+    left: 210px;
+    transform: translateY(-50%);
+    width: 89px;
+    height: 120px;
+    z-index: 18;
+    display: none;
+}
+#campogioco.bresciane #mazzo-blocco {
+    width: 72px;
+    height: 144px;
+}
+.mazzo-count {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.75);
+    color: #ffd700;
+    font-weight: bold;
+    font-size: 16px;
+    padding: 2px 10px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 215, 0, 0.5);
+    pointer-events: none;
+    z-index: 20;
+}
+
+/* Mazzetti delle prese */
+.mazzetto-prese {
+    position: absolute;
+    width: 89px;
+    height: 120px;
+    border: 2px dashed rgba(100, 160, 110, 0.35);
+    border-radius: 8px;
+    background: rgba(0, 30, 10, 0.3);
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 15;
+}
+#campogioco.bresciane .mazzetto-prese {
+    width: 72px;
+    height: 144px;
+}
+.mazzetto-prese .mazzetto-etichetta {
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 11px;
+    font-weight: bold;
+    color: #aed6ae;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+.mazzetto-prese .mazzetto-count {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 40, 10, 0.85);
+    color: #ffd700;
+    font-weight: bold;
+    font-size: 14px;
+    padding: 2px 8px;
+    border-radius: 12px;
+    border: 1.5px solid rgba(255, 215, 0, 0.5);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+    white-space: nowrap;
+    z-index: 5;
+    pointer-events: none;
+}
+
+#mazzetto-loro {
+    top: 185px;
+    right: 80px;
+    width: 120px;
+    height: 89px;
+}
+#mazzetto-loro .carta {
+    transform: rotate(90deg);
+}
+#campogioco.bresciane #mazzetto-loro {
+    width: 144px;
+    height: 72px;
+}
+#campogioco.bresciane #mazzetto-loro .carta {
+    transform: rotate(90deg);
+}
+#mazzetto-tu {
+    bottom: 188px;
+    left: calc(50% + 339px);
+}
+#campogioco.bresciane #mazzetto-tu {
+    bottom: 212px;
+    left: calc(50% + 280px);
+}
+
+/* Banner dichiarazioni / accuse (es. Napoli, Bongioco) */
+#banner-accusa {
+    position: absolute;
+    top: 90px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, rgba(201, 114, 15, 0.95), rgba(138, 74, 8, 0.95));
+    border: 2px solid #ffd700;
+    border-radius: 20px;
+    color: #fff;
+    font-weight: bold;
+    font-size: 14px;
+    padding: 6px 22px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+    z-index: 1500;
+    display: none;
+    animation: apparizioneBanner 0.4s ease-out;
+}
+@keyframes apparizioneBanner {
+    from { opacity: 0; transform: translate(-50%, -10px) scale(0.9); }
+    to { opacity: 1; transform: translate(-50%, 0) scale(1); }
+}
+
+/* === MODALI ED OVERLAY === */
+.form-tressette {
+    z-index: 40000;
+    position: absolute;
+    width: 520px;
+    max-height: 620px;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #1a4224;
+    background-image: url(images/scala40/tappetoverde.png);
+    border: 4px solid #b8860b;
+    border-radius: 12px;
+    box-shadow: 0 10px 35px rgba(0,0,0,0.7);
+    box-sizing: border-box;
+    display: none;
+    flex-direction: column;
+    padding: 22px 26px 36px 26px;
+    color: #fff;
+}
+
+/* Angoli della modale iniziale: lingua in alto a destra, regole in basso a
+   sinistra, uscita verso il sito in basso a destra */
+.modale-inizio-lang {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    z-index: 10;
+}
+.modale-inizio-regole {
+    position: absolute;
+    bottom: 12px;
+    left: 14px;
+    z-index: 10;
+}
+.modale-inizio-home {
+    position: absolute;
+    bottom: 12px;
+    right: 14px;
+    z-index: 10;
+}
+
+.form-tressette-title {
+    font-family: 'Slackey', 'Outfit', sans-serif;
+    font-size: 24px;
+    color: #ffd700;
+    text-align: center;
+    margin-bottom: 16px;
+    text-shadow: 2px 2px 4px #000;
+}
+
+.opzione-gruppo {
+    margin-bottom: 14px;
+    text-align: center;
+}
+.opzione-label {
+    font-size: 12px;
+    font-weight: bold;
+    margin-bottom: 6px;
+    color: #ffd700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.opzione-bottoni {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.btn-opzione-sel {
+    background: rgba(0, 0, 0, 0.45);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    color: #ddd;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 6px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+.btn-opzione-sel:hover {
+    border-color: #ffd700;
+    color: #fff;
+    background: rgba(255, 215, 0, 0.15);
+}
+.btn-opzione-sel.attiva {
+    background: linear-gradient(180deg, #ffd700 0%, #d4af37 100%);
+    border-color: #b8860b;
+    color: #1a1a2e;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+
+.btn-continua {
+    background: linear-gradient(180deg, #ffd700 0%, #d4af37 100%);
+    border: 2px solid #b8860b;
+    border-radius: 8px;
+    color: #1a1a2e;
+    font-family: 'Slackey', 'Outfit', sans-serif;
+    font-size: 15px;
+    font-weight: bold;
+    padding: 9px 24px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+    text-transform: uppercase;
+}
+.btn-continua:hover {
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+}
+
+/* Modale fine partita: bassa e larga, con banner pubblicitario sopra */
+#finepartita.modale-fine {
+    width: 700px;
+    height: 210px;
+    left: 162px;
+    top: 430px;
+    transform: none;
+    padding: 20px 25px;
+    justify-content: center;
+    overflow: visible;
+    text-align: center;
+}
+.confirm-message {
+    font-family: 'Slackey', 'Outfit', sans-serif;
+    font-size: 26px;
+    color: #ffd700;
+    text-shadow: 2px 2px 4px #000;
+    margin-bottom: 8px;
+}
+#fine-dettagli {
+    font-size: 14px;
+    line-height: 1.4;
+    color: #ffd700;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 14px;
+    text-shadow: 1px 1px 2px #000;
+}
+
+/* Modale conferma abbandono: bassa e larga, con banner pubblicitario sopra */
+#confermatermina.modale-conferma {
+    width: 700px;
+    height: 180px;
+    left: 162px;
+    top: 470px;
+    transform: none;
+    padding: 24px 25px;
+    justify-content: center;
+    overflow: visible;
+    text-align: center;
+}
+.conferma-bottoni {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+}
+
+.link-utility-bottom {
+    position: absolute;
+    bottom: 10px;
+    left: 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    z-index: 100;
+}
+
+.legal-links-tressette {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+    margin-left: 4px;
+    line-height: 1.2;
+}
+.legal-links-tressette a {
+    color: rgba(255, 255, 255, 0.65);
+    text-decoration: none;
+    font-size: 10.5px;
+    font-family: sans-serif;
+    transition: color 0.2s;
+    white-space: nowrap;
+}
+.legal-links-tressette a:hover {
+    color: #ffd700;
+}
+
+/* Link agli altri giochi in basso a destra */
+.link-giochi-tressette {
+    position: absolute;
+    bottom: 10px;
+    right: 15px;
+    display: flex;
+    gap: 5px;
+    z-index: 100;
+}
+.pulsante-link-tressette {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 24px;
+    line-height: 1;
+    background-color: rgba(0, 40, 10, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    color: #ccc;
+    font-size: 11px;
+    font-weight: normal;
+    font-family: inherit;
+    padding: 0 8px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s;
+    box-sizing: border-box;
+    white-space: nowrap;
+}
+.pulsante-link-tressette:hover {
+    color: #fff;
+    background-color: rgba(0, 60, 20, 0.7);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+.pulsante-home-tressette {
+    background: linear-gradient(135deg, #c9720f, #8a4a08);
+    border-color: #ffd700;
+    color: #fff;
+    font-weight: bold;
+    letter-spacing: 0.3px;
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.35);
+}
+.pulsante-home-tressette:hover {
+    background: linear-gradient(135deg, #e08514, #a3580a);
+    box-shadow: 0 0 14px rgba(255, 215, 0, 0.65);
+}

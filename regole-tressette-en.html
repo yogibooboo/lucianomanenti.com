@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
+	<script>
+		window.dataLayer = window.dataLayer || [];
+		function gtag() { dataLayer.push(arguments); }
+		gtag('js', new Date());
+		gtag('config', 'G-WRBDRDQ4L8');
+		window.currentLang = 'en';
+	</script>
+	<title>Tressette and Ciapanò Rules - How to play - lucianomanenti.com</title>
+	<link rel="alternate" hreflang="it" href="regole-tressette.html">
+	<link rel="alternate" hreflang="en" href="regole-tressette-en.html">
+	<meta name="Description"
+		content="Complete guide and rules to play Tressette and Ciapanò (Traversone) online: card ranking, scoring, must follow suit rule, and Cappotto.">
+	<link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
+	<link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
+	<link rel="shortcut icon" href="favicon/favicon.ico">
+	<link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+	<style>
+		body {
+			font-family: sans-serif;
+			line-height: 1.7;
+			max-width: 800px;
+			margin: 40px auto;
+			padding: 20px;
+			color: #333;
+			background-color: #f9f9f9;
+		}
+
+		h1 {
+			color: #2c3e50;
+			border-bottom: 2px solid #ffd700;
+			padding-bottom: 10px;
+		}
+
+		h2 {
+			color: #2c3e50;
+			margin-top: 30px;
+		}
+
+		h3 {
+			color: #2c3e50;
+			font-size: 1.1em;
+			margin-top: 20px;
+		}
+
+		.lang-switch {
+			text-align: right;
+			margin-bottom: 20px;
+		}
+
+		.lang-switch a {
+			display: inline-block;
+			padding: 6px 16px;
+			margin-left: 5px;
+			text-decoration: none;
+			border-radius: 5px;
+			font-weight: bold;
+			font-size: 14px;
+		}
+
+		.lang-switch a.active {
+			background: #2c3e50;
+			color: white;
+		}
+
+		.lang-switch a:not(.active) {
+			background: #ddd;
+			color: #333;
+			cursor: pointer;
+		}
+
+		.content-box {
+			background: white;
+			padding: 30px;
+			border-radius: 8px;
+			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+		}
+
+		.play-btn {
+			display: inline-block;
+			margin-top: 25px;
+			padding: 12px 30px;
+			background: #27ae60;
+			color: white;
+			text-decoration: none;
+			border-radius: 8px;
+			font-size: 18px;
+			font-weight: bold;
+		}
+
+		.nav-links {
+			text-align: center;
+			margin-top: 30px;
+			font-size: 14px;
+		}
+
+		.nav-links a {
+			color: #3498db;
+			text-decoration: none;
+			margin: 0 10px;
+		}
+
+		.banner {
+			width: 100%;
+			height: 150px;
+			background-image: url('images/home/castagne.jpg');
+			background-size: cover;
+			background-position: center;
+			border-radius: 8px;
+			margin: 20px 0;
+			box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+		}
+
+		.score-table {
+			width: 100%;
+			border-collapse: collapse;
+			margin-top: 10px;
+			margin-bottom: 20px;
+		}
+
+		.score-table th,
+		.score-table td {
+			border: 1px solid #ddd;
+			padding: 8px;
+			text-align: left;
+		}
+
+		.score-table th {
+			background-color: #f2f2f2;
+			font-weight: bold;
+		}
+	</style>
+</head>
+
+<body>
+	<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+		<a href="#" id="btn-back" onclick="goBack(); return false;"
+			style="display: inline-block; padding: 6px 16px; background: #e74c3c; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 14px;">&#x2190;
+			Back</a>
+		<div class="lang-switch" style="margin-bottom: 0;">
+			<a href="regole-tressette.html" id="btn-it">Italiano</a>
+			<a href="regole-tressette-en.html" id="btn-en" class="active">English</a>
+		</div>
+	</div>
+
+	<div class="banner"></div>
+
+	<div class="content-box">
+		<div id="lang-en">
+			<h1>Rules of Tressette and Ciapanò</h1>
+
+			<p><strong>Tressette</strong> is one of the oldest, most celebrated traditional Italian trick-taking card games. It is played with a standard <strong>40-card Italian deck</strong> (Neapolitan, Brescian, or French decks) across 4 suits (Coins/Diamonds, Cups/Hearts, Swords/Spades, Batons/Clubs).</p>
+
+			<p>It can be played in the classic <strong>4-player partnership mode (2 vs 2)</strong>, where partners sit opposite each other, or in <strong>1 vs 1</strong> head-to-head with a draw stock.</p>
+
+			<p>The famous variant <strong>Ciapanò</strong> (also known as <em>Traversone</em>, <em>Rovescino</em>, or <em>"Reverse Tressette"</em>) reverses the objective: the goal is to <strong>avoid taking points</strong>!</p>
+
+			<h2>1. Card Ranking (Hierarchy)</h2>
+			<p>The distinctive feature of Tressette is the unique card ranking. Unlike most card games:</p>
+			<ul>
+				<li><strong>Threes (3)</strong> are the highest and most powerful cards in the game!</li>
+				<li><strong>Twos (2)</strong> are the second highest!</li>
+				<li><strong>Aces (1)</strong> are third in trick-taking power, but worth the most points!</li>
+			</ul>
+
+			<table class="score-table">
+				<tr><th>Card</th><th>Trick-taking Power</th><th>Point Value</th></tr>
+				<tr><td><strong>Three (3)</strong></td><td>1st (Highest)</td><td>1/3 point</td></tr>
+				<tr><td><strong>Two (2)</strong></td><td>2nd</td><td>1/3 point</td></tr>
+				<tr><td><strong>Ace (1)</strong></td><td>3rd</td><td><strong>1 full point</strong></td></tr>
+				<tr><td><strong>King (10)</strong></td><td>4th</td><td>1/3 point</td></tr>
+				<tr><td><strong>Knight/Horse (9)</strong></td><td>5th</td><td>1/3 point</td></tr>
+				<tr><td><strong>Jack/Fante (8)</strong></td><td>6th</td><td>1/3 point</td></tr>
+				<tr><td><strong>7, 6, 5, 4</strong></td><td>7th to 10th (Lowest)</td><td>0 points ("scartine")</td></tr>
+			</table>
+
+			<h2>2. Trick-Taking: Must Follow Suit</h2>
+			<p>In Tressette, there is <strong>no trump suit</strong>. The player who leads plays any card from their hand: the suit of that card establishes the <strong>lead suit</strong> of the trick.</p>
+			<ul>
+				<li><strong>Must Follow Suit:</strong> All other players <strong>must play a card of the lead suit</strong> if they hold at least one!</li>
+				<li><strong>Discarding:</strong> Only if a player has no cards of the lead suit may they discard any card of another suit.</li>
+				<li><strong>Trick Winner:</strong> The highest card <strong>of the lead suit</strong> takes the trick. Cards of other suits can never win the trick.</li>
+			</ul>
+			<p>The winner of the trick collects the cards and leads the next trick.</p>
+
+			<h2>3. Scoring in Classic Tressette</h2>
+			<p>Each round provides exactly <strong>11 points</strong>:</p>
+			<ul>
+				<li>The 4 <strong>Aces</strong> are worth <strong>1 point</strong> each (4 points total).</li>
+				<li>The 20 face/count cards (four 3s, 2s, Kings, Knights, Jacks) are worth <strong>1/3 point</strong> each. Every 3 of these cards equals 1 full point (6 points total).</li>
+				<li>The <strong>last trick</strong> of the round awards <strong>1 extra point</strong>.</li>
+				<li>Any leftover third-points are discarded at the end of the round according to official rules.</li>
+			</ul>
+			<p>The match is won by the pair or player who reaches the target score first (typically <strong>21</strong> or <strong>31 points</strong>).</p>
+
+			<h3>Declarations (Bongioco &amp; Napoli)</h3>
+			<p>When enabled, players may declare special combinations in hand at the start of the round for bonus points:</p>
+			<ul>
+				<li><strong>Bongioco:</strong> 3 matching cards among Aces, Twos, or Threes = <strong>3 points</strong> (4 matching = <strong>4 points</strong>).</li>
+				<li><strong>Napoli:</strong> Ace, Two, and Three of the same suit = <strong>3 points</strong> (+1 point for consecutive cards, e.g. with the 4 it's 4 points).</li>
+			</ul>
+
+			<hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;">
+
+			<h2>4. Ciapanò (Traversone) Variant</h2>
+			<p><strong>Ciapanò</strong> (meaning "Don't take" in Lombard dialect) is one of the most exciting and strategic Italian card games, played as <strong>4 players Cutthroat (Free-for-all)</strong>:</p>
+			<ul>
+				<li><strong>Objective:</strong> Avoid taking tricks with points! Each point you take is a <strong>penalty point</strong>.</li>
+				<li><strong>Strategy:</strong> Play low cards to stay below your opponents. When you cannot follow suit, discard heavy cards (Aces and count cards) onto the opponent winning the trick!</li>
+				<li><strong>Winning:</strong> The game ends when any player reaches or exceeds the penalty limit (e.g. 21 or 31 points). The player with the <strong>fewest penalty points</strong> wins!</li>
+			</ul>
+
+			<h3>The Cappotto in Ciapanò</h3>
+			<p>If a daring player manages to take <strong>all 11 points</strong> in a single round, they achieve a <strong>Cappotto</strong>! Instead of losing, that player receives <strong>0 penalty points</strong>, and all other players receive the maximum 11 penalty points!</p>
+
+			<h3>Ace of Clubs Penalty Rule (Optional)</h3>
+			<p>You can toggle the special rule where the <strong>Ace of Clubs/Batons</strong> is a penalty bomb: taking the trick with this Ace awards <strong>11 extra penalty points</strong>!</p>
+
+			<p style="text-align: center;"><a href="#" onclick="goBack(); return false;" class="play-btn">Close</a></p>
+		</div>
+	</div>
+
+	<div class="banner"></div>
+
+	<div class="nav-links">
+		<a href="tressette-en.html">Tressette Online</a> |
+		<a href="briscola-en.html">Briscola</a> |
+		<a href="scopa-en.html">Scopa</a> |
+		<a href="burraco-en.html">Burraco</a> |
+		<a href="scala40-en.html">Scala 40</a> |
+		<a href="privacy-en.html">Privacy</a> |
+		<a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)">Manage Cookies</a>
+	</div>
+
+	<p style="text-align: center; font-size: 0.8em; color: #888; max-width: 600px; margin: 20px auto 10px; line-height: 1.5;">
+		The Brescian playing cards graphics are based on <a href="https://commons.wikimedia.org/wiki/File:Carte_bresciane_al_completo.svg" target="_blank" style="color: #3498db; text-decoration: none;">Carte bresciane al completo.svg</a> by <strong>ZZandro</strong> (Wikimedia Commons), modified and used under <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" style="color: #3498db; text-decoration: none;">CC BY-SA 4.0</a>.<br>
+		The Neapolitan playing cards graphics are based on vector artwork by <strong>Florixc</strong> (Wikimedia Commons), modified and used under <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" style="color: #3498db; text-decoration: none;">CC BY-SA 4.0</a>.
+	</p>
+
+	<p style="text-align: center; font-size: 0.8em; color: #999; margin-top: 15px;">
+		© 2026 Luciano Manenti
+	</p>
+
+	<script>
+		function goBack() {
+			window.close();
+		}
+		(function() {
+			var nascosto = false;
+			var observer = new MutationObserver(function() {
+				if (nascosto) return;
+				var divs = document.querySelectorAll('body > div');
+				for (var i = 0; i < divs.length; i++) {
+					if (divs[i].shadowRoot && !divs[i].className && (divs[i].getAttribute('style')||'').length > 5000) {
+						divs[i].style.setProperty('display', 'none', 'important');
+						nascosto = true;
+						observer.disconnect();
+						return;
+					}
+				}
+			});
+			observer.observe(document.body, { childList: true });
+		})();
+	</script>
+</body>
+
+</html>
