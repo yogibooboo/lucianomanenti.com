@@ -8,12 +8,13 @@
    Supporto mazzi: Napoletane, Bresciane, Francesi.
    ============================================================================ */
 
-window.scriptVersion = '1.28';
+window.scriptVersion = '1.29';
 
 // === TESTI MULTILINGUA ===
 const TRESSETTE_LANG = (window.currentLang === 'en') ? {
     titoloTressette: 'Luciano\'s Tressette',
-    titoloCiapano: 'Luciano\'s Ciapanò <span class="titolo-sottotitolo">(Traversone)</span>',
+    titoloCiapano: 'Luciano\'s Traversone <span class="titolo-sottotitolo">(Ciapanò)</span>',
+    traversone: 'TRAVERSONE',
     tuoTurno: 'Your turn — play a card',
     deveRispondere: function (seme) { return 'You must follow suit (' + seme + ')'; },
     inizioTu: 'You lead the first trick',
@@ -105,7 +106,8 @@ const TRESSETTE_LANG = (window.currentLang === 'en') ? {
     cliccaPerContinuareAccusa: 'Click anywhere to continue'
 } : {
     titoloTressette: 'Tressette Luciano',
-    titoloCiapano: 'Ciapanò Luciano <span class="titolo-sottotitolo">(Traversone)</span>',
+    titoloCiapano: 'Traversone Luciano <span class="titolo-sottotitolo">(Ciapanò)</span>',
+    traversone: 'TRAVERSONE',
     tuoTurno: 'Tocca a te — gioca una carta',
     deveRispondere: function (seme) { return 'Devi rispondere a ' + seme; },
     inizioTu: 'Apri tu la mano',
@@ -1727,7 +1729,7 @@ function renderPannelloPunti() {
 
         pnl.innerHTML = `
             <div class="punti-main-header">
-                <span>CIAPANÒ</span>
+                <span>${TRESSETTE_LANG.traversone || 'TRAVERSONE'}</span>
                 <span class="badge-smazzata">${TRESSETTE_LANG.smazzata} #${smazzataNumero}</span>
             </div>
 
@@ -2187,10 +2189,10 @@ function aggiornaTestoOpzioneAssoBastoni() {
     const txt = document.getElementById('lbl-asso-bastoni-testo');
     const isFr = (getTemaMazzoAttivo() === 'francesi');
     if (window.currentLang === 'en') {
-        if (lbl) lbl.textContent = isFr ? 'Ace of Spades rule in Ciapanò:' : 'Ace of Batons rule in Ciapanò:';
+        if (lbl) lbl.textContent = isFr ? 'Ace of Spades rule in Traversone:' : 'Ace of Batons rule in Traversone:';
         if (txt) txt.textContent = isFr ? 'Ace of Spades penalty (+11 pt)' : 'Ace of Batons penalty (+11 pt)';
     } else {
-        if (lbl) lbl.textContent = isFr ? 'Regola Asso di Picche nel Ciapanò:' : 'Regola Asso di Bastoni nel Ciapanò:';
+        if (lbl) lbl.textContent = isFr ? 'Regola Asso di Picche nel Traversone:' : 'Regola Asso di Bastoni nel Traversone:';
         if (txt) txt.textContent = isFr ? 'Asso di Picche penalità (+11 pt)' : 'Asso di Bastoni penalità (+11 pt)';
     }
     const btn = document.getElementById('btn-asso-bastoni');
