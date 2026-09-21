@@ -3,12 +3,12 @@
 	<!-- Italian Pages -->
 	<url>
 		<loc>https://lucianomanenti.com/</loc>
-		<lastmod>2026-03-29</lastmod>
+		<lastmod>2026-09-21</lastmod>
 		<priority>1.0</priority>
 	</url>
 	<url>
 		<loc>https://lucianomanenti.com/info.html</loc>
-		<lastmod>2026-03-29</lastmod>
+		<lastmod>2026-09-21</lastmod>
 		<priority>0.9</priority>
 	</url>
 	<url>
@@ -215,16 +215,6 @@
 		<priority>0.7</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/battaglia-navale.html</loc>
-		<lastmod>2026-08-31</lastmod>
-		<priority>0.9</priority>
-	</url>
-	<url>
-		<loc>https://lucianomanenti.com/guida-battaglia-navale.html</loc>
-		<lastmod>2026-08-31</lastmod>
-		<priority>0.7</priority>
-	</url>
-	<url>
 		<loc>https://lucianomanenti.com/mahjong.html</loc>
 		<lastmod>2026-08-31</lastmod>
 		<priority>0.9</priority>
@@ -234,16 +224,56 @@
 		<lastmod>2026-08-31</lastmod>
 		<priority>0.7</priority>
 	</url>
+	<url>
+		<loc>https://lucianomanenti.com/tressette.html</loc>
+		<lastmod>2026-09-21</lastmod>
+		<priority>0.9</priority>
+	</url>
+	<url>
+		<loc>https://lucianomanenti.com/regole-tressette.html</loc>
+		<lastmod>2026-09-21</lastmod>
+		<priority>0.7</priority>
+	</url>
+	<url>
+		<loc>https://lucianomanenti.com/domino.html</loc>
+		<lastmod>2026-09-21</lastmod>
+		<priority>0.9</priority>
+	</url>
+	<url>
+		<loc>https://lucianomanenti.com/guida-domino.html</loc>
+		<lastmod>2026-09-21</lastmod>
+		<priority>0.7</priority>
+	</url>
+	<url>
+		<loc>https://lucianomanenti.com/tetra.html</loc>
+		<lastmod>2026-09-21</lastmod>
+		<priority>0.9</priority>
+	</url>
+	<url>
+		<loc>https://lucianomanenti.com/guida-tetra.html</loc>
+		<lastmod>2026-09-21</lastmod>
+		<priority>0.7</priority>
+	</url>
+	<url>
+		<loc>https://lucianomanenti.com/scorciatoie.html</loc>
+		<lastmod>2026-09-21</lastmod>
+		<priority>0.9</priority>
+	</url>
+	<url>
+		<loc>https://lucianomanenti.com/guida-scorciatoie.html</loc>
+		<lastmod>2026-09-21</lastmod>
+		<priority>0.7</priority>
+	</url>
 
 	<!-- English Pages -->
 	<url>
 		<loc>https://lucianomanenti.com/index-en.html</loc>
-		<lastmod>2026-03-29</lastmod>
+		<lastmod>2026-09-21</lastmod>
 		<priority>1.0</priority>
 	</url>
 	<url>
 		<loc>https://lucianomanenti.com/info-en.html</loc>
-		<lastmod>2026-03-29</lastmod>
+		<lastmod>2026-09-21</lastmod>
 		<priority>0.9</priority>
 	</url>
 	<url>
@@ -449,16 +479,6 @@
 		<priority>0.7</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/battaglia-navale-en.html</loc>
-		<lastmod>2026-08-31</lastmod>
-		<priority>0.9</priority>
-	</url>
-	<url>
-		<loc>https://lucianomanenti.com/guida-battaglia-navale-en.html</loc>
-		<lastmod>2026-08-31</lastmod>
-		<priority>0.7</priority>
-	</url>
-	<url>
 		<loc>https://lucianomanenti.com/mahjong-en.html</loc>
 		<lastmod>2026-08-31</lastmod>
 		<priority>0.9</priority>
@@ -466,6 +486,46 @@
 	<url>
 		<loc>https://lucianomanenti.com/guida-mahjong-en.html</loc>
 		<lastmod>2026-08-31</lastmod>
+		<priority>0.7</priority>
+	</url>
+	<url>
+		<loc>https://lucianomanenti.com/tressette-en.html</loc>
+		<lastmod>2026-09-21</lastmod>
+		<priority>0.9</priority>
+	</url>
+	<url>
+		<loc>https://lucianomanenti.com/regole-tressette-en.html</loc>
+		<lastmod>2026-09-21</lastmod>
+		<priority>0.7</priority>
+	</url>
+	<url>
+		<loc>https://lucianomanenti.com/domino-en.html</loc>
+		<lastmod>2026-09-21</lastmod>
+		<priority>0.9</priority>
+	</url>
+	<url>
+		<loc>https://lucianomanenti.com/guida-domino-en.html</loc>
+		<lastmod>2026-09-21</lastmod>
+		<priority>0.7</priority>
+	</url>
+	<url>
+		<loc>https://lucianomanenti.com/tetra-en.html</loc>
+		<lastmod>2026-09-21</lastmod>
+		<priority>0.9</priority>
+	</url>
+	<url>
+		<loc>https://lucianomanenti.com/guida-tetra-en.html</loc>
+		<lastmod>2026-09-21</lastmod>
+		<priority>0.7</priority>
+	</url>
+	<url>
+		<loc>https://lucianomanenti.com/scorciatoie-en.html</loc>
+		<lastmod>2026-09-21</lastmod>
+		<priority>0.9</priority>
+	</url>
+	<url>
+		<loc>https://lucianomanenti.com/guida-scorciatoie-en.html</loc>
+		<lastmod>2026-09-21</lastmod>
 		<priority>0.7</priority>
 	</url>
 </urlset>
