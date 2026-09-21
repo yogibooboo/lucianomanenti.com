@@ -1083,21 +1083,20 @@ function adjustLayout() {
             var promoLink = en ? '/calcolo-en.html' : '/calcolo.html';
             var promoTesto = en ? 'CROSS FIGURE Luciano' : 'CALCOLO ENIGMATICO';
 
-            // Scorciatoie tiene il badge "nuovo" come Calcolo Enigmatico: sono
-            // i due arrivi recenti e li si vuole segnalare entrambi.
-            var scorciatoieLink = en ? '/scorciatoie-en.html' : '/scorciatoie.html';
-            var scorciatoieTesto = en ? 'SHORTCUTS Luciano' : 'SCORCIATOIE';
+            // Tressette / Traversone tiene il badge "nuovo" come Calcolo Enigmatico
+            var tressetteLink = en ? '/tressette-en.html' : '/tressette.html';
+            var tressetteTesto = 'TRESSETTE/TRAVERSONE (ciapanò)';
 
             return '<div style="display:flex;flex-direction:column;justify-content:space-evenly;align-items:center;width:300px;height:250px;padding:10px;box-sizing:border-box;background:linear-gradient(135deg, #14532d, #022c22);border:3px solid #ffdb4d;border-radius:12px;box-shadow:inset 0 0 20px rgba(0,0,0,0.6), 0 4px 15px rgba(0,0,0,0.5);font-family:\'Outfit\',\'Open Sans\',sans-serif;z-index:100;overflow:hidden;">' +
                 '<a href="' + promoLink + '" target="_self" class="sudoku-promo-btn" style="' + stileRiga + 'background:linear-gradient(180deg,#b91c1c 0%,#991b1b 100%);border:2px solid #ffd700;"' + hover + '>' +
                 badgeSmall + '🔢<span style="color:#ffd700;">' + promoTesto + '</span>' +
                 '</a>' +
-                // Verde scuro col bordo chiaro, gli stessi colori del tabellone di
+                // Verde scuro col bordo chiaro, gli stessi colori del feltro di
                 // gioco: e' il modo piu' rapido per far riconoscere il gioco a
                 // chi ci e' gia' stato, e non ripete il rosso di Calcolo qui
                 // sopra ne' il blu della musica qui sotto.
-                '<a href="' + scorciatoieLink + '" target="_self" class="sudoku-promo-btn" style="' + stileRiga + 'background:linear-gradient(180deg,#15803d 0%,#14532d 100%);border:2px solid #ffd700;"' + hover + '>' +
-                badgeSmall + '🎲<span style="color:#ffd700;">' + scorciatoieTesto + '</span>' +
+                '<a href="' + tressetteLink + '" target="_self" class="sudoku-promo-btn" style="' + stileRiga + 'font-size:12.5px;background:linear-gradient(180deg,#15803d 0%,#14532d 100%);border:2px solid #ffd700;"' + hover + '>' +
+                badgeSmall + '🃏<span style="color:#ffd700;">' + tressetteTesto + '</span>' +
                 '</a>' +
                 '<a href="' + amazonGenericLink + '" target="_self" style="' + stileRiga + 'background:linear-gradient(180deg,#1d4ed8 0%,#1e40af 100%);border:2px solid #60a5fa;"' + hover + '>' +
                 '🎵<span style="color:#ffd700;">Music Ear Training</span>' +
