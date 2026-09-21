@@ -10,7 +10,7 @@
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tressette e Ciapanò Online Gratis contro il Computer - lucianomanenti.com</title>
+    <title>Tressette e Traversone (Ciapanò) Online Gratis contro il Computer - lucianomanenti.com</title>
     <link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
     <link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
     <link rel="shortcut icon" href="favicon/favicon.ico">
@@ -18,7 +18,7 @@
     <link rel="manifest" href="favicon/site.webmanifest">
 
     <meta name="Description"
-        content="Gioca a Tressette e Ciapanò (Traversone) gratis online contro il computer a coppie 2 contro 2. Carte napoletane, bresciane o francesi con intelligenza artificiale avanzata a livello Esperto.">
+        content="Gioca a Tressette e Traversone (Ciapanò) gratis online contro il computer a coppie 2 contro 2 o tutti contro tutti a 4. Carte napoletane, bresciane o francesi con intelligenza artificiale avanzata a livello Esperto.">
     <meta http-Equiv="Cache-Control" Content="no-cache">
     <meta http-Equiv="Pragma" Content="no-cache">
     <meta http-Equiv="Expires" Content="0">
@@ -64,7 +64,7 @@
         <!-- Campo di gioco principale centrato e riscalato -->
         <div id="campogioco">
             <!-- Filigrana di sfondo -->
-            <div class="filigrana-proto">Tressette &amp; Ciapan&ograve;<br>Classico &amp; Traversone</div>
+            <div class="filigrana-proto">Tressette &amp; Traversone<br>Classico &amp; Ciapan&ograve;</div>
             <!-- Filigrana sotto le carte del compagno -->
             <div id="filigrana-compagno" class="filigrana-compagno">Prima versione del gioco<br><a href="aboutme.html" target="_blank">scrivetemi</a> per suggerimenti o per segnalare errori</div>
 
@@ -167,12 +167,12 @@
 
                 <div class="form-tressette-title">Nuova Partita</div>
 
-                <!-- Scelta Gioco: Tressette vs Ciapanò -->
+                <!-- Scelta Gioco: Tressette vs Traversone -->
                 <div class="opzione-gruppo">
                     <div class="opzione-label">Gioco / Variante:</div>
                     <div class="opzione-bottoni">
                         <button type="button" data-opt-variante="tressette" onclick="selezionaVariante('tressette')" class="btn-opzione-sel attiva">TRESSETTE CLASSICO</button>
-                        <button type="button" data-opt-variante="ciapano" onclick="selezionaVariante('ciapano')" class="btn-opzione-sel">CIAPAN&Ograve; (TRAVERSONE)</button>
+                        <button type="button" data-opt-variante="ciapano" onclick="selezionaVariante('ciapano')" class="btn-opzione-sel">TRAVERSONE (CIAPAN&Ograve;)</button>
                     </div>
                 </div>
 
@@ -198,7 +198,7 @@
                 </div>
 
                 <div class="opzione-gruppo" id="gruppo-opz-bastoni" style="display: none;">
-                    <div class="opzione-label" id="lbl-gruppo-bastoni">Regola Asso di Bastoni nel Ciapanò:</div>
+                    <div class="opzione-label" id="lbl-gruppo-bastoni">Regola Asso di Bastoni nel Traversone:</div>
                     <div class="opzione-checkbox-wrap">
                         <label class="checkbox-label" for="chk-asso-bastoni">
                             <input type="checkbox" id="chk-asso-bastoni" onchange="toggleAssoBastoni(this.checked)">
@@ -267,8 +267,8 @@
     <script src="site.js?v=1.1"></script>
     <!-- Layout engine per ridimensionare la finestra del gioco -->
     <script src="game-layout.js?v=4.6"></script>
-    <!-- Logica del Tressette e Ciapanò -->
-    <script src="tressette.js?v=1.28"></script>
+    <!-- Logica del Tressette e Traversone -->
+    <script src="tressette.js?v=1.29"></script>
     <script>
         (function () {
             var nascosto = false;
