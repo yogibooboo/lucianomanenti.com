@@ -81,6 +81,36 @@ html, body {
     z-index: 1;
 }
 
+/* Filigrana feedback sotto le carte del compagno */
+.filigrana-compagno {
+    position: absolute;
+    top: calc(var(--mano-alto-top) + var(--mano-alto-h) + 4px);
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 15px;
+    line-height: 1.35;
+    font-family: 'Outfit', sans-serif;
+    color: rgba(255, 255, 255, 0.68);
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.85);
+    white-space: normal;
+    text-align: center;
+    z-index: 6;
+    letter-spacing: 0.3px;
+    pointer-events: auto;
+    user-select: none;
+}
+.filigrana-compagno a {
+    color: #ffd700;
+    opacity: 0.85;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    transition: opacity 0.2s;
+    cursor: pointer;
+}
+.filigrana-compagno a:hover {
+    opacity: 1;
+}
+
 /* === SCHERMO OVERLAY === */
 #schermo {
     position: absolute;
@@ -97,7 +127,7 @@ html, body {
 #titolo-gioco {
     position: absolute;
     top: 8px;
-    left: 50%;
+    left: calc(50% - 50px);
     transform: translateX(-50%);
     color: #ffd700;
     font-size: 26px;
@@ -106,6 +136,15 @@ html, body {
     z-index: 1000;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
     white-space: nowrap;
+}
+
+#titolo-gioco .titolo-sottotitolo {
+    font-size: 0.5em;
+    font-weight: normal;
+    margin-left: 6px;
+    vertical-align: 2px;
+    letter-spacing: 0.5px;
+    opacity: 0.92;
 }
 
 #messaggio-stato {
@@ -349,6 +388,8 @@ html, body {
 .row-label-punti.totale-label {
     font-weight: bold;
     color: #aed6ae;
+    border-top: 1px dashed rgba(255, 255, 255, 0.15);
+    padding-top: 2px;
 }
 
 .val-punti {
@@ -365,45 +406,19 @@ html, body {
 .val-punti.totale-val {
     color: #7fe07f;
     font-size: 11px;
+    border-top: 1px dashed rgba(255, 255, 255, 0.15);
+    padding-top: 2px;
 }
 
 /* Sezione Partita */
-.partita-totali-row {
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    padding: 3px 2px 1px;
-}
-.partita-squadra-blocco {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    min-width: 60px;
-}
-.partita-sq-nome {
-    font-size: 10px;
-    color: #aed6ae;
+.val-punti.val-partita {
+    font-size: 12px;
     font-weight: bold;
-    text-transform: uppercase;
-    letter-spacing: 0.3px;
-}
-.partita-sq-nome.in-testa {
-    color: #7fff7f;
-}
-.partita-sq-val {
-    font-size: 15px;
     color: #ffd700;
-    font-weight: bold;
-    line-height: 1.2;
 }
-.partita-sq-val.in-testa {
+.val-punti.val-partita.in-testa {
     color: #7fff7f;
     text-shadow: 0 0 6px rgba(127, 255, 127, 0.4);
-}
-.partita-separatore {
-    font-size: 13px;
-    color: rgba(255, 255, 255, 0.3);
-    font-weight: bold;
 }
 
 /* Sotto-tabellino Ciapanò */
@@ -485,6 +500,7 @@ html, body {
 .stats-righe .info-blocco {
     text-align: center;
     flex: 1;
+    min-width: 0;
 }
 .stats-righe .info-label {
     font-size: 10px;
@@ -499,6 +515,46 @@ html, body {
 #stat-vinte { color: #7fe07f; }
 #stat-perse { color: #ff8f8f; }
 #stat-patte { color: #ffd700; }
+
+/* Lista statistiche Ciapanò a righe */
+.ciapano-stats-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    width: 100%;
+}
+.ciapano-stat-riga {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    padding: 1.5px 4px;
+    border-radius: 4px;
+}
+.ciapano-stat-riga.tu {
+    background: rgba(46, 125, 50, 0.25);
+}
+.ciapano-stat-nome {
+    font-weight: 500;
+    color: #e0e0e0;
+}
+.ciapano-stat-riga.tu .ciapano-stat-nome {
+    color: #7fe07f;
+    font-weight: bold;
+}
+.ciapano-stat-val {
+    font-weight: bold;
+    color: #ffd700;
+}
+.ciapano-stat-riga.tu .ciapano-stat-val {
+    color: #7fe07f;
+}
+.ciapano-stat-unit {
+    font-size: 9.5px;
+    font-weight: normal;
+    color: #aed6ae;
+    margin-left: 2px;
+}
 
 /* === CARTE & SPRITE === */
 .carta {
@@ -995,6 +1051,88 @@ html, body {
     to { opacity: 1; transform: translate(-50%, 0) scale(1); }
 }
 
+/* Showcase per mostrare le carte delle accuse */
+#showcase-accusa {
+    position: absolute;
+    top: 48%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1500;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    animation: apparizioneBanner 0.3s ease-out;
+}
+
+.showcase-accusa-box {
+    background: rgba(8, 38, 14, 0.94);
+    border: 2px solid #ffd700;
+    border-radius: 14px;
+    padding: 14px 24px 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.75), 0 0 20px rgba(255, 215, 0, 0.35);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    backdrop-filter: blur(4px);
+    max-width: 520px;
+}
+
+.showcase-accusa-titolo {
+    font-size: 16px;
+    font-weight: bold;
+    color: #ffffff;
+    text-align: center;
+    text-shadow: 1px 1px 3px #000;
+    line-height: 1.35;
+}
+.showcase-accusa-titolo .showcase-giocatore {
+    color: #7fff7f;
+}
+.showcase-accusa-titolo .showcase-punti {
+    color: #ffd700;
+    font-weight: bold;
+}
+
+.showcase-accusa-carte {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    margin: 4px 0;
+}
+.showcase-accusa-carte .carta {
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    transform: none !important;
+    box-shadow: 0 4px 16px rgba(255, 215, 0, 0.6), 0 2px 8px rgba(0, 0, 0, 0.5) !important;
+    border: 2px solid #ffd700 !important;
+    border-radius: 6px !important;
+    pointer-events: none;
+}
+#campogioco.bresciane .showcase-accusa-carte .carta {
+    width: 72px !important;
+    height: 144px !important;
+}
+
+.showcase-accusa-prompt {
+    font-size: 12px;
+    color: #d4e8d4;
+    text-shadow: 1px 1px 2px #000;
+    animation: pulsantePulse 1.5s infinite;
+    letter-spacing: 0.4px;
+}
+@keyframes pulsantePulse {
+    0%, 100% { opacity: 0.75; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.03); }
+}
+
+#campogioco.in-attesa-accuse {
+    cursor: pointer;
+}
+
 /* === MODALI ED OVERLAY === */
 .form-tressette {
     z-index: 40000;
@@ -1092,6 +1230,45 @@ html, body {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
 }
 
+.opzione-checkbox-wrap {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 4px;
+}
+.opzione-checkbox-wrap .checkbox-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: bold;
+    color: #e8e8e8;
+    user-select: none;
+    background: rgba(0, 0, 0, 0.45);
+    padding: 7px 16px;
+    border-radius: 6px;
+    border: 2px solid rgba(255, 255, 255, 0.25);
+    transition: all 0.15s ease;
+}
+.opzione-checkbox-wrap .checkbox-label:hover {
+    border-color: #ffd700;
+    color: #fff;
+    background: rgba(255, 215, 0, 0.15);
+}
+.opzione-checkbox-wrap .checkbox-label:has(input:checked) {
+    border-color: #ffd700;
+    background: rgba(0, 40, 10, 0.65);
+    color: #ffd700;
+}
+.opzione-checkbox-wrap input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: #ffd700;
+    margin: 0;
+}
+
 .btn-continua {
     background: linear-gradient(180deg, #ffd700 0%, #d4af37 100%);
     border: 2px solid #b8860b;
@@ -1111,33 +1288,236 @@ html, body {
     transform: translateY(-1px);
 }
 
-/* Modale fine partita: bassa e larga, con banner pubblicitario sopra */
-#finepartita.modale-fine {
+/* Modali fine partita e fine smazzata: basse e larghe, con banner pubblicitario sopra */
+#finepartita.modale-fine,
+#finesmazzata.modale-fine {
     width: 700px;
-    height: 210px;
+    min-height: 215px;
+    max-height: 275px;
     left: 162px;
     top: 430px;
     transform: none;
-    padding: 20px 25px;
+    padding: 14px 20px;
     justify-content: center;
     overflow: visible;
     text-align: center;
 }
 .confirm-message {
     font-family: 'Slackey', 'Outfit', sans-serif;
-    font-size: 26px;
+    font-size: 24px;
     color: #ffd700;
     text-shadow: 2px 2px 4px #000;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
 }
-#fine-dettagli {
-    font-size: 14px;
-    line-height: 1.4;
+#fine-dettagli,
+#smazzata-dettagli {
+    font-size: 13px;
+    line-height: 1.35;
     color: #ffd700;
     font-weight: bold;
     text-align: center;
-    margin-bottom: 14px;
+    margin-bottom: 10px;
     text-shadow: 1px 1px 2px #000;
+}
+
+/* Griglia riepilogo punti in modale fine smazzata / fine partita */
+.riepilogo-box-modale {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin: 2px auto 6px auto;
+    max-width: 650px;
+}
+.riepilogo-col-modale {
+    flex: 1;
+    background: rgba(0, 30, 10, 0.65);
+    border: 1px solid rgba(255, 215, 0, 0.35);
+    border-radius: 8px;
+    padding: 5px 10px;
+    box-sizing: border-box;
+}
+.riepilogo-col-titolo {
+    font-size: 11px;
+    color: #aed6ae;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 3px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+    padding-bottom: 2px;
+    font-weight: bold;
+}
+.riepilogo-riga-dettaglio {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    padding: 1px 0;
+    color: #fff;
+}
+.riepilogo-riga-dettaglio.totale {
+    border-top: 1px dashed rgba(255, 215, 0, 0.4);
+    margin-top: 2px;
+    padding-top: 2px;
+    font-weight: bold;
+    color: #ffd700;
+}
+
+/* Griglia a 3 colonne per Tressette (Voce | NOI | LORO) */
+.riepilogo-griglia-tab {
+    display: grid;
+    grid-template-columns: 1fr 58px 58px;
+    column-gap: 6px;
+    row-gap: 2.5px;
+    align-items: center;
+    font-size: 11px;
+}
+.riepilogo-tab-head {
+    font-size: 11px;
+    font-weight: bold;
+    text-align: right;
+    color: #aed6ae;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+    padding-bottom: 2px;
+    margin-bottom: 1px;
+}
+.riepilogo-tab-head.noi {
+    color: #7fff7f;
+}
+.riepilogo-tab-head.loro {
+    color: #ffd700;
+}
+.riepilogo-tab-label {
+    text-align: left;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.riepilogo-tab-val {
+    text-align: right;
+    color: #e0e0e0;
+    font-weight: normal;
+}
+.riepilogo-tab-val.noi {
+    color: #bbf7bb;
+}
+.riepilogo-tab-val.loro {
+    color: #ffe699;
+}
+.riepilogo-tab-label.totale {
+    border-top: 1px dashed rgba(255, 215, 0, 0.4);
+    margin-top: 2px;
+    padding-top: 2px;
+    font-weight: bold;
+    color: #ffd700;
+}
+.riepilogo-tab-val.totale {
+    border-top: 1px dashed rgba(255, 215, 0, 0.4);
+    margin-top: 2px;
+    padding-top: 2px;
+    font-weight: bold;
+    font-size: 12.5px;
+}
+.riepilogo-tab-val.totale.noi {
+    color: #7fff7f;
+}
+.riepilogo-tab-val.totale.loro {
+    color: #ffd700;
+}
+.riepilogo-tab-val.totale.in-testa {
+    color: #7fff7f;
+    text-shadow: 0 0 5px rgba(127, 255, 127, 0.5);
+}
+.riepilogo-bilancio-badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 5px;
+    font-size: 12px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-top: 3px;
+}
+.riepilogo-bilancio-badge.vittoria {
+    background: rgba(46, 125, 50, 0.85);
+    border: 1px solid #7fff7f;
+    color: #7fff7f;
+}
+.riepilogo-bilancio-badge.sconfitta {
+    background: rgba(183, 28, 28, 0.85);
+    border: 1px solid #ff8f8f;
+    color: #ff8f8f;
+}
+.riepilogo-bilancio-badge.patta {
+    background: rgba(198, 140, 0, 0.85);
+    border: 1px solid #ffd700;
+    color: #ffd700;
+}
+
+/* Bilancio Ciapanò suddiviso sui 4 giocatori */
+.riepilogo-bilancio-ciapano-wrapper {
+    margin: 4px auto 2px;
+    max-width: 650px;
+    background: rgba(0, 25, 8, 0.75);
+    border: 1px solid rgba(255, 215, 0, 0.4);
+    border-radius: 6px;
+    padding: 4px 8px;
+    box-sizing: border-box;
+}
+.ciapano-bilancio-titolo-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 10.5px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+    padding-bottom: 2px;
+    margin-bottom: 3px;
+}
+.ciapano-bilancio-titolo-bar.vittoria { color: #7fff7f; }
+.ciapano-bilancio-titolo-bar.sconfitta { color: #ff8f8f; }
+.ciapano-storico-inline {
+    font-size: 9.5px;
+    color: #ffd700;
+    font-weight: normal;
+    text-transform: none;
+}
+.ciapano-bilancio-griglia-chips {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    font-size: 11px;
+}
+.ciapano-bilancio-chip {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 4px;
+    padding: 2px 4px;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.ciapano-bilancio-chip.tu {
+    background: rgba(46, 125, 50, 0.4);
+    border: 1px solid rgba(127, 255, 127, 0.5);
+    color: #7fff7f;
+}
+.ciapano-bilancio-chip .chip-pos {
+    font-weight: bold;
+    color: #ffd700;
+    margin-right: 2px;
+}
+.ciapano-bilancio-chip .chip-dist {
+    font-size: 10px;
+    color: #ffb4b4;
+    margin-left: 2px;
+}
+.ciapano-bilancio-chip.tu .chip-dist {
+    color: #7fff7f;
 }
 
 /* Modale conferma abbandono: bassa e larga, con banner pubblicitario sopra */
@@ -1156,6 +1536,19 @@ html, body {
     display: flex;
     justify-content: center;
     gap: 24px;
+}
+#btn-si-termina {
+    background: linear-gradient(180deg, #d32f2f 0%, #b71c1c 100%) !important;
+    border: 2px solid #851212 !important;
+    color: #ffffff !important;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 4px 10px rgba(183, 28, 28, 0.4);
+}
+#btn-si-termina:hover {
+    background: linear-gradient(180deg, #e53935 0%, #c62828 100%) !important;
+    color: #ffffff !important;
+    filter: brightness(1.1);
+    transform: translateY(-1px);
 }
 
 .link-utility-bottom {

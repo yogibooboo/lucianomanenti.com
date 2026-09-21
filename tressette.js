@@ -1,19 +1,19 @@
 /* ============================================================================
    TRESSETTE & CIAPANÒ - Motore di Gioco (JavaScript)
-   Regole ufficiali italiane per Tressette (2v2 a coppie e 1v1) e
-   Ciapanò / Traversone / Chi perde vince (tutti contro tutti a 4 e 1v1).
+   Regole ufficiali italiane per Tressette (2v2 a coppie) e
+   Ciapanò / Traversone / Chi perde vince (tutti contro tutti a 4).
    Gerarchia di presa: 3 > 2 > Asso > Re > Cavallo > Fante > 7 > 6 > 5 > 4
    Rigido obbligo di risposta a seme (bussare/rispondere).
    AI avanzata a 3 livelli per entrambe le modalità.
    Supporto mazzi: Napoletane, Bresciane, Francesi.
    ============================================================================ */
 
-window.scriptVersion = '1.16';
+window.scriptVersion = '1.28';
 
 // === TESTI MULTILINGUA ===
 const TRESSETTE_LANG = (window.currentLang === 'en') ? {
     titoloTressette: 'Luciano\'s Tressette',
-    titoloCiapano: 'Luciano\'s Ciapanò (Traversone)',
+    titoloCiapano: 'Luciano\'s Ciapanò <span class="titolo-sottotitolo">(Traversone)</span>',
     tuoTurno: 'Your turn — play a card',
     deveRispondere: function (seme) { return 'You must follow suit (' + seme + ')'; },
     inizioTu: 'You lead the first trick',
@@ -38,8 +38,14 @@ const TRESSETTE_LANG = (window.currentLang === 'en') ? {
     diffNames: { facile: 'Beginner', medio: 'Medium', difficile: 'Expert' },
     mossaAnnullata: 'Move undone — your turn again',
     mazzo: { francesi: 'Deck: French', napoletane: 'Deck: Neapolitan', bresciane: 'Deck: Brescian' },
-    semi: { F: 'Spades', Q: 'Diamonds', C: 'Hearts/Cups', P: 'Clubs' },
-    semiItaliani: { F: 'Spade', Q: 'Denari', C: 'Coppe', P: 'Bastoni' },
+    semi: { F: 'Clubs/Swords', Q: 'Diamonds/Coins', C: 'Hearts/Cups', P: 'Spades/Batons' },
+    semiItaliani: { F: 'Swords', Q: 'Coins', C: 'Cups', P: 'Batons' },
+    semiFrancesi: { F: 'Clubs', Q: 'Diamonds', C: 'Hearts', P: 'Spades' },
+    assoSpecialeNome: function (isFr) { return isFr ? 'Ace of Spades' : 'Ace of Batons'; },
+    assoSpecialeNota: function (isFr) { return isFr ? '(+11 Spades)' : '(+11 Batons)'; },
+    napoliNome: function (semeNome, pt) {
+        return 'Napoli of ' + semeNome + (pt > 3 ? ' (' + pt + ')' : '');
+    },
     cliccaPerContinuare: 'Click to continue',
     mazziere: 'Dealer',
     dettaglioPunti: 'POINTS BREAKDOWN',
@@ -54,13 +60,52 @@ const TRESSETTE_LANG = (window.currentLang === 'en') ? {
     parziale: 'Subtotal',
     speciali: 'Specials',
     totale: 'Total',
+    totaleSmazzata: 'Hand Total',
+    totalePrecedente: 'Previous Total',
+    nuovaSmazzata: 'New Hand',
+    totaleGenerale: 'Grand Total',
     traguardo: 'Target',
     limite: 'Limit',
     penalita: 'Penalties',
-    punti: 'Points'
+    punti: 'Points',
+    fineSmazzataTitolo: function (num) { return 'END OF HAND #' + num; },
+    puntiUltimaMano: 'Last Hand Points',
+    totalePartita: 'Match Total',
+    bilancio: 'Balance',
+    bilancioCiapanoHeader: 'BALANCE (4 PLAYERS)',
+    vinte: 'Won',
+    perse: 'Lost',
+    patte: 'Tied',
+    giocatoreEst: 'East',
+    giocatoreNord: 'North',
+    giocatoreOvest: 'West',
+    bilancioCiapanoTitolo: 'Match Balance (4 Players)',
+    bilancioCiapanoStorico: function (s, nomi) {
+        const n0 = (nomi && nomi[0]) ? nomi[0].nome : 'You';
+        const n1 = (nomi && nomi[1]) ? nomi[1].nome : 'P1';
+        const n2 = (nomi && nomi[2]) ? nomi[2].nome : 'P2';
+        const n3 = (nomi && nomi[3]) ? nomi[3].nome : 'P3';
+        return 'Wins balance: ' + n0 + ' ' + s[0] + ' — ' + n1 + ' ' + s[1] + ' — ' + n2 + ' ' + s[2] + ' — ' + n3 + ' ' + s[3];
+    },
+    ultimaPresaPt: 'Last trick (+1 pt)',
+    prossimaSmazzata: 'NEXT HAND ➡️',
+    nuovaPartita: 'NEW MATCH 🔄',
+    vittoriaPer: function (mie, sue, diff) { return 'Victory by ' + mie + ' to ' + sue + ' (+' + diff + ' pt margin)'; },
+    sconfittaPer: function (mie, sue, diff) { return 'Defeat by ' + sue + ' to ' + mie + ' (-' + diff + ' pt margin)'; },
+    pattaPer: function (pt) { return 'Tie game at ' + pt + ' points'; },
+    bilancioCiapano: function (nome, min, distacco) {
+        return nome + ' wins with ' + min + ' penalties' + (distacco > 0 ? ' (' + distacco + ' pt ahead)' : '');
+    },
+    dichiaraAccusa: function (nome, accusa, pt) {
+        return '<span class="showcase-giocatore">' + nome + '</span> declares ' + accusa + ' <span class="showcase-punti">(+' + pt + ' pt)</span>';
+    },
+    dichiariAccusa: function (accusa, pt) {
+        return 'You declare ' + accusa + ' <span class="showcase-punti">(+' + pt + ' pt)</span>';
+    },
+    cliccaPerContinuareAccusa: 'Click anywhere to continue'
 } : {
     titoloTressette: 'Tressette Luciano',
-    titoloCiapano: 'Ciapanò Luciano (Traversone)',
+    titoloCiapano: 'Ciapanò Luciano <span class="titolo-sottotitolo">(Traversone)</span>',
     tuoTurno: 'Tocca a te — gioca una carta',
     deveRispondere: function (seme) { return 'Devi rispondere a ' + seme; },
     inizioTu: 'Apri tu la mano',
@@ -87,6 +132,12 @@ const TRESSETTE_LANG = (window.currentLang === 'en') ? {
     mazzo: { francesi: 'Mazzo: Francesi', napoletane: 'Mazzo: Napoletane', bresciane: 'Mazzo: Bresciane' },
     semi: { F: 'Spade/Fiori', Q: 'Denari/Quadri', C: 'Coppe/Cuori', P: 'Bastoni/Picche' },
     semiItaliani: { F: 'Spade', Q: 'Denari', C: 'Coppe', P: 'Bastoni' },
+    semiFrancesi: { F: 'Fiori', Q: 'Quadri', C: 'Cuori', P: 'Picche' },
+    assoSpecialeNome: function (isFr) { return isFr ? 'Asso di Picche' : 'Asso di Bastoni'; },
+    assoSpecialeNota: function (isFr) { return isFr ? '(+11 Picche)' : '(+11 Bastoni)'; },
+    napoliNome: function (semeNome, pt) {
+        return 'Napoli di ' + semeNome + (pt > 3 ? ' (' + pt + ')' : '');
+    },
     cliccaPerContinuare: 'Clicca per continuare',
     mazziere: 'Mazziere',
     dettaglioPunti: 'DETTAGLIO PUNTI',
@@ -101,10 +152,49 @@ const TRESSETTE_LANG = (window.currentLang === 'en') ? {
     parziale: 'Parziale',
     speciali: 'Speciali',
     totale: 'Totale',
+    totaleSmazzata: 'Totale smazzata',
+    totalePrecedente: 'Totale precedente',
+    nuovaSmazzata: 'Nuova smazzata',
+    totaleGenerale: 'Totale generale',
     traguardo: 'Traguardo',
     limite: 'Limite',
     penalita: 'Penalità',
-    punti: 'Punti'
+    punti: 'Punti',
+    fineSmazzataTitolo: function (num) { return 'FINE SMAZZATA #' + num; },
+    puntiUltimaMano: 'Punti Ultima Mano',
+    totalePartita: 'Totale Partita',
+    bilancio: 'Bilancio',
+    bilancioCiapanoHeader: 'BILANCIO (4 GIOCATORI)',
+    vinte: 'Vinte',
+    perse: 'Perse',
+    patte: 'Patte',
+    giocatoreEst: 'Est',
+    giocatoreNord: 'Nord',
+    giocatoreOvest: 'Ovest',
+    bilancioCiapanoTitolo: 'Bilancio Partita (4 Giocatori)',
+    bilancioCiapanoStorico: function (s, nomi) {
+        const n0 = (nomi && nomi[0]) ? nomi[0].nome : 'Tu';
+        const n1 = (nomi && nomi[1]) ? nomi[1].nome : 'P1';
+        const n2 = (nomi && nomi[2]) ? nomi[2].nome : 'P2';
+        const n3 = (nomi && nomi[3]) ? nomi[3].nome : 'P3';
+        return 'Bilancio vittorie: ' + n0 + ' ' + s[0] + ' — ' + n1 + ' ' + s[1] + ' — ' + n2 + ' ' + s[2] + ' — ' + n3 + ' ' + s[3];
+    },
+    ultimaPresaPt: 'Ultima presa (+1 pt)',
+    prossimaSmazzata: 'PROSSIMA SMAZZATA ➡️',
+    nuovaPartita: 'NUOVA PARTITA 🔄',
+    vittoriaPer: function (mie, sue, diff) { return 'Vittoria per ' + mie + ' a ' + sue + ' (+ ' + diff + ' pt di vantaggio)'; },
+    sconfittaPer: function (mie, sue, diff) { return 'Sconfitta per ' + sue + ' a ' + mie + ' (- ' + diff + ' pt di svantaggio)'; },
+    pattaPer: function (pt) { return 'Pareggio a ' + pt + ' punti'; },
+    bilancioCiapano: function (nome, min, distacco) {
+        return nome + ' vince con sole ' + min + ' penalità' + (distacco > 0 ? ' (' + distacco + ' pt di vantaggio)' : '');
+    },
+    dichiaraAccusa: function (nome, accusa, pt) {
+        return '<span class="showcase-giocatore">' + nome + '</span> dichiara ' + accusa + ' <span class="showcase-punti">(+' + pt + ' pt)</span>';
+    },
+    dichiariAccusa: function (accusa, pt) {
+        return 'Dichiari ' + accusa + ' <span class="showcase-punti">(+' + pt + ' pt)</span>';
+    },
+    cliccaPerContinuareAccusa: 'Clicca ovunque per continuare'
 };
 
 // === COSTANTI DI GIOCO ===
@@ -115,6 +205,21 @@ const TERZI_CARTA = { 1: 3, 3: 1, 2: 1, 10: 1, 9: 1, 8: 1 };
 
 const SEMI = ['F', 'Q', 'C', 'P'];
 const VALORI_SEMI = { F: 0, Q: 1, C: 2, P: 3 };
+
+function getTemaMazzoAttivo() {
+    try {
+        return localStorage.getItem('tressette-deck-theme') || 'napoletane';
+    } catch (e) {
+        return 'napoletane';
+    }
+}
+
+function getNomeSeme(suit, tema) {
+    const t = tema || getTemaMazzoAttivo();
+    const isFr = (t === 'francesi');
+    const dict = isFr ? TRESSETTE_LANG.semiFrancesi : TRESSETTE_LANG.semiItaliani;
+    return (dict && dict[suit]) || suit;
+}
 
 function terziDi(c) {
     if (!c) return 0;
@@ -181,6 +286,9 @@ let undoStack = [];
 let maniScoperte = false;
 let inAttesaClickFinePresa = false;
 let callbackIncassaPresa = null;
+let inAttesaClickAccuse = false;
+let codaAccuseDaMostrare = [];
+let timerMossaAI = null;
 
 window._modalita4 = true;
 
@@ -310,9 +418,11 @@ function rilevaAccuse(g) {
         const cnt = perNum[n] || 0;
         const nomeCarta = (n === 1 ? (window.currentLang === 'en' ? 'Aces' : 'Assi') : (n === 2 ? (window.currentLang === 'en' ? 'Twos' : 'Due') : (window.currentLang === 'en' ? 'Threes' : 'Tre')));
         if (cnt === 3) {
-            accuse.push({ tipo: 'bongioco', dettaglio: nomeCarta, nome: 'Bongioco (' + nomeCarta + ')', punti: 3 });
+            const carteCoinvolte = mano.filter(c => c.number === n);
+            accuse.push({ tipo: 'bongioco', dettaglio: nomeCarta, nome: 'Bongioco (' + nomeCarta + ')', punti: 3, carte: carteCoinvolte });
         } else if (cnt === 4) {
-            accuse.push({ tipo: 'bongioco', dettaglio: 'Super ' + nomeCarta, nome: 'Super Bongioco (' + nomeCarta + ')', punti: 4 });
+            const carteCoinvolte = mano.filter(c => c.number === n);
+            accuse.push({ tipo: 'bongioco', dettaglio: 'Super ' + nomeCarta, nome: 'Super Bongioco (' + nomeCarta + ')', punti: 4, carte: carteCoinvolte });
         }
     });
 
@@ -323,8 +433,19 @@ function rilevaAccuse(g) {
             let pt = 3;
             let nSeq = 4;
             while (carte.includes(nSeq)) { pt++; nSeq++; }
-            const nomeSeme = (TRESSETTE_LANG.semiItaliani[s] || s);
-            accuse.push({ tipo: 'napoli', dettaglio: nomeSeme, nome: 'Napoli ' + nomeSeme + (pt > 3 ? ' (' + pt + ')' : ''), punti: pt });
+            const nomeSeme = getNomeSeme(s);
+            const carteNumeri = [1, 2, 3];
+            for (let num = 4; num < nSeq; num++) carteNumeri.push(num);
+            const carteCoinvolte = mano.filter(c => c.suit === s && carteNumeri.includes(c.number));
+            carteCoinvolte.sort((a, b) => a.number - b.number);
+            accuse.push({
+                tipo: 'napoli',
+                seme: s,
+                dettaglio: nomeSeme,
+                nome: TRESSETTE_LANG.napoliNome(nomeSeme, pt),
+                punti: pt,
+                carte: carteCoinvolte
+            });
         }
     }
     return accuse;
@@ -333,9 +454,66 @@ function rilevaAccuse(g) {
 function mostraBannerAccusa(testo) {
     const banner = document.getElementById('banner-accusa');
     if (!banner) return;
-    banner.textContent = testo;
+    banner.innerHTML = testo;
     banner.style.display = 'block';
-    setTimeout(() => { banner.style.display = 'none'; }, 2800);
+    setTimeout(() => { banner.style.display = 'none'; }, 3200);
+}
+
+function mostraProssimaAccusa() {
+    const sc = document.getElementById('showcase-accusa');
+    const campo = document.getElementById('campogioco');
+
+    if (!codaAccuseDaMostrare || codaAccuseDaMostrare.length === 0) {
+        inAttesaClickAccuse = false;
+        if (sc) {
+            sc.style.display = 'none';
+            sc.innerHTML = '';
+        }
+        if (campo) {
+            campo.classList.remove('in-attesa-accuse');
+        }
+        prossimaMossa();
+        return;
+    }
+
+    inAttesaClickAccuse = true;
+    if (campo) {
+        campo.classList.add('in-attesa-accuse');
+    }
+
+    const item = codaAccuseDaMostrare.shift();
+    if (!sc) {
+        mostraProssimaAccusa();
+        return;
+    }
+
+    const nomeG = (item.g === 0 ? TRESSETTE_LANG.tu : nomiGiocatori[item.g].nome);
+    const testoTitolo = (item.g === 0)
+        ? TRESSETTE_LANG.dichiariAccusa(item.nome, item.punti)
+        : TRESSETTE_LANG.dichiaraAccusa(nomeG, item.nome, item.punti);
+
+    let html = '<div class="showcase-accusa-box">';
+    html += '  <div class="showcase-accusa-titolo">' + testoTitolo + '</div>';
+    html += '  <div class="showcase-accusa-carte" id="showcase-accusa-carte-cont"></div>';
+    html += '  <div class="showcase-accusa-prompt">' + TRESSETTE_LANG.cliccaPerContinuareAccusa + '</div>';
+    html += '</div>';
+
+    sc.innerHTML = html;
+    sc.style.display = 'flex';
+    sc.onclick = (e) => {
+        e.stopPropagation();
+        mostraProssimaAccusa();
+    };
+
+    const contCarte = document.getElementById('showcase-accusa-carte-cont');
+    if (contCarte && Array.isArray(item.carte)) {
+        item.carte.forEach(c => {
+            const el = elementoCarta(c, false, false);
+            contCarte.appendChild(el);
+        });
+    }
+
+    riproduciAudio('sounds/scala40/cardplace1.mp3');
 }
 
 // === INTELLIGENZA ARTIFICIALE ===
@@ -490,8 +668,19 @@ function scegliCartaCiapano(g, legali) {
 function avviaNuovaPartita() {
     partitaFinita = false;
     animando = false;
+    try { sessionStorage.removeItem('tressette-partita-in-corso'); } catch (e) {}
+    if (timerMossaAI) { clearTimeout(timerMossaAI); timerMossaAI = null; }
     undoStack = [];
     smazzataNumero = 1;
+    inAttesaClickAccuse = false;
+    codaAccuseDaMostrare = [];
+    const sc = document.getElementById('showcase-accusa');
+    if (sc) {
+        sc.style.display = 'none';
+        sc.innerHTML = '';
+    }
+    document.getElementById('campogioco')?.classList.remove('in-attesa-accuse');
+    aggiornaStatoUndoUI();
 
     if (varianteGioco === 'ciapano') {
         puntiTorneo = [0, 0, 0, 0];
@@ -508,6 +697,7 @@ function avviaNuovaPartita() {
     window._modalita4 = (modalitaGiocatori === 4);
     scegliNomi();
     aggiornaTitoloGioco();
+    renderStatisticheUI();
     iniziaNuovaSmazzata();
 }
 
@@ -515,16 +705,28 @@ function aggiornaTitoloGioco() {
     const el = document.getElementById('titolo-gioco');
     if (!el) return;
     if (varianteGioco === 'ciapano') {
-        el.textContent = TRESSETTE_LANG.titoloCiapano;
+        el.innerHTML = TRESSETTE_LANG.titoloCiapano;
     } else {
-        el.textContent = TRESSETTE_LANG.titoloTressette;
+        el.innerHTML = TRESSETTE_LANG.titoloTressette;
     }
 }
 
 function iniziaNuovaSmazzata() {
+    if (timerMossaAI) { clearTimeout(timerMossaAI); timerMossaAI = null; }
+    undoStack = [];
     inAttesaClickFinePresa = false;
     callbackIncassaPresa = null;
     document.getElementById('campogioco')?.classList.remove('in-attesa-fine-presa');
+    inAttesaClickAccuse = false;
+    codaAccuseDaMostrare = [];
+    const sc = document.getElementById('showcase-accusa');
+    if (sc) {
+        sc.style.display = 'none';
+        sc.innerHTML = '';
+    }
+    document.getElementById('campogioco')?.classList.remove('in-attesa-accuse');
+    aggiornaStatoUndoUI();
+
     mazzo = creaMazzo();
     mani = [[], [], [], []];
     cartePrese = [[], [], [], []];
@@ -564,15 +766,19 @@ function iniziaNuovaSmazzata() {
                     puntiTorneo[sq] += a.punti;
                     totaleAccuseTorneo[sq] += a.punti;
                     accuseSmazzata[sq].push({ g: g, tipo: a.tipo, dettaglio: a.dettaglio, nome: a.nome, punti: a.punti });
-                    const nomeG = (g === 0 ? TRESSETTE_LANG.tu : nomiGiocatori[g].nome);
-                    mostraBannerAccusa(nomeG + ': ' + a.nome + ' (+' + a.punti + ' pt)');
+                    codaAccuseDaMostrare.push({ g: g, tipo: a.tipo, dettaglio: a.dettaglio, nome: a.nome, punti: a.punti, carte: a.carte });
                 });
             }
         }
     }
 
     renderTutto();
-    prossimaMossa();
+
+    if (codaAccuseDaMostrare.length > 0) {
+        mostraProssimaAccusa();
+    } else {
+        prossimaMossa();
+    }
 }
 
 function impostaMessaggioStato(msg) {
@@ -606,7 +812,9 @@ function prossimaMossa() {
     aggiornaEvidenzaTurno();
     aggiornaStatoUndoUI();
     const tempoAttesa = 600 + Math.random() * 400;
-    setTimeout(() => {
+    if (timerMossaAI) clearTimeout(timerMossaAI);
+    timerMossaAI = setTimeout(() => {
+        timerMossaAI = null;
         if (partitaFinita) return;
         const carta = scegliCartaAI(turno);
         giocaCarta(turno, carta);
@@ -635,13 +843,13 @@ function giocaCarta(g, carta) {
 }
 
 function clickCartaGiocatore(carta) {
-    if (partitaFinita || animando || turno !== 0 || inAttesaClickFinePresa || tavolo.length >= modalitaGiocatori) return;
+    if (partitaFinita || animando || turno !== 0 || inAttesaClickFinePresa || inAttesaClickAccuse || tavolo.length >= modalitaGiocatori) return;
 
     const legali = carteGiocabili(0);
     if (!legali.includes(carta)) {
         // Feedback visivo obbligo di seme
         const leadSuit = tavolo[0].carta.suit;
-        const nomeSeme = (TRESSETTE_LANG.semiItaliani[leadSuit] || leadSuit);
+        const nomeSeme = getNomeSeme(leadSuit);
         impostaMessaggioStato(TRESSETTE_LANG.deveRispondere(nomeSeme));
         riproduciAudio('sounds/teck.wav');
         return;
@@ -658,13 +866,18 @@ function risolviPresa() {
     // Calcolo terzi della presa
     let terzi = terziTavolo();
 
-    // Se Asso di Bastoni nel Ciapanò:
+    // Se Asso di Bastoni / Asso di Picche nel Ciapanò:
     if (varianteGioco === 'ciapano' && assoBastoniSpeciale) {
         const haBastoni = tavolo.some(t => t.carta.suit === 'P' && t.carta.number === 1);
         if (haBastoni) {
             puntiTorneo[vincitore] += 11;
             penalitaSpecialiTorneo[vincitore] += 11;
-            mostraBannerAccusa('Asso di Bastoni a ' + nomeVincitore + '! (+11 penalità)');
+            const isFr = (getTemaMazzoAttivo() === 'francesi');
+            const nomeAsso = TRESSETTE_LANG.assoSpecialeNome(isFr);
+            const msg = (window.currentLang === 'en')
+                ? (nomeAsso + ' to ' + nomeVincitore + '! (+11 penalty)')
+                : (nomeAsso + ' a ' + nomeVincitore + '! (+11 penalità)');
+            mostraBannerAccusa(msg);
         }
     }
 
@@ -689,11 +902,13 @@ function risolviPresa() {
     inAttesaClickFinePresa = true;
     const campogiocoEl = document.getElementById('campogioco');
     if (campogiocoEl) campogiocoEl.classList.add('in-attesa-fine-presa');
+    aggiornaStatoUndoUI();
 
     callbackIncassaPresa = () => {
         inAttesaClickFinePresa = false;
         callbackIncassaPresa = null;
         if (campogiocoEl) campogiocoEl.classList.remove('in-attesa-fine-presa');
+        aggiornaStatoUndoUI();
 
         animaPresaVerso(destId, () => {
             tavolo = [];
@@ -711,45 +926,83 @@ function risolviPresa() {
             turno = vincitore;
             renderTutto();
 
-            // Verifica fine della smazzata (tutte le carte in mano esaurite)
+            // Verifica fine della smazzata (tutte le 10 prese concluse)
             if (mani.every(m => m.length === 0)) {
-                fineSmazzata(vincitore); // vincitore dell'ultima presa riceve il punto di ultima
+                fineSmazzata(vincitore); // calcola punti smazzata e valuta fine partita a smazzata conclusa
                 return;
             }
+
             animando = false;
             prossimaMossa();
         });
     };
 }
 
-// Fine della smazzata: conteggio dei punti/penalità
+let ultimoDatiSmazzata = null;
+
+// Fine della smazzata: conteggio dei punti/penalità e valutazione fine partita
 function fineSmazzata(ultimoVincitore) {
     animando = true;
 
-    // 1. Calcola i punti presi da ciascun giocatore o coppia
-    // Punti = Assi (1 pt ciascuno) + Terzi / 3 (scartando le frazioni) + Ultima presa (1 pt)
+    const labelNoi = modalitaGiocatori === 4 ? TRESSETTE_LANG.noi : TRESSETTE_LANG.tu;
+    const labelLoro = modalitaGiocatori === 4 ? TRESSETTE_LANG.loro : TRESSETTE_LANG.pc;
+    const target = parseInt(targetPunti, 10);
+
     if (varianteGioco === 'tressette') {
-        const ptCoppia = [0, 0];
+        const assi = [0, 0];
+        const pezze = [0, 0];
+        const ptCarte = [0, 0];
+        const ptUltima = [0, 0];
+        const sqUltima = squadraDi(ultimoVincitore);
+        ptUltima[sqUltima] = 1;
+
         for (let sq = 0; sq < 2; sq++) {
-            let assi = 0;
-            let pezze = 0;
             const giocatori = (modalitaGiocatori === 4) ? [sq, sq + 2] : [sq];
             giocatori.forEach(g => {
                 cartePrese[g].forEach(c => {
-                    if (c.number === 1) assi++;
-                    else if ([3, 2, 10, 9, 8].includes(c.number)) pezze++;
+                    if (c.number === 1) assi[sq]++;
+                    else if ([3, 2, 10, 9, 8].includes(c.number)) pezze[sq]++;
                 });
             });
-            ptCoppia[sq] = assi + Math.floor(pezze / 3);
-            if (squadraDi(ultimoVincitore) === sq) ptCoppia[sq] += 1; // Punto d'ultima!
-            totaleCarteTorneo[sq] += ptCoppia[sq];
-            puntiTorneo[sq] += ptCoppia[sq];
+            ptCarte[sq] = assi[sq] + Math.floor(pezze[sq] / 3);
+            totaleCarteTorneo[sq] += (ptCarte[sq] + ptUltima[sq]);
+            puntiTorneo[sq] += (ptCarte[sq] + ptUltima[sq]);
         }
+
+        const accSmazz = [
+            accuseSmazzata[0].reduce((s, a) => s + a.punti, 0),
+            accuseSmazzata[1].reduce((s, a) => s + a.punti, 0)
+        ];
+
+        const totSmazz = [
+            ptCarte[0] + ptUltima[0] + accSmazz[0],
+            ptCarte[1] + ptUltima[1] + accSmazz[1]
+        ];
+        const totPrec = [
+            puntiTorneo[0] - totSmazz[0],
+            puntiTorneo[1] - totSmazz[1]
+        ];
+
+        ultimoDatiSmazzata = {
+            smazzataNum: smazzataNumero,
+            variante: 'tressette',
+            labelNoi: labelNoi,
+            labelLoro: labelLoro,
+            assi: assi,
+            pezze: pezze,
+            ptCarte: ptCarte,
+            ptUltima: ptUltima,
+            sqUltima: sqUltima,
+            accSmazz: accSmazz,
+            totSmazzata: totSmazz,
+            totPrecedente: totPrec,
+            totPartita: [puntiTorneo[0], puntiTorneo[1]],
+            target: target
+        };
 
         renderTutto();
 
-        // Controllo vittoria Tressette
-        const target = targetPunti;
+        // Controllo vittoria partita solo a fine smazzata
         const noiRaggiunto = puntiTorneo[0] >= target;
         const loroRaggiunto = puntiTorneo[1] >= target;
 
@@ -757,6 +1010,10 @@ function fineSmazzata(ultimoVincitore) {
             concludiPartitaTressette();
             return;
         }
+
+        // Partita non finita: mostra modale intermedia di fine smazzata
+        mostraFineSmazzata();
+
     } else {
         // CIAPANÒ: calcolo penalità per ciascuno dei giocatori
         const ptG = [0, 0, 0, 0];
@@ -772,10 +1029,10 @@ function fineSmazzata(ultimoVincitore) {
             ptG[g] = assi + Math.floor(pezze / 3);
             if (ultimoVincitore === g) ptG[g] += 1; // Ultima presa è 1 punto di penalità!
 
-            // Controllo CAPPOTTO: chi totalizza tutti gli 11 punti della smazzata o tutte le 40 carte!
             if (ptG[g] === 11 || (modalitaGiocatori === 4 && cartePrese[g].length === 40)) chiPrendeTutto = g;
         }
 
+        const penalitaSmazzata = [0, 0, 0, 0];
         if (chiPrendeTutto !== -1) {
             // Regola del CAPPOTTO in Ciapanò:
             // Chi fa cappotto prende 0 penalità, tutti gli altri prendono 11 penalità!
@@ -784,38 +1041,265 @@ function fineSmazzata(ultimoVincitore) {
             riproduciAudio('sounds/scala40/tada.mp3');
             for (let g = 0; g < modalitaGiocatori; g++) {
                 if (g !== chiPrendeTutto) {
+                    penalitaSmazzata[g] = 11;
                     puntiTorneo[g] += 11;
                     penalitaSpecialiTorneo[g] += 11;
+                } else {
+                    penalitaSmazzata[g] = 0;
                 }
             }
         } else {
             for (let g = 0; g < modalitaGiocatori; g++) {
+                penalitaSmazzata[g] = ptG[g];
                 puntiTorneo[g] += ptG[g];
                 penalitaCarteTorneo[g] += ptG[g];
             }
         }
 
+        ultimoDatiSmazzata = {
+            smazzataNum: smazzataNumero,
+            variante: 'ciapano',
+            chiPrendeTutto: chiPrendeTutto,
+            ultimoVincitore: ultimoVincitore,
+            penalitaSmazzata: penalitaSmazzata,
+            totPartita: puntiTorneo.slice(),
+            target: target
+        };
+
         renderTutto();
 
-        // Controllo fine partita Ciapanò: qualcuno supera la soglia di penalità (21 o 31)
-        const qualcunoFuori = puntiTorneo.some(p => p >= targetPunti);
-        if (qualcunoFuori || targetPunti === 11) {
+        // Controllo fine partita Ciapanò solo a fine smazzata
+        const qualcunoFuori = puntiTorneo.some(p => p >= target);
+        if (qualcunoFuori || target === 11) {
             concludiPartitaCiapano();
             return;
         }
+
+        // Partita non finita: mostra modale intermedia di fine smazzata
+        mostraFineSmazzata();
+    }
+}
+
+// Formatta il riepilogo grafico dei punti per la modale di fine smazzata e fine partita
+function formattaRiepilogoHTML(dati, isFinale) {
+    if (!dati) return '';
+    let html = '';
+
+    if (dati.variante === 'tressette') {
+        const noi = dati.labelNoi;
+        const loro = dati.labelLoro;
+        const haAccuse = (dati.accSmazz[0] > 0 || dati.accSmazz[1] > 0);
+        const totPrecNoi = (dati.totPrecedente && typeof dati.totPrecedente[0] === 'number') ? dati.totPrecedente[0] : (dati.totPartita[0] - dati.totSmazzata[0]);
+        const totPrecLoro = (dati.totPrecedente && typeof dati.totPrecedente[1] === 'number') ? dati.totPrecedente[1] : (dati.totPartita[1] - dati.totSmazzata[1]);
+
+        html += '<div class="riepilogo-box-modale">';
+
+        // Colonna 1: Punti Ultima Mano (colonne Noi e Loro con valori punti)
+        html += '<div class="riepilogo-col-modale">';
+        html += '<div class="riepilogo-col-titolo">' + TRESSETTE_LANG.puntiUltimaMano + ' (#' + dati.smazzataNum + ')</div>';
+        html += '<div class="riepilogo-griglia-tab">';
+        html += '  <div class="riepilogo-tab-head"></div>';
+        html += '  <div class="riepilogo-tab-head noi">' + noi + '</div>';
+        html += '  <div class="riepilogo-tab-head loro">' + loro + '</div>';
+
+        html += '  <div class="riepilogo-tab-label">' + TRESSETTE_LANG.carte + '</div>';
+        html += '  <div class="riepilogo-tab-val noi">' + dati.ptCarte[0] + ' pt</div>';
+        html += '  <div class="riepilogo-tab-val loro">' + dati.ptCarte[1] + ' pt</div>';
+
+        if (haAccuse) {
+            html += '  <div class="riepilogo-tab-label">' + TRESSETTE_LANG.accuse + '</div>';
+            html += '  <div class="riepilogo-tab-val noi">' + (dati.accSmazz[0] > 0 ? ('+' + dati.accSmazz[0] + ' pt') : '—') + '</div>';
+            html += '  <div class="riepilogo-tab-val loro">' + (dati.accSmazz[1] > 0 ? ('+' + dati.accSmazz[1] + ' pt') : '—') + '</div>';
+        }
+
+        html += '  <div class="riepilogo-tab-label">' + TRESSETTE_LANG.ultimaPresaPt + '</div>';
+        html += '  <div class="riepilogo-tab-val noi">' + (dati.sqUltima === 0 ? '+1 pt' : '—') + '</div>';
+        html += '  <div class="riepilogo-tab-val loro">' + (dati.sqUltima === 1 ? '+1 pt' : '—') + '</div>';
+
+        html += '  <div class="riepilogo-tab-label totale">' + TRESSETTE_LANG.totaleSmazzata + '</div>';
+        html += '  <div class="riepilogo-tab-val noi totale">' + dati.totSmazzata[0] + ' pt</div>';
+        html += '  <div class="riepilogo-tab-val loro totale">' + dati.totSmazzata[1] + ' pt</div>';
+        html += '</div>';
+        html += '</div>';
+
+        // Colonna 2: Totale Partita (colonne Noi e Loro; righe: Totale precedente, Nuova smazzata, Totale generale)
+        html += '<div class="riepilogo-col-modale">';
+        html += '<div class="riepilogo-col-titolo">' + TRESSETTE_LANG.totalePartita + ' (' + TRESSETTE_LANG.traguardo + ' ' + dati.target + ' pt)</div>';
+        html += '<div class="riepilogo-griglia-tab">';
+        html += '  <div class="riepilogo-tab-head"></div>';
+        html += '  <div class="riepilogo-tab-head noi">' + noi + '</div>';
+        html += '  <div class="riepilogo-tab-head loro">' + loro + '</div>';
+
+        html += '  <div class="riepilogo-tab-label">' + TRESSETTE_LANG.totalePrecedente + '</div>';
+        html += '  <div class="riepilogo-tab-val noi">' + totPrecNoi + ' pt</div>';
+        html += '  <div class="riepilogo-tab-val loro">' + totPrecLoro + ' pt</div>';
+
+        html += '  <div class="riepilogo-tab-label">' + TRESSETTE_LANG.nuovaSmazzata + '</div>';
+        html += '  <div class="riepilogo-tab-val noi">+' + dati.totSmazzata[0] + ' pt</div>';
+        html += '  <div class="riepilogo-tab-val loro">+' + dati.totSmazzata[1] + ' pt</div>';
+
+        const inTestaNoi = dati.totPartita[0] > dati.totPartita[1];
+        const inTestaLoro = dati.totPartita[1] > dati.totPartita[0];
+        html += '  <div class="riepilogo-tab-label totale">' + TRESSETTE_LANG.totaleGenerale + '</div>';
+        html += '  <div class="riepilogo-tab-val noi totale ' + (inTestaNoi ? 'in-testa' : '') + '">' + dati.totPartita[0] + ' pt</div>';
+        html += '  <div class="riepilogo-tab-val loro totale ' + (inTestaLoro ? 'in-testa' : '') + '">' + dati.totPartita[1] + ' pt</div>';
+        html += '</div>';
+        html += '</div>';
+
+        html += '</div>';
+
+        if (isFinale) {
+            const diff = Math.abs(dati.totPartita[0] - dati.totPartita[1]);
+            let badgeHtml = '';
+            if (dati.totPartita[0] > dati.totPartita[1]) {
+                badgeHtml = '<div class="riepilogo-bilancio-badge vittoria">' + TRESSETTE_LANG.vittoriaPer(dati.totPartita[0], dati.totPartita[1], diff) + '</div>';
+            } else if (dati.totPartita[1] > dati.totPartita[0]) {
+                badgeHtml = '<div class="riepilogo-bilancio-badge sconfitta">' + TRESSETTE_LANG.sconfittaPer(dati.totPartita[0], dati.totPartita[1], diff) + '</div>';
+            } else {
+                badgeHtml = '<div class="riepilogo-bilancio-badge patta">' + TRESSETTE_LANG.pattaPer(dati.totPartita[0]) + '</div>';
+            }
+            html += badgeHtml;
+        }
+
+    } else {
+        // CIAPANÒ
+        html += '<div class="riepilogo-box-modale">';
+
+        // Colonna 1: Penalità Ultima Mano
+        html += '<div class="riepilogo-col-modale">';
+        html += '<div class="riepilogo-col-titolo">' + TRESSETTE_LANG.puntiUltimaMano + ' (#' + dati.smazzataNum + ')</div>';
+        for (let g = 0; g < modalitaGiocatori; g++) {
+            const nome = (g === 0 ? TRESSETTE_LANG.tu : (nomiGiocatori[g] ? nomiGiocatori[g].nome : 'P' + g));
+            html += '<div class="riepilogo-riga-dettaglio"><span>' + nome + ':</span><span>+' + dati.penalitaSmazzata[g] + ' pt</span></div>';
+        }
+        html += '</div>';
+
+        // Colonna 2: Totale Partita
+        let minPt = Infinity;
+        let vinc = 0;
+        let secondMin = Infinity;
+        for (let g = 0; g < modalitaGiocatori; g++) {
+            if (dati.totPartita[g] < minPt) {
+                secondMin = minPt;
+                minPt = dati.totPartita[g];
+                vinc = g;
+            } else if (dati.totPartita[g] < secondMin) {
+                secondMin = dati.totPartita[g];
+            }
+        }
+
+        html += '<div class="riepilogo-col-modale">';
+        html += '<div class="riepilogo-col-titolo">' + TRESSETTE_LANG.totalePartita + ' (' + TRESSETTE_LANG.limite + ' ' + dati.target + ' pt)</div>';
+        for (let g = 0; g < modalitaGiocatori; g++) {
+            const nome = (g === 0 ? TRESSETTE_LANG.tu : (nomiGiocatori[g] ? nomiGiocatori[g].nome : 'P' + g));
+            const inTesta = (dati.totPartita[g] === minPt);
+            html += '<div class="riepilogo-riga-dettaglio" style="' + (inTesta ? 'font-weight: bold; color: #7fff7f;' : '') + '"><span>' + nome + ':</span><span>' + dati.totPartita[g] + ' pt</span></div>';
+        }
+        html += '</div>';
+
+        html += '</div>';
+
+        if (isFinale) {
+            // Ordina i 4 giocatori per punteggio di penalità crescente (chi ha meno punti è 1°)
+            const classifica = [];
+            for (let g = 0; g < modalitaGiocatori; g++) {
+                const nomeG = (g === 0 ? TRESSETTE_LANG.tu : (nomiGiocatori[g] ? nomiGiocatori[g].nome : 'P' + g));
+                classifica.push({ g: g, nome: nomeG, pt: dati.totPartita[g] });
+            }
+            classifica.sort((a, b) => a.pt - b.pt);
+
+            const minP = classifica[0].pt;
+            const vincG = classifica[0].g;
+            const badgeCls = (vincG === 0) ? 'vittoria' : 'sconfitta';
+
+            let bilVoci = classifica.map((c, idx) => {
+                const pos = (idx + 1) + '°';
+                const distacco = c.pt - minP;
+                const distStr = (idx === 0) ? '🏆' : ('+' + distacco + ' pt');
+                return `<div class="ciapano-bilancio-chip ${c.g === 0 ? 'tu' : ''}">` +
+                    `<span class="chip-pos">${pos}</span> ` +
+                    `<span class="chip-nome">${c.nome}</span>: ` +
+                    `<b>${c.pt} pt</b> ` +
+                    `<span class="chip-dist">${distStr}</span>` +
+                    `</div>`;
+            }).join('');
+
+            const sCiap = caricaStatisticheCiapano();
+            const storicoTxt = TRESSETTE_LANG.bilancioCiapanoStorico(sCiap, nomiGiocatori);
+
+            html += `<div class="riepilogo-bilancio-ciapano-wrapper">` +
+                `<div class="ciapano-bilancio-titolo-bar ${badgeCls}">` +
+                `<span>${TRESSETTE_LANG.bilancioCiapanoTitolo}</span>` +
+                `<span class="ciapano-storico-inline">${storicoTxt}</span>` +
+                `</div>` +
+                `<div class="ciapano-bilancio-griglia-chips">${bilVoci}</div>` +
+                `</div>`;
+        }
     }
 
-    // Altrimenti nuova smazzata del torneo
-    smazzataNumero++;
-    setTimeout(() => {
-        impostaMessaggioStato('Nuova smazzata #' + smazzataNumero);
-        setTimeout(iniziaNuovaSmazzata, 1200);
-    }, 1500);
+    return html;
+}
+
+// Mostra modale intermedia di fine smazzata con banner finish
+function mostraFineSmazzata() {
+    partitaFinita = false;
+    animando = false;
+
+    const msg = document.getElementById('smazzata-messaggio');
+    const dett = document.getElementById('smazzata-dettagli');
+    const btn = document.getElementById('btn-prossima-smazzata');
+
+    if (msg && ultimoDatiSmazzata) msg.innerHTML = TRESSETTE_LANG.fineSmazzataTitolo(ultimoDatiSmazzata.smazzataNum);
+    if (dett) dett.innerHTML = formattaRiepilogoHTML(ultimoDatiSmazzata, false);
+    if (btn) btn.innerHTML = TRESSETTE_LANG.prossimaSmazzata;
+
+    setTimeout(function () {
+        const sch = document.getElementById('schermo');
+        if (sch) sch.style.display = 'block';
+        const modal = document.getElementById('finesmazzata');
+        if (modal) modal.style.display = 'flex';
+        if (typeof setupAmazonFinishBanner === 'function') {
+            setupAmazonFinishBanner('finesmazzata', {
+                modalStyle: { overflow: 'visible' },
+                targetTop: 430,
+                applyModalTop: false,
+                bannerHeight: 300,
+                bannerTopOffset: 325,
+                leftOffset: 0
+            });
+        }
+    }, 1200);
+}
+
+// Continua alla smazzata successiva salvando lo stato in sessionStorage ed eseguendo reload per rinfrescare i banner pubblicitari
+function continuaProssimaSmazzata() {
+    try {
+        sessionStorage.setItem('tressette-partita-in-corso', JSON.stringify({
+            smazzataNumero: smazzataNumero + 1,
+            puntiTorneo: puntiTorneo.slice(),
+            totaleCarteTorneo: totaleCarteTorneo.slice(),
+            totaleAccuseTorneo: totaleAccuseTorneo.slice(),
+            penalitaCarteTorneo: penalitaCarteTorneo.slice(),
+            penalitaSpecialiTorneo: penalitaSpecialiTorneo.slice(),
+            targetPunti: targetPunti,
+            varianteGioco: varianteGioco,
+            modalitaGiocatori: modalitaGiocatori,
+            difficolta: difficolta,
+            nomiGiocatori: nomiGiocatori,
+            assoBastoniSpeciale: assoBastoniSpeciale,
+            accuseAttive: accuseAttive
+        }));
+    } catch (e) {
+        console.warn('Errore salvataggio sessione smazzata:', e);
+    }
+    location.reload();
 }
 
 // Conclusione partita Tressette
 function concludiPartitaTressette() {
     partitaFinita = true;
+    try { sessionStorage.removeItem('tressette-partita-in-corso'); } catch (e) {}
+
     const vinte = puntiTorneo[0] > puntiTorneo[1];
     const patta = puntiTorneo[0] === puntiTorneo[1];
 
@@ -835,8 +1319,10 @@ function concludiPartitaTressette() {
         riproduciAudio('sounds/scala40/haiperso.mp3');
     }
 
-    dettFine.innerHTML = TRESSETTE_LANG.riepilogoTressette(puntiTorneo[0], puntiTorneo[1], targetPunti) +
-        '<br><span style="font-size: 12px; color: #aed6ae;">Smazzate giocate: ' + smazzataNumero + '</span>';
+    if (dettFine) {
+        dettFine.innerHTML = formattaRiepilogoHTML(ultimoDatiSmazzata, true) +
+            '<div style="font-size: 11px; color: #aed6ae; margin-top: 3px;">Smazzate giocate: ' + smazzataNumero + '</div>';
+    }
 
     setTimeout(function () {
         const sch = document.getElementById('schermo');
@@ -859,6 +1345,8 @@ function concludiPartitaTressette() {
 // Conclusione partita Ciapanò
 function concludiPartitaCiapano() {
     partitaFinita = true;
+    try { sessionStorage.removeItem('tressette-partita-in-corso'); } catch (e) {}
+
     // Vince chi ha il punteggio MINIMO di penalità!
     let minPenalita = Infinity;
     let vincitore = 0;
@@ -870,12 +1358,10 @@ function concludiPartitaCiapano() {
     }
 
     const vinte = (vincitore === 0);
-    aggiornaStatistiche(vinte ? 'vinta' : 'persa');
+    aggiornaStatistiche(vinte ? 'vinta' : 'persa', vincitore);
 
     const msgFine = document.getElementById('fine-messaggio');
     const dettFine = document.getElementById('fine-dettagli');
-
-    const nomeVincitore = (vincitore === 0 ? TRESSETTE_LANG.tu : nomiGiocatori[vincitore].nome);
 
     if (vinte) {
         msgFine.innerHTML = TRESSETTE_LANG.vittoria;
@@ -885,15 +1371,10 @@ function concludiPartitaCiapano() {
         riproduciAudio('sounds/scala40/haiperso.mp3');
     }
 
-    let riassunto = '<div style="margin-bottom: 8px;">' + TRESSETTE_LANG.riepilogoCiapano(nomeVincitore, minPenalita) + '</div>';
-    riassunto += '<div style="font-size: 12px; display: flex; flex-direction: column; gap: 3px;">';
-    for (let g = 0; g < modalitaGiocatori; g++) {
-        const nome = (g === 0 ? TRESSETTE_LANG.tu : nomiGiocatori[g].nome);
-        const col = (g === vincitore ? '#7fff7f' : '#ff8f8f');
-        riassunto += '<div><span style="color: ' + col + '; font-weight: bold;">' + nome + '</span>: ' + puntiTorneo[g] + ' penalità</div>';
+    if (dettFine) {
+        dettFine.innerHTML = formattaRiepilogoHTML(ultimoDatiSmazzata, true) +
+            '<div style="font-size: 11px; color: #aed6ae; margin-top: 3px;">Smazzate giocate: ' + smazzataNumero + '</div>';
     }
-    riassunto += '</div>';
-    dettFine.innerHTML = riassunto;
 
     setTimeout(function () {
         const sch = document.getElementById('schermo');
@@ -988,7 +1469,7 @@ function renderTutto() {
     const manoTu = document.getElementById('mano-basso');
     if (manoTu) {
         manoTu.innerHTML = '';
-        const isMioTurno = (turno === 0 && !animando && !partitaFinita && !inAttesaClickFinePresa && tavolo.length < modalitaGiocatori);
+        const isMioTurno = (turno === 0 && !animando && !partitaFinita && !inAttesaClickFinePresa && !inAttesaClickAccuse && tavolo.length < modalitaGiocatori);
         const legali = isMioTurno ? carteGiocabili(0) : [];
         mani[0].forEach((c, idx) => {
             const el = elementoCarta(c, false, false);
@@ -1135,9 +1616,13 @@ function renderPannelloPunti() {
             accuseSmazzata[1].forEach(a => tutteAccuse.push({ sq: 1, ...a }));
 
             tutteAccuse.forEach(a => {
-                const desc = a.tipo === 'napoli'
-                    ? ('Napoli ' + a.dettaglio)
-                    : (a.dettaglio.startsWith('Super') ? a.dettaglio : 'Bongioco ' + a.dettaglio);
+                let desc;
+                if (a.tipo === 'napoli') {
+                    const nomeSeme = a.seme ? getNomeSeme(a.seme) : a.dettaglio;
+                    desc = TRESSETTE_LANG.napoliNome(nomeSeme, a.punti);
+                } else {
+                    desc = a.dettaglio.startsWith('Super') ? a.dettaglio : 'Bongioco ' + a.dettaglio;
+                }
                 const valNoi = a.sq === 0 ? ('+' + a.punti + ' pt') : '—';
                 const valLoro = a.sq === 1 ? ('+' + a.punti + ' pt') : '—';
                 righeAccuse += `
@@ -1148,19 +1633,16 @@ function renderPannelloPunti() {
             });
         }
 
-        // Totale smazzata (Carte + Accuse)
-        let rigaTotaleSmazzata = '';
-        if (haAccuse) {
-            const totIntNoi = carteIntNoi + accSmazz[0];
-            const totStrNoi = formatVal(totIntNoi, carteRestNoi);
-            const totIntLoro = carteIntLoro + accSmazz[1];
-            const totStrLoro = formatVal(totIntLoro, carteRestLoro);
-            rigaTotaleSmazzata = `
-                <div class="row-label-punti totale-label">${TRESSETTE_LANG.totale}</div>
-                <div class="val-punti totale-val">${totStrNoi}</div>
-                <div class="val-punti totale-val">${totStrLoro}</div>
-            `;
-        }
+        // Totale smazzata (Carte + Accuse) - sempre presente in fondo alla relativa sezione
+        const totIntNoi = carteIntNoi + accSmazz[0];
+        const totStrNoi = formatVal(totIntNoi, carteRestNoi);
+        const totIntLoro = carteIntLoro + accSmazz[1];
+        const totStrLoro = formatVal(totIntLoro, carteRestLoro);
+        const rigaTotaleSmazzata = `
+            <div class="row-label-punti totale-label">${TRESSETTE_LANG.totale}</div>
+            <div class="val-punti totale-val">${totStrNoi}</div>
+            <div class="val-punti totale-val">${totStrLoro}</div>
+        `;
 
         pnl.innerHTML = `
             <div class="punti-main-header">
@@ -1190,16 +1672,10 @@ function renderPannelloPunti() {
                 <span>${TRESSETTE_LANG.partita}</span>
                 <span class="target-tag">${TRESSETTE_LANG.traguardo}: ${targetPunti} pt</span>
             </div>
-            <div class="partita-totali-row">
-                <div class="partita-squadra-blocco">
-                    <span class="partita-sq-nome ${noiPt > loroPt ? 'in-testa' : ''}">${labelNoi}</span>
-                    <span class="partita-sq-val ${noiPt > loroPt ? 'in-testa' : ''}">${noiPt} pt</span>
-                </div>
-                <div class="partita-separatore">-</div>
-                <div class="partita-squadra-blocco">
-                    <span class="partita-sq-nome ${loroPt > noiPt ? 'in-testa' : ''}">${labelLoro}</span>
-                    <span class="partita-sq-val ${loroPt > noiPt ? 'in-testa' : ''}">${loroPt} pt</span>
-                </div>
+            <div class="griglia-punti-smazzata">
+                <div class="row-label-punti">${TRESSETTE_LANG.punti}</div>
+                <div class="val-punti val-partita ${noiPt > loroPt ? 'in-testa' : ''}">${noiPt} pt</div>
+                <div class="val-punti val-partita ${loroPt > noiPt ? 'in-testa' : ''}">${loroPt} pt</div>
             </div>
         `;
     } else {
@@ -1235,13 +1711,15 @@ function renderPannelloPunti() {
             const resto = nP % 3;
             const parzStr = interi + (resto === 1 ? '⅓' : (resto === 2 ? '⅔' : '')) + ' pt';
             const haBastoniSmazz = (assoBastoniSpeciale && (cartePrese[g] || []).some(c => c.suit === 'P' && c.number === 1));
+            const isFr = (getTemaMazzoAttivo() === 'francesi');
+            const notaAsso = TRESSETTE_LANG.assoSpecialeNota(isFr);
 
             rowsSmazzata += `
                 <div class="ciapano-punti-row ${g === 0 ? 'tu' : ''}">
                     <span>${nome}</span>
                     <span>
                         <b class="ciapano-val-penalita">${parzStr}</b>
-                        ${haBastoniSmazz ? '<span class="ciapano-bastoni-note">(+11 Bastoni)</span>' : ''}
+                        ${haBastoniSmazz ? `<span class="ciapano-bastoni-note">${notaAsso}</span>` : ''}
                     </span>
                 </div>
             `;
@@ -1485,14 +1963,34 @@ function creaUndoSnapshot() {
         totaleAccuseTorneo: totaleAccuseTorneo.slice(),
         penalitaCarteTorneo: penalitaCarteTorneo.slice(),
         penalitaSpecialiTorneo: penalitaSpecialiTorneo.slice(),
-        accuseSmazzata: [accuseSmazzata[0].slice(), accuseSmazzata[1].slice()]
+        accuseSmazzata: [accuseSmazzata[0].slice(), accuseSmazzata[1].slice()],
+        carteGiocateIds: Object.assign({}, carteGiocateIds),
+        mazzo: mazzo ? mazzo.slice() : []
     };
     undoStack.push(snap);
     aggiornaStatoUndoUI();
 }
 
 function annullaMossa() {
-    if (undoStack.length === 0 || animando || partitaFinita) return;
+    if (undoStack.length === 0 || partitaFinita || inAttesaClickAccuse) return;
+    if (animando && !inAttesaClickFinePresa) return;
+
+    if (timerMossaAI) {
+        clearTimeout(timerMossaAI);
+        timerMossaAI = null;
+    }
+
+    if (inAttesaClickFinePresa) {
+        inAttesaClickFinePresa = false;
+        callbackIncassaPresa = null;
+        const campogiocoEl = document.getElementById('campogioco');
+        if (campogiocoEl) campogiocoEl.classList.remove('in-attesa-fine-presa');
+        const banner = document.getElementById('banner-accusa');
+        if (banner) banner.style.display = 'none';
+    }
+
+    animando = false;
+
     const snap = undoStack.pop();
     mani = snap.mani.map(m => m.slice());
     tavolo = snap.tavolo.slice();
@@ -1505,57 +2003,142 @@ function annullaMossa() {
     penalitaCarteTorneo = snap.penalitaCarteTorneo ? snap.penalitaCarteTorneo.slice() : [0, 0, 0, 0];
     penalitaSpecialiTorneo = snap.penalitaSpecialiTorneo ? snap.penalitaSpecialiTorneo.slice() : [0, 0, 0, 0];
     accuseSmazzata = snap.accuseSmazzata ? [snap.accuseSmazzata[0].slice(), snap.accuseSmazzata[1].slice()] : [[], []];
+    carteGiocateIds = snap.carteGiocateIds ? Object.assign({}, snap.carteGiocateIds) : {};
+    if (snap.mazzo) mazzo = snap.mazzo.slice();
 
+    riproduciAudio('sounds/teck.wav');
     impostaMessaggioStato(TRESSETTE_LANG.mossaAnnullata);
+    aggiornaEvidenzaTurno();
     renderTutto();
     aggiornaStatoUndoUI();
 }
 
 function aggiornaStatoUndoUI() {
     const btn = document.getElementById('btn-undo');
-    if (btn) {
-        btn.disabled = (undoStack.length === 0 || turno !== 0 || animando || partitaFinita);
-    }
+    if (!btn) return;
+    const canUndo = (undoStack.length > 0 && !partitaFinita && !inAttesaClickAccuse && ((turno === 0 && !animando) || inAttesaClickFinePresa));
+    btn.disabled = !canUndo;
 }
 
 // === STATISTICHE LOCALI ===
-function caricaStatistiche() {
-    const k = 'tressette-stats-' + varianteGioco;
+function caricaStatisticheTressette() {
+    const k = 'tressette-stats-' + difficolta;
     try {
         let s = JSON.parse(localStorage.getItem(k));
-        if (!s) s = JSON.parse(localStorage.getItem(k + '-' + difficolta));
+        if (!s) s = JSON.parse(localStorage.getItem('tressette-stats-tressette'));
         if (s && typeof s.v === 'number') return s;
     } catch (e) {}
     return { v: 0, p: 0, n: 0 };
 }
 
-function salvaStatistiche(s) {
-    const k = 'tressette-stats-' + varianteGioco;
-    localStorage.setItem(k, JSON.stringify(s));
+function salvaStatisticheTressette(s) {
+    try {
+        localStorage.setItem('tressette-stats-' + difficolta, JSON.stringify(s));
+        localStorage.setItem('tressette-stats-tressette', JSON.stringify(s));
+    } catch (e) {}
 }
 
-function aggiornaStatistiche(esito) {
-    const s = caricaStatistiche();
-    if (esito === 'vinta') s.v++;
-    else if (esito === 'persa') s.p++;
-    else s.n++;
-    salvaStatistiche(s);
+function caricaStatisticheCiapano() {
+    const k = 'ciapano-stats-4-' + difficolta;
+    try {
+        let s = JSON.parse(localStorage.getItem(k));
+        if (!s) s = JSON.parse(localStorage.getItem('ciapano-stats-4'));
+        if (Array.isArray(s) && s.length === 4) return s;
+    } catch (e) {}
+    return [0, 0, 0, 0];
+}
+
+function salvaStatisticheCiapano(s) {
+    try {
+        localStorage.setItem('ciapano-stats-4-' + difficolta, JSON.stringify(s));
+        localStorage.setItem('ciapano-stats-4', JSON.stringify(s));
+    } catch (e) {}
+}
+
+function caricaStatistiche() {
+    return (varianteGioco === 'ciapano') ? caricaStatisticheCiapano() : caricaStatisticheTressette();
+}
+
+function salvaStatistiche(s) {
+    if (varianteGioco === 'ciapano') {
+        salvaStatisticheCiapano(s);
+    } else {
+        salvaStatisticheTressette(s);
+    }
+}
+
+function aggiornaStatistiche(esito, vincitoreG) {
+    if (varianteGioco === 'ciapano') {
+        const s = caricaStatisticheCiapano();
+        const vincIdx = (typeof vincitoreG === 'number' && vincitoreG >= 0 && vincitoreG < 4) ? vincitoreG : 0;
+        s[vincIdx] = (s[vincIdx] || 0) + 1;
+        salvaStatisticheCiapano(s);
+    } else {
+        const s = caricaStatisticheTressette();
+        if (esito === 'vinta') s.v++;
+        else if (esito === 'persa') s.p++;
+        else s.n++;
+        salvaStatisticheTressette(s);
+    }
     renderStatisticheUI();
 }
 
 function renderStatisticheUI() {
-    const s = caricaStatistiche();
-    const sv = document.getElementById('stat-vinte');
-    const sp = document.getElementById('stat-perse');
-    const sn = document.getElementById('stat-patte');
-    if (sv) sv.textContent = s.v;
-    if (sp) sp.textContent = s.p;
-    if (sn) sn.textContent = s.n;
+    const cont = document.getElementById('stats-righe');
+    const headerTitolo = document.getElementById('stats-header-titolo');
+
+    if (varianteGioco === 'ciapano') {
+        if (headerTitolo) headerTitolo.textContent = TRESSETTE_LANG.bilancioCiapanoHeader || 'BILANCIO (4 GIOCATORI)';
+        if (cont) {
+            if (!nomiGiocatori || nomiGiocatori.length < 4) {
+                scegliNomi();
+            }
+            const s = caricaStatisticheCiapano();
+            let rowsHtml = '';
+            for (let g = 0; g < 4; g++) {
+                const nomeG = (g === 0 ? TRESSETTE_LANG.tu : (nomiGiocatori[g] ? nomiGiocatori[g].nome : 'P' + g));
+                const winCount = s[g] || 0;
+                const winUnit = (window.currentLang === 'en')
+                    ? (winCount === 1 ? 'win' : 'wins')
+                    : (winCount === 1 ? 'vinta' : 'vinte');
+                rowsHtml += `
+                    <div class="ciapano-stat-riga ${g === 0 ? 'tu' : ''}">
+                        <span class="ciapano-stat-nome">${nomeG}</span>
+                        <span class="ciapano-stat-val">${winCount} <span class="ciapano-stat-unit">${winUnit}</span></span>
+                    </div>
+                `;
+            }
+            cont.innerHTML = `<div class="ciapano-stats-lista">${rowsHtml}</div>`;
+        }
+    } else {
+        if (headerTitolo) headerTitolo.textContent = TRESSETTE_LANG.bilancio || 'BILANCIO';
+        if (cont) {
+            const s = caricaStatisticheTressette();
+            cont.innerHTML = `
+                <div class="info-blocco">
+                    <div class="info-label">${TRESSETTE_LANG.vinte}</div>
+                    <div class="stat-valore" id="stat-vinte" style="color: #7fe07f;">${s.v}</div>
+                </div>
+                <div class="info-blocco">
+                    <div class="info-label">${TRESSETTE_LANG.perse}</div>
+                    <div class="stat-valore" id="stat-perse" style="color: #ff8f8f;">${s.p}</div>
+                </div>
+                <div class="info-blocco">
+                    <div class="info-label">${TRESSETTE_LANG.patte}</div>
+                    <div class="stat-valore" id="stat-patte" style="color: #ffd700;">${s.n}</div>
+                </div>
+            `;
+        }
+    }
 }
 
 function resetStatistiche() {
     if (!confirm(TRESSETTE_LANG.resetChiedi)) return;
-    salvaStatistiche({ v: 0, p: 0, n: 0 });
+    if (varianteGioco === 'ciapano') {
+        salvaStatisticheCiapano([0, 0, 0, 0]);
+    } else {
+        salvaStatisticheTressette({ v: 0, p: 0, n: 0 });
+    }
     renderStatisticheUI();
 }
 
@@ -1576,7 +2159,42 @@ function impostaTemaMazzo(tema) {
     }
     const btn = document.getElementById('btn-mazzo');
     if (btn) btn.textContent = TRESSETTE_LANG.mazzo[tema];
+
+    // Aggiorna nomi delle accuse in corso se cambia mazzo
+    accuseSmazzata.forEach(coppia => {
+        coppia.forEach(a => {
+            if (a.tipo === 'napoli' && a.seme) {
+                const ns = getNomeSeme(a.seme, tema);
+                a.dettaglio = ns;
+                a.nome = TRESSETTE_LANG.napoliNome(ns, a.punti);
+            }
+        });
+    });
+    codaAccuseDaMostrare.forEach(a => {
+        if (a.tipo === 'napoli' && a.seme) {
+            const ns = getNomeSeme(a.seme, tema);
+            a.dettaglio = ns;
+            a.nome = TRESSETTE_LANG.napoliNome(ns, a.punti);
+        }
+    });
+
+    aggiornaTestoOpzioneAssoBastoni();
     renderTutto();
+}
+
+function aggiornaTestoOpzioneAssoBastoni() {
+    const lbl = document.getElementById('lbl-gruppo-bastoni') || document.querySelector('#gruppo-opz-bastoni .opzione-label');
+    const txt = document.getElementById('lbl-asso-bastoni-testo');
+    const isFr = (getTemaMazzoAttivo() === 'francesi');
+    if (window.currentLang === 'en') {
+        if (lbl) lbl.textContent = isFr ? 'Ace of Spades rule in Ciapanò:' : 'Ace of Batons rule in Ciapanò:';
+        if (txt) txt.textContent = isFr ? 'Ace of Spades penalty (+11 pt)' : 'Ace of Batons penalty (+11 pt)';
+    } else {
+        if (lbl) lbl.textContent = isFr ? 'Regola Asso di Picche nel Ciapanò:' : 'Regola Asso di Bastoni nel Ciapanò:';
+        if (txt) txt.textContent = isFr ? 'Asso di Picche penalità (+11 pt)' : 'Asso di Bastoni penalità (+11 pt)';
+    }
+    const btn = document.getElementById('btn-asso-bastoni');
+    if (btn) btn.textContent = isFr ? (window.currentLang === 'en' ? 'ACE OF SPADES PENALTY (+11 pt)' : 'ASSO DI PICCHE PENALITÀ (+11 pt)') : (window.currentLang === 'en' ? 'ACE OF BATONS PENALTY (+11 pt)' : 'ASSO DI BASTONI PENALITÀ (+11 pt)');
 }
 
 function toggleScoperte() {
@@ -1602,12 +2220,15 @@ function chiudiModali() {
 }
 
 function apriModaleInizio() {
+    caricaOpzioniSalvate();
+    aggiornaTestoOpzioneAssoBastoni();
     apriModale('modale-inizio');
 }
 
 function richiediNuovaPartita() {
     // Partita conclusa: il reload rinnova pubblicità, interstitial e statistiche
     if (partitaFinita) {
+        try { sessionStorage.removeItem('tressette-partita-in-corso'); } catch (e) {}
         location.reload();
         return;
     }
@@ -1635,6 +2256,7 @@ function richiediNuovaPartita() {
 // Impostazioni da modale inizio partita
 function selezionaVariante(v) {
     varianteGioco = v;
+    try { localStorage.setItem('tressette-variante', v); } catch (e) {}
     document.querySelectorAll('[data-opt-variante]').forEach(b => {
         b.classList.toggle('attiva', b.getAttribute('data-opt-variante') === v);
     });
@@ -1643,10 +2265,13 @@ function selezionaVariante(v) {
     const grpAccuse = document.getElementById('gruppo-opz-accuse');
     if (grpBastoni) grpBastoni.style.display = (v === 'ciapano' ? 'block' : 'none');
     if (grpAccuse) grpAccuse.style.display = (v === 'tressette' ? 'block' : 'none');
+    aggiornaTitoloGioco();
+    renderStatisticheUI();
 }
 
 function selezionaModalita(n) {
     modalitaGiocatori = n;
+    try { localStorage.setItem('tressette-modalita', n); } catch (e) {}
     document.querySelectorAll('[data-opt-modalita]').forEach(b => {
         b.classList.toggle('attiva', parseInt(b.getAttribute('data-opt-modalita'), 10) === n);
     });
@@ -1654,6 +2279,7 @@ function selezionaModalita(n) {
 
 function selezionaDifficolta(d) {
     difficolta = d;
+    try { localStorage.setItem('tressette-difficolta', d); } catch (e) {}
     document.querySelectorAll('[data-opt-diff]').forEach(b => {
         b.classList.toggle('attiva', b.getAttribute('data-opt-diff') === d);
     });
@@ -1661,25 +2287,91 @@ function selezionaDifficolta(d) {
 }
 
 function selezionaTarget(t) {
-    targetPunti = t;
+    targetPunti = parseInt(t, 10);
+    try { localStorage.setItem('tressette-target', targetPunti); } catch (e) {}
     document.querySelectorAll('[data-opt-target]').forEach(b => {
-        b.classList.toggle('attiva', parseInt(b.getAttribute('data-opt-target'), 10) === t);
+        b.classList.toggle('attiva', parseInt(b.getAttribute('data-opt-target'), 10) === targetPunti);
     });
 }
 
-function toggleAssoBastoni() {
-    assoBastoniSpeciale = !assoBastoniSpeciale;
+function toggleAssoBastoni(val) {
+    if (typeof val === 'boolean') {
+        assoBastoniSpeciale = val;
+    } else {
+        assoBastoniSpeciale = !assoBastoniSpeciale;
+    }
+    try { localStorage.setItem('tressette-asso-bastoni', assoBastoniSpeciale ? 'true' : 'false'); } catch (e) {}
+    const chk = document.getElementById('chk-asso-bastoni');
+    if (chk) chk.checked = assoBastoniSpeciale;
     const btn = document.getElementById('btn-asso-bastoni');
     if (btn) btn.classList.toggle('attiva', assoBastoniSpeciale);
 }
 
-function toggleAccuse() {
-    accuseAttive = !accuseAttive;
+function toggleAccuse(val) {
+    if (typeof val === 'boolean') {
+        accuseAttive = val;
+    } else {
+        accuseAttive = !accuseAttive;
+    }
+    try { localStorage.setItem('tressette-accuse', accuseAttive ? 'true' : 'false'); } catch (e) {}
+    const chk = document.getElementById('chk-accuse');
+    if (chk) chk.checked = accuseAttive;
     const btn = document.getElementById('btn-accuse');
     if (btn) btn.classList.toggle('attiva', accuseAttive);
 }
 
+function caricaOpzioniSalvate() {
+    try {
+        const vSalvata = localStorage.getItem('tressette-variante');
+        if (vSalvata === 'ciapano' || vSalvata === 'tressette') {
+            selezionaVariante(vSalvata);
+        } else {
+            selezionaVariante('tressette');
+        }
+
+        const tSalvato = localStorage.getItem('tressette-target');
+        if (tSalvato) {
+            const tNum = parseInt(tSalvato, 10);
+            if ([21, 31, 11].includes(tNum)) {
+                selezionaTarget(tNum);
+            }
+        } else {
+            selezionaTarget(21);
+        }
+
+        const accSalvate = localStorage.getItem('tressette-accuse');
+        if (accSalvate !== null) {
+            accuseAttive = (accSalvate === 'true');
+        } else {
+            accuseAttive = false;
+        }
+        const chkAcc = document.getElementById('chk-accuse');
+        if (chkAcc) chkAcc.checked = accuseAttive;
+        const btnAcc = document.getElementById('btn-accuse');
+        if (btnAcc) btnAcc.classList.toggle('attiva', accuseAttive);
+
+        const bastoniSalvati = localStorage.getItem('tressette-asso-bastoni');
+        if (bastoniSalvati !== null) {
+            assoBastoniSpeciale = (bastoniSalvati === 'true');
+        } else {
+            assoBastoniSpeciale = false;
+        }
+        const chkBast = document.getElementById('chk-asso-bastoni');
+        if (chkBast) chkBast.checked = assoBastoniSpeciale;
+        const btnBast = document.getElementById('btn-asso-bastoni');
+        if (btnBast) btnBast.classList.toggle('attiva', assoBastoniSpeciale);
+    } catch (e) {
+        console.warn('Errore lettura opzioni salvate:', e);
+    }
+}
+
 function confermaEAvviaPartita() {
+    try {
+        localStorage.setItem('tressette-variante', varianteGioco);
+        localStorage.setItem('tressette-target', targetPunti);
+        localStorage.setItem('tressette-accuse', accuseAttive ? 'true' : 'false');
+        localStorage.setItem('tressette-asso-bastoni', assoBastoniSpeciale ? 'true' : 'false');
+    } catch (e) {}
     chiudiModali();
     avviaNuovaPartita();
 }
@@ -1725,21 +2417,70 @@ function initTressette() {
 
     addEv('btn-nuova-partita', 'click', function (e) { e.stopPropagation(); richiediNuovaPartita(); });
     addEv('btn-no-continua', 'click', function (e) { e.stopPropagation(); chiudiModali(); });
-    addEv('btn-si-termina', 'click', function () { location.reload(); });
-    addEv('btn-undo', 'click', annullaMossa);
+    addEv('btn-si-termina', 'click', function () {
+        try { sessionStorage.removeItem('tressette-partita-in-corso'); } catch (e) {}
+        location.reload();
+    });
+    addEv('btn-undo', 'click', function (e) { e.stopPropagation(); annullaMossa(); });
     addEv('btn-scoperte', 'click', toggleScoperte);
     addEv('btn-mazzo', 'click', cambiaMazzo);
     addEv('btn-reset-stats', 'click', resetStatistiche);
 
-    // Click ovunque (sul tavolo o carte) per depositare le carte nei mazzetti a fine mano
+    // Click ovunque per avanzare la dichiarazione di accuse o per depositare le carte a fine presa
     document.addEventListener('click', (e) => {
+        if (inAttesaClickAccuse) {
+            if (e.target.closest('button, a, .lang-switch-header, .form-tressette')) return;
+            mostraProssimaAccusa();
+            return;
+        }
         if (inAttesaClickFinePresa && typeof callbackIncassaPresa === 'function') {
             if (e.target.closest('button, a, .lang-switch-header, .form-tressette')) return;
             callbackIncassaPresa();
         }
     });
 
+    if (!nomiGiocatori || nomiGiocatori.length < 4) {
+        scegliNomi();
+    }
     renderStatisticheUI();
+
+    // Ripristino partita da sessionStorage (reload tra smazzate per refresh banner pubblicitari)
+    const salvata = sessionStorage.getItem('tressette-partita-in-corso');
+    if (salvata) {
+        sessionStorage.removeItem('tressette-partita-in-corso');
+        try {
+            const s = JSON.parse(salvata);
+            smazzataNumero = s.smazzataNumero || 1;
+            puntiTorneo = s.puntiTorneo || [0, 0];
+            totaleCarteTorneo = s.totaleCarteTorneo || [0, 0];
+            totaleAccuseTorneo = s.totaleAccuseTorneo || [0, 0];
+            penalitaCarteTorneo = s.penalitaCarteTorneo || [0, 0, 0, 0];
+            penalitaSpecialiTorneo = s.penalitaSpecialiTorneo || [0, 0, 0, 0];
+            targetPunti = s.targetPunti || 21;
+            varianteGioco = s.varianteGioco || 'tressette';
+            modalitaGiocatori = s.modalitaGiocatori || 4;
+            difficolta = s.difficolta || 'difficile';
+            if (s.nomiGiocatori && s.nomiGiocatori.length) nomiGiocatori = s.nomiGiocatori;
+            assoBastoniSpeciale = !!s.assoBastoniSpeciale;
+            accuseAttive = !!s.accuseAttive;
+            window._modalita4 = (modalitaGiocatori === 4);
+
+            aggiornaTitoloGioco();
+            chiudiModali();
+            iniziaNuovaSmazzata();
+
+            window.addEventListener('resize', posizionaAvatarDinamici);
+            if (typeof window.registerLayoutResizeListener === 'function') {
+                window.registerLayoutResizeListener(() => {
+                    posizionaAvatarDinamici();
+                });
+            }
+            return;
+        } catch (e) {
+            console.warn('Errore ripristino partita da sessionStorage:', e);
+        }
+    }
+
     apriModaleInizio();
 
     window.addEventListener('resize', posizionaAvatarDinamici);

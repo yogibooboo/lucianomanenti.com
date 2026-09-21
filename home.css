@@ -368,6 +368,11 @@ body {
 	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
 }
 
+#btn-tressette {
+	font-size: 16px;
+	white-space: nowrap;
+}
+
 /* Indicazione NEW pulsante */
 .new-tag {
 	display: inline-block;
