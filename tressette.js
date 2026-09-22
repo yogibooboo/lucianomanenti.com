@@ -8,7 +8,7 @@
    Supporto mazzi: Napoletane, Bresciane, Francesi.
    ============================================================================ */
 
-window.scriptVersion = '1.29';
+window.scriptVersion = '1.30';
 
 // === TESTI MULTILINGUA ===
 const TRESSETTE_LANG = (window.currentLang === 'en') ? {
@@ -530,6 +530,24 @@ function scegliCartaAI(g) {
     }
 }
 
+// Calcola quante carte del seme di 'carta' con forza superiore non sono ancora state viste
+// (esclude carte già finite in cartePrese, carte sul tavolo e carte in mano a mioG)
+function quanteCarteSuperioriFuori(carta, mioG) {
+    if (!carta) return 99;
+    const suit = carta.suit;
+    const forza = FORZA_TRESSETTE[carta.number];
+    const superiori = [3, 2, 1, 10, 9, 8, 7, 6, 5, 4].filter(n => FORZA_TRESSETTE[n] > forza);
+    let nonViste = 0;
+    for (const num of superiori) {
+        const giaUscita =
+            cartePrese.some(prese => (prese || []).some(c => c.suit === suit && c.number === num)) ||
+            tavolo.some(t => t.carta.suit === suit && t.carta.number === num) ||
+            (typeof mioG === 'number' && mani[mioG] && mani[mioG].some(c => c.suit === suit && c.number === num));
+        if (!giaUscita) nonViste++;
+    }
+    return nonViste;
+}
+
 // Logica AI per Tressette Classico
 function scegliCartaTressette(g, legali) {
     if (difficolta === 'facile') {
@@ -562,8 +580,10 @@ function scegliCartaTressette(g, legali) {
         const miglioriDelVincente = legali.filter(c => FORZA_TRESSETTE[c.number] > FORZA_TRESSETTE[tavolo[iv].carta.number]);
 
         if (compagnoStaVincendo) {
-            // Compagno sta vincendo: se siamo gli ultimi a giocare o la carta del compagno è un 3 insormontabile
-            if (tavolo[iv].carta.number === 3 || tavolo.length === modalitaGiocatori - 1) {
+            // Compagno sta vincendo: se siamo gli ultimi a giocare o la carta del compagno è imbattibile (0 carte superiori fuori)
+            const supFuori = quanteCarteSuperioriFuori(tavolo[iv].carta, g);
+            const presaSicura = (supFuori === 0 || tavolo.length === modalitaGiocatori - 1);
+            if (presaSicura) {
                 // Carichiamo punti! Asso o pezza
                 const assi = legali.filter(c => c.number === 1);
                 if (assi.length > 0) return assi[0];
@@ -590,12 +610,32 @@ function scegliCartaTressette(g, legali) {
     }
 
     // 3. Sprovvisto (Piomba): non può vincere la presa
-    if (compagnoStaVincendo && tavolo.length === modalitaGiocatori - 1) {
-        // Regala un Asso o un Re al compagno!
-        const assi = legali.filter(c => c.number === 1);
-        if (assi.length > 0) return assi[0];
-        const carichi = legali.filter(c => [10, 9, 8].includes(c.number));
-        if (carichi.length > 0) return carichi[0];
+    if (compagnoStaVincendo) {
+        const supFuori = quanteCarteSuperioriFuori(tavolo[iv].carta, g);
+        const presaSicura = (supFuori === 0 || tavolo.length === modalitaGiocatori - 1);
+
+        if (presaSicura) {
+            // Presa sicura al 100%: regala un Asso (1 pt) o una figura/carico (1/3 pt)!
+            const assi = legali.filter(c => c.number === 1);
+            if (assi.length > 0) return assi[0];
+            const carichi = legali.filter(c => [10, 9, 8].includes(c.number));
+            if (carichi.length > 0) return carichi[0];
+        } else if (supFuori === 1) {
+            // Presa quasi sicura (manca solo 1 carta superiore in circolazione):
+            // Non rischiamo mai l'Asso. Valuta se dare 1/3 di punto (figura 10, 9, 8):
+            const carichi = legali.filter(c => [10, 9, 8].includes(c.number));
+            if (carichi.length > 0) {
+                const carteValore = (mani[g] || []).filter(c => [1, 2, 3, 10, 9, 8].includes(c.number));
+                const maniRimaste = (mani[g] || []).length;
+                // Criterio prudenziale: se è l'unica carta di valore e mancano più di 4 mani, non rischiare
+                const proteggiUnicaRisorsa = (carteValore.length <= 1 && maniRimaste > 4);
+                if (!proteggiUnicaRisorsa) {
+                    // Scegli la figura con forza minore per non sprecare le più alte (Fante > Cavallo > Re)
+                    carichi.sort((a, b) => FORZA_TRESSETTE[a.number] - FORZA_TRESSETTE[b.number]);
+                    return carichi[0];
+                }
+            }
+        }
     }
 
     // Altrimenti scarta una cartina insignificante
@@ -2445,6 +2485,16 @@ function initTressette() {
         scegliNomi();
     }
     renderStatisticheUI();
+
+    const elFil = document.getElementById('filigrana-compagno');
+    if (elFil) {
+        const isEn = (window.currentLang === 'en');
+        const txtBase = isEn ? 'First version of the game' : 'Prima versione del gioco';
+        const linkHtml = isEn
+            ? '<a href="aboutme-en.html" target="_blank">write to me</a> for suggestions or to report errors'
+            : '<a href="aboutme.html" target="_blank">scrivetemi</a> per suggerimenti o per segnalare errori';
+        elFil.innerHTML = `${txtBase} (v. ${window.scriptVersion})<br>${linkHtml}`;
+    }
 
     // Ripristino partita da sessionStorage (reload tra smazzate per refresh banner pubblicitari)
     const salvata = sessionStorage.getItem('tressette-partita-in-corso');
