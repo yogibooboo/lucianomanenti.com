@@ -168,7 +168,7 @@ dialog textarea{width:100%;background:#15181c;color:var(--testo);border:1px soli
 
 var D = window.W2DATI;
 var CEL = 32, SCALA = 2, COLS = 10, RIGHE = 8, PRATO = 33;
-var ATL = '../woowoo2-tiles.png';
+var ATL = '../images/woowoo2/tiles.png';
 
 var DIR = { N: [-1, 0], S: [1, 0], E: [0, 1], O: [0, -1] };
 var OPP = { N: 'S', S: 'N', E: 'O', O: 'E' };
@@ -557,7 +557,8 @@ function costruisciTavolozza() {
 // e le piastrelle, trasparenti, portano solo binari, scambi, segnali, ponte e
 // stazioni. Il campo c'e' solo nei file JSON: negli schemi scritti a mano no,
 // e li' la barra resta spenta.
-var ATL_NOSTRO = '../woowoo2-tiles-nuove.png';
+var ATL_NOSTRO = '../images/woowoo2/tiles-nuove.png';
+var CARTELLA = 'images/woowoo2/';   // dove stanno i dipinti e i fogli di piastrelle
 var CEL_NOSTRA = 64;
 var cache = {};           // percorso -> Image
 var fondoLocale = null;   // dipinto appena scelto, per vederlo subito
@@ -597,7 +598,7 @@ function immagine(src) {
 
 function nomeProposto() {
     var e = schemaCorrente();
-    return 'woowoo2-sfondo-' + String(e.liv + e.n).toLowerCase() + '.jpg';
+    return 'sfondo-' + String(e.liv + e.n).toLowerCase() + '.jpg';
 }
 
 function aggiornaBarraGrafica() {
@@ -619,8 +620,8 @@ document.getElementById('selStile').onchange = function () {
     // che aveva: cosi' andare e tornare non perde il nome del quadro.
     var e = schemaCorrente();
     scriviStile(ricordo[e.liv + e.n] ||
-        { atlante: 'woowoo2-tiles-nuove.png?v=1.0', cella: CEL_NOSTRA,
-          sfondo: nomeProposto() + '?v=1.0' });
+        { atlante: CARTELLA + 'tiles-nuove.png?v=1.0', cella: CEL_NOSTRA,
+          sfondo: CARTELLA + nomeProposto() + '?v=1.0' });
 };
 
 // ---- il dipinto: si sceglie un file e si deposita nel sito --------------
@@ -640,8 +641,8 @@ document.getElementById('bSfondo').onclick = async function () {
         if (fondoLocale) URL.revokeObjectURL(fondoLocale);
         fondoLocale = URL.createObjectURL(file);
         var sty = stileCorrente();
-        if (!sty) sty = { atlante: 'woowoo2-tiles-nuove.png?v=1.0', cella: CEL_NOSTRA, sfondo: '' };
-        sty.sfondo = dest.name + '?v=1.0';
+        if (!sty) sty = { atlante: CARTELLA + 'tiles-nuove.png?v=1.0', cella: CEL_NOSTRA, sfondo: '' };
+        sty.sfondo = CARTELLA + dest.name + '?v=1.0';
         scriviStile(sty);
     } catch (err) { if (err && err.name !== 'AbortError') alert('Non riuscito: ' + err.message); }
 };

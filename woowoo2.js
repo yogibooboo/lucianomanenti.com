@@ -5,7 +5,7 @@
    45 schemi 10x8, tabella degli scambi a due stati, parametri dei 9
    sottolivelli di ogni livello. I dati stanno in woowoo2-dati.js.
 
-   ATTENZIONE: la grafica caricata da woowoo2-tiles.png e' quella originale
+   ATTENZIONE: la grafica caricata da images/woowoo2/tiles.png e' quella originale
    Kingsoft, usata solo come grafica di cantiere per validare la meccanica.
    Va sostituita prima di qualunque pubblicazione. La sostituzione e' in
    collaudo sul livello N: piastrelle nostre su sfondo dipinto. Lo stile di
@@ -936,7 +936,7 @@
         // Si parte quando sono arrivate tutte: l'atlante del dischetto piu'
         // atlante e dipinto di ogni stile nominato nei dati.
         var stili = stiliUsati();
-        var lista = ['woowoo2-tiles.png?v=1.0'];
+        var lista = ['images/woowoo2/tiles.png?v=1.0'];
         stili.forEach(function (x) { lista.push(x.atlante, x.sfondo); });
         immagini(lista, function (im) {
             atlante = im[0];
