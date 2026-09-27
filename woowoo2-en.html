@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script>
+        // AdSense: not loaded in development mode (localStorage dev_mode = '1')
+        (function () {
+            try { if (localStorage.getItem('dev_mode') === '1') return; } catch (e) { }
+            var s = document.createElement('script');
+            s.async = true;
+            s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9335537153013492';
+            s.crossOrigin = 'anonymous';
+            document.head.appendChild(s);
+        })();
+    </script>
+    <script>
+        // Safety fix against cross-origin crashes on window.opener
+        (function () { try { if (!window.opener) return; var test = window.opener.document; if (!window.opener.game) { window.opener = null; } } catch (e) { window.opener = null; } })();
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WooWoo 2 — Switches, Trains and Stations</title>
+    <link rel="canonical" href="https://www.lucianomanenti.com/woowoo2-en.html">
+    <link rel="alternate" hreflang="it" href="https://www.lucianomanenti.com/woowoo2.html">
+    <link rel="alternate" hreflang="en" href="https://www.lucianomanenti.com/woowoo2-en.html">
+    <link rel="alternate" hreflang="x-default" href="https://www.lucianomanenti.com/woowoo2.html">
+    <link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
+    <link rel="shortcut icon" href="favicon/favicon.ico">
+
+    <meta name="Description"
+        content="WooWoo 2: the real-time railway puzzle. Throw the switches, get every train to the right station and avoid crashes.">
+    <meta name="robots" content="noindex, nofollow">
+    <meta http-Equiv="Cache-Control" Content="no-cache">
+    <meta http-Equiv="Pragma" Content="no-cache">
+    <meta http-Equiv="Expires" Content="0">
+
+    <link rel="stylesheet" href="woowoo2.css?v=1.3" />
+
+    <script>
+        // Google Analytics: gtag() always exists, the script loads only outside dev_mode
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-WRBDRDQ4L8');
+        (function () {
+            try { if (localStorage.getItem('dev_mode') === '1') return; } catch (e) { }
+            var s = document.createElement('script');
+            s.async = true;
+            s.src = 'https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8';
+            document.head.appendChild(s);
+        })();
+    </script>
+    <script>
+        window.gameConfig = {
+            gaPrefix: 'WOOWOO2_',
+            hideLegalFooter: true,
+            adsenseActive: true,
+            adsenseSlots: {
+                '300x600': '5266697442',
+                '160x600': '1167670336',
+                '300x250': '8471445288',
+                '160x250': '8663016975'
+            }
+        };
+        window.currentLang = 'en';
+    </script>
+</head>
+
+<body>
+
+    <div class="main-container">
+        <div id="sidebar-left" class="sidebar"></div>
+        <div id="sidebar-right" class="sidebar"></div>
+
+        <div id="campogioco">
+            <div id="schermo"></div>
+
+            <!-- ================= HEADER ================= -->
+            <div id="header-bar">
+                <div class="header-left">
+                    <div class="lang-switch-header">
+                        <a href="woowoo2.html">IT</a>
+                        <a href="woowoo2-en.html" class="active">EN</a>
+                    </div>
+                    <button id="w2-audio" class="bottone" style="height:26px;padding:0 10px;"
+                        aria-label="Audio">&#128266;</button>
+                    <div id="titolo-gioco">WooWoo 2 &#128642;</div>
+                </div>
+
+                <div class="header-center">
+                    <div class="badge"><span>BOARD:</span> <b id="w2-livello">A &middot; 1/9</b></div>
+                    <div class="badge ok"><span>DELIVERIES:</span> <b id="w2-consegne">0 / 0</b></div>
+                    <div class="badge ko"><span>CRASHES:</span> <b id="w2-scontri">0 / 0</b></div>
+                    <div class="badge"><span>SCORE:</span> <b id="w2-punti">00000</b></div>
+                </div>
+
+                <div class="header-right">
+                    <div class="timer-box">
+                        <div class="riga"><span>TIME</span> <i id="w2-turbo"></i> <b
+                                id="w2-tempo">0</b></div>
+                        <div class="barra-esterna">
+                            <div class="barra-piena" id="w2-barra"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= MAIN AREA ================= -->
+            <div id="area-tabellone">
+                <div id="canvas-wrapper">
+                    <canvas id="w2-canvas" width="640" height="512"></canvas>
+                </div>
+
+                <div class="pannello">
+                    <div class="pannello-titolo">TRAFFIC</div>
+                    <div id="w2-coda">
+                        <div class="w2-vuoto">no orders</div>
+                    </div>
+
+                    <div class="pannello-titolo">HOW TO PLAY</div>
+                    <div class="scheda">
+                        <div><b>Announcement:</b> the station letter blinks, then the train appears and waits a few
+                            seconds before leaving.</div>
+                        <div><b>Switches:</b> one click throws the points.</div>
+                        <div><b>Wrong way:</b> the train stops and restarts by itself as soon as you set the switch
+                            straight.</div>
+                        <div><b>Crashes:</b> a following train does not queue up, it drives in and blows up.</div>
+                        <div><b>Fast forward:</b> hold the right mouse button over the board (or the space bar) to run the game at quadruple speed. The time counter runs faster too.</div>
+                        <div><b>R:</b> restart the board.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= BOTTOM BAR ================= -->
+            <div id="barra-inferiore">
+                <div id="w2-messaggio">Loading the board&hellip;</div>
+                <select id="w2-scelta" title="Choose a board from the disk"></select>
+                <select id="w2-scelta2" title="Choose one of your boards"></select>
+                <button class="bottone principale" onclick="location.reload()">RESTART</button>
+            </div>
+
+            <!-- End-of-board dialog, filled in by the engine -->
+            <div id="w2-modale"></div>
+
+            <!-- ================= FOOTER ================= -->
+            <div class="legal-links-w2">
+                <a href="privacy-en.html" target="_blank">Privacy Policy</a>
+                <span class="sep">&bull;</span>
+                <a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)">Manage Cookies</a>
+                <span class="sep">&bull;</span>
+                <a href="aboutme-en.html" target="_blank">Contact me</a>
+            </div>
+
+            <div class="link-giochi-w2">
+                <a href="scorciatoie-en.html" class="pulsante-link-w2">Shortcuts</a>
+                <a href="tetra-en.html" class="pulsante-link-w2">Tetra</a>
+                <a href="spider-en.html" class="pulsante-link-w2">Spider</a>
+                <a href="klondike-en.html" class="pulsante-link-w2">Klondike</a>
+                <a href="index-en.html" class="pulsante-link-w2 pulsante-home-w2">ALL GAMES</a>
+            </div>
+
+        </div><!-- /campogioco -->
+    </div><!-- /main-container -->
+
+    <script src="site.js?v=1.1"></script>
+    <script src="game-layout.js?v=4.6"></script>
+    <!-- Due file di dati: A..L sono il dischetto, M..X sono i livelli nostri. -->
+    <script src="woowoo2-dati.js?v=1.2"></script>
+    <script src="woowoo2-mie.js?v=3.3"></script>
+    <script src="woowoo2.js?v=1.17"></script>
+</body>
+
+</html>

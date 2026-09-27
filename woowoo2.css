@@ -1,0 +1,348 @@
+/* ============================================================================
+   WOOWOO2 - Stili CSS, integrati con game-layout.js
+   Frame campogioco 1024x750, canvas 640x512 (griglia 10x8 di caselle da 32 px
+   disegnate al doppio), pannello informazioni a destra fuori dalla griglia.
+   ============================================================================ */
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+html, body {
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #12301c;
+    color: #ffffff;
+    -webkit-touch-callout: none;
+}
+
+.main-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+/* === SIDEBARS (AdSense, riempite da game-layout.js) === */
+.sidebar {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    background: linear-gradient(135deg, #1a6b30 0%, #145524 50%, #0f4a1c 100%);
+    overflow-y: auto;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    z-index: 1;
+}
+#sidebar-left { left: 0; }
+#sidebar-right { right: 0; }
+
+/* === CAMPO DI GIOCO (1024 x 750 fisso, riscalato dal layout engine) === */
+#campogioco {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 1024px;
+    height: 750px;
+    background: linear-gradient(135deg, #17532a 0%, #0c3316 100%);
+    transform-origin: center center;
+    border-radius: 10px;
+    box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.5), 0 10px 30px rgba(0, 0, 0, 0.65);
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+#schermo {
+    position: absolute;
+    top: 0; left: 0;
+    width: 1024px; height: 750px;
+    background-color: rgba(0, 0, 0, 0.72);
+    z-index: 30000;
+    display: none;
+}
+
+/* === HEADER === */
+#header-bar {
+    position: absolute;
+    top: 6px; left: 12px;
+    width: 1000px; height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 1000;
+}
+
+.header-left, .header-center, .header-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.lang-switch-header { display: flex; gap: 4px; }
+.lang-switch-header a {
+    padding: 0 8px;
+    height: 26px;
+    line-height: 26px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 11px;
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+}
+.lang-switch-header a.active { background: #f0c000; color: #2a1a00; border-color: #ffe680; }
+
+#titolo-gioco {
+    font-size: 17px;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+}
+
+.badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 5px;
+    font-size: 11px;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+}
+.badge span { opacity: 0.7; letter-spacing: 0.5px; }
+.badge b { font-size: 13px; font-variant-numeric: tabular-nums; }
+.badge.ok b { color: #6ee7a0; }
+.badge.ko b { color: #f87171; }
+
+.timer-box {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding: 4px 10px;
+    border-radius: 5px;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    min-width: 128px;
+}
+.timer-box .riga { display: flex; align-items: baseline; gap: 6px; font-size: 11px; }
+.timer-box b { font-variant-numeric: tabular-nums; font-size: 13px; margin-left: auto; }
+/* spia dell'acceleratore: compare solo col tasto destro premuto */
+#w2-turbo {
+    font-style: normal;
+    font-weight: bold;
+    font-size: 11px;
+    color: #ffb020;
+}
+
+.barra-esterna {
+    height: 5px;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 3px;
+    overflow: hidden;
+}
+.barra-piena {
+    height: 100%;
+    width: 100%;
+    background: linear-gradient(90deg, #f0c000, #ff7043);
+    transition: width 0.25s linear;
+}
+
+/* === AREA CENTRALE === */
+#area-tabellone {
+    position: absolute;
+    top: 54px; left: 22px;
+    width: 980px; height: 528px;
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+}
+
+#canvas-wrapper {
+    width: 640px;
+    height: 512px;
+    border: 3px solid rgba(0, 0, 0, 0.55);
+    border-radius: 6px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
+    background: #000;
+    flex: none;
+}
+#w2-canvas { display: block; width: 640px; height: 512px; cursor: pointer; }
+
+/* === PANNELLO LATERALE === */
+.pannello {
+    flex: 1;
+    height: 512px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.pannello-titolo {
+    font-size: 11px;
+    letter-spacing: 1.2px;
+    font-weight: bold;
+    opacity: 0.75;
+    padding-bottom: 2px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+#w2-coda {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.w2-voce {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    background: rgba(0, 0, 0, 0.32);
+    border-left: 3px solid #f0c000;
+}
+.w2-voce.allarme { border-left-color: #f87171; background: rgba(120, 20, 20, 0.45); }
+.w2-voce span { opacity: 0.7; font-size: 11px; }
+.w2-vuoto { font-size: 11px; opacity: 0.5; padding: 6px 2px; }
+
+.scheda {
+    padding: 8px;
+    border-radius: 5px;
+    font-size: 11px;
+    line-height: 1.5;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+}
+.scheda b { color: #ffe680; }
+
+/* === BARRA INFERIORE === */
+#barra-inferiore {
+    position: absolute;
+    bottom: 76px; left: 22px;
+    width: 980px; height: 64px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+#w2-messaggio {
+    flex: 1;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    border-radius: 5px;
+    font-size: 12px;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.bottone {
+    height: 38px;
+    padding: 0 16px;
+    border-radius: 5px;
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+}
+.bottone:hover { background: rgba(255, 255, 255, 0.22); }
+.bottone.principale { background: #f0c000; color: #2a1a00; border-color: #ffe680; }
+
+/* Due tendine: il dischetto A..L e i quadri nostri M..X. */
+#w2-scelta,
+#w2-scelta2 {
+    height: 38px;
+    padding: 0 8px;
+    border-radius: 5px;
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    background: #143f21;
+    color: #fff;
+    font-size: 12px;
+}
+
+/* === MODALE DI FINE QUADRO === */
+#w2-modale {
+    position: absolute;
+    top: 0; left: 0;
+    width: 1024px; height: 750px;
+    background: rgba(0, 0, 0, 0.72);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 30001;
+}
+.w2-riquadro {
+    width: 360px;
+    padding: 20px;
+    border-radius: 8px;
+    background: linear-gradient(160deg, #1d5c30, #0e3a1b);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.7);
+    text-align: center;
+}
+.w2-riquadro h2 { font-size: 18px; margin-bottom: 12px; }
+.w2-riquadro table { width: 100%; font-size: 13px; margin-bottom: 14px; }
+.w2-riquadro td { padding: 3px 0; text-align: left; }
+.w2-riquadro td:last-child { text-align: right; font-variant-numeric: tabular-nums; }
+.w2-riquadro tr.tot td {
+    border-top: 1px solid rgba(255, 255, 255, 0.3);
+    padding-top: 6px;
+    font-weight: bold;
+    color: #ffe680;
+}
+.w2-riquadro button {
+    height: 38px;
+    padding: 0 20px;
+    border-radius: 5px;
+    border: 1px solid #ffe680;
+    background: #f0c000;
+    color: #2a1a00;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* === PIEDINO === */
+.legal-links-w2 {
+    position: absolute;
+    bottom: 36px; left: 0;
+    width: 1024px;
+    text-align: center;
+    font-size: 11px;
+    opacity: 0.75;
+}
+.legal-links-w2 a { color: #d9f2e0; text-decoration: none; }
+.legal-links-w2 a:hover { text-decoration: underline; }
+.legal-links-w2 .sep { margin: 0 6px; opacity: 0.5; }
+
+.link-giochi-w2 {
+    position: absolute;
+    bottom: 6px; left: 0;
+    width: 1024px;
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+}
+.pulsante-link-w2 {
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 11px;
+    text-decoration: none;
+    color: #fff;
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+}
+.pulsante-link-w2:hover { background: rgba(255, 255, 255, 0.22); }
+.pulsante-home-w2 { background: #f0c000; color: #2a1a00; border-color: #ffe680; font-weight: bold; }

@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Editor quadri woowoo2</title>
+<style>
+:root{
+  --fondo:#1d2126; --pannello:#262b32; --bordo:#3a424c; --testo:#e6e9ed;
+  --fioco:#98a2b0; --acc:#6fb3e0; --ok:#7fc98a; --male:#e07b6f; --giallo:#e0c06f;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--fondo);color:var(--testo);
+  font:14px/1.45 "Segoe UI",system-ui,sans-serif}
+header{display:flex;flex-wrap:wrap;gap:8px;align-items:center;
+  padding:8px 12px;background:var(--pannello);border-bottom:1px solid var(--bordo)}
+header h1{font-size:15px;margin:0 12px 0 0;font-weight:600;letter-spacing:.02em}
+button,select{font:inherit;color:var(--testo);background:#323945;
+  border:1px solid var(--bordo);border-radius:5px;padding:4px 10px;cursor:pointer}
+button:hover,select:hover{background:#3c4452}
+button:disabled{opacity:.4;cursor:default}
+button.acc{background:#2c4f68;border-color:#3d6c8e}
+button.acc:hover{background:#356083}
+.sp{flex:1}
+/* seconda barra: tutto quello che riguarda l'aspetto del quadro */
+#barraGrafica{display:flex;flex-wrap:wrap;gap:8px;align-items:center;
+  padding:6px 12px;background:#20242a;border-bottom:1px solid var(--bordo);font-size:12px}
+#barraGrafica b{color:var(--fioco);font-size:11px;text-transform:uppercase;letter-spacing:.06em}
+#sfondoNome{color:var(--fioco);font-family:ui-monospace,Consolas,monospace}
+main{display:flex;flex-wrap:wrap;gap:12px;padding:12px;align-items:flex-start}
+#tela{border:1px solid var(--bordo);image-rendering:pixelated;cursor:crosshair;
+  background:#0d0f12;touch-action:none}
+.col{display:flex;flex-direction:column;gap:12px}
+.box{background:var(--pannello);border:1px solid var(--bordo);border-radius:6px;padding:10px}
+.box h2{font-size:12px;text-transform:uppercase;letter-spacing:.08em;
+  color:var(--fioco);margin:0 0 8px;font-weight:600}
+.fam{margin-bottom:10px}
+.fam b{display:block;font-size:11px;color:var(--fioco);font-weight:600;margin-bottom:4px}
+/* 382px = cinque tessere per riga: cosi' la tavolozza resta a fianco
+   della tela invece di scivolarle sotto. */
+#tavolozza{max-width:382px}
+.tav{display:flex;flex-wrap:wrap;gap:8px}
+/* box-sizing a contenuto: i 64px sono la tessera, il bordo sta fuori e non
+   la ritaglia. L'atlante e' 1344x64, a 64px di lato il fondo va a 2688x128. */
+.tes{box-sizing:content-box;width:64px;height:64px;
+  border:3px solid transparent;border-radius:5px;
+  background-repeat:no-repeat;background-size:2688px 128px;image-rendering:pixelated;
+  cursor:pointer;padding:0}
+.tes:hover{border-color:var(--fioco)}
+.tes.sel{border-color:#ffc21f;box-shadow:0 0 0 2px var(--pannello), 0 0 0 5px #ffc21f}
+#info{min-height:1.4em;color:var(--fioco);font-size:12px;font-family:ui-monospace,Consolas,monospace}
+#esito{font-family:ui-monospace,Consolas,monospace;font-size:12px;white-space:pre-wrap;
+  margin:0;max-height:300px;overflow:auto}
+#esito .ok{color:var(--ok)} #esito .male{color:var(--male)} #esito .nota{color:var(--fioco)}
+table{border-collapse:collapse;font-size:12px}
+th,td{border:1px solid var(--bordo);padding:2px 4px;text-align:center}
+th{color:var(--fioco);font-weight:600;font-size:11px}
+td select{padding:1px 3px;border-radius:3px;font-size:12px}
+td input[type=number]{width:52px;padding:1px 3px;border-radius:3px;font-size:12px;text-align:right;background:var(--fondo);color:var(--testo);border:1px solid var(--bordo)}
+td.der{color:var(--fioco);font-family:ui-monospace,Consolas,monospace}
+.leg{font-size:11px;color:var(--fioco);margin-top:8px;line-height:1.6}
+.leg code{background:#1a1e23;padding:1px 4px;border-radius:3px}
+dialog{background:var(--pannello);color:var(--testo);border:1px solid var(--bordo);
+  border-radius:8px;padding:16px;max-width:640px;font-size:13px}
+dialog::backdrop{background:rgba(0,0,0,.55)}
+dialog h3{margin:0 0 12px;font-size:14px;text-transform:uppercase;letter-spacing:.06em;color:var(--fioco)}
+dialog p{margin:8px 0}
+dialog label{margin-right:12px}
+dialog .fondo{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
+dialog textarea{width:100%;background:#15181c;color:var(--testo);border:1px solid var(--bordo);
+  border-radius:4px;font-family:ui-monospace,Consolas,monospace;font-size:12px;padding:6px;resize:vertical}
+#stato{font-size:12px;color:var(--fioco)}
+#stato.sporco{color:var(--giallo)}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Editor quadri woowoo2</h1>
+  <button id="bApri">Apri...</button>
+  <button id="bSalva" disabled>Salva</button>
+  <button id="bSalvaCome" disabled>Salva come...</button>
+  <select id="selSchema" disabled></select>
+  <button id="bAnnulla" disabled title="Ctrl+Z">Annulla</button>
+  <button id="bCopia" disabled title="scrive il quadro in lavorazione in un'altra casella dello stesso file">Copia in...</button>
+  <button id="bBlocco" disabled title="genera il blocco JS da incollare in woowoo2-mie.js">Blocco JS...</button>
+  <button id="bAzzera" disabled title="mette prato in tutte e ottanta le caselle">Azzera tutto</button>
+  <span class="sp"></span>
+  <button id="bControlla" class="acc" disabled>Controlla</button>
+  <span id="stato">nessun file aperto</span>
+</header>
+
+<div id="barraGrafica">
+  <b>grafica</b>
+  <select id="selStile" disabled title="come va disegnato questo schema nel gioco">
+    <option value="orig">piastrelle del dischetto</option>
+    <option value="nostra">dipinto + piastrelle nostre</option>
+  </select>
+  <span id="sfondoNome">&mdash;</span>
+  <button id="bSfondo" disabled title="scegli il jpeg del dipinto e mettilo nel sito">Sfondo...</button>
+  <span class="sp"></span>
+  <button id="bPng" disabled title="scarica il quadro disegnato con le piastrelle del dischetto, da dare in pasto al disegnatore">PNG del quadro</button>
+</div>
+
+<dialog id="dlgCopia">
+  <h3>Copia il quadro in un'altra casella</h3>
+  <p><label>destinazione <select id="dstSlot"></select></label></p>
+  <p><label><input type="checkbox" id="dstIntatta" checked>
+    rimetti l'originale nella casella di partenza</label></p>
+  <p class="leg">La casella di partenza torna com'era sul file: cosi' parti da un
+    quadro classico, lo modifichi e lo depositi altrove senza toccarlo.</p>
+  <div class="fondo"><button id="dcNo">Annulla</button><button id="dcOk" class="acc">Copia</button></div>
+</dialog>
+
+<dialog id="dlgBlocco">
+  <h3>Blocco JS per <code>woowoo2-mie.js</code></h3>
+  <p>
+    <label>nome <input id="blkNome" size="14"></label>
+    <label>livello <select id="blkLiv"></select></label>
+    <label>schema <select id="blkIdx"></select></label>
+  </p>
+  <textarea id="blkTesto" readonly rows="16" spellcheck="false"></textarea>
+  <p class="leg">Da incollare dentro la IIFE di <code>woowoo2-mie.js</code>. I parametri
+    dei sottolivelli restano quelli del file: si scrivono a parte con un array <code>sub</code>.</p>
+  <div class="fondo"><button id="blkNo">Chiudi</button><button id="blkCopia" class="acc">Copia negli appunti</button></div>
+</dialog>
+
+<main>
+  <div class="col">
+    <canvas id="tela" width="640" height="512"></canvas>
+    <div id="info"></div>
+  </div>
+
+  <div class="col">
+    <div class="box">
+      <h2>Tavolozza</h2>
+      <div id="tavolozza"></div>
+      <div class="leg">
+        clic = posa &middot; trascina = sposta (lascia prato) &middot; alt+clic = cancella<br>
+        clic su una stazione = evidenzia le sue vie d'accesso
+      </div>
+    </div>
+  </div>
+
+  <div class="col">
+    <div class="box">
+      <h2>Controllo</h2>
+      <pre id="esito"><span class="nota">premi "Controlla" quando vuoi</span></pre>
+    </div>
+    <div class="box" id="boxPar" hidden>
+      <h2>Parametri dei sottolivelli</h2>
+      <div id="tabPar"></div>
+      <div class="leg">
+        <code>traf</code> e <code>vel</code> hanno la <b>scala rovesciata</b>: il numero basso
+        e' il valore alto.<br>
+        <code>amb</code> oggi il motore non lo legge.<br>
+        durata nominale = ord &times; sec &middot; contatore iniziale = ord &times; (sec+2)
+      </div>
+    </div>
+  </div>
+</main>
+
+<script src="../woowoo2-dati.js"></script>
+<script>
+(function () {
+'use strict';
+
+var D = window.W2DATI;
+var CEL = 32, SCALA = 2, COLS = 10, RIGHE = 8, PRATO = 33;
+var ATL = '../woowoo2-tiles.png';
+
+var DIR = { N: [-1, 0], S: [1, 0], E: [0, 1], O: [0, -1] };
+var OPP = { N: 'S', S: 'N', E: 'O', O: 'E' };
+// punta (Zungenspitze) degli scambi: il capo che le due rotte condividono
+var PUNTA = { 1: 'S', 2: 'S', 3: 'N', 4: 'N', 5: 'O', 6: 'O', 7: 'E', 8: 'E' };
+
+var NOMI = {
+    0: 'incrocio piano EO/NS', 1: 'scambio NS/ES', 2: 'scambio NS/SO',
+    3: 'scambio NS/NE', 4: 'scambio NS/NO', 5: 'scambio EO/SO',
+    6: 'scambio EO/NO', 7: 'scambio EO/ES', 8: 'scambio EO/NE',
+    9: 'segnale EO', 10: 'segnale NS',
+    22: 'dritto EO', 23: 'dritto NS', 24: 'curva ES', 25: 'curva SO',
+    26: 'curva NE', 27: 'curva NO', 40: 'ponte EO',
+    28: 'stazione, bocca a O', 29: 'stazione, bocca a S',
+    30: 'stazione, bocca a E', 31: 'stazione, bocca a N',
+    32: 'trattore e pecore', 33: 'prato', 34: 'fienile', 35: 'stagno',
+    36: 'alberi', 37: 'tabellone (campo info)', 38: 'fiume NS',
+    39: 'stagno con isola', 41: 'aia recintata'
+};
+
+var FAMIGLIE = [
+    ['binari', [22, 23, 24, 25, 26, 27, 40, 0]],
+    ['scambi', [1, 2, 3, 4, 5, 6, 7, 8]],
+    ['segnali', [9, 10]],
+    ['stazioni e tabellone', [28, 29, 30, 31, 37]],
+    ['decori', [33, 32, 34, 35, 36, 38, 39, 41]]
+];
+
+// I campi con "voci" sono scelte chiuse (menu a tendina); gli altri sono
+// numeri liberi. "disco" elenca i valori usati dai livelli originali: e' solo
+// un suggerimento nel tooltip, non un vincolo -- i quadri nostri ne escono.
+var PARAM = [
+    { k: 's',    eti: 'schema',   dom: [0, 1, 2], voci: ['0', '1', '2'] },
+    { k: 'ord',  eti: 'ordini',   min: 1, max: 99, disco: '5 10 15 20 25 30 50' },
+    { k: 'sec',  eti: 'sec/ord',  min: 1, max: 99, disco: 'da 7 a 30' },
+    { k: 'inc',  eti: 'scontri',  min: 0, max: 99, disco: '4 6 8 10 20' },
+    { k: 'traf', eti: 'traffico', voci: ['0 massimo', '1 molto alto', '2 alto', '3 medio'] },
+    { k: 'tmax', eti: 'treni',    min: 1, max: 9,  disco: 'da 3 a 7' },
+    { k: 'vel',  eti: 'velocita', voci: ['1 molto alta', '2 alta', '3 media', '4 bassa'], base: 1 },
+    { k: 'dest', eti: 'lettera',  voci: ['0 no', '1 si'] },
+    { k: 'amb',  eti: 'ambiente', min: 1, max: 6,  disco: 'da 1 a 6 (oggi inerte)' }
+];
+
+// ---- stato -------------------------------------------------------------
+var F = null;            // file aperto (vedi apri())
+var idx = 0;             // schema in lavorazione
+var G = null;            // griglia corrente (riferimento dentro F)
+var sel = 22;            // tessera scelta nella tavolozza
+var pila = [];           // annulla
+var sporco = false;
+var evid = null;         // evidenziazione vie d'accesso {a:{}, b:{}, staz:{}}
+
+var tela = document.getElementById('tela'), ctx = tela.getContext('2d');
+var atl = new Image();
+atl.onload = function () { disegna(); costruisciTavolozza(); };
+atl.src = ATL;
+
+// ---- lettura del file --------------------------------------------------
+// Due forme. `woowoo2-dati.js` e' una riga di JSON: si riscrive con
+// JSON.stringify. Gli altri (woowoo2-mie.js, schema-*.js) sono JS scritto a
+// mano: li' si sostituiscono SOLO le cifre, cosi' commenti e formattazione
+// restano intatti.
+var RIGA = /\[(?:\s*(?:\d+|_)\s*,){9}\s*(?:\d+|_)\s*\]/g;
+var OGG = /\{[^{}]*\bord\s*:[^{}]*\}/g;
+var OGGJ = /\{[^{}]*"ord"\s*:[^{}]*\}/g;
+
+function analizza(testo, nome) {
+    var f = { nome: nome, testo: testo, elenco: [], sub: [] };
+    // i due file di dati hanno la stessa forma: una riga di commento e una
+    // riga sola di JSON. Cambia solo il nome: W2DATI il dischetto (A..L),
+    // W2MIEI i livelli nostri (M..X).
+    var chiave = /window\.W2(DATI|MIEI)=/.exec(testo);
+    var i = chiave ? chiave.index : -1;
+    if (i >= 0) {
+        f.tipo = 'json';
+        var a = i + chiave[0].length, b = testo.lastIndexOf('}') + 1;
+        f.jsonA = a; f.jsonB = b;
+        f.dati = JSON.parse(testo.slice(a, b));
+        Object.keys(f.dati.liv).forEach(function (L) {
+            var liv = f.dati.liv[L];
+            liv.schemi.forEach(function (g, n) {
+                f.elenco.push({ eti: L + ' / schema ' + n, g: g, liv: L, n: n });
+            });
+        });
+        return f;
+    }
+    f.tipo = 'js';
+    // costante del prato, se il file ne ha una
+    var m = /const\s+_\s*=\s*(\d+)/.exec(testo);
+    f.prato = m ? parseInt(m[1], 10) : null;
+    // righe di dieci numeri, in ordine di comparsa
+    var righe = [], r;
+    RIGA.lastIndex = 0;
+    while ((r = RIGA.exec(testo))) righe.push({ a: r.index, b: r.index + r[0].length, t: r[0] });
+    for (var k = 0; k + RIGHE <= righe.length; k += RIGHE) {
+        var blocco = righe.slice(k, k + RIGHE);
+        var g = blocco.map(function (x) {
+            return x.t.slice(1, -1).split(',').map(function (v) {
+                v = v.trim();
+                return v === '_' ? (f.prato === null ? PRATO : f.prato) : parseInt(v, 10);
+            });
+        });
+        f.elenco.push({ eti: etichetta(testo, blocco[0].a) + ' (riga ' + riga(testo, blocco[0].a) + ')',
+                        g: g, righe: blocco });
+    }
+    // oggetti parametro
+    var o;
+    OGG.lastIndex = 0;
+    while ((o = OGG.exec(testo))) {
+        var p = leggiOggetto(o[0]);
+        if (p) f.sub.push({ a: o.index, b: o.index + o[0].length, p: p, ord: chiavi(o[0]) });
+    }
+    return f;
+}
+
+function chiavi(t) {
+    var v = [], m, re = /([A-Za-z_][A-Za-z0-9_]*)\s*:/g;
+    while ((m = re.exec(t))) v.push(m[1]);
+    return v;
+}
+function leggiOggetto(t) {
+    var p = {}, m, re = /([A-Za-z_][A-Za-z0-9_]*)\s*:\s*(-?\d+)/g, n = 0;
+    while ((m = re.exec(t))) { p[m[1]] = parseInt(m[2], 10); n++; }
+    return n ? p : null;
+}
+function riga(testo, i) { return testo.slice(0, i).split('\n').length; }
+function etichetta(testo, i) {
+    var pre = testo.slice(Math.max(0, i - 260), i);
+    var m = /(?:const|var|let)\s+([A-Za-z_$][\w$]*)\s*=\s*\[[^\[\]]*$/.exec(pre);
+    return m ? m[1] : 'schema';
+}
+
+// ---- apri / salva ------------------------------------------------------
+var manico = null;
+
+document.getElementById('bApri').onclick = async function () {
+    try {
+        var r = await window.showOpenFilePicker({
+            types: [{ description: 'Schemi woowoo2', accept: { 'text/javascript': ['.js'] } }]
+        });
+        manico = r[0];
+        var file = await manico.getFile();
+        apriTesto(await file.text(), manico.name);
+    } catch (e) { if (e && e.name !== 'AbortError') alert('Apertura fallita: ' + e.message); }
+};
+
+function apriTesto(testo, nome) {
+    var f = analizza(testo, nome);
+    if (!f.elenco.length) { alert('Nessuno schema 10x8 trovato in ' + nome); return false; }
+    // copia intatta di ogni casella: serve a "Copia in..." per rimettere a
+    // posto il quadro di partenza dopo averlo usato come modello.
+    f.elenco.forEach(function (e) { e.g0 = e.g.map(function (r) { return r.slice(); }); });
+    F = f; idx = 0; pila = []; sporco = false; evid = null;
+    riempiSelettore();
+    scegli(0);
+    ['bSalva', 'bSalvaCome', 'bControlla', 'selSchema', 'bCopia', 'bBlocco', 'bAzzera', 'bPng'].forEach(function (id) {
+        document.getElementById(id).disabled = false;
+    });
+    return true;
+}
+
+// ---- copia del quadro in un'altra casella ------------------------------
+// si travasa cella per cella: nei file JSON `e.g` E' l'array dentro F.dati,
+// sostituirlo staccherebbe la casella dal file.
+function versa(dest, sorg) {
+    for (var r = 0; r < RIGHE; r++)
+        for (var c = 0; c < COLS; c++) dest[r][c] = sorg[r][c];
+}
+function vuota(g) {
+    return g.every(function (r) { return r.every(function (v) { return v === 33; }); });
+}
+document.getElementById('bCopia').onclick = function () {
+    var sel = document.getElementById('dstSlot');
+    sel.innerHTML = '';
+    F.elenco.forEach(function (e, i) {
+        var o = document.createElement('option');
+        o.value = i;
+        o.textContent = e.eti + (vuota(e.g) ? '   (vuota)' : '') + (i === idx ? '   (questa)' : '');
+        sel.appendChild(o);
+    });
+    sel.value = F.elenco.findIndex(function (e, i) { return i !== idx && vuota(e.g); });
+    if (sel.selectedIndex < 0) sel.value = idx;
+    document.getElementById('dlgCopia').showModal();
+};
+document.getElementById('dcNo').onclick = function () { document.getElementById('dlgCopia').close(); };
+document.getElementById('dcOk').onclick = function () {
+    var j = parseInt(document.getElementById('dstSlot').value, 10);
+    if (j === idx) { document.getElementById('dlgCopia').close(); return; }
+    var dest = F.elenco[j];
+    if (!vuota(dest.g) && !confirm("La casella " + dest.eti + " non e' vuota: la sovrascrivo?")) return;
+    var quadro = G.map(function (r) { return r.slice(); });
+    if (document.getElementById('dstIntatta').checked) versa(F.elenco[idx].g, F.elenco[idx].g0);
+    versa(dest.g, quadro);
+    document.getElementById('dlgCopia').close();
+    segnaSporco();
+    scegli(j);
+    segnaSporco();
+};
+
+// ---- blocco JS per woowoo2-mie.js --------------------------------------
+var LETTERE = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'W', 'X'];
+document.getElementById('bBlocco').onclick = function () {
+    var liv = document.getElementById('blkLiv'), ind = document.getElementById('blkIdx');
+    if (!liv.options.length) {
+        LETTERE.forEach(function (L) {
+            var o = document.createElement('option'); o.value = o.textContent = L; liv.appendChild(o);
+        });
+        [0, 1, 2].forEach(function (n) {
+            var o = document.createElement('option'); o.value = o.textContent = n; ind.appendChild(o);
+        });
+        liv.value = 'M'; ind.value = '2';
+        [liv, ind, document.getElementById('blkNome')].forEach(function (e) { e.oninput = componiBlocco; });
+    }
+    var nome = (F.elenco[idx].eti.match(/[A-Za-z][A-Za-z0-9]*/) || ['QUADRO'])[0].toUpperCase();
+    document.getElementById('blkNome').value = nome;
+    componiBlocco();
+    document.getElementById('dlgBlocco').showModal();
+};
+function componiBlocco() {
+    var nome = (document.getElementById('blkNome').value || 'QUADRO')
+        .toUpperCase().replace(/[^A-Z0-9_]/g, '') || 'QUADRO';
+    var r = [];
+    r.push("    // " + nome + " - disegnato con l'editor il " + new Date().toLocaleDateString('it-IT') + ".");
+    r.push('    var ' + nome + ' = [');
+    r.push('    //    0   1   2   3   4   5   6   7   8   9');
+    G.forEach(function (riga, i) {
+        r.push('        [' + riga.map(function (v) { return ('  ' + v).slice(-3); }).join(',') + ']' +
+               (i < RIGHE - 1 ? ',' : ' ') + '  // ' + i);
+    });
+    r.push('    ];');
+    r.push('    D.liv.' + document.getElementById('blkLiv').value +
+           '.schemi[' + document.getElementById('blkIdx').value + '] = ' + nome + ';');
+    document.getElementById('blkTesto').value = r.join('\n') + '\n';
+}
+document.getElementById('blkNo').onclick = function () { document.getElementById('dlgBlocco').close(); };
+document.getElementById('blkCopia').onclick = async function () {
+    var ta = document.getElementById('blkTesto');
+    try { await navigator.clipboard.writeText(ta.value); }
+    catch (e) { ta.select(); document.execCommand('copy'); }
+    var b = document.getElementById('blkCopia'), vecchio = b.textContent;
+    b.textContent = 'copiato';
+    setTimeout(function () { b.textContent = vecchio; }, 1200);
+};
+
+document.getElementById('bSalva').onclick = function () { salva(manico); };
+document.getElementById('bSalvaCome').onclick = async function () {
+    try {
+        var h = await window.showSaveFilePicker({
+            suggestedName: F.nome,
+            types: [{ description: 'Schemi woowoo2', accept: { 'text/javascript': ['.js'] } }]
+        });
+        manico = h; F.nome = h.name; salva(h);
+    } catch (e) { if (e && e.name !== 'AbortError') alert('Salvataggio fallito: ' + e.message); }
+};
+
+async function salva(h) {
+    if (!F || !h) return;
+    var testo = F.tipo === 'json' ? componiJson() : componiJs();
+    try {
+        var w = await h.createWritable();
+        await w.write(testo);
+        await w.close();
+        F.testo = testo;
+        if (F.tipo === 'js') F = analizza(testo, F.nome), scegli(idx);  // riallinea gli offset
+        segnaPulito('salvato in ' + h.name);
+    } catch (e) { alert('Salvataggio fallito: ' + e.message); }
+}
+
+function componiJson() {
+    return F.testo.slice(0, F.jsonA) + JSON.stringify(F.dati) + F.testo.slice(F.jsonB);
+}
+
+function componiJs() {
+    // si riscrive dal fondo verso l'inizio, cosi' gli offset restano validi
+    var tagli = [];
+    F.elenco.forEach(function (e) {
+        if (!e.righe) return;
+        e.righe.forEach(function (rg, r) {
+            var t = scriviRiga(e.g[r], rg.t);
+            if (t !== rg.t) tagli.push({ a: rg.a, b: rg.b, t: t });
+        });
+    });
+    F.sub.forEach(function (s) {
+        var t = scriviOggetto(s.p, s.ord);
+        if (t !== F.testo.slice(s.a, s.b)) tagli.push({ a: s.a, b: s.b, t: t });
+    });
+    tagli.sort(function (x, y) { return y.a - x.a; });
+    var t = F.testo;
+    tagli.forEach(function (c) { t = t.slice(0, c.a) + c.t + t.slice(c.b); });
+    return t;
+}
+
+// Riscrive una riga usando la VECCHIA come sagoma: ogni numero rientra nella
+// casella di testo che occupava prima, con lo stesso allineamento. Cosi' una
+// riga non modificata torna identica byte per byte e il file non si scompone.
+function scriviRiga(v, sagoma) {
+    var vecchi = sagoma.slice(1, -1).split(',');
+    return '[' + v.map(function (n, i) {
+        var s = (F.prato !== null && n === F.prato) ? '_' : String(n);
+        var t = vecchi[i] || '';
+        var sin = t.length - t.replace(/^ +/, '').length;
+        var des = t.length - t.replace(/ +$/, '').length;
+        var largo = t.length;
+        if (s.length >= largo) return s;
+        return des > 0 && sin === 0
+            ? s + ' '.repeat(largo - s.length)          // era allineato a sinistra
+            : ' '.repeat(largo - s.length) + s;         // era allineato a destra
+    }).join(',') + ']';
+}
+function scriviOggetto(p, ordine) {
+    return '{ ' + ordine.filter(function (k) { return k.slice(0, 2) !== '__'; })
+        .map(function (k) { return k + ': ' + p[k]; }).join(', ') + ' }';
+}
+
+function segnaSporco() {
+    sporco = true;
+    var s = document.getElementById('stato');
+    s.textContent = F.nome + ' - modificato';
+    s.className = 'sporco';
+}
+function segnaPulito(msg) {
+    sporco = false;
+    var s = document.getElementById('stato');
+    s.textContent = msg || F.nome;
+    s.className = '';
+}
+window.addEventListener('beforeunload', function (e) {
+    if (sporco) { e.preventDefault(); e.returnValue = ''; }
+});
+
+// ---- selettore ---------------------------------------------------------
+function riempiSelettore() {
+    var s = document.getElementById('selSchema');
+    s.innerHTML = '';
+    F.elenco.forEach(function (e, i) {
+        var o = document.createElement('option');
+        o.value = i; o.textContent = e.eti;
+        s.appendChild(o);
+    });
+    s.onchange = function () { scegli(parseInt(s.value, 10)); };
+}
+function scegli(i) {
+    idx = i; G = F.elenco[i].g; pila = []; evid = null;
+    document.getElementById('selSchema').value = i;
+    document.getElementById('bAnnulla').disabled = true;
+    document.getElementById('esito').innerHTML = '<span class="nota">premi "Controlla" quando vuoi</span>';
+    segnaPulito(sporco ? F.nome + ' - modificato' : F.nome);
+    if (sporco) segnaSporco();
+    tabellaParametri();
+    if (fondoLocale) { URL.revokeObjectURL(fondoLocale); fondoLocale = null; }
+    aggiornaBarraGrafica();
+    disegna();
+}
+
+// ---- tavolozza ---------------------------------------------------------
+function costruisciTavolozza() {
+    var cont = document.getElementById('tavolozza');
+    cont.innerHTML = '';
+    FAMIGLIE.forEach(function (fam) {
+        var d = document.createElement('div'); d.className = 'fam';
+        var b = document.createElement('b'); b.textContent = fam[0]; d.appendChild(b);
+        var t = document.createElement('div'); t.className = 'tav';
+        fam[1].forEach(function (cod) {
+            var x = document.createElement('button');
+            x.className = 'tes' + (cod === sel ? ' sel' : '');
+            x.dataset.cod = cod;
+            x.title = cod + ' - ' + (NOMI[cod] || '?');
+            x.style.backgroundImage = 'url(' + ATL + ')';
+            x.style.backgroundPosition = (-cod * 64) + 'px 0';
+            x.onclick = function () {
+                sel = cod;
+                [].forEach.call(cont.querySelectorAll('.tes'), function (e) { e.classList.remove('sel'); });
+                x.classList.add('sel');
+            };
+            t.appendChild(x);
+        });
+        d.appendChild(t); cont.appendChild(d);
+    });
+}
+
+// ---- le due versioni grafiche -----------------------------------------
+// Il campo `stile` del file di dati dice, per ogni schema, come va disegnato
+// nel gioco: la stringa "orig" per le piastrelle del dischetto (ognuna porta
+// dentro il suo pezzo di paesaggio), oppure un oggetto {atlante, cella,
+// sfondo} per la grafica nostra, dove il paesaggio e' un dipinto steso sotto
+// e le piastrelle, trasparenti, portano solo binari, scambi, segnali, ponte e
+// stazioni. Il campo c'e' solo nei file JSON: negli schemi scritti a mano no,
+// e li' la barra resta spenta.
+var ATL_NOSTRO = '../woowoo2-tiles-nuove.png';
+var CEL_NOSTRA = 64;
+var cache = {};           // percorso -> Image
+var fondoLocale = null;   // dipinto appena scelto, per vederlo subito
+var ricordo = {};         // lettera+schema -> ultimo stile nostro visto
+
+function schemaCorrente() { return F && F.elenco[idx]; }
+function haStile() {
+    var e = schemaCorrente();
+    return !!(e && F.dati && e.liv && F.dati.liv[e.liv].stile);
+}
+function stileCorrente() {
+    if (!haStile()) return null;
+    var e = schemaCorrente();
+    var st = F.dati.liv[e.liv].stile[e.n];
+    return (st && typeof st === 'object') ? st : null;
+}
+function scriviStile(v) {
+    var e = schemaCorrente();
+    if (v && typeof v === 'object') ricordo[e.liv + e.n] = v;
+    F.dati.liv[e.liv].stile[e.n] = v;
+    segnaSporco();
+    aggiornaBarraGrafica();
+    disegna();
+}
+// Carica una volta sola e ridisegna quando arriva. Restituisce null finche'
+// non e' pronta, cosi' il disegno non aspetta nessuno.
+function immagine(src) {
+    var im = cache[src];
+    if (!im) {
+        im = new Image();
+        im.onload = function () { disegna(); };
+        im.src = src;
+        cache[src] = im;
+    }
+    return (im.complete && im.naturalWidth) ? im : null;
+}
+
+function nomeProposto() {
+    var e = schemaCorrente();
+    return 'woowoo2-sfondo-' + String(e.liv + e.n).toLowerCase() + '.jpg';
+}
+
+function aggiornaBarraGrafica() {
+    var sty = stileCorrente();
+    if (sty) ricordo[schemaCorrente().liv + schemaCorrente().n] = sty;
+    var puo = haStile();
+    document.getElementById('selStile').disabled = !puo;
+    document.getElementById('bSfondo').disabled = !puo;
+    document.getElementById('selStile').value = sty ? 'nostra' : 'orig';
+    var n = document.getElementById('sfondoNome');
+    n.textContent = !puo ? 'questo file non porta il campo stile'
+        : !sty ? '\u2014'
+        : (sty.sfondo || 'nessun dipinto: scegline uno');
+}
+
+document.getElementById('selStile').onchange = function () {
+    if (this.value === 'orig') { scriviStile('orig'); return; }
+    // se lo schema era gia' stato in grafica nostra, si riprende il dipinto
+    // che aveva: cosi' andare e tornare non perde il nome del quadro.
+    var e = schemaCorrente();
+    scriviStile(ricordo[e.liv + e.n] ||
+        { atlante: 'woowoo2-tiles-nuove.png?v=1.0', cella: CEL_NOSTRA,
+          sfondo: nomeProposto() + '?v=1.0' });
+};
+
+// ---- il dipinto: si sceglie un file e si deposita nel sito --------------
+document.getElementById('bSfondo').onclick = async function () {
+    try {
+        var scelti = await window.showOpenFilePicker({
+            types: [{ description: 'Immagine', accept: { 'image/*': ['.jpg', '.jpeg', '.png', '.webp'] } }]
+        });
+        var file = await scelti[0].getFile();
+        var dest = await window.showSaveFilePicker({
+            suggestedName: nomeProposto(),
+            types: [{ description: 'Immagine', accept: { 'image/jpeg': ['.jpg', '.jpeg'] } }]
+        });
+        var w = await dest.createWritable();
+        await w.write(await file.arrayBuffer());
+        await w.close();
+        if (fondoLocale) URL.revokeObjectURL(fondoLocale);
+        fondoLocale = URL.createObjectURL(file);
+        var sty = stileCorrente();
+        if (!sty) sty = { atlante: 'woowoo2-tiles-nuove.png?v=1.0', cella: CEL_NOSTRA, sfondo: '' };
+        sty.sfondo = dest.name + '?v=1.0';
+        scriviStile(sty);
+    } catch (err) { if (err && err.name !== 'AbortError') alert('Non riuscito: ' + err.message); }
+};
+
+// ---- il PNG da dare al disegnatore -------------------------------------
+// Il quadro nudo: piastrelle del dischetto, niente reticolo, niente lettere,
+// niente segnacci. Serve come traccia per dipingere il paesaggio sotto.
+function pngDelQuadro() {
+    var t = document.createElement('canvas');
+    t.width = COLS * CEL * SCALA; t.height = RIGHE * CEL * SCALA;
+    var c2 = t.getContext('2d');
+    c2.imageSmoothingEnabled = false;
+    for (var r = 0; r < RIGHE; r++) for (var c = 0; c < COLS; c++)
+        c2.drawImage(atl, G[r][c] * CEL, 0, CEL, CEL,
+            c * CEL * SCALA, r * CEL * SCALA, CEL * SCALA, CEL * SCALA);
+    return t;
+}
+document.getElementById('bPng').onclick = function () {
+    if (!G) return;
+    var e = schemaCorrente();
+    var nome = 'quadro-' + (e.liv ? e.liv + e.n : 'x') + '.png';
+    pngDelQuadro().toBlob(function (b) {
+        var u = URL.createObjectURL(b);
+        var a = document.createElement('a');
+        a.href = u; a.download = nome; a.click();
+        setTimeout(function () { URL.revokeObjectURL(u); }, 5000);
+    });
+};
+
+// ---- prato dappertutto -------------------------------------------------
+document.getElementById('bAzzera').onclick = function () {
+    if (!G) return;
+    if (!confirm('Metto prato in tutte e ottanta le caselle di ' + schemaCorrente().eti + '?')) return;
+    var passo = [];
+    for (var r = 0; r < RIGHE; r++) for (var c = 0; c < COLS; c++) {
+        if (G[r][c] === PRATO) continue;
+        passo.push([r, c, G[r][c]]);
+        G[r][c] = PRATO;
+    }
+    if (!passo.length) return;
+    pila.push(passo);
+    dopoModifica();
+};
+
+// ---- disegno -----------------------------------------------------------
+function disegna() {
+    ctx.clearRect(0, 0, tela.width, tela.height);
+    if (!G) {
+        ctx.fillStyle = '#98a2b0'; ctx.font = '16px sans-serif';
+        ctx.fillText('Apri un file per cominciare', 24, 40);
+        return;
+    }
+    // Con la grafica nostra il paesaggio non e' fatto di piastrelle: si stende
+    // prima il dipinto e poi si posano solo binari e stazioni.
+    var sty = stileCorrente();
+    var foglio = atl, cel = CEL;
+    if (sty) {
+        var a2 = immagine(ATL_NOSTRO);
+        if (a2) { foglio = a2; cel = sty.cella || CEL_NOSTRA; }
+        var src = fondoLocale || (sty.sfondo ? '../' + sty.sfondo : null);
+        var f2 = src ? immagine(src) : null;
+        if (f2) ctx.drawImage(f2, 0, 0, tela.width, tela.height);
+        else { ctx.fillStyle = '#26361f'; ctx.fillRect(0, 0, tela.width, tela.height); }
+    }
+    for (var r = 0; r < RIGHE; r++) for (var c = 0; c < COLS; c++) {
+        var cod = G[r][c];
+        if (sty && !D.rotta[cod] && !D.staz[cod]) continue;
+        ctx.drawImage(foglio, cod * cel, 0, cel, cel,
+            c * CEL * SCALA, r * CEL * SCALA, CEL * SCALA, CEL * SCALA);
+    }
+    // reticolo
+    ctx.strokeStyle = 'rgba(255,255,255,.12)'; ctx.lineWidth = 1;
+    for (var i = 0; i <= COLS; i++) {
+        ctx.beginPath(); ctx.moveTo(i * 64 + .5, 0); ctx.lineTo(i * 64 + .5, 512); ctx.stroke();
+    }
+    for (var j = 0; j <= RIGHE; j++) {
+        ctx.beginPath(); ctx.moveTo(0, j * 64 + .5); ctx.lineTo(640, j * 64 + .5); ctx.stroke();
+    }
+    // lettere delle stazioni
+    var n = 0;
+    ctx.font = 'bold 20px Consolas,monospace'; ctx.textAlign = 'center';
+    for (r = 0; r < RIGHE; r++) for (c = 0; c < COLS; c++) {
+        if (!D.staz[G[r][c]]) continue;
+        var L = String.fromCharCode(65 + n++);
+        ctx.lineWidth = 3; ctx.strokeStyle = '#000';
+        ctx.strokeText(L, c * 64 + 32, r * 64 + 26);
+        ctx.fillStyle = '#fff'; ctx.fillText(L, c * 64 + 32, r * 64 + 26);
+    }
+    ctx.textAlign = 'left';
+    if (evid) velo();
+    if (marchi.length) segnaErrori();
+}
+
+function velo() {
+    [['a', 'rgba(111,179,224,.45)'], ['b', 'rgba(224,192,111,.45)']].forEach(function (p) {
+        ctx.fillStyle = p[1];
+        Object.keys(evid[p[0]]).forEach(function (k) {
+            var v = k.split(',');
+            ctx.fillRect(v[1] * 64, v[0] * 64, 64, 64);
+        });
+    });
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 3;
+    ctx.strokeRect(evid.sc * 64 + 2, evid.sr * 64 + 2, 60, 60);
+}
+
+var marchi = [];
+function segnaErrori() {
+    marchi.forEach(function (m) {
+        ctx.strokeStyle = m.t === 'gola' ? '#e0c06f' : '#e07b6f';
+        ctx.lineWidth = 4;
+        ctx.strokeRect(m.c * 64 + 3, m.r * 64 + 3, 58, 58);
+        if (m.t === 'sack') {
+            ctx.beginPath();
+            ctx.moveTo(m.c * 64 + 14, m.r * 64 + 14); ctx.lineTo(m.c * 64 + 50, m.r * 64 + 50);
+            ctx.moveTo(m.c * 64 + 50, m.r * 64 + 14); ctx.lineTo(m.c * 64 + 14, m.r * 64 + 50);
+            ctx.stroke();
+        }
+    });
+}
+
+// ---- interazione -------------------------------------------------------
+var giu = null;
+
+tela.addEventListener('pointerdown', function (e) {
+    if (!G) return;
+    var p = cella(e);
+    giu = { r: p.r, c: p.c, cod: G[p.r][p.c], alt: e.altKey };
+    tela.setPointerCapture(e.pointerId);
+});
+
+tela.addEventListener('pointermove', function (e) {
+    if (!G) return;
+    var p = cella(e);
+    var cod = G[p.r][p.c];
+    document.getElementById('info').textContent =
+        '(' + p.r + ',' + p.c + ')  cod ' + cod + '  ' + (NOMI[cod] || '?') +
+        (D.rotta[cod] ? '   rotte: ' + D.rotta[cod].join(' / ') : '') +
+        (PUNTA[cod] ? '   punta a ' + PUNTA[cod] : '');
+});
+
+tela.addEventListener('pointerup', function (e) {
+    if (!G || !giu) return;
+    var p = cella(e);
+    if (giu.alt) {
+        poni(giu.r, giu.c, PRATO);
+    } else if (p.r === giu.r && p.c === giu.c) {
+        if (D.staz[G[p.r][p.c]] && sel === G[p.r][p.c]) mostraVie(p.r, p.c);
+        else poni(p.r, p.c, sel);
+    } else {
+        // spostamento: lascia prato dietro di se'
+        var prima = [[giu.r, giu.c, G[giu.r][giu.c]], [p.r, p.c, G[p.r][p.c]]];
+        pila.push(prima);
+        G[p.r][p.c] = giu.cod;
+        G[giu.r][giu.c] = PRATO;
+        dopoModifica();
+    }
+    giu = null;
+});
+
+tela.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+
+document.addEventListener('keydown', function (e) {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'z') { e.preventDefault(); annulla(); }
+});
+document.getElementById('bAnnulla').onclick = annulla;
+
+function cella(e) {
+    var b = tela.getBoundingClientRect();
+    var x = (e.clientX - b.left) * tela.width / b.width;
+    var y = (e.clientY - b.top) * tela.height / b.height;
+    return {
+        r: Math.max(0, Math.min(RIGHE - 1, Math.floor(y / 64))),
+        c: Math.max(0, Math.min(COLS - 1, Math.floor(x / 64)))
+    };
+}
+function poni(r, c, cod) {
+    if (G[r][c] === cod) return;
+    pila.push([[r, c, G[r][c]]]);
+    G[r][c] = cod;
+    dopoModifica();
+}
+function annulla() {
+    if (!pila.length) return;
+    pila.pop().forEach(function (v) { G[v[0]][v[1]] = v[2]; });
+    dopoModifica();
+}
+function dopoModifica() {
+    marchi = []; evid = null;
+    document.getElementById('bAnnulla').disabled = !pila.length;
+    segnaSporco();
+    disegna();
+}
+
+// ---- vie d'accesso di una stazione ------------------------------------
+// si cammina dalla bocca fino al primo scambio (la gola), poi si risale
+// all'indietro da ciascuno dei due calci: due colori, due bacini.
+function mostraVie(r, c) {
+    var g = trovaGola(r, c);
+    if (!g) { document.getElementById('info').textContent = 'nessuno scambio davanti alla bocca'; return; }
+    var rot = D.rotta[g.cod];
+    var capi = {};
+    rot.forEach(function (v) { capi[v[0]] = 1; capi[v[1]] = 1; });
+    delete capi[PUNTA[g.cod] || ''];
+    var lati = Object.keys(capi);
+    // se la punta non guarda la stazione i "calci" non sono due vie vere:
+    // si colora comunque quello che c'e', il controllo lo dira'.
+    evid = { a: bacino(g.r, g.c, lati[0]), b: lati[1] ? bacino(g.r, g.c, lati[1]) : {},
+             sr: g.r, sc: g.c };
+    document.getElementById('info').textContent =
+        'gola ' + g.cod + ' in (' + g.r + ',' + g.c + '), punta a ' + (PUNTA[g.cod] || '-') +
+        ', serve ' + g.serve + '  -> ' + (PUNTA[g.cod] === g.serve ? 'due vie' : 'UNA VIA SOLA');
+    disegna();
+}
+
+function trovaGola(r, c) {
+    var d = D.staz[G[r][c]], passi = 0;
+    while (passi++ < 12) {
+        var nr = r + DIR[d][0], nc = c + DIR[d][1];
+        if (!dentro(nr, nc)) return null;
+        var cod = G[nr][nc], rot = D.rotta[cod];
+        if (!rot) return null;
+        if (rot.length > 1 && PUNTA[cod]) return { r: nr, c: nc, cod: cod, serve: OPP[d] };
+        var via = rot[0], ent = OPP[d];
+        if (via.indexOf(ent) < 0) return null;
+        d = via[0] === ent ? via[1] : via[0];
+        r = nr; c = nc;
+    }
+    return null;
+}
+
+// tutte le caselle da cui un treno puo' arrivare entrando nella gola dal lato `lato`
+function bacino(gr, gc, lato) {
+    var visti = {}, out = {}, pila = [[gr, gc, lato]];
+    while (pila.length) {
+        var v = pila.pop(), r = v[0], c = v[1], din = v[2], k = r + ',' + c + ',' + din;
+        if (visti[k]) continue; visti[k] = 1;
+        out[r + ',' + c] = 1;
+        var pr = r + DIR[din][0], pc = c + DIR[din][1];   // da dove veniva
+        if (!dentro(pr, pc)) continue;
+        var cod = G[pr][pc], rot = D.rotta[cod];
+        if (!rot || D.staz[cod]) continue;
+        var usc = OPP[din];                               // uscita del predecessore
+        rot.forEach(function (via) {
+            if (via.indexOf(usc) < 0) return;
+            var ent = via[0] === usc ? via[1] : via[0];
+            pila.push([pr, pc, ent]);
+        });
+    }
+    return out;
+}
+
+// ---- controllo (solo a richiesta) -------------------------------------
+function dentro(r, c) { return r >= 0 && r < RIGHE && c >= 0 && c < COLS; }
+function rotta(cod, st) { var r = D.rotta[cod]; return r ? r[Math.min(st, r.length - 1)] : null; }
+function accetta(cod, ent) {
+    if (D.staz[cod]) return D.staz[cod] === ent;
+    if (!D.rotta[cod]) return false;
+    for (var s = 0; s < 2; s++) { var r = rotta(cod, s); if (r && r.indexOf(ent) >= 0) return true; }
+    return false;
+}
+
+document.getElementById('bControlla').onclick = function () { controlla(); };
+
+function controlla() {
+    var err = [], nota = [];
+    marchi = [];
+
+    // 1. vicoli ciechi
+    for (var r = 0; r < RIGHE; r++) for (var c = 0; c < COLS; c++) {
+        var cod = G[r][c];
+        if (!D.rotta[cod] || D.staz[cod]) continue;
+        for (var s = 0; s < D.rotta[cod].length; s++) {
+            rotta(cod, s).split('').forEach(function (d) {
+                var nr = r + DIR[d][0], nc = c + DIR[d][1];
+                if (!dentro(nr, nc)) {
+                    err.push('(' + r + ',' + c + ') cod ' + cod + ' stato ' + s + ': esce dal tabellone verso ' + d);
+                    marchi.push({ r: r, c: c, t: 'sack' });
+                } else if (!accetta(G[nr][nc], OPP[d])) {
+                    err.push('(' + r + ',' + c + ') cod ' + cod + ' stato ' + s + ': verso ' + d +
+                             ' finisce su ' + G[nr][nc] + ' in (' + nr + ',' + nc + ') -- vicolo cieco');
+                    marchi.push({ r: r, c: c, t: 'sack' });
+                }
+            });
+        }
+    }
+
+    // 2. campo info
+    var info = 0;
+    for (r = 0; r < RIGHE; r++) for (c = 0; c < COLS; c++) if (G[r][c] === D.info) info++;
+    if (info === 0) err.push('manca il campo info (codice ' + D.info + ')');
+    if (info > 1) err.push('ci sono ' + info + ' campi info, ne serve uno solo');
+
+    // 3. stazioni
+    var staz = [];
+    for (r = 0; r < RIGHE; r++) for (c = 0; c < COLS; c++)
+        if (D.staz[G[r][c]]) staz.push({ r: r, c: c, uscita: D.staz[G[r][c]],
+                                         lettera: String.fromCharCode(65 + staz.length) });
+    if (!staz.length) err.push('nessuna stazione');
+    if (staz.length > 8) err.push('piu di otto stazioni');
+
+    // 3bis. due vie d'accesso
+    staz.forEach(function (st) {
+        var g = trovaGola(st.r, st.c);
+        if (!g) {
+            err.push('stazione ' + st.lettera + '(' + st.r + ',' + st.c + '): nessuno scambio davanti alla bocca -- una via sola');
+            marchi.push({ r: st.r, c: st.c, t: 'gola' });
+        } else if (PUNTA[g.cod] !== g.serve) {
+            err.push('stazione ' + st.lettera + '(' + st.r + ',' + st.c + '): gola ' + g.cod +
+                     ' in (' + g.r + ',' + g.c + ') -- una via sola (punta a ' + PUNTA[g.cod] + ', serve ' + g.serve + ')');
+            marchi.push({ r: st.r, c: st.c, t: 'gola' });
+            marchi.push({ r: g.r, c: g.c, t: 'gola' });
+        }
+    });
+
+    // 4. raggiungibilita'
+    var coppie = 0, tot = 0;
+    staz.forEach(function (st) {
+        var m = mete(st, staz);
+        coppie += m.length; tot += staz.length;
+        var manca = staz.filter(function (x) { return m.indexOf(x) < 0; })
+                        .map(function (x) { return x.lettera; });
+        nota.push('  ' + st.lettera + ' -> ' + (m.map(function (x) { return x.lettera; }).join('') || '(nessuna)') +
+                  (manca.length ? '   non serve: ' + manca.join('') : '   [serve tutte]'));
+        if (!m.length) err.push('la stazione ' + st.lettera + ' non serve nessuna meta');
+    });
+
+    var h = [];
+    h.push('<span class="nota">stazioni: ' + staz.length + '  ' +
+           staz.map(function (s) { return s.lettera + '(' + s.r + ',' + s.c + ')'; }).join(' ') + '</span>');
+    nota.forEach(function (n) { h.push('<span class="nota">' + esc(n) + '</span>'); });
+    h.push('<span class="nota">coppie servite: ' + coppie + '/' + tot + '</span>');
+    h.push('');
+    if (err.length) err.forEach(function (e) { h.push('<span class="male">! ' + esc(e) + '</span>'); });
+    else h.push('<span class="ok">nessun errore: schema valido</span>');
+    document.getElementById('esito').innerHTML = h.join('\n');
+    disegna();
+}
+
+function mete(part, staz) {
+    var visti = {}, pila = [[part.r, part.c, part.uscita]], out = [];
+    while (pila.length) {
+        var v = pila.pop(), r = v[0], c = v[1], d = v[2], k = r + ',' + c + ',' + d;
+        if (visti[k]) continue; visti[k] = 1;
+        var nr = r + DIR[d][0], nc = c + DIR[d][1];
+        if (!dentro(nr, nc)) continue;
+        var cod = G[nr][nc], ent = OPP[d];
+        if (D.staz[cod]) {
+            if (D.staz[cod] === ent) {
+                var st = staz.filter(function (x) { return x.r === nr && x.c === nc; })[0];
+                if (st && out.indexOf(st) < 0) out.push(st);
+            }
+            continue;
+        }
+        for (var s = 0; s < 2; s++) {
+            var r2 = rotta(cod, s);
+            if (r2 && r2.indexOf(ent) >= 0) pila.push([nr, nc, r2[0] === ent ? r2[1] : r2[0]]);
+        }
+    }
+    return out;
+}
+function esc(s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
+
+// ---- parametri ---------------------------------------------------------
+function tabellaParametri() {
+    var box = document.getElementById('boxPar'), cont = document.getElementById('tabPar');
+    var righe = parametriDelloSchema();
+    if (!righe.length) { box.hidden = true; return; }
+    box.hidden = false;
+    var t = document.createElement('table');
+    var tr = document.createElement('tr');
+    tr.appendChild(cella_('th', '#'));
+    PARAM.forEach(function (p) { tr.appendChild(cella_('th', p.eti)); });
+    tr.appendChild(cella_('th', 'durata'));
+    tr.appendChild(cella_('th', 'contatore'));
+    t.appendChild(tr);
+    righe.forEach(function (rg, i) {
+        var r = document.createElement('tr');
+        r.appendChild(cella_('td', rg.eti !== undefined ? rg.eti : (i + 1)));
+        PARAM.forEach(function (p) {
+            var td = document.createElement('td');
+            var ct;
+            if (p.voci) {
+                ct = document.createElement('select');
+                p.voci.forEach(function (testo, n) {
+                    var o = document.createElement('option');
+                    o.value = n + (p.base || 0); o.textContent = testo;
+                    ct.appendChild(o);
+                });
+            } else {
+                ct = document.createElement('input');
+                ct.type = 'number'; ct.min = p.min; ct.max = p.max;
+                ct.title = 'originali: ' + p.disco;
+            }
+            ct.value = rg.p[p.k];
+            ct.onchange = function () {
+                var v = parseInt(ct.value, 10);
+                if (isNaN(v)) { ct.value = rg.p[p.k]; return; }
+                if (p.min !== undefined) v = Math.max(p.min, Math.min(p.max, v));
+                ct.value = v;
+                rg.p[p.k] = v;
+                segnaSporco();
+                aggiornaDerivati(r, rg.p);
+            };
+            td.appendChild(ct); r.appendChild(td);
+        });
+        r.appendChild(cella_('td', '', 'der'));
+        r.appendChild(cella_('td', '', 'der'));
+        aggiornaDerivati(r, rg.p);
+        t.appendChild(r);
+    });
+    cont.innerHTML = ''; cont.appendChild(t);
+}
+function aggiornaDerivati(tr, p) {
+    var c = tr.querySelectorAll('td.der');
+    c[0].textContent = (p.ord * p.sec) + ' s';
+    c[1].textContent = p.ord * (p.sec + 2);
+}
+function cella_(tag, testo, cls) {
+    var e = document.createElement(tag);
+    e.textContent = testo;
+    if (cls) e.className = cls;
+    return e;
+}
+function parametriDelloSchema() {
+    if (!F) return [];
+    if (F.tipo === 'json') {
+        var L = F.elenco[idx].liv;
+        return F.dati.liv[L].sub.map(function (p, n) { return { p: p, eti: L + (n + 1) }; });
+    }
+    return F.sub.map(function (s, n) { return { p: s.p, eti: n + 1 }; });
+}
+
+// presa di servizio per il collaudo: permette di provare analisi e
+// ricomposizione senza passare dal selettore di file di Chrome.
+window.__ed = {
+    analizza: analizza,
+    apri: apriTesto,
+    scegli: scegli,
+    carica: function (f) { F = f; idx = 0; G = F.elenco[0].g; },
+    componi: function () { return F.tipo === 'json' ? componiJson() : componiJs(); },
+    controlla: controlla, mostraVie: mostraVie, trovaGola: trovaGola, PUNTA: PUNTA
+};
+
+})();
+</script>
+</body>
+</html>

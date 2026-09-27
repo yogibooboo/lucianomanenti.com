@@ -69,3 +69,20 @@ banner/*.png
 # quelle valgono anche online. Il repo e' pubblico.
 stats/stats-config.php
 stats/stats-config.locale.php
+
+# --- WooWoo ---
+# Il gioco si chiama WooWoo ma i file portano il nome woowoo2: il primo
+# tentativo, quello coi file woowoo.*, resta solo sul disco.
+woowoo.html
+woowoo-en.html
+woowoo.css
+woowoo.js
+
+# Materiale che viene dal dischetto Kingsoft del 1992: le piastrelle estratte
+# da Loco1.ilbm e i quaranta cinque quadri originali. Sono un riferimento
+# tecnico, non roba nostra, e il repo e' pubblico: restano fuori.
+# woowoo2-mie.js oggi e' una copia degli stessi quadri; quando ci saranno
+# dentro solo schemi nostri lo si toglie da questo elenco e lo si versiona.
+woowoo2-tiles.png
+woowoo2-dati.js
+woowoo2-mie.js
