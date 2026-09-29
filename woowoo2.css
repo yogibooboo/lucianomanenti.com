@@ -1,7 +1,8 @@
 /* ============================================================================
    WOOWOO2 - Stili CSS, integrati con game-layout.js
-   Frame campogioco 1024x750, canvas 640x512 (griglia 10x8 di caselle da 32 px
-   disegnate al doppio), pannello informazioni a destra fuori dalla griglia.
+   Frame campogioco 1024x750, canvas 960x576 (griglia 15x9 di caselle da 32 px
+   disegnate al doppio). Il tabellone si prende tutta la larghezza: il
+   pannello che stava a destra non c'e' piu'.
    ============================================================================ */
 
 * {
@@ -157,16 +158,15 @@ html, body {
 /* === AREA CENTRALE === */
 #area-tabellone {
     position: absolute;
-    top: 54px; left: 22px;
-    width: 980px; height: 528px;
+    top: 52px; left: 29px;
+    width: 966px; height: 582px;
     display: flex;
-    gap: 16px;
     align-items: flex-start;
 }
 
 #canvas-wrapper {
-    width: 640px;
-    height: 512px;
+    width: 960px;
+    height: 576px;
     border: 3px solid rgba(0, 0, 0, 0.55);
     border-radius: 6px;
     box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
@@ -174,9 +174,12 @@ html, body {
     background: #000;
     flex: none;
 }
-#w2-canvas { display: block; width: 640px; height: 512px; cursor: pointer; }
+#w2-canvas { display: block; width: 960px; height: 576px; cursor: pointer; }
 
-/* === PANNELLO LATERALE === */
+/* === PANNELLO LATERALE ===
+   Il tabellone 15x9 si prende tutta la larghezza e il pannello non c'e' piu'
+   nelle due pagine. Le regole restano qui perche' il motore continua a
+   riempire #w2-coda se lo trova, e rimetterlo e' solo un blocco di HTML. */
 .pannello {
     flex: 1;
     height: 512px;
@@ -228,8 +231,8 @@ html, body {
 /* === BARRA INFERIORE === */
 #barra-inferiore {
     position: absolute;
-    bottom: 76px; left: 22px;
-    width: 980px; height: 64px;
+    bottom: 56px; left: 22px;
+    width: 980px; height: 52px;
     display: flex;
     align-items: center;
     gap: 12px;
@@ -260,6 +263,26 @@ html, body {
 }
 .bottone:hover { background: rgba(255, 255, 255, 0.22); }
 .bottone.principale { background: #f0c000; color: #2a1a00; border-color: #ffe680; }
+
+/* Il tasto della pausa lampeggia di giallo: e' l'unico segno che il gioco e'
+   fermo, sul quadro non si mette niente. A chi ha chiesto meno animazioni
+   resta acceso fisso. */
+#w2-pausa.inpausa {
+    background: #f0c000;
+    color: #2a1a00;
+    border-color: #ffe680;
+    animation: w2-lampeggio 0.9s steps(1, end) infinite;
+}
+@keyframes w2-lampeggio {
+    50% {
+        background: rgba(255, 255, 255, 0.12);
+        color: #fff;
+        border-color: rgba(255, 255, 255, 0.28);
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    #w2-pausa.inpausa { animation: none; }
+}
 
 /* Due tendine: il dischetto A..L e i quadri nostri M..X. */
 #w2-scelta,
@@ -317,7 +340,7 @@ html, body {
 /* === PIEDINO === */
 .legal-links-w2 {
     position: absolute;
-    bottom: 36px; left: 0;
+    bottom: 30px; left: 0;
     width: 1024px;
     text-align: center;
     font-size: 11px;

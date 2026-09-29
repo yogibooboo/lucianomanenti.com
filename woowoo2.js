@@ -2,14 +2,20 @@
    WooWoo2 - motore di gioco
    ---------------------------------------------------------------------------
    Meccanica ricavata dal dischetto originale Locomotion (Kingsoft 1992):
-   45 schemi 10x8, tabella degli scambi a due stati, parametri dei 9
-   sottolivelli di ogni livello. I dati stanno in woowoo2-dati.js.
+   45 schemi, tabella degli scambi a due stati, parametri dei 9 sottolivelli
+   di ogni livello. I dati stanno in woowoo2-dati.js. Gli schemi del dischetto
+   erano 10x8; il tabellone nostro e' 15x9 e se li tiene in mezzo, col prato
+   intorno (vedi dev/woowoo2-allarga.py). Sul prato ci sta anche la targa,
+   tre caselle per una, che ha preso il posto dei numeri nella casella nera
+   del dischetto (vedi targaDi e disegnaTarga).
 
    ATTENZIONE: la grafica caricata da images/woowoo2/tiles.png e' quella originale
    Kingsoft, usata solo come grafica di cantiere per validare la meccanica.
    Va sostituita prima di qualunque pubblicazione. La sostituzione e' in
-   collaudo sul livello N: piastrelle nostre su sfondo dipinto. Lo stile di
-   ogni schema sta nel campo `stile` dei file di dati (vedi stileDi).
+   collaudo: piastrelle nostre su sfondo dipinto. Lo stile di ogni schema sta
+   nel campo `stile` dei file di dati (vedi stileDi). Oggi nessuno schema lo
+   usa: l'unico dipinto, sfondo-a1.jpg, e' fatto per il riquadro 10x8 e va
+   rifatto a 960x576.
    =========================================================================== */
 (function () {
     'use strict';
@@ -54,10 +60,26 @@
     function stileDi(L, n) {
         var liv = D.liv[L];
         var st = liv && liv.stile && liv.stile[n];
-        return (st && typeof st === 'object') ? st : null;
+        if (!st || typeof st !== 'object') return null;
+        // Se atlante o dipinto non sono arrivati lo schema si disegna con le
+        // piastrelle del dischetto: brutto ma giocabile, e soprattutto lo si
+        // vede. Prima si provava a stenderlo lo stesso e drawImage buttava
+        // fuori un errore che fermava il ciclo: il quadro restava congelato
+        // sull'ultimo fotogramma e sembrava che il gioco non cambiasse mai
+        // livello.
+        return st.rotto ? null : st;
     }
 
     // Tutti i disegni citati dai dati, senza doppioni: servono al caricatore.
+    // Dice se lo schema porta un dipinto. Si guarda il dato e non `stileDi`,
+    // che torna null quando il dipinto non e' arrivato: la velocita' dei treni
+    // non deve dipendere da un file che il server non ha servito.
+    function haDipinto(L, n) {
+        var liv = D.liv[L];
+        var st = liv && liv.stile && liv.stile[n];
+        return !!(st && typeof st === 'object' && st.sfondo);
+    }
+
     function stiliUsati() {
         var visti = {}, fuori = [];
         Object.keys(D.liv).forEach(function (L) {
@@ -70,6 +92,24 @@
             });
         });
         return fuori;
+    }
+
+    // ---- targa -----------------------------------------------------------
+    // Nell'originale i numeri stavano nella casella nera del dischetto: tre
+    // cifre impilate, senza etichette, dentro 32x32. Qui stanno in una targa
+    // di tre caselle per una, appoggiata sul prato che gira intorno al quadro
+    // - da quando il tabellone e' 15x9 quel bordo e' libero in tutti e 81 gli
+    // schemi. Tre riquadri affiancati, ognuno con la sua etichetta sopra e il
+    // suo numero sotto. Di serie la targa va in alto a destra; chi la vuole
+    // altrove la sposta con l'editor, e allora il posto se lo porta dietro il
+    // file di dati, nel campo `targa`: una voce per schema, come `stile`, con
+    // dentro [riga, colonna] dell'angolo in alto a sinistra.
+    var TARGA_C = 3, TARGA_R = 1;        // larghezza e altezza in caselle
+    function targaDi(L, n) {
+        var liv = D.liv[L];
+        var t = liv && liv.targa && liv.targa[n];
+        if (t && t.length === 2) return { r: t[0], c: t[1] };
+        return { r: 0, c: COLS - TARGA_C };
     }
 
     // ---- testi -----------------------------------------------------------
@@ -99,6 +139,9 @@
         fra: EN ? 'in {N} s' : 'fra {N} s',
         vuoto: EN ? 'no orders' : 'nessun ordine',
         voceLiv: EN ? 'Level {L} · board {N}' : 'Livello {L} · quadro {N}',
+        qConsegne: EN ? 'DELIVERED' : 'CONSEGNE',
+        qScontri: EN ? 'CRASHES' : 'SCONTRI',
+        qTempo: EN ? 'TIME' : 'TEMPO',
         capoBase: EN ? 'Disk A–L' : 'Dischetto A–L',
         capoMiei: EN ? 'Mine M–X' : 'Miei M–X'
     };
@@ -109,7 +152,7 @@
     // ---- geometria -------------------------------------------------------
     var CELLA = 32;          // lato della casella in pixel originali
     var SCALA = 2;           // fattore di ingrandimento a video
-    var COLS = 10, RIGHE = 8;
+    var COLS = 15, RIGHE = 9;   // i quadri del dischetto, 10x8, stanno dentro con del prato intorno
     var LARG = COLS * CELLA, ALT = RIGHE * CELLA;
 
     // ---- direzioni -------------------------------------------------------
@@ -186,11 +229,27 @@
     // Fattore 4, verificato dall'utente in UAE il 25/09/2026 (non 2).
     var TURBO = 4;
 
+    // QUADRI LARGHI. Il tabellone e' 15x9; i quadri del dischetto sono 10x8 con
+    // l'erba intorno, quelli nostri usano tutto lo spazio e hanno percorsi piu'
+    // lunghi. Il contatore non e' un orologio, si consuma in treni-secondo:
+    // a parita' di velocita' una consegna su un quadro largo tiene il treno in
+    // pista piu' a lungo, costa di piu', e il budget tarato sul dischetto non
+    // basta. Si rimette in pari accelerando i treni - il viaggio torna a durare
+    // quanto prima, quindi il consumo torna quello di prima e il contatore
+    // finale non ci rimette niente. Accelerare NON toglie tempo: il tempo lo
+    // mangiano i treni in pista, non l'orologio.
+    // La sosta in stazione (0,33 x sec) non si tocca: non e' cresciuta col
+    // tabellone, e infatti non dev'essere compensata.
+    // Il riconoscimento e' il dipinto: i quadri larghi li disegniamo noi e
+    // hanno tutti uno sfondo nostro, quelli del dischetto nessuno.
+    var F_LARGO = 1.35;
+
     // Manopole di taratura, per confrontare a occhio con UAE senza ricaricare.
     window.W2TARA = {
         velocita: VELOCITA, fAnnuncio: F_ANNUNCIO, fSosta: F_SOSTA,
         anticipo: ANTICIPO, fGap: F_GAP, fRitmo: F_RITMO, fRiprova: F_RIPROVA,
         trenoSec: TRENOSEC,
+        fLargo: F_LARGO,
         turbo: TURBO
     };
 
@@ -206,13 +265,24 @@
     function contatoreIniziale(p) { return p.ord * (p.sec + 2); }
     function tara() { return window.W2TARA; }
 
-    // ---- il treno, 8x14, ricavato da una schermata originale --------------
-    // 0 = nero, 1 = corpo (ricolorabile), 2 = bianco
-    var TRENO = [
-        '02000020', '11100111', '11100111', '01000010', '10222201', '11000011', '10100101',
-        '10100101', '11000011', '10222201', '01000010', '11100111', '11100111', '02000020'
-    ];
     var COLORI = ['#cc0000', '#eecc00', '#22aaee', '#ee7700', '#bb44cc', '#22cc66'];
+
+    // Il colore distingue un convoglio dall'altro, non dice dove va: si pesca
+    // a caso fra quelli che in questo momento non sono in giro, cosi' due treni
+    // contemporanei non si somigliano mai. Si evita anche il colore appena
+    // usato, altrimenti due annunci di fila escono uguali. Se sono tutti presi
+    // si ripesca dall'intero mazzo.
+    var ultimoColore = '';
+
+    function coloreACaso() {
+        var usati = S.treni.map(function (t) { return t.colore; })
+            .concat(S.coda.map(function (o) { return o.colore; }));
+        usati.push(ultimoColore);
+        var liberi = COLORI.filter(function (c) { return usati.indexOf(c) < 0; });
+        var mazzo = liberi.length ? liberi : COLORI;
+        ultimoColore = mazzo[Math.floor(Math.random() * mazzo.length)];
+        return ultimoColore;
+    }
 
     // ---- stato -----------------------------------------------------------
     var S = {
@@ -224,7 +294,7 @@
         coda: [],           // ordini annunciati non ancora comparsi
         consegnati: 0, scontri: 0, persi: 0, punti: 0,
         tempo: 0, tempoMax: 0, prossimo: 0,
-        attivo: false, finito: null,
+        attivo: false, finito: null, largo: false,
         lampeggio: 0,
         turbo: false
     };
@@ -371,6 +441,7 @@
         allinea(liv, sub);
         var p = parametri();
         S.stile = stileDi(liv, p.s);
+        S.largo = haDipinto(liv, p.s);
         var sch = D.liv[liv].schemi[p.s];
 
         S.griglia = sch.map(function (r) { return r.slice(); });
@@ -390,26 +461,10 @@
         }
         S.stazioni.forEach(function (s, i) { s.lettera = String.fromCharCode(65 + i); });
 
-        // Casella del tabellone: nell'originale e' la casella nera `D.info`,
-        // che 39 schemi su 45 hanno gia' dentro il disegno. Per i sei che non
-        // ce l'hanno scelgo la casella di sfondo piu' vicina al centro e ci
-        // disegno sopra la stessa piastrella, cosi' il quadro non resta muto.
-        S.info = null;
-        for (var r3 = 0; r3 < RIGHE; r3++) {
-            for (var c3 = 0; c3 < COLS; c3++) {
-                if (S.griglia[r3][c3] === D.info) S.info = { r: r3, c: c3, finta: false };
-            }
-        }
-        if (!S.info) {
-            var mig = 1e9;
-            for (var r4 = 0; r4 < RIGHE; r4++) {
-                for (var c4 = 0; c4 < COLS; c4++) {
-                    if (D.decor.indexOf(S.griglia[r4][c4]) < 0) continue;
-                    var d = Math.abs(r4 - 3.5) + Math.abs(c4 - 4.5);
-                    if (d < mig) { mig = d; S.info = { r: r4, c: c4, finta: true }; }
-                }
-            }
-        }
+        // Dove appoggiare il quadro comandi. La casella nera del dischetto
+        // (codice D.info) resta dov'e' ma da qui in avanti e' solo paesaggio:
+        // i numeri non ci vanno piu' sopra.
+        S.targa = targaDi(liv, p.s);
         S.stazioni.forEach(function (s) { s.mete = raggiungibili(s); });
 
         S.treni = []; S.coda = [];
@@ -420,10 +475,11 @@
         S.prossimo = 2;                  // il primo annuncio arriva quasi subito
         S.emessi = 0;                    // ordini gia' annunciati
         S.extra = Math.min(tara().anticipo[p.traf], p.tmax);   // annunci ravvicinati d'avvio
-        S.attivo = true; S.finito = null; S.turbo = false;
+        S.attivo = true; S.finito = null; S.turbo = false; S.pausa = false;
         messaggio(t('quadro', { L: liv, N: sub + 1, M: D.liv[liv].sub.length,
                                 O: p.ord, S: S.stazioni.length }));
         aggiornaHud();
+        aggiornaPausa();
     }
 
     // =======================================================================
@@ -462,7 +518,8 @@
         S.coda.push({
             part: part, dest: part.mete[Math.floor(Math.random() * part.mete.length)],
             resta: p.sec * tara().fAnnuncio,
-            colore: COLORI[S.coda.length % COLORI.length]
+            colore: coloreACaso(),
+            modello: Math.floor(Math.random() * MODELLI.length)
         });
         part.annuncio = p.sec * tara().fAnnuncio;
         suona('annuncio');
@@ -475,7 +532,7 @@
         S.treni.push({
             r: st.r, c: st.c,
             ea: OPP[st.uscita], xa: st.uscita, t: 0.5,
-            dest: o.dest.lettera, colore: o.colore,
+            dest: o.dest.lettera, colore: o.colore, modello: o.modello,
             sosta: p.sec * tara().fSosta, fermo: false, uscito: false
         });
     }
@@ -590,7 +647,7 @@
         }
 
         // treni
-        var v = tara().velocita[p.vel];
+        var v = tara().velocita[p.vel] * (S.largo ? tara().fLargo : 1);
         for (var k = 0; k < S.treni.length; k++) {
             var tr = S.treni[k];
             if (tr.sosta > 0) { tr.sosta -= dt; if (tr.sosta <= 0) suona('partenza'); continue; }
@@ -641,6 +698,7 @@
     function fine(vinto) {
         if (!S.attivo) return;
         S.attivo = false;
+        S.pausa = false; aggiornaPausa();
         var p = parametri();
         var avanzo = vinto ? Math.floor(S.tempo) : 0;   // vale solo in punteggio
         var pTempo = avanzo * 5;
@@ -690,8 +748,6 @@
             }
         }
 
-        disegnaTabellone();
-
         // lettere delle stazioni, lampeggianti durante l'annuncio
         S.stazioni.forEach(function (s) {
             var lampeggia = s.annuncio > 0 && (Math.floor(S.lampeggio * 4) % 2 === 0);
@@ -707,41 +763,289 @@
         // treni
         S.treni.forEach(function (tr) { disegnaTreno(tr); });
 
+        // la targa sta sopra tutto: se qualcuno la sposta sui binari, i treni
+        // le passano sotto invece di cancellarla
+        disegnaTarga();
+
         ctx.setTransform(1, 0, 0, 1, 0, 0);
     }
 
-    // Tabellone dell'originale, dentro la casella nera da 32x32: tre numeri
-    // impilati, senza etichette. Verde = treni ancora da consegnare, azzurro =
-    // scontri ancora concessi prima di perdere, giallo = contatore del tempo.
-    // I bordi della piastrella mangiano 2 px a sinistra e 1 in alto e a destra,
-    // quindi le basi del testo stanno a 13, 21 e 29.
-    function disegnaTabellone() {
-        var i = S.info;
-        if (!i) return;
+    // La targa: tre riquadri da una casella l'uno, in fila. In ognuno
+    // l'etichetta sopra e il numero sotto. Le misure sono in pixel originali,
+    // il doppio a video, quindi c'e' poco posto: le scritte si stringono da
+    // sole (vedi scritta) e non si straborda mai dal riquadro.
+    function disegnaTarga() {
+        var q = S.targa;
+        if (!q) return;
         var p = parametri();
-        var sty = S.stile;
-        if (sty) {
-            // Il codice 37 non esiste nell'atlante nuovo: la targa nera si
-            // disegna qui, se no i numeri finirebbero a galleggiare sul prato.
-            ctx.fillStyle = '#0d0d0d';
-            ctx.fillRect(i.c * CELLA + 1, i.r * CELLA + 1, CELLA - 2, CELLA - 2);
-            ctx.strokeStyle = '#6b6257'; ctx.lineWidth = 1;
-            ctx.strokeRect(i.c * CELLA + 1.5, i.r * CELLA + 1.5, CELLA - 3, CELLA - 3);
-        } else if (i.finta) {
-            ctx.drawImage(atlante, D.info * 32, 0, 32, 32, i.c * CELLA, i.r * CELLA, CELLA, CELLA);
-        }
-        var x = i.c * CELLA + 16, y = i.r * CELLA;
+        var x = q.c * CELLA, y = q.r * CELLA;
+        var w = TARGA_C * CELLA, h = TARGA_R * CELLA;
+
+        ctx.fillStyle = 'rgba(8,10,8,0.86)';
+        ctx.fillRect(x + 1, y + 1, w - 2, h - 2);
+        ctx.strokeStyle = '#6b6257'; ctx.lineWidth = 1;
+        ctx.strokeRect(x + 1.5, y + 1.5, w - 3, h - 3);
+
+        var caselle = [
+            [T.qConsegne, S.consegnati + '/' + p.ord, '#00e05a'],
+            [T.qScontri, S.persi + '/' + p.inc, '#ff7b6f'],
+            [T.qTempo, String(Math.ceil(S.tempo)), '#ffe000']
+        ];
         ctx.textAlign = 'center';
         ctx.textBaseline = 'alphabetic';
-        ctx.fillStyle = '#00e05a';
-        ctx.font = 'bold 15px monospace';
-        ctx.fillText(String(Math.max(0, p.ord - S.consegnati)), x, y + 13);
-        ctx.font = 'bold 9px monospace';
-        ctx.fillStyle = '#4aa8ff';
-        ctx.fillText(String(Math.max(0, p.inc - S.persi)), x, y + 21);
-        ctx.fillStyle = '#ffe000';
-        ctx.fillText(String(Math.ceil(S.tempo)), x, y + 29);
+        caselle.forEach(function (v, i) {
+            if (i) {
+                ctx.strokeStyle = 'rgba(255,255,255,0.14)';
+                ctx.beginPath();
+                ctx.moveTo(x + i * CELLA + 0.5, y + 4);
+                ctx.lineTo(x + i * CELLA + 0.5, y + h - 4);
+                ctx.stroke();
+            }
+            var cx = x + i * CELLA + CELLA / 2;
+            scritta(v[0], cx, y + 12, 6, CELLA - 4, '#8d9aa8');
+            scritta(v[1], cx, y + 26, 12, CELLA - 4, v[2]);
+        });
     }
+
+    // Scrive centrato rimpicciolendo il carattere finche' ci sta: CONSEGNE in
+    // italiano e DELIVERED in inglese non sono lunghi uguali, e il riquadro e'
+    // sempre di 32 punti.
+    function scritta(txt, cx, base, punti, largo, col) {
+        ctx.font = 'bold ' + punti + 'px monospace';
+        while (punti > 4 && ctx.measureText(txt).width > largo) {
+            punti -= 1;
+            ctx.font = 'bold ' + punti + 'px monospace';
+        }
+        ctx.fillStyle = col;
+        ctx.fillText(txt, cx, base);
+    }
+
+    // ---- i corpi dei treni ------------------------------------------------
+    // Quattro modelli disegnati a vettori, tutti col muso a nord, centrati
+    // nell'origine e nello stesso ingombro 16x28. disegnaTreno li riduce di
+    // meta', cosi' sul quadro occupano 8x14 come lo sprite di prima ma con il
+    // doppio del dettaglio, perche' il canvas e' gia' a SCALA 2.
+
+    function schiara(col, perc) {
+        var n = parseInt(col.replace('#', ''), 16), d = Math.round(2.55 * perc);
+        var r = (n >> 16) + d, g = ((n >> 8) & 255) + d, b = (n & 255) + d;
+        function m(v) { return v < 0 ? 0 : (v > 255 ? 255 : v); }
+        return '#' + (0x1000000 + m(r) * 0x10000 + m(g) * 0x100 + m(b)).toString(16).slice(1);
+    }
+
+    function rrect(c, x, y, w, h, r) {
+        c.beginPath();
+        if (c.roundRect) c.roundRect(x, y, w, h, r); else c.rect(x, y, w, h);
+        c.fill();
+    }
+
+    // ---- 1. locomotore da manovra ------------------------------------------
+
+    function modManovra(c, col) {
+        var scuro = schiara(col, -35), chiaro = schiara(col, 25);
+
+        c.fillStyle = '#111418';                      // telaio
+        c.fillRect(-8, -14, 16, 28);
+
+        c.fillStyle = '#2d333b';                      // respingenti
+        c.fillRect(-7.5, -15.5, 3.5, 2.5); c.fillRect(4, -15.5, 3.5, 2.5);
+        c.fillRect(-7.5, 13, 3.5, 2.5);    c.fillRect(4, 13, 3.5, 2.5);
+        c.fillStyle = '#4a5568';
+        c.fillRect(-8, -16, 4.5, 1);  c.fillRect(3.5, -16, 4.5, 1);
+        c.fillRect(-8, 15, 4.5, 1);   c.fillRect(3.5, 15, 4.5, 1);
+        c.fillStyle = '#1a202c';                      // gancio di trazione
+        c.fillRect(-1.5, -15.5, 3, 2); c.fillRect(-1.5, 13.5, 3, 2);
+
+        c.fillStyle = '#d97706';                      // pancone a strisce
+        c.fillRect(-7, -14, 14, 2); c.fillRect(-7, 12, 14, 2);
+        c.fillStyle = '#111418';
+        c.fillRect(-4, -14, 2, 2); c.fillRect(2, -14, 2, 2);
+        c.fillRect(-4, 12, 2, 2);  c.fillRect(2, 12, 2, 2);
+
+        c.fillStyle = col;                            // cofano motore
+        rrect(c, -6.5, -12, 13, 24, 2);
+        c.fillStyle = chiaro; c.fillRect(-6, -11, 1.5, 22);
+        c.fillStyle = scuro;  c.fillRect(4.5, -11, 1.5, 22);
+
+        c.fillStyle = '#111418';                      // griglia del radiatore
+        rrect(c, -4.5, -11.5, 9, 3, 1);
+        c.fillStyle = '#475569'; c.fillRect(-4, -10.5, 8, 0.7);
+
+        c.fillStyle = '#1e293b';                      // ventola
+        c.beginPath(); c.arc(0, -5, 2.5, 0, Math.PI * 2); c.fill();
+        c.fillStyle = '#0f172a';
+        c.beginPath(); c.arc(0, -5, 1.2, 0, Math.PI * 2); c.fill();
+        c.fillStyle = '#090d12'; c.fillRect(-1, -1.5, 2, 1.5);        // scarico
+
+        c.fillStyle = scuro;     c.fillRect(-6, 0.5, 12, 9);          // cabina
+        c.fillStyle = '#1e293b'; c.fillRect(-5.5, 1, 11, 8);
+        c.fillStyle = '#0f172a'; c.fillRect(-4.5, 1.5, 9, 2.5);       // parabrezza
+        c.fillStyle = '#38bdf8'; c.fillRect(-4, 2, 8, 1.5);
+        c.fillStyle = '#ffffff'; c.fillRect(-3, 2, 2.5, 1.5);
+        c.fillStyle = '#0284c7';                                      // finestrini
+        c.fillRect(-5, 4.5, 1, 3.5); c.fillRect(4, 4.5, 1, 3.5);
+        c.fillStyle = col;       c.fillRect(-5, 4, 10, 4.5);          // tettuccio
+        c.fillStyle = chiaro;    c.fillRect(-4, 4.5, 8, 1);
+
+        c.fillStyle = '#334155';                      // fari anteriori
+        c.fillRect(-5, -13.5, 2.5, 2); c.fillRect(2.5, -13.5, 2.5, 2);
+        c.fillStyle = '#fef08a';
+        c.beginPath();
+        c.arc(-3.75, -12.5, 1, 0, Math.PI * 2);
+        c.arc(3.75, -12.5, 1, 0, Math.PI * 2);
+        c.fill();
+
+        c.fillStyle = '#ef4444';                      // fanali di coda
+        c.beginPath();
+        c.arc(-4.5, 12.5, 0.8, 0, Math.PI * 2);
+        c.arc(4.5, 12.5, 0.8, 0, Math.PI * 2);
+        c.fill();
+    }
+
+
+    // ---- 2. berlina a due teste ("retro HD") -------------------------------
+    // Simmetrica come lo sprite originale: due parabrezza, quattro fari
+    // d'angolo, feritoia scura lungo tutto il tetto.
+
+    function modRetro(c, col) {
+        var scuro = schiara(col, -40), chiaro = schiara(col, 35);
+
+        c.fillStyle = '#0a0d11'; rrect(c, -8, -14, 16, 28, 3);
+        c.fillStyle = '#171c24';
+        c.fillRect(-6, -14.5, 12, 1.5); c.fillRect(-6, 13, 12, 1.5);
+
+        c.fillStyle = col;                            // scocca in due tronconi
+        rrect(c, -7, -13, 14, 11, 2);
+        rrect(c, -7, 2, 14, 11, 2);
+        c.fillStyle = chiaro;
+        c.fillRect(-6.5, -12, 1.5, 9.5); c.fillRect(-6.5, 2.5, 1.5, 9.5);
+        c.fillStyle = scuro;
+        c.fillRect(5, -12, 1.5, 9.5);    c.fillRect(5, 2.5, 1.5, 9.5);
+
+        c.fillStyle = '#11161d'; c.fillRect(-1.5, -13, 3, 26);   // feritoia
+
+        c.fillStyle = '#0f172a'; rrect(c, -4.5, -6, 9, 3.5, 1);  // parabrezza nord
+        c.fillStyle = '#e2e8f0'; c.fillRect(-4, -5.5, 8, 2.5);
+        c.fillStyle = '#38bdf8'; c.fillRect(-2, -5.5, 5, 2.5);
+
+        c.fillStyle = '#1e293b'; c.fillRect(-6.5, -2, 13, 4);    // fascia centrale
+        c.fillStyle = col;       c.fillRect(-5.5, -1.5, 11, 3);
+
+        c.fillStyle = '#0f172a'; rrect(c, -4.5, 2.5, 9, 3.5, 1); // parabrezza sud
+        c.fillStyle = '#e2e8f0'; c.fillRect(-4, 3, 8, 2.5);
+        c.fillStyle = '#38bdf8'; c.fillRect(-3, 3, 5, 2.5);
+
+        var ang = [[-5.2, -13.2], [5.2, -13.2], [-5.2, 13.2], [5.2, 13.2]];
+        ang.forEach(function (f) {
+            c.fillStyle = '#0f172a';
+            c.beginPath(); c.arc(f[0], f[1], 1.6, 0, Math.PI * 2); c.fill();
+            c.fillStyle = '#ffffff';
+            c.beginPath(); c.arc(f[0], f[1], 1.1, 0, Math.PI * 2); c.fill();
+        });
+    }
+
+    // ---- 3. freccia ad alta velocita' --------------------------------------
+    // Muso a ogiva, visiera scura avvolgente, pantografo dietro. Unico modello
+    // che ha un davanti e un dietro veri.
+
+    function modFreccia(c, col) {
+        var chiaro = schiara(col, 30);
+
+        c.fillStyle = '#0f141a'; rrect(c, -7.5, -13, 15, 27, 3);
+
+        c.fillStyle = col;                            // carlinga
+        c.beginPath();
+        c.moveTo(0, -15);
+        c.bezierCurveTo(-6, -14, -7, -8, -7, -2);
+        c.lineTo(-7, 12);
+        c.quadraticCurveTo(-7, 14, -4, 14.5);
+        c.lineTo(4, 14.5);
+        c.quadraticCurveTo(7, 14, 7, 12);
+        c.lineTo(7, -2);
+        c.bezierCurveTo(7, -8, 6, -14, 0, -15);
+        c.closePath(); c.fill();
+
+        c.fillStyle = chiaro;                         // riflesso di curvatura
+        c.beginPath();
+        c.moveTo(0, -14);
+        c.bezierCurveTo(-4, -13, -5.5, -8, -5.5, -2);
+        c.lineTo(-5.5, 12); c.lineTo(-4.5, 12); c.lineTo(-4.5, -2);
+        c.bezierCurveTo(-4.5, -7, -3, -12, 0, -14);
+        c.fill();
+
+        c.fillStyle = '#334155'; rrect(c, -2.5, -5, 5, 17, 1.5); // dorso metallico
+        c.fillStyle = '#64748b'; c.fillRect(-1.5, -4, 3, 15);
+        c.fillStyle = '#cbd5e1'; c.fillRect(-2, 8, 4, 1);        // pantografo
+        c.fillStyle = '#e2e8f0'; c.fillRect(-0.7, 7, 1.4, 3);
+
+        c.fillStyle = '#090d14';                      // visiera
+        c.beginPath();
+        c.moveTo(0, -12); c.lineTo(-5, -6.5); c.lineTo(-5, -4);
+        c.lineTo(5, -4); c.lineTo(5, -6.5);
+        c.closePath(); c.fill();
+        c.fillStyle = '#38bdf8';
+        c.beginPath();
+        c.moveTo(0, -11.2); c.lineTo(-4, -6.5); c.lineTo(0, -6.5);
+        c.closePath(); c.fill();
+        c.fillStyle = '#ffffff';
+        c.beginPath();
+        c.moveTo(-1, -10.5); c.lineTo(-3, -7.5); c.lineTo(-1.5, -7.5);
+        c.closePath(); c.fill();
+
+        c.fillStyle = '#fef08a';                      // fari a virgola
+        c.beginPath();
+        c.moveTo(-2, -13); c.lineTo(-4, -10.5); c.lineTo(-3, -10);
+        c.closePath(); c.fill();
+        c.beginPath();
+        c.moveTo(2, -13); c.lineTo(4, -10.5); c.lineTo(3, -10);
+        c.closePath(); c.fill();
+
+        c.fillStyle = '#ef4444'; c.fillRect(-5, 13.5, 10, 1);    // barra di coda
+    }
+
+    // ---- 4. modellino gommoso ----------------------------------------------
+    // Tondo, bordo scuro spesso, un solo fanale grosso davanti.
+
+    function modModellino(c, col) {
+        var scuro = schiara(col, -30), chiaro = schiara(col, 45);
+
+        c.fillStyle = '#0f172a'; rrect(c, -8, -14, 16, 28, 5);
+
+        c.fillStyle = '#334155';                      // respingenti tondi
+        c.beginPath();
+        c.arc(-5, -14, 1.8, 0, Math.PI * 2); c.arc(5, -14, 1.8, 0, Math.PI * 2);
+        c.arc(-5, 14, 1.8, 0, Math.PI * 2);  c.arc(5, 14, 1.8, 0, Math.PI * 2);
+        c.fill();
+        c.fillStyle = '#94a3b8';
+        c.beginPath();
+        c.arc(-5, -14.5, 0.8, 0, Math.PI * 2); c.arc(5, -14.5, 0.8, 0, Math.PI * 2);
+        c.arc(-5, 14.5, 0.8, 0, Math.PI * 2);  c.arc(5, 14.5, 0.8, 0, Math.PI * 2);
+        c.fill();
+
+        c.fillStyle = col;    rrect(c, -6.5, -12.5, 13, 25, 4);  // scocca bombata
+        c.fillStyle = scuro;  rrect(c, -6.5, 4, 13, 8.5, 3);
+        c.fillStyle = chiaro; rrect(c, -5, -10, 10, 16, 3);      // cupola
+
+        c.fillStyle = '#ffffff';                      // punto di luce
+        c.beginPath(); c.ellipse(-2, -5, 2, 4, -Math.PI / 6, 0, Math.PI * 2); c.fill();
+
+        c.fillStyle = '#0f172a'; rrect(c, -5, -11, 10, 4, 1.5);  // parabrezza
+        c.fillStyle = '#38bdf8'; c.fillRect(-4, -10.5, 8, 2.5);
+        c.fillStyle = '#ffffff'; c.fillRect(-2.5, -10.5, 3, 1.2);
+
+        c.fillStyle = '#0f172a'; rrect(c, -4.5, 8.5, 9, 3, 1.5); // lunotto
+        c.fillStyle = '#38bdf8'; c.fillRect(-3.5, 9, 7, 1.8);
+
+        c.fillStyle = '#475569';                      // fanale unico
+        c.beginPath(); c.arc(0, -13, 2, 0, Math.PI * 2); c.fill();
+        c.fillStyle = '#fef08a';
+        c.beginPath(); c.arc(0, -13, 1.3, 0, Math.PI * 2); c.fill();
+        c.fillStyle = '#ffffff';
+        c.beginPath(); c.arc(-0.4, -13.4, 0.5, 0, Math.PI * 2); c.fill();
+    }
+
+    // Ogni convoglio pesca un modello a caso fra questi quattro.
+    var MODELLI = [modManovra, modRetro, modFreccia, modModellino];
 
     function disegnaTreno(tr) {
         var p = mondo(tr);
@@ -754,21 +1058,19 @@
         ctx.save();
         ctx.translate(p[0], p[1]);
         ctx.rotate(ang);
-        for (var y = 0; y < TRENO.length; y++) {
-            for (var x = 0; x < 8; x++) {
-                var v = TRENO[y][x];
-                ctx.fillStyle = v === '0' ? '#000000' : (v === '2' ? '#ffffff' : tr.colore);
-                ctx.fillRect(x - 4, y - 7, 1, 1);
-            }
-        }
+        ctx.scale(0.5, 0.5);       // il corpo e' disegnato 16x28, sul quadro va 8x14
+        (MODELLI[tr.modello] || MODELLI[0])(ctx, tr.colore);
         ctx.restore();
 
         // la lettera di destinazione sta sempre a nord del convoglio
         if (parametri().dest) {
+            // niente riquadro: la lettera si legge da sola grazie al contorno
             ctx.font = 'bold 11px monospace';
             ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-            ctx.fillStyle = '#000000';
-            ctx.fillRect(p[0] - 5, p[1] - 17, 10, 12);
+            ctx.lineWidth = 2.5;
+            ctx.lineJoin = 'round';
+            ctx.strokeStyle = 'rgba(0,0,0,0.85)';
+            ctx.strokeText(tr.dest, p[0], p[1] - 11);
             ctx.fillStyle = '#ffffff';
             ctx.fillText(tr.dest, p[0], p[1] - 11);
         }
@@ -852,7 +1154,7 @@
     // =======================================================================
 
     function click(ev) {
-        if (!S.attivo) return;
+        if (!S.attivo || S.pausa) return;
         var b = cv.getBoundingClientRect();
         var x = (ev.clientX - b.left) / b.width * LARG;
         var y = (ev.clientY - b.top) / b.height * ALT;
@@ -869,13 +1171,27 @@
     // col trackpad e a chi non ha il tasto destro. Si rilascia da solo se il
     // mouse esce dalla finestra o se la pagina perde il fuoco, altrimenti il
     // gioco resterebbe accelerato senza che nessuno tenga premuto niente.
-    function turboOn(e) { if (e.button === 2 && S.attivo) S.turbo = true; }
+    function turboOn(e) { if (e.button === 2 && S.attivo && !S.pausa) S.turbo = true; }
     function turboOff() { S.turbo = false; }
+
+    // Pausa. Il gioco si ferma ma il quadro resta com'e': niente velo sopra,
+    // niente oscuramento, cosi' si puo' studiare la situazione. A dire che si
+    // e' fermi e' il tasto, che lampeggia di giallo.
+    function pausa(v) {
+        if (!S.attivo) return;
+        S.pausa = (v === undefined) ? !S.pausa : v;
+        if (S.pausa) S.turbo = false;
+        aggiornaPausa();
+    }
+    function aggiornaPausa() {
+        var b = el('w2-pausa');
+        if (b) { b.classList.toggle('inpausa', !!S.pausa); b.setAttribute('aria-pressed', S.pausa ? 'true' : 'false'); }
+    }
 
     function tasti(e) {
         if (e.altKey) return;
         if (e.key === 'r' || e.key === 'R') carica(S.livello, S.sub);
-        if (e.key === ' ' && S.attivo) { S.turbo = true; e.preventDefault(); }
+        if (e.key === ' ' && S.attivo && !S.pausa) { S.turbo = true; e.preventDefault(); }
     }
     function tastiSu(e) { if (e.key === ' ') S.turbo = false; }
 
@@ -930,6 +1246,8 @@
         // Vale sempre l'ultima toccata, e l'altra torna sul suo capofila per
         // dire a colpo d'occhio da quale banco si sta giocando.
         montaSelettori();
+        var bp = el('w2-pausa');
+        if (bp) bp.onclick = function () { pausa(); };
         var ba = el('w2-audio');
         if (ba) ba.onclick = function () { audioOn = !audioOn; ba.textContent = audioOn ? '🔊' : '🔇'; };
 
@@ -943,6 +1261,12 @@
             stili.forEach(function (x, i) {
                 x.img = im[1 + i * 2];
                 x.fondoImg = im[2 + i * 2];
+                // immagini() richiama anche quando un file non c'e': una
+                // figura mai arrivata ha larghezza zero.
+                x.rotto = !x.img.naturalWidth || !x.fondoImg.naturalWidth;
+                if (x.rotto) console.warn('WooWoo: manca ' +
+                    (x.img.naturalWidth ? x.sfondo : x.atlante) +
+                    ', quello schema va con le piastrelle del dischetto');
             });
             pronto = true; carica('A', 0); ciclo();
         });
@@ -950,14 +1274,18 @@
 
     var prec = 0;
     function ciclo(ts) {
+        // La prenotazione del fotogramma dopo sta qui in cima apposta: se la
+        // mettiamo in fondo, il primo errore dentro passo() o disegna() la
+        // salta e il gioco si ferma per sempre, senza dire niente.
+        requestAnimationFrame(ciclo);
         var dt = prec ? Math.min(0.1, (ts - prec) / 1000) : 0;
         prec = ts;
         // Il tetto va messo PRIMA del moltiplicatore, se no un fotogramma
         // lungo verrebbe amplificato e il treno salterebbe delle caselle.
-        if (S.turbo) dt *= tara().turbo;
+        if (S.pausa) dt = 0;
+        else if (S.turbo) dt *= tara().turbo;
         passo(dt);
         disegna();
-        requestAnimationFrame(ciclo);
     }
 
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', avvia);

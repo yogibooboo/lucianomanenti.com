@@ -19,7 +19,7 @@
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WooWoo 2 — Scambi, treni e stazioni</title>
+    <title>WooWoo Luciano — Scambi, treni e stazioni</title>
     <link rel="canonical" href="https://www.lucianomanenti.com/woowoo2.html">
     <link rel="alternate" hreflang="it" href="https://www.lucianomanenti.com/woowoo2.html">
     <link rel="alternate" hreflang="en" href="https://www.lucianomanenti.com/woowoo2-en.html">
@@ -28,13 +28,13 @@
     <link rel="shortcut icon" href="favicon/favicon.ico">
 
     <meta name="Description"
-        content="WooWoo 2: il rompicapo ferroviario in tempo reale. Aziona gli scambi, porta ogni treno alla stazione giusta ed evita gli scontri.">
+        content="WooWoo Luciano: il rompicapo ferroviario in tempo reale. Aziona gli scambi, porta ogni treno alla stazione giusta ed evita gli scontri.">
     <meta name="robots" content="noindex, nofollow">
     <meta http-Equiv="Cache-Control" Content="no-cache">
     <meta http-Equiv="Pragma" Content="no-cache">
     <meta http-Equiv="Expires" Content="0">
 
-    <link rel="stylesheet" href="woowoo2.css?v=1.3" />
+    <link rel="stylesheet" href="woowoo2.css?v=1.5" />
 
     <script>
         // Google Analytics: gtag() esiste sempre, lo script si carica solo fuori da dev_mode
@@ -84,7 +84,7 @@
                     </div>
                     <button id="w2-audio" class="bottone" style="height:26px;padding:0 10px;"
                         aria-label="Audio">&#128266;</button>
-                    <div id="titolo-gioco">WooWoo 2 &#128642;</div>
+                    <div id="titolo-gioco">WooWoo Luciano &#128642;</div>
                 </div>
 
                 <div class="header-center">
@@ -108,25 +108,7 @@
             <!-- ================= AREA CENTRALE ================= -->
             <div id="area-tabellone">
                 <div id="canvas-wrapper">
-                    <canvas id="w2-canvas" width="640" height="512"></canvas>
-                </div>
-
-                <div class="pannello">
-                    <div class="pannello-titolo">MOVIMENTO</div>
-                    <div id="w2-coda">
-                        <div class="w2-vuoto">nessun ordine</div>
-                    </div>
-
-                    <div class="pannello-titolo">COME SI GIOCA</div>
-                    <div class="scheda">
-                        <div><b>Annuncio:</b> la lettera della stazione lampeggia, poi il treno compare e sosta
-                            qualche secondo prima di partire.</div>
-                        <div><b>Scambi:</b> un clic commuta la via.</div>
-                        <div><b>Via storta:</b> il treno si ferma e riparte da solo appena raddrizzi lo scambio.</div>
-                        <div><b>Scontri:</b> chi sopraggiunge non si accoda, entra dentro e salta.</div>
-                        <div><b>Acceleratore:</b> tieni premuto il tasto destro del mouse sul quadro (o la barra spaziatrice) per far correre il gioco a velocita' quadrupla. Corre anche il contatore del tempo.</div>
-                        <div><b>R:</b> ricomincia il quadro.</div>
-                    </div>
+                    <canvas id="w2-canvas" width="960" height="576"></canvas>
                 </div>
             </div>
 
@@ -135,6 +117,7 @@
                 <div id="w2-messaggio">Caricamento del quadro&hellip;</div>
                 <select id="w2-scelta" title="Scegli un quadro del dischetto"></select>
                 <select id="w2-scelta2" title="Scegli un quadro dei tuoi"></select>
+                <button class="bottone" id="w2-pausa" aria-pressed="false" title="Ferma il gioco: il tasto lampeggia finche' si e' in pausa">PAUSA</button>
                 <button class="bottone principale" onclick="location.reload()">RICOMINCIA</button>
             </div>
 
@@ -164,9 +147,9 @@
     <script src="site.js?v=1.1"></script>
     <script src="game-layout.js?v=4.6"></script>
     <!-- Due file di dati: A..L sono il dischetto, M..X sono i livelli nostri. -->
-    <script src="woowoo2-dati.js?v=1.3"></script>
-    <script src="woowoo2-mie.js?v=3.3"></script>
-    <script src="woowoo2.js?v=1.18"></script>
+    <script src="woowoo2-dati.js?v=1.4"></script>
+    <script src="woowoo2-mie.js?v=3.6"></script>
+    <script src="woowoo2.js?v=1.29"></script>
 </body>
 
 </html>
