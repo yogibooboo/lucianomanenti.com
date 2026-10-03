@@ -34,7 +34,7 @@
     <meta http-Equiv="Pragma" Content="no-cache">
     <meta http-Equiv="Expires" Content="0">
 
-    <link rel="stylesheet" href="woowoo2.css?v=1.5" />
+    <link rel="stylesheet" href="woowoo2.css?v=1.9" />
 
     <script>
         // Google Analytics: gtag() always exists, the script loads only outside dev_mode
@@ -88,20 +88,18 @@
                 </div>
 
                 <div class="header-center">
-                    <div class="badge"><span>BOARD:</span> <b id="w2-livello">A &middot; 1/9</b></div>
-                    <div class="badge ok"><span>DELIVERIES:</span> <b id="w2-consegne">0 / 0</b></div>
-                    <div class="badge ko"><span>CRASHES:</span> <b id="w2-scontri">0 / 0</b></div>
-                    <div class="badge"><span>SCORE:</span> <b id="w2-punti">00000</b></div>
+                    <div class="quadrante ok"><span>DELIVERIES</span><b id="w2-consegne">0</b></div>
+                    <div class="quadrante ko"><span>TRAINS</span><b id="w2-treni">0</b></div>
+                    <div class="quadrante tempo">
+                        <span>TIME <i id="w2-turbo"></i></span>
+                        <b id="w2-tempo">0</b>
+                        <div class="barra-esterna"><div class="barra-piena" id="w2-barra"></div></div>
+                    </div>
                 </div>
 
                 <div class="header-right">
-                    <div class="timer-box">
-                        <div class="riga"><span>TIME</span> <i id="w2-turbo"></i> <b
-                                id="w2-tempo">0</b></div>
-                        <div class="barra-esterna">
-                            <div class="barra-piena" id="w2-barra"></div>
-                        </div>
-                    </div>
+                    <div class="badge"><span>BOARD:</span> <b id="w2-livello">A &middot; 1/9</b></div>
+                    <div class="badge"><span>SCORE:</span> <b id="w2-punti">00000</b></div>
                 </div>
             </div>
 
@@ -113,12 +111,21 @@
             </div>
 
             <!-- ================= BOTTOM BAR ================= -->
+            <!-- The timetable: announced trains and trains already
+                 running, with their state. It sits on its own, not inside
+                 the bar: down here it is the only thing that needs height,
+                 so it reaches the bottom edge. Filled in by aggiornaHud. -->
+            <div id="w2-coda" title="Announced trains and trains on the move"></div>
+
+            <div id="w2-messaggio">Loading the board&hellip;</div>
+
             <div id="barra-inferiore">
-                <div id="w2-messaggio">Loading the board&hellip;</div>
-                <select id="w2-scelta" title="Choose a board from the disk"></select>
-                <select id="w2-scelta2" title="Choose one of your boards"></select>
-                <button class="bottone" id="w2-pausa" aria-pressed="false" title="Freeze the game: the button blinks while paused">PAUSE</button>
-                <button class="bottone principale" onclick="location.reload()">RESTART</button>
+                <div id="w2-comandi">
+                    <select id="w2-scelta" title="Choose a board from the disk"></select>
+                    <select id="w2-scelta2" title="Choose one of your boards"></select>
+                    <button class="bottone" id="w2-pausa" aria-pressed="false" title="Freeze the game: the button blinks while paused">PAUSE</button>
+                    <button class="bottone principale" onclick="location.reload()">RESTART</button>
+                </div>
             </div>
 
             <!-- End-of-board dialog, filled in by the engine -->
@@ -129,15 +136,11 @@
                 <a href="privacy-en.html" target="_blank">Privacy Policy</a>
                 <span class="sep">&bull;</span>
                 <a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)">Manage Cookies</a>
-                <span class="sep">&bull;</span>
-                <a href="aboutme-en.html" target="_blank">Contact me</a>
             </div>
 
             <div class="link-giochi-w2">
-                <a href="scorciatoie-en.html" class="pulsante-link-w2">Shortcuts</a>
-                <a href="tetra-en.html" class="pulsante-link-w2">Tetra</a>
-                <a href="spider-en.html" class="pulsante-link-w2">Spider</a>
-                <a href="klondike-en.html" class="pulsante-link-w2">Klondike</a>
+                <a href="aboutme-en.html" target="_blank" class="pulsante-link-w2">Contact me</a>
+                <a href="regole-woowoo2-en.html" target="_blank" class="pulsante-link-w2">How to play</a>
                 <a href="index-en.html" class="pulsante-link-w2 pulsante-home-w2">ALL GAMES</a>
             </div>
 
@@ -146,10 +149,16 @@
 
     <script src="site.js?v=1.1"></script>
     <script src="game-layout.js?v=4.6"></script>
-    <!-- Due file di dati: A..L sono il dischetto, M..X sono i livelli nostri. -->
-    <script src="woowoo2-dati.js?v=1.4"></script>
-    <script src="woowoo2-mie.js?v=3.6"></script>
-    <script src="woowoo2.js?v=1.29"></script>
+    <!-- Due file di dati: A..L sono il dischetto, M..X sono i livelli nostri.
+         Il dischetto sta in dev/, che non si carica sul server: quello e'
+         materiale Kingsoft, riferimento tecnico e non roba da pubblicare. -->
+    <script src="dev/woowoo2-dati.js?v=1.5"></script>
+    <!-- I codici delle piastrelle: questi si pubblicano, servono anche ai
+         quadri nostri. Vanno dopo il dischetto, che se li trovasse davanti li
+         cancellerebbe. -->
+    <script src="woowoo2-codici.js?v=1.0"></script>
+    <script src="woowoo2-mie.js?v=3.7"></script>
+    <script src="woowoo2.js?v=1.53"></script>
 </body>
 
 </html>

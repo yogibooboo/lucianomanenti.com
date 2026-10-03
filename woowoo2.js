@@ -3,14 +3,16 @@
    ---------------------------------------------------------------------------
    Meccanica ricavata dal dischetto originale Locomotion (Kingsoft 1992):
    45 schemi, tabella degli scambi a due stati, parametri dei 9 sottolivelli
-   di ogni livello. I dati stanno in woowoo2-dati.js. Gli schemi del dischetto
+   di ogni livello. I dati stanno in dev/woowoo2-dati.js. Gli schemi del dischetto
    erano 10x8; il tabellone nostro e' 15x9 e se li tiene in mezzo, col prato
-   intorno (vedi dev/woowoo2-allarga.py). Sul prato ci sta anche la targa,
-   tre caselle per una, che ha preso il posto dei numeri nella casella nera
-   del dischetto (vedi targaDi e disegnaTarga).
+   intorno (vedi dev/woowoo2-allarga.py). I numeri che nell'originale stavano
+   nella casella nera del dischetto qui non sono sul quadro: stanno nella
+   fascia sopra, al centro (vedi aggiornaHud).
 
-   ATTENZIONE: la grafica caricata da images/woowoo2/tiles.png e' quella originale
+   ATTENZIONE: la grafica caricata da dev/tiles.png e' quella originale
    Kingsoft, usata solo come grafica di cantiere per validare la meccanica.
+   Sta in dev/ con tutto il resto del materiale del dischetto: quella cartella
+   non si carica sul server, ed e' tutta la regola di pubblicazione.
    Va sostituita prima di qualunque pubblicazione. La sostituzione e' in
    collaudo: piastrelle nostre su sfondo dipinto. Lo stile di ogni schema sta
    nel campo `stile` dei file di dati (vedi stileDi). Oggi nessuno schema lo
@@ -25,7 +27,7 @@
     // Il dischetto porta quindici lettere di livello, ma **A..L sono il gioco e
     // M, W, X servono all'editor**: infatti hanno `s`=0 su tutti e nove i
     // sottolivelli e i loro schemi 1 e 2 sono ottanta caselle di prato vuoto.
-    // `woowoo2-dati.js` resta l'estrazione completa del dischetto, il filtro
+    // `dev/woowoo2-dati.js` resta l'estrazione completa del dischetto, il filtro
     // sta qui. Restano 12 livelli, 108 quadri.
     var LIVELLI = D.ordine.slice(0, D.ordine.indexOf('L') + 1);
 
@@ -94,24 +96,6 @@
         return fuori;
     }
 
-    // ---- targa -----------------------------------------------------------
-    // Nell'originale i numeri stavano nella casella nera del dischetto: tre
-    // cifre impilate, senza etichette, dentro 32x32. Qui stanno in una targa
-    // di tre caselle per una, appoggiata sul prato che gira intorno al quadro
-    // - da quando il tabellone e' 15x9 quel bordo e' libero in tutti e 81 gli
-    // schemi. Tre riquadri affiancati, ognuno con la sua etichetta sopra e il
-    // suo numero sotto. Di serie la targa va in alto a destra; chi la vuole
-    // altrove la sposta con l'editor, e allora il posto se lo porta dietro il
-    // file di dati, nel campo `targa`: una voce per schema, come `stile`, con
-    // dentro [riga, colonna] dell'angolo in alto a sinistra.
-    var TARGA_C = 3, TARGA_R = 1;        // larghezza e altezza in caselle
-    function targaDi(L, n) {
-        var liv = D.liv[L];
-        var t = liv && liv.targa && liv.targa[n];
-        if (t && t.length === 2) return { r: t[0], c: t[1] };
-        return { r: 0, c: COLS - TARGA_C };
-    }
-
     // ---- testi -----------------------------------------------------------
     var EN = window.currentLang === 'en';
     var T = {
@@ -133,15 +117,12 @@
         totale: EN ? 'Total' : 'Totale',
         avanti: EN ? 'Next board' : 'Quadro successivo',
         ancora: EN ? 'Play again' : 'Ricomincia',
-        viaggio: EN ? 'running' : 'in viaggio',
-        sosta: EN ? 'waiting' : 'in sosta',
-        fermo: EN ? 'HELD' : 'FERMO',
-        fra: EN ? 'in {N} s' : 'fra {N} s',
+        viaggio: EN ? 'running {N} s' : 'in viaggio {N} s',
+        sosta: EN ? 'leaving in {N} s' : 'in partenza tra {N} s',
+        fermo: EN ? 'HELD {F} s \u00b7 running {N} s' : 'FERMO {F} s \u00b7 viaggio {N} s',
+        fra: EN ? 'in {N} s' : 'tra {N} s',
         vuoto: EN ? 'no orders' : 'nessun ordine',
         voceLiv: EN ? 'Level {L} · board {N}' : 'Livello {L} · quadro {N}',
-        qConsegne: EN ? 'DELIVERED' : 'CONSEGNE',
-        qScontri: EN ? 'CRASHES' : 'SCONTRI',
-        qTempo: EN ? 'TIME' : 'TEMPO',
         capoBase: EN ? 'Disk A–L' : 'Dischetto A–L',
         capoMiei: EN ? 'Mine M–X' : 'Miei M–X'
     };
@@ -188,40 +169,66 @@
     var F_ANNUNCIO = 0.52;
     var F_SOSTA = 0.33;
 
-    // EMISSIONE DEGLI ORDINI. Non e' un timer fisso: il quadro dura `ord * sec`
-    // e deve smaltire `ord` ordini, quindi a regime il ritmo e' per forza
-    // UN ORDINE OGNI `sec` SECONDI. `sec` (Zeit/Auftrag) e' la schedulazione,
-    // non serve nessuna tabella inventata.
-    // Sopra questo ritmo agiscono due freni, entrambi dal disco:
-    //   - ANTICIPO: quanti annunci EXTRA il gioco fa all'avvio, ravvicinati,
-    //     per riempire un quadro che altrimenti parte vuoto. Indicizzato su
-    //     `traf` (0 = Massimo traffico, 4 = Minimo) e tagliato da `tmax`.
-    //     Il log UAE di A/1 (traf 3) ha i primi due annunci a 4 s e 43 s, cioe'
-    //     **nessun extra**: da li' lo zero in terza e quarta posizione. Gli
-    //     altri quattro gradini non sono misurati.
-    //   - F_GAP: distanza fra gli annunci extra dell'avvio.
-    //   - F_RIPROVA: quando l'annuncio non si puo' fare (quadro pieno, oppure
-    //     tutte le stazioni occupate) non si riprova subito, se no appena si
-    //     libera un posto parte una raffica. Si riprova dopo una frazione del
-    //     ritmo.
-    // Il tetto `tmax` fa il resto: a quadro pieno l'emissione si ferma e
+    // EMISSIONE DEGLI ORDINI. Il ritmo NON si ricava da `sec'. A/1, A/2 e A/3
+    // hanno tutti sec 25 e ritmi misurati di 40, 32 e 30 secondi: la vecchia
+    // regola "un ordine ogni sec secondi" e' SCARTATA, e con essa il fattore
+    // F_RITMO = 1,5 che era tarato sul solo A/1 (37,5 contro 40) e su A/7
+    // sbagliava del 75% (31,5 contro 18).
+    // La regola vera e':
+    //     periodo = (4 + 2 * traf) scatti di contatore
+    // cioe' (4 + 2*traf) x 50 pixel di percorso di un treno. Centra tutti e
+    // nove i quadri di A misurati su tre partite video. `traf' e' il parametro
+    // "traffico" del dischetto sulla scala rovesciata (0 = Maximum, 4 = Tief),
+    // quindi da' 4, 6, 8, 10 e 12 scatti dal traffico piu' fitto al piu' rado.
+    // Il candidato alternativo era `inc', che pero' sbaglia su A/2; i due
+    // campi differiscono nel 39% dei 135 sottolivelli del dischetto, percio' la
+    // distinzione e' reale e non una coincidenza. `inc' resta senza significato.
+    // Il metronomo gira in secondi reali per conto suo, NON e' agganciato ai
+    // cali del contatore: misurati fra due annunci, quei cali vanno da 0 a 58.
+    //
+    // ANTICIPO E' STATO TOLTO. Faceva 3, 2 o 1 annunci extra ravvicinati
+    // all'avvio secondo `traf'. Le tre partite lo smentiscono: A/4, A/5 e A/6
+    // (traf 2) partono con 24,0 / 24,0 / 24,0 puliti e A/7, A/8, A/9 (traf 1)
+    // con 18,0 / 18,0 / 18,0, senza nessun extra. Era una pezza che compensava
+    // il ritmo di base troppo lento; raddrizzato il ritmo, non serve piu'.
+    //
+    // F_RIPROVA resta: quando l'annuncio non si puo' fare (quadro pieno o
+    // tutte le stazioni occupate) non si riprova subito, se no appena si libera
+    // un posto parte una raffica. Si riprova dopo una frazione del ritmo.
+    // Il tetto `tmax' fa il resto: a quadro pieno l'emissione si ferma e
     // riprende alla prima consegna, quindi l'intervallo non e' mai costante.
-    var ANTICIPO = [3, 2, 1, 0, 0];
-    var F_GAP = 0.12;
     var F_RIPROVA = 0.3;
 
-    // Ritmo di base fra due annunci, in frazioni di `sec`. Misurato su A/1 in
-    // UAE: 7 annunci in 256 s, cioe' ~37 s con sec = 25.
-    var F_RITMO = 1.5;
+    // Moltiplicatore del ritmo, da lasciare a 1. Serve solo per confrontare a
+    // occhio con UAE senza ricaricare la pagina.
+    var F_RITMO = 1;
 
-    // IL CONTATORE NON E' UN OROLOGIO. Misurato su A/1 (partita completa
-    // cronometrata dall'utente, 9 treni): il numero mostrato cala di UNO ogni
-    // TRENOSEC secondi PER OGNI TRENO PRESENTE sul quadro, dalla comparsa alla
-    // stazione fino all'arrivo o allo scontro. A quadro vuoto e' fermo, con due
-    // treni scende il doppio, con tre il triplo. Adattamento ai minimi quadrati
-    // su 27 letture: divisore 3,965 e valore iniziale 134,4 contro i 4 e 135
-    // teorici, scarto 0,64 unita', dentro l'errore di trascrizione dichiarato.
-    var TRENOSEC = 4;
+    // IL CONTATORE NON E' UN OROLOGIO, E NON MISURA NEMMENO IL TEMPO: MISURA
+    // LO SPAZIO. Il numero mostrato cala di UNO ogni PXSCATTO pixel percorsi
+    // da CIASCUN TRENO presente sul quadro. A quadro vuoto e' fermo, con due
+    // treni scende il doppio, con tre il triplo.
+    // Misurato fotogramma per fotogramma (campionamento a 100 ms) su tutti e
+    // nove i quadri di A: lo scatto vale 4,00 s dove `vel' e' 4 (A/1 e A/2) e
+    // 3,00 s dove `vel' e' 3 (da A/3 a A/9), e a quadro vuoto non scatta mai,
+    // nemmeno durante l'annuncio. Quelle due velocita' sono 12,5 e 16,67 px/s,
+    // e 12,5 x 4,00 = 16,67 x 3,00 = 50 pixel: da li' PXSCATTO.
+    // In fotogrammi PAL a 50 Hz sono 200 e 150; sugli altri tre gradini della
+    // scala delle velocita' vengono 100, 75 e 50, tutti multipli di 25. E' una
+    // conferma di rimbalzo della ricostruzione della scala qui sopra, che per
+    // `vel' 1, 2 e 3 era dichiarata solo una stima: il gradino 3 adesso e'
+    // misurato, gli altri due cadono su numeri tondi.
+    // IL CONTO SI TIENE IN SECONDI, NON IN PIXEL DAVVERO PERCORSI. Il
+    // conteggio comincia dalla comparsa in stazione, quindi la sosta in
+    // banchina consuma gia' (per questo fallaPartire() mette il treno in
+    // S.treni con la sosta ancora da scontare), e per lo stesso motivo un
+    // treno fermo a uno scambio continua a consumare.
+    // F_LARGO NON ENTRA QUI. Sui quadri nostri i treni corrono di piu' apposta,
+    // per compensare i percorsi piu' lunghi; se accelerasse anche lo scatto la
+    // compensazione si annullerebbe e un quadro largo costerebbe comunque di
+    // piu'. Lo scatto si prende dalla velocita' nuda del sottolivello.
+    var PXSCATTO = 50;
+    var TRENOSEC = [];
+    for (var iv = 0; iv < VELOCITA.length; iv++) TRENOSEC[iv] = PXSCATTO / (VELOCITA[iv] * 32);
 
     // ACCELERATORE. Nell'originale si tiene premuto il tasto destro del mouse
     // per far correre il gioco piu' in fretta. Moltiplica il tempo, quindi
@@ -247,21 +254,23 @@
     // Manopole di taratura, per confrontare a occhio con UAE senza ricaricare.
     window.W2TARA = {
         velocita: VELOCITA, fAnnuncio: F_ANNUNCIO, fSosta: F_SOSTA,
-        anticipo: ANTICIPO, fGap: F_GAP, fRitmo: F_RITMO, fRiprova: F_RIPROVA,
-        trenoSec: TRENOSEC,
+        fRitmo: F_RITMO, fRiprova: F_RIPROVA,
+        trenoSec: TRENOSEC, pxScatto: PXSCATTO,
         fLargo: F_LARGO,
         turbo: TURBO
     };
 
-    // Valore iniziale del contatore, su due letture in UAE: A/1 = 135 (ord 5,
-    // sec 25) e A/2 = A/3 = 270 (ord 10, sec 25). Il budget e' dunque esatta-
-    // mente proporzionale agli ordini, 27 unita' ciascuno, cioe' 108 secondi-
-    // treno. La vecchia ipotesi `ord*sec+inc` e' SCARTATA: su A/2 avrebbe dato
-    // 260 e `inc` vale 10 su tutti e tre i quadri, quindi il conto tornava su
-    // A/1 solo per coincidenza.
-    // Restano in piedi due letture della costante, indistinguibili finche' sec
-    // vale 25: `sec+2` e `sec*1,08`. Le separa un quadro con sec diverso, per
-    // esempio A/8 (ord 15, sec 18): 300 contro 292. Tengo la piu' semplice.
+    // Valore iniziale del contatore. La vecchia ipotesi `ord*sec+inc' e'
+    // SCARTATA: su A/2 avrebbe dato 260 e `inc' vale 10 su tutti e tre i primi
+    // quadri, quindi il conto tornava su A/1 solo per coincidenza.
+    // VERIFICATO il 29/09/2026 su tutti e nove i quadri di A, letti da tre
+    // partite video indipendenti: 135, 270, 270, 250, 220, 240, 345, 300, 330.
+    // `ord*(sec+2)` li azzecca tutti e nove senza scarto. Cade cosi' l'altra
+    // lettura rimasta aperta, `sec*1,08`, che su A/8 (ord 15, sec 18) avrebbe
+    // dato 292 invece dei 300 misurati.
+    // Nota: il budget NON e' proporzionale ai soli ordini, come sembrava
+    // quando si conoscevano i tre quadri con sec 25. Vale da 22 a 27 unita'
+    // per ordine a seconda di sec. In secondi-treno sono quattro volte tanto.
     function contatoreIniziale(p) { return p.ord * (p.sec + 2); }
     function tara() { return window.W2TARA; }
 
@@ -300,6 +309,155 @@
     };
 
     window.W2STATO = S;          // sonda per la console e per il banco di prova
+
+    // ---- registro delle uscite -------------------------------------------
+    // Si scrive una riga a ogni fatto della vita di un treno:
+    //   annunciato          la lettera comincia a lampeggiare
+    //   tetto tmax          il metronomo ha suonato ma la pista e' piena
+    //   stazioni occupate   il metronomo ha suonato ma nessuna stazione e' libera
+    //   consegnato          arrivato alla sua meta
+    //   sbagliata           entrato nella stazione sbagliata e rimbalzato fuori
+    //   scontro             due treni sovrapposti: una riga per ciascuno
+    //   fuori quadro        uscito dal bordo del tabellone (non dovrebbe capitare)
+    // Sul ritmo: la colonna `dal_prec' (secondi fra un annuncio e il precedente)
+    // va confrontata con `atteso', che e' `(4 + 2*traf) * scatto'. Sui treni:
+    // `durata' e' quanto e' vissuto il convoglio dalla comparsa, sosta compresa.
+    // Il tempo e' quello di gioco, quindi il turbo non falsa il conto. Il registro non si azzera a fine quadro: la colonna `run'
+    // numera le esecuzioni, cosi' si gioca tutta la partita e si scarica una
+    // volta sola.
+    // Dalla console: W2LOGCSV() stampa, W2LOGSCARICA() salva il file,
+    // W2LOGAZZERA() ricomincia da capo.
+    var LOG = [], LOGMAX = 5000, logPrec = null, logRun = 0;
+    var LOGCOL = ['run', 'quadro', 't', 'esito', 'part', 'dest', 'dove',
+                  'dal_prec', 'atteso', 'durata', 'in_pista', 'in_coda', 'tmax',
+                  'consegnati', 'persi', 'emessi', 'contatore'];
+
+    function treniInPista() {
+        var n = 0;
+        for (var i = 0; i < S.treni.length; i++) if (!S.treni[i].morto) n++;
+        return n;
+    }
+
+    // `d' porta i dati dell'avvenimento: part (stazione di partenza), dest
+    // (lettera della meta), dove (stazione in cui e' capitato il fatto), durata.
+    function registra(esito, d) {
+        if (LOG.length >= LOGMAX) return;
+        d = d || {};
+        var p = parametri();
+        LOG.push({
+            run: logRun,
+            quadro: S.livello + '/' + (S.sub + 1),
+            t: S.orologio,
+            esito: esito,
+            part: d.part || '',
+            dest: d.dest || '',
+            dove: d.dove || '',
+            dal_prec: esito !== 'annunciato' ? '' : (logPrec === null ? 0 : S.orologio - logPrec),
+            atteso: (4 + 2 * p.traf) * tara().trenoSec[p.vel] * tara().fRitmo,
+            durata: d.durata === undefined ? '' : d.durata,
+            in_pista: treniInPista(),
+            in_coda: S.coda.length,
+            tmax: p.tmax,
+            consegnati: S.consegnati,
+            persi: S.persi,
+            emessi: S.emessi,
+            contatore: S.tempo
+        });
+        if (esito === 'annunciato') logPrec = S.orologio;
+    }
+
+    // Comodo per le righe che riguardano un treno.
+    function datiTreno(tr, dove) {
+        return { part: tr.partenza, dest: tr.dest, dove: dove || '',
+                 durata: S.orologio - tr.nato };
+    }
+
+    // ---- scheda per treno -------------------------------------------------
+    // Stesse colonne dei CSV ricavati dai filmati del gioco vero: quattro
+    // momenti nella vita del convoglio (annuncio, comparsa, partenza dopo la
+    // sosta, fine) e per ognuno il tempo E il valore del contatore, che la' si
+    // chiama `virtual_timer'. Serve per incrociare riga per riga il nostro
+    // motore con l'originale: stessa griglia di colonne, stesse unita'.
+    // Due avvertenze per il confronto: i tempi dei filmati sono l'orologio del
+    // video (mm:ss.xx) mentre i nostri ripartono da zero a ogni quadro, quindi
+    // si confrontano le DIFFERENZE; e nei loro CSV la colonna
+    // `estimated_speed_px_s' e la distanza spawn->departure sono ricostruite a
+    // tavolino, non misurate, quindi non fanno testo.
+    var TRENI = [], logId = 0;
+    var TRECOL = ['run', 'quadro', 'treno', 'colore', 'part', 'dest',
+                  't_annuncio', 'c_annuncio', 't_comparsa', 'c_comparsa',
+                  't_partenza', 'c_partenza', 'esito', 'dove', 't_fine', 'c_fine'];
+    var NOMICOL = ['Rosso', 'Giallo', 'Azzurro', 'Arancio', 'Viola', 'Verde'];
+
+    function nomeColore(c) {
+        var i = COLORI.indexOf(c);
+        return i < 0 ? c : NOMICOL[i];
+    }
+
+    function schedaNuova(o) {
+        if (TRENI.length >= LOGMAX) return;
+        TRENI.push({
+            run: logRun, quadro: S.livello + '/' + (S.sub + 1),
+            treno: o.id, colore: nomeColore(o.colore),
+            part: o.part.lettera, dest: o.dest.lettera,
+            t_annuncio: S.orologio, c_annuncio: S.tempo,
+            t_comparsa: '', c_comparsa: '', t_partenza: '', c_partenza: '',
+            esito: '', dove: '', t_fine: '', c_fine: ''
+        });
+    }
+
+    function scheda(id) {
+        for (var i = TRENI.length - 1; i >= 0; i--) {
+            if (TRENI[i].treno === id && TRENI[i].run === logRun) return TRENI[i];
+        }
+        return null;
+    }
+
+    function segna(id, campi) {
+        var s = scheda(id);
+        if (!s) return;
+        for (var k in campi) if (campi.hasOwnProperty(k)) s[k] = campi[k];
+    }
+
+    function fineScheda(tr, esito, dove) {
+        segna(tr.id, { esito: esito, dove: dove, t_fine: S.orologio, c_fine: S.tempo });
+    }
+
+    // CSV all'italiana: punto e virgola, virgola decimale, BOM per Excel.
+    function csv(col, righe) {
+        var out = [col.join(';')];
+        righe.forEach(function (r) {
+            out.push(col.map(function (k) {
+                var v = r[k];
+                if (typeof v !== 'number') return v;
+                return (Math.round(v * 100) / 100).toString().replace('.', ',');
+            }).join(';'));
+        });
+        return out.join('\r\n');
+    }
+
+    function salva(nome, testo) {
+        var b = new Blob(['\ufeff' + testo], { type: 'text/csv;charset=utf-8' });
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(b);
+        a.download = nome;
+        a.click();
+        setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+    }
+
+    window.W2LOG = LOG;
+    window.W2TRENI = TRENI;
+    window.W2LOGCSV = function () { var s = csv(LOGCOL, LOG); console.log(s); return s; };
+    window.W2TRENICSV = function () { var s = csv(TRECOL, TRENI); console.log(s); return s; };
+    window.W2LOGAZZERA = function () {
+        LOG.length = 0; TRENI.length = 0; logPrec = null;
+        return 'registro azzerato';
+    };
+    window.W2LOGSCARICA = function () {
+        salva('woowoo2-avvenimenti.csv', csv(LOGCOL, LOG));
+        salva('woowoo2-treni.csv', csv(TRECOL, TRENI));
+        return LOG.length + ' avvenimenti, ' + TRENI.length + ' treni';
+    };
 
     var cv, ctx, atlante, pronto = false;
 
@@ -459,12 +617,13 @@
                 if (u) S.stazioni.push({ r: r2, c: c2, uscita: u, lettera: '', annuncio: 0 });
             }
         }
-        S.stazioni.forEach(function (s, i) { s.lettera = String.fromCharCode(65 + i); });
+        S.stazioni.forEach(function (s, i) {
+            s.lettera = String.fromCharCode(65 + i);
+            var ci = cifraStazione(i);
+            s.serie = ci.serie;
+            s.colpi = ci.colpi;
+        });
 
-        // Dove appoggiare il quadro comandi. La casella nera del dischetto
-        // (codice D.info) resta dov'e' ma da qui in avanti e' solo paesaggio:
-        // i numeri non ci vanno piu' sopra.
-        S.targa = targaDi(liv, p.s);
         S.stazioni.forEach(function (s) { s.mete = raggiungibili(s); });
 
         S.treni = []; S.coda = [];
@@ -474,7 +633,7 @@
         S.orologio = 0;                  // secondi veri, per la schedulazione
         S.prossimo = 2;                  // il primo annuncio arriva quasi subito
         S.emessi = 0;                    // ordini gia' annunciati
-        S.extra = Math.min(tara().anticipo[p.traf], p.tmax);   // annunci ravvicinati d'avvio
+        logRun++; logPrec = null;        // nuova esecuzione nel registro
         S.attivo = true; S.finito = null; S.turbo = false; S.pausa = false;
         messaggio(t('quadro', { L: liv, N: sub + 1, M: D.liv[liv].sub.length,
                                 O: p.ord, S: S.stazioni.length }));
@@ -499,6 +658,19 @@
         return false;
     }
 
+    // C'e' un treno fermo sulla casella della stazione? O e' in sosta prima
+    // di partire, o si e' piantato li' sopra: in tutt'e due i casi la lettera
+    // deve continuare a lampeggiare, se no l'annuncio finisce e il treno in
+    // attesa resta senza segnalazione.
+    function fermoSu(st) {
+        for (var j = 0; j < S.treni.length; j++) {
+            var tr = S.treni[j];
+            if (tr.morto || tr.r !== st.r || tr.c !== st.c) continue;
+            if (tr.sosta > 0 || tr.fermo) return true;
+        }
+        return false;
+    }
+
     function occupata(st) {
         for (var i = 0; i < S.coda.length; i++) if (S.coda[i].part === st) return true;
         return trenoSu(st);
@@ -516,13 +688,15 @@
         if (!buone.length) return false;
         var part = buone[Math.floor(Math.random() * buone.length)];
         S.coda.push({
+            id: ++logId,
             part: part, dest: part.mete[Math.floor(Math.random() * part.mete.length)],
             resta: p.sec * tara().fAnnuncio,
             colore: coloreACaso(),
             modello: Math.floor(Math.random() * MODELLI.length)
         });
         part.annuncio = p.sec * tara().fAnnuncio;
-        suona('annuncio');
+        schedaNuova(S.coda[S.coda.length - 1]);
+        suona('annuncio', part);
         return true;
     }
 
@@ -533,15 +707,27 @@
             r: st.r, c: st.c,
             ea: OPP[st.uscita], xa: st.uscita, t: 0.5,
             dest: o.dest.lettera, colore: o.colore, modello: o.modello,
-            sosta: p.sec * tara().fSosta, fermo: false, uscito: false
+            partenza: st.lettera, nato: S.orologio, id: o.id,   // per il registro
+            sosta: p.sec * tara().fSosta, fischiato: false, fischioDa: 0,
+            // Due marcatempo per l'orario: quando si e' mosso la prima volta
+            // e da quando sta fermo (null se cammina). Si leggono per
+            // differenza da S.orologio, che e' il tempo di gioco.
+            mosso: null, daFermo: null,
+            fermo: false, uscito: false
         });
+        segna(o.id, { t_comparsa: S.orologio, c_comparsa: S.tempo });
     }
 
     // Prova a far entrare il treno nella casella successiva.
     function avanza(tr) {
         var d = DIR[tr.xa];
         var nr = tr.r + d.dr, nc = tr.c + d.dc;
-        if (!dentro(nr, nc)) { tr.morto = true; return; }
+        if (!dentro(nr, nc)) {
+            tr.morto = true;
+            registra('fuori quadro', datiTreno(tr));
+            fineScheda(tr, 'fuori quadro', '');
+            return;
+        }
 
         var cod = S.griglia[nr][nc];
         var entrata = OPP[tr.xa];
@@ -573,6 +759,8 @@
             S.punti += 100;
             suona('arrivo');
             messaggio(t('consegna', { S: st.lettera, A: S.consegnati, B: parametri().ord }));
+            registra('consegnato', datiTreno(tr, st.lettera));
+            fineScheda(tr, 'consegnato', st.lettera);
             if (S.consegnati >= parametri().ord) fine(true);
             return;
         }
@@ -585,11 +773,20 @@
         tr.fermo = false; tr.uscito = true;
         suona('rimbalzo');
         messaggio(t('sbagliata', { D: tr.dest, S: st ? st.lettera : '?' }));
+        registra('sbagliata', datiTreno(tr, st ? st.lettera : '?'));
     }
 
     // =======================================================================
     //  aggiornamento
     // =======================================================================
+
+    // Il cronometro del treno bloccato: parte quando si pianta, si azzera
+    // appena riparte. Va chiamato dopo avanza(), che e' l'unico a muovere
+    // `fermo' nei due versi.
+    function orologioFermo(tr) {
+        if (tr.fermo) { if (tr.daFermo === null) tr.daFermo = S.orologio; }
+        else tr.daFermo = null;
+    }
 
     function passo(dt) {
         if (!S.attivo) return;
@@ -602,7 +799,7 @@
         // non ancora spariti), uno ogni TRENOSEC secondi ciascuno.
         var inPista = 0;
         for (var q = 0; q < S.treni.length; q++) if (!S.treni[q].morto) inPista++;
-        S.tempo -= inPista * dt / tara().trenoSec;
+        S.tempo -= inPista * dt / tara().trenoSec[p.vel];
         if (S.tempo <= 0) { S.tempo = 0; fine(false); return; }
 
         // annunci in coda
@@ -625,24 +822,34 @@
         // nessun arretrato da smaltire - la versione precedente contava gli
         // ordini "dovuti" dall'inizio del quadro, e ogni volta che il tetto
         // `tmax` bloccava l'emissione il debito cresceva e poi si scaricava in
-        // raffica a distanza di F_GAP l'uno dall'altro. Da li' le partenze
-        // ammucchiate che nell'originale non si vedono.
+        // raffica, uno dietro l'altro. Da li' le partenze ammucchiate che
+        // nell'originale non si vedono.
         S.prossimo -= dt;
-        var ritmo = p.sec * tara().fRitmo;
-        // si smette solo quando fra consegnati e roba in pista si arriva a `ord`:
-        // se un treno si schianta ne serve un altro, il tetto non e' sugli emessi.
-        var bastano = S.consegnati + S.treni.length + S.coda.length >= p.ord;
-        if (S.prossimo <= 0 && !bastano) {
-            var posto = S.treni.length + S.coda.length < p.tmax;
+        var ritmo = (4 + 2 * p.traf) * tara().trenoSec[p.vel] * tara().fRitmo;
+        // Il metronomo non si ferma mai. Qui c'era un freno nostro, non del
+        // dischetto: si smetteva di annunciare appena fra consegnati, treni in
+        // pista e coda si arrivava a `ord`, e cosi' la parte finale del quadro
+        // restava deserta. Nel gioco vero i treni continuano ad arrivare fino
+        // all'ultima consegna. Tolto il 29/09/2026: a limitare l'emissione
+        // restano solo `tmax' e le stazioni libere.
+        if (S.prossimo <= 0) {
+            // `tmax' conta i treni VISIBILI, non anche gli annunci in corso.
+            // Ricostruendo la comparsa come annuncio + 0,52*sec sui 361 treni
+            // delle tre partite, il massimo di treni insieme non supera mai
+            // `tmax' in nessuna delle 25 esecuzioni di quadro e lo tocca in
+            // nove; contando anche la coda il tetto risulterebbe sfondato su
+            // cinque quadri. Sommare S.coda soffocava l'emissione.
+            var posto = S.treni.length < p.tmax;
             if (posto && nuovoOrdine()) {
                 S.emessi++;
-                // gli annunci d'avvio sono ravvicinati, poi si va a ritmo
-                if (S.extra > 0) { S.extra--; S.prossimo = p.sec * tara().fGap; }
-                else S.prossimo = ritmo;
+                S.prossimo = ritmo;
+                var ann = S.coda[S.coda.length - 1];
+                registra('annunciato', { part: ann.part.lettera, dest: ann.dest.lettera });
             } else {
                 // niente posto o nessuna stazione libera: si riprova piu' tardi,
                 // non al primo fotogramma utile.
                 S.prossimo = ritmo * tara().fRiprova;
+                registra(posto ? 'stazioni occupate' : 'tetto tmax', null);
             }
         }
 
@@ -650,8 +857,24 @@
         var v = tara().velocita[p.vel] * (S.largo ? tara().fLargo : 1);
         for (var k = 0; k < S.treni.length; k++) {
             var tr = S.treni[k];
-            if (tr.sosta > 0) { tr.sosta -= dt; if (tr.sosta <= 0) suona('partenza'); continue; }
-            if (tr.fermo) { avanza(tr); continue; }   // riprova a ogni giro: riparte da solo
+            if (tr.sosta > 0) {
+                tr.sosta -= dt;
+                // Il fischio annuncia la partenza, quindi va prima: comincia
+                // quando alla sosta resta esattamente la sua durata, e l'ultima
+                // nota cade sullo scatto delle ruote. Se la sosta e' piu' corta
+                // del fischio non si puo' anticipare di piu' e parte subito.
+                if (!tr.fischiato && tr.sosta <= durataFischio()) {
+                    tr.fischiato = true;
+                    tr.fischioDa = S.orologio;
+                    suona('partenza');
+                }
+                if (tr.sosta <= 0) {
+                    tr.mosso = S.orologio;
+                    segna(tr.id, { t_partenza: S.orologio, c_partenza: S.tempo });
+                }
+                continue;
+            }
+            if (tr.fermo) { avanza(tr); orologioFermo(tr); continue; }   // riprova a ogni giro: riparte da solo
             tr.t += v * dt;
             while (tr.t >= 1 && !tr.morto && !tr.fermo) {
                 var resto = tr.t - 1;
@@ -659,6 +882,7 @@
                 if (!tr.morto && !tr.fermo) tr.t = resto;   // il residuo non va perso
             }
             if (tr.fermo) tr.t = 1;   // resta appoggiato al confine della casella
+            orologioFermo(tr);
         }
 
         collisioni();
@@ -683,6 +907,10 @@
                     S.scontri++; S.persi += 2; S.punti -= 50;
                     suona('scontro');
                     messaggio(t('scontro', { A: S.persi, B: parametri().inc }));
+                    registra('scontro', datiTreno(a));
+                    registra('scontro', datiTreno(b));
+                    fineScheda(a, 'scontro', b.partenza + '>' + b.dest);
+                    fineScheda(b, 'scontro', a.partenza + '>' + a.dest);
                     if (S.persi >= parametri().inc) fine(false);
                     return;
                 }
@@ -748,9 +976,11 @@
             }
         }
 
-        // lettere delle stazioni, lampeggianti durante l'annuncio
+        // lettere delle stazioni: lampeggiano durante l'annuncio e finche' il
+        // treno resta fermo sulla casella, in sosta o bloccato
         S.stazioni.forEach(function (s) {
-            var lampeggia = s.annuncio > 0 && (Math.floor(S.lampeggio * 4) % 2 === 0);
+            var lampeggia = (s.annuncio > 0 || fermoSu(s)) &&
+                            (Math.floor(S.lampeggio * 4) % 2 === 0);
             ctx.font = 'bold 13px monospace';
             ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
             var x = s.c * CELLA + 16, y = s.r * CELLA + 16;
@@ -760,64 +990,26 @@
             ctx.fillText(s.lettera, x, y);
         });
 
+        // Il quadrato della partenza. Mentre il treno fischia, la casella
+        // della stazione lampeggia di rosso a tempo con le fischiate - una
+        // lampata per fischiata, due in tutto - cosi' l'occhio e l'orecchio
+        // dicono la stessa cosa e il lampo non si confonde con quello lento
+        // della lettera, che vuol dire solo "qui c'e' un treno fermo". Va
+        // prima dei treni: il treno ci sta sopra e resta scoperta la cornice.
+        S.treni.forEach(function (tr) {
+            if (tr.sosta <= 0 || !tr.fischiato) return;
+            if (!fischioAcceso(S.orologio - tr.fischioDa)) return;
+            ctx.fillStyle = 'rgba(255, 32, 32, 0.45)';
+            ctx.fillRect(tr.c * CELLA, tr.r * CELLA, CELLA, CELLA);
+            ctx.strokeStyle = '#ff2020';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(tr.c * CELLA + 1, tr.r * CELLA + 1, CELLA - 2, CELLA - 2);
+        });
+
         // treni
         S.treni.forEach(function (tr) { disegnaTreno(tr); });
 
-        // la targa sta sopra tutto: se qualcuno la sposta sui binari, i treni
-        // le passano sotto invece di cancellarla
-        disegnaTarga();
-
         ctx.setTransform(1, 0, 0, 1, 0, 0);
-    }
-
-    // La targa: tre riquadri da una casella l'uno, in fila. In ognuno
-    // l'etichetta sopra e il numero sotto. Le misure sono in pixel originali,
-    // il doppio a video, quindi c'e' poco posto: le scritte si stringono da
-    // sole (vedi scritta) e non si straborda mai dal riquadro.
-    function disegnaTarga() {
-        var q = S.targa;
-        if (!q) return;
-        var p = parametri();
-        var x = q.c * CELLA, y = q.r * CELLA;
-        var w = TARGA_C * CELLA, h = TARGA_R * CELLA;
-
-        ctx.fillStyle = 'rgba(8,10,8,0.86)';
-        ctx.fillRect(x + 1, y + 1, w - 2, h - 2);
-        ctx.strokeStyle = '#6b6257'; ctx.lineWidth = 1;
-        ctx.strokeRect(x + 1.5, y + 1.5, w - 3, h - 3);
-
-        var caselle = [
-            [T.qConsegne, S.consegnati + '/' + p.ord, '#00e05a'],
-            [T.qScontri, S.persi + '/' + p.inc, '#ff7b6f'],
-            [T.qTempo, String(Math.ceil(S.tempo)), '#ffe000']
-        ];
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'alphabetic';
-        caselle.forEach(function (v, i) {
-            if (i) {
-                ctx.strokeStyle = 'rgba(255,255,255,0.14)';
-                ctx.beginPath();
-                ctx.moveTo(x + i * CELLA + 0.5, y + 4);
-                ctx.lineTo(x + i * CELLA + 0.5, y + h - 4);
-                ctx.stroke();
-            }
-            var cx = x + i * CELLA + CELLA / 2;
-            scritta(v[0], cx, y + 12, 6, CELLA - 4, '#8d9aa8');
-            scritta(v[1], cx, y + 26, 12, CELLA - 4, v[2]);
-        });
-    }
-
-    // Scrive centrato rimpicciolendo il carattere finche' ci sta: CONSEGNE in
-    // italiano e DELIVERED in inglese non sono lunghi uguali, e il riquadro e'
-    // sempre di 32 punti.
-    function scritta(txt, cx, base, punti, largo, col) {
-        ctx.font = 'bold ' + punti + 'px monospace';
-        while (punti > 4 && ctx.measureText(txt).width > largo) {
-            punti -= 1;
-            ctx.font = 'bold ' + punti + 'px monospace';
-        }
-        ctx.fillStyle = col;
-        ctx.fillText(txt, cx, base);
     }
 
     // ---- i corpi dei treni ------------------------------------------------
@@ -1092,8 +1284,12 @@
         var p = parametri();
         var resta = Math.ceil(S.tempo);
         testo('w2-livello', S.livello + ' · ' + (S.sub + 1) + '/' + D.liv[S.livello].sub.length);
-        testo('w2-consegne', S.consegnati + ' / ' + p.ord);
-        testo('w2-scontri', S.persi + ' / ' + p.inc);
+        // I due contatori del centro vanno a scendere, come nell'originale:
+        // quante consegne restano da fare e quanti treni si possono ancora
+        // perdere. Il primo che arriva a zero decide il quadro, e da fermo si
+        // legge quanto manca invece di quanto e' andato.
+        testo('w2-consegne', String(Math.max(0, p.ord - S.consegnati)));
+        testo('w2-treni', String(Math.max(0, p.inc - S.persi)));
         testo('w2-punti', String(Math.max(0, S.punti)).padStart(5, '0'));
         testo('w2-tempo', String(resta));
         var barra = el('w2-barra');
@@ -1106,7 +1302,14 @@
                 return '<div class="w2-voce"><b>' + o.part.lettera + ' → ' + o.dest.lettera +
                        '</b><span>' + t('fra', { N: Math.ceil(o.resta) }) + '</span></div>';
             }).concat(S.treni.map(function (tr) {
-                var stato = tr.sosta > 0 ? T.sosta : (tr.fermo ? T.fermo : T.viaggio);
+                // Da quanto e' in giro e, se e' bloccato, da quanto sta fermo.
+                // Senza i due numeri un treno piantato dietro uno scambio
+                // storto si riconosce solo guardando il quadro.
+                var vg = tr.mosso === null ? 0 : Math.floor(S.orologio - tr.mosso);
+                var ff = tr.daFermo === null ? 0 : Math.floor(S.orologio - tr.daFermo);
+                var stato = tr.sosta > 0 ? t('sosta', { N: Math.ceil(tr.sosta) })
+                          : (tr.fermo ? t('fermo', { F: ff, N: vg })
+                                      : t('viaggio', { N: vg }));
                 return '<div class="w2-voce' + (tr.fermo ? ' allarme' : '') +
                        '"><b>→ ' + tr.dest + '</b><span>' + stato + '</span></div>';
             }));
@@ -1196,20 +1399,478 @@
     function tastiSu(e) { if (e.key === ' ') S.turbo = false; }
 
     // =======================================================================
-    //  suoni: segnaposto, i campioni originali arriveranno dopo
+    //  suoni
     // =======================================================================
+    // L'annuncio e' una campana da passaggio a livello, calcolata e non
+    // scaricata: niente file, niente licenza, niente crediti da scrivere.
+    // I numeri non sono inventati: sono misurati su una registrazione vera di
+    // campana da passaggio a livello, un parziale per volta. Modi, ampiezze,
+    // tempi di spegnimento, passo fra un colpo e l'altro, durata dell'attacco.
+    // La resintesi e' stata poi rimisurata con lo stesso metodo e combacia
+    // entro 0,3 dB su tutti gli undici parziali. Dentro al nostro file non
+    // finisce nessun byte di quella registrazione: e' ricalcolata da zero.
+    //
+    // Due cose che si imparano solo misurando, e che prima avevo sbagliato:
+    // 1) il carattere del passaggio a livello e' l'INSISTENZA, non la
+    //    risonanza. Sono colpi asciutti ripetuti ogni 0,438 s, ognuno quasi
+    //    spento quando arriva il successivo. Una campana con la coda lunga
+    //    suona da chiesa, non da ferrovia.
+    // 2) il parziale piu' forte (5,267 volte il ronzio, cioe' 2470 Hz) muore
+    //    in 9 centesimi: e' lo schiocco del martelletto, non la nota. La nota
+    //    che resta e' il gruppo 1033-1667 Hz.
+    // I rapporti 1,0 / 1,84 / 2,20 / 2,98 sono quelli di una campana vera:
+    // ronzio, primo, terza, quinta. Le due coppie 9,44/9,49 e 11,83/11,87
+    // sono modi appaiati, sdoppiati di una ventina di Hz: una campana non
+    // perfettamente rotonda li ha, e si sente battere. Anche questo e' preso
+    // dalla registrazione, non aggiunto a gusto.
+    // Non ci sono piu' segnaposto: ogni suono del gioco e' una registrazione
+    // o una sintesi misurata.
     var audioOn = true;
-    function suona(che) {
-        if (!audioOn || !window.AudioContext) return;
+    var VOL = {                   // una manopola per suono
+        campana: 0.09,            // l'annuncio della stazione
+        fischio: 0.09,            // il fischio della partenza
+        arrivo: 0.35,             // tada.mp3: e' una fanfara e sta forte
+        scambio: 0.50,            // slitta2.mp3
+        scontro: 0.40             // crash.mp3: la disgrazia si sente, senza spaventare
+    };
+
+    // Questi tre non sono calcolati, sono registrazioni. La fanfara e' quella
+    // di scala40; gli altri due stanno nella cartella del gioco, e slitta2 e'
+    // slitta senza il silenzio in testa, cosi' il colpo cade sul clic invece
+    // che un attimo dopo.
+    var SUONI = {
+        arrivo: 'sounds/scala40/tada.mp3',       // la consegna fatta
+        scambio: 'sounds/woowoo2/slitta2.mp3',   // lo scambio che si muove
+        scontro: 'sounds/woowoo2/crash.mp3'      // due treni che si prendono
+    };
+
+    // Il ronzio, cioe' il modo piu' grave: tutti i rapporti sono riferiti a lui.
+    var RONZIO = 469;
+
+    // rapporto sul ronzio, ampiezza, secondi di spegnimento (tutto misurato)
+    var MODI = [
+        [1.000, 0.0348, 0.98],    //  469 Hz  il ronzio, l'unico che dura
+        [1.840, 0.0584, 0.12],    //  863 Hz  il primo
+        [2.203, 0.1101, 0.35],    // 1033 Hz  la terza
+        [2.983, 0.0252, 0.26],    // 1399 Hz  la quinta
+        [3.555, 0.0734, 0.43],    // 1667 Hz
+        [5.267, 1.0000, 0.09],    // 2470 Hz  lo schiocco del martelletto
+        [7.252, 0.1152, 0.13],    // 3401 Hz
+        [9.440, 0.0915, 0.10],    // 4427 Hz  coppia appaiata, batte con...
+        [9.488, 0.1652, 0.11],    // 4450 Hz  ...questa, 23 Hz piu' su
+        [11.833, 0.1998, 0.08],   // 5550 Hz  l'altra coppia appaiata
+        [11.867, 0.0440, 0.11]    // 5566 Hz
+    ];
+
+    // Le manopole della campana. PASSO e' misurato (0,429-0,444, mediano
+    // 0,439); ATTACCO e' la salita del singolo colpo, un gradino netto
+    // farebbe un clic; CODA e' quanto si lascia suonare un colpo nel buffer.
+    var PASSO = 0.438, ATTACCO = 0.004, CODA = 0.50;
+
+    // Il primo colpo e' pieno, gli altri un filo diversi fra loro: nel vero
+    // il martelletto non batte mai due volte allo stesso modo. Fissi e non a
+    // caso, cosi' l'annuncio di una stazione e' sempre lo stesso annuncio.
+    var FORZA = [1.00, 0.90, 0.96, 0.88, 0.93];
+
+    // Come si riconosce una stazione a orecchio. Non per altezza: distribuire
+    // le stazioni su due ottave suona finto, nessun impianto ferroviario vero
+    // ha campane a un'ottava di distanza. Si riconosce QUANTI colpi batte -
+    // da due a cinque - e, se le stazioni sono piu' di quattro, da una seconda
+    // e una terza campana un po' piu' alte: due toni e quattro toni sopra la
+    // prima. Niente tre toni, che e' il tritono e stride.
+    // Quattro conteggi per tre serie fanno dodici combinazioni, ed e'
+    // esattamente il massimo di stazioni che c'e' in un quadro (E/3 e G/2).
+    // Il prezzo: contare richiede tempo, cinque colpi sono 2,7 secondi, e due
+    // annunci accavallati non si contano piu'. Un'altezza si riconosce subito,
+    // un conteggio no. Scelta sua, misurata contro il suono vero.
+    var SERIE = [0, 4, 8];        // semitoni sopra la campana di base
+    var COLPI_MIN = 2;            // la A ne batte due, la D cinque
+
+    // A -> 2 colpi serie 0, B -> 3, C -> 4, D -> 5, E -> 2 colpi serie 1, ...
+    function cifraStazione(i) {
+        var k = i % (SERIE.length * 4);
+        return { serie: Math.floor(k / 4), colpi: COLPI_MIN + (k % 4) };
+    }
+
+    // UN SOLO COLPO, non la scampanellata intera. La scampanellata si fa
+    // facendo partire questo buffer piu' volte a 0,438 s di distanza, e c'e'
+    // un motivo preciso per farla cosi' invece di cuocere l'intera suonata in
+    // un buffer: se l'altezza si facesse con playbackRate, un buffer letto
+    // piu' veloce accorcerebbe ANCHE il passo fra i colpi, e il passo qui
+    // porta l'informazione - e' quello che si conta. Una campana per serie,
+    // tre buffer da mezzo secondo in tutto, e il passo resta identico per
+    // tutte le stazioni.
+    function campana(C, serie) {
+        if (!campana.buf) campana.buf = {};
+        if (campana.buf[serie]) return campana.buf[serie];
+        var sr = C.sampleRate;
+        var alza = Math.pow(2, (SERIE[serie] || 0) / 12);
+        var n = Math.ceil(sr * CODA);
+        var buf = C.createBuffer(1, n, sr);
+        var d = buf.getChannelData(0);
+        var seme = 123456789;
+        function caso() {               // rumore ripetibile: il martelletto
+            // Math.imul e non *: in JavaScript seme * 1103515245 sfonda il
+            // piu' grande intero esatto e i bit bassi si perdono
+            // nell'arrotondamento, cosi' il generatore degenera e il
+            // martelletto diventa un clic tonale invece di uno schiocco.
+            seme = (Math.imul(seme, 1103515245) + 12345) & 0x7fffffff;
+            return (seme / 0x7fffffff) * 2 - 1;
+        }
+        for (var k = 0; k < MODI.length; k++) {
+            var f = RONZIO * MODI[k][0] * alza;
+            if (f > sr / 2.2) continue;
+            var w = 2 * Math.PI * f / sr, amp = MODI[k][1], tau = MODI[k][2];
+            var fase = (k * 2.39) % (2 * Math.PI);
+            for (var i = 0; i < n; i++) {
+                var t = i / sr;
+                // salita invece di gradino: un gradino e' un clic
+                d[i] += amp * (1 - Math.exp(-t / ATTACCO))
+                      * Math.exp(-t / tau) * Math.sin(w * i + fase);
+            }
+        }
+        var batt = Math.round(sr * 0.004);
+        for (var j = 0; j < batt && j < n; j++)
+            d[j] += caso() * 0.9 * Math.exp(-j / (sr * 0.0012));
+        // porta il picco a -3 dB, poi arrotonda le punte invece di tagliarle
+        var picco = 0;
+        for (var x = 0; x < n; x++) picco = Math.max(picco, Math.abs(d[x]));
+        var g = picco ? 0.707 / picco : 1;
+        for (var y = 0; y < n; y++) d[y] = Math.tanh(d[y] * g * 1.2);
+        // dissolvenza in coda: senza, il buffer finisce di netto e fa un clic
+        var q = Math.round(sr * 0.025);
+        for (var z = 0; z < q; z++)
+            d[n - q + z] *= 0.5 * (1 + Math.cos(Math.PI * z / q));
+        campana.buf[serie] = buf;
+        return buf;
+    }
+
+    // =======================================================================
+    //  il fischio della partenza
+    // =======================================================================
+    // Anche questo e' calcolato e non scaricato, quindi non porta dentro audio
+    // di nessuno: i numeri vengono da un fischio vero a tre canne (una
+    // locomotiva Shay a vapore), misurato riga per riga come la campana.
+    //
+    // Le tre canne stanno a 400,2 / 478,8 / 657,2 Hz - una terza minore, poi
+    // un'altra quarta e mezza - e sono quasi seni puri: le loro armoniche
+    // stanno fra i 18 e i 28 dB sotto la propria fondamentale. Un fischio non
+    // e' una canna d'organo, e' aria che taglia uno spigolo. I ventun livelli
+    // di F_RIGHE (tre canne per sette armoniche, in dB sulla riga piu' forte)
+    // sono calibrati a ciclo chiuso contro la registrazione: sintetizza,
+    // rimisura con lo stesso metro, sottrai lo scarto, ripeti. Chiudono a 0,00
+    // dB su tutte e ventuno.
+    //
+    // Ma la cosa che fa il suono e' un'altra: il volume e l'intonazione hanno
+    // due curve SEPARATE. Nel vero il volume arriva a regime in 70 millesimi,
+    // l'intonazione ci mette 150 - a volume ormai pieno il fischio e' ancora
+    // mezzo semitono sotto, e ci sale dopo. In chiusura cala di due semitoni e
+    // mezzo a 0,031 semitoni al millesimo, e comincia a cadere un filo dopo il
+    // volume. Legare le due curve - che e' il primo errore che ho fatto - fa
+    // consumare il glissato mentre il suono sta ancora salendo, e il glissato
+    // non si sente piu'. Con le curve separate il glissato della sintesi
+    // ricalca quello misurato entro due decimi di semitono ai due capi.
+    var F_CANNE = [400.2, 478.8, 657.2];
+    var F_NARM = 7;
+    var F_RIGHE = [
+        -3.85, -29.51, -21.79, -27.58, -26.16, -30.61, -32.65,   // 400,2 Hz
+         0.00, -24.73, -26.81, -26.85, -30.61, -32.91, -38.49,   // 478,8 Hz
+        -11.22, -28.82, -26.16, -31.84, -39.01, -39.68, -43.67   // 657,2 Hz
+    ];
+
+    // Il soffio e' solo il 3,4% dell'energia delle note, ma senza di lui il
+    // fischio e' un sintetizzatore. E non e' rumore bianco: si distribuisce
+    // per bande, e queste cinque quote sono misurate sul vero.
+    // da Hz, a Hz, quota di energia sulle note
+    var F_SOFFIO = [
+        [120, 350, 0.000212], [350, 900, 0.007806], [900, 2200, 0.013732],
+        [2200, 5000, 0.010071], [5000, 14000, 0.002487]
+    ];
+
+    // il volume: salita, tenuta, caduta, e la pausa fra le due fischiate
+    var F_SAL = 0.070, F_TEN = 0.285, F_CAL = 0.130, F_PAU = 0.095;
+    // Le fischiate con le pause in mezzo: serve al treno, che deve cominciare
+    // a fischiare tanto prima quanto il fischio dura. Senza argomento sono due,
+    // cioe' la partenza regolare.
+    function durataFischio(quante) {
+        var una = F_SAL + F_TEN + F_CAL + 0.10;
+        var q = quante || 2;
+        return q * una + (q - 1) * F_PAU;
+    }
+    // Sta suonando adesso? `trascorso' e' quanto e' passato dall'inizio del
+    // fischio. Vero mentre una fischiata e' in aria, falso nella coda muta e
+    // nella pausa in mezzo. Serve al quadro, che lampeggia a tempo col
+    // fischio invece che per conto suo.
+    function fischioAcceso(trascorso) {
+        var una = F_SAL + F_TEN + F_CAL + 0.10;
+        return (trascorso % (una + F_PAU)) < F_SAL + F_TEN + F_CAL;
+    }
+    // l'intonazione: F_GIU semitoni sotto all'attacco, riassorbiti in F_TSU;
+    // F_DERIVA quanto sale ancora durante la tenuta; F_CADE semitoni al
+    // millesimo in chiusura; F_RIT quanto tardi comincia a cadere.
+    var F_GIU = 2.85, F_TSU = 0.150, F_DERIVA = 0.15, F_CADE = 0.031, F_RIT = 0.015;
+
+    // Di quanti semitoni sale il fischio del rimbalzo rispetto a quello della
+    // partenza. Le fischiate erano gia' tre contro due, ma il numero si conta
+    // solo a mente: a orecchio erano lo stesso suono, e il rimbalzo si deve
+    // riconoscere dalla prima nota. Tre semitoni sono una terza minore - si
+    // sente subito e resta dentro la famiglia, mezza ottava sarebbe un altro
+    // fischio. Salgono tutte e tre le canne insieme, cosi' e' lo stesso
+    // strumento, solo piu' piccolo.
+    var F_SU_RIMBALZO = 3;
+
+    // Le due fischiate intere in un buffer solo, calcolato la prima volta che
+    // serve e poi tenuto. Qui, al contrario della campana, non c'e' niente da
+    // contare: il fischio e' sempre lo stesso, e un buffer solo basta.
+    // `quante' e' il numero di fischiate: due la partenza, tre il treno
+    // respinto dalla stazione sbagliata che riparte. `su' e' di quanti
+    // semitoni alzare le canne. Un buffer in cache per ogni combinazione -
+    // oggi sono due, e tanto restano.
+    function fischio(C, quante, su) {
+        var q = quante || 2, sem = su || 0;
+        var chiave = q + '/' + sem;
+        if (!fischio.buf) fischio.buf = {};
+        if (fischio.buf[chiave]) return fischio.buf[chiave];
+        var tono = Math.pow(2, sem / 12);
+        var sr = C.sampleRate;
+        var nf = Math.round(sr * (F_SAL + F_TEN + F_CAL + 0.10));
+        var npau = Math.round(sr * F_PAU);
+        var n = nf * q + npau * (q - 1);
+        var buf = C.createBuffer(1, n, sr);
+        var d = buf.getChannelData(0);
+
+        // Una fischiata sola, scritta dentro d a partire da off. Le due
+        // fischiate del vero non sono la stessa copiata due volte, e qui si
+        // distinguono per il seme: cambiano le fasi e il tremolo, non le note.
+        function fischiata(off, seme) {
+            function caso() {
+                // Math.imul e non *, per lo stesso motivo della campana: il
+                // prodotto sfonda il piu' grande intero esatto e i bit bassi
+                // si perdono nell'arrotondamento.
+                seme = (Math.imul(seme, 1103515245) + 12345) & 0x7fffffff;
+                return (seme / 0x7fffffff) * 2 - 1;
+            }
+            var i, t, p, semi, s;
+            var pres = new Float64Array(nf), bend = new Float64Array(nf);
+            for (i = 0; i < nf; i++) {
+                t = i / sr;
+                if (t < F_SAL) p = 1 - Math.exp(-t / (F_SAL * 0.32));
+                else if (t < F_SAL + F_TEN) p = 1;
+                else p = Math.exp(-(t - F_SAL - F_TEN) / (F_CAL * 0.42));
+                pres[i] = p;
+                if (t < F_SAL + F_TEN) {
+                    s = Math.min(1, t / F_TSU);
+                    semi = -F_GIU * (1 - s) * (1 - s) + F_DERIVA * s * s;
+                } else {
+                    semi = F_DERIVA
+                         - F_CADE * Math.max(0, t - F_SAL - F_TEN - F_RIT) * 1000;
+                }
+                bend[i] = Math.pow(2, semi / 12);
+            }
+
+            // il tremolo: il vapore non esce liscio
+            var tr = new Float64Array(nf), v = 0, mira = 0;
+            var passo = Math.round(sr * 0.055);
+            for (i = 0; i < nf; i++) {
+                if (i % passo === 0) mira = caso() * 0.09;
+                v += (mira - v) * 0.0035;
+                tr[i] = 1 + v;
+            }
+
+            // Le ventuno righe. La fase si ACCUMULA invece di calcolare
+            // sin(w*i): moltiplicando, il bend non piega niente - cambia solo
+            // il passo del seno istante per istante e l'intonazione resta
+            // dov'era. Il glissato sta tutto in questa somma.
+            var q = 0;
+            for (var ci = 0; ci < F_CANNE.length; ci++) {
+                for (var k = 1; k <= F_NARM; k++) {
+                    var a = Math.pow(10, F_RIGHE[q++] / 20);
+                    var f = F_CANNE[ci] * tono * k;
+                    if (f > sr / 2.2) continue;
+                    var fase = (caso() + 1) * Math.PI;
+                    for (i = 0; i < nf; i++) {
+                        fase += 2 * Math.PI * f * bend[i] / sr;
+                        d[off + i] += a * pres[i] * tr[i] * Math.sin(fase);
+                    }
+                }
+            }
+
+            // Il soffio, banda per banda, con un passabanda a biquad. Non si
+            // trasporta con le canne: e' vapore che esce da un buco, e il
+            // rumore del vapore non ha una nota da alzare.
+            var gr = new Float64Array(nf);
+            for (i = 0; i < nf; i++) gr[i] = caso();
+            var y = new Float64Array(nf);
+            for (var bi = 0; bi < F_SOFFIO.length; bi++) {
+                var lo = F_SOFFIO[bi][0], hi = F_SOFFIO[bi][1];
+                var fc = Math.sqrt(lo * hi), Q = Math.max(0.4, fc / (hi - lo));
+                var w0 = 2 * Math.PI * fc / sr, al = Math.sin(w0) / (2 * Q);
+                var den = 1 + al;
+                var b0 = al / den, b2 = -al / den;
+                var a1 = -2 * Math.cos(w0) / den, a2 = (1 - al) / den;
+                var x1 = 0, x2 = 0, y1 = 0, y2 = 0, en = 0, u;
+                for (i = 0; i < nf; i++) {
+                    u = b0 * gr[i] + b2 * x2 - a1 * y1 - a2 * y2;
+                    y[i] = u; en += u * u;
+                    x2 = x1; x1 = gr[i]; y2 = y1; y1 = u;
+                }
+                en /= nf;
+                var g = en > 0 ? Math.sqrt(F_SOFFIO[bi][2] / en) : 0;
+                for (i = 0; i < nf; i++) d[off + i] += g * pres[i] * y[i];
+            }
+        }
+
+        // Le fischiate del vero non sono la stessa copiata: un seme diverso
+        // per ognuna, e cambiano fasi e tremolo, non le note.
+        var SEMI = [4242, 9191, 7373];
+        for (var z = 0; z < q; z++) fischiata(z * (nf + npau), SEMI[z % SEMI.length]);
+
+        // Le stesse tre rifiniture dell'ascolto che e' stato scelto: picco a
+        // -3 dB, punte arrotondate invece che tagliate, e sei millesimi di
+        // dissolvenza ai due capi - un buffer che finisce di netto fa un clic.
+        var picco = 0, x;
+        for (x = 0; x < n; x++) picco = Math.max(picco, Math.abs(d[x]));
+        var gg = picco ? 0.707 / picco : 1;
+        for (x = 0; x < n; x++) d[x] = Math.tanh(d[x] * gg * 1.1);
+        var qd = Math.round(sr * 0.006);
+        for (x = 0; x < qd; x++) { d[x] *= x / qd; d[n - 1 - x] *= x / qd; }
+        fischio.buf[chiave] = buf;
+        return buf;
+    }
+
+    // I due suoni in prestito dagli altri giochi sono mp3 gia' mixati. Non
+    // passano da un elemento <audio>: si scaricano una volta, si decodificano
+    // nel nostro contesto e poi suonano come la campana e il fischio, dallo
+    // stesso limitatore e con la stessa manopola.
+    //
+    // La ragione non e' l'eleganza. site.js dirotta la play() di ogni elemento
+    // audio del sito sulla Web Audio API con una sua fetch, un suo contesto e
+    // un suo interruttore di silenzio, e scarta il suono se scaricare e
+    // decodificare supera il mezzo secondo: l'elemento resta fermo a zero, la
+    // promessa si risolve e non si sente niente senza che nessuno protesti.
+    // Passando dal nostro contesto quella strada si evita per intero.
+    var CAMPIONI = {};        // chiave di SUONI -> AudioBuffer decodificato
+
+    // Un contesto per tutto il gioco. Nasce sospeso quando il quadro si carica
+    // prima che l'utente abbia toccato qualcosa, quindi si chiede di accenderlo.
+    function ctxAudio() {
+        if (!window.AudioContext) return null;
+        var C = suona.ctx || (suona.ctx = new AudioContext());
+        if (C.state === 'suspended' && C.resume) C.resume();
+        return C;
+    }
+
+    function precarica(C) {
+        if (precarica.fatto || !C) return;
+        precarica.fatto = true;
+        for (var k in SUONI) {
+            if (SUONI.hasOwnProperty(k)) scarica(C, k, SUONI[k]);
+        }
+    }
+
+    function scarica(C, k, url) {
         try {
-            var C = suona.ctx || (suona.ctx = new AudioContext());
-            var o = C.createOscillator(), g = C.createGain();
-            var f = { annuncio: 220, partenza: 330, arrivo: 660, scontro: 90, scambio: 1200, rimbalzo: 160 }[che] || 440;
-            o.frequency.value = f;
-            o.type = che === 'scontro' ? 'sawtooth' : 'square';
-            g.gain.value = 0.05;
-            o.connect(g); g.connect(C.destination);
-            o.start(); o.stop(C.currentTime + (che === 'scontro' ? 0.4 : 0.12));
+            fetch(url).then(function (r) {
+                if (!r.ok) throw new Error('risposta ' + r.status);
+                return r.arrayBuffer();
+            }).then(function (dati) {
+                return C.decodeAudioData(dati);
+            }).then(function (buf) {
+                CAMPIONI[k] = buf;
+            })['catch'](function (e) {
+                // Questo resta a parlare: un campione che non arriva e' un
+                // guasto, e un guasto muto costa mezza giornata a trovarlo.
+                console.log('woowoo2: ' + url + ' non si carica: ' + e);
+            });
+        } catch (err) {
+            console.log('woowoo2: ' + url + ' non si carica: ' + err);
+        }
+    }
+
+    // Due colpi vicini si sovrappongono invece di tagliarsi: ogni colpo e' una
+    // sorgente nuova sullo stesso buffer, e gli scambi si toccano uno dietro
+    // l'altro.
+    function campione(C, che, vol) {
+        var buf = CAMPIONI[che];
+        if (!buf) return;      // chiesto nel primo secondo, non ancora decodificato
+        var s = C.createBufferSource(), g = C.createGain();
+        s.buffer = buf;
+        g.gain.value = vol;
+        s.connect(g); g.connect(uscitaAudio(C));
+        // Un filo di anticipo: si prenota l'orologio dell'audio, e un istante
+        // gia' passato non si puo' prenotare.
+        s.start(C.currentTime + 0.02);
+    }
+
+    // Da scrivere in console: prova i due campioni fuori dal gioco.
+    window.W2PROVASUONI = function () {
+        var C = ctxAudio();
+        console.log('woowoo2 audio: audioOn=' + audioOn
+            + ', contesto=' + (C ? C.state : 'assente')
+            + ', silenzio del sito=' + !!window.audioMuted
+            + ', pronti=' + Object.keys(CAMPIONI).join(' '));
+        if (!C) return 'niente contesto audio';
+        precarica(C);
+        campione(C, 'arrivo', VOL.arrivo);
+        setTimeout(function () { campione(C, 'scambio', VOL.scambio); }, 2000);
+        return 'provo arrivo adesso e scambio fra due secondi';
+    };
+
+
+    // Tutti i suoni passano di qui: un volume generale e un limitatore. Tre
+    // campane sovrapposte sommano le ampiezze, e senza freno gracchiano.
+    // Si chiama uscitaAudio e non uscita: uscita e' gia' presa, e' quella
+    // della stazione (riga 496). Due funzioni con lo stesso nome nello stesso
+    // ambito non convivono, la seconda cancella la prima.
+    function uscitaAudio(C) {
+        if (uscitaAudio.nodo) return uscitaAudio.nodo;
+        var g = C.createGain();
+        g.gain.value = 0.8;
+        var lim = C.createDynamicsCompressor();
+        lim.threshold.value = -12; lim.knee.value = 6; lim.ratio.value = 12;
+        lim.attack.value = 0.002; lim.release.value = 0.15;
+        g.connect(lim); lim.connect(C.destination);
+        uscitaAudio.nodo = g;
+        return g;
+    }
+
+    // `chi' e' la stazione che annuncia, e serve solo all'annuncio.
+    function suona(che, chi) {
+        if (!audioOn) return;
+        try {
+            var C = ctxAudio();
+            if (!C) return;
+            if (che === 'arrivo') { campione(C, 'arrivo', VOL.arrivo); return; }
+            if (che === 'scambio') { campione(C, 'scambio', VOL.scambio); return; }
+            if (che === 'scontro') { campione(C, 'scontro', VOL.scontro); return; }
+            if (che === 'annuncio') {
+                var serie = chi && chi.serie ? chi.serie : 0;
+                var colpi = chi && chi.colpi ? chi.colpi : COLPI_MIN;
+                var buf = campana(C, serie);
+                // Un filo di anticipo: si sta programmando l'orologio
+                // dell'audio, e un istante gia' passato non si puo' prenotare.
+                var t0 = C.currentTime + 0.02;
+                for (var c = 0; c < colpi; c++) {
+                    var s = C.createBufferSource(), gc = C.createGain();
+                    s.buffer = buf;
+                    gc.gain.value = VOL.campana * FORZA[c % FORZA.length];
+                    s.connect(gc); gc.connect(uscitaAudio(C));
+                    s.start(t0 + c * PASSO);
+                }
+                return;
+            }
+            if (che === 'partenza' || che === 'rimbalzo') {
+                // Partenza: due fischiate, intonazione di casa. Rimbalzo: tre
+                // fischiate e piu' acuto, che sono due segni invece di uno.
+                var rim = che === 'rimbalzo';
+                var sf = C.createBufferSource(), gf = C.createGain();
+                sf.buffer = fischio(C, rim ? 3 : 2, rim ? F_SU_RIMBALZO : 0);
+                gf.gain.value = VOL.fischio;
+                sf.connect(gf); gf.connect(uscitaAudio(C));
+                // un filo di anticipo: un istante gia' passato non si prenota
+                sf.start(C.currentTime + 0.02);
+                return;
+            }
         } catch (err) { /* audio non disponibile */ }
     }
 
@@ -1246,6 +1907,7 @@
         // Vale sempre l'ultima toccata, e l'altra torna sul suo capofila per
         // dire a colpo d'occhio da quale banco si sta giocando.
         montaSelettori();
+        precarica(ctxAudio());   // i due mp3, prima che servano
         var bp = el('w2-pausa');
         if (bp) bp.onclick = function () { pausa(); };
         var ba = el('w2-audio');
@@ -1254,7 +1916,7 @@
         // Si parte quando sono arrivate tutte: l'atlante del dischetto piu'
         // atlante e dipinto di ogni stile nominato nei dati.
         var stili = stiliUsati();
-        var lista = ['images/woowoo2/tiles.png?v=1.0'];
+        var lista = ['dev/tiles.png?v=1.0'];
         stili.forEach(function (x) { lista.push(x.atlante, x.sfondo); });
         immagini(lista, function (im) {
             atlante = im[0];

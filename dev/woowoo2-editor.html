@@ -16,6 +16,7 @@ body{margin:0;background:var(--fondo);color:var(--testo);
 header{display:flex;flex-wrap:wrap;gap:8px;align-items:center;
   padding:8px 12px;background:var(--pannello);border-bottom:1px solid var(--bordo)}
 header h1{font-size:15px;margin:0 12px 0 0;font-weight:600;letter-spacing:.02em}
+    header b{color:var(--fioco);font-size:11px;text-transform:uppercase;letter-spacing:.06em}
 button,select{font:inherit;color:var(--testo);background:#323945;
   border:1px solid var(--bordo);border-radius:5px;padding:4px 10px;cursor:pointer}
 button:hover,select:hover{background:#3c4452}
@@ -41,12 +42,17 @@ main{display:flex;flex-wrap:wrap;gap:12px;padding:12px;align-items:flex-start}
    della tela invece di scivolarle sotto. */
 #tavolozza{max-width:382px}
 .tav{display:flex;flex-wrap:wrap;gap:8px}
-/* box-sizing a contenuto: i 64px sono la tessera, il bordo sta fuori e non
-   la ritaglia. L'atlante e' 1344x64, a 64px di lato il fondo va a 2688x128. */
+/* Ogni tessera si porta dentro la sua telina, ritagliata dall'atlante una
+   volta sola (vedi costruisciTavolozza). Prima il disegno era un fondo CSS:
+   l'atlante intero, 1344x64, stirato a 2688x128 e spostato per far affacciare
+   la tessera giusta nella finestrella da 64. A riposo si vedeva bene, ma al
+   passaggio del mouse Chrome ridisegnava quel fondo enorme e ne tirava fuori
+   un pezzo sbagliato: sembrava che la tessera cambiasse immagine. Con la
+   telina non c'e' piu' niente da stirare e l'immagine e' quella e basta. */
 .tes{box-sizing:content-box;width:64px;height:64px;
   border:3px solid transparent;border-radius:5px;
-  background-repeat:no-repeat;background-size:2688px 128px;image-rendering:pixelated;
-  cursor:pointer;padding:0}
+  cursor:pointer;padding:0;background:none;line-height:0;overflow:hidden}
+.tes canvas{display:block;width:64px;height:64px}
 .tes:hover{border-color:var(--fioco)}
 .tes.sel{border-color:#ffc21f;box-shadow:0 0 0 2px var(--pannello), 0 0 0 5px #ffc21f}
 #info{min-height:1.4em;color:var(--fioco);font-size:12px;font-family:ui-monospace,Consolas,monospace}
@@ -62,7 +68,7 @@ td.der{color:var(--fioco);font-family:ui-monospace,Consolas,monospace}
 .leg{font-size:11px;color:var(--fioco);margin-top:8px;line-height:1.6}
 .leg code{background:#1a1e23;padding:1px 4px;border-radius:3px}
 dialog{background:var(--pannello);color:var(--testo);border:1px solid var(--bordo);
-  border-radius:8px;padding:16px;max-width:640px;font-size:13px}
+  border-radius:8px;padding:16px;max-width:960px;font-size:13px}
 dialog::backdrop{background:rgba(0,0,0,.55)}
 dialog h3{margin:0 0 12px;font-size:14px;text-transform:uppercase;letter-spacing:.06em;color:var(--fioco)}
 dialog p{margin:8px 0}
@@ -70,6 +76,10 @@ dialog label{margin-right:12px}
 dialog .fondo{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
 dialog textarea{width:100%;background:#15181c;color:var(--testo);border:1px solid var(--bordo);
   border-radius:4px;font-family:ui-monospace,Consolas,monospace;font-size:12px;padding:6px;resize:vertical}
+#dsvCorpo{min-width:380px;max-width:540px}
+#dsvCorpo code{background:#1a1e23;padding:1px 4px;border-radius:3px}
+#dsvCorpo b{color:var(--testo)}
+#dsvCorpo ul{margin:6px 0 0;padding-left:18px;font-size:11px;color:var(--fioco);line-height:1.7}
 #stato{font-size:12px;color:var(--fioco)}
 #stato.sporco{color:var(--giallo)}
 </style>
@@ -78,17 +88,17 @@ dialog textarea{width:100%;background:#15181c;color:var(--testo);border:1px soli
 
 <header>
   <h1>Editor quadri woowoo2</h1>
-  <button id="bApri">Apri...</button>
-  <button id="bSalva" disabled>Salva</button>
-  <button id="bSalvaCome" disabled>Salva come...</button>
-  <select id="selSchema" disabled></select>
-  <button id="bAnnulla" disabled title="Ctrl+Z">Annulla</button>
-  <button id="bCopia" disabled title="scrive il quadro in lavorazione in un'altra casella dello stesso file">Copia in...</button>
+  <button id="bSalva" disabled title="riscrive il woowoo2-mie.js del sito: se non sa dov'e', te lo chiede">Salva</button>
+  <b>da</b>
+  <select id="selSorg" disabled title="il quadro di partenza: uno del dischetto (A..L) oppure uno dei tuoi (M..X)"></select>
+  <b>a</b>
+  <select id="selDest" disabled title="la casella di woowoo2-mie.js dove si lavora: e' l'unica che l'editor scrive"></select>
+  <button id="bAnnulla" disabled title="Ctrl+Z, oppure tasto destro sul quadro">Annulla</button>
   <button id="bBlocco" disabled title="genera il blocco JS da incollare in woowoo2-mie.js">Blocco JS...</button>
-  <button id="bAzzera" disabled title="mette prato in tutte e ottanta le caselle">Azzera tutto</button>
+  <button id="bAzzera" disabled title="mette prato in tutte e le caselle">Azzera tutto</button>
   <span class="sp"></span>
   <button id="bControlla" class="acc" disabled>Controlla</button>
-  <span id="stato">nessun file aperto</span>
+  <span id="stato">apro i file...</span>
 </header>
 
 <div id="barraGrafica">
@@ -98,19 +108,62 @@ dialog textarea{width:100%;background:#15181c;color:var(--testo);border:1px soli
     <option value="nostra">dipinto + piastrelle nostre</option>
   </select>
   <span id="sfondoNome">&mdash;</span>
-  <button id="bSfondo" disabled title="scegli il jpeg del dipinto e mettilo nel sito">Sfondo...</button>
+  <button id="bSfondo" disabled title="scegli il jpeg del dipinto: dove va lo so io, images/woowoo2 del sito">Sfondo...</button>
+  <button id="bSfondoVia" disabled title="toglie di mezzo il dipinto per guardare bene binari e stazioni: non cambia i dati, ma il PNG esce come lo vedi">Nascondi sfondo</button>
   <span class="sp"></span>
-  <button id="bPng" disabled title="scarica il quadro disegnato con le piastrelle del dischetto, da dare in pasto al disegnatore">PNG del quadro</button>
+  <b>targa</b>
+  <button id="bTarga" disabled title="poi clicca la casella dove mettere l'angolo sinistro della targa">Sposta targa</button>
+  <button id="bTargaVia" disabled title="rimette la targa al suo posto di serie, in alto a destra">In alto a destra</button>
+  <span id="targaDove">&mdash;</span>
+  <span class="sp"></span>
+  <button id="bPng" disabled title="scarica il quadro come lo vedi, senza reticolo ne lettere, col posto della targa in nero, da dare in pasto al disegnatore">PNG del quadro</button>
 </div>
 
-<dialog id="dlgCopia">
-  <h3>Copia il quadro in un'altra casella</h3>
-  <p><label>destinazione <select id="dstSlot"></select></label></p>
-  <p><label><input type="checkbox" id="dstIntatta" checked>
-    rimetti l'originale nella casella di partenza</label></p>
-  <p class="leg">La casella di partenza torna com'era sul file: cosi' parti da un
-    quadro classico, lo modifichi e lo depositi altrove senza toccarlo.</p>
-  <div class="fondo"><button id="dcNo">Annulla</button><button id="dcOk" class="acc">Copia</button></div>
+<dialog id="dlgCartella">
+  <h3>Dove vanno i dipinti</h3>
+  <p class="leg">I dati nominano sempre <code>images/woowoo2/</code>, quindi la
+    cartella e' una sola: <code>images/woowoo2</code> dentro la cartella del
+    sito. Te la chiedo una volta, poi il browser se la ricorda e i dipinti ce
+    li metto io.</p>
+  <p class="leg">Il browser non mi lascia leggere il nome della cartella che
+    scegli: per essere sicuro che sia quella giusta ci guardo dentro e
+    confronto il <code>tiles-nuove.png</code> con quello che serve il server.</p>
+  <div class="fondo">
+    <button id="dcaNo">Annulla</button>
+    <button id="dcaSi" class="acc">Scegli la cartella</button>
+  </div>
+</dialog>
+
+<dialog id="dlgSalva">
+  <h3>Cosa sto per salvare</h3>
+  <div id="dsvCorpo"></div>
+  <div class="fondo">
+    <button id="dsvNo">Annulla</button>
+    <button id="dsvSi" class="acc">Salva</button>
+  </div>
+</dialog>
+
+<dialog id="dlgDove">
+  <h3 id="ddoT">In che file scrivo</h3>
+  <p class="leg" id="ddoP"></p>
+  <div class="fondo">
+    <button id="ddoNo">Annulla</button>
+    <button id="ddoSi" class="acc">Scegli il file</button>
+  </div>
+</dialog>
+
+<dialog id="dlgSporco">
+  <h3>Il quadro non e' ancora su disco</h3>
+  <p id="dspChi" class="leg"></p>
+  <p><label>casella dove salvarlo <select id="dspSlot"></select></label></p>
+  <p class="leg"><b>Salva</b> riscrive <code>woowoo2-mie.js</code>, volendo in
+    un'altra casella. <b>Butta via</b> rimette la casella com'era sul file e la
+    modifica si perde. <b>Annulla</b> lascia tutto com'e' e non cambia quadro.</p>
+  <div class="fondo">
+    <button id="dspNo">Annulla</button>
+    <button id="dspVia">Butta via</button>
+    <button id="dspSi" class="acc">Salva</button>
+  </div>
 </dialog>
 
 <dialog id="dlgBlocco">
@@ -128,7 +181,7 @@ dialog textarea{width:100%;background:#15181c;color:var(--testo);border:1px soli
 
 <main>
   <div class="col">
-    <canvas id="tela" width="640" height="512"></canvas>
+    <canvas id="tela" width="960" height="576"></canvas>
     <div id="info"></div>
   </div>
 
@@ -161,14 +214,15 @@ dialog textarea{width:100%;background:#15181c;color:var(--testo);border:1px soli
   </div>
 </main>
 
-<script src="../woowoo2-dati.js"></script>
+<script src="woowoo2-dati.js"></script>
+<script src="../woowoo2-codici.js"></script>
 <script>
 (function () {
 'use strict';
 
 var D = window.W2DATI;
-var CEL = 32, SCALA = 2, COLS = 10, RIGHE = 8, PRATO = 33;
-var ATL = '../images/woowoo2/tiles.png';
+var CEL = 32, SCALA = 2, COLS = 15, RIGHE = 9, PRATO = 33;
+var ATL = 'tiles.png';   // l'atlante del dischetto, qui in dev/ accanto all'editor
 
 var DIR = { N: [-1, 0], S: [1, 0], E: [0, 1], O: [0, -1] };
 var OPP = { N: 'S', S: 'N', E: 'O', O: 'E' };
@@ -231,7 +285,10 @@ atl.src = ATL;
 // JSON.stringify. Gli altri (woowoo2-mie.js, schema-*.js) sono JS scritto a
 // mano: li' si sostituiscono SOLO le cifre, cosi' commenti e formattazione
 // restano intatti.
-var RIGA = /\[(?:\s*(?:\d+|_)\s*,){9}\s*(?:\d+|_)\s*\]/g;
+// una riga di quadro: COLS numeri fra parentesi quadre, il prato si puo'
+// scrivere come _. Il numero di colonne entra nella regex, cosi' basta
+// cambiare COLS piu' sotto.
+var RIGA = new RegExp('\\[(?:\\s*(?:\\d+|_)\\s*,){' + (COLS - 1) + '}\\s*(?:\\d+|_)\\s*\\]', 'g');
 var OGG = /\{[^{}]*\bord\s*:[^{}]*\}/g;
 var OGGJ = /\{[^{}]*"ord"\s*:[^{}]*\}/g;
 
@@ -301,33 +358,241 @@ function etichetta(testo, i) {
     return m ? m[1] : 'schema';
 }
 
-// ---- apri / salva ------------------------------------------------------
-var manico = null;
+// ---- avvio: i due file si aprono da soli -------------------------------
+// Il tasto "Apri" non c'e' piu'. All'accensione l'editor si tira su da solo
+// il dischetto (dev/woowoo2-dati.js, che si guarda e si copia ma non si scrive
+// mai: e' l'estrazione dell'originale) e i quadri nostri (woowoo2-mie.js,
+// l'unico file che questo editor riscrive).
+var FD = null;           // il dischetto, solo da guardare
 
-document.getElementById('bApri').onclick = async function () {
+async function avvio() {
     try {
-        var r = await window.showOpenFilePicker({
-            types: [{ description: 'Schemi woowoo2', accept: { 'text/javascript': ['.js'] } }]
-        });
-        manico = r[0];
-        var file = await manico.getFile();
-        apriTesto(await file.text(), manico.name);
-    } catch (e) { if (e && e.name !== 'AbortError') alert('Apertura fallita: ' + e.message); }
-};
+        var td = await (await fetch('woowoo2-dati.js', { cache: 'no-store' })).text();
+        var tm = await (await fetch('../woowoo2-mie.js', { cache: 'no-store' })).text();
+        FD = analizza(td, 'woowoo2-dati.js');
+        // del dischetto tengo solo A..L: le sue M, W e X sono caselle di
+        // servizio rimaste dall'estrazione, tutte prato, e si chiamano come le
+        // nostre - in un elenco unico farebbero solo confusione.
+        FD.elenco = FD.elenco.filter(function (e) { return e.liv >= 'A' && e.liv <= 'L'; });
+        apriTesto(tm, 'woowoo2-mie.js');
+    } catch (e) {
+        document.getElementById('stato').textContent = 'non riesco ad aprire i file: ' + e.message;
+    }
+}
 
 function apriTesto(testo, nome) {
     var f = analizza(testo, nome);
-    if (!f.elenco.length) { alert('Nessuno schema 10x8 trovato in ' + nome); return false; }
-    // copia intatta di ogni casella: serve a "Copia in..." per rimettere a
-    // posto il quadro di partenza dopo averlo usato come modello.
+    if (!f.elenco.length) { alert('Nessuno schema 15x9 trovato in ' + nome); return false; }
+    // copia intatta di ogni casella: serve a rimettere a posto la casella che
+    // si lascia quando il lavoro trasloca in un'altra destinazione.
     f.elenco.forEach(function (e) { e.g0 = e.g.map(function (r) { return r.slice(); }); });
-    F = f; idx = 0; pila = []; sporco = false; evid = null;
-    riempiSelettore();
-    scegli(0);
-    ['bSalva', 'bSalvaCome', 'bControlla', 'selSchema', 'bCopia', 'bBlocco', 'bAzzera', 'bPng'].forEach(function (id) {
-        document.getElementById(id).disabled = false;
-    });
+    // All'accensione non c'e' niente in lavorazione: la tendina di sinistra sta
+    // sulla voce vuota e il quadro si apre solo quando si sceglie da dove
+    // partire. Prima si trovava gia' aperta la prima casella, e non era ovvio
+    // che fosse un quadro nostro pronto a essere scritto.
+    F = f; idx = -1; G = null; pila = []; sporco = false; evid = null;
+    // Stessa copia intatta per la grafica: serve a rimettere a posto la
+    // casella che si lascia quando il lavoro trasloca altrove.
+    F.elenco.forEach(function (e, i) { e.st0 = clona(stileSlot(i)); e.tg0 = clona(targaSlot(i)); });
+    riempiSelettori();
+    abilita(false);
+    document.getElementById('selSorg').disabled = false;
+    document.getElementById('stato').textContent = F.nome + ' - scegli da dove partire';
+    tabellaParametri();
+    aggiornaBarraGrafica();
+    disegna();
     return true;
+}
+
+// i comandi che hanno senso solo con un quadro in lavorazione
+function abilita(on) {
+    ['bSalva', 'bControlla', 'selDest', 'bBlocco', 'bAzzera', 'bPng']
+        .forEach(function (id) { document.getElementById(id).disabled = !on; });
+}
+
+// ---- sorgente e destinazione -------------------------------------------
+// Due tendine, non una. La prima dice DA DOVE si parte: un quadro del
+// dischetto (A..L) oppure uno dei nostri (M..X). La seconda dice DOVE si
+// lavora, e le caselle sono soltanto le nostre, perche' woowoo2-mie.js e'
+// l'unico file che questo editor riscrive: il dischetto si guarda e si copia,
+// ma non si tocca mai. Con una tendina sola non si capiva quale dei due ruoli
+// stesse facendo la scelta.
+// Scegliendo un quadro del dischetto la casella proposta e' quella che gli
+// corrisponde - A->M, B->N, fino a L->X, stesso numero di schema - perche'
+// woowoo2-mie.js nasce come copia dell'estrazione e le lettere si guardano in
+// faccia a due a due. Scegliendo un quadro gia' nostro la casella proposta e'
+// lui stesso.
+// Niente va su disco finche' non si preme Salva.
+var CAT = [];            // il catalogo della tendina di sinistra
+var sorgSel = '';        // voce scelta, per rimetterla a posto se si annulla
+
+function costruisciCatalogo() {
+    CAT = [];
+    if (FD) FD.elenco.forEach(function (e) {
+        CAT.push({ eti: 'dischetto  ' + e.eti, g: e.g, mio: -1, liv: e.liv, n: e.n });
+    });
+    F.elenco.forEach(function (e, i) {
+        CAT.push({ eti: 'miei  ' + e.eti, g: e.g, mio: i, liv: e.liv, n: e.n });
+    });
+}
+
+// A->M, B->N ... L->X: dodici lettere di distanza nell'alfabeto.
+function gemella(L) { return String.fromCharCode(L.charCodeAt(0) + 12); }
+
+function destProposta(src) {
+    if (src.mio >= 0) return src.mio;
+    var L = gemella(src.liv);
+    var j = F.elenco.findIndex(function (e) { return e.liv === L && e.n === src.n; });
+    if (j >= 0) return j;
+    j = F.elenco.findIndex(function (e) { return vuota(e.g); });
+    return j >= 0 ? j : Math.max(idx, 0);
+}
+
+function cambiaSorgente() {
+    var s = document.getElementById('selSorg');
+    if (s.value === '') { s.value = sorgSel; return; }   // non si torna al vuoto
+    var k = parseInt(s.value, 10);
+    if (!sporco) { applicaSorgente(k); return; }
+    guardia(function () { applicaSorgente(k); },
+            function () { s.value = sorgSel; });
+}
+
+function applicaSorgente(k) {
+    sorgSel = String(k);
+    document.getElementById('selSorg').value = sorgSel;
+    var src = CAT[k];
+    var j = destProposta(src);
+    if (src.mio === j) { scegli(j); return; }    // e' gia' li': si apre e basta
+    var cambia = !uguali(F.elenco[j].g, src.g);
+    versa(F.elenco[j].g, src.g);
+    scegli(j);
+    // woowoo2-mie.js nasce come copia del dischetto, quindi spesso la casella
+    // gemella contiene gia' quel quadro: in quel caso non c'e' niente da
+    // salvare e non ha senso far comparire la guardia al prossimo cambio.
+    if (cambia) segnaSporco();
+}
+function uguali(a, b) {
+    for (var r = 0; r < RIGHE; r++)
+        for (var c = 0; c < COLS; c++) if (a[r][c] !== b[r][c]) return false;
+    return true;
+}
+
+// Cambiare destinazione sposta il lavoro: la casella che si lascia torna
+// com'e' sul file, quella nuova si prende il quadro in lavorazione. Cosi' si
+// puo' cambiare idea su dove depositare senza ricominciare da capo.
+function cambiaDestinazione() {
+    var j = parseInt(document.getElementById('selDest').value, 10);
+    if (j === idx) return;
+    trasloca(j);
+    scegli(j);
+    rinominaDipinto();
+    segnaSporco();
+}
+// Lo stile e la targa non stanno dentro la casella: stanno nei dati, sotto il
+// livello, indicizzati per schema. Per spostarli insieme al quadro servono una
+// lettura e una scrittura per indice, non solo per "casella corrente".
+function clona(v) { return v == null ? v : JSON.parse(JSON.stringify(v)); }
+
+function stileSlot(i, v) {
+    var e = F.elenco[i];
+    if (!e || !e.liv || !F.dati || !F.dati.liv[e.liv] || !F.dati.liv[e.liv].stile) return null;
+    if (v === undefined) return F.dati.liv[e.liv].stile[e.n];
+    F.dati.liv[e.liv].stile[e.n] = v;
+    return v;
+}
+
+function targaSlot(i, v) {
+    var e = F.elenco[i];
+    var liv = e && e.liv && F.dati && F.dati.liv[e.liv];
+    if (!liv) return null;
+    if (v === undefined) return liv.targa ? liv.targa[e.n] : null;
+    if (!liv.targa) {
+        if (!v) return null;                  // non c'era e non serve: non lo creo
+        liv.targa = [null, null, null];
+    }
+    liv.targa[e.n] = v;
+    if (liv.targa.every(function (x) { return !x; })) delete liv.targa;
+    return v;
+}
+
+// Sposta il lavoro in un'altra casella. Si porta dietro anche la grafica:
+// dipinto, foglio di piastrelle e targa sono roba del quadro, non della
+// casella. Prima restavano indietro, e arrivando nella casella nuova - che
+// quasi sempre e' "orig" - il disegno tornava a piastrelle del dischetto.
+function trasloca(j) {
+    var quadro = G.map(function (r) { return r.slice(); });
+    var stile = clona(stileSlot(idx));
+    var targa = clona(targaSlot(idx));
+
+    // la casella che si lascia torna com'e' sul file, grafica compresa
+    versa(F.elenco[idx].g, F.elenco[idx].g0);
+    stileSlot(idx, clona(F.elenco[idx].st0) || null);
+    targaSlot(idx, clona(F.elenco[idx].tg0) || null);
+
+    versa(F.elenco[j].g, quadro);
+    stileSlot(j, stile || null);
+    targaSlot(j, targa || null);
+}
+
+// Il dipinto in attesa del Salva prende il nome dalla casella (sfondo-m2.jpg):
+// se il lavoro trasloca deve cambiare nome con lui, se no nei dati finirebbe
+// il nome di un'altra casella.
+function rinominaDipinto() {
+    if (!dipintoNuovo) return;
+    var nuovo = nomeProposto();
+    if (nuovo === dipintoNuovo.nome) return;
+    var sty = stileCorrente();
+    if (sty && sty.sfondo && sty.sfondo.indexOf(dipintoNuovo.nome) >= 0) {
+        sty.sfondo = CARTELLA + nuovo + '?v=1.0';
+        scriviStile(sty);
+    }
+    dipintoNuovo.nome = nuovo;
+    aggiornaBarraGrafica();
+}
+
+// ---- la guardia delle modifiche non salvate ----------------------------
+// Il quadro sta in memoria finche' non si preme Salva. Se si cambia sorgente
+// con una modifica in ballo, prima si decide che farne: salvarla (anche in
+// un'altra casella), buttarla via, o lasciar perdere il cambio.
+var guardiaSi = null, guardiaNo = null;
+
+function guardia(prosegui, lasciaPerdere) {
+    guardiaSi = prosegui; guardiaNo = lasciaPerdere;
+    riempiTendina(document.getElementById('dspSlot'), idx);
+    document.getElementById('dspChi').textContent =
+        'in lavorazione: ' + F.elenco[idx].eti;
+    document.getElementById('dlgSporco').showModal();
+}
+document.getElementById('dspNo').onclick = function () {
+    document.getElementById('dlgSporco').close();
+    if (guardiaNo) guardiaNo();
+};
+document.getElementById('dspVia').onclick = function () {
+    document.getElementById('dlgSporco').close();
+    versa(F.elenco[idx].g, F.elenco[idx].g0);
+    pila = [];
+    document.getElementById('bAnnulla').disabled = true;
+    segnaPulito();
+    disegna();
+    if (guardiaSi) guardiaSi();
+};
+document.getElementById('dspSi').onclick = async function () {
+    var j = parseInt(document.getElementById('dspSlot').value, 10);
+    document.getElementById('dlgSporco').close();
+    if (j !== idx) { trasloca(j); scegli(j); rinominaDipinto(); segnaSporco(); }
+    if (await salvaSuDisco()) { if (guardiaSi) guardiaSi(); }
+    else if (guardiaNo) guardiaNo();
+};
+
+function riempiTendina(s, quale) {
+    s.innerHTML = '';
+    F.elenco.forEach(function (e, i) {
+        var o = document.createElement('option');
+        o.value = i;
+        o.textContent = e.eti + (vuota(e.g) ? '   (vuota)' : '');
+        s.appendChild(o);
+    });
+    if (quale >= 0) s.value = quale;
 }
 
 // ---- copia del quadro in un'altra casella ------------------------------
@@ -340,34 +605,6 @@ function versa(dest, sorg) {
 function vuota(g) {
     return g.every(function (r) { return r.every(function (v) { return v === 33; }); });
 }
-document.getElementById('bCopia').onclick = function () {
-    var sel = document.getElementById('dstSlot');
-    sel.innerHTML = '';
-    F.elenco.forEach(function (e, i) {
-        var o = document.createElement('option');
-        o.value = i;
-        o.textContent = e.eti + (vuota(e.g) ? '   (vuota)' : '') + (i === idx ? '   (questa)' : '');
-        sel.appendChild(o);
-    });
-    sel.value = F.elenco.findIndex(function (e, i) { return i !== idx && vuota(e.g); });
-    if (sel.selectedIndex < 0) sel.value = idx;
-    document.getElementById('dlgCopia').showModal();
-};
-document.getElementById('dcNo').onclick = function () { document.getElementById('dlgCopia').close(); };
-document.getElementById('dcOk').onclick = function () {
-    var j = parseInt(document.getElementById('dstSlot').value, 10);
-    if (j === idx) { document.getElementById('dlgCopia').close(); return; }
-    var dest = F.elenco[j];
-    if (!vuota(dest.g) && !confirm("La casella " + dest.eti + " non e' vuota: la sovrascrivo?")) return;
-    var quadro = G.map(function (r) { return r.slice(); });
-    if (document.getElementById('dstIntatta').checked) versa(F.elenco[idx].g, F.elenco[idx].g0);
-    versa(dest.g, quadro);
-    document.getElementById('dlgCopia').close();
-    segnaSporco();
-    scegli(j);
-    segnaSporco();
-};
-
 // ---- blocco JS per woowoo2-mie.js --------------------------------------
 var LETTERE = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'W', 'X'];
 document.getElementById('bBlocco').onclick = function () {
@@ -413,28 +650,274 @@ document.getElementById('blkCopia').onclick = async function () {
     setTimeout(function () { b.textContent = vecchio; }, 1200);
 };
 
-document.getElementById('bSalva').onclick = function () { salva(manico); };
-document.getElementById('bSalvaCome').onclick = async function () {
-    try {
-        var h = await window.showSaveFilePicker({
-            suggestedName: F.nome,
-            types: [{ description: 'Schemi woowoo2', accept: { 'text/javascript': ['.js'] } }]
-        });
-        manico = h; F.nome = h.name; salva(h);
-    } catch (e) { if (e && e.name !== 'AbortError') alert('Salvataggio fallito: ' + e.message); }
-};
+// Si salva un file solo, woowoo2-mie.js. Siccome i file l'editor se li apre
+// da solo, un permesso di scrittura non ce l'ha: il primo Salva lo chiede una
+// volta - si indica woowoo2-mie.js e si conferma la sovrascrittura - e poi il
+// manico se lo tiene in IndexedDB. Nelle sessioni dopo il browser chiede solo
+// di riconfermare il permesso, che non si porta dietro da una visita all'altra.
+var manico = null;
 
-async function salva(h) {
-    if (!F || !h) return;
-    var testo = F.tipo === 'json' ? componiJson() : componiJs();
+// Il magazzino dei permessi. Attenzione: qui dentro non si puo' restare in
+// attesa per sempre. Se questa promessa non si chiude, il Salva si ferma sul
+// primo await e non succede niente - niente file, niente messaggio, niente in
+// console: e' successo, e da fuori sembrava che il pulsante fosse morto.
+// Quindi si risponde sempre, anche solo "non lo so".
+var lamentato = false;
+function lamenta() {
+    if (lamentato) return;
+    lamentato = true;
+    alert('Un\'altra scheda dell\'editor tiene occupato il magazzino dei '
+        + 'permessi e non riesco ad arrivarci.\n\nChiudi le altre schede '
+        + 'dell\'editor, o ricaricale con Ctrl+F5, e riprova.');
+}
+
+function manicoDB(modo, h, chiave) {
+    chiave = chiave || 'mie';
+    return new Promise(function (ris) {
+        var chiuso = false;
+        function finito(v) { if (!chiuso) { chiuso = true; ris(v); } }
+        setTimeout(function () { finito(null); }, 3000);   // ultima rete
+
+        var ap;
+        // La versione 2 serve a rimettere il magazzino a chi non ce l'ha: un
+        // database senza magazzino faceva saltare transaction() e la promessa
+        // restava li'. Adesso se manca lo si rifa' invece di inciamparci.
+        try { ap = indexedDB.open('woowoo2-editor', 2); } catch (e) { return finito(null); }
+        ap.onupgradeneeded = function () {
+            if (!ap.result.objectStoreNames.contains('manici'))
+                ap.result.createObjectStore('manici');
+        };
+        ap.onerror = function () { finito(null); };
+        ap.onblocked = function () { lamenta(); finito(null); };
+        ap.onsuccess = function () {
+            var db = ap.result;
+            // Se un'altra scheda deve rifare il magazzino, questa si fa da
+            // parte invece di tenerla ferma. Senza questa riga bastava una
+            // scheda vecchia lasciata aperta per bloccare tutte le altre.
+            db.onversionchange = function () { db.close(); };
+            try {
+                if (!db.objectStoreNames.contains('manici')) { db.close(); return finito(null); }
+                var st = db.transaction('manici', modo === 'leggi' ? 'readonly' : 'readwrite')
+                           .objectStore('manici');
+                var q = modo === 'leggi' ? st.get(chiave) : st.put(h, chiave);
+                q.onsuccess = function () { db.close(); finito(modo === 'leggi' ? q.result : true); };
+                q.onerror = function () { db.close(); finito(null); };
+            } catch (e) { db.close(); finito(null); }
+        };
+    });
+}
+
+async function permesso(h) {
+    var o = { mode: 'readwrite' };
     try {
+        if (await h.queryPermission(o) === 'granted') return true;
+        return (await h.requestPermission(o)) === 'granted';
+    } catch (e) { return false; }
+}
+
+// Apre il selettore del file dei dati. Lo fa partire il clic sul pulsante
+// dentro al pannello, non questa funzione: il selettore vuole un clic
+// "fresco", e un avviso - o un altro selettore aperto poco prima nello stesso
+// clic - se lo mangia.
+function chiediFile(titolo, spiega) {
+    return new Promise(function (ris) {
+        var d = document.getElementById('dlgDove');
+        document.getElementById('ddoT').textContent = titolo;
+        document.getElementById('ddoP').textContent = spiega;
+        document.getElementById('ddoNo').onclick = function () { d.close(); ris(null); };
+        document.getElementById('ddoSi').onclick = async function () {
+            d.close();
+            try {
+                ris(await window.showSaveFilePicker({
+                    id: 'woowoo2mie',   // Chrome riapre dove si e' scelto l'ultima volta
+                    suggestedName: 'woowoo2-mie.js',
+                    types: [{ description: 'Schemi woowoo2', accept: { 'text/javascript': ['.js'] } }]
+                }));
+            } catch (e) {
+                if (e && e.name !== 'AbortError') alert('Non riuscito: ' + e.message);
+                ris(null);
+            }
+        };
+        d.showModal();
+    });
+}
+
+// ---- la modale del salvataggio ----------------------------------------
+// Il Salva tocca due posti diversi e non si vede da fuori: il dipinto in
+// attesa finisce in images/woowoo2 del sito, e i dati vengono riscritti TUTTI
+// nel file aperto, non solo il quadro che hai sotto gli occhi. Prima di
+// muovere qualcosa lo si dice per esteso, con l'elenco di cosa e' cambiato e
+// la via d'uscita.
+function elencoCambiati() {
+    var fuori = [];
+    F.elenco.forEach(function (e, i) {
+        var n = 0;
+        for (var r = 0; r < e.g.length; r++) {
+            for (var c = 0; c < e.g[r].length; c++) if (e.g[r][c] !== e.g0[r][c]) n++;
+        }
+        var voci = [];
+        if (n) voci.push(n + (n === 1 ? ' casella' : ' caselle'));
+        if (JSON.stringify(stileSlot(i) || null) !== JSON.stringify(e.st0 || null)) voci.push('grafica');
+        if (JSON.stringify(targaSlot(i) || null) !== JSON.stringify(e.tg0 || null)) voci.push('targa');
+        if (voci.length) fuori.push(e.eti + ' \u2014 ' + voci.join(', '));
+    });
+    return fuori;
+}
+
+async function confermaSalva() {
+    // I due manici si sbirciano prima di comporre il testo, altrimenti al
+    // primo salvataggio della sessione la modale direbbe "te lo faccio
+    // indicare adesso" anche quando il browser se li ricorda gia'. Solo
+    // lettura: qui non si chiede niente a nessuno.
+    var mData = manico || await manicoDB('leggi');
+    var mDip = cartella || await manicoDB('leggi', null, 'sfondi');
+
+    return new Promise(function (ris) {
+        var d = document.getElementById('dlgSalva');
+        var h = [];
+
+        if (dipintoNuovo) {
+            h.push('<p><b>1. Il dipinto</b><br><code>' + dipintoNuovo.nome + '</code> ('
+                + Math.round(dipintoNuovo.file.size / 1024) + ' KB)<br>'
+                + 'va nella cartella <code>' + CARTELLA + '</code> del sito'
+                + (mDip ? ', in <code>' + mDip.name + '</code>' : ', che mi farai indicare adesso')
+                + '.</p>');
+        }
+
+        var n = dipintoNuovo ? '2' : '1';
+        h.push('<p><b>' + n + '. I dati</b><br>riscrivo <code>' + F.nome + '</code>'
+            + (mData ? ' dove l\'hai indicato la prima volta' : ', che mi farai indicare adesso')
+            + '.<br><span class="leg">Il file si riscrive tutto, non solo il quadro aperto: '
+            + 'quello che finisce dentro e\' l\'elenco qui sotto.</span></p>');
+
+        var c = elencoCambiati();
+        h.push(c.length
+            ? '<p class="leg">Quadri toccati dall\'ultimo salvataggio:</p><ul><li>'
+              + c.join('</li><li>') + '</li></ul>'
+            : '<p class="leg">Dall\'ultimo salvataggio non risulta cambiato nessun quadro: '
+              + 'il file verrebbe riscritto uguale.</p>');
+
+        document.getElementById('dsvCorpo').innerHTML = h.join('');
+        // La risposta si da' alla chiusura, non sui pulsanti: cosi' anche l'Esc,
+        // che chiude la modale senza passare da nessun pulsante, vale Annulla
+        // invece di lasciare il salvataggio appeso per sempre.
+        var si = false;
+        d.onclose = function () { d.onclose = null; ris(si); };
+        document.getElementById('dsvNo').onclick = function () { d.close(); };
+        document.getElementById('dsvSi').onclick = function () { si = true; d.close(); };
+        d.showModal();
+    });
+}
+
+// Dice se il file e' finito su disco davvero: la guardia lo chiede prima di
+// lasciar cambiare quadro, e se il salvataggio non riesce non si cambia.
+// Il pulsante e' uno solo: quando la destinazione manca, e' scaduta o punta
+// al file sbagliato, se la fa indicare qui. Prima c'era un secondo pulsante,
+// ma bisognava sapere quando premerlo - e lo si sapeva solo dopo che il
+// salvataggio era gia' andato a vuoto.
+async function salvaSuDisco() {
+    try {
+        if (!F) return false;
+        // La modale sta prima di tutto, anche prima dei selettori di file: da
+        // qui in avanti si scrive, e il clic sul suo Salva vale come gesto
+        // fresco per i selettori che potrebbero servire subito dopo.
+        if (!(await confermaSalva())) return false;
+        // Prima il dipinto, poi i dati: se il dipinto non ce la fa, i dati
+        // restano com'erano invece di nominare un file che non esiste.
+        if (!(await deponiDipinto())) return false;
+        if (!manico) manico = await manicoDB('leggi');
+        if (manico && !(await permesso(manico))) manico = null;
+
+        var titolo = 'In che file scrivo';
+        var spiega = 'Devo sapere dov\'e\' il woowoo2-mie.js del sito: il browser non mi '
+            + 'lascia scrivere da nessuna parte finche\' non me lo indichi tu. Te lo '
+            + 'chiedo adesso, poi se lo ricorda.';
+
+        if (manico) {
+            var esito = await salva(manico);
+            if (esito !== 'altrofile') return esito === true;
+            // Il file che il browser si ricordava non e' quello aperto dal
+            // sito: non l'ho toccato, e adesso mi faccio indicare quello buono.
+            manico = null;
+            titolo = 'Quello non e\' il file del sito';
+            spiega = 'Il file che il browser si ricordava non e\' quello che ho aperto dal '
+                + 'sito: o sta in un\'altra cartella, o qualcuno l\'ha cambiato nel '
+                + 'frattempo. Non l\'ho riscritto. Indicami il woowoo2-mie.js che sta '
+                + 'nella cartella del sito.';
+        }
+
+        var h = await chiediFile(titolo, spiega);
+        if (!h) return false;
+        manico = h;
+        await manicoDB('scrivi', h);
+        return await salva(h, true) === true;   // l'hai appena scelto tu
+    } catch (e) {
+        if (e && e.name !== 'AbortError') alert('Salvataggio fallito: ' + e.message);
+        return false;
+    }
+}
+document.getElementById('bSalva').onclick = function () { salvaSuDisco(); };
+
+async function salva(h, scelto) {
+    if (!F || !h) return false;
+    var testo = F.tipo === 'json' ? componiJson() : componiJs();
+
+    // Prima rete: quello che sto per scrivere si deve poter rileggere. Un file
+    // rotto non se ne accorge nessuno finche' il gioco non parte piu', e li'
+    // non dice nemmeno da dove viene.
+    try {
+        var prova = analizza(testo, F.nome);
+        if (prova.elenco.length !== F.elenco.length) throw new Error(
+            'ne rileggo ' + prova.elenco.length + ' invece di ' + F.elenco.length);
+    } catch (e) {
+        alert('Non scrivo niente: il testo che verrebbe fuori non si rilegge (' +
+            e.message + '). Il file su disco resta com\'e\'.');
+        return false;
+    }
+
+    try {
+        // Seconda rete: il file che sto per riscrivere deve essere quello che ho
+        // aperto dal sito. Il browser si ricorda la destinazione da una volta
+        // all'altra, e se la prima volta si e' sbagliata cartella continua a
+        // scrivere li' senza dirlo: il gioco non vede niente e sembra un
+        // problema suo.
+        var giaLi = await (await h.getFile()).text();
+        if (giaLi !== F.testo) {
+            // Qui la destinazione l'ha tirata fuori il browser dai suoi
+            // ricordi. Non si scrive e non si chiede conferma - a una domanda
+            // si risponde "si" per abitudine e il file continuerebbe ad
+            // andare dove non deve: si torna indietro con un "non e' questo",
+            // e chi ha chiamato si fa indicare la destinazione buona.
+            if (!scelto) return 'altrofile';
+            var dubbio = 'Il file ' + h.name + ' non e\' quello che ho aperto dal sito: '
+                + 'o sta in un\'altra cartella, o qualcuno l\'ha cambiato nel frattempo.';
+            // Qui invece il file l'hai appena indicato tu, quindi potresti
+            // saperne piu' di me - ma un secondo sbaglio di cartella resta il
+            // caso probabile, e prima passava senza che nessuno fiatasse.
+            if (!confirm(dubbio + '\n\nLo riscrivo lo stesso?')) return false;
+        }
+
         var w = await h.createWritable();
         await w.write(testo);
         await w.close();
         F.testo = testo;
+        // Dove comincia e dove finisce il pezzo JSON dentro il testo. Vanno
+        // rifatti: se il quadro nuovo e' piu' lungo di quello vecchio, F.jsonB
+        // resta indietro e finisce in mezzo al JSON appena scritto, cosi' il
+        // salvataggio dopo ricopia la coda due volte e il file non si carica
+        // piu'. Succedeva dal secondo salvataggio in poi, sempre, in silenzio.
+        if (F.tipo === 'json') F.jsonB = F.jsonA + JSON.stringify(F.dati).length;
         if (F.tipo === 'js') F = analizza(testo, F.nome), scegli(idx);  // riallinea gli offset
+        // da qui in avanti "com'e' sul file" vuol dire questo: se no, spostando
+        // il lavoro in un'altra casella, quella lasciata tornerebbe indietro
+        // fino all'apertura dell'editor invece che all'ultimo salvataggio.
+        F.elenco.forEach(function (e, i) {
+            e.g0 = e.g.map(function (r) { return r.slice(); });
+            e.st0 = clona(stileSlot(i)); e.tg0 = clona(targaSlot(i));
+        });
         segnaPulito('salvato in ' + h.name);
-    } catch (e) { alert('Salvataggio fallito: ' + e.message); }
+        return true;
+    } catch (e) { alert('Salvataggio fallito: ' + e.message); return false; }
 }
 
 function componiJson() {
@@ -499,34 +982,78 @@ window.addEventListener('beforeunload', function (e) {
     if (sporco) { e.preventDefault(); e.returnValue = ''; }
 });
 
-// ---- selettore ---------------------------------------------------------
-function riempiSelettore() {
-    var s = document.getElementById('selSchema');
+// ---- i due selettori ---------------------------------------------------
+function riempiSelettori() {
+    costruisciCatalogo();
+    var s = document.getElementById('selSorg');
     s.innerHTML = '';
-    F.elenco.forEach(function (e, i) {
+    var niente = document.createElement('option');
+    niente.value = ''; niente.textContent = '\u2014 scegli da dove partire \u2014';
+    s.appendChild(niente);
+    CAT.forEach(function (e, i) {
         var o = document.createElement('option');
         o.value = i; o.textContent = e.eti;
         s.appendChild(o);
     });
-    s.onchange = function () { scegli(parseInt(s.value, 10)); };
+    s.value = ''; sorgSel = '';
+    s.onchange = cambiaSorgente;
+
+    var d = document.getElementById('selDest');
+    riempiTendina(d, -1);
+    // anche la destinazione parte vuota: finche' non si sceglie da dove
+    // partire non c'e' nessuna casella in lavorazione, e mostrarne una - per
+    // giunta spenta - farebbe credere il contrario
+    var vuoto = document.createElement('option');
+    vuoto.value = ''; vuoto.textContent = '—';
+    d.insertBefore(vuoto, d.firstChild);
+    d.value = '';
+    d.onchange = cambiaDestinazione;
+    aggiornaEtichette();
+}
+// il "(vuota)" deve restare sincero in tutte e due le tendine
+function aggiornaEtichette() {
+    var so = document.getElementById('selSorg').options;
+    CAT.forEach(function (e, i) {
+        if (so[i + 1]) so[i + 1].textContent = e.eti + (vuota(e.g) ? '   (vuota)' : '');
+    });
+    var dd = document.getElementById('selDest').options;   // la prima e' la voce vuota
+    F.elenco.forEach(function (e, i) {
+        if (dd[i + 1]) dd[i + 1].textContent = e.eti + (vuota(e.g) ? '   (vuota)' : '');
+    });
 }
 function scegli(i) {
-    idx = i; G = F.elenco[i].g; pila = []; evid = null;
-    document.getElementById('selSchema').value = i;
+    idx = i; G = F.elenco[i].g; pila = []; evid = null; spostando = false;
+    document.getElementById('selDest').value = i;
+    aggiornaEtichette();
+    abilita(true);
     document.getElementById('bAnnulla').disabled = true;
     document.getElementById('esito').innerHTML = '<span class="nota">premi "Controlla" quando vuoi</span>';
     segnaPulito(sporco ? F.nome + ' - modificato' : F.nome);
     if (sporco) segnaSporco();
     tabellaParametri();
-    if (fondoLocale) { URL.revokeObjectURL(fondoLocale); fondoLocale = null; }
+    // L'anteprima del dipinto si butta solo se il dipinto non c'e' piu': se e'
+    // ancora in attesa del Salva viaggia col lavoro, e buttarla qui faceva
+    // ricomparire il quadro tradizionale appena si cambiava casella.
+    if (fondoLocale && !dipintoNuovo) { URL.revokeObjectURL(fondoLocale); fondoLocale = null; }
     aggiornaBarraGrafica();
+    costruisciTavolozza();
     disegna();
 }
 
 // ---- tavolozza ---------------------------------------------------------
+// Le tessere si mostrano col foglio del quadro su cui stai lavorando: se e'
+// in grafica nostra escono le piastrelle nostre, non piu' quelle del
+// dischetto. Siccome le nostre sono trasparenti, dietro ci va lo stesso fondo
+// neutro del tabellone, altrimenti i binari si perderebbero sul nero.
 function costruisciTavolozza() {
     var cont = document.getElementById('tavolozza');
     cont.innerHTML = '';
+    var sty = stileCorrente();
+    var foglio = atl, cel = CEL, nostre = false;
+    if (sty) {
+        var a2 = immagine(ATL_NOSTRO);
+        if (a2) { foglio = a2; cel = sty.cella || CEL_NOSTRA; nostre = true; }
+    }
     FAMIGLIE.forEach(function (fam) {
         var d = document.createElement('div'); d.className = 'fam';
         var b = document.createElement('b'); b.textContent = fam[0]; d.appendChild(b);
@@ -536,8 +1063,13 @@ function costruisciTavolozza() {
             x.className = 'tes' + (cod === sel ? ' sel' : '');
             x.dataset.cod = cod;
             x.title = cod + ' - ' + (NOMI[cod] || '?');
-            x.style.backgroundImage = 'url(' + ATL + ')';
-            x.style.backgroundPosition = (-cod * 64) + 'px 0';
+            var cv = document.createElement('canvas');
+            cv.width = CEL * SCALA; cv.height = CEL * SCALA;
+            var g = cv.getContext('2d');
+            g.imageSmoothingEnabled = false;
+            if (nostre) { g.fillStyle = FONDO_NEUTRO; g.fillRect(0, 0, cv.width, cv.height); }
+            g.drawImage(foglio, cod * cel, 0, cel, cel, 0, 0, cv.width, cv.height);
+            x.appendChild(cv);
             x.onclick = function () {
                 sel = cod;
                 [].forEach.call(cont.querySelectorAll('.tes'), function (e) { e.classList.remove('sel'); });
@@ -560,6 +1092,11 @@ function costruisciTavolozza() {
 var ATL_NOSTRO = '../images/woowoo2/tiles-nuove.png';
 var CARTELLA = 'images/woowoo2/';   // dove stanno i dipinti e i fogli di piastrelle
 var CEL_NOSTRA = 64;
+var FONDO_NEUTRO = '#26361f';   // il prato di quando il dipinto non c'e'
+// Sfondo tolto di mezzo per guardare i binari. E' solo un modo di vedere: nei
+// dati non cambia niente e il campo `sfondo' resta dov'e'. Il PNG pero' segue
+// lo schermo, quindi con lo sfondo nascosto esce anche lui sul fondo neutro.
+var sfondoVia = false;
 var cache = {};           // percorso -> Image
 var fondoLocale = null;   // dipinto appena scelto, per vederlo subito
 var ricordo = {};         // lettera+schema -> ultimo stile nostro visto
@@ -581,6 +1118,7 @@ function scriviStile(v) {
     F.dati.liv[e.liv].stile[e.n] = v;
     segnaSporco();
     aggiornaBarraGrafica();
+    costruisciTavolozza();
     disegna();
 }
 // Carica una volta sola e ridisegna quando arriva. Restituisce null finche'
@@ -589,7 +1127,10 @@ function immagine(src) {
     var im = cache[src];
     if (!im) {
         im = new Image();
-        im.onload = function () { disegna(); };
+        im.onload = function () {
+            disegna();
+            if (src === ATL_NOSTRO) costruisciTavolozza();   // arrivato tardi
+        };
         im.src = src;
         cache[src] = im;
     }
@@ -602,17 +1143,45 @@ function nomeProposto() {
 }
 
 function aggiornaBarraGrafica() {
+    // senza niente in lavorazione le due barre non hanno di che parlare: non
+    // e' che il file non porti lo stile, e' che non si e' ancora scelto nulla
+    if (!F || idx < 0) {
+        ['selStile', 'bSfondo', 'bSfondoVia', 'bTarga', 'bTargaVia'].forEach(function (id) {
+            document.getElementById(id).disabled = true;
+        });
+        document.getElementById('sfondoNome').textContent = '—';
+        document.getElementById('targaDove').textContent = '—';
+        return;
+    }
     var sty = stileCorrente();
     if (sty) ricordo[schemaCorrente().liv + schemaCorrente().n] = sty;
     var puo = haStile();
     document.getElementById('selStile').disabled = !puo;
     document.getElementById('bSfondo').disabled = !puo;
+    document.getElementById('bSfondoVia').disabled = !sty;
+    document.getElementById('bSfondoVia').textContent = sfondoVia ? 'Mostra sfondo' : 'Nascondi sfondo';
     document.getElementById('selStile').value = sty ? 'nostra' : 'orig';
     var n = document.getElementById('sfondoNome');
     n.textContent = !puo ? 'questo file non porta il campo stile'
         : !sty ? '\u2014'
-        : (sty.sfondo || 'nessun dipinto: scegline uno');
+        : !sty.sfondo ? 'nessun dipinto: scegline uno'
+        : sty.sfondo + (dipintoNuovo && sty.sfondo.indexOf(dipintoNuovo.nome) >= 0
+            ? '   (scelto, va su disco col Salva)' : '');
+
+    var tg = targaCorrente();
+    document.getElementById('bTarga').disabled = !tg;
+    document.getElementById('bTargaVia').disabled = !(tg && tg.suo);
+    document.getElementById('bTarga').textContent = spostando ? 'clicca una casella...' : 'Sposta targa';
+    document.getElementById('targaDove').textContent = !tg ? 'questo file non tiene la posizione'
+        : tg.suo ? 'riga ' + tg.r + ', colonna ' + tg.c
+        : 'di serie, in alto a destra';
 }
+
+document.getElementById('bSfondoVia').onclick = function () {
+    sfondoVia = !sfondoVia;
+    aggiornaBarraGrafica();
+    disegna();
+};
 
 document.getElementById('selStile').onchange = function () {
     if (this.value === 'orig') { scriviStile('orig'); return; }
@@ -624,46 +1193,219 @@ document.getElementById('selStile').onchange = function () {
           sfondo: CARTELLA + nomeProposto() + '?v=1.0' });
 };
 
-// ---- il dipinto: si sceglie un file e si deposita nel sito --------------
+// ---- la targa: dove stanno i numeri nel gioco --------------------------
+// Il gioco scrive i parametri in una targa larga TARGA_C caselle e alta
+// TARGA_R, di serie in alto a destra, sul prato che gira intorno al quadro.
+// Chi lo vuole altrove lo sposta qui: la posizione finisce nel campo `targa`
+// del file di dati, una voce per schema come `stile`, [riga, colonna]
+// dell'angolo in alto a sinistra. Una voce nulla vuol dire "di serie", e
+// quando sono nulle tutte e tre il campo si toglie del tutto, cosi' i file
+// che nessuno ha spostato restano identici a prima.
+var TARGA_C = 3, TARGA_R = 1;
+var spostando = false;
+
+function haTarga() {
+    var e = schemaCorrente();
+    return !!(e && F.dati && e.liv);
+}
+function targaCorrente() {
+    if (!haTarga()) return null;
+    var e = schemaCorrente();
+    var liv = F.dati.liv[e.liv];
+    var t = liv.targa && liv.targa[e.n];
+    if (t && t.length === 2) return { r: t[0], c: t[1], suo: true };
+    return { r: 0, c: COLS - TARGA_C, suo: false };
+}
+function scriviTarga(v) {
+    var e = schemaCorrente();
+    var liv = F.dati.liv[e.liv];
+    if (!liv.targa) {
+        if (!v) return;                       // non c'era e non serve: non lo creo
+        liv.targa = [null, null, null];
+    }
+    liv.targa[e.n] = v;
+    if (liv.targa.every(function (x) { return !x; })) delete liv.targa;
+    segnaSporco();
+    aggiornaBarraGrafica();
+    disegna();
+}
+
+document.getElementById('bTarga').onclick = function () {
+    spostando = !spostando;
+    aggiornaBarraGrafica();
+    disegna();
+};
+document.getElementById('bTargaVia').onclick = function () {
+    spostando = false;
+    scriviTarga(null);
+};
+
+// ---- la cartella dei dipinti: si indica una volta sola ------------------
+// Nei dati il percorso e' sempre images/woowoo2/<nome>, quindi la destinazione non
+// e' una scelta: e' una sola. Chiederla a ogni dipinto serviva solo a
+// sbagliarla, ed e' successo - il jpeg finiva altrove e il gioco cercava un
+// file che non c'era. Qui la cartella si indica una volta, il browser se la
+// ricorda, e da li' in avanti l'editor ci scrive dentro da solo.
+var cartella = null;
+
+// Il nome della cartella il browser non lo dice, ma il contenuto si': se qui
+// dentro c'e' lo stesso tiles-nuove.png che serve il server, questa e' la
+// cartella del sito e non un'altra che si chiama uguale. Il segno di
+// riconoscimento era tiles.png, che adesso sta in dev/ e qui non si trova
+// piu'; tiles-nuove.png e' il nostro foglio di piastrelle, sta in
+// images/woowoo2 e lo serve il sito, quindi fa lo stesso lavoro.
+async function cartellaGiusta(dir) {
+    try {
+        var qui = await (await dir.getFileHandle('tiles-nuove.png')).getFile();
+        var la = await fetch('../' + CARTELLA + 'tiles-nuove.png?t=' + Date.now(), { cache: 'no-store' });
+        return la.ok && (await la.blob()).size === qui.size;
+    } catch (e) { return false; }
+}
+
+async function cartellaDipinti() {
+    if (!cartella) cartella = await manicoDB('leggi', null, 'sfondi');
+    if (cartella && !(await permesso(cartella))) cartella = null;
+    if (cartella && !(await cartellaGiusta(cartella))) cartella = null;
+    if (cartella) return cartella;
+
+    // La cartella si chiede dal pannello e non da un alert: il selettore lo
+    // apre il clic sul pulsante li' dentro. Con l'alert davanti il browser
+    // non considera piu' "fresco" il clic di partenza e rifiuta di aprirlo -
+    // "Must be handling a user gesture".
+    var dir = await new Promise(function (ris) {
+        var d = document.getElementById('dlgCartella');
+        document.getElementById('dcaNo').onclick = function () { d.close(); ris(null); };
+        document.getElementById('dcaSi').onclick = async function () {
+            d.close();
+            try { ris(await window.showDirectoryPicker({ id: 'woowoo2sfondi', mode: 'readwrite' })); }
+            catch (e) { if (e && e.name !== 'AbortError') alert('Non riuscito: ' + e.message); ris(null); }
+        };
+        d.showModal();
+    });
+    if (!dir) return null;
+
+    if (!(await cartellaGiusta(dir))) {
+        alert('Quella non e\' la images/woowoo2 del sito: qui dentro non c\'e\' il '
+            + 'tiles-nuove.png che serve il server.\n\nNon ho salvato niente.');
+        return null;
+    }
+    cartella = dir;
+    await manicoDB('scrivi', dir, 'sfondi');
+    return dir;
+}
+
+// Il dipinto scelto e non ancora su disco: {nome, file}. Sta qui in mezzo
+// come le caselle modificate del quadro, e parte col Salva insieme a loro.
+var dipintoNuovo = null;
+
+// Posa su disco il dipinto in attesa. Va chiamata dal gestore di un clic:
+// se manca la cartella si apre un selettore, e quello vuole un clic fresco.
+async function deponiDipinto() {
+    if (!dipintoNuovo) return true;
+    var dir = await cartellaDipinti();
+    if (!dir) return false;
+    try {
+        var fh = await dir.getFileHandle(dipintoNuovo.nome, { create: true });
+        var w = await fh.createWritable();
+        await w.write(await dipintoNuovo.file.arrayBuffer());
+        await w.close();
+    } catch (e) {
+        alert('Il dipinto non e\' andato su disco: ' + e.message);
+        return false;
+    }
+
+    // Rete: il file lo deve vedere anche il server, se no nei dati resterebbe
+    // il nome di qualcosa che il gioco non trova. Si confronta la lunghezza:
+    // non basta che un file con quel nome esista.
+    var dove = CARTELLA + dipintoNuovo.nome;
+    var ris = null;
+    try { ris = await fetch('../' + dove + '?t=' + Date.now(), { cache: 'no-store' }); } catch (e2) { }
+    if (!ris || !ris.ok || (await ris.blob()).size !== dipintoNuovo.file.size) {
+        alert('Il dipinto non e\' arrivato in ' + dove + ': il server da li\' non me lo '
+            + 'rid\u00e0.\n\nNon salvo nemmeno i dati, se no resterebbero a nominare un '
+            + 'file che non c\'e\'.');
+        return false;
+    }
+    dipintoNuovo = null;
+    aggiornaBarraGrafica();
+    return true;
+}
+
+// ---- il dipinto: si sceglie il file, la cartella la sappiamo gia' ------
 document.getElementById('bSfondo').onclick = async function () {
     try {
+        // Si pesca dove si vuole: Download, Immagini, dove l'ha lasciato il
+        // disegnatore. Qui non si scrive niente da nessuna parte - il dipinto
+        // resta in memoria e va su disco col Salva, come le caselle del
+        // quadro. Cosi' se cambi idea basta non salvare.
         var scelti = await window.showOpenFilePicker({
             types: [{ description: 'Immagine', accept: { 'image/*': ['.jpg', '.jpeg', '.png', '.webp'] } }]
         });
         var file = await scelti[0].getFile();
-        var dest = await window.showSaveFilePicker({
-            suggestedName: nomeProposto(),
-            types: [{ description: 'Immagine', accept: { 'image/jpeg': ['.jpg', '.jpeg'] } }]
-        });
-        var w = await dest.createWritable();
-        await w.write(await file.arrayBuffer());
-        await w.close();
+        dipintoNuovo = { nome: nomeProposto(), file: file };
+
         if (fondoLocale) URL.revokeObjectURL(fondoLocale);
         fondoLocale = URL.createObjectURL(file);
         var sty = stileCorrente();
         if (!sty) sty = { atlante: CARTELLA + 'tiles-nuove.png?v=1.0', cella: CEL_NOSTRA, sfondo: '' };
-        sty.sfondo = CARTELLA + dest.name + '?v=1.0';
+        sty.sfondo = CARTELLA + dipintoNuovo.nome + '?v=1.0';
         scriviStile(sty);
     } catch (err) { if (err && err.name !== 'AbortError') alert('Non riuscito: ' + err.message); }
 };
 
 // ---- il PNG da dare al disegnatore -------------------------------------
-// Il quadro nudo: piastrelle del dischetto, niente reticolo, niente lettere,
-// niente segnacci. Serve come traccia per dipingere il paesaggio sotto.
+// Il quadro nudo: niente reticolo, niente lettere, niente segnacci. La
+// grafica e' quella che vedi sullo schermo, non una fissa: se il quadro e' in
+// stile dischetto escono le piastrelle del dischetto, se e' in grafica nostra
+// escono le piastrelle nostre sopra il dipinto, e dove il dipinto non c'e'
+// resta il fondo neutro - che e' proprio la traccia da dare a chi dipinge.
+// Prima disegnava sempre e comunque col foglio del dischetto, e cambiare
+// stile non cambiava il file salvato.
 function pngDelQuadro() {
     var t = document.createElement('canvas');
     t.width = COLS * CEL * SCALA; t.height = RIGHE * CEL * SCALA;
     var c2 = t.getContext('2d');
     c2.imageSmoothingEnabled = false;
-    for (var r = 0; r < RIGHE; r++) for (var c = 0; c < COLS; c++)
-        c2.drawImage(atl, G[r][c] * CEL, 0, CEL, CEL,
+    var sty = stileCorrente();
+    var foglio = atl, cel = CEL;
+    if (sty) {
+        var a2 = immagine(ATL_NOSTRO);
+        if (a2) { foglio = a2; cel = sty.cella || CEL_NOSTRA; }
+        var src = sfondoVia ? null : (fondoLocale || (sty.sfondo ? '../' + sty.sfondo : null));
+        var f2 = src ? immagine(src) : null;
+        if (f2) c2.drawImage(f2, 0, 0, t.width, t.height);
+        else { c2.fillStyle = FONDO_NEUTRO; c2.fillRect(0, 0, t.width, t.height); }
+    }
+    for (var r = 0; r < RIGHE; r++) for (var c = 0; c < COLS; c++) {
+        var cod = G[r][c];
+        // con la grafica nostra il paesaggio non e' fatto di piastrelle: si
+        // posano solo binari e stazioni, il resto lo fa il fondo
+        if (sty && !D.rotta[cod] && !D.staz[cod]) continue;
+        c2.drawImage(foglio, cod * cel, 0, cel, cel,
             c * CEL * SCALA, r * CEL * SCALA, CEL * SCALA, CEL * SCALA);
+    }
+    // Dove va la targa si stende un rettangolo nero pieno: nel gioco quella
+    // fetta di quadro sta sotto al riquadro dei numeri e non si vede. Chi
+    // dipinge lo sfondo cosi' lo sa, e non ci spreca paesaggio sopra.
+    var tg = targaCorrente();
+    if (tg) {
+        c2.fillStyle = '#000';
+        c2.fillRect(tg.c * CEL * SCALA, tg.r * CEL * SCALA,
+                    TARGA_C * CEL * SCALA, TARGA_R * CEL * SCALA);
+    }
     return t;
 }
 document.getElementById('bPng').onclick = function () {
     if (!G) return;
     var e = schemaCorrente();
-    var nome = 'quadro-' + (e.liv ? e.liv + e.n : 'x') + '.png';
+    // Se il foglio nostro non e' ancora arrivato il PNG uscirebbe col foglio
+    // del dischetto senza dirlo: meglio fermarsi e farlo riprovare.
+    if (stileCorrente() && !immagine(ATL_NOSTRO)) {
+        alert('Le piastrelle nostre non sono ancora caricate. Riprova fra un istante.');
+        return;
+    }
+    var nome = 'quadro-' + (e.liv ? e.liv + e.n : 'x')
+             + (stileCorrente() ? '-nostro' : '') + '.png';
     pngDelQuadro().toBlob(function (b) {
         var u = URL.createObjectURL(b);
         var a = document.createElement('a');
@@ -675,7 +1417,7 @@ document.getElementById('bPng').onclick = function () {
 // ---- prato dappertutto -------------------------------------------------
 document.getElementById('bAzzera').onclick = function () {
     if (!G) return;
-    if (!confirm('Metto prato in tutte e ottanta le caselle di ' + schemaCorrente().eti + '?')) return;
+    if (!confirm('Metto prato in tutte e le caselle di ' + schemaCorrente().eti + '?')) return;
     var passo = [];
     for (var r = 0; r < RIGHE; r++) for (var c = 0; c < COLS; c++) {
         if (G[r][c] === PRATO) continue;
@@ -692,7 +1434,7 @@ function disegna() {
     ctx.clearRect(0, 0, tela.width, tela.height);
     if (!G) {
         ctx.fillStyle = '#98a2b0'; ctx.font = '16px sans-serif';
-        ctx.fillText('Apri un file per cominciare', 24, 40);
+        ctx.fillText('Scegli da dove partire, nella tendina qui sopra', 24, 40);
         return;
     }
     // Con la grafica nostra il paesaggio non e' fatto di piastrelle: si stende
@@ -702,10 +1444,10 @@ function disegna() {
     if (sty) {
         var a2 = immagine(ATL_NOSTRO);
         if (a2) { foglio = a2; cel = sty.cella || CEL_NOSTRA; }
-        var src = fondoLocale || (sty.sfondo ? '../' + sty.sfondo : null);
+        var src = sfondoVia ? null : (fondoLocale || (sty.sfondo ? '../' + sty.sfondo : null));
         var f2 = src ? immagine(src) : null;
         if (f2) ctx.drawImage(f2, 0, 0, tela.width, tela.height);
-        else { ctx.fillStyle = '#26361f'; ctx.fillRect(0, 0, tela.width, tela.height); }
+        else { ctx.fillStyle = FONDO_NEUTRO; ctx.fillRect(0, 0, tela.width, tela.height); }
     }
     for (var r = 0; r < RIGHE; r++) for (var c = 0; c < COLS; c++) {
         var cod = G[r][c];
@@ -716,10 +1458,10 @@ function disegna() {
     // reticolo
     ctx.strokeStyle = 'rgba(255,255,255,.12)'; ctx.lineWidth = 1;
     for (var i = 0; i <= COLS; i++) {
-        ctx.beginPath(); ctx.moveTo(i * 64 + .5, 0); ctx.lineTo(i * 64 + .5, 512); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(i * CEL * SCALA + .5, 0); ctx.lineTo(i * CEL * SCALA + .5, tela.height); ctx.stroke();
     }
     for (var j = 0; j <= RIGHE; j++) {
-        ctx.beginPath(); ctx.moveTo(0, j * 64 + .5); ctx.lineTo(640, j * 64 + .5); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(0, j * CEL * SCALA + .5); ctx.lineTo(tela.width, j * CEL * SCALA + .5); ctx.stroke();
     }
     // lettere delle stazioni
     var n = 0;
@@ -732,8 +1474,30 @@ function disegna() {
         ctx.fillStyle = '#fff'; ctx.fillText(L, c * 64 + 32, r * 64 + 26);
     }
     ctx.textAlign = 'left';
+    disegnaTarga();
     if (evid) velo();
     if (marchi.length) segnaErrori();
+}
+
+// L'ingombro della targa, come lo vedra' il gioco. Non e' una piastrella:
+// non sta nella griglia, sta solo nel campo `targa`.
+function disegnaTarga() {
+    var t = targaCorrente();
+    if (!t) return;
+    var x = t.c * CEL * SCALA, y = t.r * CEL * SCALA;
+    var w = TARGA_C * CEL * SCALA, h = TARGA_R * CEL * SCALA;
+    ctx.fillStyle = spostando ? 'rgba(224,192,111,.28)' : 'rgba(8,10,8,.55)';
+    ctx.fillRect(x, y, w, h);
+    ctx.setLineDash([6, 4]);
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = spostando ? '#e0c06f' : 'rgba(255,255,255,.55)';
+    ctx.strokeRect(x + 1, y + 1, w - 2, h - 2);
+    ctx.setLineDash([]);
+    ctx.font = 'bold 12px ui-monospace,Consolas,monospace';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = spostando ? '#e0c06f' : 'rgba(255,255,255,.7)';
+    ctx.fillText('TARGA', x + w / 2, y + h / 2 + 4);
+    ctx.textAlign = 'left';
 }
 
 function velo() {
@@ -769,6 +1533,23 @@ var giu = null;
 tela.addEventListener('pointerdown', function (e) {
     if (!G) return;
     var p = cella(e);
+    // Il tasto destro annulla l'ultima mossa, una per clic: e' la stessa cosa
+    // di Ctrl+Z ma senza staccare la mano dal quadro. Se si stava spostando la
+    // targa, invece, il destro annulla lo spostamento - li' non c'e' ancora
+    // niente da disfare. Prima il destro dipingeva come il sinistro.
+    if (e.button === 2) {
+        if (spostando) { spostando = false; aggiornaBarraGrafica(); disegna(); }
+        else annulla();
+        giu = null;
+        return;
+    }
+    if (spostando) {
+        // la casella cliccata e' l'angolo in alto a sinistra, e la targa
+        // deve restare dentro il tabellone
+        spostando = false;
+        scriviTarga([Math.min(p.r, RIGHE - TARGA_R), Math.min(p.c, COLS - TARGA_C)]);
+        return;
+    }
     giu = { r: p.r, c: p.c, cod: G[p.r][p.c], alt: e.altKey };
     tela.setPointerCapture(e.pointerId);
 });
@@ -806,6 +1587,7 @@ tela.addEventListener('contextmenu', function (e) { e.preventDefault(); });
 
 document.addEventListener('keydown', function (e) {
     if ((e.ctrlKey || e.metaKey) && e.key === 'z') { e.preventDefault(); annulla(); }
+    if (e.key === 'Escape' && spostando) { spostando = false; aggiornaBarraGrafica(); disegna(); }
 });
 document.getElementById('bAnnulla').onclick = annulla;
 
@@ -929,11 +1711,20 @@ function controlla() {
         }
     }
 
-    // 2. campo info
+    // 2. la casella nera del dischetto e la targa.
+    // Da quando i numeri stanno nel quadro comandi la casella nera e' solo
+    // paesaggio: puo' anche non esserci. Quello che conta e' che la targa non
+    // finisca sopra ai binari.
     var info = 0;
     for (r = 0; r < RIGHE; r++) for (c = 0; c < COLS; c++) if (G[r][c] === D.info) info++;
-    if (info === 0) err.push('manca il campo info (codice ' + D.info + ')');
-    if (info > 1) err.push('ci sono ' + info + ' campi info, ne serve uno solo');
+    if (info > 1) nota.push('ci sono ' + info + ' caselle nere (codice ' + D.info + '): sono solo decorazione');
+    var tg = targaCorrente();
+    if (tg) {
+        var sotto = 0;
+        for (r = tg.r; r < tg.r + TARGA_R; r++) for (c = tg.c; c < tg.c + TARGA_C; c++)
+            if (dentro(r, c) && (D.rotta[G[r][c]] || D.staz[G[r][c]])) sotto++;
+        if (sotto) err.push('la targa copre ' + sotto + ' caselle di binario: spostala');
+    }
 
     // 3. stazioni
     var staz = [];
@@ -1067,7 +1858,7 @@ function cella_(tag, testo, cls) {
     return e;
 }
 function parametriDelloSchema() {
-    if (!F) return [];
+    if (!F || idx < 0) return [];
     if (F.tipo === 'json') {
         var L = F.elenco[idx].liv;
         return F.dati.liv[L].sub.map(function (p, n) { return { p: p, eti: L + (n + 1) }; });
@@ -1078,13 +1869,21 @@ function parametriDelloSchema() {
 // presa di servizio per il collaudo: permette di provare analisi e
 // ricomposizione senza passare dal selettore di file di Chrome.
 window.__ed = {
+    f: function () { return F; }, idx: function () { return idx; },
     analizza: analizza,
     apri: apriTesto,
+    avvio: avvio,
+    png: pngDelQuadro,
+    sorgente: applicaSorgente,
+    dest: cambiaDestinazione,
+    catalogo: function () { return CAT; },
     scegli: scegli,
     carica: function (f) { F = f; idx = 0; G = F.elenco[0].g; },
     componi: function () { return F.tipo === 'json' ? componiJson() : componiJs(); },
     controlla: controlla, mostraVie: mostraVie, trovaGola: trovaGola, PUNTA: PUNTA
 };
+
+avvio();
 
 })();
 </script>

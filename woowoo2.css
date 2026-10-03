@@ -72,7 +72,7 @@ html, body {
 #header-bar {
     position: absolute;
     top: 6px; left: 12px;
-    width: 1000px; height: 40px;
+    width: 1000px; height: 46px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -83,6 +83,54 @@ html, body {
     display: flex;
     align-items: center;
     gap: 8px;
+}
+
+.header-center {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    gap: 10px;
+}
+
+/* I tre numeri che prima stavano nella targa dentro al quadro. Qui si leggono
+   sempre nello stesso posto, invece di cercarli nel disegno a ogni schema:
+   uno per casella e grande, come nell'originale. Le caselle non sono larghe
+   uguali - quella del tempo si porta dietro la barra. */
+.quadrante {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2px 14px;
+    border-radius: 5px;
+    line-height: 1;
+    background: rgba(0, 0, 0, 0.42);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+}
+.quadrante span {
+    font-size: 9px;
+    letter-spacing: 1px;
+    opacity: 0.7;
+    white-space: nowrap;
+    margin-bottom: 2px;
+}
+.quadrante b {
+    font-size: 24px;
+    font-weight: bold;
+    font-variant-numeric: tabular-nums;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
+}
+.quadrante.ok b { color: #6ee7a0; }
+.quadrante.ko b { color: #f87171; }
+/* La barra non sta sotto il numero: sta sul bordo basso della casella, dentro
+   lo spazio che le si lascia col padding. Cosi' il numero resta grande senza
+   far crescere la fascia. */
+.quadrante.tempo { position: relative; padding-bottom: 6px; min-width: 76px; }
+.quadrante.tempo b { color: #ffe000; }
+.quadrante.tempo .barra-esterna {
+    position: absolute;
+    left: 6px; right: 6px; bottom: 2px;
+    height: 4px;
 }
 
 .lang-switch-header { display: flex; gap: 4px; }
@@ -122,24 +170,13 @@ html, body {
 .badge.ok b { color: #6ee7a0; }
 .badge.ko b { color: #f87171; }
 
-.timer-box {
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-    padding: 4px 10px;
-    border-radius: 5px;
-    background: rgba(0, 0, 0, 0.35);
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    min-width: 128px;
-}
-.timer-box .riga { display: flex; align-items: baseline; gap: 6px; font-size: 11px; }
-.timer-box b { font-variant-numeric: tabular-nums; font-size: 13px; margin-left: auto; }
 /* spia dell'acceleratore: compare solo col tasto destro premuto */
 #w2-turbo {
     font-style: normal;
     font-weight: bold;
-    font-size: 11px;
+    font-size: 9px;
     color: #ffb020;
+    letter-spacing: 0;
 }
 
 .barra-esterna {
@@ -176,79 +213,92 @@ html, body {
 }
 #w2-canvas { display: block; width: 960px; height: 576px; cursor: pointer; }
 
-/* === PANNELLO LATERALE ===
-   Il tabellone 15x9 si prende tutta la larghezza e il pannello non c'e' piu'
-   nelle due pagine. Le regole restano qui perche' il motore continua a
-   riempire #w2-coda se lo trova, e rimetterlo e' solo un blocco di HTML. */
-.pannello {
-    flex: 1;
-    height: 512px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.pannello-titolo {
-    font-size: 11px;
-    letter-spacing: 1.2px;
-    font-weight: bold;
-    opacity: 0.75;
-    padding-bottom: 2px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.18);
-}
-
+/* === ORARIO DEI TRENI ===
+   Sta in fondo a sinistra, non di lato: il tabellone 15x9 si prende tutta la
+   larghezza e un pannello a fianco non ci starebbe piu'. Una colonna sola e
+   stretto, come un vero tabellone delle partenze. Non sta dentro la barra:
+   qui sotto e' l'unica cosa che ha bisogno di altezza, e da solo puo'
+   scendere fino al bordo della pagina (638..746) mentre la barra finisce a
+   716 e il piedino gli passa a fianco. Due dati per voce: da dove a dove, e
+   a che punto e'; ne stanno a vista quattro o cinque, le altre si scorrono. */
 #w2-coda {
-    flex: 1;
+    position: absolute;
+    top: 638px; left: 22px;
+    width: 200px; height: 108px;
+    box-sizing: border-box;
+    padding: 4px;
+    border-radius: 5px;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.14);
     overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-auto-rows: min-content;
+    align-content: start;
+    gap: 3px;
 }
 .w2-voce {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 5px 8px;
+    gap: 6px;
+    padding: 2px 6px;
     border-radius: 4px;
-    font-size: 12px;
+    font-size: 11px;
     background: rgba(0, 0, 0, 0.32);
     border-left: 3px solid #f0c000;
 }
+.w2-voce b { white-space: nowrap; }
+.w2-voce span { text-align: right; }
+/* FERMO: il treno e' sul binario e non va avanti, e' la cosa da guardare */
 .w2-voce.allarme { border-left-color: #f87171; background: rgba(120, 20, 20, 0.45); }
-.w2-voce span { opacity: 0.7; font-size: 11px; }
-.w2-vuoto { font-size: 11px; opacity: 0.5; padding: 6px 2px; }
-
-.scheda {
-    padding: 8px;
-    border-radius: 5px;
-    font-size: 11px;
-    line-height: 1.5;
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-}
-.scheda b { color: #ffe680; }
+.w2-voce b { font-variant-numeric: tabular-nums; }
+.w2-voce span { opacity: 0.7; font-size: 10px; font-variant-numeric: tabular-nums; }
+.w2-vuoto { font-size: 11px; opacity: 0.5; padding: 4px 2px; }
 
 /* === BARRA INFERIORE === */
+/* Nella barra restano i soli comandi, tenuti a destra: l'orario e il campo
+   informativo scendono piu' in basso di lei e stanno per conto loro. Sopra,
+   il tabellone finisce a 635; sotto, a 720, comincia la riga del piedino. */
 #barra-inferiore {
     position: absolute;
-    bottom: 56px; left: 22px;
-    width: 980px; height: 52px;
+    bottom: 34px; left: 234px;
+    width: 768px; height: 78px;
     display: flex;
-    align-items: center;
-    gap: 12px;
+    align-items: stretch;
+    justify-content: flex-end;
 }
 
+/* Anche il campo informativo scende fino in fondo, a fianco dell'orario:
+   sotto non c'e' niente, e cosi' i messaggi lunghi di fine quadro ci stanno
+   per intero senza stringere i comandi. Sta fuori dalla barra, come
+   l'orario, per la stessa ragione: e' piu' alto di lei. */
 #w2-messaggio {
-    flex: 1;
-    height: 44px;
+    position: absolute;
+    top: 638px; left: 234px;
+    width: 220px; height: 108px;
+    box-sizing: border-box;
     display: flex;
     align-items: center;
-    padding: 0 12px;
+    padding: 6px 12px;
     border-radius: 5px;
     font-size: 12px;
+    line-height: 1.45;
     background: rgba(0, 0, 0, 0.35);
     border: 1px solid rgba(255, 255, 255, 0.14);
 }
+
+/* I comandi su una riga sola: le due tendine del quadro e, di seguito, i due
+   tasti che agiscono sul quadro scelto. I rimandi al resto del sito non
+   stanno qui, stanno nel piedino. */
+#w2-comandi {
+    width: 500px;
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+#w2-comandi select { flex: 1; min-width: 0; }
 
 .bottone {
     height: 38px;
@@ -337,12 +387,12 @@ html, body {
     cursor: pointer;
 }
 
-/* === PIEDINO === */
+/* === PIEDINO ===
+   Una riga sola in fondo, a destra dell'orario che scende fin qui: i due
+   link di legge a sinistra, i tre rimandi a destra. */
 .legal-links-w2 {
     position: absolute;
-    bottom: 30px; left: 0;
-    width: 1024px;
-    text-align: center;
+    bottom: 10px; left: 466px;
     font-size: 11px;
     opacity: 0.75;
 }
@@ -350,22 +400,43 @@ html, body {
 .legal-links-w2 a:hover { text-decoration: underline; }
 .legal-links-w2 .sep { margin: 0 6px; opacity: 0.5; }
 
+/* I rimandi fuori dal gioco, nello stile degli altri giochi del sito:
+   tastini bassi in fondo a destra. TUTTI I GIOCHI e' l'uscita verso il
+   resto del sito, quindi e' quello giallo. */
 .link-giochi-w2 {
     position: absolute;
-    bottom: 6px; left: 0;
-    width: 1024px;
+    bottom: 4px; right: 22px;
     display: flex;
-    justify-content: center;
     gap: 6px;
 }
 .pulsante-link-w2 {
-    padding: 4px 12px;
+    height: 26px;
+    line-height: 24px;
+    padding: 0 12px;
+    box-sizing: border-box;
     border-radius: 4px;
     font-size: 11px;
+    font-weight: bold;
+    white-space: nowrap;
     text-decoration: none;
     color: #fff;
-    background: rgba(255, 255, 255, 0.12);
-    border: 1px solid rgba(255, 255, 255, 0.22);
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    transition: all 0.2s;
 }
-.pulsante-link-w2:hover { background: rgba(255, 255, 255, 0.22); }
-.pulsante-home-w2 { background: #f0c000; color: #2a1a00; border-color: #ffe680; font-weight: bold; }
+.pulsante-link-w2:hover {
+    background: rgba(255, 255, 255, 0.22);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+.pulsante-home-w2 {
+    background: #f0c000;
+    color: #2a1a00;
+    border-color: #ffe680;
+    box-shadow: 0 0 8px rgba(240, 192, 0, 0.35);
+}
+.pulsante-home-w2:hover {
+    background: #ffd720;
+    color: #2a1a00;
+    border-color: #fff2b0;
+    box-shadow: 0 0 14px rgba(240, 192, 0, 0.6);
+}

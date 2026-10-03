@@ -78,11 +78,22 @@ woowoo-en.html
 woowoo.css
 woowoo.js
 
-# Materiale che viene dal dischetto Kingsoft del 1992: le piastrelle estratte
-# da Loco1.ilbm e i quaranta cinque quadri originali. Sono un riferimento
-# tecnico, non roba nostra, e il repo e' pubblico: restano fuori.
-# woowoo2-mie.js oggi e' una copia degli stessi quadri; quando ci saranno
-# dentro solo schemi nostri lo si toglie da questo elenco e lo si versiona.
-images/woowoo2/tiles.png
-woowoo2-dati.js
-woowoo2-mie.js
+# La cartella dev/ tiene il materiale che viene dal dischetto Kingsoft del
+# 1992: le piastrelle estratte da Loco1.ilbm, i quarantacinque quadri
+# originali e le copie di sicurezza. Sono un riferimento tecnico, non roba
+# nostra, e questo repo e' pubblico. Sta tutto li' dentro perche' dev/ non si
+# carica mai sul server per FTP: una cartella sola invece di una regola per
+# file.
+#
+# La regola e' ribaltata: QUI DENTRO E' TUTTO FUORI, tranne quello che si
+# nomina sotto. Cosi' un file nuovo buttato in dev/ e' escluso da solo, senza
+# doversene ricordare. Gli strumenti nostri, che di Kingsoft non hanno niente,
+# si versionano uno per uno.
+dev/*
+!dev/woowoo2-editor.html
+!dev/woowoo2-innesto-vecchio.js
+!dev/woowoo2-schemi-nostri.json
+
+# woowoo2-mie.js invece si versiona: era una copia dei quadri del dischetto,
+# ma i livelli N..X sono stati svuotati e resta disegnata solo M, che e' roba
+# nostra. La copia integra di prima e' in dev/dischetto/.
