@@ -34,7 +34,7 @@
     <meta http-Equiv="Pragma" Content="no-cache">
     <meta http-Equiv="Expires" Content="0">
 
-    <link rel="stylesheet" href="woowoo2.css?v=1.9" />
+    <link rel="stylesheet" href="woowoo2.css?v=2.4" />
 
     <script>
         // Google Analytics: gtag() esiste sempre, lo script si carica solo fuori da dev_mode
@@ -89,7 +89,7 @@
 
                 <div class="header-center">
                     <div class="quadrante ok"><span>CONSEGNE</span><b id="w2-consegne">0</b></div>
-                    <div class="quadrante ko"><span>TRENI</span><b id="w2-treni">0</b></div>
+                    <div class="quadrante ko"><span>SCONTRI</span><b id="w2-scontri">0</b></div>
                     <div class="quadrante tempo">
                         <span>TEMPO <i id="w2-turbo"></i></span>
                         <b id="w2-tempo">0</b>
@@ -99,7 +99,6 @@
 
                 <div class="header-right">
                     <div class="badge"><span>QUADRO:</span> <b id="w2-livello">A &middot; 1/9</b></div>
-                    <div class="badge"><span>PUNTI:</span> <b id="w2-punti">00000</b></div>
                 </div>
             </div>
 
@@ -124,7 +123,7 @@
                     <select id="w2-scelta" title="Scegli un quadro del dischetto"></select>
                     <select id="w2-scelta2" title="Scegli un quadro dei tuoi"></select>
                     <button class="bottone" id="w2-pausa" aria-pressed="false" title="Ferma il gioco: il tasto lampeggia finche' si e' in pausa">PAUSA</button>
-                    <button class="bottone principale" onclick="location.reload()">RICOMINCIA</button>
+                    <button class="bottone principale" id="w2-ricomincia" title="Rifa' da capo il quadro scelto">RICOMINCIA</button>
                 </div>
             </div>
 
@@ -152,13 +151,14 @@
     <!-- Due file di dati: A..L sono il dischetto, M..X sono i livelli nostri.
          Il dischetto sta in dev/, che non si carica sul server: quello e'
          materiale Kingsoft, riferimento tecnico e non roba da pubblicare. -->
-    <script src="dev/woowoo2-dati.js?v=1.5"></script>
+    <script src="dev/woowoo2-dati.js?v=1.6"></script>
     <!-- I codici delle piastrelle: questi si pubblicano, servono anche ai
          quadri nostri. Vanno dopo il dischetto, che se li trovasse davanti li
          cancellerebbe. -->
-    <script src="woowoo2-codici.js?v=1.0"></script>
-    <script src="woowoo2-mie.js?v=3.7"></script>
-    <script src="woowoo2.js?v=1.53"></script>
+    <script src="woowoo2-codici.js?v=1.2"></script>
+    <script src="woowoo2-mie.js?v=3.9"></script>
+    <script src="woowoo2-binari.js?v=1.9"></script>
+    <script src="woowoo2.js?v=1.65"></script>
 </body>
 
 </html>

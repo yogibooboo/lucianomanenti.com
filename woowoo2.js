@@ -43,11 +43,27 @@
     function disegnato(L) {
         return D.liv[L] && D.liv[L].schemi.some(function (g) {
             return g.some(function (r) {
-                return r.some(function (v) { return v !== 33; });
+                return r.some(function (v) { return v !== 0; });
             });
         });
     }
     var NOSTRI = MIEI ? MIEI.ordine.filter(disegnato) : [];
+
+    // Nella versione pubblicata il dischetto non si vede: si gioca soltanto sui
+    // quadri nostri, e a video non si chiamano M, N, O... ma A, B, C..., perche'
+    // per chi gioca sono il primo, il secondo, il terzo livello. La lettera vera
+    // resta quella interna -- serve a pescare dentro D.liv -- e quella da
+    // mostrare la da' `nome`. In dev_mode non cambia niente: si vedono tutte e
+    // due le tendine e le lettere sono quelle vere.
+    var DEV = (function () {
+        try { return localStorage.getItem('dev_mode') === '1'; } catch (e) { return false; }
+    })();
+    var CAMPAGNA = (DEV || !NOSTRI.length) ? LIVELLI : NOSTRI;
+    function nome(L) {
+        if (CAMPAGNA === LIVELLI) return L;
+        var i = CAMPAGNA.indexOf(L);
+        return i >= 0 ? 'ABCDEFGHIJKL'.charAt(i) : L;
+    }
 
     // ---- grafica per quadro ---------------------------------------------
     // Ogni schema porta con se' il suo stile, nel campo `stile` del file di
@@ -105,18 +121,19 @@
                      : 'Consegna in stazione {S}. {A} di {B}.',
         sbagliata: EN ? 'Wrong station: the train for {D} ended up in {S}.'
                       : "Stazione sbagliata: il treno per {D} e' finito in {S}.",
-        scontro: EN ? 'Crash: two trains lost, {A} of {B}.'
-                    : 'Scontro: due treni persi, {A} di {B}.',
+        scontro: EN ? 'Crash! Crashes left: {A} of {B}.'
+                    : 'Scontro! Scontri rimasti: {A} di {B}.',
         vinto: EN ? 'Board cleared' : 'Quadro superato',
         perso: EN ? 'Game over' : 'Partita finita',
-        pOrdini: EN ? 'Delivery points' : 'Punti consegne',
-        pTempo: EN ? 'Time points' : 'Punti tempo',
-        pScontri: EN ? 'Crash points' : 'Punti scontri',
-        pExtra: EN ? 'Bonus points' : 'Punti extra',
-        pLivello: EN ? 'Level points' : 'Punti livello',
-        totale: EN ? 'Total' : 'Totale',
+        finale: EN ? 'Congratulations!' : 'Complimenti!',
+        finaleTesto: EN ? 'You have cleared every board in the game. New ones are on the way soon.'
+                        : 'Hai superato tutti i quadri del gioco. Presto se ne aggiungeranno dei nuovi.',
+        rConsegne: EN ? 'Deliveries' : 'Consegne',
+        rScontri: EN ? 'Crashes' : 'Scontri',
+        rTempo: EN ? 'Time left' : 'Tempo avanzato',
         avanti: EN ? 'Next board' : 'Quadro successivo',
-        ancora: EN ? 'Play again' : 'Ricomincia',
+        ripeti: EN ? 'Replay this board' : 'Ripeti il quadro',
+        scegli: EN ? 'Choose a board' : 'Scegli il quadro',
         viaggio: EN ? 'running {N} s' : 'in viaggio {N} s',
         sosta: EN ? 'leaving in {N} s' : 'in partenza tra {N} s',
         fermo: EN ? 'HELD {F} s \u00b7 running {N} s' : 'FERMO {F} s \u00b7 viaggio {N} s',
@@ -124,7 +141,8 @@
         vuoto: EN ? 'no orders' : 'nessun ordine',
         voceLiv: EN ? 'Level {L} · board {N}' : 'Livello {L} · quadro {N}',
         capoBase: EN ? 'Disk A–L' : 'Dischetto A–L',
-        capoMiei: EN ? 'Mine M–X' : 'Miei M–X'
+        capoMiei: EN ? 'Mine M–X' : 'Miei M–X',
+        capoSolo: EN ? 'Levels' : 'Livelli'
     };
     function t(k, v) {
         return T[k].replace(/\{(\w+)\}/g, function (m, n) { return v && v[n] !== undefined ? v[n] : m; });
@@ -301,7 +319,7 @@
         stazioni: [],       // {r,c,lettera,uscita}
         treni: [],
         coda: [],           // ordini annunciati non ancora comparsi
-        consegnati: 0, scontri: 0, persi: 0, punti: 0,
+        consegnati: 0, scontri: 0, persi: 0,
         tempo: 0, tempoMax: 0, prossimo: 0,
         attivo: false, finito: null, largo: false,
         lampeggio: 0,
@@ -552,7 +570,7 @@
     // Ogni quadro parte dal suo budget nudo: il tempo avanzato NON si riporta al
     // quadro dopo. (Il riporto c'era stato messo il 25/09/2026 e tolto lo stesso
     // giorno: l'utente lo aveva confuso con un altro gioco.) Il tempo avanzato
-    // paga solo in punteggio, la riga `pTempo` della modale di fine quadro.
+    // si legge soltanto nel riepilogo di fine quadro, e non vale niente.
     // Riempie una tendina con le lettere passate. La prima voce e' il
     // capofila: non e' un quadro, serve da titolo e da posizione di riposo
     // quando la scelta e' stata fatta nell'altra tendina.
@@ -562,7 +580,9 @@
         lettere.forEach(function (l) {
             for (var i = 0; i < D.liv[l].sub.length; i++) {
                 var x = document.createElement('option');
-                x.value = l + ':' + i; x.textContent = t('voceLiv', { L: l, N: i + 1 });
+                // Il valore porta la lettera vera, il testo quella mostrata.
+                x.value = l + ':' + i;
+                x.textContent = t('voceLiv', { L: nome(l), N: i + 1 });
                 sel.appendChild(x);
             }
         });
@@ -578,10 +598,30 @@
         });
     }
 
+    // RICOMINCIA rifa' il quadro che si sta giocando, non ricarica la pagina:
+    // ricaricando si tornava al primo quadro e si perdeva la scelta fatta.
+    function montaRicomincia() {
+        var b = el('w2-ricomincia');
+        if (!b) return;
+        b.onclick = function () {
+            if (!pronto) return;            // il primo quadro non c'e' ancora
+            var e = el('w2-modale');
+            if (e) e.style.display = 'none';
+            carica(S.livello, S.sub);
+        };
+    }
+
     function montaSelettori() {
         var a = el('w2-scelta'), b = el('w2-scelta2');
-        if (a) riempi(a, LIVELLI, t('capoBase'));
-        if (b) riempi(b, NOSTRI, t('capoMiei'));
+        if (CAMPAGNA === LIVELLI) {
+            if (a) riempi(a, LIVELLI, t('capoBase'));
+            if (b) riempi(b, NOSTRI, t('capoMiei'));
+        } else {
+            // Una tendina sola, con i nostri quadri: l'altra non ha niente da
+            // mostrare e sparisce, titolo compreso.
+            if (a) { riempi(a, CAMPAGNA, t('capoSolo')); a.title = t('capoSolo'); }
+            if (b) b.style.display = 'none';
+        }
         [a, b].forEach(function (sel) {
             if (!sel) return;
             sel.onchange = function () {
@@ -604,9 +644,13 @@
 
         S.griglia = sch.map(function (r) { return r.slice(); });
         S.stato = [];
+        // Millisecondi di movimento che restano a ogni scambio. Vive a fianco
+        // di S.stato e non dentro: lo stato cambia di scatto e comanda il
+        // gioco, questo e' solo il disegno che lo rincorre.
+        S.mossa = [];
         for (var r = 0; r < RIGHE; r++) {
-            S.stato.push([]);
-            for (var c = 0; c < COLS; c++) S.stato[r].push(0);
+            S.stato.push([]); S.mossa.push([]);
+            for (var c = 0; c < COLS; c++) { S.stato[r].push(0); S.mossa[r].push(0); }
         }
 
         // stazioni in ordine di lettura, lettera A, B, C...
@@ -627,7 +671,7 @@
         S.stazioni.forEach(function (s) { s.mete = raggiungibili(s); });
 
         S.treni = []; S.coda = [];
-        S.consegnati = 0; S.scontri = 0; S.persi = 0; S.punti = 0;
+        S.consegnati = 0; S.scontri = 0; S.persi = 0;
         S.tempo = contatoreIniziale(p);
         S.tempoMax = S.tempo;            // tetto della barra
         S.orologio = 0;                  // secondi veri, per la schedulazione
@@ -635,7 +679,7 @@
         S.emessi = 0;                    // ordini gia' annunciati
         logRun++; logPrec = null;        // nuova esecuzione nel registro
         S.attivo = true; S.finito = null; S.turbo = false; S.pausa = false;
-        messaggio(t('quadro', { L: liv, N: sub + 1, M: D.liv[liv].sub.length,
+        messaggio(t('quadro', { L: nome(liv), N: sub + 1, M: D.liv[liv].sub.length,
                                 O: p.ord, S: S.stazioni.length }));
         aggiornaHud();
         aggiornaPausa();
@@ -753,11 +797,24 @@
             if (S.stazioni[i].r === r && S.stazioni[i].c === c) st = S.stazioni[i];
         }
 
+        // Dentro c'e' gia' un treno che aspetta di partire: si sbatte, e non
+        // conta se questa era la stazione giusta o quella sbagliata.
+        var occupante = inAttesa(r, c, tr);
+        if (occupante) {
+            tr.r = r; tr.c = c; tr.ea = entrata; tr.xa = entrata; tr.t = 0.5;
+            tr.fermo = false; tr.uscito = true;
+            scontro(tr, occupante);
+            return;
+        }
+
         if (st && st.lettera === tr.dest) {
             tr.morto = true;                  // consegnato: sparisce subito
             S.consegnati++;
-            S.punti += 100;
-            suona('arrivo');
+            // La fanfara della consegna e' la stessa del quadro vinto: se
+            // l'ultima consegna le suonasse tutte e due si sentirebbe doppia.
+            // Qui suona solo quando il quadro va avanti; alla fine ci pensa
+            // `fine`, che sa anche se e' l'ultimo quadro di tutti.
+            if (S.consegnati < parametri().ord) suona('arrivo');
             messaggio(t('consegna', { S: st.lettera, A: S.consegnati, B: parametri().ord }));
             registra('consegnato', datiTreno(tr, st.lettera));
             fineScheda(tr, 'consegnato', st.lettera);
@@ -789,6 +846,18 @@
     }
 
     function passo(dt) {
+        // Il movimento degli scambi scorre anche a quadro finito, se no uno
+        // scambio commutato all'ultimo resterebbe congelato a mezza strada.
+        // In turbo scatta piu' svelto, come tutto il resto.
+        if (S.mossa) {
+            for (var mr = 0; mr < RIGHE; mr++) {
+                for (var mc = 0; mc < COLS; mc++) {
+                    if (S.mossa[mr][mc] > 0) {
+                        S.mossa[mr][mc] = Math.max(0, S.mossa[mr][mc] - dt * 1000);
+                    }
+                }
+            }
+        }
         if (!S.attivo) return;
         var p = parametri();
 
@@ -899,23 +968,37 @@
                 var b = S.treni[j]; if (b.morto || b.sosta > 0 || !b.uscito) continue;
                 var pa = mondo(a), pb = mondo(b);
                 var dx = pa[0] - pb[0], dy = pa[1] - pb[1];
-                if (dx * dx + dy * dy < 25) {
-                    a.morto = b.morto = true;
-                    // `inc` (Unfall-Zaehler) conta TRENI PERSI, non scontri: uno
-                    // scontro ne brucia due, e infatti sui 108 quadri `inc` e'
-                    // sempre pari (4, 6, 8, 10), cioe' 2, 3, 4 o 5 scontri.
-                    S.scontri++; S.persi += 2; S.punti -= 50;
-                    suona('scontro');
-                    messaggio(t('scontro', { A: S.persi, B: parametri().inc }));
-                    registra('scontro', datiTreno(a));
-                    registra('scontro', datiTreno(b));
-                    fineScheda(a, 'scontro', b.partenza + '>' + b.dest);
-                    fineScheda(b, 'scontro', a.partenza + '>' + a.dest);
-                    if (S.persi >= parametri().inc) fine(false);
-                    return;
-                }
+                if (dx * dx + dy * dy < 25) { scontro(a, b); return; }
             }
         }
+    }
+
+    // Il treno fermo in stazione che aspetta di partire non e' al riparo: chi
+    // arriva mentre lui e' ancora li' gli finisce addosso. Durante il solo
+    // annuncio non succede niente, perche' il treno non c'e' ancora.
+    function inAttesa(r, c, tranne) {
+        for (var i = 0; i < S.treni.length; i++) {
+            var tr = S.treni[i];
+            if (tr === tranne || tr.morto) continue;
+            if (tr.r === r && tr.c === c && tr.sosta > 0) return tr;
+        }
+        return null;
+    }
+
+    function scontro(a, b) {
+        a.morto = b.morto = true;
+        // `inc` (Unfall-Zaehler) conta TRENI PERSI, non scontri: uno scontro
+        // ne brucia due, e infatti sui 108 quadri `inc` e' sempre pari (4, 6,
+        // 8, 10), cioe' 2, 3, 4 o 5 scontri.
+        S.scontri++; S.persi += 2;
+        suona('scontro');
+        var tot = Math.floor(parametri().inc / 2);
+        messaggio(t('scontro', { A: Math.max(0, tot - S.scontri), B: tot }));
+        registra('scontro', datiTreno(a));
+        registra('scontro', datiTreno(b));
+        fineScheda(a, 'scontro', b.partenza + '>' + b.dest);
+        fineScheda(b, 'scontro', a.partenza + '>' + a.dest);
+        if (S.persi >= parametri().inc) fine(false);
     }
 
     function mondo(tr) {
@@ -923,22 +1006,38 @@
         return [tr.c * CELLA + p[0], tr.r * CELLA + p[1]];
     }
 
+    // Il quadro dopo sta nella stessa lettera, oppure nella lettera seguente
+    // della campagna. L'ultimo quadro dell'ultima lettera non ha un dopo: li'
+    // il bottone giallo non compare e, se il quadro e' vinto, la campagna e'
+    // finita. Se la lettera che si gioca non e' in campagna -- in dev_mode si
+    // puo' giocare la M mentre la campagna e' il dischetto -- non c'e' nessun
+    // dopo da offrire, ma non e' nemmeno la fine di niente.
+    function quadroDopo() {
+        var i = CAMPAGNA.indexOf(S.livello);
+        if (S.sub + 1 < D.liv[S.livello].sub.length) return [S.livello, S.sub + 1];
+        if (i >= 0 && i < CAMPAGNA.length - 1) return [CAMPAGNA[i + 1], 0];
+        return null;
+    }
+
+    function inCampagna() { return CAMPAGNA.indexOf(S.livello) >= 0; }
+
     function fine(vinto) {
         if (!S.attivo) return;
         S.attivo = false;
         S.pausa = false; aggiornaPausa();
         var p = parametri();
-        var avanzo = vinto ? Math.floor(S.tempo) : 0;   // vale solo in punteggio
-        var pTempo = avanzo * 5;
-        var pOrdini = S.consegnati * 100;
-        var pScontri = -S.scontri * 50;
-        var pExtra = (vinto && S.scontri === 0) ? 500 : 0;
-        var pLivello = vinto ? (S.livello.charCodeAt(0) - 64) * 50 : 0;
+        // Punteggio non ce n'e' piu': il quadro si supera o no, e a fine quadro
+        // si legge come e' andata -- consegne, scontri, tempo avanzato -- senza
+        // che niente si trasformi in punti.
+        // Vinto l'ultimo quadro della campagna non c'e' piu' niente dopo: li'
+        // non e' un quadro superato, e' il gioco finito, e si festeggia.
+        var finale = vinto && inCampagna() && !quadroDopo();
         S.finito = {
-            vinto: vinto, avanzo: avanzo, tempo: pTempo, ordini: pOrdini, scontri: pScontri,
-            extra: pExtra, livello: pLivello,
-            totale: pTempo + pOrdini + pScontri + pExtra + pLivello
+            vinto: vinto, finale: finale,
+            consegne: S.consegnati, ordini: p.ord, scontri: S.scontri,
+            avanzo: Math.floor(Math.max(0, S.tempo))
         };
+        suona(finale ? 'applauso' : vinto ? 'vittoria' : 'perso');
         // L'ultima lettura va scritta qui: se il quadro finisce per tempo scaduto
         // `passo` esce prima di arrivare al suo aggiornaHud() di coda, e la barra
         // in alto resterebbe ferma sui valori di un fotogramma prima.
@@ -949,6 +1048,86 @@
     // =======================================================================
     //  disegno
     // =======================================================================
+
+    // ---- la stazione disegnata da Luciano --------------------------------
+    // Una piastrella sola, disegnata col binario che entra da levante. Le
+    // altre tre sono la stessa girata, secondo il lato scritto in D.staz.
+    //
+    // Il quadrato della lettera va ridisegnato SOPRA al treno: il treno che si
+    // ferma in stazione ci finisce sotto e ne resta fuori solo la coda, che e'
+    // piu' lunga del quadrato. Per questo del quadrato si tiene una copia a
+    // parte, gia' girata come la piastrella.
+    var STAZ_SRC = 'images/woowoo2/stazione-tua.png?v=1.0';
+    var STAZ_VERSO = 'E';                   // da che parte entra il binario nel file
+    var STAZ_QUADRO = [19, 19, 23, 25];     // il quadrato della lettera, misurato nel file
+    var STAZ_LATO = 64;                     // la piastrella del file
+    var ANG_STAZ = { O: 0, E: Math.PI, N: Math.PI / 2, S: -Math.PI / 2 };
+    var quadri = null;                      // cod -> { piena, cv, x, y, w, h }
+
+    function giroStaz(cod) {
+        return (ANG_STAZ[D.staz[cod]] || 0) - ANG_STAZ[STAZ_VERSO];
+    }
+
+    // La piastrella girata, su una tela di 64: serve sia per l'atlante sia
+    // per ritagliarne il quadrato.
+    function stazioneGirata(img, cod) {
+        var L = STAZ_LATO;
+        var cv = document.createElement('canvas');
+        cv.width = cv.height = L;
+        var g = cv.getContext('2d');
+        g.imageSmoothingEnabled = false;
+        g.translate(L / 2, L / 2); g.rotate(giroStaz(cod)); g.translate(-L / 2, -L / 2);
+        g.drawImage(img, 0, 0, L, L);
+        return cv;
+    }
+
+    // Dove finisce il quadrato dopo il giro. Gli angoli sono tutti multipli di
+    // 90 gradi, percio' il rettangolo resta dritto: bastano i quattro vertici.
+    function quadroGirato(cod) {
+        var a = giroStaz(cod);
+        var co = Math.round(Math.cos(a)), si = Math.round(Math.sin(a));
+        var q = STAZ_QUADRO, m = STAZ_LATO / 2;
+        var xs = [], ys = [], i, j, dx, dy;
+        for (i = 0; i < 2; i++) for (j = 0; j < 2; j++) {
+            dx = q[0] + i * q[2] - m; dy = q[1] + j * q[3] - m;
+            xs.push(m + dx * co - dy * si);
+            ys.push(m + dx * si + dy * co);
+        }
+        var x0 = Math.min.apply(null, xs), y0 = Math.min.apply(null, ys);
+        return [x0, y0, Math.max.apply(null, xs) - x0, Math.max.apply(null, ys) - y0];
+    }
+
+    function preparaStazioni(img) {
+        quadri = null;
+        if (!img || !img.naturalWidth || !D.staz) return;
+        quadri = {};
+        Object.keys(D.staz).forEach(function (k) {
+            var cod = +k;
+            var piena = stazioneGirata(img, cod);
+            var r = quadroGirato(cod);
+            var cv = document.createElement('canvas');
+            cv.width = r[2]; cv.height = r[3];
+            var g = cv.getContext('2d');
+            g.imageSmoothingEnabled = false;
+            g.drawImage(piena, r[0], r[1], r[2], r[3], 0, 0, r[2], r[3]);
+            quadri[cod] = { piena: piena, cv: cv, x: r[0], y: r[1], w: r[2], h: r[3] };
+        });
+    }
+
+    // Le quattro stazioni entrano nell'atlante dello stile nostro al posto di
+    // quelle del dischetto. Solo li': dove si gioca con le piastrelle del
+    // dischetto il disegno e' un altro e questa stonerebbe in mezzo.
+    function montaStazioni(tela, cella) {
+        if (!quadri) return;
+        var g = tela.getContext('2d');
+        g.imageSmoothingEnabled = false;
+        Object.keys(quadri).forEach(function (k) {
+            var x = (+k) * cella;
+            if (x + cella > tela.width) return;
+            g.clearRect(x, 0, cella, cella);
+            g.drawImage(quadri[+k].piena, x, 0, cella, cella);
+        });
+    }
 
     function disegna() {
         if (!pronto) return;
@@ -972,23 +1151,23 @@
                 // sono piastrelle, li ha gia' disegnati il dipinto
                 if (sty && !D.rotta[cod] && !D.staz[cod]) continue;
                 var st = (D.scambio.indexOf(cod) >= 0 || D.segnale.indexOf(cod) >= 0) ? S.stato[r][c] : 0;
+                // Scambio in movimento: la piastrella non viene dall'atlante
+                // ma da un fotogramma disegnato. La massicciata sta ferma, si
+                // spostano rotaie e traversine, incernierate sulla punta.
+                // Solo negli schemi con la grafica nostra: dove si gioca
+                // con le piastrelle del dischetto il disegno e' un altro e
+                // una casella nel nostro stile stonerebbe in mezzo.
+                var mv = (sty && S.mossa) ? S.mossa[r][c] : 0;
+                if (mv > 0 && window.W2BINARI) {
+                    var q = 1 - mv / W2BINARI.DURATA;
+                    var sm = q * q * (3 - 2 * q);         // parte piano e arriva piano
+                    ctx.drawImage(W2BINARI.cella(cod, st ? sm : 1 - sm),
+                                  c * CELLA, r * CELLA, CELLA, CELLA);
+                    continue;
+                }
                 ctx.drawImage(atl, cod * cel, st * cel, cel, cel, c * CELLA, r * CELLA, CELLA, CELLA);
             }
         }
-
-        // lettere delle stazioni: lampeggiano durante l'annuncio e finche' il
-        // treno resta fermo sulla casella, in sosta o bloccato
-        S.stazioni.forEach(function (s) {
-            var lampeggia = (s.annuncio > 0 || fermoSu(s)) &&
-                            (Math.floor(S.lampeggio * 4) % 2 === 0);
-            ctx.font = 'bold 13px monospace';
-            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-            var x = s.c * CELLA + 16, y = s.r * CELLA + 16;
-            ctx.fillStyle = lampeggia ? '#ffffff' : '#000000';
-            ctx.fillRect(x - 7, y - 8, 14, 16);
-            ctx.fillStyle = lampeggia ? '#cc0000' : '#eecc00';
-            ctx.fillText(s.lettera, x, y);
-        });
 
         // Il quadrato della partenza. Mentre il treno fischia, la casella
         // della stazione lampeggia di rosso a tempo con le fischiate - una
@@ -1008,6 +1187,51 @@
 
         // treni
         S.treni.forEach(function (tr) { disegnaTreno(tr); });
+
+        // Le stazioni vanno per ultime, dopo i treni. Con le piastrelle
+        // nostre si ridisegna qui il quadrato della lettera, ritagliato dalla
+        // piastrella stessa: il treno fermo ci finisce sotto invece di
+        // passarci sopra. Con quelle del dischetto il quadrato non c'e' e
+        // resta il riquadro nero di sempre. In tutti e due i casi la lettera
+        // lampeggia durante l'annuncio e finche' il treno sta fermo li'.
+        S.stazioni.forEach(function (s) {
+            var lampeggia = (s.annuncio > 0 || fermoSu(s)) &&
+                            (Math.floor(S.lampeggio * 4) % 2 === 0);
+            var q = (sty && quadri) ? quadri[S.griglia[s.r][s.c]] : null;
+            var k, x, y;
+            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            if (q) {
+                k = CELLA / STAZ_LATO;
+                ctx.drawImage(q.cv, s.c * CELLA + q.x * k, s.r * CELLA + q.y * k,
+                              q.w * k, q.h * k);
+                x = s.c * CELLA + (q.x + q.w / 2) * k;
+                y = s.r * CELLA + (q.y + q.h / 2) * k;
+                // A lampeggiare e' tutto il riquadro, non la sola lettera:
+                // da lontano un quadrato che si accende si vede, una lettera
+                // che cambia colore no. Acceso e' BIANCO -- il bianco e' quello
+                // che stacca di piu' da tutto il resto del quadro -- con la
+                // lettera nera sopra. Il bordo scuro del disegno resta, percio'
+                // il bianco si stende solo dentro.
+                if (lampeggia) {
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(s.c * CELLA + (q.x + 2) * k, s.r * CELLA + (q.y + 2) * k,
+                                 (q.w - 4) * k, (q.h - 4) * k);
+                }
+                ctx.font = 'bold 10px monospace';
+                ctx.lineWidth = 2; ctx.lineJoin = 'round';
+                ctx.strokeStyle = lampeggia ? 'rgba(0,0,0,0.9)' : 'rgba(0,0,0,0.75)';
+                ctx.strokeText(s.lettera, x, y);
+                ctx.fillStyle = lampeggia ? '#000000' : '#eecc00';
+                ctx.fillText(s.lettera, x, y);
+                return;
+            }
+            ctx.font = 'bold 13px monospace';
+            x = s.c * CELLA + 16; y = s.r * CELLA + 16;
+            ctx.fillStyle = lampeggia ? '#ffffff' : '#000000';
+            ctx.fillRect(x - 7, y - 8, 14, 16);
+            ctx.fillStyle = lampeggia ? '#000000' : '#eecc00';
+            ctx.fillText(s.lettera, x, y);
+        });
 
         ctx.setTransform(1, 0, 0, 1, 0, 0);
     }
@@ -1283,14 +1507,17 @@
     function aggiornaHud() {
         var p = parametri();
         var resta = Math.ceil(S.tempo);
-        testo('w2-livello', S.livello + ' · ' + (S.sub + 1) + '/' + D.liv[S.livello].sub.length);
+        testo('w2-livello', nome(S.livello) + ' · ' + (S.sub + 1) + '/' + D.liv[S.livello].sub.length);
         // I due contatori del centro vanno a scendere, come nell'originale:
-        // quante consegne restano da fare e quanti treni si possono ancora
-        // perdere. Il primo che arriva a zero decide il quadro, e da fermo si
+        // quante consegne restano da fare e quanti scontri si possono ancora
+        // fare. Il primo che arriva a zero decide il quadro, e da fermo si
         // legge quanto manca invece di quanto e' andato.
+        //
+        // `inc` conta treni persi, e in uno scontro se ne perdono sempre due:
+        // diviso due da il numero di scontri, che e' quello che il giocatore
+        // guarda davvero.
         testo('w2-consegne', String(Math.max(0, p.ord - S.consegnati)));
-        testo('w2-treni', String(Math.max(0, p.inc - S.persi)));
-        testo('w2-punti', String(Math.max(0, S.punti)).padStart(5, '0'));
+        testo('w2-scontri', String(Math.max(0, Math.floor((p.inc - S.persi) / 2))));
         testo('w2-tempo', String(resta));
         var barra = el('w2-barra');
         if (barra) barra.style.width = Math.max(0, 100 * S.tempo / (S.tempoMax || 1)) + '%';
@@ -1299,8 +1526,9 @@
         var q = el('w2-coda');
         if (q) {
             var righe = S.coda.map(function (o) {
-                return '<div class="w2-voce"><b>' + o.part.lettera + ' → ' + o.dest.lettera +
-                       '</b><span>' + t('fra', { N: Math.ceil(o.resta) }) + '</span></div>';
+                return '<div class="w2-voce annuncio"><b>' + o.part.lettera + ' → ' +
+                       o.dest.lettera + '</b><span>' + t('fra', { N: Math.ceil(o.resta) }) +
+                       '</span></div>';
             }).concat(S.treni.map(function (tr) {
                 // Da quanto e' in giro e, se e' bloccato, da quanto sta fermo.
                 // Senza i due numeri un treno piantato dietro uno scambio
@@ -1310,8 +1538,12 @@
                 var stato = tr.sosta > 0 ? t('sosta', { N: Math.ceil(tr.sosta) })
                           : (tr.fermo ? t('fermo', { F: ff, N: vg })
                                       : t('viaggio', { N: vg }));
-                return '<div class="w2-voce' + (tr.fermo ? ' allarme' : '') +
-                       '"><b>→ ' + tr.dest + '</b><span>' + stato + '</span></div>';
+                // Quattro bande di colore: annuncio, in partenza, in viaggio,
+                // bloccato. Il blocco vince sempre, e' la cosa da guardare.
+                var classe = tr.fermo ? ' allarme' : (tr.sosta > 0 ? ' partenza' : '');
+                return '<div class="w2-voce' + classe +
+                       '"><b>' + tr.partenza + ' → ' + tr.dest +
+                       '</b><span>' + stato + '</span></div>';
             }));
             q.innerHTML = righe.join('') || '<div class="w2-vuoto">' + T.vuoto + '</div>';
         }
@@ -1324,33 +1556,83 @@
         var f = S.finito;
         var e = el('w2-modale');
         if (!e) return;
-        // Il quadro dopo sta nella stessa lettera, oppure nella lettera
-        // seguente della campagna. Le lettere fuori campagna (M, N) e l'ultimo
-        // quadro di L non hanno un dopo: li' il bottone dice "Ricomincia".
-        var iLiv = LIVELLI.indexOf(S.livello);
-        var dopo = S.sub + 1 < D.liv[S.livello].sub.length ? [S.livello, S.sub + 1]
-                 : (iLiv >= 0 && iLiv < LIVELLI.length - 1) ? [LIVELLI[iLiv + 1], 0]
-                 : null;
+        var dopo = quadroDopo();
+        // A quadro perso il bottone del quadro dopo non si offre: si ripete
+        // questo o si va a scegliere.
         var avanti = f.vinto && !!dopo;
         e.innerHTML =
-            '<div class="w2-riquadro">' +
-            '<h2>' + (f.vinto ? T.vinto : T.perso) + '</h2>' +
-            '<table>' +
-            riga(T.pOrdini, f.ordini) + riga(T.pTempo, f.tempo) +
-            riga(T.pScontri, f.scontri) + riga(T.pExtra, f.extra) +
-            riga(T.pLivello, f.livello) +
-            '<tr class="tot"><td>' + T.totale + '</td><td>' + f.totale + '</td></tr>' +
-            '</table>' +
-            '<button id="w2-avanti">' + (avanti ? T.avanti : T.ancora) + '</button>' +
+            '<div class="w2-riquadro" id="w2-riquadro">' +
+            '<h2>' + (f.finale ? T.finale : f.vinto ? T.vinto : T.perso) + '</h2>' +
+            (f.finale ? '<p class="w2-finale">' + T.finaleTesto + '</p>' : '') +
+            '<div class="w2-schede">' +
+            cartellino(T.rConsegne, f.consegne + '/' + f.ordini) +
+            cartellino(T.rScontri, f.scontri) +
+            cartellino(T.rTempo, f.avanzo + ' s') +
+            '</div>' +
+            '<div class="w2-bottoni">' +
+            '<button id="w2-fine-ripeti">' + T.ripeti + '</button>' +
+            (avanti ? '<button id="w2-fine-avanti" class="giallo">' + T.avanti + '</button>' : '') +
+            '<button id="w2-fine-scegli">' + T.scegli + '</button>' +
+            '</div>' +
+            '<div class="w2-angolo sx"></div><div class="w2-angolo dx"></div>' +
             '</div>';
         e.style.display = 'flex';
-        el('w2-avanti').onclick = function () {
-            e.style.display = 'none';
-            if (avanti) carica(dopo[0], dopo[1]);
-            else carica(S.livello, S.sub);
+
+        // Negli angoli in basso i due rimandi del piedino, copiati di peso: in
+        // questo modo restano uguali a quelli della pagina -- testo, indirizzo
+        // e lingua -- senza riscriverli qui.
+        copiaLink('.link-giochi-w2 a[href^="regole-"]', e.querySelector('.w2-angolo.sx'));
+        copiaLink('.link-giochi-w2 .pulsante-home-w2', e.querySelector('.w2-angolo.dx'));
+
+        function chiudi() { e.style.display = 'none'; }
+        var b = el('w2-fine-ripeti');
+        if (b) b.onclick = function () { chiudi(); carica(S.livello, S.sub); };
+        b = el('w2-fine-avanti');
+        if (b) b.onclick = function () { chiudi(); carica(dopo[0], dopo[1]); };
+        b = el('w2-fine-scegli');
+        if (b) b.onclick = function () {
+            chiudi();
+            // Si apre la tendina dove sta il quadro che si sta giocando: in
+            // dev_mode ce ne sono due, e se si gioca su un quadro nostro quella
+            // da aprire e' la seconda, non quella del dischetto.
+            var ora = S.livello + ':' + S.sub;
+            var sel = el('w2-scelta');
+            var due = el('w2-scelta2');
+            if (due && due.style.display !== 'none' &&
+                Array.prototype.some.call(due.options, function (o) { return o.value === ora; })) sel = due;
+            if (!sel) return;
+            sel.focus();
+            // showPicker apre la tendina da sola dove c'e' (Chrome): dove non
+            // c'e', resta il fuoco e la tendina si apre con un clic.
+            try { sel.showPicker(); } catch (x) { }
         };
+
+        // Il banner di fine partita, come negli altri giochi: sta sopra il
+        // riquadro, che per questo e' basso e largo 700 come loro. Si attacca
+        // al riquadro, non alla velatura, se no il left:0 non tornerebbe.
+        if (typeof setupAmazonFinishBanner === 'function') {
+            setupAmazonFinishBanner('w2-riquadro', {
+                modalStyle: { overflow: 'visible' },
+                targetTop: 430,
+                applyModalTop: false,
+                bannerWidth: 700,
+                bannerHeight: 300,
+                bannerTopOffset: 325,
+                leftOffset: 0
+            });
+        }
     }
-    function riga(n, v) { return '<tr><td>' + n + '</td><td>' + v + '</td></tr>'; }
+    function cartellino(n, v) {
+        return '<div class="w2-scheda"><div class="lbl">' + n +
+               '</div><div class="val">' + v + '</div></div>';
+    }
+    function copiaLink(sel, dove) {
+        var a = document.querySelector(sel);
+        if (!a || !dove) return;
+        var c = a.cloneNode(true);
+        c.removeAttribute('id');
+        dove.appendChild(c);
+    }
 
     // =======================================================================
     //  comandi
@@ -1366,6 +1648,10 @@
         var cod = S.griglia[r][c];
         if (D.scambio.indexOf(cod) < 0 && D.segnale.indexOf(cod) < 0) return;
         S.stato[r][c] = S.stato[r][c] ? 0 : 1;
+        // Lo stato cambia subito e l'instradamento lo legge subito: il treno
+        // che arriva nello stesso fotogramma va per la strada nuova. Il
+        // movimento che segue e' solo cosmetico, nessuna regola lo guarda.
+        if (D.scambio.indexOf(cod) >= 0 && window.W2BINARI) S.mossa[r][c] = W2BINARI.DURATA;
         suona('scambio');
     }
 
@@ -1431,7 +1717,9 @@
         fischio: 0.09,            // il fischio della partenza
         arrivo: 0.35,             // tada.mp3: e' una fanfara e sta forte
         scambio: 0.50,            // slitta2.mp3
-        scontro: 0.40             // crash.mp3: la disgrazia si sente, senza spaventare
+        scontro: 0.40,            // crash.mp3: la disgrazia si sente, senza spaventare
+        perso: 0.35,              // haiperso.mp3: il quadro finito male
+        applauso: 0.35            // applause.mp3: l'ultimo quadro della campagna
     };
 
     // Questi tre non sono calcolati, sono registrazioni. La fanfara e' quella
@@ -1441,7 +1729,12 @@
     var SUONI = {
         arrivo: 'sounds/scala40/tada.mp3',       // la consegna fatta
         scambio: 'sounds/woowoo2/slitta2.mp3',   // lo scambio che si muove
-        scontro: 'sounds/woowoo2/crash.mp3'      // due treni che si prendono
+        scontro: 'sounds/woowoo2/crash.mp3',     // due treni che si prendono
+        // Fine del quadro. La fanfara del quadro vinto e' la stessa della
+        // consegna -- tada.mp3, gia' caricata qui sopra come `arrivo` -- e non
+        // si scarica due volte: la vittoria la suona riusando quel campione.
+        perso: 'sounds/scala40/haiperso.mp3',    // il quadro finito male
+        applauso: 'sounds/scala40/applause.mp3'  // l'ultimo quadro di tutti
     };
 
     // Il ronzio, cioe' il modo piu' grave: tutti i rapporti sono riferiti a lui.
@@ -1843,6 +2136,10 @@
             if (che === 'arrivo') { campione(C, 'arrivo', VOL.arrivo); return; }
             if (che === 'scambio') { campione(C, 'scambio', VOL.scambio); return; }
             if (che === 'scontro') { campione(C, 'scontro', VOL.scontro); return; }
+            // Il quadro vinto suona la stessa fanfara della consegna.
+            if (che === 'vittoria') { campione(C, 'arrivo', VOL.arrivo); return; }
+            if (che === 'perso') { campione(C, 'perso', VOL.perso); return; }
+            if (che === 'applauso') { campione(C, 'applauso', VOL.applauso); return; }
             if (che === 'annuncio') {
                 var serie = chi && chi.serie ? chi.serie : 0;
                 var colpi = chi && chi.colpi ? chi.colpi : COLPI_MIN;
@@ -1907,6 +2204,7 @@
         // Vale sempre l'ultima toccata, e l'altra torna sul suo capofila per
         // dire a colpo d'occhio da quale banco si sta giocando.
         montaSelettori();
+        montaRicomincia();
         precarica(ctxAudio());   // i due mp3, prima che servano
         var bp = el('w2-pausa');
         if (bp) bp.onclick = function () { pausa(); };
@@ -1916,10 +2214,12 @@
         // Si parte quando sono arrivate tutte: l'atlante del dischetto piu'
         // atlante e dipinto di ogni stile nominato nei dati.
         var stili = stiliUsati();
-        var lista = ['dev/tiles.png?v=1.0'];
+        var lista = ['dev/tiles.png?v=1.1'];
         stili.forEach(function (x) { lista.push(x.atlante, x.sfondo); });
+        lista.push(STAZ_SRC);               // la stazione di Luciano, ultima
         immagini(lista, function (im) {
             atlante = im[0];
+            preparaStazioni(im[1 + stili.length * 2]);
             stili.forEach(function (x, i) {
                 x.img = im[1 + i * 2];
                 x.fondoImg = im[2 + i * 2];
@@ -1929,8 +2229,15 @@
                 if (x.rotto) console.warn('WooWoo: manca ' +
                     (x.img.naturalWidth ? x.sfondo : x.atlante) +
                     ', quello schema va con le piastrelle del dischetto');
+                // I binari non vengono piu' dall'immagine: le loro colonne si
+                // ridisegnano sopra una copia dell'atlante, partendo dalla
+                // rotta scritta nei codici. Dell'immagine resta tutto il
+                // resto - prato, ponte, stazioni, paesaggio.
+                if (!x.rotto && window.W2BINARI) x.img = W2BINARI.rifaiAtlante(x.img, x.cella);
+                // e sopra la copia dell'atlante vanno le quattro stazioni
+                if (!x.rotto && x.img.getContext) montaStazioni(x.img, x.cella);
             });
-            pronto = true; carica('A', 0); ciclo();
+            pronto = true; carica(CAMPAGNA[0], 0); ciclo();
         });
     }
 
