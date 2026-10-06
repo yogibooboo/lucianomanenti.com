@@ -12,11 +12,11 @@
 		gtag('config', 'G-WRBDRDQ4L8');
 		window.currentLang = 'en';
 	</script>
-	<title>Tetra Luciano Rules - How to Play & Strategies</title>
+	<title>Bricks Rules - How to Play & Strategies</title>
 	<meta name="Description"
-		content="Complete guide to Tetra Luciano rules: polyomino tetromino shapes, SRS rotations, scoring system, Marathon, 40-Line Sprint, and strategies to reach high scores.">
-	<link rel="alternate" hreflang="it" href="guida-tetra.html">
-	<link rel="alternate" hreflang="en" href="guida-tetra-en.html">
+		content="Complete guide to Bricks rules: the seven shapes, wall-kick rotations, scoring system, Marathon, 40-Line Sprint, and strategies to reach high scores.">
+	<link rel="alternate" hreflang="it" href="guida-mattoncini.html">
+	<link rel="alternate" hreflang="en" href="guida-mattoncini-en.html">
 	<link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
 	<link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
 	<link rel="shortcut icon" href="favicon/favicon.ico">
@@ -127,29 +127,57 @@
 			font-family: monospace;
 			font-size: 12px;
 		}
+		.banner {
+			width: 100%;
+			height: 150px;
+			background-image: url('images/home/castagne.jpg');
+			background-size: cover;
+			background-position: center;
+			border-radius: 8px;
+			margin: 20px 0;
+			box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+		}
+
+		.nav-links {
+			text-align: center;
+			margin-top: 30px;
+			font-size: 14px;
+		}
+
+		.nav-links a {
+			color: #3498db;
+			text-decoration: none;
+			margin: 0 8px;
+		}
 	</style>
 </head>
 
 <body>
 
-	<div class="lang-switch">
-		<a href="guida-tetra.html">Italiano</a>
-		<a href="guida-tetra-en.html" class="active">English</a>
+	<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+		<a href="#" id="btn-back" onclick="goBack(); return false;"
+			style="display: inline-block; padding: 6px 16px; background: #e74c3c; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 14px;">&#x2190; Back</a>
+		<div class="lang-switch" style="margin-bottom: 0;">
+			<a href="guida-mattoncini.html">Italiano</a>
+			<a href="guida-mattoncini-en.html" class="active">English</a>
+		</div>
 	</div>
 
+	<div class="banner"></div>
+
 	<div class="content-box">
-		<h1>Tetra Luciano Rules & Guide</h1>
+		<h1>Bricks Rules & Guide</h1>
 
-		<p><strong>Tetra</strong> is the iconic geometric falling-block puzzle game. The objective is to position falling shapes (called <em>tetrominoes</em> or <em>polyominoes</em>) to complete full horizontal rows, clearing them from the matrix and scoring points before the board stacks up to the top.</p>
+		<p><strong>Bricks</strong> is the iconic geometric falling-block puzzle game. The objective is to position the falling shapes to complete full horizontal rows, clearing them from the matrix and scoring points before the board stacks up to the top.</p>
 
-		<h2>The 7 Tetrominoes</h2>
-		<p>Each piece is composed of 4 square blocks configured into distinct shapes with standard color coding:</p>
+		<h2>The 7 Shapes</h2>
+		<p>Each piece is composed of 4 square blocks configured into distinct shapes, each with its own colour:</p>
 		<ul>
-			<li><strong>I (Cyan):</strong> The 4-block straight line, the only piece capable of scoring a 4-line <em>TETRA!</em>.</li>
-			<li><strong>O (Yellow):</strong> The 2x2 square.</li>
-			<li><strong>T (Purple):</strong> The versatile T-shape used for advanced maneuvers like T-Spins.</li>
-			<li><strong>L (Orange) & J (Blue):</strong> The two mirror L-shaped hook pieces.</li>
-			<li><strong>S (Green) & Z (Red):</strong> The two snake / step pieces.</li>
+			<li><strong>I (Yellow):</strong> The 4-block straight line, the only piece capable of scoring a 4-line <em>WALL!</em>.</li>
+			<li><strong>O (Cyan):</strong> The 2x2 square.</li>
+			<li><strong>T (Orange):</strong> The versatile T-shape: the only piece that can make a WEDGE.</li>
+			<li><strong>L (Purple) & J (Green):</strong> The two mirror L-shaped hook pieces.</li>
+			<li><strong>S (Red) & Z (Blue):</strong> The two snake / step pieces.</li>
 		</ul>
 
 		<h2>Game Controls</h2>
@@ -166,38 +194,60 @@
 
 		<h2>Game Modes</h2>
 		<h3>1. Marathon (Classic)</h3>
-		<p>Play without time limits. The speed increases automatically every 10 cleared lines, advancing to the next level. The goal is to reach the highest score possible.</p>
+		<p>Play without time limits. The speed increases automatically every 12 cleared lines, advancing to the next level. The goal is to reach the highest score possible.</p>
 
 		<h3>2. Sprint 40 Lines (Time Attack)</h3>
 		<p>Clear 40 lines in the fastest time possible. The timer tracks tenths of a second: balance speed and precision to set a new personal record!</p>
 
 		<h3>3. Ultra 2 Minutes (Score Attack)</h3>
-		<p>You have exactly 120 seconds to score as many points as possible. Maximize your score using 4-line Tetra clears and consecutive combos.</p>
+		<p>You have exactly 120 seconds to score as many points as possible. Maximize your score using 4-line Bricks clears and consecutive combos.</p>
 
 		<h2>Scoring Table</h2>
 		<table class="score-table">
 			<tr><th>Action</th><th>Base Points</th><th>With Level (Multiplier)</th></tr>
-			<tr><td>Single line clear</td><td>100</td><td>100 × Level</td></tr>
-			<tr><td>Double line clear</td><td>300</td><td>300 × Level</td></tr>
-			<tr><td>Triple line clear</td><td>500</td><td>500 × Level</td></tr>
-			<tr><td>TETRA! (4 lines)</td><td>800</td><td>800 × Level</td></tr>
-			<tr><td>Back-to-Back Bonus (Consecutive Tetra)</td><td>+50% bonus</td><td>1200 × Level</td></tr>
-			<tr><td>T-Spin</td><td>400 - 1600</td><td>Up to 1600 × Level</td></tr>
+			<tr><td>Single line clear</td><td>120</td><td>120 × Level</td></tr>
+			<tr><td>Double line clear</td><td>320</td><td>320 × Level</td></tr>
+			<tr><td>Triple line clear</td><td>560</td><td>560 × Level</td></tr>
+			<tr><td>WALL! (4 lines)</td><td>1200</td><td>1200 × Level</td></tr>
+			<tr><td>Back-to-Back Bonus (two hard moves in a row)</td><td>+60% bonus</td><td>up to 3200 × Level</td></tr>
+			<tr><td>WEDGE! (the T turned into a gap closed above)</td><td>700 - 2000</td><td>Up to 2000 × Level</td></tr>
 			<tr><td>Soft Drop / Hard Drop</td><td>1 pt / line</td><td>2 pt / line (Hard)</td></tr>
 		</table>
 
 		<h2>Tips & Strategies</h2>
 		<ul>
 			<li><strong>Keep your stack flat:</strong> Avoid building deep wells or spires that make future piece placement difficult.</li>
-			<li><strong>Use the Hold queue:</strong> If you get a piece that doesn't fit well or you want to save a straight I-bar for a 4-line Tetra, pressing <span class="kbd">C</span> will save your run.</li>
+			<li><strong>Use the Hold queue:</strong> If you get a piece that doesn't fit well or you want to save a straight I-bar for a 4-line WALL, pressing <span class="kbd">C</span> will save your run.</li>
 			<li><strong>Watch the Next preview:</strong> Plan ahead by checking the upcoming pieces to build optimal placements in advance.</li>
 		</ul>
 
-		<div style="text-align: center;">
-			<a href="tetra-en.html" class="play-btn">🎮 PLAY TETRA NOW</a>
-		</div>
+		<p style="text-align: center;"><a href="#" onclick="goBack(); return false;" class="play-btn">Close</a></p>
 	</div>
 
+	<div class="banner"></div>
+
+	<div class="nav-links">
+		<a href="index-en.html">All Games</a> |
+		<a href="mattoncini-en.html">Bricks</a> |
+		<a href="scorciatoie-en.html">Shortcuts</a> |
+		<a href="sudoku-en.html">Sudoku</a> |
+		<a href="quadrati-en.html">Dots &amp; Boxes</a> |
+		<a href="calcolo-en.html">Cross Figure</a> |
+		<a href="dama-en.html">Checkers</a>
+	</div>
+
+	<p style="text-align: center; font-size: 0.8em; color: #999; margin-top: 10px;">
+		&copy; 2026 Luciano Manenti
+	</p>
+
+	<script>
+		function goBack() {
+			if (window.history.length > 1) {
+				window.history.back();
+			}
+			window.close();
+		}
+	</script>
 </body>
 
 </html>

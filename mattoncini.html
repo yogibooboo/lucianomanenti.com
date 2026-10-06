@@ -10,11 +10,11 @@
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tetra Luciano - Gioco Gratis Online - lucianomanenti.com</title>
-    <link rel="canonical" href="https://www.lucianomanenti.com/tetra.html">
-    <link rel="alternate" hreflang="it" href="https://www.lucianomanenti.com/tetra.html">
-    <link rel="alternate" hreflang="en" href="https://www.lucianomanenti.com/tetra-en.html">
-    <link rel="alternate" hreflang="x-default" href="https://www.lucianomanenti.com/tetra.html">
+    <title>Mattoncini - Gioco Gratis Online - lucianomanenti.com</title>
+    <link rel="canonical" href="https://www.lucianomanenti.com/mattoncini.html">
+    <link rel="alternate" hreflang="it" href="https://www.lucianomanenti.com/mattoncini.html">
+    <link rel="alternate" hreflang="en" href="https://www.lucianomanenti.com/mattoncini-en.html">
+    <link rel="alternate" hreflang="x-default" href="https://www.lucianomanenti.com/mattoncini.html">
     <link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
     <link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
     <link rel="shortcut icon" href="favicon/favicon.ico">
@@ -22,12 +22,12 @@
     <link rel="manifest" href="favicon/site.webmanifest">
 
     <meta name="Description"
-        content="Gioca gratis online a Tetra Luciano: il classico gioco dei blocchi e tetramini a incastro con grafica elegante, rotazioni SRS, Hold, anteprima dei pezzi, modalità Maratona, Sprint 40 Righe e Ultra.">
+        content="Gioca gratis online a Mattoncini: il classico gioco dei blocchi a incastro che cadono, con grafica elegante, rotazioni con scostamento al muro, Scambio, anteprima dei pezzi, modalità Maratona, Sprint 40 Righe e Ultra.">
     <meta http-Equiv="Cache-Control" Content="no-cache">
     <meta http-Equiv="Pragma" Content="no-cache">
     <meta http-Equiv="Expires" Content="0">
 
-    <link rel="stylesheet" href="tetra.css?v=1.8" />
+    <link rel="stylesheet" href="mattoncini.css?v=2.0" />
 
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
@@ -39,7 +39,7 @@
     </script>
     <script>
         window.gameConfig = {
-            gaPrefix: 'TETRA_',
+            gaPrefix: 'MATTONCINI_',
             hideLegalFooter: true,
             adsenseActive: true,
             adsenseSlots: {
@@ -66,10 +66,10 @@
             <div id="schermo"></div>
 
             <!-- ================= HEADER BAR SUPERIORE ================= -->
-            <div id="header-tetra">
+            <div id="header-mattoncini">
                 <div class="header-left">
                     <div id="titolo-gioco">
-                        🕹️ Tetra Luciano <span class="badge-modalita" id="modalita-badge">Maratona</span>
+                        🕹️ Mattoncini <span class="badge-modalita" id="modalita-badge">Maratona</span>
                     </div>
                 </div>
 
@@ -99,83 +99,83 @@
                     <button id="btn-new-game" onclick="apriConfermaNuova()" class="btn-azione-top" style="border-color: #ffd700; color: #ffd700;">Nuova</button>
 
                     <div class="lang-switch-header">
-                        <a href="tetra.html" class="active">IT</a>
-                        <a href="tetra-en.html">EN</a>
+                        <a href="mattoncini.html" class="active">IT</a>
+                        <a href="mattoncini-en.html">EN</a>
                         <div id="btn-audio" class="btn-audio-game" aria-label="Audio"></div>
                     </div>
                 </div>
             </div>
 
             <!-- Messaggio di stato banner -->
-            <div id="messaggio-stato-tetra">Tetra Luciano</div>
+            <div id="messaggio-stato-mattoncini">Mattoncini</div>
 
-            <!-- ================= AREA TAVOLO TETRA ================= -->
-            <div id="area-tavolo-tetra">
-                <div class="tetra-layout">
+            <!-- ================= AREA TAVOLO MATTONCINI ================= -->
+            <div id="area-tavolo-mattoncini">
+                <div class="mattoncini-layout">
 
                     <!-- Pannello Sinistro: Scambio (Hold), Statistiche Tessere e Record -->
-                    <div class="tetra-side-panel">
-                        <div class="tetra-box tetra-box-clickable" onclick="holdPieceAction()" title="Clicca per scambiare pezzo (o premi C / Shift)" style="cursor: pointer;">
-                            <div class="tetra-box-title">🔄 Scambio (C)</div>
-                            <canvas id="hold-canvas" class="tetra-preview-canvas" width="100" height="70"></canvas>
+                    <div class="mattoncini-side-panel">
+                        <div class="mattoncini-box mattoncini-box-clickable" onclick="holdPieceAction()" title="Clicca per scambiare pezzo (o premi C / Shift)" style="cursor: pointer;">
+                            <div class="mattoncini-box-title">🔄 Scambio (C)</div>
+                            <canvas id="hold-canvas" class="mattoncini-preview-canvas" width="100" height="70"></canvas>
                         </div>
 
                         <!-- Pannello Record Stile Sudoku: Oggi / Settimana / Assoluto -->
-                        <div class="tetra-box tetra-record-card" id="pannello-record-tetra">
+                        <div class="mattoncini-box mattoncini-record-card" id="pannello-record-mattoncini">
                             <div class="record-card-header">
-                                <span class="tetra-box-title" style="margin-bottom: 0;">🏆 RECORD</span>
+                                <span class="mattoncini-box-title" style="margin-bottom: 0;">🏆 RECORD</span>
                                 <span class="record-mode-badge" id="record-mode-lbl">MARATONA</span>
                             </div>
-                            <div class="record-righe-tetra">
-                                <div class="record-col-tetra">
-                                    <div class="record-lbl-tetra">Oggi</div>
-                                    <div class="record-val-tetra" id="record-oggi">0</div>
-                                    <button class="btn-reset-record-tetra" data-tipo="daily" title="Azzera il record di oggi">&#10226;</button>
+                            <div class="record-righe-mattoncini">
+                                <div class="record-col-mattoncini">
+                                    <div class="record-lbl-mattoncini">Oggi</div>
+                                    <div class="record-val-mattoncini" id="record-oggi">0</div>
+                                    <button class="btn-reset-record-mattoncini" data-tipo="daily" title="Azzera il record di oggi">&#10226;</button>
                                 </div>
-                                <div class="record-col-tetra">
-                                    <div class="record-lbl-tetra">Settimana</div>
-                                    <div class="record-val-tetra" id="record-settimana">0</div>
-                                    <button class="btn-reset-record-tetra" data-tipo="weekly" title="Azzera il record della settimana">&#10226;</button>
+                                <div class="record-col-mattoncini">
+                                    <div class="record-lbl-mattoncini">Settimana</div>
+                                    <div class="record-val-mattoncini" id="record-settimana">0</div>
+                                    <button class="btn-reset-record-mattoncini" data-tipo="weekly" title="Azzera il record della settimana">&#10226;</button>
                                 </div>
-                                <div class="record-col-tetra">
-                                    <div class="record-lbl-tetra">Assoluto</div>
-                                    <div class="record-val-tetra" id="record-assoluto">0</div>
-                                    <button class="btn-reset-record-tetra" data-tipo="all" title="Azzera il record assoluto">&#10226;</button>
+                                <div class="record-col-mattoncini">
+                                    <div class="record-lbl-mattoncini">Assoluto</div>
+                                    <div class="record-val-mattoncini" id="record-assoluto">0</div>
+                                    <button class="btn-reset-record-mattoncini" data-tipo="all" title="Azzera il record assoluto">&#10226;</button>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="tetra-box" style="padding: 6px 10px;">
-                            <div class="tetra-box-title">📊 Tessere</div>
-                            <div class="tetra-stats-list">
-                                <div class="tetra-stat-row"><span class="tetra-stat-name" style="color: #00d2d3;">■ I (Line)</span><span class="tetra-stat-count" id="stat-piece-I">0</span></div>
-                                <div class="tetra-stat-row"><span class="tetra-stat-name" style="color: #2e86de;">■ J (Hook)</span><span class="tetra-stat-count" id="stat-piece-J">0</span></div>
-                                <div class="tetra-stat-row"><span class="tetra-stat-name" style="color: #ff9f43;">■ L (Hook)</span><span class="tetra-stat-count" id="stat-piece-L">0</span></div>
-                                <div class="tetra-stat-row"><span class="tetra-stat-name" style="color: #feca57;">■ O (Square)</span><span class="tetra-stat-count" id="stat-piece-O">0</span></div>
-                                <div class="tetra-stat-row"><span class="tetra-stat-name" style="color: #1dd1a1;">■ S (Snake)</span><span class="tetra-stat-count" id="stat-piece-S">0</span></div>
-                                <div class="tetra-stat-row"><span class="tetra-stat-name" style="color: #9b59b6;">■ T (Cross)</span><span class="tetra-stat-count" id="stat-piece-T">0</span></div>
-                                <div class="tetra-stat-row"><span class="tetra-stat-name" style="color: #ff6b6b;">■ Z (Snake)</span><span class="tetra-stat-count" id="stat-piece-Z">0</span></div>
+                        <div class="mattoncini-box" style="padding: 6px 10px;">
+                            <div class="mattoncini-box-title">📊 Tessere</div>
+                            <div class="mattoncini-stats-list">
+                                <div class="mattoncini-stat-row"><span class="mattoncini-stat-name" style="color: #feca57;">■ I (Line)</span><span class="mattoncini-stat-count" id="stat-piece-I">0</span></div>
+                                <div class="mattoncini-stat-row"><span class="mattoncini-stat-name" style="color: #1dd1a1;">■ J (Hook)</span><span class="mattoncini-stat-count" id="stat-piece-J">0</span></div>
+                                <div class="mattoncini-stat-row"><span class="mattoncini-stat-name" style="color: #9b59b6;">■ L (Hook)</span><span class="mattoncini-stat-count" id="stat-piece-L">0</span></div>
+                                <div class="mattoncini-stat-row"><span class="mattoncini-stat-name" style="color: #00d2d3;">■ O (Square)</span><span class="mattoncini-stat-count" id="stat-piece-O">0</span></div>
+                                <div class="mattoncini-stat-row"><span class="mattoncini-stat-name" style="color: #ff6b6b;">■ S (Snake)</span><span class="mattoncini-stat-count" id="stat-piece-S">0</span></div>
+                                <div class="mattoncini-stat-row"><span class="mattoncini-stat-name" style="color: #ff9f43;">■ T (Cross)</span><span class="mattoncini-stat-count" id="stat-piece-T">0</span></div>
+                                <div class="mattoncini-stat-row"><span class="mattoncini-stat-name" style="color: #2e86de;">■ Z (Snake)</span><span class="mattoncini-stat-count" id="stat-piece-Z">0</span></div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Griglia Centrale: Matrice Canvas 10x20 -->
-                    <div class="tetra-board-wrapper">
-                        <canvas id="tetra-canvas" width="280" height="560"></canvas>
-                        <div id="tetra-action-banner">TETRA!</div>
+                    <!-- Griglia Centrale: Matrice Canvas 12x22 -->
+                    <div class="mattoncini-board-wrapper">
+                        <canvas id="mattoncini-canvas" width="336" height="616"></canvas>
+                        <div id="mattoncini-action-banner">MURO!</div>
                     </div>
 
                     <!-- Pannello Destro: Prossimi Pezzi (Next), Tempo e Pubblicità Adattabile / Rotante -->
-                    <div class="tetra-side-panel tetra-side-panel-right">
-                        <div class="tetra-box">
-                            <div class="tetra-box-title">⏭️ Prossimi</div>
-                            <canvas id="next-canvas" class="tetra-preview-canvas" width="100" height="190"></canvas>
+                    <div class="mattoncini-side-panel mattoncini-side-panel-right">
+                        <div class="mattoncini-box">
+                            <div class="mattoncini-box-title">⏭️ Prossimi</div>
+                            <canvas id="next-canvas" class="mattoncini-preview-canvas" width="100" height="190"></canvas>
                         </div>
 
                         <!-- Box Tempo: visibile solo nelle modalità a tempo (Sprint 40R e Ultra 2 Min) -->
-                        <div class="tetra-box" id="box-tempo-container" style="display: none;">
-                            <div class="tetra-box-title" id="lbl-tempo-box">⏱️ Tempo</div>
-                            <div class="tetra-box-val accent" id="stat-tempo">00:00.0</div>
+                        <div class="mattoncini-box" id="box-tempo-container" style="display: none;">
+                            <div class="mattoncini-box-title" id="lbl-tempo-box">⏱️ Tempo</div>
+                            <div class="mattoncini-box-val accent" id="stat-tempo">00:00.0</div>
                         </div>
 
                         <!-- Banner Affiliati / Pubblicità Adattabile Rotante -->
@@ -186,7 +186,7 @@
             </div>
 
             <!-- ================= CONTROLLI TOUCH PER MOBILE ================= -->
-            <div id="touch-controls-tetra">
+            <div id="touch-controls-mattoncini">
                 <div class="touch-cluster">
                     <button id="touch-left" class="btn-touch" aria-label="Sinistra">◀</button>
                     <button id="touch-right" class="btn-touch" aria-label="Destra">▶</button>
@@ -203,8 +203,8 @@
             <!-- ================= MODALI ED OVERLAY ================= -->
 
             <!-- 1. Modale Inizio Gioco / Selezione Modalità -->
-            <div id="modale-inizio" class="form-tetra">
-                <div class="form-tetra-title">🕹️ Tetra Luciano</div>
+            <div id="modale-inizio" class="form-mattoncini">
+                <div class="form-mattoncini-title">🕹️ Mattoncini</div>
 
                 <div class="opzione-gruppo">
                     <div class="opzione-lbl">Modalità di Gioco:</div>
@@ -228,22 +228,22 @@
                 <button onclick="avviaNuovaPartita()" class="btn-continua" style="width: 220px;">GIOCA ORA 🕹️</button>
 
                 <div class="lang-switch-modale">
-                    <a href="tetra.html" class="active" title="Italiano">IT</a>
-                    <a href="tetra-en.html" title="English">EN</a>
+                    <a href="mattoncini.html" class="active" title="Italiano">IT</a>
+                    <a href="mattoncini-en.html" title="English">EN</a>
                 </div>
-                <a href="guida-tetra.html" target="_blank" rel="opener" id="btn-regole-modale" class="btn-angolo-modale sinistra">ISTRUZIONI</a>
+                <a href="guida-mattoncini.html" target="_blank" rel="opener" id="btn-regole-modale" class="btn-angolo-modale sinistra">ISTRUZIONI</a>
                 <a href="index.html" id="btn-home-modale" class="btn-angolo-modale destra home">TUTTI I GIOCHI</a>
             </div>
 
             <!-- 2. Modale Pausa -->
-            <div id="modale-pausa" class="form-tetra">
-                <div class="form-tetra-title">⏸️ GIOCO IN PAUSA</div>
+            <div id="modale-pausa" class="form-mattoncini">
+                <div class="form-mattoncini-title">⏸️ GIOCO IN PAUSA</div>
                 <div style="font-size: 14px; color: #cde8cd; margin-bottom: 20px; text-align: center;">Premi riprendi o il tasto P / Esc per continuare a giocare.</div>
                 <button onclick="togglePause()" class="btn-continua" style="width: 220px;">RIPRENDI ▶️</button>
             </div>
 
             <!-- 3. Modale Fine Partita / Record -->
-            <div id="modale-fine" class="form-tetra modale-fine-tetra">
+            <div id="modale-fine" class="form-mattoncini modale-fine-mattoncini">
                 <div class="fine-titolo" id="fine-titolo">PARTITA CONCLUSA!</div>
                 <div id="badge-nuovo-record" class="badge-record" style="display: none;">🏆 NUOVO RECORD PERSONALE!</div>
 
@@ -270,8 +270,8 @@
             </div>
 
             <!-- 4. Modale Conferma Nuova Partita -->
-            <div id="confermatermina" class="form-tetra modale-conferma">
-                <div class="form-tetra-title" style="font-size: 20px;">Ricominciare la partita?</div>
+            <div id="confermatermina" class="form-mattoncini modale-conferma">
+                <div class="form-mattoncini-title" style="font-size: 20px;">Ricominciare la partita?</div>
                 <div style="font-size: 13.5px; color: #cde8cd; margin-bottom: 16px; text-align: center;">La partita in corso verrà interrotta.</div>
                 <div class="conferma-bottoni" style="display: flex; gap: 10px; width: 100%;">
                     <button onclick="chiudiModali()" id="btn-no-continua" class="btn-opzione-sel" style="padding: 10px;">ANNULLA</button>
@@ -280,8 +280,8 @@
             </div>
 
             <!-- 5. Modale Guida Controlli -->
-            <div id="modale-controlli" class="form-tetra">
-                <div class="form-tetra-title">⌨️ Controlli di Gioco</div>
+            <div id="modale-controlli" class="form-mattoncini">
+                <div class="form-mattoncini-title">⌨️ Controlli di Gioco</div>
                 <table class="controlli-tabella">
                     <tr><td>Muovi a Sinistra / Destra:</td><td><span class="key-badge">←</span> <span class="key-badge">→</span> oppure <span class="key-badge">A</span> <span class="key-badge">D</span></td></tr>
                     <tr><td>Ruota in Senso Orario:</td><td><span class="key-badge">↑</span> oppure <span class="key-badge">X</span> / <span class="key-badge">W</span></td></tr>
@@ -296,26 +296,26 @@
 
             <!-- ================= LINK FOOTER ================= -->
             <!-- Link Legali (Privacy Policy e Gestisci Cookie) e Info in basso a sinistra -->
-            <div class="legal-links-tetra">
+            <div class="legal-links-mattoncini">
                 <a href="privacy.html" target="_blank">Privacy Policy</a>
                 <span class="sep">•</span>
                 <a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)">Gestisci Cookie</a>
                 <span class="sep">•</span>
-                <a href="guida-tetra.html" target="_blank" rel="opener" class="pulsante-link-tetra">Istruzioni</a>
-                <a href="aboutme.html" target="_blank" class="pulsante-link-tetra">Scrivetemi</a>
+                <a href="guida-mattoncini.html" target="_blank" rel="opener" class="pulsante-link-mattoncini">Istruzioni</a>
+                <a href="aboutme.html" target="_blank" class="pulsante-link-mattoncini">Scrivetemi</a>
             </div>
 
-            <div class="link-giochi-tetra">
-                <a href="scala40.html" class="pulsante-link-tetra">Scala 40</a>
-                <a href="burraco.html" class="pulsante-link-tetra">Burraco</a>
-                <a href="sudoku.html" class="pulsante-link-tetra">Sudoku</a>
-                <a href="domino.html" class="pulsante-link-tetra">Domino</a>
-                <a href="mahjong.html" class="pulsante-link-tetra">Mahjong</a>
-                <a href="dama.html" class="pulsante-link-tetra">Dama</a>
-                <a href="scacchi.html" class="pulsante-link-tetra">Scacchi</a>
-                <a href="minato.html" class="pulsante-link-tetra">Campo Minato</a>
-                <a href="quadrati.html" class="pulsante-link-tetra">Quadrati</a>
-                <a href="index.html" class="pulsante-link-tetra pulsante-home-tetra">TUTTI I GIOCHI</a>
+            <div class="link-giochi-mattoncini">
+                <a href="scala40.html" class="pulsante-link-mattoncini">Scala 40</a>
+                <a href="burraco.html" class="pulsante-link-mattoncini">Burraco</a>
+                <a href="sudoku.html" class="pulsante-link-mattoncini">Sudoku</a>
+                <a href="domino.html" class="pulsante-link-mattoncini">Domino</a>
+                <a href="mahjong.html" class="pulsante-link-mattoncini">Mahjong</a>
+                <a href="dama.html" class="pulsante-link-mattoncini">Dama</a>
+                <a href="scacchi.html" class="pulsante-link-mattoncini">Scacchi</a>
+                <a href="minato.html" class="pulsante-link-mattoncini">Campo Minato</a>
+                <a href="quadrati.html" class="pulsante-link-mattoncini">Quadrati</a>
+                <a href="index.html" class="pulsante-link-mattoncini pulsante-home-mattoncini">TUTTI I GIOCHI</a>
             </div>
 
         </div><!-- /campogioco -->
@@ -325,8 +325,8 @@
     <script src="site.js?v=1.1"></script>
     <!-- Layout engine per ridimensionamento responsivo -->
     <script src="game-layout.js?v=4.6"></script>
-    <!-- Motore di Gioco Tetra -->
-    <script src="tetra.js?v=1.8"></script>
+    <!-- Motore di Gioco Mattoncini -->
+    <script src="mattoncini.js?v=2.0"></script>
     <script>
         (function () {
             var nascosto = false;

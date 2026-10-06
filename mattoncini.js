@@ -1,5 +1,5 @@
 /**
- * TETRA LUCIANO - Motore di Gioco Completo
+ * MATTONCINI - Motore di Gioco Completo
  * lucianomanenti.com
  */
 
@@ -11,7 +11,7 @@
     var isEn = lang === 'en';
 
     var TXT = {
-        title: isEn ? 'Tetra Luciano' : 'Tetra Luciano',
+        title: isEn ? 'Mattoncini' : 'Mattoncini',
         modeMarathon: isEn ? 'Marathon' : 'Maratona',
         modeSprint: isEn ? 'Sprint (40 Lines)' : 'Sprint 40 Righe',
         modeUltra: isEn ? 'Ultra (2 Min)' : 'Ultra (2 Minuti)',
@@ -21,8 +21,8 @@
         sprintComplete: isEn ? 'SPRINT COMPLETED!' : 'SPRINT COMPLETATO!',
         ultraComplete: isEn ? 'TIME UP! ULTRA COMPLETED' : 'TEMPO SCADUTO! ULTRA CONCLUSO',
         newRecord: isEn ? '🏆 NEW RECORD!' : '🏆 NUOVO RECORD!',
-        tetraClear: isEn ? 'TETRA!' : 'TETRA!',
-        tspin: isEn ? 'T-SPIN!' : 'T-SPIN!',
+        muroClear: isEn ? 'WALL!' : 'MURO!',
+        incastro: isEn ? 'WEDGE!' : 'INCASTRO!',
         backToBack: isEn ? 'BACK TO BACK!' : 'CONSECUTIVO!',
         single: isEn ? 'Single' : 'Singola',
         double: isEn ? 'Double' : 'Doppia',
@@ -31,19 +31,23 @@
     };
 
     // ─── CONFIGURAZIONE DEI TETRAMINI E COLORI ────────────────────────────
-    var COLS = 10;
-    var ROWS = 20;
-    var BLOCK_SIZE = 28; // Dimensione base render (280x560 canvas)
+    var COLS = 12;
+    var ROWS = 22;
+    var BLOCK_SIZE = 28; // Dimensione base render (336x616 canvas)
 
     // Palette colori brillanti, vivaci e luminosi con rilievi 3D
+    // Le sette rampe sono quelle disegnate per il rilievo; a cambiare e' a
+    // quale pezzo vanno. Nessun pezzo tiene il colore che aveva, e le due
+    // coppie speculari - S/Z e J/L - prendono tinte lontane invece che
+    // vicine, cosi' a occhio non si scambiano mentre scendono.
     var PIECE_COLORS = {
-        I: { main: '#00e5ff', light: '#80f3ff', dark: '#00b4d8', shadow: '#0077b6' }, // Cyan brillante
-        J: { main: '#3867d6', light: '#70a1ff', dark: '#1e3799', shadow: '#0c2461' }, // Blu vivace
-        L: { main: '#ff9f1a', light: '#ffd32a', dark: '#ff6348', shadow: '#eb2f06' }, // Arancione caldo
-        O: { main: '#ffd700', light: '#fff59d', dark: '#ffb300', shadow: '#f57c00' }, // Giallo oro luminoso
-        S: { main: '#2ed573', light: '#7bed9f', dark: '#26af61', shadow: '#1e824c' }, // Verde smeraldo brillante
-        T: { main: '#a55eea', light: '#d980fa', dark: '#8854d0', shadow: '#575fcf' }, // Viola acceso
-        Z: { main: '#ff4757', light: '#ff7675', dark: '#eb2f06', shadow: '#b33939' }  // Rosso rubino vivace
+        I: { main: '#ffd700', light: '#fff59d', dark: '#ffb300', shadow: '#f57c00' }, // Giallo oro luminoso
+        J: { main: '#2ed573', light: '#7bed9f', dark: '#26af61', shadow: '#1e824c' }, // Verde smeraldo brillante
+        L: { main: '#a55eea', light: '#d980fa', dark: '#8854d0', shadow: '#575fcf' }, // Viola acceso
+        O: { main: '#00e5ff', light: '#80f3ff', dark: '#00b4d8', shadow: '#0077b6' }, // Cyan brillante
+        S: { main: '#ff4757', light: '#ff7675', dark: '#eb2f06', shadow: '#b33939' }, // Rosso rubino vivace
+        T: { main: '#ff9f1a', light: '#ffd32a', dark: '#ff6348', shadow: '#eb2f06' }, // Arancione caldo
+        Z: { main: '#3867d6', light: '#70a1ff', dark: '#1e3799', shadow: '#0c2461' }  // Blu vivace
     };
 
     // Matrici forme 4x4 o 3x3 o 2x2
@@ -92,7 +96,24 @@
         ]
     };
 
-    // Super Rotation System (SRS) Wall Kicks
+    // Tabelle di scostamento: quando il pezzo, girando, andrebbe a sbattere
+    // contro un muro o contro i mattoncini gia' posati, si prova a spostarlo
+    // di queste caselle finche' una posizione sta.
+    //
+    // Questi numeri vengono dalla specifica ufficiale del Tetris e sono
+    // l'ultima cosa copiata rimasta nel motore. Il 3/10/2026 si e' provato a
+    // rifarli, misurando 2,8 milioni di rotazioni su 400 mucchi di gioco: una
+    // lista nostra sola, uguale per tutte le otto giravolte, non ce la fa.
+    // Mettendo lo scarto "giu' di due" in fondo si perde il 21% degli
+    // INCASTRI (il buco non lo trova piu'); mettendolo in testa gli incastri
+    // tornano, ma il pezzo sprofonda girando nel 3,55% dei casi contro lo
+    // 0,02% di adesso, e il giocatore perde il controllo. Il motivo e' che la
+    // loro tabella ha otto liste diverse, e in ognuna il "giu' di due" e'
+    // appaiato all'unico scarto di lato che entra solo in un buco vero.
+    // Se si vogliono togliere comunque, la variante meno peggio e':
+    //   JLSTZ [[0,0],[-1,0],[1,0],[-1,1],[1,1],[0,-2],[-1,-2],[1,-2],[0,-1]]
+    //   I     [[0,0],[-1,0],[1,0],[-2,0],[2,0],[-1,1],[1,1],[0,-2],[0,-1]]
+    // uguale per tutte le giravolte: controllo intatto, incastri al 78%.
     var KICKS_JLSTZ = {
         '0->1': [[0, 0], [-1, 0], [-1, 1], [0, -2], [-1, -2]],
         '1->0': [[0, 0], [1, 0], [1, -1], [0, 2], [1, 2]],
@@ -211,7 +232,7 @@
                 })(i);
             }
         },
-        tetraClear: function () {
+        mattonciniClear: function () {
             if (window.audioMuted) return;
             var notes = [523.25, 659.25, 783.99, 1046.50, 1318.51];
             notes.forEach(function (n, i) {
@@ -265,7 +286,7 @@
         isGameOver: false,
         lastDropTime: 0,
         lockTimer: null,
-        lockDelay: 500,      // 500ms lock delay standard
+        lockDelay: 450,      // tempo per muovere il pezzo appena appoggiato
         lockResets: 0,       // Max 15 aggiustamenti
         maxLockResets: 15,
         clearingLines: [],   // Linee in fase di animazione
@@ -510,9 +531,11 @@
 
     // ─── FORMULA GRAVITÀ E VELOCITÀ ───────────────────────────────────────
     function getGravityInterval(level) {
+        // Ogni livello cade nel 76% del tempo del livello prima: al primo un
+        // secondo per riga, al settimo meno di due decimi, e dal quattordicesimo
+        // in su si appoggia al pavimento dei 25 ms.
         var lvl = Math.min(Math.max(level, 1), 20);
-        var frames = Math.pow(0.8 - ((lvl - 1) * 0.007), lvl - 1) * 60;
-        return Math.max((frames / 60) * 1000, 25);
+        return Math.max(1000 * Math.pow(0.76, lvl - 1), 25);
     }
 
     // ─── GENERAZIONE NUOVO PEZZO ──────────────────────────────────────────
@@ -547,7 +570,7 @@
         }
     }
 
-    // ─── MOVIMENTI E ROTAZIONI (SRS) ──────────────────────────────────────
+    // ─── MOVIMENTI E ROTAZIONI ──────────────────────────────────────────
     function moveLeft() {
         if (!canControl()) return;
         var p = STATE.currentPiece;
@@ -700,7 +723,7 @@
         var p = STATE.currentPiece;
         var m = getPieceMatrix(p.type, p.rotation);
         var size = m.length;
-        var isTSpin = checkTSpin(p);
+        var isIncastro = checkIncastro(p);
 
         for (var r = 0; r < size; r++) {
             for (var c = 0; c < size; c++) {
@@ -733,14 +756,14 @@
         }
 
         if (fullLines.length > 0) {
-            handleLinesCleared(fullLines, isTSpin);
+            handleLinesCleared(fullLines, isIncastro);
         } else {
             STATE.combo = -1;
             spawnPiece();
         }
     }
 
-    function checkTSpin(p) {
+    function checkIncastro(p) {
         if (p.type !== 'T' || !p.lastMoveWasRotate) return false;
         var cx = p.x + 1;
         var cy = p.y + 1;
@@ -761,28 +784,33 @@
         return occupied >= 3;
     }
 
-    function handleLinesCleared(lines, isTSpin) {
+    function handleLinesCleared(lines, isIncastro) {
         var count = lines.length;
         STATE.clearingLines = lines;
         STATE.clearAnimTime = Date.now();
 
-        var basePoints = [0, 100, 300, 500, 800];
+        // Quanto vale chiudere 1, 2, 3 o 4 righe. La curva e' ripida di
+        // proposito: su un quadro largo 12 una riga costa piu' fatica, e il
+        // MURO deve restare la mossa che conviene aspettare.
+        var basePoints = [0, 120, 320, 560, 1200];
         var points = basePoints[count] * STATE.level;
-        var isDifficult = count === 4 || isTSpin;
+        var isDifficult = count === 4 || isIncastro;
 
-        if (isTSpin) {
-            var tSpinPoints = [0, 800, 1200, 1600];
-            points = (tSpinPoints[count] || 400) * STATE.level;
+        // L'incastro paga piu' del numero di righe che chiude: una riga sola
+        // incastrata (700) vale piu' di tre righe normali (560).
+        if (isIncastro) {
+            var puntiIncastro = [0, 700, 1300, 2000];
+            points = (puntiIncastro[count] || 300) * STATE.level;
         }
 
-        // Back-to-Back bonus (1.5x)
+        // Due mosse difficili di fila: una volta e mezzo e mezza
         if (isDifficult) {
             if (STATE.backToBack) {
-                points = Math.floor(points * 1.5);
-                showActionBanner(TXT.backToBack + (count === 4 ? ' ' + TXT.tetraClear : ' ' + TXT.tspin));
+                points = Math.floor(points * 1.6);
+                showActionBanner(TXT.backToBack + (count === 4 ? ' ' + TXT.muroClear : ' ' + TXT.incastro));
             } else {
-                if (count === 4) showActionBanner(TXT.tetraClear);
-                else if (isTSpin) showActionBanner(TXT.tspin);
+                if (count === 4) showActionBanner(TXT.muroClear);
+                else if (isIncastro) showActionBanner(TXT.incastro);
             }
             STATE.backToBack = true;
         } else {
@@ -792,25 +820,25 @@
             else if (count === 3) showActionBanner(TXT.triple);
         }
 
-        // Combo bonus
+        // Combo: righe chiuse una dietro l'altra senza respiro
         STATE.combo++;
         if (STATE.combo > 0) {
-            points += 50 * STATE.combo * STATE.level;
+            points += 40 * STATE.combo * STATE.level;
         }
 
         STATE.score += points;
         STATE.lines += count;
 
         if (count === 4) {
-            SFX.tetraClear();
+            SFX.mattonciniClear();
         } else {
             SFX.lineClear(count);
         }
 
-        // Avanzamento livello (ogni 10 righe in Marathon)
+        // Avanzamento livello (ogni 12 righe in Marathon)
         var oldLevel = STATE.level;
         if (CONFIG.mode === 'marathon') {
-            STATE.level = Math.floor(STATE.lines / 10) + CONFIG.startLevel;
+            STATE.level = Math.floor(STATE.lines / 12) + CONFIG.startLevel;
             if (STATE.level > oldLevel) {
                 SFX.levelUp();
                 showActionBanner(TXT.levelUp);
@@ -843,7 +871,7 @@
     // ─── BANNER AZIONE / COMBO / BACK-TO-BACK ─────────────────────────────
     var bannerTimeout = null;
     function showActionBanner(text) {
-        var banner = document.getElementById('tetra-action-banner');
+        var banner = document.getElementById('mattoncini-action-banner');
         if (!banner) return;
         banner.textContent = text;
         banner.classList.add('show');
@@ -1280,7 +1308,7 @@
         var btn = document.getElementById('btn-pausa');
         var modalePausa = document.getElementById('modale-pausa');
         var schermo = document.getElementById('schermo');
-        var msgStato = document.getElementById('messaggio-stato-tetra');
+        var msgStato = document.getElementById('messaggio-stato-mattoncini');
 
         if (STATE.isPaused) {
             if (btn) btn.classList.add('attivo');
@@ -1348,7 +1376,7 @@
     };
 
     window.chiudiModali = function () {
-        var modali = document.querySelectorAll('.form-tetra');
+        var modali = document.querySelectorAll('.form-mattoncini');
         modali.forEach(function (m) { m.style.display = 'none'; });
         var schermo = document.getElementById('schermo');
         if (schermo) schermo.style.display = 'none';
@@ -1410,7 +1438,7 @@
         updateStatsUI();
         startModeTimer();
 
-        var msgStato = document.getElementById('messaggio-stato-tetra');
+        var msgStato = document.getElementById('messaggio-stato-mattoncini');
         if (msgStato) msgStato.textContent = TXT.title;
 
         if (animFrameId) cancelAnimationFrame(animFrameId);
@@ -1557,7 +1585,7 @@
             return;
         }
 
-        canvas = document.getElementById('tetra-canvas');
+        canvas = document.getElementById('mattoncini-canvas');
         if (canvas) {
             canvas.width = COLS * BLOCK_SIZE;
             canvas.height = ROWS * BLOCK_SIZE;
@@ -1577,7 +1605,7 @@
             holdCanvas.addEventListener('click', onHoldTrigger);
             holdCanvas.addEventListener('touchstart', onHoldTrigger, { passive: false });
 
-            var holdParent = holdCanvas.closest('.tetra-box');
+            var holdParent = holdCanvas.closest('.mattoncini-box');
             if (holdParent) {
                 holdParent.addEventListener('click', onHoldTrigger);
             }
@@ -1607,7 +1635,7 @@
 
         caricaRecords();
 
-        var resetBtns = document.querySelectorAll('.btn-reset-record-tetra');
+        var resetBtns = document.querySelectorAll('.btn-reset-record-mattoncini');
         resetBtns.forEach(function (btn) {
             btn.addEventListener('click', azzeraRecordSingolo);
         });

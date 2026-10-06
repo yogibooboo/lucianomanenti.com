@@ -1,5 +1,5 @@
 /* ============================================================================
-   TETRA LUCIANO - Stile Grafico & Layout 1024x750
+   MATTONCINI - Stile Grafico & Layout 1024x750
    lucianomanenti.com
    ============================================================================ */
 
@@ -67,7 +67,7 @@ html, body {
 }
 
 /* ================= HEADER BAR SUPERIORE ================= */
-#header-tetra {
+#header-mattoncini {
     position: absolute;
     top: 0;
     left: 0;
@@ -240,7 +240,7 @@ html, body {
 }
 
 /* ================= BANNER NOTIFICHE STATO ================= */
-#messaggio-stato-tetra {
+#messaggio-stato-mattoncini {
     position: absolute;
     top: 64px;
     left: 50%;
@@ -260,7 +260,7 @@ html, body {
 }
 
 /* ================= AREA PRINCIPALE DI GIOCO ================= */
-#area-tavolo-tetra {
+#area-tavolo-mattoncini {
     position: absolute;
     top: 96px;
     left: 0;
@@ -272,7 +272,7 @@ html, body {
     z-index: 10;
 }
 
-.tetra-layout {
+.mattoncini-layout {
     display: flex;
     align-items: flex-start;
     justify-content: center;
@@ -281,14 +281,14 @@ html, body {
 }
 
 /* --- PANNELLI LATERALI (SINISTRO E DESTRO) --- */
-.tetra-side-panel {
+.mattoncini-side-panel {
     width: 180px;
     display: flex;
     flex-direction: column;
     gap: 12px;
 }
 
-.tetra-box {
+.mattoncini-box {
     background: rgba(0, 45, 18, 0.65);
     border: 2px solid rgba(100, 180, 120, 0.45);
     border-radius: 8px;
@@ -299,18 +299,18 @@ html, body {
     align-items: center;
 }
 
-.tetra-box.tetra-box-clickable {
+.mattoncini-box.mattoncini-box-clickable {
     transition: transform 0.15s, border-color 0.15s, background-color 0.15s, box-shadow 0.15s;
 }
 
-.tetra-box.tetra-box-clickable:hover {
+.mattoncini-box.mattoncini-box-clickable:hover {
     border-color: #ffd700;
     background: rgba(0, 65, 28, 0.8);
     box-shadow: 0 0 14px rgba(255, 215, 0, 0.4);
     transform: translateY(-1px);
 }
 
-.tetra-box-title {
+.mattoncini-box-title {
     font-size: 12px;
     font-weight: 700;
     color: #ffd700;
@@ -323,7 +323,7 @@ html, body {
     gap: 5px;
 }
 
-.tetra-box-val {
+.mattoncini-box-val {
     font-size: 20px;
     font-weight: bold;
     color: #ffffff;
@@ -331,16 +331,16 @@ html, body {
     text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
 }
 
-.tetra-box-val.gold {
+.mattoncini-box-val.gold {
     color: #ffd700;
 }
 
-.tetra-box-val.accent {
+.mattoncini-box-val.accent {
     color: #55efc4;
 }
 
 /* Pannello Record Stile Sudoku */
-.tetra-record-card {
+.mattoncini-record-card {
     width: 100%;
     padding: 8px 6px 10px;
 }
@@ -365,14 +365,14 @@ html, body {
     letter-spacing: 0.5px;
 }
 
-.record-righe-tetra {
+.record-righe-mattoncini {
     display: flex;
     justify-content: space-between;
     width: 100%;
     gap: 2px;
 }
 
-.record-col-tetra {
+.record-col-mattoncini {
     flex: 1;
     display: flex;
     flex-direction: column;
@@ -380,7 +380,7 @@ html, body {
     text-align: center;
 }
 
-.record-lbl-tetra {
+.record-lbl-mattoncini {
     font-size: 10px;
     color: #aed6ae;
     text-transform: uppercase;
@@ -388,7 +388,7 @@ html, body {
     line-height: 1;
 }
 
-.record-val-tetra {
+.record-val-mattoncini {
     font-size: 13.5px;
     font-weight: bold;
     color: #ffd700;
@@ -397,7 +397,7 @@ html, body {
     white-space: nowrap;
 }
 
-.btn-reset-record-tetra {
+.btn-reset-record-mattoncini {
     background: rgba(0, 0, 0, 0.4);
     border: 1px solid rgba(255, 255, 255, 0.25);
     color: #ccc;
@@ -414,13 +414,13 @@ html, body {
     justify-content: center;
 }
 
-.btn-reset-record-tetra:hover {
+.btn-reset-record-mattoncini:hover {
     color: #fff;
     border-color: rgba(255, 255, 255, 0.6);
     background: rgba(0, 60, 25, 0.8);
 }
 
-.btn-reset-record-tetra.conferma {
+.btn-reset-record-mattoncini.conferma {
     background: #cc0c39;
     color: #fff;
     border-color: #990022;
@@ -429,7 +429,7 @@ html, body {
     padding: 2px 4px;
 }
 
-.tetra-preview-canvas {
+.mattoncini-preview-canvas {
     background: rgba(10, 36, 18, 0.7);
     border-radius: 6px;
     border: 1px solid rgba(100, 180, 120, 0.35);
@@ -437,7 +437,7 @@ html, body {
 }
 
 /* Statistiche tessere (pezzi posizionati I, J, L, O, S, T, Z) */
-.tetra-stats-list {
+.mattoncini-stats-list {
     width: 100%;
     display: flex;
     flex-direction: column;
@@ -445,7 +445,7 @@ html, body {
     margin-top: 4px;
 }
 
-.tetra-stat-row {
+.mattoncini-stat-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -456,19 +456,19 @@ html, body {
     border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.tetra-stat-name {
+.mattoncini-stat-name {
     font-weight: bold;
     display: flex;
     align-items: center;
     gap: 4px;
 }
 
-.tetra-stat-count {
+.mattoncini-stat-count {
     color: #ffd700;
     font-weight: bold;
 }
 
-.tetra-side-panel.tetra-side-panel-right {
+.mattoncini-side-panel.mattoncini-side-panel-right {
     width: 250px;
 }
 
@@ -486,15 +486,15 @@ html, body {
     flex-direction: column;
 }
 
-/* --- GRIGLIA CENTRALE (CANVAS TETRA) --- */
-.tetra-board-wrapper {
+/* --- GRIGLIA CENTRALE (CANVAS MATTONCINI) --- */
+.mattoncini-board-wrapper {
     position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
 }
 
-#tetra-canvas {
+#mattoncini-canvas {
     background: linear-gradient(180deg, #0e3019 0%, #092412 100%);
     border: 3px solid #b8860b;
     border-radius: 6px;
@@ -502,8 +502,8 @@ html, body {
     display: block;
 }
 
-/* Banner combo / azione speciale (T-SPIN, TETRA!, BACK TO BACK) */
-#tetra-action-banner {
+/* Banner combo / azione speciale (INCASTRO, MURO!, BACK TO BACK) */
+#mattoncini-action-banner {
     position: absolute;
     top: 40%;
     left: 50%;
@@ -526,13 +526,13 @@ html, body {
     text-align: center;
 }
 
-#tetra-action-banner.show {
+#mattoncini-action-banner.show {
     transform: translate(-50%, -50%) scale(1);
     opacity: 1;
 }
 
 /* ================= CONTROLLI TOUCH PER MOBILE ================= */
-#touch-controls-tetra {
+#touch-controls-mattoncini {
     position: absolute;
     bottom: 48px;
     left: 0;
@@ -602,7 +602,7 @@ html, body {
     display: none;
 }
 
-.form-tetra {
+.form-mattoncini {
     position: absolute;
     top: 50%;
     left: 50%;
@@ -623,7 +623,7 @@ html, body {
     box-sizing: border-box;
 }
 
-.form-tetra-title {
+.form-mattoncini-title {
     font-size: 24px;
     font-weight: bold;
     color: #ffd700;
@@ -708,7 +708,7 @@ html, body {
 }
 
 /* Modale fine partita (bassa e larga per il banner pubblicitario finish sopra) */
-#modale-fine.modale-fine-tetra {
+#modale-fine.modale-fine-mattoncini {
     width: 700px;
     max-width: 700px;
     height: 230px;
@@ -887,7 +887,7 @@ html, body {
 }
 
 /* ================= FOOTER LINKS ================= */
-.legal-links-tetra {
+.legal-links-mattoncini {
     position: absolute;
     bottom: 6px;
     left: 12px;
@@ -898,7 +898,7 @@ html, body {
     z-index: 20;
 }
 
-.legal-links-tetra a:not(.pulsante-link-tetra) {
+.legal-links-mattoncini a:not(.pulsante-link-mattoncini) {
     color: rgba(255, 255, 255, 0.65);
     text-decoration: none;
     font-family: sans-serif;
@@ -906,16 +906,16 @@ html, body {
     transition: color 0.15s;
 }
 
-.legal-links-tetra a:not(.pulsante-link-tetra):hover {
+.legal-links-mattoncini a:not(.pulsante-link-mattoncini):hover {
     color: #ffd700;
 }
 
-.legal-links-tetra .sep {
+.legal-links-mattoncini .sep {
     color: rgba(255, 255, 255, 0.3);
     font-size: 11px;
 }
 
-.link-giochi-tetra {
+.link-giochi-mattoncini {
     position: absolute;
     bottom: 6px;
     right: 12px;
@@ -926,17 +926,17 @@ html, body {
     z-index: 20;
 }
 
-.link-giochi-tetra a {
+.link-giochi-mattoncini a {
     color: #cde8cd;
     text-decoration: none;
     transition: color 0.15s;
 }
 
-.link-giochi-tetra a:hover {
+.link-giochi-mattoncini a:hover {
     color: #ffd700;
 }
 
-.pulsante-link-tetra {
+.pulsante-link-mattoncini {
     background: rgba(0, 0, 0, 0.4);
     border: 1px solid rgba(255, 255, 255, 0.2);
     color: #ffffff;
@@ -950,20 +950,20 @@ html, body {
     align-items: center;
 }
 
-.pulsante-link-tetra:hover {
+.pulsante-link-mattoncini:hover {
     background-color: rgba(0, 60, 30, 0.85);
     border-color: #ffd700;
     color: #ffffff;
     transform: translateY(-1px);
 }
 
-.pulsante-home-tetra {
+.pulsante-home-mattoncini {
     background: linear-gradient(135deg, #c9720f, #8a4a08);
     border-color: #ffd700;
     color: #ffd700 !important;
 }
 
-.pulsante-home-tetra:hover {
+.pulsante-home-mattoncini:hover {
     color: #ffffff !important;
     background: linear-gradient(135deg, #e08514, #a3580a);
 }
