@@ -454,7 +454,7 @@ body {
 }
 
 /* Altri Giochi (colonna destra, sopra la musica).
-   Due colonne a griglia, 7 righe con Tetra. */
+   Due colonne a griglia, 7 righe con Mattoncini. */
 .other-games-container {
 	position: absolute;
 	top: 176px;
@@ -470,6 +470,14 @@ body {
 	grid-column: 1 / -1;
 }
 
+/* Un pulsante che si prende tutt'e due le sottocolonne: lo usa il gioco
+   nuovo, messo in testa alla colonna perche' si veda. Una riga larga vale una
+   riga della griglia, quindi la colonna cresce di 45px (39 di pulsante piu' 6
+   di spazio) e il menu della musica qui sotto va spostato con la classe giu. */
+.other-games-container .game-btn.larga {
+	grid-column: 1 / -1;
+}
+
 .other-games-container .game-btn {
 	height: 39px;
 	font-size: 16.5px;
@@ -477,7 +485,9 @@ body {
 }
 
 /* Menu Musica con pulsanti caldi color legno/ambra.
-   Posizionato a top: 527px, subito dopo la 7a riga di Altri Giochi. */
+   Posizionato a top: 527px, subito dopo la 7a riga di Altri Giochi. Dove sopra
+   c'e' un pulsante largo in piu' (vedi .game-btn.larga) la colonna arriva una
+   riga piu' in basso, e allora al contenitore si aggiunge la classe giu. */
 .music-menu-container {
 	position: absolute;
 	top: 527px;
@@ -487,6 +497,10 @@ body {
 	grid-template-columns: 225px 225px;
 	gap: 6px;
 	z-index: 10;
+}
+
+.music-menu-container.giu {
+	top: 572px;
 }
 
 .music-menu-container .menu-title-music {

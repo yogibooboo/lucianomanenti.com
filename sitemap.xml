@@ -2,530 +2,550 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 	<!-- Italian Pages -->
 	<url>
-		<loc>https://lucianomanenti.com/</loc>
-		<lastmod>2026-09-21</lastmod>
+		<loc>https://www.lucianomanenti.com/</loc>
+		<lastmod>2026-10-06</lastmod>
 		<priority>1.0</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/info.html</loc>
-		<lastmod>2026-09-21</lastmod>
+		<loc>https://www.lucianomanenti.com/info.html</loc>
+		<lastmod>2026-10-06</lastmod>
 		<priority>0.9</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/scala40.html</loc>
+		<loc>https://www.lucianomanenti.com/scala40.html</loc>
 		<lastmod>2026-03-29</lastmod>
 		<priority>0.9</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/machiavelli.html</loc>
+		<loc>https://www.lucianomanenti.com/machiavelli.html</loc>
 		<lastmod>2026-03-29</lastmod>
 		<priority>0.9</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/burraco.html</loc>
+		<loc>https://www.lucianomanenti.com/burraco.html</loc>
 		<lastmod>2026-08-18</lastmod>
 		<priority>0.9</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/spider.html</loc>
+		<loc>https://www.lucianomanenti.com/spider.html</loc>
 		<lastmod>2026-03-29</lastmod>
 		<priority>0.9</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/metronome.html</loc>
+		<loc>https://www.lucianomanenti.com/metronome.html</loc>
 		<lastmod>2026-03-29</lastmod>
 		<priority>0.8</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/regole-scala40.html</loc>
+		<loc>https://www.lucianomanenti.com/regole-scala40.html</loc>
 		<lastmod>2026-03-29</lastmod>
 		<priority>0.7</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/regole-machiavelli.html</loc>
+		<loc>https://www.lucianomanenti.com/regole-machiavelli.html</loc>
 		<lastmod>2026-03-29</lastmod>
 		<priority>0.7</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/regole-spider.html</loc>
+		<loc>https://www.lucianomanenti.com/regole-spider.html</loc>
 		<lastmod>2026-03-29</lastmod>
 		<priority>0.7</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/regole-burraco.html</loc>
+		<loc>https://www.lucianomanenti.com/regole-burraco.html</loc>
 		<lastmod>2026-03-29</lastmod>
 		<priority>0.7</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/guida-metronomo.html</loc>
+		<loc>https://www.lucianomanenti.com/guida-metronomo.html</loc>
 		<lastmod>2026-03-29</lastmod>
 		<priority>0.7</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/aboutme.html</loc>
+		<loc>https://www.lucianomanenti.com/aboutme.html</loc>
 		<lastmod>2026-03-29</lastmod>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/privacy.html</loc>
+		<loc>https://www.lucianomanenti.com/privacy.html</loc>
 		<lastmod>2026-03-29</lastmod>
 		<priority>0.3</priority>
 	</url>
 
 	
 	<url>
-		<loc>https://lucianomanenti.com/rummy.html</loc>
+		<loc>https://www.lucianomanenti.com/rummy.html</loc>
 		<lastmod>2026-03-29</lastmod>
 		<priority>0.9</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/regole-rummy.html</loc>
+		<loc>https://www.lucianomanenti.com/regole-rummy.html</loc>
 		<lastmod>2026-03-29</lastmod>
 		<priority>0.7</priority>
 	</url>
 
 	<url>
-		<loc>https://lucianomanenti.com/briscola.html</loc>
+		<loc>https://www.lucianomanenti.com/briscola.html</loc>
 		<lastmod>2026-08-16</lastmod>
 		<priority>0.9</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/calcolo.html</loc>
+		<loc>https://www.lucianomanenti.com/calcolo.html</loc>
 		<lastmod>2026-08-16</lastmod>
 		<priority>0.9</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/codice-segreto.html</loc>
+		<loc>https://www.lucianomanenti.com/codice-segreto.html</loc>
 		<lastmod>2026-08-30</lastmod>
 		<priority>0.9</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/dama.html</loc>
+		<loc>https://www.lucianomanenti.com/dama.html</loc>
 		<lastmod>2026-08-09</lastmod>
 		<priority>0.9</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/klondike.html</loc>
+		<loc>https://www.lucianomanenti.com/klondike.html</loc>
 		<lastmod>2026-08-09</lastmod>
 		<priority>0.9</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/minato.html</loc>
+		<loc>https://www.lucianomanenti.com/minato.html</loc>
 		<lastmod>2026-08-19</lastmod>
 		<priority>0.9</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/mulino.html</loc>
+		<loc>https://www.lucianomanenti.com/mulino.html</loc>
 		<lastmod>2026-08-09</lastmod>
 		<priority>0.9</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/battaglia-navale.html</loc>
+		<loc>https://www.lucianomanenti.com/battaglia-navale.html</loc>
 		<lastmod>2026-08-30</lastmod>
 		<priority>0.9</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/navale.html</loc>
+		<loc>https://www.lucianomanenti.com/navale.html</loc>
 		<lastmod>2026-08-16</lastmod>
 		<priority>0.9</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/quadrati.html</loc>
+		<loc>https://www.lucianomanenti.com/quadrati.html</loc>
 		<lastmod>2026-08-19</lastmod>
 		<priority>0.9</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/scacchi.html</loc>
+		<loc>https://www.lucianomanenti.com/scacchi.html</loc>
 		<lastmod>2026-08-09</lastmod>
 		<priority>0.9</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/scopa.html</loc>
+		<loc>https://www.lucianomanenti.com/scopa.html</loc>
 		<lastmod>2026-08-09</lastmod>
 		<priority>0.9</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/sudoku.html</loc>
+		<loc>https://www.lucianomanenti.com/sudoku.html</loc>
 		<lastmod>2026-08-12</lastmod>
 		<priority>0.9</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/guida-battaglia-navale.html</loc>
+		<loc>https://www.lucianomanenti.com/guida-battaglia-navale.html</loc>
 		<lastmod>2026-08-30</lastmod>
 		<priority>0.7</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/regole-briscola.html</loc>
+		<loc>https://www.lucianomanenti.com/regole-briscola.html</loc>
 		<lastmod>2026-07-31</lastmod>
 		<priority>0.7</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/regole-calcolo.html</loc>
+		<loc>https://www.lucianomanenti.com/regole-calcolo.html</loc>
 		<lastmod>2026-08-12</lastmod>
 		<priority>0.7</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/regole-codice-segreto.html</loc>
+		<loc>https://www.lucianomanenti.com/regole-codice-segreto.html</loc>
 		<lastmod>2026-08-30</lastmod>
 		<priority>0.7</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/regole-dama.html</loc>
+		<loc>https://www.lucianomanenti.com/regole-dama.html</loc>
 		<lastmod>2026-07-19</lastmod>
 		<priority>0.7</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/regole-klondike.html</loc>
+		<loc>https://www.lucianomanenti.com/regole-klondike.html</loc>
 		<lastmod>2026-05-11</lastmod>
 		<priority>0.7</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/guida-minato.html</loc>
+		<loc>https://www.lucianomanenti.com/guida-minato.html</loc>
 		<lastmod>2026-08-16</lastmod>
 		<priority>0.7</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/regole-mulino.html</loc>
+		<loc>https://www.lucianomanenti.com/regole-mulino.html</loc>
 		<lastmod>2026-08-02</lastmod>
 		<priority>0.7</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/guida-navale.html</loc>
+		<loc>https://www.lucianomanenti.com/guida-navale.html</loc>
 		<lastmod>2026-08-16</lastmod>
 		<priority>0.7</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/guida-quadrati.html</loc>
+		<loc>https://www.lucianomanenti.com/guida-quadrati.html</loc>
 		<lastmod>2026-08-16</lastmod>
 		<priority>0.7</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/regole-scacchi.html</loc>
+		<loc>https://www.lucianomanenti.com/regole-scacchi.html</loc>
 		<lastmod>2026-07-19</lastmod>
 		<priority>0.7</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/regole-scopa.html</loc>
+		<loc>https://www.lucianomanenti.com/regole-scopa.html</loc>
 		<lastmod>2026-08-08</lastmod>
 		<priority>0.7</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/regole-sudoku.html</loc>
+		<loc>https://www.lucianomanenti.com/regole-sudoku.html</loc>
 		<lastmod>2026-08-02</lastmod>
 		<priority>0.7</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/mahjong.html</loc>
+		<loc>https://www.lucianomanenti.com/mahjong.html</loc>
 		<lastmod>2026-08-31</lastmod>
 		<priority>0.9</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/guida-mahjong.html</loc>
+		<loc>https://www.lucianomanenti.com/guida-mahjong.html</loc>
 		<lastmod>2026-08-31</lastmod>
 		<priority>0.7</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/tressette.html</loc>
+		<loc>https://www.lucianomanenti.com/tressette.html</loc>
 		<lastmod>2026-09-21</lastmod>
 		<priority>0.9</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/regole-tressette.html</loc>
+		<loc>https://www.lucianomanenti.com/regole-tressette.html</loc>
 		<lastmod>2026-09-21</lastmod>
 		<priority>0.7</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/domino.html</loc>
+		<loc>https://www.lucianomanenti.com/domino.html</loc>
 		<lastmod>2026-09-21</lastmod>
 		<priority>0.9</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/guida-domino.html</loc>
+		<loc>https://www.lucianomanenti.com/guida-domino.html</loc>
 		<lastmod>2026-09-21</lastmod>
 		<priority>0.7</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/tetra.html</loc>
+		<loc>https://www.lucianomanenti.com/mattoncini.html</loc>
+		<lastmod>2026-10-06</lastmod>
+		<priority>0.9</priority>
+	</url>
+	<url>
+		<loc>https://www.lucianomanenti.com/guida-mattoncini.html</loc>
+		<lastmod>2026-10-06</lastmod>
+		<priority>0.7</priority>
+	</url>
+	<url>
+		<loc>https://www.lucianomanenti.com/scorciatoie.html</loc>
 		<lastmod>2026-09-21</lastmod>
 		<priority>0.9</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/guida-tetra.html</loc>
+		<loc>https://www.lucianomanenti.com/guida-scorciatoie.html</loc>
 		<lastmod>2026-09-21</lastmod>
 		<priority>0.7</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/scorciatoie.html</loc>
-		<lastmod>2026-09-21</lastmod>
+		<loc>https://www.lucianomanenti.com/woowoo2.html</loc>
+		<lastmod>2026-10-06</lastmod>
 		<priority>0.9</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/guida-scorciatoie.html</loc>
-		<lastmod>2026-09-21</lastmod>
+		<loc>https://www.lucianomanenti.com/guida-woowoo.html</loc>
+		<lastmod>2026-10-06</lastmod>
 		<priority>0.7</priority>
 	</url>
 
 	<!-- English Pages -->
 	<url>
-		<loc>https://lucianomanenti.com/index-en.html</loc>
-		<lastmod>2026-09-21</lastmod>
+		<loc>https://www.lucianomanenti.com/index-en.html</loc>
+		<lastmod>2026-10-06</lastmod>
 		<priority>1.0</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/info-en.html</loc>
-		<lastmod>2026-09-21</lastmod>
+		<loc>https://www.lucianomanenti.com/info-en.html</loc>
+		<lastmod>2026-10-06</lastmod>
 		<priority>0.9</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/scala40-en.html</loc>
+		<loc>https://www.lucianomanenti.com/scala40-en.html</loc>
 		<lastmod>2026-03-29</lastmod>
 		<priority>0.9</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/machiavelli-en.html</loc>
+		<loc>https://www.lucianomanenti.com/machiavelli-en.html</loc>
 		<lastmod>2026-03-29</lastmod>
 		<priority>0.9</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/burraco-en.html</loc>
+		<loc>https://www.lucianomanenti.com/burraco-en.html</loc>
 		<lastmod>2026-08-18</lastmod>
 		<priority>0.9</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/spider-en.html</loc>
+		<loc>https://www.lucianomanenti.com/spider-en.html</loc>
 		<lastmod>2026-03-29</lastmod>
 		<priority>0.9</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/metronome-en.html</loc>
+		<loc>https://www.lucianomanenti.com/metronome-en.html</loc>
 		<lastmod>2026-03-29</lastmod>
 		<priority>0.8</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/regole-scala40-en.html</loc>
+		<loc>https://www.lucianomanenti.com/regole-scala40-en.html</loc>
 		<lastmod>2026-03-29</lastmod>
 		<priority>0.7</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/regole-machiavelli-en.html</loc>
+		<loc>https://www.lucianomanenti.com/regole-machiavelli-en.html</loc>
 		<lastmod>2026-03-29</lastmod>
 		<priority>0.7</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/regole-spider-en.html</loc>
+		<loc>https://www.lucianomanenti.com/regole-spider-en.html</loc>
 		<lastmod>2026-03-29</lastmod>
 		<priority>0.7</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/regole-burraco-en.html</loc>
+		<loc>https://www.lucianomanenti.com/regole-burraco-en.html</loc>
 		<lastmod>2026-03-29</lastmod>
 		<priority>0.7</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/guida-metronomo-en.html</loc>
+		<loc>https://www.lucianomanenti.com/guida-metronomo-en.html</loc>
 		<lastmod>2026-03-29</lastmod>
 		<priority>0.7</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/aboutme-en.html</loc>
+		<loc>https://www.lucianomanenti.com/aboutme-en.html</loc>
 		<lastmod>2026-03-29</lastmod>
 		<priority>0.5</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/privacy-en.html</loc>
+		<loc>https://www.lucianomanenti.com/privacy-en.html</loc>
 		<lastmod>2026-03-29</lastmod>
 		<priority>0.3</priority>
 	</url>
 
 	<url>
-		<loc>https://lucianomanenti.com/rummy-en.html</loc>
+		<loc>https://www.lucianomanenti.com/rummy-en.html</loc>
 		<lastmod>2026-03-29</lastmod>
 		<priority>0.9</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/regole-rummy-en.html</loc>
+		<loc>https://www.lucianomanenti.com/regole-rummy-en.html</loc>
 		<lastmod>2026-03-29</lastmod>
 		<priority>0.7</priority>
 	</url>
 
 	<url>
-		<loc>https://lucianomanenti.com/briscola-en.html</loc>
+		<loc>https://www.lucianomanenti.com/briscola-en.html</loc>
 		<lastmod>2026-08-09</lastmod>
 		<priority>0.9</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/calcolo-en.html</loc>
+		<loc>https://www.lucianomanenti.com/calcolo-en.html</loc>
 		<lastmod>2026-08-16</lastmod>
 		<priority>0.9</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/codice-segreto-en.html</loc>
+		<loc>https://www.lucianomanenti.com/codice-segreto-en.html</loc>
 		<lastmod>2026-08-30</lastmod>
 		<priority>0.9</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/dama-en.html</loc>
+		<loc>https://www.lucianomanenti.com/dama-en.html</loc>
 		<lastmod>2026-08-09</lastmod>
 		<priority>0.9</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/klondike-en.html</loc>
+		<loc>https://www.lucianomanenti.com/klondike-en.html</loc>
 		<lastmod>2026-08-09</lastmod>
 		<priority>0.9</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/minato-en.html</loc>
+		<loc>https://www.lucianomanenti.com/minato-en.html</loc>
 		<lastmod>2026-08-19</lastmod>
 		<priority>0.9</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/mulino-en.html</loc>
+		<loc>https://www.lucianomanenti.com/mulino-en.html</loc>
 		<lastmod>2026-08-09</lastmod>
 		<priority>0.9</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/battaglia-navale-en.html</loc>
+		<loc>https://www.lucianomanenti.com/battaglia-navale-en.html</loc>
 		<lastmod>2026-08-30</lastmod>
 		<priority>0.9</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/navale-en.html</loc>
+		<loc>https://www.lucianomanenti.com/navale-en.html</loc>
 		<lastmod>2026-08-16</lastmod>
 		<priority>0.9</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/quadrati-en.html</loc>
+		<loc>https://www.lucianomanenti.com/quadrati-en.html</loc>
 		<lastmod>2026-08-19</lastmod>
 		<priority>0.9</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/scacchi-en.html</loc>
+		<loc>https://www.lucianomanenti.com/scacchi-en.html</loc>
 		<lastmod>2026-08-09</lastmod>
 		<priority>0.9</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/scopa-en.html</loc>
+		<loc>https://www.lucianomanenti.com/scopa-en.html</loc>
 		<lastmod>2026-08-09</lastmod>
 		<priority>0.9</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/sudoku-en.html</loc>
+		<loc>https://www.lucianomanenti.com/sudoku-en.html</loc>
 		<lastmod>2026-08-12</lastmod>
 		<priority>0.9</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/guida-battaglia-navale-en.html</loc>
+		<loc>https://www.lucianomanenti.com/guida-battaglia-navale-en.html</loc>
 		<lastmod>2026-08-30</lastmod>
 		<priority>0.7</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/regole-briscola-en.html</loc>
+		<loc>https://www.lucianomanenti.com/regole-briscola-en.html</loc>
 		<lastmod>2026-07-31</lastmod>
 		<priority>0.7</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/regole-calcolo-en.html</loc>
+		<loc>https://www.lucianomanenti.com/regole-calcolo-en.html</loc>
 		<lastmod>2026-08-12</lastmod>
 		<priority>0.7</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/regole-codice-segreto-en.html</loc>
+		<loc>https://www.lucianomanenti.com/regole-codice-segreto-en.html</loc>
 		<lastmod>2026-08-30</lastmod>
 		<priority>0.7</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/regole-dama-en.html</loc>
+		<loc>https://www.lucianomanenti.com/regole-dama-en.html</loc>
 		<lastmod>2026-07-19</lastmod>
 		<priority>0.7</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/regole-klondike-en.html</loc>
+		<loc>https://www.lucianomanenti.com/regole-klondike-en.html</loc>
 		<lastmod>2026-05-11</lastmod>
 		<priority>0.7</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/guida-minato-en.html</loc>
+		<loc>https://www.lucianomanenti.com/guida-minato-en.html</loc>
 		<lastmod>2026-08-16</lastmod>
 		<priority>0.7</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/regole-mulino-en.html</loc>
+		<loc>https://www.lucianomanenti.com/regole-mulino-en.html</loc>
 		<lastmod>2026-08-02</lastmod>
 		<priority>0.7</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/guida-navale-en.html</loc>
+		<loc>https://www.lucianomanenti.com/guida-navale-en.html</loc>
 		<lastmod>2026-08-16</lastmod>
 		<priority>0.7</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/guida-quadrati-en.html</loc>
+		<loc>https://www.lucianomanenti.com/guida-quadrati-en.html</loc>
 		<lastmod>2026-08-16</lastmod>
 		<priority>0.7</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/regole-scacchi-en.html</loc>
+		<loc>https://www.lucianomanenti.com/regole-scacchi-en.html</loc>
 		<lastmod>2026-07-19</lastmod>
 		<priority>0.7</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/regole-scopa-en.html</loc>
+		<loc>https://www.lucianomanenti.com/regole-scopa-en.html</loc>
 		<lastmod>2026-08-08</lastmod>
 		<priority>0.7</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/regole-sudoku-en.html</loc>
+		<loc>https://www.lucianomanenti.com/regole-sudoku-en.html</loc>
 		<lastmod>2026-08-02</lastmod>
 		<priority>0.7</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/mahjong-en.html</loc>
+		<loc>https://www.lucianomanenti.com/mahjong-en.html</loc>
 		<lastmod>2026-08-31</lastmod>
 		<priority>0.9</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/guida-mahjong-en.html</loc>
+		<loc>https://www.lucianomanenti.com/guida-mahjong-en.html</loc>
 		<lastmod>2026-08-31</lastmod>
 		<priority>0.7</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/tressette-en.html</loc>
+		<loc>https://www.lucianomanenti.com/tressette-en.html</loc>
 		<lastmod>2026-09-21</lastmod>
 		<priority>0.9</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/regole-tressette-en.html</loc>
+		<loc>https://www.lucianomanenti.com/regole-tressette-en.html</loc>
 		<lastmod>2026-09-21</lastmod>
 		<priority>0.7</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/domino-en.html</loc>
+		<loc>https://www.lucianomanenti.com/domino-en.html</loc>
 		<lastmod>2026-09-21</lastmod>
 		<priority>0.9</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/guida-domino-en.html</loc>
+		<loc>https://www.lucianomanenti.com/guida-domino-en.html</loc>
 		<lastmod>2026-09-21</lastmod>
 		<priority>0.7</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/tetra-en.html</loc>
+		<loc>https://www.lucianomanenti.com/mattoncini-en.html</loc>
+		<lastmod>2026-10-06</lastmod>
+		<priority>0.9</priority>
+	</url>
+	<url>
+		<loc>https://www.lucianomanenti.com/guida-mattoncini-en.html</loc>
+		<lastmod>2026-10-06</lastmod>
+		<priority>0.7</priority>
+	</url>
+	<url>
+		<loc>https://www.lucianomanenti.com/scorciatoie-en.html</loc>
 		<lastmod>2026-09-21</lastmod>
 		<priority>0.9</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/guida-tetra-en.html</loc>
+		<loc>https://www.lucianomanenti.com/guida-scorciatoie-en.html</loc>
 		<lastmod>2026-09-21</lastmod>
 		<priority>0.7</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/scorciatoie-en.html</loc>
-		<lastmod>2026-09-21</lastmod>
+		<loc>https://www.lucianomanenti.com/woowoo2-en.html</loc>
+		<lastmod>2026-10-06</lastmod>
 		<priority>0.9</priority>
 	</url>
 	<url>
-		<loc>https://lucianomanenti.com/guida-scorciatoie-en.html</loc>
-		<lastmod>2026-09-21</lastmod>
+		<loc>https://www.lucianomanenti.com/guida-woowoo-en.html</loc>
+		<lastmod>2026-10-06</lastmod>
 		<priority>0.7</priority>
 	</url>
 </urlset>

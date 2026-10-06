@@ -29,12 +29,11 @@
 
     <meta name="Description"
         content="WooWoo Luciano: il rompicapo ferroviario in tempo reale. Aziona gli scambi, porta ogni treno alla stazione giusta ed evita gli scontri.">
-    <meta name="robots" content="noindex, nofollow">
     <meta http-Equiv="Cache-Control" Content="no-cache">
     <meta http-Equiv="Pragma" Content="no-cache">
     <meta http-Equiv="Expires" Content="0">
 
-    <link rel="stylesheet" href="woowoo2.css?v=2.4" />
+    <link rel="stylesheet" href="woowoo2.css?v=2.5" />
 
     <script>
         // Google Analytics: gtag() esiste sempre, lo script si carica solo fuori da dev_mode
@@ -106,6 +105,9 @@
             <div id="area-tabellone">
                 <div id="canvas-wrapper">
                     <canvas id="w2-canvas" width="960" height="576"></canvas>
+                    <!-- Cartello di fine quadro: sta sopra il quadro per tre secondi,
+                         prima della modale. Lo riempie il motore. -->
+                    <div id="w2-annuncio" class="w2-annuncio"></div>
                 </div>
             </div>
 
@@ -139,7 +141,7 @@
 
             <div class="link-giochi-w2">
                 <a href="aboutme.html" target="_blank" class="pulsante-link-w2">Scrivetemi</a>
-                <a href="regole-woowoo2.html" target="_blank" class="pulsante-link-w2">Come si gioca</a>
+                <a href="guida-woowoo.html" target="_blank" class="pulsante-link-w2">Come si gioca</a>
                 <a href="index.html" class="pulsante-link-w2 pulsante-home-w2">TUTTI I GIOCHI</a>
             </div>
 
@@ -150,15 +152,51 @@
     <script src="game-layout.js?v=4.6"></script>
     <!-- Due file di dati: A..L sono il dischetto, M..X sono i livelli nostri.
          Il dischetto sta in dev/, che non si carica sul server: quello e'
-         materiale Kingsoft, riferimento tecnico e non roba da pubblicare. -->
-    <script src="dev/woowoo2-dati.js?v=1.6"></script>
+         materiale Kingsoft, riferimento tecnico e non roba da pubblicare.
+         Per questo si chiede solo in modalita' sviluppo: fuori di li' il file
+         non c'e', e un tag fisso vorrebbe dire un 404 a ogni visita. Senza, il
+         contenitore se lo fa woowoo2-codici.js qui sotto e la campagna sono i
+         quadri nostri.
+         document.write e non appendChild: questo script deve girare PRIMA di
+         woowoo2-codici.js, e solo document.write durante il parsing lo
+         garantisce: un tag script aggiunto col DOM parte per conto suo. -->
+    <script>
+        (function () {
+            try { if (localStorage.getItem('dev_mode') !== '1') return; } catch (e) { return; }
+            document.write('<script src="dev/woowoo2-dati.js?v=1.6"><\/script>');
+        })();
+    </script>
     <!-- I codici delle piastrelle: questi si pubblicano, servono anche ai
          quadri nostri. Vanno dopo il dischetto, che se li trovasse davanti li
          cancellerebbe. -->
     <script src="woowoo2-codici.js?v=1.2"></script>
     <script src="woowoo2-mie.js?v=3.9"></script>
-    <script src="woowoo2-binari.js?v=1.9"></script>
-    <script src="woowoo2.js?v=1.65"></script>
+    <script src="woowoo2-binari.js?v=2.1"></script>
+    <script src="woowoo2.js?v=1.68"></script>
+    <!-- Il bollino "Impostazioni privacy e cookie" che il CMP di Google
+         appiccica in fondo alla pagina: da' fastidio e non serve, perche' il
+         link "Gestisci Cookie" qui sotto richiama la stessa finestra. Si
+         riconosce dalla forma e non dal nome, che Google cambia: un div
+         figlio di body, con shadow DOM, senza classe e con uno style inline
+         lunghissimo. Stesso blocco di tutte le altre pagine del sito. -->
+    <script>
+        (function () {
+            var nascosto = false;
+            var observer = new MutationObserver(function () {
+                if (nascosto) return;
+                var divs = document.querySelectorAll('body > div');
+                for (var i = 0; i < divs.length; i++) {
+                    if (divs[i].shadowRoot && !divs[i].className && (divs[i].getAttribute('style') || '').length > 5000) {
+                        divs[i].style.setProperty('display', 'none', 'important');
+                        nascosto = true;
+                        observer.disconnect();
+                        return;
+                    }
+                }
+            });
+            observer.observe(document.body, { childList: true });
+        })();
+    </script>
 </body>
 
 </html>

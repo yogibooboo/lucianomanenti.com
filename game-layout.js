@@ -1080,20 +1080,23 @@ function adjustLayout() {
             var offerteTesto = en ? 'Amazon / AliExpress Deals' : 'Offerte Amazon / AliExpress';
             var offerteBg = 'background:linear-gradient(180deg,#e47911 0%,#e62e04 100%);border:2px solid #ffd18c;';
 
-            var promoLink = en ? '/calcolo-en.html' : '/calcolo.html';
-            var promoTesto = en ? 'CROSS FIGURE Luciano' : 'CALCOLO ENIGMATICO';
+            // Il primo posto va al gioco piu' recente: prima era Calcolo
+            // Enigmatico, dal 6/10/2026 e' WooWoo. Il nome da solo non dice
+            // niente a chi non c'e' mai stato, e allora porta dietro due parole.
+            var promoLink = en ? '/woowoo2-en.html' : '/woowoo2.html';
+            var promoTesto = en ? 'WOOWOO - trains and switches' : 'WOOWOO - treni e scambi';
 
-            // Tressette / Traversone tiene il badge "nuovo" come Calcolo Enigmatico
+            // Tressette / Traversone tiene il badge "nuovo" come WooWoo
             var tressetteLink = en ? '/tressette-en.html' : '/tressette.html';
             var tressetteTesto = 'TRESSETTE/TRAVERSONE (ciapanò)';
 
             return '<div style="display:flex;flex-direction:column;justify-content:space-evenly;align-items:center;width:300px;height:250px;padding:10px;box-sizing:border-box;background:linear-gradient(135deg, #14532d, #022c22);border:3px solid #ffdb4d;border-radius:12px;box-shadow:inset 0 0 20px rgba(0,0,0,0.6), 0 4px 15px rgba(0,0,0,0.5);font-family:\'Outfit\',\'Open Sans\',sans-serif;z-index:100;overflow:hidden;">' +
                 '<a href="' + promoLink + '" target="_self" class="sudoku-promo-btn" style="' + stileRiga + 'background:linear-gradient(180deg,#b91c1c 0%,#991b1b 100%);border:2px solid #ffd700;"' + hover + '>' +
-                badgeSmall + '🔢<span style="color:#ffd700;">' + promoTesto + '</span>' +
+                badgeSmall + '🚂<span style="color:#ffd700;">' + promoTesto + '</span>' +
                 '</a>' +
                 // Verde scuro col bordo chiaro, gli stessi colori del feltro di
                 // gioco: e' il modo piu' rapido per far riconoscere il gioco a
-                // chi ci e' gia' stato, e non ripete il rosso di Calcolo qui
+                // chi ci e' gia' stato, e non ripete il rosso di WooWoo qui
                 // sopra ne' il blu della musica qui sotto.
                 '<a href="' + tressetteLink + '" target="_self" class="sudoku-promo-btn" style="' + stileRiga + 'font-size:12.5px;background:linear-gradient(180deg,#15803d 0%,#14532d 100%);border:2px solid #ffd700;"' + hover + '>' +
                 badgeSmall + '🃏<span style="color:#ffd700;">' + tressetteTesto + '</span>' +

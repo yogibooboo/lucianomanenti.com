@@ -111,12 +111,7 @@ dialog textarea{width:100%;background:#15181c;color:var(--testo);border:1px soli
   <button id="bSfondo" disabled title="scegli il jpeg del dipinto: dove va lo so io, images/woowoo2 del sito">Sfondo...</button>
   <button id="bSfondoVia" disabled title="toglie di mezzo il dipinto per guardare bene binari e stazioni: non cambia i dati, ma il PNG esce come lo vedi">Nascondi sfondo</button>
   <span class="sp"></span>
-  <b>targa</b>
-  <button id="bTarga" disabled title="poi clicca la casella dove mettere l'angolo sinistro della targa">Sposta targa</button>
-  <button id="bTargaVia" disabled title="rimette la targa al suo posto di serie, in alto a destra">In alto a destra</button>
-  <span id="targaDove">&mdash;</span>
-  <span class="sp"></span>
-  <button id="bPng" disabled title="scarica il quadro come lo vedi, senza reticolo ne lettere, col posto della targa in nero, da dare in pasto al disegnatore">PNG del quadro</button>
+  <button id="bPng" disabled title="scarica il quadro come lo vedi, senza reticolo ne lettere, da dare in pasto al disegnatore">PNG del quadro</button>
 </div>
 
 <dialog id="dlgCartella">
@@ -216,12 +211,13 @@ dialog textarea{width:100%;background:#15181c;color:var(--testo);border:1px soli
 
 <script src="woowoo2-dati.js"></script>
 <script src="../woowoo2-codici.js"></script>
+<script src="../woowoo2-binari.js"></script>
 <script>
 (function () {
 'use strict';
 
 var D = window.W2DATI;
-var CEL = 32, SCALA = 2, COLS = 15, RIGHE = 9, PRATO = 33;
+var CEL = 32, SCALA = 2, COLS = 15, RIGHE = 9, PRATO = 0;
 var ATL = 'tiles.png';   // l'atlante del dischetto, qui in dev/ accanto all'editor
 
 var DIR = { N: [-1, 0], S: [1, 0], E: [0, 1], O: [0, -1] };
@@ -229,26 +225,31 @@ var OPP = { N: 'S', S: 'N', E: 'O', O: 'E' };
 // punta (Zungenspitze) degli scambi: il capo che le due rotte condividono
 var PUNTA = { 1: 'S', 2: 'S', 3: 'N', 4: 'N', 5: 'O', 6: 'O', 7: 'E', 8: 'E' };
 
+// I numeri sono i nostri, non quelli del dischetto, e l'ordine di questo
+// elenco e' l'ordine della tavolozza qui sotto: prato, binari, scambi,
+// segnali, stazioni, decori. Da 0 a 30, senza buchi.
 var NOMI = {
-    0: 'incrocio piano EO/NS', 1: 'scambio NS/ES', 2: 'scambio NS/SO',
-    3: 'scambio NS/NE', 4: 'scambio NS/NO', 5: 'scambio EO/SO',
-    6: 'scambio EO/NO', 7: 'scambio EO/ES', 8: 'scambio EO/NE',
-    9: 'segnale EO', 10: 'segnale NS',
-    22: 'dritto EO', 23: 'dritto NS', 24: 'curva ES', 25: 'curva SO',
-    26: 'curva NE', 27: 'curva NO', 40: 'ponte EO',
-    28: 'stazione, bocca a O', 29: 'stazione, bocca a S',
-    30: 'stazione, bocca a E', 31: 'stazione, bocca a N',
-    32: 'trattore e pecore', 33: 'prato', 34: 'fienile', 35: 'stagno',
-    36: 'alberi', 37: 'tabellone (campo info)', 38: 'fiume NS',
-    39: 'stagno con isola', 41: 'aia recintata'
+    0: 'prato',
+    1: 'dritto EO', 2: 'dritto NS', 3: 'curva ES', 4: 'curva SO',
+    5: 'curva NE', 6: 'curva NO', 7: 'ponte EO',
+    8: 'incrocio piano EO/NS',
+    9: 'scambio NS/ES', 10: 'scambio NS/SO', 11: 'scambio NS/NE',
+    12: 'scambio NS/NO', 13: 'scambio EO/SO', 14: 'scambio EO/NO',
+    15: 'scambio EO/ES', 16: 'scambio EO/NE',
+    17: 'segnale EO', 18: 'segnale NS',
+    19: 'stazione, bocca a O', 20: 'stazione, bocca a S',
+    21: 'stazione, bocca a E', 22: 'stazione, bocca a N',
+    23: 'tabellone (campo info)',
+    24: 'trattore e pecore', 25: 'fienile', 26: 'stagno', 27: 'alberi',
+    28: 'fiume NS', 29: 'stagno con isola', 30: 'aia recintata'
 };
 
 var FAMIGLIE = [
-    ['binari', [22, 23, 24, 25, 26, 27, 40, 0]],
-    ['scambi', [1, 2, 3, 4, 5, 6, 7, 8]],
-    ['segnali', [9, 10]],
-    ['stazioni e tabellone', [28, 29, 30, 31, 37]],
-    ['decori', [33, 32, 34, 35, 36, 38, 39, 41]]
+    ['binari', [1, 2, 3, 4, 5, 6, 7, 8]],
+    ['scambi', [9, 10, 11, 12, 13, 14, 15, 16]],
+    ['segnali', [17, 18]],
+    ['stazioni e tabellone', [19, 20, 21, 22, 23]],
+    ['decori', [0, 24, 25, 26, 27, 28, 29, 30]]
 ];
 
 // I campi con "voci" sono scelte chiuse (menu a tendina); gli altri sono
@@ -274,6 +275,10 @@ var sel = 22;            // tessera scelta nella tavolozza
 var pila = [];           // annulla
 var sporco = false;
 var evid = null;         // evidenziazione vie d'accesso {a:{}, b:{}, staz:{}}
+// Quali caselle si stanno guardando commutate, per chiave "riga,colonna".
+// E' roba di vista come evid: non sta nei dati, non si salva, e cambiando
+// schema si azzera.
+var commutate = {};
 
 var tela = document.getElementById('tela'), ctx = tela.getContext('2d');
 var atl = new Image();
@@ -393,7 +398,7 @@ function apriTesto(testo, nome) {
     F = f; idx = -1; G = null; pila = []; sporco = false; evid = null;
     // Stessa copia intatta per la grafica: serve a rimettere a posto la
     // casella che si lascia quando il lavoro trasloca altrove.
-    F.elenco.forEach(function (e, i) { e.st0 = clona(stileSlot(i)); e.tg0 = clona(targaSlot(i)); });
+    F.elenco.forEach(function (e, i) { e.st0 = clona(stileSlot(i)); });
     riempiSelettori();
     abilita(false);
     document.getElementById('selSorg').disabled = false;
@@ -488,9 +493,9 @@ function cambiaDestinazione() {
     rinominaDipinto();
     segnaSporco();
 }
-// Lo stile e la targa non stanno dentro la casella: stanno nei dati, sotto il
-// livello, indicizzati per schema. Per spostarli insieme al quadro servono una
-// lettura e una scrittura per indice, non solo per "casella corrente".
+// Lo stile non sta dentro la casella: sta nei dati, sotto il livello,
+// indicizzato per schema. Per spostarlo insieme al quadro servono una lettura
+// e una scrittura per indice, non solo per "casella corrente".
 function clona(v) { return v == null ? v : JSON.parse(JSON.stringify(v)); }
 
 function stileSlot(i, v) {
@@ -501,37 +506,20 @@ function stileSlot(i, v) {
     return v;
 }
 
-function targaSlot(i, v) {
-    var e = F.elenco[i];
-    var liv = e && e.liv && F.dati && F.dati.liv[e.liv];
-    if (!liv) return null;
-    if (v === undefined) return liv.targa ? liv.targa[e.n] : null;
-    if (!liv.targa) {
-        if (!v) return null;                  // non c'era e non serve: non lo creo
-        liv.targa = [null, null, null];
-    }
-    liv.targa[e.n] = v;
-    if (liv.targa.every(function (x) { return !x; })) delete liv.targa;
-    return v;
-}
-
 // Sposta il lavoro in un'altra casella. Si porta dietro anche la grafica:
-// dipinto, foglio di piastrelle e targa sono roba del quadro, non della
+// dipinto e foglio di piastrelle sono roba del quadro, non della
 // casella. Prima restavano indietro, e arrivando nella casella nuova - che
 // quasi sempre e' "orig" - il disegno tornava a piastrelle del dischetto.
 function trasloca(j) {
     var quadro = G.map(function (r) { return r.slice(); });
     var stile = clona(stileSlot(idx));
-    var targa = clona(targaSlot(idx));
 
     // la casella che si lascia torna com'e' sul file, grafica compresa
     versa(F.elenco[idx].g, F.elenco[idx].g0);
     stileSlot(idx, clona(F.elenco[idx].st0) || null);
-    targaSlot(idx, clona(F.elenco[idx].tg0) || null);
 
     versa(F.elenco[j].g, quadro);
     stileSlot(j, stile || null);
-    targaSlot(j, targa || null);
 }
 
 // Il dipinto in attesa del Salva prende il nome dalla casella (sfondo-m2.jpg):
@@ -603,7 +591,7 @@ function versa(dest, sorg) {
         for (var c = 0; c < COLS; c++) dest[r][c] = sorg[r][c];
 }
 function vuota(g) {
-    return g.every(function (r) { return r.every(function (v) { return v === 33; }); });
+    return g.every(function (r) { return r.every(function (v) { return v === 0; }); });
 }
 // ---- blocco JS per woowoo2-mie.js --------------------------------------
 var LETTERE = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'W', 'X'];
@@ -758,7 +746,6 @@ function elencoCambiati() {
         var voci = [];
         if (n) voci.push(n + (n === 1 ? ' casella' : ' caselle'));
         if (JSON.stringify(stileSlot(i) || null) !== JSON.stringify(e.st0 || null)) voci.push('grafica');
-        if (JSON.stringify(targaSlot(i) || null) !== JSON.stringify(e.tg0 || null)) voci.push('targa');
         if (voci.length) fuori.push(e.eti + ' \u2014 ' + voci.join(', '));
     });
     return fuori;
@@ -913,7 +900,7 @@ async function salva(h, scelto) {
         // fino all'apertura dell'editor invece che all'ultimo salvataggio.
         F.elenco.forEach(function (e, i) {
             e.g0 = e.g.map(function (r) { return r.slice(); });
-            e.st0 = clona(stileSlot(i)); e.tg0 = clona(targaSlot(i));
+            e.st0 = clona(stileSlot(i));
         });
         segnaPulito('salvato in ' + h.name);
         return true;
@@ -1022,7 +1009,7 @@ function aggiornaEtichette() {
     });
 }
 function scegli(i) {
-    idx = i; G = F.elenco[i].g; pila = []; evid = null; spostando = false;
+    idx = i; G = F.elenco[i].g; pila = []; evid = null; commutate = {};
     document.getElementById('selDest').value = i;
     aggiornaEtichette();
     abilita(true);
@@ -1092,6 +1079,30 @@ function costruisciTavolozza() {
 var ATL_NOSTRO = '../images/woowoo2/tiles-nuove.png';
 var CARTELLA = 'images/woowoo2/';   // dove stanno i dipinti e i fogli di piastrelle
 var CEL_NOSTRA = 64;
+
+// La stazione disegnata da Luciano, come nel gioco: una piastrella sola, col
+// binario che entra da levante. Le altre tre sono la stessa girata, secondo il
+// lato scritto in D.staz, e vanno a coprire nell'atlante nostro le quattro
+// colonne delle stazioni del dischetto. Qui il quadrato della lettera non si
+// ridisegna sopra: nell'editor non ci sono treni da nascondere.
+var STAZ_SRC = '../images/woowoo2/stazione-tua.png';
+var STAZ_VERSO = 'E';               // da che parte entra il binario nel file
+var ANG_STAZ = { O: 0, E: Math.PI, N: Math.PI / 2, S: -Math.PI / 2 };
+
+function montaStazioni(tela, cella, img) {
+    var g = tela.getContext('2d');
+    g.imageSmoothingEnabled = false;
+    Object.keys(D.staz).forEach(function (k) {
+        var cod = +k, x = cod * cella;
+        if (x + cella > tela.width) return;
+        g.clearRect(x, 0, cella, cella);
+        g.save();
+        g.translate(x + cella / 2, cella / 2);
+        g.rotate((ANG_STAZ[D.staz[cod]] || 0) - ANG_STAZ[STAZ_VERSO]);
+        g.drawImage(img, -cella / 2, -cella / 2, cella, cella);
+        g.restore();
+    });
+}
 var FONDO_NEUTRO = '#26361f';   // il prato di quando il dipinto non c'e'
 // Sfondo tolto di mezzo per guardare i binari. E' solo un modo di vedere: nei
 // dati non cambia niente e il campo `sfondo' resta dov'e'. Il PNG pero' segue
@@ -1128,13 +1139,36 @@ function immagine(src) {
     if (!im) {
         im = new Image();
         im.onload = function () {
+            // Come nel gioco: i binari non vengono piu' dall'immagine, le
+            // loro colonne si ridisegnano sopra una copia dell'atlante
+            // partendo dalla rotta scritta nei codici. Da qui in poi nella
+            // cassetta al posto della Image c'e' un canvas, che per
+            // drawImage vale esattamente lo stesso.
+            if (src === ATL_NOSTRO && window.W2BINARI) {
+                var tela = W2BINARI.rifaiAtlante(im, CEL_NOSTRA);
+                cache[src] = tela;
+                // e sopra la copia dell'atlante vanno le quattro stazioni, che
+                // arrivano per conto loro: quando ci sono si ridisegna.
+                var st = new Image();
+                st.onload = function () {
+                    montaStazioni(tela, CEL_NOSTRA, st);
+                    disegna(); costruisciTavolozza();
+                };
+                st.src = STAZ_SRC;
+            }
             disegna();
             if (src === ATL_NOSTRO) costruisciTavolozza();   // arrivato tardi
         };
         im.src = src;
         cache[src] = im;
     }
-    return (im.complete && im.naturalWidth) ? im : null;
+    return pronta(im) ? cache[src] : null;
+}
+
+// Nella cassetta puo' esserci una Image ancora per strada oppure un canvas
+// gia' ridisegnato: il canvas e' pronto per definizione, la Image no.
+function pronta(im) {
+    return !!im && (im.tagName === 'CANVAS' || (im.complete && !!im.naturalWidth));
 }
 
 function nomeProposto() {
@@ -1146,11 +1180,10 @@ function aggiornaBarraGrafica() {
     // senza niente in lavorazione le due barre non hanno di che parlare: non
     // e' che il file non porti lo stile, e' che non si e' ancora scelto nulla
     if (!F || idx < 0) {
-        ['selStile', 'bSfondo', 'bSfondoVia', 'bTarga', 'bTargaVia'].forEach(function (id) {
+        ['selStile', 'bSfondo', 'bSfondoVia'].forEach(function (id) {
             document.getElementById(id).disabled = true;
         });
         document.getElementById('sfondoNome').textContent = '—';
-        document.getElementById('targaDove').textContent = '—';
         return;
     }
     var sty = stileCorrente();
@@ -1167,14 +1200,6 @@ function aggiornaBarraGrafica() {
         : !sty.sfondo ? 'nessun dipinto: scegline uno'
         : sty.sfondo + (dipintoNuovo && sty.sfondo.indexOf(dipintoNuovo.nome) >= 0
             ? '   (scelto, va su disco col Salva)' : '');
-
-    var tg = targaCorrente();
-    document.getElementById('bTarga').disabled = !tg;
-    document.getElementById('bTargaVia').disabled = !(tg && tg.suo);
-    document.getElementById('bTarga').textContent = spostando ? 'clicca una casella...' : 'Sposta targa';
-    document.getElementById('targaDove').textContent = !tg ? 'questo file non tiene la posizione'
-        : tg.suo ? 'riga ' + tg.r + ', colonna ' + tg.c
-        : 'di serie, in alto a destra';
 }
 
 document.getElementById('bSfondoVia').onclick = function () {
@@ -1191,53 +1216,6 @@ document.getElementById('selStile').onchange = function () {
     scriviStile(ricordo[e.liv + e.n] ||
         { atlante: CARTELLA + 'tiles-nuove.png?v=1.0', cella: CEL_NOSTRA,
           sfondo: CARTELLA + nomeProposto() + '?v=1.0' });
-};
-
-// ---- la targa: dove stanno i numeri nel gioco --------------------------
-// Il gioco scrive i parametri in una targa larga TARGA_C caselle e alta
-// TARGA_R, di serie in alto a destra, sul prato che gira intorno al quadro.
-// Chi lo vuole altrove lo sposta qui: la posizione finisce nel campo `targa`
-// del file di dati, una voce per schema come `stile`, [riga, colonna]
-// dell'angolo in alto a sinistra. Una voce nulla vuol dire "di serie", e
-// quando sono nulle tutte e tre il campo si toglie del tutto, cosi' i file
-// che nessuno ha spostato restano identici a prima.
-var TARGA_C = 3, TARGA_R = 1;
-var spostando = false;
-
-function haTarga() {
-    var e = schemaCorrente();
-    return !!(e && F.dati && e.liv);
-}
-function targaCorrente() {
-    if (!haTarga()) return null;
-    var e = schemaCorrente();
-    var liv = F.dati.liv[e.liv];
-    var t = liv.targa && liv.targa[e.n];
-    if (t && t.length === 2) return { r: t[0], c: t[1], suo: true };
-    return { r: 0, c: COLS - TARGA_C, suo: false };
-}
-function scriviTarga(v) {
-    var e = schemaCorrente();
-    var liv = F.dati.liv[e.liv];
-    if (!liv.targa) {
-        if (!v) return;                       // non c'era e non serve: non lo creo
-        liv.targa = [null, null, null];
-    }
-    liv.targa[e.n] = v;
-    if (liv.targa.every(function (x) { return !x; })) delete liv.targa;
-    segnaSporco();
-    aggiornaBarraGrafica();
-    disegna();
-}
-
-document.getElementById('bTarga').onclick = function () {
-    spostando = !spostando;
-    aggiornaBarraGrafica();
-    disegna();
-};
-document.getElementById('bTargaVia').onclick = function () {
-    spostando = false;
-    scriviTarga(null);
 };
 
 // ---- la cartella dei dipinti: si indica una volta sola ------------------
@@ -1384,15 +1362,6 @@ function pngDelQuadro() {
         c2.drawImage(foglio, cod * cel, 0, cel, cel,
             c * CEL * SCALA, r * CEL * SCALA, CEL * SCALA, CEL * SCALA);
     }
-    // Dove va la targa si stende un rettangolo nero pieno: nel gioco quella
-    // fetta di quadro sta sotto al riquadro dei numeri e non si vede. Chi
-    // dipinge lo sfondo cosi' lo sa, e non ci spreca paesaggio sopra.
-    var tg = targaCorrente();
-    if (tg) {
-        c2.fillStyle = '#000';
-        c2.fillRect(tg.c * CEL * SCALA, tg.r * CEL * SCALA,
-                    TARGA_C * CEL * SCALA, TARGA_R * CEL * SCALA);
-    }
     return t;
 }
 document.getElementById('bPng').onclick = function () {
@@ -1452,7 +1421,8 @@ function disegna() {
     for (var r = 0; r < RIGHE; r++) for (var c = 0; c < COLS; c++) {
         var cod = G[r][c];
         if (sty && !D.rotta[cod] && !D.staz[cod]) continue;
-        ctx.drawImage(foglio, cod * cel, 0, cel, cel,
+        var st = commutate[r + ',' + c] ? 1 : 0;
+        ctx.drawImage(foglio, cod * cel, st * cel, cel, cel,
             c * CEL * SCALA, r * CEL * SCALA, CEL * SCALA, CEL * SCALA);
     }
     // reticolo
@@ -1474,30 +1444,8 @@ function disegna() {
         ctx.fillStyle = '#fff'; ctx.fillText(L, c * 64 + 32, r * 64 + 26);
     }
     ctx.textAlign = 'left';
-    disegnaTarga();
     if (evid) velo();
     if (marchi.length) segnaErrori();
-}
-
-// L'ingombro della targa, come lo vedra' il gioco. Non e' una piastrella:
-// non sta nella griglia, sta solo nel campo `targa`.
-function disegnaTarga() {
-    var t = targaCorrente();
-    if (!t) return;
-    var x = t.c * CEL * SCALA, y = t.r * CEL * SCALA;
-    var w = TARGA_C * CEL * SCALA, h = TARGA_R * CEL * SCALA;
-    ctx.fillStyle = spostando ? 'rgba(224,192,111,.28)' : 'rgba(8,10,8,.55)';
-    ctx.fillRect(x, y, w, h);
-    ctx.setLineDash([6, 4]);
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = spostando ? '#e0c06f' : 'rgba(255,255,255,.55)';
-    ctx.strokeRect(x + 1, y + 1, w - 2, h - 2);
-    ctx.setLineDash([]);
-    ctx.font = 'bold 12px ui-monospace,Consolas,monospace';
-    ctx.textAlign = 'center';
-    ctx.fillStyle = spostando ? '#e0c06f' : 'rgba(255,255,255,.7)';
-    ctx.fillText('TARGA', x + w / 2, y + h / 2 + 4);
-    ctx.textAlign = 'left';
 }
 
 function velo() {
@@ -1533,21 +1481,14 @@ var giu = null;
 tela.addEventListener('pointerdown', function (e) {
     if (!G) return;
     var p = cella(e);
-    // Il tasto destro annulla l'ultima mossa, una per clic: e' la stessa cosa
-    // di Ctrl+Z ma senza staccare la mano dal quadro. Se si stava spostando la
-    // targa, invece, il destro annulla lo spostamento - li' non c'e' ancora
-    // niente da disfare. Prima il destro dipingeva come il sinistro.
+    // Il tasto destro gira lo scambio: fa vedere la piastrella commutata,
+    // cioe' la seconda riga dell'atlante. Non e' una modifica, non entra
+    // nella pila e non sporca il file - serve solo a guardare dove va il
+    // binario nell'altra posizione. Su una casella che non commuta non
+    // succede niente. Per disfare c'e' Ctrl+Z, che prima stava anche qui.
     if (e.button === 2) {
-        if (spostando) { spostando = false; aggiornaBarraGrafica(); disegna(); }
-        else annulla();
+        giraCasella(p.r, p.c);
         giu = null;
-        return;
-    }
-    if (spostando) {
-        // la casella cliccata e' l'angolo in alto a sinistra, e la targa
-        // deve restare dentro il tabellone
-        spostando = false;
-        scriviTarga([Math.min(p.r, RIGHE - TARGA_R), Math.min(p.c, COLS - TARGA_C)]);
         return;
     }
     giu = { r: p.r, c: p.c, cod: G[p.r][p.c], alt: e.altKey };
@@ -1587,7 +1528,6 @@ tela.addEventListener('contextmenu', function (e) { e.preventDefault(); });
 
 document.addEventListener('keydown', function (e) {
     if ((e.ctrlKey || e.metaKey) && e.key === 'z') { e.preventDefault(); annulla(); }
-    if (e.key === 'Escape' && spostando) { spostando = false; aggiornaBarraGrafica(); disegna(); }
 });
 document.getElementById('bAnnulla').onclick = annulla;
 
@@ -1604,7 +1544,18 @@ function poni(r, c, cod) {
     if (G[r][c] === cod) return;
     pila.push([[r, c, G[r][c]]]);
     G[r][c] = cod;
+    delete commutate[r + ',' + c];
     dopoModifica();
+}
+// Gira lo scambio solo per guardarlo. Vale per gli scambi e per i semafori,
+// cioe' per i codici che nell'atlante hanno due righe: gli altri hanno una
+// riga sola e commutarli mostrerebbe il vuoto.
+function giraCasella(r, c) {
+    var cod = G[r][c];
+    if (D.scambio.indexOf(cod) < 0 && D.segnale.indexOf(cod) < 0) return;
+    var k = r + ',' + c;
+    if (commutate[k]) delete commutate[k]; else commutate[k] = true;
+    disegna();
 }
 function annulla() {
     if (!pila.length) return;
@@ -1711,21 +1662,12 @@ function controlla() {
         }
     }
 
-    // 2. la casella nera del dischetto e la targa.
-    // Da quando i numeri stanno nel quadro comandi la casella nera e' solo
-    // paesaggio: puo' anche non esserci. Quello che conta e' che la targa non
-    // finisca sopra ai binari.
+    // 2. la casella nera del dischetto.
+    // Da quando i numeri stanno nel quadro comandi e' solo paesaggio: puo'
+    // anche non esserci.
     var info = 0;
     for (r = 0; r < RIGHE; r++) for (c = 0; c < COLS; c++) if (G[r][c] === D.info) info++;
     if (info > 1) nota.push('ci sono ' + info + ' caselle nere (codice ' + D.info + '): sono solo decorazione');
-    var tg = targaCorrente();
-    if (tg) {
-        var sotto = 0;
-        for (r = tg.r; r < tg.r + TARGA_R; r++) for (c = tg.c; c < tg.c + TARGA_C; c++)
-            if (dentro(r, c) && (D.rotta[G[r][c]] || D.staz[G[r][c]])) sotto++;
-        if (sotto) err.push('la targa copre ' + sotto + ' caselle di binario: spostala');
-    }
-
     // 3. stazioni
     var staz = [];
     for (r = 0; r < RIGHE; r++) for (c = 0; c < COLS; c++)

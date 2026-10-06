@@ -1,3 +1,9 @@
+// ATTENZIONE: i numeri di questo file sono quelli VECCHI, del dischetto, e
+// non sono stati ritradotti con la rinumerazione: non lo carica nessuno, e i
+// disegnini qui sotto sono fatti coi numeri, quindi ritradurli vorrebbe dire
+// ridisegnarli tutti. Se un giorno serve davvero, la tavola di conversione
+// sta in woowoo2-codici.js (prato 0, binari 1..8, scambi 9..16, segnali
+// 17..18, stazioni e tabellone 19..23, decori 24..30).
 // woowoo2 - schemi nostri.
 // NIENTE in questo file viene dal dischetto Kingsoft: il tracciato e i
 // parametri sono disegnati e tarati da zero. Si innesta su W2DATI dopo il

@@ -73,10 +73,6 @@ stats/stats-config.locale.php
 # --- WooWoo ---
 # Il gioco si chiama WooWoo ma i file portano il nome woowoo2: il primo
 # tentativo, quello coi file woowoo.*, resta solo sul disco.
-woowoo.html
-woowoo-en.html
-woowoo.css
-woowoo.js
 
 # La cartella dev/ tiene il materiale che viene dal dischetto Kingsoft del
 # 1992: le piastrelle estratte da Loco1.ilbm, i quarantacinque quadri

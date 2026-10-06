@@ -70,7 +70,8 @@ window.W2BINARI = (function () {
         sassoMin: 1.1,    // il sasso piu' piccolo, in pixel
         sassoMax: 3.3,    // il sasso piu' grosso
         sassoVelo: 0.35,  // quanto si vede il sasso piu' smorto
-        sassoVar: 0.07    // e quanto in piu' si vede il piu' acceso
+        sassoVar: 0.07,   // e quanto in piu' si vede il piu' acceso
+        mortoVelo: 0.35   // quanto si vede il ramo scollegato dello scambio
     };
 
     // Una sorgente sola per tutto il tabellone, da nord-est (y positivo = sud).
@@ -314,9 +315,51 @@ window.W2BINARI = (function () {
         revB = (ESTREMI[B][0] !== cond);
 
         massicciata(g, [pa, pb], cod);            // la ghiaia non si muove mai
+
+        // Il ramo scollegato. Nel dischetto non c'e': quando lo scambio sta da
+        // una parte, dall'altra resta solo ghiaia, e dove va il binario lo si
+        // capisce solo guardando bene. Tracciato appena, invece, la casella
+        // dice da sola che li' c'e' un bivio. Sta sotto al binario buono, e
+        // quando lo scambio si muove i due si scambiano il velo: a p = 0 e'
+        // acceso A e si intravede B, a p = 1 il contrario.
+        if (M.mortoVelo > 0) {
+            g.save();
+            g.globalAlpha = M.mortoVelo * p;
+            rotaie(g, pa);
+            g.globalAlpha = M.mortoVelo * (1 - p);
+            rotaie(g, pb);
+            g.restore();
+        }
+
         pm = poli(A, revA, B, revB, p, 48);
         traversine(g, pm);
         rotaie(g, pm);
+    }
+
+    // Il raccordo della stazione: lo spezzone di binario che dal bordo della
+    // casella arriva al fabbricato. Torna una tela sua invece di disegnare
+    // dove gli si dice, e il motivo e' dentro `sassi()': la ghiaia si sparge
+    // in `source-atop', cioe' solo dove c'e' gia' colore. Su una piastrella
+    // piena come quella della stazione finirebbe addosso a tutto il
+    // fabbricato. Su una tela vuota, invece, resta dov'e' la massicciata.
+    // `lungo' e' quanto entra il binario, contato dal bordo della bocca.
+    function raccordo(verso, lungo) {
+        var rot = (verso === 'E' || verso === 'O') ? 'EO' : 'NS';
+        var c = document.createElement('canvas');
+        c.width = c.height = C;
+        var g = c.getContext('2d');
+        var pts = poli(rot, false, null, false, 0);
+        massicciata(g, [pts], 0); traversine(g, pts); rotaie(g, pts);
+
+        // Via la meta' che entrerebbe nel fabbricato: resta la striscia
+        // attaccata al lato da cui arriva il treno.
+        g.globalCompositeOperation = 'destination-in';
+        g.fillStyle = '#000';
+        if (verso === 'E') g.fillRect(C - lungo, 0, lungo, C);
+        else if (verso === 'O') g.fillRect(0, 0, lungo, C);
+        else if (verso === 'S') g.fillRect(0, C - lungo, C, lungo);
+        else g.fillRect(0, 0, C, lungo);
+        return c;
     }
 
     // ---- quello che usa il gioco -----------------------------------------
@@ -383,6 +426,7 @@ window.W2BINARI = (function () {
         DURATA: DURATA,
         PASSI: PASSI,
         rifaiAtlante: rifaiAtlante,
+        raccordo: raccordo,
         cella: cella,
         disegnaCella: disegnaCella
     };

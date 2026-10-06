@@ -202,6 +202,7 @@ html, body {
 }
 
 #canvas-wrapper {
+    position: relative;        /* il cartello di fine quadro si appende qui */
     width: 960px;
     height: 576px;
     border: 3px solid rgba(0, 0, 0, 0.55);
@@ -349,6 +350,45 @@ html, body {
     background: #143f21;
     color: #fff;
     font-size: 12px;
+}
+
+/* === CARTELLO DI FINE QUADRO ===
+   Quello che si vede nei tre secondi prima della modale. Sta sopra il quadro
+   ma non lo copre: una striscia sola, nel terzo alto, e il quadro resta
+   leggibile sotto. `pointer-events: none' non e' un dettaglio: quel cartello
+   non deve prendere nessun clic, ne' dare l'idea che ci sia qualcosa da
+   cliccare. */
+.w2-annuncio {
+    position: absolute;
+    top: 150px; left: 50%;
+    transform: translateX(-50%);
+    padding: 10px 26px;
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.78);
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+    text-align: center;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.25s;
+    z-index: 20;
+}
+.w2-annuncio.su { opacity: 1; visibility: visible; }
+.w2-annuncio b {
+    display: block;
+    font-size: 24px;
+    font-weight: 900;
+    letter-spacing: 0.5px;
+}
+.w2-annuncio.bene b { color: #ffd700; }
+.w2-annuncio.male b { color: #ff9a8a; }
+.w2-annuncio span {
+    display: block;
+    margin-top: 2px;
+    font-size: 12px;
+    color: #cfe3d4;
 }
 
 /* === MODALE DI FINE QUADRO === */

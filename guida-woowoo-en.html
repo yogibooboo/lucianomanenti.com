@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
+	<script>
+		window.dataLayer = window.dataLayer || [];
+		function gtag() { dataLayer.push(arguments); }
+		gtag('js', new Date());
+		gtag('config', 'G-WRBDRDQ4L8');
+		window.currentLang = 'en';
+	</script>
+	<title>WooWoo Rules - How to Play and Strategy</title>
+	<meta name="Description"
+		content="Complete guide to WooWoo: how to work the switches, how to read the train schedule, how time and crashes work, and the strategy for clearing every board.">
+	<link rel="alternate" hreflang="it" href="guida-woowoo.html">
+	<link rel="alternate" hreflang="en" href="guida-woowoo-en.html">
+	<link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
+	<link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
+	<link rel="shortcut icon" href="favicon/favicon.ico">
+	<link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+	<style>
+		body {
+			font-family: sans-serif;
+			line-height: 1.7;
+			max-width: 800px;
+			margin: 40px auto;
+			padding: 20px;
+			color: #333;
+			background-color: #f9f9f9;
+		}
+
+		h1 {
+			color: #2c3e50;
+			border-bottom: 2px solid #ffd700;
+			padding-bottom: 10px;
+		}
+
+		h2 {
+			color: #2c3e50;
+			margin-top: 30px;
+		}
+
+		h3 {
+			color: #2c3e50;
+			font-size: 1.1em;
+			margin-top: 20px;
+		}
+
+		.lang-switch {
+			text-align: right;
+			margin-bottom: 20px;
+		}
+
+		.lang-switch a {
+			display: inline-block;
+			padding: 6px 16px;
+			margin-left: 5px;
+			text-decoration: none;
+			border-radius: 5px;
+			font-weight: bold;
+			font-size: 14px;
+		}
+
+		.lang-switch a.active {
+			background: #2c3e50;
+			color: white;
+		}
+
+		.lang-switch a:not(.active) {
+			background: #ddd;
+			color: #333;
+			cursor: pointer;
+		}
+
+		.content-box {
+			background: white;
+			padding: 30px;
+			border-radius: 8px;
+			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+		}
+
+		.play-btn {
+			display: inline-block;
+			margin-top: 25px;
+			padding: 12px 30px;
+			background: #27ae60;
+			color: white;
+			text-decoration: none;
+			border-radius: 8px;
+			font-size: 18px;
+			font-weight: bold;
+			transition: background 0.2s;
+			cursor: pointer;
+		}
+
+		.play-btn:hover {
+			background: #219150;
+		}
+
+		.score-table, .controls-table {
+			width: 100%;
+			border-collapse: collapse;
+			margin: 15px 0;
+		}
+
+		.score-table th, .score-table td,
+		.controls-table th, .controls-table td {
+			border: 1px solid #ddd;
+			padding: 8px 12px;
+			text-align: left;
+		}
+
+		.score-table th, .controls-table th {
+			background-color: #f2f2f2;
+			color: #2c3e50;
+		}
+
+		.kbd {
+			display: inline-block;
+			padding: 2px 6px;
+			background: #eee;
+			border: 1px solid #ccc;
+			border-radius: 4px;
+			font-family: monospace;
+			font-size: 12px;
+		}
+
+		.banner {
+			width: 100%;
+			height: 150px;
+			background-image: url('images/home/castagne.jpg');
+			background-size: cover;
+			background-position: center;
+			border-radius: 8px;
+			margin: 20px 0;
+			box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+		}
+
+		.nav-links {
+			text-align: center;
+			margin-top: 30px;
+			font-size: 14px;
+		}
+
+		.nav-links a {
+			color: #3498db;
+			text-decoration: none;
+			margin: 0 8px;
+		}
+	</style>
+</head>
+
+<body>
+
+	<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+		<a href="#" id="btn-back" onclick="goBack(); return false;"
+			style="display: inline-block; padding: 6px 16px; background: #e74c3c; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 14px;">&#x2190; Back</a>
+		<div class="lang-switch" style="margin-bottom: 0;">
+			<a href="guida-woowoo.html">Italiano</a>
+			<a href="guida-woowoo-en.html" class="active">English</a>
+		</div>
+	</div>
+
+	<div class="banner"></div>
+
+	<div class="content-box">
+		<h1>WooWoo Rules &amp; Guide</h1>
+
+		<p><strong>WooWoo</strong> is a railway puzzle played in real time. You never drive the trains: they set off by themselves and always run forward, at their own speed. What you can do is <strong>change the track under their wheels</strong>, working the switches at the right moment, so that every train reaches the station it was assigned — and so that they don't crash into each other on the way.</p>
+
+		<h2>The aim of a board</h2>
+		<p>Every board asks for a given number of <strong>deliveries</strong>: that many trains brought into the right station. Make them all and the board is cleared, and you move on to the next one. You lose a board in two ways: when the <strong>time</strong> runs out, or when you use up the trains you are allowed to lose in <strong>crashes</strong>.</p>
+
+		<h2>What is on the board</h2>
+		<ul>
+			<li><strong>Stations:</strong> the buildings with a letter on them. They are both departure and arrival: a train comes out of one station, and the letter it carries says which station it has to enter.</li>
+			<li><strong>Switches:</strong> the forks. The connected branch is drawn solid, the disconnected one only faintly, so you can see at a glance where the other route would take you. The crossing is clickable too: it is not a fork but a cross, and the click chooses which of the two directions is open.</li>
+			<li><strong>Fixed track:</strong> straights and curves. Those cannot be changed.</li>
+			<li><strong>Scenery:</strong> trees, ponds, houses, the tractor. Just something to look at — no train runs through them.</li>
+		</ul>
+
+		<h2>Game controls</h2>
+		<table class="controls-table">
+			<tr><th>Action</th><th>How</th></tr>
+			<tr><td>Throw a switch</td><td>Click the switch square</td></tr>
+			<tr><td>Accelerator (everything runs faster)</td><td>Hold the right mouse button on the board, or <span class="kbd">Space</span></td></tr>
+			<tr><td>Pause / resume</td><td>The <span class="kbd">PAUSE</span> button (it blinks while you are stopped)</td></tr>
+			<tr><td>Start the board over</td><td>The <span class="kbd">RESTART</span> button or the <span class="kbd">R</span> key</td></tr>
+			<tr><td>Change board</td><td>The drop-down at the bottom, next to the buttons</td></tr>
+			<tr><td>Sound on / off</td><td>The &#128266; button at the top left</td></tr>
+		</table>
+		<p>A switch changes route <em>the instant</em> you click it: the movement you see afterwards is only the drawing catching up. A train already sitting on the fork still takes the new route.</p>
+
+		<h2>The train schedule</h2>
+		<p>At the bottom left is the list of trains: the ones announced and the ones already running. Each line says where from and where to — for example <strong>B &rarr; C</strong>, a train leaving B that has to reach C — and what it is doing:</p>
+		<table class="score-table">
+			<tr><th>It says</th><th>It means</th></tr>
+			<tr><td>in <em>n</em> s</td><td>The train is announced: it will come out in that many seconds. Meanwhile its station blinks white.</td></tr>
+			<tr><td>leaving in <em>n</em> s</td><td>It is already out, standing in front of the station, about to move.</td></tr>
+			<tr><td>running <em>n</em> s</td><td>It has been running for that many seconds.</td></tr>
+			<tr><td>HELD <em>n</em> s</td><td>It is stuck: a switch set the wrong way, or no route at all.</td></tr>
+		</table>
+		<p>The train on the board carries its destination letter as well, so you don't have to keep everything in your head.</p>
+
+		<h2>The three dials at the top</h2>
+		<h3>DELIVERIES</h3>
+		<p>How many you still have to make. Down to zero and the board is cleared.</p>
+
+		<h3>CRASHES</h3>
+		<p>How many crashes you are still allowed. Two trains crash when they meet on the same track, and also when a train enters a station where another one is still waiting to leave. <strong>Every crash costs two trains</strong>, and lost trains do not come back: the deliveries they owed are still owed.</p>
+
+		<h3>TIME</h3>
+		<p>This is the rule that shapes the whole game: <strong>time only runs down while there are trains on the board, and the more of them there are the faster it goes</strong>. An empty board costs you nothing; three trains out at once cost you three times as much. And a stuck train is no shelter either: as long as it is on the board, it keeps burning time.</p>
+
+		<h2>The wrong station</h2>
+		<p>A train that enters a station which is not its own is not lost: it is pushed straight back out the way it came in and sets off again in the opposite direction. It costs no crashes, but it costs time — and unless you are quick to throw the switches you are left with a train travelling the wrong way among the others, which is usually the worse trouble.</p>
+
+		<h2>Strategy tips</h2>
+		<ul>
+			<li><strong>Set the switches in advance.</strong> Read the schedule: you know ahead of time which station the next train will come from and where it has to go. Throwing the fork while the train is still announced always beats chasing it.</li>
+			<li><strong>Try to build one shared route,</strong> so that the trains all travel in roughly the same direction. Most of the time a clockwise loop is the best way to route them.</li>
+			<li><strong>Leave the stations set the way you normally use them.</strong> Keep the switches at the station exits turned to your preferred direction (usually the one that sends trains clockwise). A train that leaves while you are looking elsewhere then sets off the right way on its own. And whenever you have had to throw a switch to bring a train in from another direction, put it back as soon as you can.</li>
+		</ul>
+
+		<p style="text-align: center;"><a href="#" onclick="goBack(); return false;" class="play-btn">Close</a></p>
+	</div>
+
+	<div class="banner"></div>
+
+	<div class="nav-links">
+		<a href="index-en.html">All games</a> |
+		<a href="woowoo2-en.html">WooWoo</a> |
+		<a href="mattoncini-en.html">Bricks</a> |
+		<a href="sudoku-en.html">Sudoku</a> |
+		<a href="quadrati-en.html">Squares</a> |
+		<a href="calcolo-en.html">Cross Maths</a> |
+		<a href="dama-en.html">Checkers</a>
+	</div>
+
+	<p style="text-align: center; font-size: 0.8em; color: #999; margin-top: 10px;">
+		© 2026 Luciano Manenti
+	</p>
+
+	<script>
+		function goBack() {
+			if (window.history.length > 1) {
+				window.history.back();
+			}
+			window.close();
+		}
+	</script>
+    <!-- Il bollino "Impostazioni privacy e cookie" che il CMP di Google
+         appiccica in fondo alla pagina: da' fastidio e non serve, perche' il
+         link "Gestisci Cookie" qui sotto richiama la stessa finestra. Si
+         riconosce dalla forma e non dal nome, che Google cambia: un div
+         figlio di body, con shadow DOM, senza classe e con uno style inline
+         lunghissimo. Stesso blocco di tutte le altre pagine del sito. -->
+    <script>
+        (function () {
+            var nascosto = false;
+            var observer = new MutationObserver(function () {
+                if (nascosto) return;
+                var divs = document.querySelectorAll('body > div');
+                for (var i = 0; i < divs.length; i++) {
+                    if (divs[i].shadowRoot && !divs[i].className && (divs[i].getAttribute('style') || '').length > 5000) {
+                        divs[i].style.setProperty('display', 'none', 'important');
+                        nascosto = true;
+                        observer.disconnect();
+                        return;
+                    }
+                }
+            });
+            observer.observe(document.body, { childList: true });
+        })();
+    </script>
+</body>
+
+</html>

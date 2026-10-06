@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
+	<script>
+		window.dataLayer = window.dataLayer || [];
+		function gtag() { dataLayer.push(arguments); }
+		gtag('js', new Date());
+		gtag('config', 'G-WRBDRDQ4L8');
+		window.currentLang = 'it';
+	</script>
+	<title>Regole di WooWoo - Come si gioca e strategie</title>
+	<meta name="Description"
+		content="Guida completa a WooWoo: come si azionano gli scambi, come si legge l'orario dei treni, come funzionano tempo e scontri, e le strategie per superare ogni quadro.">
+	<link rel="alternate" hreflang="it" href="guida-woowoo.html">
+	<link rel="alternate" hreflang="en" href="guida-woowoo-en.html">
+	<link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
+	<link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
+	<link rel="shortcut icon" href="favicon/favicon.ico">
+	<link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+	<style>
+		body {
+			font-family: sans-serif;
+			line-height: 1.7;
+			max-width: 800px;
+			margin: 40px auto;
+			padding: 20px;
+			color: #333;
+			background-color: #f9f9f9;
+		}
+
+		h1 {
+			color: #2c3e50;
+			border-bottom: 2px solid #ffd700;
+			padding-bottom: 10px;
+		}
+
+		h2 {
+			color: #2c3e50;
+			margin-top: 30px;
+		}
+
+		h3 {
+			color: #2c3e50;
+			font-size: 1.1em;
+			margin-top: 20px;
+		}
+
+		.lang-switch {
+			text-align: right;
+			margin-bottom: 20px;
+		}
+
+		.lang-switch a {
+			display: inline-block;
+			padding: 6px 16px;
+			margin-left: 5px;
+			text-decoration: none;
+			border-radius: 5px;
+			font-weight: bold;
+			font-size: 14px;
+		}
+
+		.lang-switch a.active {
+			background: #2c3e50;
+			color: white;
+		}
+
+		.lang-switch a:not(.active) {
+			background: #ddd;
+			color: #333;
+			cursor: pointer;
+		}
+
+		.content-box {
+			background: white;
+			padding: 30px;
+			border-radius: 8px;
+			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+		}
+
+		.play-btn {
+			display: inline-block;
+			margin-top: 25px;
+			padding: 12px 30px;
+			background: #27ae60;
+			color: white;
+			text-decoration: none;
+			border-radius: 8px;
+			font-size: 18px;
+			font-weight: bold;
+			transition: background 0.2s;
+			cursor: pointer;
+		}
+
+		.play-btn:hover {
+			background: #219150;
+		}
+
+		.score-table, .controls-table {
+			width: 100%;
+			border-collapse: collapse;
+			margin: 15px 0;
+		}
+
+		.score-table th, .score-table td,
+		.controls-table th, .controls-table td {
+			border: 1px solid #ddd;
+			padding: 8px 12px;
+			text-align: left;
+		}
+
+		.score-table th, .controls-table th {
+			background-color: #f2f2f2;
+			color: #2c3e50;
+		}
+
+		.kbd {
+			display: inline-block;
+			padding: 2px 6px;
+			background: #eee;
+			border: 1px solid #ccc;
+			border-radius: 4px;
+			font-family: monospace;
+			font-size: 12px;
+		}
+
+		.banner {
+			width: 100%;
+			height: 150px;
+			background-image: url('images/home/castagne.jpg');
+			background-size: cover;
+			background-position: center;
+			border-radius: 8px;
+			margin: 20px 0;
+			box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+		}
+
+		.nav-links {
+			text-align: center;
+			margin-top: 30px;
+			font-size: 14px;
+		}
+
+		.nav-links a {
+			color: #3498db;
+			text-decoration: none;
+			margin: 0 8px;
+		}
+	</style>
+</head>
+
+<body>
+
+	<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+		<a href="#" id="btn-back" onclick="goBack(); return false;"
+			style="display: inline-block; padding: 6px 16px; background: #e74c3c; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 14px;">&#x2190; Indietro</a>
+		<div class="lang-switch" style="margin-bottom: 0;">
+			<a href="guida-woowoo.html" class="active">Italiano</a>
+			<a href="guida-woowoo-en.html">English</a>
+		</div>
+	</div>
+
+	<div class="banner"></div>
+
+	<div class="content-box">
+		<h1>Guida e Regole di WooWoo</h1>
+
+		<p><strong>WooWoo</strong> è un rompicapo ferroviario che si gioca in tempo reale. Tu non guidi i treni: i treni partono da soli e corrono sempre avanti, alla loro velocità. Quello che puoi fare è <strong>cambiare la strada sotto le loro ruote</strong>, azionando gli scambi al momento giusto, perché ciascuno arrivi alla stazione che gli è stata assegnata — e perché non si scontrino fra loro per strada.</p>
+
+		<h2>Lo scopo del quadro</h2>
+		<p>Ogni quadro chiede un certo numero di <strong>consegne</strong>: tanti treni portati nella stazione giusta. Quando le hai fatte tutte il quadro è superato e si passa al successivo. Il quadro è perso in due casi: se finisce il <strong>tempo</strong>, oppure se esaurisci i treni che ti è concesso perdere negli <strong>scontri</strong>.</p>
+
+		<h2>Che cosa c'è sul tabellone</h2>
+		<ul>
+			<li><strong>Le stazioni:</strong> i fabbricati con una lettera sopra. Sono insieme partenza e arrivo: da una stazione esce un treno, e la lettera che si porta dietro dice in quale stazione deve entrare.</li>
+			<li><strong>Gli scambi:</strong> i bivi. Il ramo collegato si vede netto, quello staccato è tracciato appena: così capisci subito dove porterebbe l'altra strada. Si clicca anche l'incrocio, che non è un bivio ma una croce: il clic sceglie quale delle due direzioni è aperta.</li>
+			<li><strong>I binari fissi:</strong> dritti e curve. Quelli non si toccano.</li>
+			<li><strong>Il paesaggio:</strong> alberi, stagni, case, il trattore. Sono soltanto da guardare, i treni non ci passano.</li>
+		</ul>
+
+		<h2>Comandi di gioco</h2>
+		<table class="controls-table">
+			<tr><th>Azione</th><th>Come si fa</th></tr>
+			<tr><td>Girare uno scambio</td><td>Clic sulla casella dello scambio</td></tr>
+			<tr><td>Acceleratore (tutto va più in fretta)</td><td>Tasto destro del mouse tenuto premuto sul quadro, oppure <span class="kbd">Spazio</span></td></tr>
+			<tr><td>Pausa / riprendi</td><td>Pulsante <span class="kbd">PAUSA</span> (lampeggia finché sei fermo)</td></tr>
+			<tr><td>Rifare il quadro da capo</td><td>Pulsante <span class="kbd">RICOMINCIA</span> oppure il tasto <span class="kbd">R</span></td></tr>
+			<tr><td>Cambiare quadro</td><td>La tendina in basso, accanto ai pulsanti</td></tr>
+			<tr><td>Audio sì / no</td><td>Il pulsante &#128266; in alto a sinistra</td></tr>
+		</table>
+		<p>Lo scambio cambia strada <em>nell'istante</em> del clic: il movimento che vedi dopo è soltanto il disegno che si adegua. Un treno già appoggiato sul bivio prende comunque la via nuova.</p>
+
+		<h2>L'orario dei treni</h2>
+		<p>In basso a sinistra c'è l'elenco dei treni: quelli già annunciati e quelli in giro. Ogni riga dice da dove a dove — per esempio <strong>B &rarr; C</strong>, cioè un treno che esce da B e deve arrivare a C — e in che stato si trova:</p>
+		<table class="score-table">
+			<tr><th>Dice</th><th>Vuol dire</th></tr>
+			<tr><td>tra <em>n</em> s</td><td>Il treno è annunciato: fra tanti secondi uscirà. Intanto la stazione lampeggia di bianco.</td></tr>
+			<tr><td>in partenza tra <em>n</em> s</td><td>È già fuori, fermo davanti alla stazione, e sta per muoversi.</td></tr>
+			<tr><td>in viaggio <em>n</em> s</td><td>Sta correndo da tanti secondi.</td></tr>
+			<tr><td>FERMO <em>n</em> s</td><td>È piantato: scambio girato male, oppure la strada non c'è.</td></tr>
+		</table>
+		<p>Anche il treno sul tabellone porta scritta la lettera della sua destinazione, così non devi tenere tutto a mente.</p>
+
+		<h2>I tre quadranti in alto</h2>
+		<h3>CONSEGNE</h3>
+		<p>Quante te ne restano da fare. Arrivato a zero, il quadro è superato.</p>
+
+		<h3>SCONTRI</h3>
+		<p>Quanti scontri ti sono ancora concessi. Si scontrano due treni che si toccano sullo stesso binario, e anche un treno che entra in una stazione dove un altro sta ancora aspettando di partire. <strong>Ogni scontro costa due treni</strong>, e i treni persi non tornano: le consegne che dovevano fare restano da fare.</p>
+
+		<h3>TEMPO</h3>
+		<p>Qui c'è la regola che cambia tutto il modo di giocare: <strong>il tempo scende solo mentre ci sono treni sul quadro, e tanto più in fretta quanti più ce ne sono</strong>. Un quadro vuoto non ti costa niente; tre treni in giro insieme ti costano il triplo. E un treno piantato non è al riparo: finché è sul tabellone, continua a consumare.</p>
+
+		<h2>La stazione sbagliata</h2>
+		<p>Se un treno entra in una stazione che non è la sua, non lo perdi: viene respinto fuori dalla stessa parte da cui è entrato e riparte in senso contrario. Non costa scontri, ma costa tempo — e se non sei rapido a girare gli scambi ti ritrovi un treno che viaggia al contrario in mezzo agli altri, che è spesso il guaio peggiore.</p>
+
+		<h2>Consigli strategici</h2>
+		<ul>
+			<li><strong>Prepara gli scambi prima.</strong> Guarda l'orario: sai in anticipo da dove uscirà il prossimo treno e dove deve andare. Girare il bivio mentre il treno è ancora annunciato è sempre più comodo che inseguirlo.</li>
+			<li><strong>Cerca di creare un percorso comune,</strong> in cui i treni possano grosso modo viaggiare nella stessa direzione. Nella maggior parte dei casi un instradamento ad anello in senso orario è la soluzione migliore.</li>
+			<li><strong>Lascia le stazioni sulla direzione preferenziale.</strong> Tieni gli scambi all'uscita delle stazioni girati sulla direzione preferenziale (di solito quella che instrada in senso orario). Se un treno parte mentre stai guardando da un'altra parte, se ne va per la strada giusta da solo. E quando hai dovuto girare uno scambio per far entrare un treno da un'altra direzione, rimettilo sulla preferenziale appena puoi.</li>
+		</ul>
+
+		<p style="text-align: center;"><a href="#" onclick="goBack(); return false;" class="play-btn">Chiudi</a></p>
+	</div>
+
+	<div class="banner"></div>
+
+	<div class="nav-links">
+		<a href="index.html">Tutti i giochi</a> |
+		<a href="woowoo2.html">WooWoo</a> |
+		<a href="mattoncini.html">Mattoncini</a> |
+		<a href="sudoku.html">Sudoku</a> |
+		<a href="quadrati.html">Quadrati</a> |
+		<a href="calcolo.html">Calcolo Enigmatico</a> |
+		<a href="dama.html">Dama</a>
+	</div>
+
+	<p style="text-align: center; font-size: 0.8em; color: #999; margin-top: 10px;">
+		© 2026 Luciano Manenti
+	</p>
+
+	<script>
+		function goBack() {
+			if (window.history.length > 1) {
+				window.history.back();
+			}
+			window.close();
+		}
+	</script>
+    <!-- Il bollino "Impostazioni privacy e cookie" che il CMP di Google
+         appiccica in fondo alla pagina: da' fastidio e non serve, perche' il
+         link "Gestisci Cookie" qui sotto richiama la stessa finestra. Si
+         riconosce dalla forma e non dal nome, che Google cambia: un div
+         figlio di body, con shadow DOM, senza classe e con uno style inline
+         lunghissimo. Stesso blocco di tutte le altre pagine del sito. -->
+    <script>
+        (function () {
+            var nascosto = false;
+            var observer = new MutationObserver(function () {
+                if (nascosto) return;
+                var divs = document.querySelectorAll('body > div');
+                for (var i = 0; i < divs.length; i++) {
+                    if (divs[i].shadowRoot && !divs[i].className && (divs[i].getAttribute('style') || '').length > 5000) {
+                        divs[i].style.setProperty('display', 'none', 'important');
+                        nascosto = true;
+                        observer.disconnect();
+                        return;
+                    }
+                }
+            });
+            observer.observe(document.body, { childList: true });
+        })();
+    </script>
+</body>
+
+</html>

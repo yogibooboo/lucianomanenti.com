@@ -9,15 +9,16 @@
    nella casella nera del dischetto qui non sono sul quadro: stanno nella
    fascia sopra, al centro (vedi aggiornaHud).
 
-   ATTENZIONE: la grafica caricata da dev/tiles.png e' quella originale
-   Kingsoft, usata solo come grafica di cantiere per validare la meccanica.
-   Sta in dev/ con tutto il resto del materiale del dischetto: quella cartella
-   non si carica sul server, ed e' tutta la regola di pubblicazione.
-   Va sostituita prima di qualunque pubblicazione. La sostituzione e' in
-   collaudo: piastrelle nostre su sfondo dipinto. Lo stile di ogni schema sta
-   nel campo `stile` dei file di dati (vedi stileDi). Oggi nessuno schema lo
-   usa: l'unico dipinto, sfondo-a1.jpg, e' fatto per il riquadro 10x8 e va
-   rifatto a 960x576.
+   ATTENZIONE: la grafica di dev/tiles.png e' quella originale Kingsoft,
+   grafica di cantiere per validare la meccanica. Sta in dev/ con tutto il
+   resto del materiale del dischetto, e quella cartella non si carica sul
+   server: e' tutta la regola di pubblicazione.
+   Dal 5/10/2026 quel file si carica SOLO se serve, cioe' se in campagna c'e'
+   almeno uno schema senza grafica nostra (vedi serveDisco). Nella versione
+   pubblicata la campagna sono i quadri nostri, che il dipinto ce l'hanno
+   tutti: li' il file non viene nemmeno chiesto, e il gioco gira per intero
+   senza una piastrella del dischetto. Lo stile di ogni schema sta nel campo
+   `stile` dei file di dati (vedi stileDi).
    =========================================================================== */
 (function () {
     'use strict';
@@ -112,6 +113,23 @@
         return fuori;
     }
 
+    // Serve l'atlante del dischetto? Solo se in campagna c'e' almeno uno
+    // schema senza grafica nostra. In dev_mode si gioca anche sui quadri del
+    // dischetto e serve sempre; nella versione pubblicata la campagna sono i
+    // quadri nostri, che il dipinto ce l'hanno tutti, e quel file non si
+    // chiede nemmeno. E' quello che permette a dev/ di restare fuori dal
+    // server senza che a video manchi niente.
+    function serveDisco() {
+        return CAMPAGNA.some(function (L) {
+            var liv = D.liv[L];
+            if (!liv) return false;
+            var st = liv.stile || [];
+            return liv.schemi.some(function (_, n) {
+                return !(st[n] && typeof st[n] === 'object');
+            });
+        });
+    }
+
     // ---- testi -----------------------------------------------------------
     var EN = window.currentLang === 'en';
     var T = {
@@ -128,6 +146,12 @@
         finale: EN ? 'Congratulations!' : 'Complimenti!',
         finaleTesto: EN ? 'You have cleared every board in the game. New ones are on the way soon.'
                         : 'Hai superato tutti i quadri del gioco. Presto se ne aggiungeranno dei nuovi.',
+        annVinto: EN ? 'Mission accomplished!' : 'Missione compiuta!',
+        annFinale: EN ? 'Every board cleared!' : 'Tutti i quadri superati!',
+        annTempo: EN ? 'Out of time' : 'Tempo scaduto',
+        annScontri: EN ? 'Too many crashes' : 'Troppi scontri',
+        annFra: EN ? 'summary in {N} s' : 'riepilogo fra {N} s',
+        annSubito: EN ? 'summary coming up' : 'riepilogo in arrivo',
         rConsegne: EN ? 'Deliveries' : 'Consegne',
         rScontri: EN ? 'Crashes' : 'Scontri',
         rTempo: EN ? 'Time left' : 'Tempo avanzato',
@@ -679,6 +703,8 @@
         S.emessi = 0;                    // ordini gia' annunciati
         logRun++; logPrec = null;        // nuova esecuzione nel registro
         S.attivo = true; S.finito = null; S.turbo = false; S.pausa = false;
+        annullaFine();                   // il cartello del quadro di prima
+
         messaggio(t('quadro', { L: nome(liv), N: sub + 1, M: D.liv[liv].sub.length,
                                 O: p.ord, S: S.stazioni.length }));
         aggiornaHud();
@@ -1034,6 +1060,10 @@
         var finale = vinto && inCampagna() && !quadroDopo();
         S.finito = {
             vinto: vinto, finale: finale,
+            // Il perche', che serve al cartello: la modale non lo dice, lei
+            // mostra i tre numeri e si capisce da quelli.
+            causa: vinto ? (finale ? 'Finale' : 'Vinto')
+                         : (S.tempo <= 0 ? 'Tempo' : 'Scontri'),
             consegne: S.consegnati, ordini: p.ord, scontri: S.scontri,
             avanzo: Math.floor(Math.max(0, S.tempo))
         };
@@ -1042,7 +1072,72 @@
         // `passo` esce prima di arrivare al suo aggiornaHud() di coda, e la barra
         // in alto resterebbe ferma sui valori di un fotogramma prima.
         aggiornaHud();
-        mostraFine();
+        annunciaFine();
+    }
+
+    // ---- il cartello di fine quadro --------------------------------------
+    // La modale non salta su nell'istante in cui il quadro finisce. Prima si
+    // mette un cartello sopra il quadro, piccolo e che non lo copre, e la
+    // modale arriva tre secondi dopo. Due motivi, tutti e due di Luciano:
+    // il quadro che sparisce di colpo su un evento che magari non stavi
+    // guardando e' brutto, e una modale che compare mentre stai cliccando uno
+    // scambio si prende il clic -- nel caso peggiore sul banner, che e' un
+    // annuncio, e un clic su un annuncio non deve mai partire per sbaglio.
+    // Per lo stesso motivo non basta il tempo: la modale aspetta anche che il
+    // mouse stia fermo, cioe' nessun tasto premuto e un momento dall'ultimo
+    // rilascio. Cosi' va a posto da solo anche il guaio del tasto destro.
+    var FINE_ANNUNCIO = 3000;       // quanto resta il cartello da solo
+    var FINE_QUIETE = 400;          // e quanto il mouse deve stare fermo
+    var fineAttesa = false;         // c'e' una modale in attesa
+    var fineDa = 0;                 // quando il quadro e' finito
+    var fineTimer = 0, fineTick = 0;
+
+    function annunciaFine() {
+        annullaFine();
+        fineAttesa = true;
+        fineDa = Date.now();
+        var e = el('w2-annuncio');
+        if (e) {
+            e.innerHTML = '<b>' + T['ann' + S.finito.causa] + '</b>' +
+                          '<span id="w2-annuncio-attesa"></span>';
+            e.className = 'w2-annuncio su ' + (S.finito.vinto ? 'bene' : 'male');
+        }
+        attesaFine();
+        fineTick = setInterval(attesaFine, 250);
+        provaModale();
+    }
+
+    // Il conto alla rovescia sul cartello: non e' un vezzo, dice che sta
+    // arrivando qualcosa. Se l'attesa si allunga perche' il mouse non sta
+    // fermo, al posto dei secondi resta la riga senza numero.
+    function attesaFine() {
+        var e = el('w2-annuncio-attesa');
+        if (!e) return;
+        var manca = FINE_ANNUNCIO - (Date.now() - fineDa);
+        e.textContent = manca > 0 ? t('annFra', { N: Math.ceil(manca / 1000) })
+                                  : T.annSubito;
+    }
+
+    function provaModale() {
+        if (!fineAttesa) return;
+        if (fineTimer) { clearTimeout(fineTimer); fineTimer = 0; }
+        // Tasto ancora premuto: non si decide niente, ci ripensa il rilascio.
+        if (tastoGiu) return;
+        var ora = Date.now();
+        var manca = Math.max(FINE_ANNUNCIO - (ora - fineDa),
+                             FINE_QUIETE - (ora - ultimoSu));
+        if (manca > 0) { fineTimer = setTimeout(provaModale, manca); return; }
+        annullaFine();
+        // Se nel frattempo si e' ricominciato non c'e' piu' niente da dire.
+        if (!S.attivo && S.finito) mostraFine();
+    }
+
+    function annullaFine() {
+        fineAttesa = false;
+        if (fineTimer) { clearTimeout(fineTimer); fineTimer = 0; }
+        if (fineTick) { clearInterval(fineTick); fineTick = 0; }
+        var e = el('w2-annuncio');
+        if (e) e.className = 'w2-annuncio';
     }
 
     // =======================================================================
@@ -1062,14 +1157,38 @@
     var STAZ_QUADRO = [19, 19, 23, 25];     // il quadrato della lettera, misurato nel file
     var STAZ_LATO = 64;                     // la piastrella del file
     var ANG_STAZ = { O: 0, E: Math.PI, N: Math.PI / 2, S: -Math.PI / 2 };
+    // Il raccordo disegnato nel file e' rimasto del formato vecchio: accanto
+    // ai binari ridisegnati da W2BINARI si vede subito che e' di un'altra
+    // mano, piu' stretto e piu' scuro, e al confine della casella fa gradino.
+    // La tacca si richiude tirandoci dentro il tetto, e il raccordo lo rifa'
+    // W2BINARI insieme a tutto il resto della rete.
+    var STAZ_TACCA = [42, 20, 22, 24];      // la tacca del binario, misurata nel file
     var quadri = null;                      // cod -> { piena, cv, x, y, w, h }
 
     function giroStaz(cod) {
         return (ANG_STAZ[D.staz[cod]] || 0) - ANG_STAZ[STAZ_VERSO];
     }
 
+    // La stazione col buco del binario richiuso. Il colmo del tetto passa
+    // proprio in mezzo alla tacca - falda al sole sopra, in ombra sotto - e
+    // allora si allunga una riga per parte fino a meta': il colmo resta dov'e'
+    // e non si vede la giunta.
+    function senzaRaccordo(img) {
+        var L = STAZ_LATO, t = STAZ_TACCA, meta = t[1] + t[3] / 2;
+        var cv = document.createElement('canvas');
+        cv.width = cv.height = L;
+        var g = cv.getContext('2d');
+        g.imageSmoothingEnabled = false;
+        g.drawImage(img, 0, 0, L, L);
+        g.drawImage(cv, t[0], t[1] - 1, t[2], 1, t[0], t[1], t[2], meta - t[1]);
+        g.drawImage(cv, t[0], t[1] + t[3], t[2], 1, t[0], meta, t[2], t[1] + t[3] - meta);
+        return cv;
+    }
+
     // La piastrella girata, su una tela di 64: serve sia per l'atlante sia
-    // per ritagliarne il quadrato.
+    // per ritagliarne il quadrato. Il raccordo si rimette dopo il giro, gia'
+    // nel verso della bocca: e' roba disegnata, non pescata dall'immagine,
+    // e girarla non avrebbe cambiato niente se non i bordi.
     function stazioneGirata(img, cod) {
         var L = STAZ_LATO;
         var cv = document.createElement('canvas');
@@ -1078,6 +1197,9 @@
         g.imageSmoothingEnabled = false;
         g.translate(L / 2, L / 2); g.rotate(giroStaz(cod)); g.translate(-L / 2, -L / 2);
         g.drawImage(img, 0, 0, L, L);
+        g.setTransform(1, 0, 0, 1, 0, 0);
+        if (window.W2BINARI)
+            g.drawImage(W2BINARI.raccordo(D.staz[cod], L - STAZ_TACCA[0]), 0, 0, L, L);
         return cv;
     }
 
@@ -1101,9 +1223,10 @@
         quadri = null;
         if (!img || !img.naturalWidth || !D.staz) return;
         quadri = {};
+        var pulita = window.W2BINARI ? senzaRaccordo(img) : img;
         Object.keys(D.staz).forEach(function (k) {
             var cod = +k;
-            var piena = stazioneGirata(img, cod);
+            var piena = stazioneGirata(pulita, cod);
             var r = quadroGirato(cod);
             var cv = document.createElement('canvas');
             cv.width = r[2]; cv.height = r[3];
@@ -1150,6 +1273,10 @@
                 // prato, alberi, acqua, case e tabellone: nello stile nuovo non
                 // sono piastrelle, li ha gia' disegnati il dipinto
                 if (sty && !D.rotta[cod] && !D.staz[cod]) continue;
+                // Senza atlante non c'e' niente da ritagliare. Si arriva qui
+                // solo se un file non e' arrivato: meglio un quadro spoglio
+                // che drawImage che butta fuori un errore e ferma il ciclo.
+                if (!atl) continue;
                 var st = (D.scambio.indexOf(cod) >= 0 || D.segnale.indexOf(cod) >= 0) ? S.stato[r][c] : 0;
                 // Scambio in movimento: la piastrella non viene dall'atlante
                 // ma da un fotogramma disegnato. La massicciata sta ferma, si
@@ -1660,8 +1787,43 @@
     // col trackpad e a chi non ha il tasto destro. Si rilascia da solo se il
     // mouse esce dalla finestra o se la pagina perde il fuoco, altrimenti il
     // gioco resterebbe accelerato senza che nessuno tenga premuto niente.
-    function turboOn(e) { if (e.button === 2 && S.attivo && !S.pausa) S.turbo = true; }
-    function turboOff() { S.turbo = false; }
+    // Il menu contestuale del browser e' un guaio a parte: non esce quando si
+    // preme il destro ma mentre lo si tiene, e in mezzo quello che sta sotto
+    // il mouse puo' essere cambiato. Finche' c'e' un destro partito dal
+    // quadro, allora, il menu si butta via dovunque arrivi. Quello che non si
+    // puo' fare e' toglierlo da sopra il banner di fine partita, che e' un
+    // iframe di un altro sito: li' il preventDefault nostro non arriva
+    // nemmeno. Per quello la modale non compare a mouse premuto (vedi
+    // annunciaFine): se sotto il cursore non c'e' il banner, il problema non
+    // si pone.
+    var destroGiu = false;      // il destro e' giu', ed e' partito dal quadro
+    var tastoGiu = false;       // un tasto qualunque, sempre partito dal quadro
+    var ultimoSu = 0;           // quando si e' lasciato l'ultimo tasto
+
+    function mouseGiu(e) {
+        tastoGiu = true;
+        if (e.button !== 2) return;
+        destroGiu = true;
+        if (S.attivo && !S.pausa) S.turbo = true;
+    }
+    function mouseSu(e) {
+        S.turbo = false;
+        if (e && e.type === 'mouseup') {
+            // Un tick di ritardo per il destro, e non e' un vezzo: dove il
+            // menu contestuale arriva DOPO il mouseup deve trovare destroGiu
+            // ancora alzato per farsi buttare via.
+            if (e.button === 2) setTimeout(function () { destroGiu = false; }, 0);
+            // I `buttons' sono quelli ANCORA premuti, senza quello appena
+            // lasciato: tenendo giu' il destro si puo' cliccare uno scambio
+            // col sinistro, e il mouse non e' fermo.
+            if (e.buttons) return;
+        } else {
+            destroGiu = false;      // la finestra ha perso il fuoco: molla tutto
+        }
+        tastoGiu = false;
+        ultimoSu = Date.now();
+        provaModale();
+    }
 
     // Pausa. Il gioco si ferma ma il quadro resta com'e': niente velo sopra,
     // niente oscuramento, cosi' si puo' studiare la situazione. A dire che si
@@ -2193,10 +2355,16 @@
         cv.width = LARG * SCALA; cv.height = ALT * SCALA;
         ctx = cv.getContext('2d');
         cv.addEventListener('click', click);
-        cv.addEventListener('mousedown', turboOn);
-        cv.addEventListener('contextmenu', function (e) { e.preventDefault(); });
-        window.addEventListener('mouseup', turboOff);
-        window.addEventListener('blur', turboOff);
+        cv.addEventListener('mousedown', mouseGiu);
+        // Non sulla sola tela: il destro parte da li' ma il menu puo' uscire
+        // altrove, perche' esce al rilascio e nel frattempo il mouse si e'
+        // mosso o il quadro e' finito. Fuori da questi due casi il destro
+        // resta quello del browser, nel resto della pagina.
+        document.addEventListener('contextmenu', function (e) {
+            if (e.target === cv || destroGiu) e.preventDefault();
+        });
+        window.addEventListener('mouseup', mouseSu);
+        window.addEventListener('blur', mouseSu);
         document.addEventListener('keydown', tasti);
         document.addEventListener('keyup', tastiSu);
 
@@ -2214,21 +2382,24 @@
         // Si parte quando sono arrivate tutte: l'atlante del dischetto piu'
         // atlante e dipinto di ogni stile nominato nei dati.
         var stili = stiliUsati();
-        var lista = ['dev/tiles.png?v=1.1'];
+        var disco = serveDisco();
+        var lista = disco ? ['dev/tiles.png?v=1.1'] : [];
+        var base = lista.length;
         stili.forEach(function (x) { lista.push(x.atlante, x.sfondo); });
         lista.push(STAZ_SRC);               // la stazione di Luciano, ultima
         immagini(lista, function (im) {
-            atlante = im[0];
-            preparaStazioni(im[1 + stili.length * 2]);
+            atlante = disco ? im[0] : null;
+            preparaStazioni(im[base + stili.length * 2]);
             stili.forEach(function (x, i) {
-                x.img = im[1 + i * 2];
-                x.fondoImg = im[2 + i * 2];
+                x.img = im[base + i * 2];
+                x.fondoImg = im[base + 1 + i * 2];
                 // immagini() richiama anche quando un file non c'e': una
                 // figura mai arrivata ha larghezza zero.
                 x.rotto = !x.img.naturalWidth || !x.fondoImg.naturalWidth;
                 if (x.rotto) console.warn('WooWoo: manca ' +
                     (x.img.naturalWidth ? x.sfondo : x.atlante) +
-                    ', quello schema va con le piastrelle del dischetto');
+                    (disco ? ', quello schema va con le piastrelle del dischetto'
+                           : ', e non c\'e\' nessun atlante di riserva'));
                 // I binari non vengono piu' dall'immagine: le loro colonne si
                 // ridisegnano sopra una copia dell'atlante, partendo dalla
                 // rotta scritta nei codici. Dell'immagine resta tutto il
