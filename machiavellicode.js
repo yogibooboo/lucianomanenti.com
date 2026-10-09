@@ -994,7 +994,18 @@ var scala = {
 
 
 			if (carta.gruppo == scala.giocatore) scala.fscartigiocatore = true;
+			//se la carta sta in mezzo a una scala sul tavolo, togliendola la scala resta con un buco:
+			//i due pezzi rimasti diventano due tris separati (quelli sotto le 3 carte li segna checksplit)
+			//il tipo si legge dalla vicina: checktris, durante il trascinamento, cambia il tipotris della carta spostata
+			var tc = scala.campotris.carte;
+			var pc = tc.indexOf(carta);
+			var inmezzo = (carta.gruppo == scala.campotris)
+				&& (pc > 0) && (pc < tc.length - 1) && (tc[pc - 1].tipotris == SCALA)
+				&& (tc[pc - 1].ntris == carta.ntris) && (tc[pc + 1].ntris == carta.ntris);
 			var posizione = this.rimuovicarta(carta);
+			if (inmezzo) {
+				for (var k = posizione; k < tc.length; k++) tc[k].ntris++;
+			}
 			scala.vismoved(carta);
 			if ((carta.gruppo == scala.campotris) && (posizione < indice)) indice--;  //se ho tolto una carta prima dell'indice'
 			carta.ntris = cartasel.ntris;
