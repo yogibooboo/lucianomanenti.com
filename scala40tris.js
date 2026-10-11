@@ -859,7 +859,7 @@ var scala = {
 			if (_stato.na > 0 && _stato.na < 4) this.numeroavversari = _stato.na;
 		}
 
-		this.fscalauptouch = false;
+		this.tscalauptouch = 0;
 		this.fmodale = false;
 		this.turno = -1;
 
@@ -1312,12 +1312,28 @@ var scala = {
 		});
 
 		$$.on(document, "touchend", function (ev) {
-			scala.fscalauptouch = true;
+			scala.tscalauptouch = Date.now();
 			if ((!scala.fmodale)) return scala.scalamouseup(ev.touches[0] || ev.changedTouches[0]);
 		});
 
 		$$.on(document, "mouseup", function (ev) {
-			if (scala.fscalauptouch) { scala.fscalauptouch = false; return; }
+			/* Pezza dell'11/10/2026: questo fermo serve solo a scartare il mouseup
+			   di compatibilita' che il browser manda subito dopo il touchend, non a
+			   scartare il primo mouseup che capita. Era un flag a colpo singolo,
+			   alzato a OGNI touchend e abbassato solo da un mouseup vero: dopo un
+			   tocco col dito su una carta restava armato (il touchstart chiama
+			   preventDefault, quindi gli eventi mouse di compatibilita' non
+			   arrivano e non lo consumano) e si mangiava il mouseup della penna o
+			   del mouse arrivato molto dopo, lasciando scaladown alto: da li' ogni
+			   movimento del puntatore trascinava la carta, anche a dito/penna
+			   staccati (le carte che "volano" avvicinando lo stilo al Galaxy S25).
+			   Ora il fermo scade in mezzo secondo, e in ogni caso un trascinamento
+			   appeso muore qui invece di sopravvivere. */
+			if ((Date.now() - scala.tscalauptouch) < 500) {
+				scala.tscalauptouch = 0;
+				if (scala.scaladown) { scala.scaladown = false; scala.scalamove = false; scala.render(); }
+				return;
+			}
 			if ((ev.button == 0) && (!scala.fmodale)) return scala.scalamouseup(ev);
 		});
 
@@ -1325,8 +1341,33 @@ var scala = {
 			if ((scala.scaladown) && (!scala.fmodale)) return scala.scalamousemove(ev.touches[0] || ev.changedTouches[0]);
 		});
 
+		/* Pezza dell'11/10/2026: non c'era nessun gestore di touchcancel, e un
+		   tocco annullato dal sistema (palmo appoggiato, scroll, la penna che
+		   prende il posto del dito) lasciava scaladown alto esattamente come il
+		   mouseup mangiato dal fermo qui sopra. Qui il trascinamento muore senza
+		   fare la mossa: la selezione NON si azzera (un tocco annullato non e'
+		   una decisione del giocatore) e il render riporta la carta al suo posto,
+		   come fa mostradialogo. */
+		$$.on(document, "touchcancel", function (ev) {
+			scala.tscalauptouch = Date.now();
+			if (!scala.scaladown) return;
+			scala.scaladown = false;
+			scala.scalamove = false;
+			scala.tgoff();
+			for (var j = 0; j < scala.numeroavversari; j++) scala.taoff(j);
+			scala.render();
+		});
+
 		$$.on(document, "mousemove", function (ev) {
-			if ((ev.button == 0) && (scala.scaladown) && (!scala.fmodale)) return scala.scalamousemove(ev);
+			/* Pezza dell'11/10/2026: su un evento di movimento ev.button e' SEMPRE 0,
+			   quindi il vecchio controllo (ev.button == 0) non diceva niente e non
+			   fermava nulla. La proprieta' che dice "c'e' un tasto premuto" e'
+			   ev.buttons, e il bit 1 e' il sinistro. Senza questo, un scaladown
+			   rimasto appeso faceva trascinare la carta col puntatore in volo.
+			   Il controllo sull'undefined tiene buoni i browser che non hanno
+			   ev.buttons, dove il trascinamento deve restare possibile. */
+			if ((ev.buttons !== undefined) && ((ev.buttons & 1) === 0)) return;
+			if ((scala.scaladown) && (!scala.fmodale)) return scala.scalamousemove(ev);
 		});
 
 		$$.on("#pulsantemessaggio1", "click", function (ev) {
@@ -1608,7 +1649,20 @@ var scala = {
 
 		var deltax = (ev.pageX - scala.offsetxx) / window.gameScale - this.scaladownx;
 		var deltay = (ev.pageY - scala.offsetyy) / window.gameScale - this.scaladowny;
-		if (!this.scalamove) { if ((Math.abs(deltax) < 5) && (Math.abs(deltay) < 5)) return; }
+		/* Pezza dell'11/10/2026: col dito la soglia di cinque pixel e' troppo
+		   stretta. Un tocco con sette pixel di scivolamento veniva letto come
+		   trascinamento, e il rilascio finiva in coda a scalamouseup dove
+		   azzeraselezione() cancella TUTTA la selezione costruita fino a li':
+		   sul tablet non si arrivava mai a tre carte, il banner DEPOSITA non
+		   compariva e il tris non si poteva calare (misurato in emulazione
+		   touch: con 0 e 3 pixel la selezione cresce, con 7 si azzera). Col
+		   dito la soglia passa a quattordici pixel VERI -- divisi per gameScale
+		   perche' i delta qui sono in pixel di gioco, altrimenti su un tavolo
+		   rimpicciolito la tolleranza si stringerebbe da sola. Col mouse resta
+		   cinque com'era. Il tocco si riconosce dall'oggetto: un Touch ha
+		   identifier, un MouseEvent no. */
+		var soglia = (ev.identifier !== undefined) ? (14 / window.gameScale) : 5;
+		if (!this.scalamove) { if ((Math.abs(deltax) < soglia) && (Math.abs(deltay) < soglia)) return; }
 
 		var divCard = this.cartadown;
 		$$.css(divCard, { "z-index": 1000 });
