@@ -47,6 +47,19 @@ function stats_siamo_in_casa() {
     // lanci PHP dalla shell, nemmeno un cron.
     if (PHP_SAPI === 'cli') return true;
 
+    // Il server incorporato di PHP (php -S, il .bat sul desktop) gira solo in
+    // casa: Aruba e' hosting condiviso e non puo' avviarlo.
+    //
+    // Serve perche' il controllo sul nome qui sotto guarda L'INDIRIZZO SCRITTO
+    // NEL BROWSER, non da dove arriva davvero la richiesta. Aperto il sito dal
+    // tablet come http://192.168.0.174:9999/ quel nome non e' localhost, questa
+    // funzione rispondeva no, stats-config.locale.php si tirava indietro e le
+    // mani di PROVA finivano nel database vero su Aruba - cioe' esattamente
+    // l'incidente che questo file e' scritto per impedire. Da quando il .bat
+    // lega il server a 0.0.0.0 per farsi raggiungere dal tablet, il caso non e'
+    // piu' teorico.
+    if (PHP_SAPI === 'cli-server') return true;
+
     $host = strtolower((string)($_SERVER['SERVER_NAME'] ?? $_SERVER['HTTP_HOST'] ?? ''));
     $host = preg_replace('/:\d+$/', '', $host);          // via la porta
     if (in_array($host, ['localhost', '127.0.0.1', '::1', '[::1]'], true)) return true;
