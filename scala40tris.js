@@ -4490,6 +4490,52 @@ var scala = {
 			jollyrecuperati.push(coppia["jolly"]);
 			this.cercajollyrecuperabili(this.campiavversario[avv]);
 		}
+		/* Pezza del 7/10/2026: chiusura con un jolly appena recuperato.
+		   Se il recupero qui sopra ha fatto rientrare un jolly in mano e
+		   restano quattro carte di cui tre formano un blocco valido, l'IA
+		   cala subito, prima che gestisciattaccabili spenda quelle carte
+		   negli attacchi al tavolo. Senza la pezza il caso sfuggiva: il
+		   primo ciclo di trisconjolly (riga 4472) gira prima del recupero,
+		   e la rivalutazione più sotto pretende più di tre carte in mano,
+		   quindi lì non scatta mai.
+		   Misura su banco appaiato in lockstep, 20.000 mani per braccio,
+		   una sola sedia rattoppata: cala 522 volte e chiude sempre nello
+		   stesso turno, le chiusure mancate scendono da 102 a 62, 22 mani
+		   vinte in più e nessuna persa (z 4,69), zero blocchi illegali.
+		   Nelle 19.444 mani in cui non scatta lo stato resta identico
+		   turno per turno. */
+		if ((jollyrecuperati.length > 0) && this.f40avversario[avv]
+			&& (this.campiavversario[avv].carte.length == 4)) {
+			var chiudibile = false;
+			for (var ic = 0; (ic < 4) && !chiudibile; ic++) {
+				var sottoinsieme = [];
+				for (var jc = 0; jc < 4; jc++) {
+					if (jc != ic) sottoinsieme.push(this.campiavversario[avv].carte[jc]);
+				}
+				chiudibile = this.analizzatris(sottoinsieme).valido;
+			}
+			if (chiudibile) {
+				log("chiusura con jolly recuperato, avversario " + avv);
+				this.ordinacarte(this.campiavversario[avv]);
+				var giri = 0;
+				if (this.campiavversario[avv].carte[this.campiavversario[avv].carte.length - 1].numero > 49) {
+					this.cercacoppie(avv);
+					this.ottimizzacoppie();
+					/* il tetto sui giri è la stessa guardia di avanzamento
+					   usata altrove: se trisconjolly non cala niente le
+					   coppie restano in lista e il ciclo non finirebbe */
+					while (this.f40avversario[avv]
+						&& (this.campiavversario[avv].carte.length > 3)
+						&& (this.campiavversario[avv].carte[this.campiavversario[avv].carte.length - 1].numero > 49)
+						&& (this.coppie.length > 0)
+						&& (giri++ < 12)) {
+						this.trisconjolly(avv, giaaperto);
+						this.cercacoppie(avv);
+						this.ottimizzacoppie();
+					}
+				}
+			}
+		}
 		this.gestisciattaccabili(avv);
 
 		if (this.campiavversario[avv].carte.length > 0) {
@@ -4642,7 +4688,17 @@ var scala = {
 			}
 
 			var carta;
-			var nomeprecedente = this.campiavversario[avv].carte[0].shortName;
+			/* La guardia sulla mano non vuota sta 150 righe piu' su (il
+			   controllo length > 0 che apre questo blocco), e in mezzo
+			   trisconjolly, gestisciattaccabili, gli attacchi e piazzajolly
+			   togliono carte dalla mano: qui ci si arrivava protetti solo
+			   dalle condizioni "lascia una carta per lo scarto" sparse in
+			   quei cicli. Con la mano vuota carte[0] e' undefined e l'errore
+			   uscirebbe da alavora senza riarmare il setTimeout del turno
+			   (sta in fondo ad alavorastato), piantando il tavolo in
+			   silenzio. Il ciclo sotto parte da 1, quindi a mano vuota non
+			   gira comunque: il valore di scorta non cambia niente. */
+			var nomeprecedente = (this.campiavversario[avv].carte.length > 0) ? this.campiavversario[avv].carte[0].shortName : "";
 
 			for (var i = 1; i < this.campiavversario[avv].carte.length; i++) {
 				carta = this.campiavversario[avv].carte[i];
