@@ -64,7 +64,18 @@ th,td{border:1px solid var(--bordo);padding:2px 4px;text-align:center}
 th{color:var(--fioco);font-weight:600;font-size:11px}
 td select{padding:1px 3px;border-radius:3px;font-size:12px}
 td input[type=number]{width:52px;padding:1px 3px;border-radius:3px;font-size:12px;text-align:right;background:var(--fondo);color:var(--testo);border:1px solid var(--bordo)}
-td.der{color:var(--fioco);font-family:ui-monospace,Consolas,monospace}
+#bParDisco{margin-bottom:8px}
+/* La tabella in lavorazione e quella di riferimento una di fianco all'altra,
+   e una sotto l'altra quando la finestra non le tiene. */
+.parfila{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-start}
+#rifPar h3{font-size:11px;font-weight:600;color:var(--fioco);margin:0 0 6px;
+  text-transform:uppercase;letter-spacing:.06em}
+#rifPar h3 span{text-transform:none;letter-spacing:0;color:var(--acc)}
+/* Solo da guardare: i numeri sono fiochi come il resto delle note, cosi'
+   non si confondono con quelli che si possono cambiare. */
+table.rif td{color:var(--fioco);font-family:ui-monospace,Consolas,monospace;
+  padding:2px 6px}
+table.rif td.conv{color:var(--giallo)}
 .leg{font-size:11px;color:var(--fioco);margin-top:8px;line-height:1.6}
 .leg code{background:#1a1e23;padding:1px 4px;border-radius:3px}
 dialog{background:var(--pannello);color:var(--testo);border:1px solid var(--bordo);
@@ -90,10 +101,10 @@ dialog textarea{width:100%;background:#15181c;color:var(--testo);border:1px soli
   <h1>Editor quadri woowoo2</h1>
   <button id="bSalva" disabled title="riscrive il woowoo2-mie.js del sito: se non sa dov'e', te lo chiede">Salva</button>
   <b>da</b>
-  <select id="selSorg" disabled title="il quadro di partenza: uno del dischetto (A..L) oppure uno dei tuoi (M..X)"></select>
+  <select id="selSorg" disabled title="il quadro di partenza: uno del dischetto (M..X) oppure uno dei tuoi (A..L)"></select>
   <b>a</b>
   <select id="selDest" disabled title="la casella di woowoo2-mie.js dove si lavora: e' l'unica che l'editor scrive"></select>
-  <button id="bAnnulla" disabled title="Ctrl+Z, oppure tasto destro sul quadro">Annulla</button>
+  <button id="bAnnulla" disabled title="Ctrl+Z">Annulla</button>
   <button id="bBlocco" disabled title="genera il blocco JS da incollare in woowoo2-mie.js">Blocco JS...</button>
   <button id="bAzzera" disabled title="mette prato in tutte e le caselle">Azzera tutto</button>
   <span class="sp"></span>
@@ -198,12 +209,33 @@ dialog textarea{width:100%;background:#15181c;color:var(--testo);border:1px soli
     </div>
     <div class="box" id="boxPar" hidden>
       <h2>Parametri dei sottolivelli</h2>
-      <div id="tabPar"></div>
+      <button id="bParDisco" disabled title="rilegge i sottolivelli dallo stesso livello del dischetto, convertendo il suo campo sec nei tre campi tempo/annuncio/sosta e aggiungendo i tre del quarto giro: sono i numeri originali, da tenere come punto di partenza e poi cambiare">Parametri dal dischetto</button>
+      <div class="parfila">
+        <div id="tabPar"></div>
+        <div id="rifPar" hidden></div>
+      </div>
       <div class="leg">
         <code>traf</code> e <code>vel</code> hanno la <b>scala rovesciata</b>: il numero basso
         e' il valore alto.<br>
         <code>amb</code> oggi il motore non lo legge.<br>
-        durata nominale = ord &times; sec &middot; contatore iniziale = ord &times; (sec+2)
+        <code>tempo</code> il contatore di partenza &middot;
+        <code>ann</code> quanto dura l'annuncio &middot;
+        <code>sosta</code> quanto il treno sta in banchina: secondi, un decimale.
+        Nel dischetto erano un campo solo, <code>sec</code>, da cui il motore
+        ricavava tutti e tre (contatore = ord&times;(sec+2),
+        annuncio = 0,52&times;sec, sosta = 0,33&times;sec).<br>
+        I nostri livelli hanno <b>dodici</b> sottolivelli, i tre quadri girati
+        quattro volte; il dischetto ne aveva nove. Il quarto giro e' quello da
+        rendere piu' difficile.<br>
+        La tabella <b>di fianco</b> e' il livello del dischetto da cui si
+        copia, solo da guardare: in giallo i tre campi del tempo, che li' non
+        esistono e sono ricavati da <code>sec</code> (l'ultima colonna) con le
+        formule di qui sopra.<br>
+        <b>Parametri dal dischetto</b> ricopia qui i nove sottolivelli dello stesso
+        livello del dischetto, fa la conversione e aggiunge i tre del quarto giro
+        come copia dei tre piu' alti: cancella tutti quelli che vedi. Il
+        pulsante lo chiama con la lettera dell'originale, che e' la nostra
+        stessa; nei dati e' spostato di dodici (A&larr;M, B&larr;N ... L&larr;X).
       </div>
     </div>
   </div>
@@ -223,11 +255,25 @@ var ATL = 'tiles.png';   // l'atlante del dischetto, qui in dev/ accanto all'edi
 var DIR = { N: [-1, 0], S: [1, 0], E: [0, 1], O: [0, -1] };
 var OPP = { N: 'S', S: 'N', E: 'O', O: 'E' };
 // punta (Zungenspitze) degli scambi: il capo che le due rotte condividono
-var PUNTA = { 1: 'S', 2: 'S', 3: 'N', 4: 'N', 5: 'O', 6: 'O', 7: 'E', 8: 'E' };
+// La bocca da cui lo scambio si apre a ventaglio: quella che le sue rotte
+// hanno in comune. Serve al controllo delle vie d'accesso, che vuole la punta
+// girata verso la stazione. Sui pezzi a tre stati la punta cambia con lo
+// stato, e quella scritta qui e' la bocca della DIRAMAZIONE, cioe' l'unica
+// che si raggiunge da tutte e due le parti: e' il senso che interessa al
+// controllo.
+// I numeri erano quelli del dischetto - gli scambi li' partivano da 1 - e
+// questa tabella se li e' portati dietro mentre tutto il resto passava alla
+// nostra numerazione: le lettere erano giuste ma spostate di otto caselle.
+// Finche' e' stata cosi', `trovaGola' non riconosceva nessuno scambio davanti
+// a una bocca e il controllo diceva "una via sola" su ogni stazione.
+var PUNTA = { 9: 'S', 10: 'S', 11: 'N', 12: 'N', 13: 'O', 14: 'O', 15: 'E', 16: 'E',
+              31: 'E', 32: 'O', 33: 'N', 34: 'S' };
 
 // I numeri sono i nostri, non quelli del dischetto, e l'ordine di questo
 // elenco e' l'ordine della tavolozza qui sotto: prato, binari, scambi,
-// segnali, stazioni, decori. Da 0 a 30, senza buchi.
+// segnali, stazioni, decori. Da 0 a 30 senza buchi, che sono le colonne
+// delle tavole di piastrelle; dal 31 in su i pezzi nuovi nostri, che una
+// colonna non ce l'hanno e si disegnano.
 var NOMI = {
     0: 'prato',
     1: 'dritto EO', 2: 'dritto NS', 3: 'curva ES', 4: 'curva SO',
@@ -241,24 +287,46 @@ var NOMI = {
     21: 'stazione, bocca a E', 22: 'stazione, bocca a N',
     23: 'tabellone (campo info)',
     24: 'trattore e pecore', 25: 'fienile', 26: 'stagno', 27: 'alberi',
-    28: 'fiume NS', 29: 'stagno con isola', 30: 'aia recintata'
+    28: 'fiume NS', 29: 'stagno con isola', 30: 'aia recintata',
+    31: 'scambio NS/NE/ES', 32: 'scambio NS/NO/SO',
+    33: 'scambio EO/NE/NO', 34: 'scambio EO/ES/SO'
 };
 
 var FAMIGLIE = [
     ['binari', [1, 2, 3, 4, 5, 6, 7, 8]],
     ['scambi', [9, 10, 11, 12, 13, 14, 15, 16]],
+    ['scambi a tre stati', [31, 32, 33, 34]],
     ['segnali', [17, 18]],
     ['stazioni e tabellone', [19, 20, 21, 22, 23]],
     ['decori', [0, 24, 25, 26, 27, 28, 29, 30]]
 ];
 
 // I campi con "voci" sono scelte chiuse (menu a tendina); gli altri sono
-// numeri liberi. "disco" elenca i valori usati dai livelli originali: e' solo
-// un suggerimento nel tooltip, non un vincolo -- i quadri nostri ne escono.
+// numeri liberi, interi se non hanno "passo". "disco" elenca i valori usati
+// dai livelli originali: e' solo un suggerimento nel tooltip, non un vincolo
+// -- i quadri nostri ne escono.
+// `tempo', `ann' e `sosta' sono i tre valori che nel dischetto stavano nel solo
+// campo `sec'. Il dischetto, che qui non si scrive mai, ha ancora `sec': la
+// conversione la fa il pulsante "Parametri dal dischetto".
+// `tempo' e' il contatore iniziale scritto per quello che e'. Fino al
+// 9/10/2026 nei dati c'era `dote' (unita' per ordine) e il contatore era una
+// colonna calcolata qui a fianco: il numero che si vuole regolare era quello
+// calcolato, quindi adesso e' lui a stare nei dati e la colonna e' sparita.
+// Da sapere mentre si lavora: `ord' e `tempo' sono due manopole separate,
+// cambiare gli ordini non muove piu' il budget.
+// Quanti sottolivelli ha un livello nostro in piu' del suo gemello del
+// dischetto. Il dischetto ne ha nove - tre quadri girati tre volte - i nostri
+// dodici: il quarto giro, che e' il piu' difficile. Il motore non e' legato a
+// nessuno dei due numeri, legge sempre `sub.length'; qui serve solo al
+// pulsante "Parametri dal dischetto", che dei nove ne deve fare dodici.
+var SUBEXTRA = 3;
+
 var PARAM = [
     { k: 's',    eti: 'schema',   dom: [0, 1, 2], voci: ['0', '1', '2'] },
     { k: 'ord',  eti: 'ordini',   min: 1, max: 99, disco: '5 10 15 20 25 30 50' },
-    { k: 'sec',  eti: 'sec/ord',  min: 1, max: 99, disco: 'da 7 a 30' },
+    { k: 'tempo', eti: 'tempo',   min: 1, max: 9999, disco: 'da 130 a 575 (era ord x (sec+2))' },
+    { k: 'ann',  eti: 'annuncio', min: 0, max: 99, passo: 0.1, disco: '0,52 x sec' },
+    { k: 'sosta', eti: 'sosta',   min: 0, max: 99, passo: 0.1, disco: '0,33 x sec' },
     { k: 'inc',  eti: 'scontri',  min: 0, max: 99, disco: '4 6 8 10 20' },
     { k: 'traf', eti: 'traffico', voci: ['0 massimo', '1 molto alto', '2 alto', '3 medio'] },
     { k: 'tmax', eti: 'treni',    min: 1, max: 9,  disco: 'da 3 a 7' },
@@ -300,8 +368,8 @@ var OGGJ = /\{[^{}]*"ord"\s*:[^{}]*\}/g;
 function analizza(testo, nome) {
     var f = { nome: nome, testo: testo, elenco: [], sub: [] };
     // i due file di dati hanno la stessa forma: una riga di commento e una
-    // riga sola di JSON. Cambia solo il nome: W2DATI il dischetto (A..L),
-    // W2MIEI i livelli nostri (M..X).
+    // riga sola di JSON. Cambia solo il nome: W2MIEI i livelli del gioco
+    // (A..L), W2DATI il dischetto (M..X).
     var chiave = /window\.W2(DATI|MIEI)=/.exec(testo);
     var i = chiave ? chiave.index : -1;
     if (i >= 0) {
@@ -375,10 +443,10 @@ async function avvio() {
         var td = await (await fetch('woowoo2-dati.js', { cache: 'no-store' })).text();
         var tm = await (await fetch('../woowoo2-mie.js', { cache: 'no-store' })).text();
         FD = analizza(td, 'woowoo2-dati.js');
-        // del dischetto tengo solo A..L: le sue M, W e X sono caselle di
-        // servizio rimaste dall'estrazione, tutte prato, e si chiamano come le
-        // nostre - in un elenco unico farebbero solo confusione.
-        FD.elenco = FD.elenco.filter(function (e) { return e.liv >= 'A' && e.liv <= 'L'; });
+        // Dal 9/10/2026 le lettere del dischetto sono M..X: A..L sono i quadri
+        // nostri, quelli che si giocano. Il filtro resta per sicurezza, se nel
+        // file si dovesse ritrovare qualche cella di servizio.
+        FD.elenco = FD.elenco.filter(function (e) { return e.liv >= 'M' && e.liv <= 'X'; });
         apriTesto(tm, 'woowoo2-mie.js');
     } catch (e) {
         document.getElementById('stato').textContent = 'non riesco ad aprire i file: ' + e.message;
@@ -417,32 +485,48 @@ function abilita(on) {
 
 // ---- sorgente e destinazione -------------------------------------------
 // Due tendine, non una. La prima dice DA DOVE si parte: un quadro del
-// dischetto (A..L) oppure uno dei nostri (M..X). La seconda dice DOVE si
+// dischetto (M..X) oppure uno dei nostri (A..L). La seconda dice DOVE si
 // lavora, e le caselle sono soltanto le nostre, perche' woowoo2-mie.js e'
 // l'unico file che questo editor riscrive: il dischetto si guarda e si copia,
 // ma non si tocca mai. Con una tendina sola non si capiva quale dei due ruoli
 // stesse facendo la scelta.
 // Scegliendo un quadro del dischetto la casella proposta e' quella che gli
-// corrisponde - A->M, B->N, fino a L->X, stesso numero di schema - perche'
-// woowoo2-mie.js nasce come copia dell'estrazione e le lettere si guardano in
-// faccia a due a due. Scegliendo un quadro gia' nostro la casella proposta e'
-// lui stesso.
+// corrisponde - M->A, N->B, fino a X->L, stesso numero di schema. Scegliendo
+// un quadro gia' nostro la casella proposta e' lui stesso.
+// Fino al 9/10/2026 le lettere erano al contrario: A..L il dischetto, M..X i
+// nostri, che il gioco mostrava rinumerati A..L. Adesso le lettere nostre
+// sono quelle vere e il dischetto e' spostato in avanti di dodici.
 // Niente va su disco finche' non si preme Salva.
 var CAT = [];            // il catalogo della tendina di sinistra
 var sorgSel = '';        // voce scelta, per rimetterla a posto se si annulla
 
+// I quadri NOSTRI stanno in testa, il dischetto dietro: su A..L si lavora
+// tutti i giorni, il dischetto si apre una volta per copiarlo e poi mai piu'.
+// Prima era il contrario e i trentasei quadri del dischetto seppellivano i
+// nostri in fondo a una tendina da settantadue voci, dove non si vedevano.
 function costruisciCatalogo() {
     CAT = [];
-    if (FD) FD.elenco.forEach(function (e) {
-        CAT.push({ eti: 'dischetto  ' + e.eti, g: e.g, mio: -1, liv: e.liv, n: e.n });
-    });
     F.elenco.forEach(function (e, i) {
-        CAT.push({ eti: 'miei  ' + e.eti, g: e.g, mio: i, liv: e.liv, n: e.n });
+        CAT.push({ eti: e.eti, g: e.g, mio: i, liv: e.liv, n: e.n,
+                   d: F.dati, gruppo: 'i tuoi quadri (A..L)' });
+    });
+    if (FD) FD.elenco.forEach(function (e) {
+        CAT.push({ eti: e.eti, g: e.g, mio: -1, liv: e.liv, n: e.n,
+                   d: FD.dati, gruppo: 'dischetto, da copiare (M..X)' });
     });
 }
 
-// A->M, B->N ... L->X: dodici lettere di distanza nell'alfabeto.
-function gemella(L) { return String.fromCharCode(L.charCodeAt(0) + 12); }
+// Lo stile di una voce del catalogo. Non si puo' usare stileSlot(), che guarda
+// solo dentro F: una voce del dischetto sta in FD, percio' il catalogo si
+// porta dietro i dati del suo file.
+function stileDiCAT(e) {
+    var liv = e.d && e.d.liv && e.d.liv[e.liv];
+    return (liv && liv.stile) ? liv.stile[e.n] : null;
+}
+
+// M->A, N->B ... X->L: dodici lettere di distanza nell'alfabeto, dal
+// dischetto al quadro nostro.
+function gemella(L) { return String.fromCharCode(L.charCodeAt(0) - 12); }
 
 function destProposta(src) {
     if (src.mio >= 0) return src.mio;
@@ -469,7 +553,16 @@ function applicaSorgente(k) {
     var j = destProposta(src);
     if (src.mio === j) { scegli(j); return; }    // e' gia' li': si apre e basta
     var cambia = !uguali(F.elenco[j].g, src.g);
+    // La grafica viene con il quadro, come quando il lavoro trasloca: e' roba
+    // del quadro, non della casella. Prima restava quella della casella di
+    // arrivo, e un quadro del dischetto scelto come sorgente finiva dentro la
+    // casella gemella nostra - che per la A ha il dipinto - percio' si vedeva
+    // "dipinto + piastrelle nostre" su un quadro del dischetto, che vuole le
+    // sue piastrelle ("orig"). Si clona: lo stile del dischetto non si tocca.
+    var st = clona(stileDiCAT(src));
+    if (JSON.stringify(stileSlot(j) || null) !== JSON.stringify(st || null)) cambia = true;
     versa(F.elenco[j].g, src.g);
+    stileSlot(j, st || null);
     scegli(j);
     // woowoo2-mie.js nasce come copia del dischetto, quindi spesso la casella
     // gemella contiene gia' quel quadro: in quel caso non c'e' niente da
@@ -522,7 +615,7 @@ function trasloca(j) {
     stileSlot(j, stile || null);
 }
 
-// Il dipinto in attesa del Salva prende il nome dalla casella (sfondo-m2.jpg):
+// Il dipinto in attesa del Salva prende il nome dalla casella (sfondo-a2.jpg):
 // se il lavoro trasloca deve cambiare nome con lui, se no nei dati finirebbe
 // il nome di un'altra casella.
 function rinominaDipinto() {
@@ -558,9 +651,14 @@ document.getElementById('dspNo').onclick = function () {
 document.getElementById('dspVia').onclick = function () {
     document.getElementById('dlgSporco').close();
     versa(F.elenco[idx].g, F.elenco[idx].g0);
+    // anche la grafica torna com'e' sul file, se no la casella resta con lo
+    // stile di un quadro che e' stato buttato via
+    stileSlot(idx, clona(F.elenco[idx].st0) || null);
     pila = [];
     document.getElementById('bAnnulla').disabled = true;
     segnaPulito();
+    aggiornaBarraGrafica();
+    costruisciTavolozza();
     disegna();
     if (guardiaSi) guardiaSi();
 };
@@ -594,7 +692,9 @@ function vuota(g) {
     return g.every(function (r) { return r.every(function (v) { return v === 0; }); });
 }
 // ---- blocco JS per woowoo2-mie.js --------------------------------------
-var LETTERE = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'W', 'X'];
+// Le dodici lettere del gioco. Fino al 9/10/2026 qui c'erano le quindici del
+// dischetto (A..L piu' M, W e X) perche' i quadri nostri si chiamavano M..X.
+var LETTERE = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'];
 document.getElementById('bBlocco').onclick = function () {
     var liv = document.getElementById('blkLiv'), ind = document.getElementById('blkIdx');
     if (!liv.options.length) {
@@ -604,7 +704,7 @@ document.getElementById('bBlocco').onclick = function () {
         [0, 1, 2].forEach(function (n) {
             var o = document.createElement('option'); o.value = o.textContent = n; ind.appendChild(o);
         });
-        liv.value = 'M'; ind.value = '2';
+        liv.value = 'A'; ind.value = '2';
         [liv, ind, document.getElementById('blkNome')].forEach(function (e) { e.oninput = componiBlocco; });
     }
     var nome = (F.elenco[idx].eti.match(/[A-Za-z][A-Za-z0-9]*/) || ['QUADRO'])[0].toUpperCase();
@@ -970,19 +1070,46 @@ window.addEventListener('beforeunload', function (e) {
 });
 
 // ---- i due selettori ---------------------------------------------------
-function riempiSelettori() {
-    costruisciCatalogo();
+// Nella tendina di sinistra entrano SOLO i quadri che hanno qualcosa dentro:
+// un quadro vuoto come sorgente non serve a niente - copiare il prato sopra
+// una casella e' quello che fa "Azzera" - e prima erano trentatre voci
+// "(vuota)" da scorrere. Resta per forza la voce scelta, anche se la si
+// svuota lavorandoci, se no la tendina tornerebbe sul segnaposto mentre il
+// quadro e' aperto.
+// Un optgroup per banco, cosi' si vede a quale dei due appartiene la voce
+// senza leggerla: prima il nome del banco stava attaccato a ogni voce.
+// Il valore dell'option e' l'indice in CAT, non la posizione nella tendina:
+// i due numeri non coincidono piu' da quando le voci si filtrano.
+function riempiSorgente() {
     var s = document.getElementById('selSorg');
+    var scelto = s.value;
     s.innerHTML = '';
     var niente = document.createElement('option');
     niente.value = ''; niente.textContent = '\u2014 scegli da dove partire \u2014';
     s.appendChild(niente);
+    var gruppo = null, dove = s;
     CAT.forEach(function (e, i) {
+        var vuoto = vuota(e.g);
+        if (vuoto && String(i) !== scelto) return;
+        if (e.gruppo !== gruppo) {
+            gruppo = e.gruppo;
+            dove = document.createElement('optgroup');
+            dove.label = gruppo;
+            s.appendChild(dove);
+        }
         var o = document.createElement('option');
-        o.value = i; o.textContent = e.eti;
-        s.appendChild(o);
+        o.value = i; o.textContent = e.eti + (vuoto ? '   (vuota)' : '');
+        dove.appendChild(o);
     });
+    s.value = scelto;
+    if (s.selectedIndex < 0) s.value = '';
+}
+
+function riempiSelettori() {
+    costruisciCatalogo();
+    var s = document.getElementById('selSorg');
     s.value = ''; sorgSel = '';
+    riempiSorgente();
     s.onchange = cambiaSorgente;
 
     var d = document.getElementById('selDest');
@@ -997,12 +1124,11 @@ function riempiSelettori() {
     d.onchange = cambiaDestinazione;
     aggiornaEtichette();
 }
-// il "(vuota)" deve restare sincero in tutte e due le tendine
+// il "(vuota)" deve restare sincero in tutte e due le tendine. A sinistra si
+// rifa' la tendina da capo invece di ritoccare i testi: un quadro appena
+// disegnato deve comparire fra le sorgenti, e uno appena azzerato sparire.
 function aggiornaEtichette() {
-    var so = document.getElementById('selSorg').options;
-    CAT.forEach(function (e, i) {
-        if (so[i + 1]) so[i + 1].textContent = e.eti + (vuota(e.g) ? '   (vuota)' : '');
-    });
+    riempiSorgente();
     var dd = document.getElementById('selDest').options;   // la prima e' la voce vuota
     F.elenco.forEach(function (e, i) {
         if (dd[i + 1]) dd[i + 1].textContent = e.eti + (vuota(e.g) ? '   (vuota)' : '');
@@ -1055,7 +1181,7 @@ function costruisciTavolozza() {
             var g = cv.getContext('2d');
             g.imageSmoothingEnabled = false;
             if (nostre) { g.fillStyle = FONDO_NEUTRO; g.fillRect(0, 0, cv.width, cv.height); }
-            g.drawImage(foglio, cod * cel, 0, cel, cel, 0, 0, cv.width, cv.height);
+            piastrella(g, foglio, cel, cod, 0, 0, 0, cv.width, !nostre);
             x.appendChild(cv);
             x.onclick = function () {
                 sel = cod;
@@ -1104,6 +1230,27 @@ function montaStazioni(tela, cella, img) {
     });
 }
 var FONDO_NEUTRO = '#26361f';   // il prato di quando il dipinto non c'e'
+
+// I codici oltre le colonne delle tavole non si ritagliano: non c'e' nessuna
+// colonna da cui prenderli. Sono i pezzi nuovi nostri, e il fotogramma lo
+// fa W2BINARI disegnando le rotte.
+function fuoriAtlante(cod) {
+    return cod >= (D.colonne || 31);
+}
+// Mette in tela la piastrella `cod' nello stato `st', venga dal foglio o dal
+// disegno. `lato' e' il lato in pixel sulla tela, `prato' dice se sotto ci
+// vuole l'erba: i pezzi disegnati sono trasparenti, e nello stile del
+// dischetto - dove il paesaggio e' fatto di piastrelle e non di dipinto -
+// resterebbero appesi sul nero.
+function piastrella(g, foglio, cel, cod, st, x, y, lato, prato) {
+    if (!fuoriAtlante(cod)) {
+        g.drawImage(foglio, cod * cel, st * cel, cel, cel, x, y, lato, lato);
+        return;
+    }
+    if (prato) g.drawImage(foglio, 0, 0, cel, cel, x, y, lato, lato);
+    var q = window.W2BINARI ? W2BINARI.cella(cod, st) : null;
+    if (q) g.drawImage(q, x, y, lato, lato);
+}
 // Sfondo tolto di mezzo per guardare i binari. E' solo un modo di vedere: nei
 // dati non cambia niente e il campo `sfondo' resta dov'e'. Il PNG pero' segue
 // lo schermo, quindi con lo sfondo nascosto esce anche lui sul fondo neutro.
@@ -1359,8 +1506,11 @@ function pngDelQuadro() {
         // con la grafica nostra il paesaggio non e' fatto di piastrelle: si
         // posano solo binari e stazioni, il resto lo fa il fondo
         if (sty && !D.rotta[cod] && !D.staz[cod]) continue;
-        c2.drawImage(foglio, cod * cel, 0, cel, cel,
-            c * CEL * SCALA, r * CEL * SCALA, CEL * SCALA, CEL * SCALA);
+        // Si posa con la stessa mano del disegno sullo schermo: i pezzi
+        // oltre le colonne del foglio non hanno una colonna da ritagliare e
+        // vanno chiesti a W2BINARI, altrimenti nel PNG restano buchi.
+        piastrella(c2, foglio, cel, cod, 0,
+            c * CEL * SCALA, r * CEL * SCALA, CEL * SCALA, !sty);
     }
     return t;
 }
@@ -1421,9 +1571,9 @@ function disegna() {
     for (var r = 0; r < RIGHE; r++) for (var c = 0; c < COLS; c++) {
         var cod = G[r][c];
         if (sty && !D.rotta[cod] && !D.staz[cod]) continue;
-        var st = commutate[r + ',' + c] ? 1 : 0;
-        ctx.drawImage(foglio, cod * cel, st * cel, cel, cel,
-            c * CEL * SCALA, r * CEL * SCALA, CEL * SCALA, CEL * SCALA);
+        var st = commutate[r + ',' + c] || 0;
+        piastrella(ctx, foglio, cel, cod, st, c * CEL * SCALA, r * CEL * SCALA,
+                   CEL * SCALA, !sty);
     }
     // reticolo
     ctx.strokeStyle = 'rgba(255,255,255,.12)'; ctx.lineWidth = 1;
@@ -1499,9 +1649,14 @@ tela.addEventListener('pointermove', function (e) {
     if (!G) return;
     var p = cella(e);
     var cod = G[p.r][p.c];
+    var st = commutate[p.r + ',' + p.c] || 0;
+    var rot = D.rotta[cod];
     document.getElementById('info').textContent =
         '(' + p.r + ',' + p.c + ')  cod ' + cod + '  ' + (NOMI[cod] || '?') +
-        (D.rotta[cod] ? '   rotte: ' + D.rotta[cod].join(' / ') : '') +
+        (rot ? '   rotte: ' + rot.map(function (v, i) {
+            return i === st ? '[' + v + ']' : v;
+        }).join(' / ') : '') +
+        (rot && rot.length > 2 ? ' (tre stati, tasto destro per girare)' : '') +
         (PUNTA[cod] ? '   punta a ' + PUNTA[cod] : '');
 });
 
@@ -1547,14 +1702,16 @@ function poni(r, c, cod) {
     delete commutate[r + ',' + c];
     dopoModifica();
 }
-// Gira lo scambio solo per guardarlo. Vale per gli scambi e per i semafori,
-// cioe' per i codici che nell'atlante hanno due righe: gli altri hanno una
-// riga sola e commutarli mostrerebbe il vuoto.
+// Gira lo scambio solo per guardarlo: un colpo, uno stato avanti, e dopo
+// l'ultimo si torna al primo. Vale per gli scambi e per i semafori; gli altri
+// pezzi hanno una rotta sola e girarli non mostrerebbe niente.
 function giraCasella(r, c) {
     var cod = G[r][c];
     if (D.scambio.indexOf(cod) < 0 && D.segnale.indexOf(cod) < 0) return;
+    var quanti = (D.rotta[cod] || ['']).length;
     var k = r + ',' + c;
-    if (commutate[k]) delete commutate[k]; else commutate[k] = true;
+    var st = ((commutate[k] || 0) + 1) % quanti;
+    if (st) commutate[k] = st; else delete commutate[k];
     disegna();
 }
 function annulla() {
@@ -1633,7 +1790,9 @@ function rotta(cod, st) { var r = D.rotta[cod]; return r ? r[Math.min(st, r.leng
 function accetta(cod, ent) {
     if (D.staz[cod]) return D.staz[cod] === ent;
     if (!D.rotta[cod]) return false;
-    for (var s = 0; s < 2; s++) { var r = rotta(cod, s); if (r && r.indexOf(ent) >= 0) return true; }
+    for (var s = 0; s < D.rotta[cod].length; s++) {
+        var r = rotta(cod, s); if (r && r.indexOf(ent) >= 0) return true;
+    }
     return false;
 }
 
@@ -1729,7 +1888,12 @@ function mete(part, staz) {
             }
             continue;
         }
-        for (var s = 0; s < 2; s++) {
+        // Tutte le posizioni del pezzo, non due: i quattro scambi a tre stati
+        // ne hanno tre. Vale qui come nel gioco, ed e' bene che le due
+        // esplorazioni dicano la stessa cosa: questa accende il "coppie
+        // servite" del Controlla, quella decide gli ordini che escono davvero.
+        var quanti = (D.rotta[cod] || ['']).length;
+        for (var s = 0; s < quanti; s++) {
             var r2 = rotta(cod, s);
             if (r2 && r2.indexOf(ent) >= 0) pila.push([nr, nc, r2[0] === ent ? r2[1] : r2[0]]);
         }
@@ -1744,12 +1908,31 @@ function tabellaParametri() {
     var righe = parametriDelloSchema();
     if (!righe.length) { box.hidden = true; return; }
     box.hidden = false;
+    // Il pulsante nomina il livello del dischetto COME LO CHIAMAVA
+    // L'ORIGINALE, non come si chiama nei dati. Nei dati e' spostato di
+    // dodici - il gemello del nostro A e' la lettera M - ma M era la A del
+    // dischetto, e di lettere spostate chi disegna non ha motivo di sapere
+    // niente: leggeva "Parametri dal dischetto M" con la A aperta, e sembrava
+    // che stesse parlando di un altro livello. Il nome originale del gemello
+    // e' sempre la nostra stessa lettera, perche' le caselle si guardano in
+    // faccia a due a due. La lettera vera dei dati resta nel suggerimento,
+    // per chi va a cercarla nel file.
+    var bd = document.getElementById('bParDisco'), ld = letteraDischetto();
+    bd.disabled = !ld;
+    var dove = ld ? F.elenco[idx].liv : '';
+    bd.textContent = ld ? 'Parametri dal dischetto ' + dove : 'Parametri dal dischetto';
+    bd.title = ld
+        ? 'mette i sottolivelli del livello ' + dove + ' del dischetto'
+          + ' (nei dati e\' la lettera ' + ld + ') nel tuo livello ' + dove
+          + ', convertendo il campo sec nei tre campi tempo, annuncio e sosta,'
+          + ' e aggiungendo i tre del quarto giro come copia dei tre piu\''
+          + ' alti: sono i numeri originali, da tenere come punto di partenza'
+          + ' e poi cambiare'
+        : 'questo livello non ha un gemello nel dischetto';
     var t = document.createElement('table');
     var tr = document.createElement('tr');
     tr.appendChild(cella_('th', '#'));
     PARAM.forEach(function (p) { tr.appendChild(cella_('th', p.eti)); });
-    tr.appendChild(cella_('th', 'durata'));
-    tr.appendChild(cella_('th', 'contatore'));
     t.appendChild(tr);
     righe.forEach(function (rg, i) {
         var r = document.createElement('tr');
@@ -1767,38 +1950,112 @@ function tabellaParametri() {
             } else {
                 ct = document.createElement('input');
                 ct.type = 'number'; ct.min = p.min; ct.max = p.max;
+                if (p.passo) ct.step = p.passo;
                 ct.title = 'originali: ' + p.disco;
             }
             ct.value = rg.p[p.k];
             ct.onchange = function () {
-                var v = parseInt(ct.value, 10);
+                var v = p.passo ? parseFloat(ct.value) : parseInt(ct.value, 10);
                 if (isNaN(v)) { ct.value = rg.p[p.k]; return; }
                 if (p.min !== undefined) v = Math.max(p.min, Math.min(p.max, v));
+                // un decimale, se no nei dati finiscono le code binarie di
+                // parseFloat (3.3000000000000003)
+                if (p.passo) v = Math.round(v * 10) / 10;
                 ct.value = v;
                 rg.p[p.k] = v;
                 segnaSporco();
-                aggiornaDerivati(r, rg.p);
             };
             td.appendChild(ct); r.appendChild(td);
         });
-        r.appendChild(cella_('td', '', 'der'));
-        r.appendChild(cella_('td', '', 'der'));
-        aggiornaDerivati(r, rg.p);
         t.appendChild(r);
     });
     cont.innerHTML = ''; cont.appendChild(t);
+    tabellaRiferimento();
 }
-function aggiornaDerivati(tr, p) {
-    var c = tr.querySelectorAll('td.der');
-    c[0].textContent = (p.ord * p.sec) + ' s';
-    c[1].textContent = p.ord * (p.sec + 2);
-}
+// La tabella non ha piu' colonne calcolate. Ne aveva due e sono andate via
+// entrambe il 9/10/2026: "durata" (ord x sec, con la "s" di secondi attaccata)
+// prometteva secondi che non sono secondi, perche' il contatore misura
+// treni-secondo e non tempo; "contatore" (ord x dote) e' diventata il campo
+// `tempo' dei dati, che si scrive a mano come tutti gli altri.
 function cella_(tag, testo, cls) {
     var e = document.createElement(tag);
     e.textContent = testo;
     if (cls) e.className = cls;
     return e;
 }
+// I tre campi del tempo ricavati dal solo `sec' del dischetto. La
+// conversione sta in un punto solo e la usano in due: il pulsante, che la
+// versa nei dati, e la tabella di riferimento, che la mostra e non tocca
+// niente. Sono le formule che il motore applicava fino al 9/10/2026.
+function treTempi(d) {
+    return {
+        tempo: d.ord * (d.sec + 2),
+        ann: Math.round(0.52 * d.sec * 10) / 10,
+        sosta: Math.round(0.33 * d.sec * 10) / 10
+    };
+}
+
+// Quale livello del dischetto mettere a fianco. Se nella tendina delle
+// sorgenti c'e' un quadro del dischetto e' quello: chi sta ridisegnando il
+// quadro del livello P vuole i numeri di P, non quelli del gemello della
+// lettera in cui lo sta depositando. Fuori da quel caso si cade sul gemello,
+// il livello equivalente originale, che e' anche quello che copierebbe il
+// pulsante.
+function livelloRiferimento() {
+    if (!F || idx < 0 || F.tipo !== 'json' || !FD) return '';
+    var s = sorgSel === '' ? null : CAT[parseInt(sorgSel, 10)];
+    if (s && s.d === FD.dati) {
+        var liv = FD.dati.liv[s.liv];
+        if (liv && liv.sub && liv.sub.length) return s.liv;
+    }
+    return letteraDischetto();
+}
+
+// La tabella di riferimento: le stesse colonne di quella in lavorazione, con
+// i numeri originali e nessun comando. Serve a tenere d'occhio da dove si
+// parte mentre si cambia: il pulsante "Parametri dal dischetto" li versa
+// tutti insieme e cancella il lavoro, questa invece non tocca niente.
+// Le righe sono nove - il dischetto non ha il quarto giro - percio' le
+// ultime tre della tabella accanto restano senza riscontro, ed e' giusto:
+// sono nostre.
+function tabellaRiferimento() {
+    var box = document.getElementById('rifPar');
+    var S = livelloRiferimento();
+    box.innerHTML = '';
+    if (!S) { box.hidden = true; return; }
+    var sub = FD.dati.liv[S].sub;
+    box.hidden = false;
+    // Il titolo nomina il livello COME LO CHIAMAVA L'ORIGINALE, come fa il
+    // pulsante: nei dati e' spostato di dodici, ma di lettere spostate chi
+    // disegna non ha motivo di sapere niente. La lettera vera resta fra
+    // parentesi, per chi va a cercarla nel file.
+    var h = document.createElement('h3');
+    h.innerHTML = 'dal dischetto: livello <span>' + esc(gemella(S)) +
+                  '</span> (nei dati ' + esc(S) + ')';
+    box.appendChild(h);
+    var t = document.createElement('table');
+    t.className = 'rif';
+    var tr = document.createElement('tr');
+    tr.appendChild(cella_('th', '#'));
+    PARAM.forEach(function (p) { tr.appendChild(cella_('th', p.eti)); });
+    tr.appendChild(cella_('th', 'sec'));
+    t.appendChild(tr);
+    sub.forEach(function (d, i) {
+        var tt = (d.sec !== undefined && d.ord !== undefined) ? treTempi(d) : null;
+        var r = document.createElement('tr');
+        r.appendChild(cella_('td', i + 1));
+        PARAM.forEach(function (p) {
+            var conv = tt && tt[p.k] !== undefined;
+            var v = conv ? tt[p.k] : d[p.k];
+            r.appendChild(cella_('td', v === undefined ? '\u00b7' : v,
+                                 conv ? 'conv' : null));
+        });
+        r.appendChild(cella_('td', d.sec === undefined ? '\u00b7' : d.sec));
+        t.appendChild(r);
+    });
+    box.appendChild(t);
+}
+
 function parametriDelloSchema() {
     if (!F || idx < 0) return [];
     if (F.tipo === 'json') {
@@ -1807,6 +2064,70 @@ function parametriDelloSchema() {
     }
     return F.sub.map(function (s, n) { return { p: s.p, eti: n + 1 }; });
 }
+
+// I parametri dei sottolivelli nascono vuoti e tutti uguali: da B a L sono
+// dodici righe segnaposto identiche. Per avere una base sensata su cui lavorare
+// si rileggono dal quadro gemello del dischetto - la lettera avanti di dodici,
+// la rovescia di `gemella()': A->M, B->N ... L->X. Si copia solo in memoria,
+// dentro F.dati: il dischetto non si scrive mai, e il file nostro cambia
+// davvero soltanto quando si preme Salva.
+function letteraDischetto() {
+    if (!F || idx < 0 || F.tipo !== 'json' || !FD) return '';
+    var S = String.fromCharCode(F.elenco[idx].liv.charCodeAt(0) + 12);
+    var liv = FD.dati.liv[S];
+    return (liv && liv.sub && liv.sub.length) ? S : '';
+}
+
+document.getElementById('bParDisco').onclick = function () {
+    var S = letteraDischetto();
+    if (!S) return;
+    var L = F.elenco[idx].liv;
+    var mie = F.dati.liv[L].sub, dis = FD.dati.liv[S].sub;
+    if (!mie.length || dis.length <= SUBEXTRA) {
+        alert('Il livello ' + L + ' del dischetto (nei dati la lettera ' + S +
+              ') ha ' + dis.length + ' sottolivelli e il tuo ne ha ' +
+              mie.length + ': non ci so lavorare.');
+        return;
+    }
+    var quanti = dis.length + SUBEXTRA;
+    if (!confirm('Metto in tabella i ' + dis.length + ' sottolivelli del livello '
+                 + L + ' del dischetto (nei dati la lettera ' + S + '), piu\' '
+                 + SUBEXTRA + ' copie dei tre piu\' alti per il quarto giro:'
+                 + ' ' + quanti + ' righe dentro il tuo livello ' + L + '. I'
+                 + ' parametri che vedi adesso si perdono. Vado?')) return;
+    // Si parte da una copia di una riga NOSTRA e sopra ci si versano i campi
+    // del dischetto uno per uno, solo quelli della tabella: cosi' le chiavi
+    // del JSON restano nell'ordine di prima e il file non si scompone.
+    // `tempo', `ann' e `sosta' nel dischetto non ci sono: li' c'e' il solo
+    // campo `sec', e il motore ne ricavava tutti e tre. La conversione sta
+    // qui, ed e' l'unico posto del progetto dove quelle tre formule servono
+    // ancora.
+    var modello = JSON.stringify(mie[0]);
+    var nuove = dis.map(function (d) {
+        var p = JSON.parse(modello);
+        PARAM.forEach(function (c) {
+            if (d[c.k] !== undefined) p[c.k] = d[c.k];
+        });
+        if (d.sec !== undefined) {
+            var tt = treTempi(d);
+            p.tempo = tt.tempo; p.ann = tt.ann; p.sosta = tt.sosta;
+        }
+        return p;
+    });
+    // Il quarto giro: tre righe nuove, copia delle tre piu' alte. Cosi' la
+    // rotazione dei quadri continua da sola (il dischetto chiude con 2, 1, 0 e
+    // il giro in piu' riparte da 2) e i numeri sono una base sensata invece
+    // che tre righe vuote. Poi si fanno piu' difficili a mano.
+    nuove = nuove.concat(nuove.slice(-SUBEXTRA).map(function (p) {
+        return JSON.parse(JSON.stringify(p));
+    }));
+    // l'array e' quello dentro F.dati: si svuota e si riempie, non si
+    // sostituisce, se no il riferimento che gira per l'editor resta al vecchio
+    mie.length = 0;
+    nuove.forEach(function (p) { mie.push(p); });
+    segnaSporco();
+    tabellaParametri();
+};
 
 // presa di servizio per il collaudo: permette di provare analisi e
 // ricomposizione senza passare dal selettore di file di Chrome.

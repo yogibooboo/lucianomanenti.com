@@ -304,7 +304,7 @@ html, body {
     align-items: center;
     gap: 8px;
 }
-#w2-comandi select { flex: 1; min-width: 0; }
+#w2-comandi #w2-quadro { flex: 1; min-width: 0; }
 
 .bottone {
     height: 38px;
@@ -340,17 +340,90 @@ html, body {
     #w2-pausa.inpausa { animation: none; }
 }
 
-/* Due tendine: il dischetto A..L e i quadri nostri M..X. */
-#w2-scelta,
-#w2-scelta2 {
-    height: 38px;
-    padding: 0 8px;
-    border-radius: 5px;
-    border: 1px solid rgba(255, 255, 255, 0.28);
-    background: #143f21;
-    color: #fff;
-    font-size: 12px;
+/* === SCELTA DEL QUADRO ===
+   Fino al 16/10/2026 era una tendina. Una tendina di cinquanta voci si apre
+   su una colonna lunghissima e da' il quadro per scritto -- "Livello B ·
+   quadro 12" -- quando quello che serve e' una lettera e un numero. Adesso
+   e' un pannello con i tasti: le lettere su una riga, i numeri sotto. Il
+   tasto nella barra dei comandi mostra il quadro in corso e apre il
+   pannello. */
+#w2-scelte {
+    position: absolute;
+    top: 0; left: 0;
+    width: 1024px; height: 750px;
+    box-sizing: border-box;
+    background: rgba(0, 0, 0, 0.72);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 30002;          /* sopra la modale di fine quadro */
 }
+#w2-scelte.su { display: flex; }
+
+/* Lo stesso riquadro della modale di fine quadro, ma stretto: qui dentro non
+   ci va nessun banner, e una griglia di tasti larga 700 sarebbe tutta vuota. */
+.w2-riquadro.w2-scelta-box {
+    width: 440px;
+    padding-bottom: 16px;
+}
+/* Le righe hanno due etichette ("LIVELLO", "QUADRO") perche' senza di quelle
+   due file di tasti, lettere sopra e numeri sotto, non dicono chi comanda
+   chi. */
+.w2-scelta-tit {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    opacity: 0.8;
+    text-align: left;
+    margin: 12px 0 5px;
+}
+.w2-scelta-box .w2-griglia {
+    display: grid;
+    gap: 6px;
+}
+/* Le lettere sono poche e larghe uguali; i numeri arrivano a dodici e stanno
+   comodi su sei per riga. */
+.w2-scelta-box .w2-griglia.lettere { grid-template-columns: repeat(4, 1fr); }
+.w2-scelta-box .w2-griglia.numeri { grid-template-columns: repeat(6, 1fr); }
+.w2-scelta-box .w2-griglia button {
+    height: 40px;
+    padding: 0;
+    font-size: 15px;
+    font-weight: bold;
+    font-variant-numeric: tabular-nums;
+}
+/* Il tasto di una lettera porta due righe: la lettera grande e, sotto, il
+   tema del livello in piccolo. Serve piu' altezza, e le due righe si
+   impilano al centro. */
+.w2-scelta-box .w2-griglia.lettere button {
+    height: 50px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    line-height: 1.1;
+}
+.w2-scelta-box .w2-griglia.lettere button b { font-size: 17px; }
+.w2-scelta-box .w2-griglia.lettere button i {
+    font-style: normal;
+    font-size: 10px;
+    font-weight: normal;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    opacity: 0.75;
+}
+/* Sul tasto acceso il tema si legge su fondo giallo: senza questo resterebbe
+   schiarito come sugli altri e sparirebbe. */
+.w2-scelta-box .w2-griglia.lettere button.on i { opacity: 1; }
+/* Il tasto acceso e' quello scelto adesso: la lettera che si sta guardando,
+   e -- solo se e' anche la sua -- il numero che si sta giocando. */
+.w2-scelta-box .w2-griglia button.on {
+    border-color: #ffe680;
+    background: #f0c000;
+    color: #2a1a00;
+}
+.w2-scelta-box .w2-griglia button.on:hover { background: #ffd720; }
+.w2-scelta-box .w2-bottoni { margin-top: 14px; }
 
 /* === CARTELLO DI FINE QUADRO ===
    Quello che si vede nei tre secondi prima della modale. Sta sopra il quadro
@@ -429,6 +502,16 @@ html, body {
 }
 /* Il riepilogo in tre schede, come le statistiche di fine partita degli altri
    giochi: l'etichetta piccola sopra, il numero grande sotto. */
+/* Quale quadro e' appena finito, in piccolo sotto il titolo. */
+.w2-fine-quadro {
+    font-size: 11px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: #cfe6cf;
+    margin: 2px 0 0;
+}
+
 /* I complimenti dell'ultimo quadro: una riga sola sotto il titolo. */
 .w2-finale { font-size: 14px; margin: 6px 0 0; color: #dff0d8; }
 

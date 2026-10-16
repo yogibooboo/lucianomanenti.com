@@ -68,7 +68,7 @@ if (adsDisabled) {
     ADSENSE_GLOBAL_ENABLED = false;
 }
 
-var ADSENSE_SHIELD_DURATION = 70 * 60 * 1000; // 70 minuti di blocco dopo un click
+var ADSENSE_SHIELD_DURATION = 40 * 60 * 1000; // 40 minuti di blocco dopo un click
 var _isMouseOverAdSense = false;
 
 // ─── TELEMETRIA SCALA (GA4) ──────────────────────────────────────────────────
@@ -1064,9 +1064,12 @@ function adjustLayout() {
             // Con la quarta voce (Campo Minato) l'altezza e' scesa da 60 a 52: lo
             // spazio utile in verticale e' 230 (250 meno i due padding da 10) e
             // quattro righe da 60 ne vorrebbero 240. A 52 il totale e' 208 e i 22
-            // che restano bastano allo space-evenly per staccarle. Se un giorno
-            // si aggiunge una quinta voce, qui non ci sta piu': o si torna alla
-            // griglia a due colonne o si sceglie cosa togliere.
+            // che restano bastano allo space-evenly per staccarle.
+            // Dal 16/10/2026 le voci sono tre, ma il conto non cambia: la voce
+            // delle carte e' uscita, e WooWoo si prende i suoi 52 diventando
+            // alto 104, cioe' due pulsanti. Il totale resta 208. Una voce in
+            // piu' qui dentro non ci sta: o si torna alla griglia a due
+            // colonne, o si sceglie cosa togliere, o WooWoo torna basso.
             var en = (window.currentLang === 'en');
             var newLabel = en ? 'NEW' : 'NUOVO';
             var stileRiga = 'display:flex;align-items:center;justify-content:center;gap:8px;width:262px;height:52px;border-radius:9px;color:#ffffff;font-size:15px;font-weight:bold;text-align:center;text-decoration:none;position:relative;transition:transform 0.2s;cursor:pointer;box-sizing:border-box;line-height:1.25;box-shadow:0 3px 6px rgba(0,0,0,0.3);';
@@ -1085,21 +1088,26 @@ function adjustLayout() {
             // niente a chi non c'e' mai stato, e allora porta dietro due parole.
             var promoLink = en ? '/woowoo2-en.html' : '/woowoo2.html';
             var promoTesto = en ? 'WOOWOO - trains and switches' : 'WOOWOO - treni e scambi';
-
-            // Tressette / Traversone tiene il badge "nuovo" come WooWoo
-            var tressetteLink = en ? '/tressette-en.html' : '/tressette.html';
-            var tressetteTesto = 'TRESSETTE/TRAVERSONE (ciapanò)';
+            // Seconda riga del pulsante, sotto il nome: i quadri nuovi. La
+            // lettera e' scritta grossa perche' e' quella che si cerca nel
+            // pannello della scelta dentro al gioco, dove i livelli sono
+            // bottoni con su una lettera sola.
+            var promoNovita = en ? 'New levels' : 'Nuovi livelli';
+            var promoLettera = 'B';
+            // Alto come due righe. Stesse regole della riga normale, con
+            // l'altezza raddoppiata e il contenuto incolonnato: le proprieta'
+            // ripetute dopo vincono su quelle di stileRiga, che viene prima.
+            var stileDoppia = stileRiga + 'height:104px;flex-direction:column;gap:4px;';
 
             return '<div style="display:flex;flex-direction:column;justify-content:space-evenly;align-items:center;width:300px;height:250px;padding:10px;box-sizing:border-box;background:linear-gradient(135deg, #14532d, #022c22);border:3px solid #ffdb4d;border-radius:12px;box-shadow:inset 0 0 20px rgba(0,0,0,0.6), 0 4px 15px rgba(0,0,0,0.5);font-family:\'Outfit\',\'Open Sans\',sans-serif;z-index:100;overflow:hidden;">' +
-                '<a href="' + promoLink + '" target="_self" class="sudoku-promo-btn" style="' + stileRiga + 'background:linear-gradient(180deg,#b91c1c 0%,#991b1b 100%);border:2px solid #ffd700;"' + hover + '>' +
-                badgeSmall + '🚂<span style="color:#ffd700;">' + promoTesto + '</span>' +
-                '</a>' +
-                // Verde scuro col bordo chiaro, gli stessi colori del feltro di
-                // gioco: e' il modo piu' rapido per far riconoscere il gioco a
-                // chi ci e' gia' stato, e non ripete il rosso di WooWoo qui
-                // sopra ne' il blu della musica qui sotto.
-                '<a href="' + tressetteLink + '" target="_self" class="sudoku-promo-btn" style="' + stileRiga + 'font-size:12.5px;background:linear-gradient(180deg,#15803d 0%,#14532d 100%);border:2px solid #ffd700;"' + hover + '>' +
-                badgeSmall + '🃏<span style="color:#ffd700;">' + tressetteTesto + '</span>' +
+                '<a href="' + promoLink + '" target="_self" class="sudoku-promo-btn" style="' + stileDoppia + 'background:linear-gradient(180deg,#b91c1c 0%,#991b1b 100%);border:2px solid #ffd700;"' + hover + '>' +
+                badgeSmall +
+                '<span style="display:flex;align-items:center;gap:8px;">🚂' +
+                '<span style="color:#ffd700;">' + promoTesto + '</span></span>' +
+                '<span style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:bold;color:#ffe9a8;">' +
+                promoNovita +
+                '<span style="font-size:22px;line-height:1;color:#ffd700;">' + promoLettera + '</span>' +
+                '</span>' +
                 '</a>' +
                 '<a href="' + amazonGenericLink + '" target="_self" style="' + stileRiga + 'background:linear-gradient(180deg,#1d4ed8 0%,#1e40af 100%);border:2px solid #60a5fa;"' + hover + '>' +
                 '🎵<span style="color:#ffd700;">Music Ear Training</span>' +

@@ -3,42 +3,38 @@
    ---------------------------------------------------------------------------
    Meccanica ricavata dal dischetto originale Locomotion (Kingsoft 1992):
    45 schemi, tabella degli scambi a due stati, parametri dei 9 sottolivelli
-   di ogni livello. I dati stanno in dev/woowoo2-dati.js. Gli schemi del dischetto
-   erano 10x8; il tabellone nostro e' 15x9 e se li tiene in mezzo, col prato
+   di ogni livello. Gli schemi del dischetto erano 10x8; il tabellone nostro e' 15x9 e se li tiene in mezzo, col prato
    intorno (vedi dev/woowoo2-allarga.py). I numeri che nell'originale stavano
    nella casella nera del dischetto qui non sono sul quadro: stanno nella
    fascia sopra, al centro (vedi aggiornaHud).
 
-   ATTENZIONE: la grafica di dev/tiles.png e' quella originale Kingsoft,
-   grafica di cantiere per validare la meccanica. Sta in dev/ con tutto il
-   resto del materiale del dischetto, e quella cartella non si carica sul
-   server: e' tutta la regola di pubblicazione.
-   Dal 5/10/2026 quel file si carica SOLO se serve, cioe' se in campagna c'e'
-   almeno uno schema senza grafica nostra (vedi serveDisco). Nella versione
-   pubblicata la campagna sono i quadri nostri, che il dipinto ce l'hanno
-   tutti: li' il file non viene nemmeno chiesto, e il gioco gira per intero
-   senza una piastrella del dischetto. Lo stile di ogni schema sta nel campo
-   `stile` dei file di dati (vedi stileDi).
+   DAL 9/10/2026 IL DISCHETTO NON ENTRA PIU' NEL GIOCO. I quadri giocabili
+   sono soltanto i nostri, stanno in woowoo2-mie.js e si chiamano A..L: non
+   c'e' piu' nessuna modalita' sviluppo e nessun atlante Kingsoft da caricare.
+   L'estrazione resta in dev/woowoo2-dati.js, dove le lettere sono spostate a
+   M..X, e la apre soltanto l'editor come punto di partenza da cui copiare.
+   Lo stile di ogni schema sta nel campo `stile` dei file di dati (vedi
+   stileDi): un quadro senza dipinto si gioca ma non si vede, perche' non c'e'
+   nessun atlante di riserva.
    =========================================================================== */
 (function () {
     'use strict';
 
     var D = window.W2DATI;
 
-    // Il dischetto porta quindici lettere di livello, ma **A..L sono il gioco e
-    // M, W, X servono all'editor**: infatti hanno `s`=0 su tutti e nove i
-    // sottolivelli e i loro schemi 1 e 2 sono ottanta caselle di prato vuoto.
-    // `dev/woowoo2-dati.js` resta l'estrazione completa del dischetto, il filtro
-    // sta qui. Restano 12 livelli, 108 quadri.
-    var LIVELLI = D.ordine.slice(0, D.ordine.indexOf('L') + 1);
-
-    // I livelli nostri stanno in `woowoo2-mie.js`: dodici lettere dalla M alla
-    // X, tre schemi e nove sottolivelli ciascuna, stessa struttura dei dati
-    // estratti. Si innestano qui sopra D.liv e nel menu a tendina compaiono
-    // solo quelle in cui c'e' davvero un tracciato disegnato -- le altre sono
-    // ottanta caselle di prato e non si possono giocare.
-    // In LIVELLI non entrano apposta: la campagna resta A..L, cosi' non
-    // cambiano ne' il "quadro dopo" ne' la schermata di fine gioco.
+    // I livelli del gioco stanno in `woowoo2-mie.js`: dodici lettere dalla A
+    // alla L, tre schemi e dodici sottolivelli ciascuna (i tre quadri girati
+    // quattro volte). Si innestano qui sopra
+    // D.liv -- che arriva vuoto da woowoo2-codici.js, il quale porta soltanto
+    // i codici delle piastrelle -- e nel menu a tendina compaiono solo quelle
+    // in cui c'e' davvero un tracciato disegnato: le altre sono ottanta
+    // caselle di prato e non si possono giocare.
+    // FINO AL 9/10/2026 ERA IL CONTRARIO: A..L era il dischetto, i quadri
+    // nostri si chiamavano M..X e una funzione `nome()' li mostrava A..L; una
+    // modalita' sviluppo (localStorage dev_mode) accendeva in piu' la campagna
+    // del dischetto, con due tendine. Non c'e' piu' niente di tutto questo: le
+    // lettere nostre sono quelle vere, il dischetto e' spostato a M..X in
+    // dev/woowoo2-dati.js e lo apre soltanto l'editor.
     var MIEI = window.W2MIEI;
     if (MIEI) MIEI.ordine.forEach(function (L) { D.liv[L] = MIEI.liv[L]; });
     function disegnato(L) {
@@ -48,23 +44,7 @@
             });
         });
     }
-    var NOSTRI = MIEI ? MIEI.ordine.filter(disegnato) : [];
-
-    // Nella versione pubblicata il dischetto non si vede: si gioca soltanto sui
-    // quadri nostri, e a video non si chiamano M, N, O... ma A, B, C..., perche'
-    // per chi gioca sono il primo, il secondo, il terzo livello. La lettera vera
-    // resta quella interna -- serve a pescare dentro D.liv -- e quella da
-    // mostrare la da' `nome`. In dev_mode non cambia niente: si vedono tutte e
-    // due le tendine e le lettere sono quelle vere.
-    var DEV = (function () {
-        try { return localStorage.getItem('dev_mode') === '1'; } catch (e) { return false; }
-    })();
-    var CAMPAGNA = (DEV || !NOSTRI.length) ? LIVELLI : NOSTRI;
-    function nome(L) {
-        if (CAMPAGNA === LIVELLI) return L;
-        var i = CAMPAGNA.indexOf(L);
-        return i >= 0 ? 'ABCDEFGHIJKL'.charAt(i) : L;
-    }
+    var CAMPAGNA = MIEI ? MIEI.ordine.filter(disegnato) : [];
 
     // ---- grafica per quadro ---------------------------------------------
     // Ogni schema porta con se' il suo stile, nel campo `stile` del file di
@@ -80,10 +60,10 @@
         var liv = D.liv[L];
         var st = liv && liv.stile && liv.stile[n];
         if (!st || typeof st !== 'object') return null;
-        // Se atlante o dipinto non sono arrivati lo schema si disegna con le
-        // piastrelle del dischetto: brutto ma giocabile, e soprattutto lo si
-        // vede. Prima si provava a stenderlo lo stesso e drawImage buttava
-        // fuori un errore che fermava il ciclo: il quadro restava congelato
+        // Se atlante o dipinto non sono arrivati lo schema si disegna
+        // spoglio: non c'e' nessun atlante di riserva, ma almeno si gioca.
+        // Prima si provava a stenderlo lo stesso e drawImage buttava fuori un
+        // errore che fermava il ciclo: il quadro restava congelato
         // sull'ultimo fotogramma e sembrava che il gioco non cambiasse mai
         // livello.
         return st.rotto ? null : st;
@@ -111,23 +91,6 @@
             });
         });
         return fuori;
-    }
-
-    // Serve l'atlante del dischetto? Solo se in campagna c'e' almeno uno
-    // schema senza grafica nostra. In dev_mode si gioca anche sui quadri del
-    // dischetto e serve sempre; nella versione pubblicata la campagna sono i
-    // quadri nostri, che il dipinto ce l'hanno tutti, e quel file non si
-    // chiede nemmeno. E' quello che permette a dev/ di restare fuori dal
-    // server senza che a video manchi niente.
-    function serveDisco() {
-        return CAMPAGNA.some(function (L) {
-            var liv = D.liv[L];
-            if (!liv) return false;
-            var st = liv.stile || [];
-            return liv.schemi.some(function (_, n) {
-                return !(st[n] && typeof st[n] === 'object');
-            });
-        });
     }
 
     // ---- testi -----------------------------------------------------------
@@ -163,10 +126,21 @@
         fermo: EN ? 'HELD {F} s \u00b7 running {N} s' : 'FERMO {F} s \u00b7 viaggio {N} s',
         fra: EN ? 'in {N} s' : 'tra {N} s',
         vuoto: EN ? 'no orders' : 'nessun ordine',
-        voceLiv: EN ? 'Level {L} · board {N}' : 'Livello {L} · quadro {N}',
-        capoBase: EN ? 'Disk A–L' : 'Dischetto A–L',
-        capoMiei: EN ? 'Mine M–X' : 'Miei M–X',
-        capoSolo: EN ? 'Levels' : 'Livelli'
+        tastoQuadro: EN ? 'BOARD {L} · {N} — CHOOSE' : 'QUADRO {L} · {N} — SCEGLI',
+        etLivello: EN ? 'Level' : 'Livello',
+        etQuadro: EN ? 'Board of level {L}' : 'Quadro del livello {L}',
+        quadroFatto: EN ? 'Board {L} · {N}' : 'Quadro {L} · {N}',
+        seleziona: EN ? 'SELECT' : 'SELEZIONA',
+        annulla: EN ? 'CANCEL' : 'ANNULLA'
+    };
+
+    // Il tema di ogni livello, in piccolo sotto la lettera nel pannello della
+    // scelta. Sta qui e non nei dati dei quadri perche' quel file lo riscrive
+    // l'editor da capo a ogni salvataggio: un campo in piu' andrebbe tenuto
+    // d'accordo anche di la'. Un livello senza tema mostra la sola lettera.
+    var TEMI = {
+        A: EN ? 'country' : 'country',
+        B: EN ? 'swamp' : 'palude'
     };
     function t(k, v) {
         return T[k].replace(/\{(\w+)\}/g, function (m, n) { return v && v[n] !== undefined ? v[n] : m; });
@@ -205,11 +179,18 @@
     // quadro con vel = 1, 2 o 3 questi tre numeri restano una stima.
     var VELOCITA = [50 / 32, (100 / 3) / 32, 25 / 32, (50 / 3) / 32, 12.5 / 32];
 
-    // ANNUNCIO e SOSTA non sono costanti ma frazioni di `sec` (Zeit/Auftrag,
-    // il tempo assegnato a ogni ordine). Sul primo quadro di A, sec = 25 e le
-    // misure sono 13 s di annuncio e 8 s di sosta: 0,52 e 0,33 di sec.
-    var F_ANNUNCIO = 0.52;
-    var F_SOSTA = 0.33;
+    // ANNUNCIO E SOSTA SONO DUE CAMPI DEI DATI, in secondi: `ann' e `sosta'.
+    // Nel dischetto erano due frazioni di un campo solo, `sec' (Zeit/Auftrag,
+    // il tempo assegnato a ogni ordine): sul primo quadro di A, sec = 25 e le
+    // misure erano 13 s di annuncio e 8 s di sosta, cioe' 0,52 e 0,33 di sec.
+    // Dal 9/10/2026 i tre valori che `sec' generava si scrivono separati nei
+    // dati -- `tempo', `ann' e `sosta' -- perche' un campo solo non lasciava
+    // regolarli uno per uno. Le due frazioni sono rimaste dove serve la
+    // conversione, cioe' nel pulsante "Parametri dal dischetto" dell'editor.
+    // Qui restano solo due moltiplicatori da lasciare a 1: servono per
+    // confrontare a occhio con UAE senza ricaricare la pagina.
+    var M_ANNUNCIO = 1;
+    var M_SOSTA = 1;
 
     // EMISSIONE DEGLI ORDINI. Il ritmo NON si ricava da `sec'. A/1, A/2 e A/3
     // hanno tutti sec 25 e ritmi misurati di 40, 32 e 30 secondi: la vecchia
@@ -287,36 +268,56 @@
     // quanto prima, quindi il consumo torna quello di prima e il contatore
     // finale non ci rimette niente. Accelerare NON toglie tempo: il tempo lo
     // mangiano i treni in pista, non l'orologio.
-    // La sosta in stazione (0,33 x sec) non si tocca: non e' cresciuta col
-    // tabellone, e infatti non dev'essere compensata.
+    // La sosta in stazione non si tocca: non e' cresciuta col tabellone, e
+    // infatti non dev'essere compensata.
     // Il riconoscimento e' il dipinto: i quadri larghi li disegniamo noi e
     // hanno tutti uno sfondo nostro, quelli del dischetto nessuno.
     var F_LARGO = 1.35;
 
+    // SCAMBI A TRE STATI. Un treno che aspetta davanti a uno di questi scambi
+    // non riparte nell'istante in cui il colpo gli apre la strada: passa prima
+    // questo tanto di secondi. Senza la pausa, chi vuole la terza posizione non
+    // ce la fa mai -- ci vogliono due clic e al primo il treno e' gia' scappato
+    // per la strada di mezzo. Non riguarda i pezzi a due posizioni, dove un
+    // colpo basta e aspettare sarebbe solo un ritardo.
+    var ATTESA_SCAMBIO = 0.5;
+
     // Manopole di taratura, per confrontare a occhio con UAE senza ricaricare.
     window.W2TARA = {
-        velocita: VELOCITA, fAnnuncio: F_ANNUNCIO, fSosta: F_SOSTA,
+        velocita: VELOCITA, mAnnuncio: M_ANNUNCIO, mSosta: M_SOSTA,
         fRitmo: F_RITMO, fRiprova: F_RIPROVA,
         trenoSec: TRENOSEC, pxScatto: PXSCATTO,
         fLargo: F_LARGO,
-        turbo: TURBO
+        turbo: TURBO,
+        attesaScambio: ATTESA_SCAMBIO
     };
 
-    // Valore iniziale del contatore. La vecchia ipotesi `ord*sec+inc' e'
-    // SCARTATA: su A/2 avrebbe dato 260 e `inc' vale 10 su tutti e tre i primi
-    // quadri, quindi il conto tornava su A/1 solo per coincidenza.
+    // Valore iniziale del contatore: il campo `tempo' dei dati, scritto per
+    // quello che e'. Si chiama tempo perche' e' il numero che il giocatore
+    // vede scorrere, ma attenzione a non prenderlo per un orologio: come dice
+    // il blocco qui sopra, misura treni-secondo, non secondi.
+    // Due passaggi, per memoria. Nel dischetto il numero non c'era: si
+    // ricavava da `sec' come `ord*(sec+2)'. Dal 9/10/2026 la seconda meta' era
+    // il campo `dote' (unita' per ordine) e il prodotto lo faceva il motore;
+    // dal 10/10/2026 nei dati c'e' il prodotto gia' fatto, perche' era il
+    // numero che si voleva regolare e lo si leggeva solo in una colonna
+    // calcolata dell'editor. Conseguenza da sapere: cambiare `ord' adesso NON
+    // muove piu' il budget, sono due manopole indipendenti.
+    // Scartate: `ord*sec+inc' (su A/2 avrebbe dato 260, e `inc' vale 10 su
+    // tutti e tre i primi quadri, quindi tornava su A/1 per coincidenza) e
+    // `sec*1,08' (su A/8, ord 15 e sec 18, dava 292 invece dei 300 misurati).
     // VERIFICATO il 29/09/2026 su tutti e nove i quadri di A, letti da tre
     // partite video indipendenti: 135, 270, 270, 250, 220, 240, 345, 300, 330.
-    // `ord*(sec+2)` li azzecca tutti e nove senza scarto. Cade cosi' l'altra
-    // lettura rimasta aperta, `sec*1,08`, che su A/8 (ord 15, sec 18) avrebbe
-    // dato 292 invece dei 300 misurati.
-    // Nota: il budget NON e' proporzionale ai soli ordini, come sembrava
-    // quando si conoscevano i tre quadri con sec 25. Vale da 22 a 27 unita'
-    // per ordine a seconda di sec. In secondi-treno sono quattro volte tanto.
-    function contatoreIniziale(p) { return p.ord * (p.sec + 2); }
+    // Sono gli stessi numeri che oggi stanno nei dati.
+    function contatoreIniziale(p) { return p.tempo; }
     function tara() { return window.W2TARA; }
 
     var COLORI = ['#cc0000', '#eecc00', '#22aaee', '#ee7700', '#bb44cc', '#22cc66'];
+    // Il fondo di un quadro senza dipinto: un prato piatto, senza niente
+    // sopra tranne i treni e le lettere delle stazioni. Non e' bello e non
+    // deve esserlo - dice "qui il dipinto manca" - ma lascia giocare e,
+    // soprattutto, non lascia in vista il quadro di prima.
+    var PRATO_NUDO = '#3f4f36';
 
     // Il colore distingue un convoglio dall'altro, non dice dove va: si pesca
     // a caso fra quelli che in questo momento non sono in giro, cosi' due treni
@@ -339,7 +340,7 @@
     var S = {
         livello: 'A', sub: 0,
         griglia: null,      // [r][c] codice
-        stato: null,        // [r][c] stato dello scambio (0/1)
+        stato: null,        // [r][c] stato dello scambio (0, 1, e 2 sui pezzi a tre)
         stazioni: [],       // {r,c,lettera,uscita}
         treni: [],
         coda: [],           // ordini annunciati non ancora comparsi
@@ -501,7 +502,7 @@
         return LOG.length + ' avvenimenti, ' + TRENI.length + ' treni';
     };
 
-    var cv, ctx, atlante, pronto = false;
+    var cv, ctx, pronto = false;
 
     // =======================================================================
     //  percorsi
@@ -583,7 +584,14 @@
                 }
                 continue;
             }
-            for (var s = 0; s < 2; s++) {
+            // Tutte le posizioni del pezzo, non due. I quattro scambi a tre
+            // stati ne hanno tre, e fermandosi alla seconda la terza rotta
+            // risultava impraticabile: la rete sembrava a senso unico dove non
+            // lo era. Si vedeva negli ordini - da una stazione non partiva mai
+            // un treno per una meta che si raggiunge solo con la terza
+            // posizione - perche' le mete le decide questa esplorazione.
+            var quanti = (D.rotta[cod] || ['']).length;
+            for (var s = 0; s < quanti; s++) {
                 var x = uscita(cod, s, entrata);
                 if (x) pila.push([nr, nc, x]);
             }
@@ -595,31 +603,104 @@
     // quadro dopo. (Il riporto c'era stato messo il 25/09/2026 e tolto lo stesso
     // giorno: l'utente lo aveva confuso con un altro gioco.) Il tempo avanzato
     // si legge soltanto nel riepilogo di fine quadro, e non vale niente.
-    // Riempie una tendina con le lettere passate. La prima voce e' il
-    // capofila: non e' un quadro, serve da titolo e da posizione di riposo
-    // quando la scelta e' stata fatta nell'altra tendina.
-    function riempi(sel, lettere, capo) {
-        var o = document.createElement('option');
-        o.value = ''; o.textContent = capo; sel.appendChild(o);
-        lettere.forEach(function (l) {
-            for (var i = 0; i < D.liv[l].sub.length; i++) {
-                var x = document.createElement('option');
-                // Il valore porta la lettera vera, il testo quella mostrata.
-                x.value = l + ':' + i;
-                x.textContent = t('voceLiv', { L: nome(l), N: i + 1 });
-                sel.appendChild(x);
-            }
-        });
+    // ---- scelta del quadro ------------------------------------------------
+    // Fino al 16/10/2026 era una tendina sola, con dentro tutti i quadri per
+    // scritto: "Livello B . quadro 12", cinquanta voci in colonna. Adesso e'
+    // un pannello con due file di tasti, le lettere sopra e i numeri sotto.
+    // Lettera e numero si accendono soltanto: a caricare il quadro e' il tasto
+    // SELEZIONA. Cosi' si puo' girare fra i livelli senza far ripartire
+    // niente, e ANNULLA lascia le cose come stavano.
+    var scelL = null, scelN = 0;
+
+    function sceltaAperta() {
+        var e = el('w2-scelte');
+        return !!e && e.classList.contains('su');
     }
 
-    // Porta le due tendine d'accordo con il quadro in corso: quella che lo
-    // contiene lo mostra, l'altra torna al capofila.
+    function apriScelta() {
+        if (!pronto) return;            // il primo quadro non c'e' ancora
+        scelL = S.livello; scelN = S.sub;
+        disegnaScelta();
+        var e = el('w2-scelte');
+        if (e) e.classList.add('su');
+    }
+
+    function chiudiScelta() {
+        var e = el('w2-scelte');
+        if (e) e.classList.remove('su');
+    }
+
+    function disegnaScelta() {
+        var e = el('w2-scelte');
+        if (!e) return;
+        if (CAMPAGNA.indexOf(scelL) < 0) { scelL = S.livello; scelN = S.sub; }
+
+        var lettere = CAMPAGNA.map(function (L) {
+            var tema = TEMI[L] ? '<i>' + TEMI[L] + '</i>' : '';
+            return '<button type="button" data-liv="' + L + '"' +
+                   (L === scelL ? ' class="on"' : '') + '><b>' + L + '</b>' +
+                   tema + '</button>';
+        }).join('');
+
+        // I numeri sono quelli della lettera accesa: i livelli non hanno per
+        // forza lo stesso numero di quadri.
+        var numeri = '';
+        for (var i = 0; i < D.liv[scelL].sub.length; i++) {
+            numeri += '<button type="button" data-sub="' + i + '"' +
+                      (i === scelN ? ' class="on"' : '') + '>' + (i + 1) + '</button>';
+        }
+
+        e.innerHTML =
+            '<div class="w2-riquadro w2-scelta-box">' +
+            '<h2>' + T.scegli + '</h2>' +
+            '<div class="w2-scelta-tit">' + T.etLivello + '</div>' +
+            '<div class="w2-griglia lettere">' + lettere + '</div>' +
+            '<div class="w2-scelta-tit">' + t('etQuadro', { L: scelL }) + '</div>' +
+            '<div class="w2-griglia numeri">' + numeri + '</div>' +
+            '<div class="w2-bottoni">' +
+            '<button type="button" id="w2-scelta-annulla">' + T.annulla + '</button>' +
+            '<button type="button" id="w2-scelta-ok" class="giallo">' + T.seleziona + '</button>' +
+            '</div></div>';
+    }
+
+    // Un ascoltatore solo sul velo, messo una volta: il pannello si ridisegna
+    // tutto a ogni clic sulle lettere, e riattaccare i tasti uno per uno a
+    // ogni ridisegno e' lavoro sprecato.
+    function montaScelta() {
+        var b = el('w2-quadro');
+        if (b) b.onclick = apriScelta;
+
+        var e = el('w2-scelte');
+        if (!e) return;
+        e.onclick = function (ev) {
+            if (ev.target === e) { chiudiScelta(); return; }   // clic fuori dal riquadro
+            var t2 = ev.target;
+            while (t2 && t2 !== e && t2.tagName !== 'BUTTON') t2 = t2.parentNode;
+            if (!t2 || t2.tagName !== 'BUTTON') return;
+            if (t2.hasAttribute('data-liv')) {
+                scelL = t2.getAttribute('data-liv');
+                // Tornando sulla lettera che si sta giocando si riaccende il
+                // quadro in corso; su un'altra lettera si riparte dal primo.
+                scelN = (scelL === S.livello) ? S.sub : 0;
+                disegnaScelta();
+            } else if (t2.hasAttribute('data-sub')) {
+                scelN = parseInt(t2.getAttribute('data-sub'), 10);
+                disegnaScelta();
+            } else if (t2.id === 'w2-scelta-ok') {
+                chiudiScelta();
+                carica(scelL, scelN);
+            } else {
+                chiudiScelta();
+            }
+        };
+    }
+
+    // Il tasto nella barra dei comandi porta scritto il quadro in corso: e'
+    // quello che RICOMINCIA rifa', ed e' l'unico posto dove si legge senza
+    // alzare gli occhi all'intestazione.
     function allinea(L, n) {
-        [el('w2-scelta'), el('w2-scelta2')].forEach(function (sel) {
-            if (!sel) return;
-            sel.value = L + ':' + n;
-            if (sel.selectedIndex < 0) sel.value = '';
-        });
+        var b = el('w2-quadro');
+        if (b) b.textContent = t('tastoQuadro', { L: L, N: n + 1 });
     }
 
     // RICOMINCIA rifa' il quadro che si sta giocando, non ricarica la pagina:
@@ -633,29 +714,6 @@
             if (e) e.style.display = 'none';
             carica(S.livello, S.sub);
         };
-    }
-
-    function montaSelettori() {
-        var a = el('w2-scelta'), b = el('w2-scelta2');
-        if (CAMPAGNA === LIVELLI) {
-            if (a) riempi(a, LIVELLI, t('capoBase'));
-            if (b) riempi(b, NOSTRI, t('capoMiei'));
-        } else {
-            // Una tendina sola, con i nostri quadri: l'altra non ha niente da
-            // mostrare e sparisce, titolo compreso.
-            if (a) { riempi(a, CAMPAGNA, t('capoSolo')); a.title = t('capoSolo'); }
-            if (b) b.style.display = 'none';
-        }
-        [a, b].forEach(function (sel) {
-            if (!sel) return;
-            sel.onchange = function () {
-                // Il capofila non e' un quadro: se ci finisce sopra, la
-                // tendina torna a segnare quello che si sta giocando.
-                if (!sel.value) { allinea(S.livello, S.sub); return; }
-                var v = sel.value.split(':');
-                carica(v[0], parseInt(v[1], 10));
-            };
-        });
     }
 
     function carica(liv, sub) {
@@ -672,9 +730,23 @@
         // di S.stato e non dentro: lo stato cambia di scatto e comanda il
         // gioco, questo e' solo il disegno che lo rincorre.
         S.mossa = [];
+        // Da quale stato e' partita la manovra in corso. Con due posizioni si
+        // indovinava - era l'altra - ma i pezzi a tre stati ne hanno due di
+        // "altre", e il disegno deve sapere da dove si viene per girare dalla
+        // parte giusta.
+        S.mossaDa = [];
+        // Quando e' stato dato l'ultimo colpo a ogni scambio a tre stati, letto
+        // sull'orologio del quadro. Serve solo a tenere fermo mezzo secondo il
+        // treno che aspetta davanti (vedi ATTESA_SCAMBIO). Parte da un tempo
+        // molto prima di zero, se no all'inizio del quadro ogni scambio
+        // risulterebbe appena toccato.
+        S.toccato = [];
         for (var r = 0; r < RIGHE; r++) {
-            S.stato.push([]); S.mossa.push([]);
-            for (var c = 0; c < COLS; c++) { S.stato[r].push(0); S.mossa[r].push(0); }
+            S.stato.push([]); S.mossa.push([]); S.mossaDa.push([]); S.toccato.push([]);
+            for (var c = 0; c < COLS; c++) {
+                S.stato[r].push(0); S.mossa[r].push(0); S.mossaDa[r].push(0);
+                S.toccato[r].push(-99);
+            }
         }
 
         // stazioni in ordine di lettura, lettera A, B, C...
@@ -705,7 +777,7 @@
         S.attivo = true; S.finito = null; S.turbo = false; S.pausa = false;
         annullaFine();                   // il cartello del quadro di prima
 
-        messaggio(t('quadro', { L: nome(liv), N: sub + 1, M: D.liv[liv].sub.length,
+        messaggio(t('quadro', { L: liv, N: sub + 1, M: D.liv[liv].sub.length,
                                 O: p.ord, S: S.stazioni.length }));
         aggiornaHud();
         aggiornaPausa();
@@ -760,11 +832,11 @@
         S.coda.push({
             id: ++logId,
             part: part, dest: part.mete[Math.floor(Math.random() * part.mete.length)],
-            resta: p.sec * tara().fAnnuncio,
+            resta: p.ann * tara().mAnnuncio,
             colore: coloreACaso(),
             modello: Math.floor(Math.random() * MODELLI.length)
         });
-        part.annuncio = p.sec * tara().fAnnuncio;
+        part.annuncio = p.ann * tara().mAnnuncio;
         schedaNuova(S.coda[S.coda.length - 1]);
         suona('annuncio', part);
         return true;
@@ -778,7 +850,7 @@
             ea: OPP[st.uscita], xa: st.uscita, t: 0.5,
             dest: o.dest.lettera, colore: o.colore, modello: o.modello,
             partenza: st.lettera, nato: S.orologio, id: o.id,   // per il registro
-            sosta: p.sec * tara().fSosta, fischiato: false, fischioDa: 0,
+            sosta: p.sosta * tara().mSosta, fischiato: false, fischioDa: 0,
             // Due marcatempo per l'orario: quando si e' mosso la prima volta
             // e da quando sta fermo (null se cammina). Si leggono per
             // differenza da S.orologio, che e' il tempo di gioco.
@@ -809,6 +881,11 @@
             arrivo(tr, nr, nc, entrata);
             return;
         }
+
+        // Scambio a tre stati appena toccato, con questo treno che aspetta
+        // davanti: resta fermo ancora un po'. Vale solo per chi era GIA' fermo
+        // -- un treno in corsa passa senza riguardi, com'e' sempre stato.
+        if (tr.fermo && S.orologio - S.toccato[nr][nc] < tara().attesaScambio) return;
 
         var x = uscita(cod, S.stato[nr][nc], entrata);
         if (!x) { tr.fermo = true; return; }     // scambio storto o segnale chiuso
@@ -1035,9 +1112,8 @@
     // Il quadro dopo sta nella stessa lettera, oppure nella lettera seguente
     // della campagna. L'ultimo quadro dell'ultima lettera non ha un dopo: li'
     // il bottone giallo non compare e, se il quadro e' vinto, la campagna e'
-    // finita. Se la lettera che si gioca non e' in campagna -- in dev_mode si
-    // puo' giocare la M mentre la campagna e' il dischetto -- non c'e' nessun
-    // dopo da offrire, ma non e' nemmeno la fine di niente.
+    // finita. Niente si gioca fuori dalla campagna: l'unico modo di scegliere
+    // un quadro e' la tendina, e la tendina e' la campagna.
     function quadroDopo() {
         var i = CAMPAGNA.indexOf(S.livello);
         if (S.sub + 1 < D.liv[S.livello].sub.length) return [S.livello, S.sub + 1];
@@ -1045,7 +1121,12 @@
         return null;
     }
 
-    function inCampagna() { return CAMPAGNA.indexOf(S.livello) >= 0; }
+    // Quanti quadri sono stati portati a termine da quando si e' aperta la
+    // pagina, vinti o persi che siano. Un quadro lasciato a meta' -- chi
+    // ricomincia o cambia quadro prima della fine -- non conta: qui si contano
+    // le partite finite, non quelle cominciate. Vive solo in memoria, una
+    // ricarica della pagina lo riazzera.
+    var giocate = 0;
 
     function fine(vinto) {
         if (!S.attivo) return;
@@ -1057,7 +1138,7 @@
         // che niente si trasformi in punti.
         // Vinto l'ultimo quadro della campagna non c'e' piu' niente dopo: li'
         // non e' un quadro superato, e' il gioco finito, e si festeggia.
-        var finale = vinto && inCampagna() && !quadroDopo();
+        var finale = vinto && !quadroDopo();
         S.finito = {
             vinto: vinto, finale: finale,
             // Il perche', che serve al cartello: la modale non lo dice, lei
@@ -1065,9 +1146,38 @@
             causa: vinto ? (finale ? 'Finale' : 'Vinto')
                          : (S.tempo <= 0 ? 'Tempo' : 'Scontri'),
             consegne: S.consegnati, ordini: p.ord, scontri: S.scontri,
-            avanzo: Math.floor(Math.max(0, S.tempo))
+            avanzo: Math.floor(Math.max(0, S.tempo)),
+            livello: S.livello, sub: S.sub
         };
         suona(finale ? 'applauso' : vinto ? 'vittoria' : 'perso');
+
+        // Un avvenimento solo per Analytics a ogni quadro finito. Gli altri
+        // giochi del sito mandano due nomi diversi, game_won e game_lost;
+        // qui ne parte uno, game_end, e com'e' andata sta nel parametro
+        // `result'. Se Analytics non c'e' -- modalita' sviluppo, o consenso
+        // negato -- gtag non esiste e qui non succede niente.
+        giocate++;
+        if (typeof gtag === 'function') {
+            var prefix = (window.gameConfig && window.gameConfig.gaPrefix) || '';
+            gtag('event', prefix + 'game_end', {
+                'event_category': 'WooWoo',
+                'result': vinto ? 'won' : 'lost',
+                'level': S.livello,                        // la lettera
+                'board': S.sub + 1,                        // il numero del quadro
+                // "B/12", scritto come nel registro dei treni: comodo da
+                // raggruppare senza incrociare due colonne.
+                'level_board': S.livello + '/' + (S.sub + 1),
+                // Lo stesso quadro come numero progressivo, per metterli in
+                // fila su un grafico: A/1 fa 1, B/2 fa 14. La lettera vale
+                // per la sua posizione nell'alfabeto e non per il posto che
+                // occupa nella campagna, se no i numeri ballerebbero ogni
+                // volta che un livello non e' ancora disegnato.
+                'level_number': (S.livello.charCodeAt(0) - 65) * 12 + S.sub + 1,
+                'cause': S.finito.causa,                   // Vinto, Finale, Tempo, Scontri
+                'seconds_left': S.finito.avanzo,
+                'games_in_session': giocate
+            });
+        }
         // L'ultima lettura va scritta qui: se il quadro finisce per tempo scaduto
         // `passo` esce prima di arrivare al suo aggiornaHud() di coda, e la barra
         // in alto resterebbe ferma sui valori di un fotogramma prima.
@@ -1252,10 +1362,39 @@
         });
     }
 
+    // I secondi che mancano alla comparsa del treno annunciato in questa
+    // stazione. Si legge dalla coda e non da `s.annuncio', che quando la
+    // stazione e' ancora occupata resta inchiodato a 0,01 per tenere la
+    // lettera lampeggiante: li' non c'e' piu' nessun numero da mostrare,
+    // perche' il treno aspetta che si liberi il posto e non un orario.
+    function attesaDi(s) {
+        for (var i = 0; i < S.coda.length; i++)
+            if (S.coda[i].part === s && S.coda[i].resta > 0) return S.coda[i].resta;
+        return 0;
+    }
+
+    // ---- un quadro senza dipinto ------------------------------------------
+    // Serve a giocare uno schema appena disegnato nell'editor, prima che il
+    // dipinto esista. Rotaie, scambi e segnali li ridisegna W2BINARI dai
+    // codici - sono le stesse piastrelle che poi vanno sopra il dipinto - e
+    // la stazione e' il disegno a parte, girato una volta sola all'avvio.
+    // Il resto del tabellone resta prato: alberi, acqua, case e tabellone
+    // stanno nel dipinto, e senza dipinto non ci sono.
+    var PONTE = 7;          // il solo codice con una rotta che W2BINARI non disegna
+    var RETTO_EO = 1;       // al suo posto si stende il rettilineo: la linea non si spezza
+    var COLONNE = (D.colonne || 31);   // quante ne hanno le tavole di piastrelle
+    function cellaNuda(cod, st) {
+        if (D.staz[cod]) return quadri ? quadri[cod].piena : null;
+        if (!D.rotta[cod] || !window.W2BINARI) return null;
+        return W2BINARI.cella(cod === PONTE ? RETTO_EO : cod, st);
+    }
+
     function disegna() {
         if (!pronto) return;
         var sty = S.stile;
-        var atl = sty ? sty.img : atlante;
+        // Niente atlante di riserva: il dischetto non si carica piu'. Uno
+        // schema senza dipinto resta spoglio (vedi il controllo in avvia()).
+        var atl = sty ? sty.img : null;
         var cel = sty ? sty.cella : 32;
         ctx.setTransform(SCALA, 0, 0, SCALA, 0, 0);
         ctx.imageSmoothingEnabled = false;
@@ -1264,7 +1403,14 @@
         // sopra sono trasparenti fuori dalla massicciata. Nello stile del
         // dischetto lo sfondo sta dentro le piastrelle e qui non c'e' niente
         // da stendere.
+        // LA TELA SI PULISCE SEMPRE. Il dipinto la copre tutta e fa anche da
+        // pulizia, ma senza stile non si stendeva niente e restava in vista
+        // il fotogramma di prima: cioe' il quadro giocato prima, coi treni di
+        // questo sopra. Succede appena uno schema cita un dipinto che non
+        // c'e' ancora (lo stile si marca `rotto' e stileDi torna null), che
+        // e' la condizione normale di un quadro appena disegnato nell'editor.
         if (sty) ctx.drawImage(sty.fondoImg, 0, 0, LARG, ALT);
+        else { ctx.fillStyle = PRATO_NUDO; ctx.fillRect(0, 0, LARG, ALT); }
 
         // caselle
         for (var r = 0; r < RIGHE; r++) {
@@ -1273,23 +1419,35 @@
                 // prato, alberi, acqua, case e tabellone: nello stile nuovo non
                 // sono piastrelle, li ha gia' disegnati il dipinto
                 if (sty && !D.rotta[cod] && !D.staz[cod]) continue;
-                // Senza atlante non c'e' niente da ritagliare. Si arriva qui
-                // solo se un file non e' arrivato: meglio un quadro spoglio
-                // che drawImage che butta fuori un errore e ferma il ciclo.
-                if (!atl) continue;
                 var st = (D.scambio.indexOf(cod) >= 0 || D.segnale.indexOf(cod) >= 0) ? S.stato[r][c] : 0;
                 // Scambio in movimento: la piastrella non viene dall'atlante
                 // ma da un fotogramma disegnato. La massicciata sta ferma, si
                 // spostano rotaie e traversine, incernierate sulla punta.
-                // Solo negli schemi con la grafica nostra: dove si gioca
-                // con le piastrelle del dischetto il disegno e' un altro e
-                // una casella nel nostro stile stonerebbe in mezzo.
-                var mv = (sty && S.mossa) ? S.mossa[r][c] : 0;
+                // Lo stile del dischetto non arriva piu' qui, percio' la
+                // piastrella disegnata non stona con niente: vale anche sui
+                // quadri ancora senza dipinto.
+                var mv = S.mossa ? S.mossa[r][c] : 0;
                 if (mv > 0 && window.W2BINARI) {
                     var q = 1 - mv / W2BINARI.DURATA;
                     var sm = q * q * (3 - 2 * q);         // parte piano e arriva piano
-                    ctx.drawImage(W2BINARI.cella(cod, st ? sm : 1 - sm),
+                    ctx.drawImage(W2BINARI.cella(cod, S.mossaDa[r][c] + sm),
                                   c * CELLA, r * CELLA, CELLA, CELLA);
+                    continue;
+                }
+                // I codici oltre le colonne delle tavole non si ritagliano da
+                // nessun atlante: la colonna non c'e'. Sono i pezzi nuovi
+                // nostri, e il fotogramma lo fa W2BINARI dalle rotte.
+                if (cod >= COLONNE) {
+                    var pz = window.W2BINARI ? W2BINARI.cella(cod, st) : null;
+                    if (pz) ctx.drawImage(pz, c * CELLA, r * CELLA, CELLA, CELLA);
+                    continue;
+                }
+                // Senza atlante non c'e' niente da ritagliare: lo schema non
+                // ha un dipinto, o un file non e' arrivato. La rete si
+                // disegna comunque, sul prato nudo.
+                if (!atl) {
+                    var nd = cellaNuda(cod, st);
+                    if (nd) ctx.drawImage(nd, c * CELLA, r * CELLA, CELLA, CELLA);
                     continue;
                 }
                 ctx.drawImage(atl, cod * cel, st * cel, cel, cel, c * CELLA, r * CELLA, CELLA, CELLA);
@@ -1322,9 +1480,30 @@
         // resta il riquadro nero di sempre. In tutti e due i casi la lettera
         // lampeggia durante l'annuncio e finche' il treno sta fermo li'.
         S.stazioni.forEach(function (s) {
+            // Durante l'annuncio, nel posto dove poi comparira' la lettera di
+            // destinazione del treno, si leggono i secondi che mancano alla
+            // comparsa. Stesso punto e stesso disegno della lettera - undici
+            // pixel a nord del centro della casella, bianco col contorno
+            // scuro - cosi' quando il treno arriva il numero diventa lettera
+            // senza che niente si sposti. Il treno nasce con t = 0,5 fra due
+            // lati opposti, e la Bezier in mezzo da' esattamente il centro
+            // della casella: il punto e' quello, non una somiglianza.
+            // Il numero non lampeggia: lampeggia la lettera della stazione,
+            // che vuol dire "qui sta per arrivare qualcosa", mentre questo si
+            // deve leggere.
+            var att = attesaDi(s);
+            if (att > 0) {
+                ctx.font = 'bold 11px monospace';
+                ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.lineWidth = 2.5; ctx.lineJoin = 'round';
+                ctx.strokeStyle = 'rgba(0,0,0,0.85)';
+                ctx.strokeText(String(Math.ceil(att)), s.c * CELLA + 16, s.r * CELLA + 5);
+                ctx.fillStyle = '#ffffff';
+                ctx.fillText(String(Math.ceil(att)), s.c * CELLA + 16, s.r * CELLA + 5);
+            }
             var lampeggia = (s.annuncio > 0 || fermoSu(s)) &&
                             (Math.floor(S.lampeggio * 4) % 2 === 0);
-            var q = (sty && quadri) ? quadri[S.griglia[s.r][s.c]] : null;
+            var q = quadri ? quadri[S.griglia[s.r][s.c]] : null;
             var k, x, y;
             ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
             if (q) {
@@ -1634,7 +1813,7 @@
     function aggiornaHud() {
         var p = parametri();
         var resta = Math.ceil(S.tempo);
-        testo('w2-livello', nome(S.livello) + ' · ' + (S.sub + 1) + '/' + D.liv[S.livello].sub.length);
+        testo('w2-livello', S.livello + ' · ' + (S.sub + 1) + '/' + D.liv[S.livello].sub.length);
         // I due contatori del centro vanno a scendere, come nell'originale:
         // quante consegne restano da fare e quanti scontri si possono ancora
         // fare. Il primo che arriva a zero decide il quadro, e da fermo si
@@ -1690,6 +1869,10 @@
         e.innerHTML =
             '<div class="w2-riquadro" id="w2-riquadro">' +
             '<h2>' + (f.finale ? T.finale : f.vinto ? T.vinto : T.perso) + '</h2>' +
+            // Quale quadro, sotto il titolo: la modale dice com'e' andata, non
+            // diceva su cosa.
+            '<div class="w2-fine-quadro">' +
+            t('quadroFatto', { L: f.livello, N: f.sub + 1 }) + '</div>' +
             (f.finale ? '<p class="w2-finale">' + T.finaleTesto + '</p>' : '') +
             '<div class="w2-schede">' +
             cartellino(T.rConsegne, f.consegne + '/' + f.ordini) +
@@ -1717,22 +1900,7 @@
         b = el('w2-fine-avanti');
         if (b) b.onclick = function () { chiudi(); carica(dopo[0], dopo[1]); };
         b = el('w2-fine-scegli');
-        if (b) b.onclick = function () {
-            chiudi();
-            // Si apre la tendina dove sta il quadro che si sta giocando: in
-            // dev_mode ce ne sono due, e se si gioca su un quadro nostro quella
-            // da aprire e' la seconda, non quella del dischetto.
-            var ora = S.livello + ':' + S.sub;
-            var sel = el('w2-scelta');
-            var due = el('w2-scelta2');
-            if (due && due.style.display !== 'none' &&
-                Array.prototype.some.call(due.options, function (o) { return o.value === ora; })) sel = due;
-            if (!sel) return;
-            sel.focus();
-            // showPicker apre la tendina da sola dove c'e' (Chrome): dove non
-            // c'e', resta il fuoco e la tendina si apre con un clic.
-            try { sel.showPicker(); } catch (x) { }
-        };
+        if (b) b.onclick = function () { chiudi(); apriScelta(); };
 
         // Il banner di fine partita, come negli altri giochi: sta sopra il
         // riquadro, che per questo e' basso e largo 700 come loro. Si attacca
@@ -1774,11 +1942,22 @@
         if (!dentro(r, c)) return;
         var cod = S.griglia[r][c];
         if (D.scambio.indexOf(cod) < 0 && D.segnale.indexOf(cod) < 0) return;
-        S.stato[r][c] = S.stato[r][c] ? 0 : 1;
+        // Un colpo, una posizione avanti, e dopo l'ultima si torna alla prima.
+        // Quasi tutti i pezzi ne hanno due e il giro e' quello di sempre,
+        // acceso e spento; i quattro scambi a tre stati ne hanno tre, e per
+        // tornare indietro ci vogliono due clic. E' il prezzo del pezzo: una
+        // diramazione che si imbocca dalle due parti ha tre posizioni e basta.
+        var quanti = (D.rotta[cod] || ['']).length;
+        S.mossaDa[r][c] = S.stato[r][c];
+        S.stato[r][c] = (S.stato[r][c] + 1) % quanti;
         // Lo stato cambia subito e l'instradamento lo legge subito: il treno
         // che arriva nello stesso fotogramma va per la strada nuova. Il
         // movimento che segue e' solo cosmetico, nessuna regola lo guarda.
         if (D.scambio.indexOf(cod) >= 0 && window.W2BINARI) S.mossa[r][c] = W2BINARI.DURATA;
+        // Timbro del colpo, solo sui pezzi a tre posizioni: da qui parte il
+        // mezzo secondo di grazia per il treno che aspetta davanti, il tempo
+        // di dare il secondo clic e arrivare alla terza posizione.
+        if (quanti > 2) S.toccato[r][c] = S.orologio;
         suona('scambio');
     }
 
@@ -1841,6 +2020,8 @@
 
     function tasti(e) {
         if (e.altKey) return;
+        // Esc chiude il pannello della scelta senza scegliere niente.
+        if (e.key === 'Escape' && sceltaAperta()) { chiudiScelta(); return; }
         if (e.key === 'r' || e.key === 'R') carica(S.livello, S.sub);
         if (e.key === ' ' && S.attivo && !S.pausa) { S.turbo = true; e.preventDefault(); }
     }
@@ -2368,10 +2549,7 @@
         document.addEventListener('keydown', tasti);
         document.addEventListener('keyup', tastiSu);
 
-        // Due tendine distinte: il dischetto A..L e i quadri nostri M..X.
-        // Vale sempre l'ultima toccata, e l'altra torna sul suo capofila per
-        // dire a colpo d'occhio da quale banco si sta giocando.
-        montaSelettori();
+        montaScelta();
         montaRicomincia();
         precarica(ctxAudio());   // i due mp3, prima che servano
         var bp = el('w2-pausa');
@@ -2379,27 +2557,32 @@
         var ba = el('w2-audio');
         if (ba) ba.onclick = function () { audioOn = !audioOn; ba.textContent = audioOn ? '🔊' : '🔇'; };
 
-        // Si parte quando sono arrivate tutte: l'atlante del dischetto piu'
-        // atlante e dipinto di ogni stile nominato nei dati.
+        // Senza un quadro disegnato non c'e' niente da giocare. Prima la
+        // campagna cadeva sul dischetto e non succedeva mai; adesso il
+        // dischetto non c'e' piu', quindi il caso va detto invece di
+        // schiantarsi su CAMPAGNA[0].
+        if (!CAMPAGNA.length) {
+            console.warn('WooWoo: nessun quadro disegnato in woowoo2-mie.js');
+            return;
+        }
+
+        // Si parte quando sono arrivate tutte: atlante e dipinto di ogni
+        // stile nominato nei dati, piu' la stazione.
         var stili = stiliUsati();
-        var disco = serveDisco();
-        var lista = disco ? ['dev/tiles.png?v=1.1'] : [];
-        var base = lista.length;
+        var lista = [];
         stili.forEach(function (x) { lista.push(x.atlante, x.sfondo); });
         lista.push(STAZ_SRC);               // la stazione di Luciano, ultima
         immagini(lista, function (im) {
-            atlante = disco ? im[0] : null;
-            preparaStazioni(im[base + stili.length * 2]);
+            preparaStazioni(im[stili.length * 2]);
             stili.forEach(function (x, i) {
-                x.img = im[base + i * 2];
-                x.fondoImg = im[base + 1 + i * 2];
+                x.img = im[i * 2];
+                x.fondoImg = im[1 + i * 2];
                 // immagini() richiama anche quando un file non c'e': una
                 // figura mai arrivata ha larghezza zero.
                 x.rotto = !x.img.naturalWidth || !x.fondoImg.naturalWidth;
                 if (x.rotto) console.warn('WooWoo: manca ' +
                     (x.img.naturalWidth ? x.sfondo : x.atlante) +
-                    (disco ? ', quello schema va con le piastrelle del dischetto'
-                           : ', e non c\'e\' nessun atlante di riserva'));
+                    ', e non c\'e\' nessun atlante di riserva');
                 // I binari non vengono piu' dall'immagine: le loro colonne si
                 // ridisegnano sopra una copia dell'atlante, partendo dalla
                 // rotta scritta nei codici. Dell'immagine resta tutto il
@@ -2407,6 +2590,15 @@
                 if (!x.rotto && window.W2BINARI) x.img = W2BINARI.rifaiAtlante(x.img, x.cella);
                 // e sopra la copia dell'atlante vanno le quattro stazioni
                 if (!x.rotto && x.img.getContext) montaStazioni(x.img, x.cella);
+            });
+            // Uno schema senza dipinto si gioca ma non si vede: le
+            // piastrelle del dischetto non si caricano piu'. Lo si dice qui,
+            // se no si guarda un quadro nero senza capire perche'.
+            CAMPAGNA.forEach(function (L) {
+                D.liv[L].schemi.forEach(function (_, m) {
+                    if (!haDipinto(L, m)) console.warn('WooWoo: ' + L +
+                        ' schema ' + m + ' non ha un dipinto: si gioca ma non si vede');
+                });
             });
             pronto = true; carica(CAMPAGNA[0], 0); ciclo();
         });

@@ -278,9 +278,24 @@ window.W2BINARI = (function () {
 
     // p = 0 e' il primo stato, p = 1 il secondo, in mezzo c'e' il movimento.
     // `stato' serve solo al semaforo, che non si muove ma cambia colore.
+    // Il lato in comune fra due rotte: la punta dello scambio, da dove la
+    // manovra si apre a ventaglio. Niente lato in comune vuol dire che le due
+    // rotte si tagliano, cioe' che la casella e' un incrocio.
+    function punta(A, B) {
+        for (var i = 0; i < 2; i++)
+            if (ESTREMI[B].indexOf(ESTREMI[A][i]) >= 0) return ESTREMI[A][i];
+        return null;
+    }
+
+    // `p' e' la posizione sulla ruota degli stati: 0 e' il primo, 1 il
+    // secondo, 2 il terzo, e i numeri in mezzo sono la manovra a mezza
+    // strada. Dopo l'ultimo si torna al primo, percio' la ruota gira in
+    // tondo. Con due stati - tutti i pezzi fino al 30 - torna esattamente il
+    // conto di prima, che andava da 0 a 1.
     function disegnaCella(g, cod, p, stato) {
         var D = window.W2DATI;
         var rotte = D && D.rotta[cod], A, B, revA, revB, cond, pa, pb, pm, i;
+        var ns, fase, ia, ib, f, tutte;
         g.clearRect(0, 0, C, C);
         if (!rotte) return;
 
@@ -292,19 +307,20 @@ window.W2BINARI = (function () {
             return;
         }
 
-        A = rotte[0]; B = rotte[1];
-        cond = null;
-        for (i = 0; i < 2; i++) {
-            if (ESTREMI[B].indexOf(ESTREMI[A][i]) >= 0) cond = ESTREMI[A][i];
-        }
-        pa = poli(A, false, null, false, 0);
-        pb = poli(B, false, null, false, 0);
+        ns = rotte.length;
+        fase = Math.max(0, Math.min(ns, p)) % ns;   // a ns si e' tornati al primo
+        ia = Math.floor(fase); f = fase - ia; ib = (ia + 1) % ns;
+        A = rotte[ia]; B = rotte[ib];
+        cond = punta(A, B);
+        tutte = rotte.map(function (v) { return poli(v, false, null, false, 0); });
+        pa = tutte[ia];
+        pb = tutte[ib];
 
         // incrocio: niente punta in comune, le due rotte si tagliano nel
         // centro. Resta ferma la croce di ghiaia e gira un binario solo.
         if (!cond) {
-            massicciata(g, [pa, pb], cod);
-            pm = gira(pa, p * Math.PI / 2);
+            massicciata(g, tutte, cod);
+            pm = gira(pa, f * Math.PI / 2);
             traversine(g, pm);
             rotaie(g, pm);
             return;
@@ -314,24 +330,26 @@ window.W2BINARI = (function () {
         revA = (ESTREMI[A][0] !== cond);
         revB = (ESTREMI[B][0] !== cond);
 
-        massicciata(g, [pa, pb], cod);            // la ghiaia non si muove mai
+        massicciata(g, tutte, cod);               // la ghiaia non si muove mai
 
         // Il ramo scollegato. Nel dischetto non c'e': quando lo scambio sta da
         // una parte, dall'altra resta solo ghiaia, e dove va il binario lo si
         // capisce solo guardando bene. Tracciato appena, invece, la casella
         // dice da sola che li' c'e' un bivio. Sta sotto al binario buono, e
-        // quando lo scambio si muove i due si scambiano il velo: a p = 0 e'
-        // acceso A e si intravede B, a p = 1 il contrario.
+        // quando lo scambio si muove i due si scambiano il velo: a manovra
+        // ferma e' acceso A e si intravede B, a manovra finita il contrario.
+        // Le rotte che non c'entrano con la manovra in corso - su un pezzo a
+        // tre stati ce n'e' sempre una - stanno sotto il velo pieno.
         if (M.mortoVelo > 0) {
             g.save();
-            g.globalAlpha = M.mortoVelo * p;
-            rotaie(g, pa);
-            g.globalAlpha = M.mortoVelo * (1 - p);
-            rotaie(g, pb);
+            for (i = 0; i < ns; i++) {
+                g.globalAlpha = M.mortoVelo * (i === ia ? f : i === ib ? 1 - f : 1);
+                rotaie(g, tutte[i]);
+            }
             g.restore();
         }
 
-        pm = poli(A, revA, B, revB, p, 48);
+        pm = poli(A, revA, B, revB, f, 48);
         traversine(g, pm);
         rotaie(g, pm);
     }
@@ -400,7 +418,15 @@ window.W2BINARI = (function () {
     // una decisione in anticipo.
     var cassetto = {};
     function cella(cod, p) {
-        var n = Math.round(Math.max(0, Math.min(1, p)) * PASSI);
+        var rotte = window.W2DATI && window.W2DATI.rotta[cod];
+        var ns = (rotte && rotte.length) || 1;
+        var fase = Math.max(0, Math.min(ns, p)) % ns;
+        // Con due sole rotte la manovra di ritorno ripassa per i fotogrammi
+        // dell'andata, al contrario: si riusano quelli invece di riempire il
+        // cassetto di copie speculari. Con tre rotte no - i tre tratti del
+        // giro sono tre manovre diverse - e infatti la piega non si applica.
+        if (ns === 2 && fase > 1) fase = 2 - fase;
+        var n = Math.round(fase * PASSI);
         var k = cod + '|' + n;
         if (cassetto[k]) return cassetto[k];
         var c = document.createElement('canvas');
