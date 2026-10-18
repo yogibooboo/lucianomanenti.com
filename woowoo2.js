@@ -131,7 +131,11 @@
         etQuadro: EN ? 'Board of level {L}' : 'Quadro del livello {L}',
         quadroFatto: EN ? 'Board {L} · {N}' : 'Quadro {L} · {N}',
         seleziona: EN ? 'SELECT' : 'SELEZIONA',
-        annulla: EN ? 'CANCEL' : 'ANNULLA'
+        annulla: EN ? 'CANCEL' : 'ANNULLA',
+        // Quanto picchia ogni terzina di quadri. L'ordine conta: la prima
+        // voce e' per i quadri 1-3, la seconda per i 4-6, e via cosi'.
+        gradi: EN ? ['easy', 'medium', 'hard', 'very hard']
+                  : ['facili', 'medi', 'difficili', 'molto difficili']
     };
 
     // Il tema di ogni livello, in piccolo sotto la lettera nel pannello della
@@ -140,7 +144,8 @@
     // d'accordo anche di la'. Un livello senza tema mostra la sola lettera.
     var TEMI = {
         A: EN ? 'country' : 'country',
-        B: EN ? 'swamp' : 'palude'
+        B: EN ? 'swamp' : 'palude',
+        C: EN ? 'desert' : 'deserto'
     };
     function t(k, v) {
         return T[k].replace(/\{(\w+)\}/g, function (m, n) { return v && v[n] !== undefined ? v[n] : m; });
@@ -280,7 +285,11 @@
     // ce la fa mai -- ci vogliono due clic e al primo il treno e' gia' scappato
     // per la strada di mezzo. Non riguarda i pezzi a due posizioni, dove un
     // colpo basta e aspettare sarebbe solo un ritardo.
-    var ATTESA_SCAMBIO = 0.5;
+    // Sono secondi veri, non di gioco: in turbo l'attesa resta un secondo,
+    // perche' il secondo clic lo da' una mano e la mano non va in turbo.
+    // Era mezzo secondo di gioco fino al 17/10/2026: troppo poco per
+    // arrivare in tempo a dare il secondo colpo senza fretta.
+    var ATTESA_SCAMBIO = 1;
 
     // Manopole di taratura, per confrontare a occhio con UAE senza ricaricare.
     window.W2TARA = {
@@ -348,6 +357,13 @@
         tempo: 0, tempoMax: 0, prossimo: 0,
         attivo: false, finito: null, largo: false,
         lampeggio: 0,
+        // Due orologi. `orologio' e' quello del quadro: in turbo corre
+        // quattro volte piu' in fretta, ed e' giusto cosi' perche' tutto il
+        // gioco va con lui. `vero' sono i secondi del muro, che il turbo non
+        // tocca: lo guarda solo chi misura una cosa fatta dalle mani di chi
+        // gioca, come il tempo per dare il secondo colpo a uno scambio a tre
+        // posizioni. In pausa stanno fermi tutti e due.
+        orologio: 0, vero: 0,
         turbo: false
     };
 
@@ -630,6 +646,9 @@
         if (e) e.classList.remove('su');
     }
 
+    // Quanti quadri per terzina nel pannello della scelta.
+    var TERZINA = 3;
+
     function disegnaScelta() {
         var e = el('w2-scelte');
         if (!e) return;
@@ -644,11 +663,23 @@
 
         // I numeri sono quelli della lettera accesa: i livelli non hanno per
         // forza lo stesso numero di quadri.
-        var numeri = '';
-        for (var i = 0; i < D.liv[scelL].sub.length; i++) {
+        // Vanno a terzine, ognuna con sopra scritto quanto picchia: tre quadri
+        // di fila hanno la stessa difficolta' perche' sono lo stesso giro del
+        // livello. Se un livello avesse piu' di dodici quadri, le terzine in
+        // piu' restano senza scritta invece di inventarsi un grado che non
+        // c'e'; e l'ultima terzina puo' anche essere monca senza danni.
+        var numeri = '', quanti = D.liv[scelL].sub.length;
+        for (var i = 0; i < quanti; i++) {
+            if (i % TERZINA === 0) {
+                if (i) numeri += '</div></div>';
+                var gr = T.gradi[i / TERZINA] || '';
+                numeri += '<div class="w2-terzina"><div class="w2-scelta-sot">' +
+                          (gr || '&nbsp;') + '</div><div class="w2-griglia numeri">';
+            }
             numeri += '<button type="button" data-sub="' + i + '"' +
                       (i === scelN ? ' class="on"' : '') + '>' + (i + 1) + '</button>';
         }
+        if (quanti) numeri += '</div></div>';
 
         e.innerHTML =
             '<div class="w2-riquadro w2-scelta-box">' +
@@ -656,7 +687,7 @@
             '<div class="w2-scelta-tit">' + T.etLivello + '</div>' +
             '<div class="w2-griglia lettere">' + lettere + '</div>' +
             '<div class="w2-scelta-tit">' + t('etQuadro', { L: scelL }) + '</div>' +
-            '<div class="w2-griglia numeri">' + numeri + '</div>' +
+            '<div class="w2-terzine">' + numeri + '</div>' +
             '<div class="w2-bottoni">' +
             '<button type="button" id="w2-scelta-annulla">' + T.annulla + '</button>' +
             '<button type="button" id="w2-scelta-ok" class="giallo">' + T.seleziona + '</button>' +
@@ -736,8 +767,10 @@
         // parte giusta.
         S.mossaDa = [];
         // Quando e' stato dato l'ultimo colpo a ogni scambio a tre stati, letto
-        // sull'orologio del quadro. Serve solo a tenere fermo mezzo secondo il
-        // treno che aspetta davanti (vedi ATTESA_SCAMBIO). Parte da un tempo
+        // sull'orologio vero e non su quello del quadro: e' il tempo che serve
+        // a una mano per dare il secondo clic, e quello non va piu' svelto in
+        // turbo. Serve solo a tenere fermo un altro po' il treno che aspetta
+        // davanti (vedi ATTESA_SCAMBIO). Parte da un tempo
         // molto prima di zero, se no all'inizio del quadro ogni scambio
         // risulterebbe appena toccato.
         S.toccato = [];
@@ -770,7 +803,8 @@
         S.consegnati = 0; S.scontri = 0; S.persi = 0;
         S.tempo = contatoreIniziale(p);
         S.tempoMax = S.tempo;            // tetto della barra
-        S.orologio = 0;                  // secondi veri, per la schedulazione
+        S.orologio = 0;                  // tempo di gioco, il turbo lo accelera
+        S.vero = 0;                      // secondi del muro, il turbo non lo tocca
         S.prossimo = 2;                  // il primo annuncio arriva quasi subito
         S.emessi = 0;                    // ordini gia' annunciati
         logRun++; logPrec = null;        // nuova esecuzione nel registro
@@ -885,7 +919,7 @@
         // Scambio a tre stati appena toccato, con questo treno che aspetta
         // davanti: resta fermo ancora un po'. Vale solo per chi era GIA' fermo
         // -- un treno in corsa passa senza riguardi, com'e' sempre stato.
-        if (tr.fermo && S.orologio - S.toccato[nr][nc] < tara().attesaScambio) return;
+        if (tr.fermo && S.vero - S.toccato[nr][nc] < tara().attesaScambio) return;
 
         var x = uscita(cod, S.stato[nr][nc], entrata);
         if (!x) { tr.fermo = true; return; }     // scambio storto o segnale chiuso
@@ -948,7 +982,7 @@
         else tr.daFermo = null;
     }
 
-    function passo(dt) {
+    function passo(dt, dtVero) {
         // Il movimento degli scambi scorre anche a quadro finito, se no uno
         // scambio commutato all'ultimo resterebbe congelato a mezza strada.
         // In turbo scatta piu' svelto, come tutto il resto.
@@ -966,6 +1000,7 @@
 
         S.lampeggio += dt;
         S.orologio += dt;
+        S.vero += dtVero;
 
         // Il contatore scende solo per i treni presenti sul quadro (comparsi e
         // non ancora spariti), uno ogni TRENOSEC secondi ciascuno.
@@ -1954,10 +1989,10 @@
         // che arriva nello stesso fotogramma va per la strada nuova. Il
         // movimento che segue e' solo cosmetico, nessuna regola lo guarda.
         if (D.scambio.indexOf(cod) >= 0 && window.W2BINARI) S.mossa[r][c] = W2BINARI.DURATA;
-        // Timbro del colpo, solo sui pezzi a tre posizioni: da qui parte il
-        // mezzo secondo di grazia per il treno che aspetta davanti, il tempo
+        // Timbro del colpo, solo sui pezzi a tre posizioni: da qui parte la
+        // grazia per il treno che aspetta davanti (ATTESA_SCAMBIO), il tempo
         // di dare il secondo clic e arrivare alla terza posizione.
-        if (quanti > 2) S.toccato[r][c] = S.orologio;
+        if (quanti > 2) S.toccato[r][c] = S.vero;
         suona('scambio');
     }
 
@@ -2615,8 +2650,9 @@
         // Il tetto va messo PRIMA del moltiplicatore, se no un fotogramma
         // lungo verrebbe amplificato e il treno salterebbe delle caselle.
         if (S.pausa) dt = 0;
-        else if (S.turbo) dt *= tara().turbo;
-        passo(dt);
+        var dtVero = dt;                 // prima del turbo: questi sono secondi del muro
+        if (S.turbo) dt *= tara().turbo;
+        passo(dt, dtVero);
         disegna();
     }
 

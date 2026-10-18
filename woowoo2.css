@@ -381,10 +381,41 @@ html, body {
     display: grid;
     gap: 6px;
 }
-/* Le lettere sono poche e larghe uguali; i numeri arrivano a dodici e stanno
-   comodi su sei per riga. */
+/* Le lettere sono poche e larghe uguali. */
 .w2-scelta-box .w2-griglia.lettere { grid-template-columns: repeat(4, 1fr); }
-.w2-scelta-box .w2-griglia.numeri { grid-template-columns: repeat(6, 1fr); }
+/* I numeri erano una fila di sei. Adesso quella fila e' spezzata in due
+   terzine, perche' tre quadri di fila sono lo stesso giro del livello e
+   picchiano uguale: due terzine per riga, tre tasti per terzina, e sopra
+   ognuna la scritta che dice quanto picchia. I tasti restano larghi come
+   prima, cambia solo l'aria in mezzo. */
+.w2-scelta-box .w2-griglia.numeri { grid-template-columns: repeat(3, 1fr); }
+.w2-scelta-box .w2-terzine {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-top: 2px;
+}
+/* La cornicetta tiene insieme la scritta e i suoi tre tasti: senza, con due
+   terzine per riga, non si capisce se "MEDI" parla dei tasti che ha sotto o
+   di quelli che ha a sinistra. Riga sottile e fondo appena piu' chiaro, che
+   deve raccogliere i tasti senza mettersi in gara con loro. */
+.w2-scelta-box .w2-terzina {
+    padding: 5px 7px 7px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.045);
+}
+/* Piu' piccola e piu' smorzata di "QUADRO DEL LIVELLO A", che le sta sopra:
+   sono due gradini di titolo, e se pesassero uguale non si capirebbe quale
+   comanda quale. */
+.w2-scelta-box .w2-scelta-sot {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    opacity: 0.6;
+    text-align: left;
+    margin: 0 0 5px;
+}
 .w2-scelta-box .w2-griglia button {
     height: 40px;
     padding: 0;
