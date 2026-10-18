@@ -391,6 +391,25 @@ body {
 	animation: pulse-glow 1.5s infinite ease-in-out;
 }
 
+/* Variante della targhetta per i livelli nuovi di un gioco che e' gia' sulla
+   home da un pezzo: invece di dire "NUOVO" dice quale livello e' arrivato, con
+   la lettera grossa perche' e' quella che si cerca nel pannello della scelta
+   dentro al gioco, dove i livelli sono bottoni con su una lettera sola.
+   Il contenuto si incolonna in orizzontale con inline-flex: con l'inline-block
+   di .new-tag la lettera piu' alta della scritta sballerebbe l'altezza della
+   pillola. Due classi battono una, quindi queste proprieta' vincono. */
+.new-tag.livelli {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	padding-right: 6px;
+}
+
+.new-tag.livelli .lettera {
+	font-size: 15px;
+	line-height: 1;
+}
+
 @keyframes pulse-glow {
 	0% {
 		transform: scale(1);

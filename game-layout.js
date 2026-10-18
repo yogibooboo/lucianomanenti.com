@@ -1088,12 +1088,23 @@ function adjustLayout() {
             // niente a chi non c'e' mai stato, e allora porta dietro due parole.
             var promoLink = en ? '/woowoo2-en.html' : '/woowoo2.html';
             var promoTesto = en ? 'WOOWOO - trains and switches' : 'WOOWOO - treni e scambi';
-            // Seconda riga del pulsante, sotto il nome: i quadri nuovi. La
-            // lettera e' scritta grossa perche' e' quella che si cerca nel
-            // pannello della scelta dentro al gioco, dove i livelli sono
-            // bottoni con su una lettera sola.
+            // Seconda riga del pulsante, sotto il nome: i quadri nuovi. Le
+            // lettere sono scritte grosse perche' sono quelle che si cercano
+            // nel pannello della scelta dentro al gioco, dove i livelli sono
+            // bottoni con su una lettera sola; il tema fra parentesi dice che
+            // cosa si va a vedere, ed e' lo stesso che il pannello scrive
+            // sotto la lettera.
             var promoNovita = en ? 'New levels' : 'Nuovi livelli';
-            var promoLettera = 'B';
+            var promoLivelli = en ? [['B', 'swamp'], ['C', 'desert']]
+                                  : [['B', 'palude'], ['C', 'deserto']];
+            // Un livello per riga: in fila sarebbero stati 237 px su 262, cioe'
+            // dentro per un pelo, e in colonna nel pulsante alto 104 lo spazio
+            // c'e' lo stesso.
+            var promoRighe = promoLivelli.map(function (v) {
+                return '<span style="display:flex;align-items:center;gap:5px;">' +
+                       '<span style="font-size:20px;line-height:1;color:#ffd700;">' +
+                       v[0] + '</span>(' + v[1] + ')</span>';
+            }).join('');
             // Alto come due righe. Stesse regole della riga normale, con
             // l'altezza raddoppiata e il contenuto incolonnato: le proprieta'
             // ripetute dopo vincono su quelle di stileRiga, che viene prima.
@@ -1104,9 +1115,8 @@ function adjustLayout() {
                 badgeSmall +
                 '<span style="display:flex;align-items:center;gap:8px;">🚂' +
                 '<span style="color:#ffd700;">' + promoTesto + '</span></span>' +
-                '<span style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:bold;color:#ffe9a8;">' +
-                promoNovita +
-                '<span style="font-size:22px;line-height:1;color:#ffd700;">' + promoLettera + '</span>' +
+                '<span style="display:flex;flex-direction:column;align-items:center;gap:1px;font-size:13px;font-weight:bold;color:#ffe9a8;">' +
+                '<span>' + promoNovita + '</span>' + promoRighe +
                 '</span>' +
                 '</a>' +
                 '<a href="' + amazonGenericLink + '" target="_self" style="' + stileRiga + 'background:linear-gradient(180deg,#1d4ed8 0%,#1e40af 100%);border:2px solid #60a5fa;"' + hover + '>' +
