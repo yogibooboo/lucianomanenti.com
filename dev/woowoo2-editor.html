@@ -64,7 +64,12 @@ th,td{border:1px solid var(--bordo);padding:2px 4px;text-align:center}
 th{color:var(--fioco);font-weight:600;font-size:11px}
 td select{padding:1px 3px;border-radius:3px;font-size:12px}
 td input[type=number]{width:52px;padding:1px 3px;border-radius:3px;font-size:12px;text-align:right;background:var(--fondo);color:var(--testo);border:1px solid var(--bordo)}
-#bParDisco{margin-bottom:8px}
+/* I due modi di riempire la tabella, in fila sopra di essa. */
+.parcomandi{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:8px}
+.parcomandi span{font-size:11px;color:var(--fioco)}
+/* Dove si e' arrivati con le frecce: il contorno deve vedersi da lontano,
+   se no in una tabella di undici colonne ci si perde. */
+#tabPar input:focus,#tabPar select:focus{outline:2px solid var(--acc);outline-offset:0}
 /* La tabella in lavorazione e quella di riferimento una di fianco all'altra,
    e una sotto l'altra quando la finestra non le tiene. */
 .parfila{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-start}
@@ -209,7 +214,12 @@ dialog textarea{width:100%;background:#15181c;color:var(--testo);border:1px soli
     </div>
     <div class="box" id="boxPar" hidden>
       <h2>Parametri dei sottolivelli</h2>
-      <button id="bParDisco" disabled title="rilegge i sottolivelli dallo stesso livello del dischetto, convertendo il suo campo sec nei tre campi tempo/annuncio/sosta e aggiungendo i tre del quarto giro: sono i numeri originali, da tenere come punto di partenza e poi cambiare">Parametri dal dischetto</button>
+      <div class="parcomandi">
+        <button id="bParDisco" disabled title="rilegge i sottolivelli dallo stesso livello del dischetto, convertendo il suo campo sec nei tre campi tempo/annuncio/sosta e aggiungendo i tre del quarto giro: sono i numeri originali, da tenere come punto di partenza e poi cambiare">Parametri dal dischetto</button>
+        <span>oppure</span>
+        <select id="selParDa" disabled title="da quale altro livello copiare la tabella dei sottolivelli"></select>
+        <button id="bParDa" disabled title="copia qui la tabella del livello scelto: quella che vedi adesso si perde">Copia qui</button>
+      </div>
       <div class="parfila">
         <div id="tabPar"></div>
         <div id="rifPar" hidden></div>
@@ -235,7 +245,18 @@ dialog textarea{width:100%;background:#15181c;color:var(--testo);border:1px soli
         livello del dischetto, fa la conversione e aggiunge i tre del quarto giro
         come copia dei tre piu' alti: cancella tutti quelli che vedi. Il
         pulsante lo chiama con la lettera dell'originale, che e' la nostra
-        stessa; nei dati e' spostato di dodici (A&larr;M, B&larr;N ... L&larr;X).
+        stessa; nei dati e' spostato di dodici (A&larr;M, B&larr;N ... L&larr;X).<br>
+        <b>oppure... Copia qui</b> fa lo stesso lavoro partendo da un livello
+        qualunque: uno dei tuoi, che arriva tale e quale, oppure un altro
+        livello del dischetto, che passa per la conversione e il quarto giro
+        come sopra.<br>
+        I numeri si leggono e si scrivono a <b>unita' intere</b>; quello che
+        si copia si arrotonda. I decimali che uscivano dalle formule del
+        dischetto non erano piu' precisi di cosi'.<br>
+        Nella tabella ci si gira con le <b>frecce</b> (su e giu' cambiano riga,
+        destra e sinistra cambiano colonna) oltre che con il Tab: il dato dove
+        si arriva e' gia' selezionato, si riscrive digitando. Nelle tendine la
+        voce si cambia digitando il numero che ha davanti.
       </div>
     </div>
   </div>
@@ -302,7 +323,12 @@ var FAMIGLIE = [
 ];
 
 // I campi con "voci" sono scelte chiuse (menu a tendina); gli altri sono
-// numeri liberi, interi se non hanno "passo". "disco" elenca i valori usati
+// numeri liberi, tutti INTERI: la tabella si legge e si scrive a unita'.
+// Fino al 16/10/2026 `ann' e `sosta' avevano un decimale, che veniva dalle
+// formule del dischetto (0,52 x sec); un decimo di secondo di annuncio non
+// e' una cosa che si senta, e intanto costringeva a leggere 10,4 dove basta
+// 10. I vecchi valori con la virgola restano nei dati finche' non si tocca
+// la casella, e allora si arrotondano. "disco" elenca i valori usati
 // dai livelli originali: e' solo un suggerimento nel tooltip, non un vincolo
 // -- i quadri nostri ne escono.
 // `tempo', `ann' e `sosta' sono i tre valori che nel dischetto stavano nel solo
@@ -325,8 +351,8 @@ var PARAM = [
     { k: 's',    eti: 'schema',   dom: [0, 1, 2], voci: ['0', '1', '2'] },
     { k: 'ord',  eti: 'ordini',   min: 1, max: 99, disco: '5 10 15 20 25 30 50' },
     { k: 'tempo', eti: 'tempo',   min: 1, max: 9999, disco: 'da 130 a 575 (era ord x (sec+2))' },
-    { k: 'ann',  eti: 'annuncio', min: 0, max: 99, passo: 0.1, disco: '0,52 x sec' },
-    { k: 'sosta', eti: 'sosta',   min: 0, max: 99, passo: 0.1, disco: '0,33 x sec' },
+    { k: 'ann',  eti: 'annuncio', min: 0, max: 99, disco: '0,52 x sec, arrotondato' },
+    { k: 'sosta', eti: 'sosta',   min: 0, max: 99, disco: '0,33 x sec, arrotondato' },
     { k: 'inc',  eti: 'scontri',  min: 0, max: 99, disco: '4 6 8 10 20' },
     { k: 'traf', eti: 'traffico', voci: ['0 massimo', '1 molto alto', '2 alto', '3 medio'] },
     { k: 'tmax', eti: 'treni',    min: 1, max: 9,  disco: 'da 3 a 7' },
@@ -1949,18 +1975,17 @@ function tabellaParametri() {
                 });
             } else {
                 ct = document.createElement('input');
-                ct.type = 'number'; ct.min = p.min; ct.max = p.max;
-                if (p.passo) ct.step = p.passo;
+                ct.type = 'number'; ct.min = p.min; ct.max = p.max; ct.step = 1;
                 ct.title = 'originali: ' + p.disco;
             }
             ct.value = rg.p[p.k];
             ct.onchange = function () {
-                var v = p.passo ? parseFloat(ct.value) : parseInt(ct.value, 10);
+                // parseInt tronca da solo la virgola di un valore vecchio:
+                // chi tocca una casella da 10,4 se la ritrova a 10, ed e'
+                // la risoluzione che la tabella ha adesso.
+                var v = parseInt(ct.value, 10);
                 if (isNaN(v)) { ct.value = rg.p[p.k]; return; }
                 if (p.min !== undefined) v = Math.max(p.min, Math.min(p.max, v));
-                // un decimale, se no nei dati finiscono le code binarie di
-                // parseFloat (3.3000000000000003)
-                if (p.passo) v = Math.round(v * 10) / 10;
                 ct.value = v;
                 rg.p[p.k] = v;
                 segnaSporco();
@@ -1970,7 +1995,57 @@ function tabellaParametri() {
         t.appendChild(r);
     });
     cont.innerHTML = ''; cont.appendChild(t);
+    legaTastiera(t);
+    riempiParDa();
     tabellaRiferimento();
+}
+
+// Vero quando il prossimo fuoco arriva da tastiera e non dal mouse: solo
+// allora il dato si presenta gia' selezionato. Con il mouse no, se no un
+// clic dentro al numero per correggere una cifra cancellerebbe tutto.
+var daTastiera = false;
+
+// Ci si gira con le frecce, come in un foglio di conti: su e giu' cambiano
+// riga, destra e sinistra cambiano colonna. Il Tab fa la sua strada da solo
+// - l'ordine del DOM e' gia' quello giusto, una riga dopo l'altra - e qui
+// serve solo ad avvisare che l'arrivo e' da tastiera.
+// Le frecce si prendono tutte e quattro: lasciate passare, su un campo
+// numero muoverebbero il valore e su una tendina cambierebbero la voce. La
+// voce di una tendina si cambia lo stesso digitando il numero che ha davanti
+// (1 sceglie "1 molto alta"), che e' anche piu' svelto. Dentro al numero il
+// cursore non si sposta piu' con le frecce, ma il dato all'arrivo e' tutto
+// selezionato: si riscrive e basta.
+// Alt, Ctrl e il tasto di sistema non si toccano, come in tutto il sito.
+function legaTastiera(t) {
+    var MOSSE = { ArrowUp: [-1, 0], ArrowDown: [1, 0],
+                  ArrowLeft: [0, -1], ArrowRight: [0, 1] };
+    var celle = [];
+    for (var i = 1; i < t.rows.length; i++) {
+        celle.push([].slice.call(t.rows[i].querySelectorAll('input,select')));
+    }
+    celle.forEach(function (fila, r) {
+        fila.forEach(function (ct, c) {
+            ct.onkeydown = function (e) {
+                if (e.altKey || e.ctrlKey || e.metaKey) return;
+                if (e.key === 'Tab') { daTastiera = true; return; }
+                var m = MOSSE[e.key];
+                if (!m) return;
+                e.preventDefault();
+                var nr = Math.max(0, Math.min(celle.length - 1, r + m[0]));
+                var nc = Math.max(0, Math.min(fila.length - 1, c + m[1]));
+                if (nr === r && nc === c) return;
+                daTastiera = true;
+                celle[nr][nc].focus();
+            };
+            ct.onfocus = function () {
+                if (!daTastiera) return;
+                daTastiera = false;
+                // le tendine non hanno niente da selezionare
+                if (ct.select) ct.select();
+            };
+        });
+    });
+    t.onmousedown = function () { daTastiera = false; };
 }
 // La tabella non ha piu' colonne calcolate. Ne aveva due e sono andate via
 // entrambe il 9/10/2026: "durata" (ord x sec, con la "s" di secondi attaccata)
@@ -2078,39 +2153,97 @@ function letteraDischetto() {
     return (liv && liv.sub && liv.sub.length) ? S : '';
 }
 
-document.getElementById('bParDisco').onclick = function () {
-    var S = letteraDischetto();
-    if (!S) return;
+// Tutti i numeri della tabella sono interi (vedi PARAM): quello che si copia
+// da un'altra parte si arrotonda entrando.
+function aUnita(v) { return typeof v === 'number' ? Math.round(v) : v; }
+
+// Le voci della tendina "da quale livello": i livelli nostri, tranne quello
+// aperto, e dietro quelli del dischetto. Un livello si offre solo se ha dei
+// sottolivelli scritti. Nel valore dell'option sta scritto anche il banco:
+// le lettere dei due non si incontrano mai (A..L e M..X), ma il banco cambia
+// il lavoro da fare, perche' dal dischetto si converte.
+function riempiParDa() {
+    var s = document.getElementById('selParDa'), b = document.getElementById('bParDa');
+    var scelto = s.value;
+    s.innerHTML = '';
+    var niente = document.createElement('option');
+    niente.value = ''; niente.textContent = '\u2014 da quale livello \u2014';
+    s.appendChild(niente);
+    // Si copia dentro F.dati.liv, percio' serve un file nostro aperto: su una
+    // sorgente .js i sottolivelli stanno altrove e questo non vale.
+    if (F && F.tipo === 'json' && idx >= 0) {
+        var qui = F.elenco[idx].liv, g = null;
+        Object.keys(F.dati.liv).forEach(function (L) {
+            var sub = F.dati.liv[L].sub;
+            if (L === qui || !sub || !sub.length) return;
+            if (!g) g = gruppoPar(s, 'i tuoi livelli');
+            vocePar(g, 'mio:' + L, 'livello ' + L + '  (' + sub.length + ' sottolivelli)');
+        });
+        g = null;
+        if (FD) Object.keys(FD.dati.liv).forEach(function (L) {
+            var sub = FD.dati.liv[L].sub;
+            if (!sub || !sub.length) return;
+            if (!g) g = gruppoPar(s, 'dal dischetto');
+            // nominato come lo chiamava l'originale, con la lettera dei dati
+            // dietro: e' la regola che segue tutto il resto del pannello
+            vocePar(g, 'disco:' + L, 'livello ' + gemella(L) + '  (nei dati ' + L + ')');
+        });
+    }
+    s.value = scelto;
+    if (s.selectedIndex < 0) s.value = '';
+    s.disabled = s.options.length < 2;
+    b.disabled = s.disabled || s.value === '';
+}
+function gruppoPar(s, eti) {
+    var g = document.createElement('optgroup');
+    g.label = eti; s.appendChild(g); return g;
+}
+function vocePar(dove, val, testo) {
+    var o = document.createElement('option');
+    o.value = val; o.textContent = testo; dove.appendChild(o);
+}
+
+// Versa in tabella i sottolivelli di un altro livello: e' il lavoro dei due
+// pulsanti, "Parametri dal dischetto" e "Copia qui". `nome' arriva senza
+// articolo ("tuo livello A"), perche' le frasi le scrive questa funzione.
+// Dal dischetto ci sono due cose in piu' da fare: il campo `sec' si apre nei
+// tre campi del tempo, e alle nove righe se ne aggiungono tre - il quarto
+// giro, che li' non esisteva - copiando le tre piu' alte. Fra due livelli
+// nostri non serve niente di tutto questo: le righe sono gia' dodici e i
+// campi sono gli stessi.
+function copiaParametri(dis, nome, dalDisco) {
     var L = F.elenco[idx].liv;
-    var mie = F.dati.liv[L].sub, dis = FD.dati.liv[S].sub;
-    if (!mie.length || dis.length <= SUBEXTRA) {
-        alert('Il livello ' + L + ' del dischetto (nei dati la lettera ' + S +
-              ') ha ' + dis.length + ' sottolivelli e il tuo ne ha ' +
-              mie.length + ': non ci so lavorare.');
+    var mie = F.dati.liv[L].sub;
+    var extra = dalDisco ? SUBEXTRA : 0;
+    if (!mie.length || dis.length <= extra) {
+        alert('Dal ' + nome + ' non ci so lavorare: ha ' + dis.length +
+              ' sottolivelli e il tuo ne ha ' + mie.length + '.');
         return;
     }
-    var quanti = dis.length + SUBEXTRA;
-    if (!confirm('Metto in tabella i ' + dis.length + ' sottolivelli del livello '
-                 + L + ' del dischetto (nei dati la lettera ' + S + '), piu\' '
-                 + SUBEXTRA + ' copie dei tre piu\' alti per il quarto giro:'
-                 + ' ' + quanti + ' righe dentro il tuo livello ' + L + '. I'
+    var quanti = dis.length + extra;
+    if (!confirm('Metto in tabella i ' + dis.length + ' sottolivelli del ' + nome
+                 + (extra ? ', piu\' ' + extra + ' copie dei ' + extra + ' piu\' alti per'
+                            + ' il quarto giro' : '')
+                 + ': ' + quanti + ' righe dentro il tuo livello ' + L + '. I'
                  + ' parametri che vedi adesso si perdono. Vado?')) return;
     // Si parte da una copia di una riga NOSTRA e sopra ci si versano i campi
-    // del dischetto uno per uno, solo quelli della tabella: cosi' le chiavi
+    // della sorgente uno per uno, solo quelli della tabella: cosi' le chiavi
     // del JSON restano nell'ordine di prima e il file non si scompone.
-    // `tempo', `ann' e `sosta' nel dischetto non ci sono: li' c'e' il solo
-    // campo `sec', e il motore ne ricavava tutti e tre. La conversione sta
-    // qui, ed e' l'unico posto del progetto dove quelle tre formule servono
-    // ancora.
     var modello = JSON.stringify(mie[0]);
     var nuove = dis.map(function (d) {
         var p = JSON.parse(modello);
         PARAM.forEach(function (c) {
-            if (d[c.k] !== undefined) p[c.k] = d[c.k];
+            if (d[c.k] !== undefined) p[c.k] = aUnita(d[c.k]);
         });
+        // `tempo', `ann' e `sosta' nel dischetto non ci sono: li' c'e' il solo
+        // campo `sec', e il motore ne ricavava tutti e tre. La conversione sta
+        // in treTempi(), l'unico posto del progetto dove quelle formule
+        // servono ancora.
         if (d.sec !== undefined) {
             var tt = treTempi(d);
-            p.tempo = tt.tempo; p.ann = tt.ann; p.sosta = tt.sosta;
+            p.tempo = aUnita(tt.tempo);
+            p.ann = aUnita(tt.ann);
+            p.sosta = aUnita(tt.sosta);
         }
         return p;
     });
@@ -2118,7 +2251,7 @@ document.getElementById('bParDisco').onclick = function () {
     // rotazione dei quadri continua da sola (il dischetto chiude con 2, 1, 0 e
     // il giro in piu' riparte da 2) e i numeri sono una base sensata invece
     // che tre righe vuote. Poi si fanno piu' difficili a mano.
-    nuove = nuove.concat(nuove.slice(-SUBEXTRA).map(function (p) {
+    if (extra) nuove = nuove.concat(nuove.slice(-extra).map(function (p) {
         return JSON.parse(JSON.stringify(p));
     }));
     // l'array e' quello dentro F.dati: si svuota e si riempie, non si
@@ -2127,6 +2260,28 @@ document.getElementById('bParDisco').onclick = function () {
     nuove.forEach(function (p) { mie.push(p); });
     segnaSporco();
     tabellaParametri();
+}
+
+document.getElementById('bParDisco').onclick = function () {
+    var S = letteraDischetto();
+    if (!S) return;
+    copiaParametri(FD.dati.liv[S].sub, 'livello ' + F.elenco[idx].liv +
+                   ' del dischetto (nei dati la lettera ' + S + ')', true);
+};
+
+document.getElementById('selParDa').onchange = function () {
+    document.getElementById('bParDa').disabled = this.value === '';
+};
+
+document.getElementById('bParDa').onclick = function () {
+    var v = document.getElementById('selParDa').value;
+    if (!v) return;
+    var disco = v.indexOf('disco:') === 0, L = v.slice(v.indexOf(':') + 1);
+    var liv = (disco ? FD.dati : F.dati).liv[L];
+    if (!liv || !liv.sub || !liv.sub.length) return;
+    copiaParametri(liv.sub, disco
+        ? 'livello ' + gemella(L) + ' del dischetto (nei dati la lettera ' + L + ')'
+        : 'tuo livello ' + L, disco);
 };
 
 // presa di servizio per il collaudo: permette di provare analisi e
