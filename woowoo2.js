@@ -66,7 +66,32 @@
         // errore che fermava il ciclo: il quadro restava congelato
         // sull'ultimo fotogramma e sembrava che il gioco non cambiasse mai
         // livello.
-        return st.rotto ? null : st;
+        // `fondoImg' si controlla accanto a `rotto' perche' sono due guasti
+        // diversi: `rotto' e' il file che il server non ha servito, qui
+        // invece l'oggetto non e' mai passato dal caricatore e i suoi campi
+        // non esistono proprio. Senza questa riga drawImage riceve
+        // `undefined' e ferma il ciclo.
+        return (st.rotto || !st.fondoImg) ? null : st;
+    }
+
+    // Lo stesso dipinto puo' servire a due schemi - capita copiando uno
+    // schema sull'altro nell'editor. `stiliUsati' lo scarica una volta sola,
+    // giustamente, ma nei dati gli oggetti restano due e il caricatore ne
+    // riempie uno solo: l'altro si ritrova senza `fondoImg' e con `rotto'
+    // indefinito, cioe' falso, percio' `stileDi' lo da' per buono e drawImage
+    // ferma il ciclo appena si arriva a quel quadro. Qui l'esito del
+    // caricamento si ricopia sui gemelli.
+    function spargiStili(stili) {
+        var per = {};
+        stili.forEach(function (x) { per[x.atlante + '|' + x.sfondo] = x; });
+        Object.keys(D.liv).forEach(function (L) {
+            (D.liv[L].stile || []).forEach(function (x) {
+                if (!x || typeof x !== 'object') return;
+                var s = per[x.atlante + '|' + x.sfondo];
+                if (!s || s === x) return;
+                x.img = s.img; x.fondoImg = s.fondoImg; x.rotto = s.rotto;
+            });
+        });
     }
 
     // Tutti i disegni citati dai dati, senza doppioni: servono al caricatore.
@@ -145,7 +170,8 @@
     var TEMI = {
         A: EN ? 'country' : 'country',
         B: EN ? 'swamp' : 'palude',
-        C: EN ? 'desert' : 'deserto'
+        C: EN ? 'desert' : 'deserto',
+        D: EN ? 'arctic' : 'artico'
     };
     function t(k, v) {
         return T[k].replace(/\{(\w+)\}/g, function (m, n) { return v && v[n] !== undefined ? v[n] : m; });
@@ -1309,6 +1335,7 @@
     // W2BINARI insieme a tutto il resto della rete.
     var STAZ_TACCA = [42, 20, 22, 24];      // la tacca del binario, misurata nel file
     var quadri = null;                      // cod -> { piena, cv, x, y, w, h }
+    var raccordi = null;                    // cod -> la sola tela dello spezzone
 
     function giroStaz(cod) {
         return (ANG_STAZ[D.staz[cod]] || 0) - ANG_STAZ[STAZ_VERSO];
@@ -1364,8 +1391,29 @@
         return [x0, y0, Math.max.apply(null, xs) - x0, Math.max.apply(null, ys) - y0];
     }
 
+    // Il solo spezzone di binario, su una tela trasparente. Serve quando la
+    // stazione sta nel dipinto: il fabbricato l'ha dipinto Luciano, ma il
+    // binario che ci entra deve restare quello di W2BINARI, se no la rete si
+    // interrompe a meta' casella e si vede. Si prepara una volta sola perche'
+    // `W2BINARI.raccordo' ogni volta fa una tela nuova.
+    function preparaRaccordi() {
+        raccordi = null;
+        if (!window.W2BINARI || !D.staz) return;
+        raccordi = {};
+        Object.keys(D.staz).forEach(function (k) {
+            var cod = +k, L = STAZ_LATO;
+            var cv = document.createElement('canvas');
+            cv.width = cv.height = L;
+            var g = cv.getContext('2d');
+            g.imageSmoothingEnabled = false;
+            g.drawImage(W2BINARI.raccordo(D.staz[cod], L - STAZ_TACCA[0]), 0, 0, L, L);
+            raccordi[cod] = cv;
+        });
+    }
+
     function preparaStazioni(img) {
         quadri = null;
+        preparaRaccordi();
         if (!img || !img.naturalWidth || !D.staz) return;
         quadri = {};
         var pulita = window.W2BINARI ? senzaRaccordo(img) : img;
@@ -1427,6 +1475,16 @@
     function disegna() {
         if (!pronto) return;
         var sty = S.stile;
+        // "disegna stazione", il campo `amb' dei sottolivelli: 0 vuol dire
+        // che la stazione sta dipinta nello sfondo e il motore non ci mette
+        // sopra la sua piastrella. Assente, o 1, e' il disegno di sempre: nei
+        // nostri dodici livelli il campo vale 1 in tutte e 144 le righe,
+        // percio' il significato nuovo non cambia niente di quello che c'e'.
+        // Nel dischetto si chiamava `ambiente', andava da 1 a 6 e nessuno lo
+        // leggeva. La lettera della stazione si disegna in tutti e due i
+        // casi: non e' decorazione, e' quello che si gioca.
+        var pp = parametri();
+        var disStaz = !pp || Number(pp.amb) !== 0;
         // Niente atlante di riserva: il dischetto non si carica piu'. Uno
         // schema senza dipinto resta spoglio (vedi il controllo in avvia()).
         var atl = sty ? sty.img : null;
@@ -1454,6 +1512,14 @@
                 // prato, alberi, acqua, case e tabellone: nello stile nuovo non
                 // sono piastrelle, li ha gia' disegnati il dipinto
                 if (sty && !D.rotta[cod] && !D.staz[cod]) continue;
+                // Stazione dipinta nello sfondo: il fabbricato non si mette,
+                // ma lo spezzone di binario che ci entra si', se no la rete
+                // si interrompe a meta' casella.
+                if (D.staz[cod] && !disStaz) {
+                    var rc = raccordi ? raccordi[cod] : null;
+                    if (rc) ctx.drawImage(rc, c * CELLA, r * CELLA, CELLA, CELLA);
+                    continue;
+                }
                 var st = (D.scambio.indexOf(cod) >= 0 || D.segnale.indexOf(cod) >= 0) ? S.stato[r][c] : 0;
                 // Scambio in movimento: la piastrella non viene dall'atlante
                 // ma da un fotogramma disegnato. La massicciata sta ferma, si
@@ -1543,8 +1609,13 @@
             ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
             if (q) {
                 k = CELLA / STAZ_LATO;
-                ctx.drawImage(q.cv, s.c * CELLA + q.x * k, s.r * CELLA + q.y * k,
-                              q.w * k, q.h * k);
+                // Il quadrato ritagliato e' un pezzo dell'edificio, percio'
+                // segue la stazione: se la stazione sta nel dipinto, qui non
+                // si ridisegna niente. Restano il posto, il lampeggio e la
+                // lettera, che vanno a finire sul dipinto.
+                if (disStaz)
+                    ctx.drawImage(q.cv, s.c * CELLA + q.x * k, s.r * CELLA + q.y * k,
+                                  q.w * k, q.h * k);
                 x = s.c * CELLA + (q.x + q.w / 2) * k;
                 y = s.r * CELLA + (q.y + q.h / 2) * k;
                 // A lampeggiare e' tutto il riquadro, non la sola lettera:
@@ -2626,6 +2697,7 @@
                 // e sopra la copia dell'atlante vanno le quattro stazioni
                 if (!x.rotto && x.img.getContext) montaStazioni(x.img, x.cella);
             });
+            spargiStili(stili);
             // Uno schema senza dipinto si gioca ma non si vede: le
             // piastrelle del dischetto non si caricano piu'. Lo si dice qui,
             // se no si guarda un quadro nero senza capire perche'.

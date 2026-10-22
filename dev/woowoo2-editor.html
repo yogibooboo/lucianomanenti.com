@@ -227,7 +227,14 @@ dialog textarea{width:100%;background:#15181c;color:var(--testo);border:1px soli
       <div class="leg">
         <code>traf</code> e <code>vel</code> hanno la <b>scala rovesciata</b>: il numero basso
         e' il valore alto.<br>
-        <code>amb</code> oggi il motore non lo legge.<br>
+        <code>stazione</code> era <code>ambiente</code>, che il motore non
+        leggeva: adesso dice chi disegna la stazione. <b>si</b> e' il
+        disegno di sempre, <b>no</b> vuol dire che la stazione sta dipinta
+        nello sfondo e il motore non ci mette sopra la sua piastrella. La
+        lettera la disegna in tutti e due i casi. Vale per il quadro, non
+        per la riga: a comandare e' la <b>prima riga che usa quello schema</b>,
+        e cambiandola cambiano anche le altre righe con lo stesso schema. Su
+        una riga successiva invece resta un'eccezione sua.<br>
         <code>tempo</code> il contatore di partenza &middot;
         <code>ann</code> quanto dura l'annuncio &middot;
         <code>sosta</code> quanto il treno sta in banchina: secondi, un decimale.
@@ -358,7 +365,12 @@ var PARAM = [
     { k: 'tmax', eti: 'treni',    min: 1, max: 9,  disco: 'da 3 a 7' },
     { k: 'vel',  eti: 'velocita', voci: ['1 molto alta', '2 alta', '3 media', '4 bassa'], base: 1 },
     { k: 'dest', eti: 'lettera',  voci: ['0 no', '1 si'] },
-    { k: 'amb',  eti: 'ambiente', min: 1, max: 6,  disco: 'da 1 a 6 (oggi inerte)' }
+    { k: 'amb',  eti: 'stazione', voci: ['0 no', '1 si'],
+      nota: 'disegna la stazione: "no" vuol dire che sta dipinta nello'
+          + ' sfondo e il motore non ci mette sopra la sua piastrella.'
+          + ' La lettera resta in tutti e due i casi, serve a giocare.'
+          + ' Nel dischetto questo campo si chiamava ambiente, andava da'
+          + ' 1 a 6 e il motore non lo leggeva.' }
 ];
 
 // ---- stato -------------------------------------------------------------
@@ -573,6 +585,7 @@ function cambiaSorgente() {
 }
 
 function applicaSorgente(k) {
+    var prima = sorgSel;              // per tornare indietro se si dice di no
     sorgSel = String(k);
     document.getElementById('selSorg').value = sorgSel;
     var src = CAT[k];
@@ -586,6 +599,11 @@ function applicaSorgente(k) {
     // "dipinto + piastrelle nostre" su un quadro del dischetto, che vuole le
     // sue piastrelle ("orig"). Si clona: lo stile del dischetto non si tocca.
     var st = clona(stileDiCAT(src));
+    if (!confermaSovrascrittura(j, src.g, st)) {
+        sorgSel = prima;
+        document.getElementById('selSorg').value = prima;
+        return;
+    }
     if (JSON.stringify(stileSlot(j) || null) !== JSON.stringify(st || null)) cambia = true;
     versa(F.elenco[j].g, src.g);
     stileSlot(j, st || null);
@@ -601,12 +619,35 @@ function uguali(a, b) {
     return true;
 }
 
+// Rete contro la sovrascrittura. Una casella che ha gia' un quadro dentro si
+// copriva in silenzio, e insieme al quadro se ne andava il suo dipinto, perche'
+// la grafica viaggia col lavoro. E' successo davvero: C/1 copiato su C/2 si e'
+// portato dietro anche il dipinto, e del quadro del deserto non restava niente
+// nel file. Si chiede soltanto quando c'e' qualcosa da perdere: sulla casella
+// vuota non si chiede, e nemmeno quando quello che arriva e' gia' identico -
+// se no la domanda comparirebbe a ogni giro senza motivo.
+function confermaSovrascrittura(j, quadro, stile) {
+    var e = F.elenco[j];
+    if (!e || vuota(e.g)) return true;
+    var stessoQuadro = !quadro || uguali(e.g, quadro);
+    var stessoStile = JSON.stringify(stileSlot(j) || null)
+                   === JSON.stringify(stile || null);
+    if (stessoQuadro && stessoStile) return true;
+    return confirm("In " + e.eti + " c'e' gia' un quadro disegnato. Ci metto "
+        + "quello in lavorazione? Quello che c'e' adesso si perde,"
+        + " insieme al suo dipinto.");
+}
+
 // Cambiare destinazione sposta il lavoro: la casella che si lascia torna
 // com'e' sul file, quella nuova si prende il quadro in lavorazione. Cosi' si
 // puo' cambiare idea su dove depositare senza ricominciare da capo.
 function cambiaDestinazione() {
     var j = parseInt(document.getElementById('selDest').value, 10);
     if (j === idx) return;
+    if (!confermaSovrascrittura(j, G, stileSlot(idx))) {
+        document.getElementById('selDest').value = idx;   // la tendina torna indietro
+        return;
+    }
     trasloca(j);
     scegli(j);
     rinominaDipinto();
@@ -690,6 +731,9 @@ document.getElementById('dspVia').onclick = function () {
 };
 document.getElementById('dspSi').onclick = async function () {
     var j = parseInt(document.getElementById('dspSlot').value, 10);
+    // Qui la finestra resta aperta se si dice di no: cosi' si puo' scegliere
+    // un'altra casella senza ricominciare.
+    if (j !== idx && !confermaSovrascrittura(j, G, stileSlot(idx))) return;
     document.getElementById('dlgSporco').close();
     if (j !== idx) { trasloca(j); scegli(j); rinominaDipinto(); segnaSporco(); }
     if (await salvaSuDisco()) { if (guardiaSi) guardiaSi(); }
@@ -1255,6 +1299,18 @@ function montaStazioni(tela, cella, img) {
         g.restore();
     });
 }
+
+// Lo spezzone di binario che entra nella stazione: serve quando la stazione
+// sta nel dipinto, perche' il fabbricato non si disegna ma il binario si', se
+// no la rete si interrompe a meta' casella. Sono i 22 pixel su 64 del gioco.
+// `W2BINARI.raccordo' ogni volta fa una tela nuova, percio' si tiene da parte.
+var raccordi = {};
+function raccordoStaz(cod) {
+    if (raccordi[cod]) return raccordi[cod];
+    if (!window.W2BINARI || !D.staz[cod]) return null;
+    raccordi[cod] = W2BINARI.raccordo(D.staz[cod], 22);
+    return raccordi[cod];
+}
 var FONDO_NEUTRO = '#26361f';   // il prato di quando il dipinto non c'e'
 
 // I codici oltre le colonne delle tavole non si ritagliano: non c'e' nessuna
@@ -1518,6 +1574,7 @@ function pngDelQuadro() {
     var c2 = t.getContext('2d');
     c2.imageSmoothingEnabled = false;
     var sty = stileCorrente();
+    var disStaz = stazioneDaDisegnare();
     var foglio = atl, cel = CEL;
     if (sty) {
         var a2 = immagine(ATL_NOSTRO);
@@ -1532,6 +1589,18 @@ function pngDelQuadro() {
         // con la grafica nostra il paesaggio non e' fatto di piastrelle: si
         // posano solo binari e stazioni, il resto lo fa il fondo
         if (sty && !D.rotta[cod] && !D.staz[cod]) continue;
+        // Stazione dipinta nello sfondo: il fabbricato non si posa, lo
+        // spezzone di binario che ci entra si'.
+        if (D.staz[cod] && !disStaz) {
+            var rcp = raccordoStaz(cod);
+            // Lo spezzone e' trasparente: senza dipinto sotto ci vuole
+            // l'erba, come fa `piastrella' coi pezzi disegnati.
+            if (!sty) c2.drawImage(foglio, 0, 0, cel, cel,
+                c * CEL * SCALA, r * CEL * SCALA, CEL * SCALA, CEL * SCALA);
+            if (rcp) c2.drawImage(rcp, c * CEL * SCALA, r * CEL * SCALA,
+                                  CEL * SCALA, CEL * SCALA);
+            continue;
+        }
         // Si posa con la stessa mano del disegno sullo schermo: i pezzi
         // oltre le colonne del foglio non hanno una colonna da ritagliare e
         // vanno chiesti a W2BINARI, altrimenti nel PNG restano buchi.
@@ -1585,6 +1654,7 @@ function disegna() {
     // Con la grafica nostra il paesaggio non e' fatto di piastrelle: si stende
     // prima il dipinto e poi si posano solo binari e stazioni.
     var sty = stileCorrente();
+    var disStaz = stazioneDaDisegnare();
     var foglio = atl, cel = CEL;
     if (sty) {
         var a2 = immagine(ATL_NOSTRO);
@@ -1597,6 +1667,15 @@ function disegna() {
     for (var r = 0; r < RIGHE; r++) for (var c = 0; c < COLS; c++) {
         var cod = G[r][c];
         if (sty && !D.rotta[cod] && !D.staz[cod]) continue;
+        // Come nel gioco: stazione nel dipinto, resta il solo spezzone.
+        if (D.staz[cod] && !disStaz) {
+            var rcs = raccordoStaz(cod);
+            if (!sty) ctx.drawImage(foglio, 0, 0, cel, cel,
+                c * CEL * SCALA, r * CEL * SCALA, CEL * SCALA, CEL * SCALA);
+            if (rcs) ctx.drawImage(rcs, c * CEL * SCALA, r * CEL * SCALA,
+                                   CEL * SCALA, CEL * SCALA);
+            continue;
+        }
         var st = commutate[r + ',' + c] || 0;
         piastrella(ctx, foglio, cel, cod, st, c * CEL * SCALA, r * CEL * SCALA,
                    CEL * SCALA, !sty);
@@ -1960,8 +2039,10 @@ function tabellaParametri() {
     tr.appendChild(cella_('th', '#'));
     PARAM.forEach(function (p) { tr.appendChild(cella_('th', p.eti)); });
     t.appendChild(tr);
+    var ctrl = [];            // riga -> { campo: il comando nella tabella }
     righe.forEach(function (rg, i) {
         var r = document.createElement('tr');
+        var comandi = {}; ctrl.push(comandi);
         r.appendChild(cella_('td', rg.eti !== undefined ? rg.eti : (i + 1)));
         PARAM.forEach(function (p) {
             var td = document.createElement('td');
@@ -1978,6 +2059,7 @@ function tabellaParametri() {
                 ct.type = 'number'; ct.min = p.min; ct.max = p.max; ct.step = 1;
                 ct.title = 'originali: ' + p.disco;
             }
+            if (p.nota) ct.title = p.nota;
             ct.value = rg.p[p.k];
             ct.onchange = function () {
                 // parseInt tronca da solo la virgola di un valore vecchio:
@@ -1988,8 +2070,25 @@ function tabellaParametri() {
                 if (p.min !== undefined) v = Math.max(p.min, Math.min(p.max, v));
                 ct.value = v;
                 rg.p[p.k] = v;
+                // `stazione' vale per il quadro: scritta sulla PRIMA riga che
+                // usa uno schema, si porta dietro tutte le altre righe con lo
+                // stesso schema. Su una riga successiva resta dov'e'. Il
+                // confronto e' sull'oggetto dei parametri, non sulla riga:
+                // `parametriDelloSchema' ogni volta rifa' gli involucri.
+                var pr = primaRigaSchema(rg.p.s);
+                if (p.k === 'amb' && pr && pr.p === rg.p)
+                    righe.forEach(function (al, j) {
+                        if (al.p === rg.p || +al.p.s !== +rg.p.s) return;
+                        al.p.amb = v;
+                        if (ctrl[j] && ctrl[j].amb) ctrl[j].amb.value = v;
+                    });
                 segnaSporco();
+                // Il tabellone segue la prima istanza dello schema, percio' si
+                // ridisegna sia cambiando la stazione sia cambiando lo schema
+                // di una riga, che puo' spostare quale riga e' la prima.
+                if (p.k === 'amb' || p.k === 's') disegna();
             };
+            comandi[p.k] = ct;
             td.appendChild(ct); r.appendChild(td);
         });
         t.appendChild(r);
@@ -2140,6 +2239,25 @@ function parametriDelloSchema() {
     return F.sub.map(function (s, n) { return { p: s.p, eti: n + 1 }; });
 }
 
+// La prima riga della tabella che usa lo schema `n'. Il campo `stazione' e'
+// una cosa del quadro, non del sottolivello: se lo stesso schema torna in piu'
+// righe, quella che comanda e' la prima.
+function primaRigaSchema(n) {
+    var righe = parametriDelloSchema();
+    for (var i = 0; i < righe.length; i++)
+        if (+righe[i].p.s === +n) return righe[i];
+    return null;
+}
+
+// Il valore di `stazione' che vale per il tabellone aperto adesso: quello
+// della prima riga che usa questo schema. Se nessuna riga lo usa - o il file
+// non ha la tabella - si disegna, che e' il comportamento di sempre.
+function stazioneDaDisegnare() {
+    if (!F || idx < 0 || !F.elenco[idx]) return true;
+    var rg = primaRigaSchema(F.elenco[idx].n);
+    return !rg || Number(rg.p.amb) !== 0;
+}
+
 // I parametri dei sottolivelli nascono vuoti e tutti uguali: da B a L sono
 // dodici righe segnaposto identiche. Per avere una base sensata su cui lavorare
 // si rileggono dal quadro gemello del dischetto - la lettera avanti di dodici,
@@ -2156,6 +2274,19 @@ function letteraDischetto() {
 // Tutti i numeri della tabella sono interi (vedi PARAM): quello che si copia
 // da un'altra parte si arrotonda entrando.
 function aUnita(v) { return typeof v === 'number' ? Math.round(v) : v; }
+
+// Un valore che arriva da un'altra parte puo' essere fuori dalla scala di
+// adesso: `amb' nel dischetto va da 1 a 6, e qui e' diventato un si/no. Si
+// riporta dentro, come fa la casella quando lo si scrive a mano.
+function dentroPar(c, v) {
+    if (typeof v !== 'number') return v;
+    if (c.min !== undefined) return Math.max(c.min, Math.min(c.max, v));
+    if (c.voci) {
+        var b = c.base || 0;
+        return Math.max(b, Math.min(b + c.voci.length - 1, v));
+    }
+    return v;
+}
 
 // Le voci della tendina "da quale livello": i livelli nostri, tranne quello
 // aperto, e dietro quelli del dischetto. Un livello si offre solo se ha dei
@@ -2233,7 +2364,7 @@ function copiaParametri(dis, nome, dalDisco) {
     var nuove = dis.map(function (d) {
         var p = JSON.parse(modello);
         PARAM.forEach(function (c) {
-            if (d[c.k] !== undefined) p[c.k] = aUnita(d[c.k]);
+            if (d[c.k] !== undefined) p[c.k] = dentroPar(c, aUnita(d[c.k]));
         });
         // `tempo', `ann' e `sosta' nel dischetto non ci sono: li' c'e' il solo
         // campo `sec', e il motore ne ricavava tutti e tre. La conversione sta

@@ -1095,8 +1095,8 @@ function adjustLayout() {
             // cosa si va a vedere, ed e' lo stesso che il pannello scrive
             // sotto la lettera.
             var promoNovita = en ? 'New levels' : 'Nuovi livelli';
-            var promoLivelli = en ? [['B', 'swamp'], ['C', 'desert']]
-                                  : [['B', 'palude'], ['C', 'deserto']];
+            var promoLivelli = en ? [['C', 'desert'], ['D', 'arctic']]
+                                  : [['C', 'deserto'], ['D', 'artico']];
             // Un livello per riga: in fila sarebbero stati 237 px su 262, cioe'
             // dentro per un pelo, e in colonna nel pulsante alto 104 lo spazio
             // c'e' lo stesso.
