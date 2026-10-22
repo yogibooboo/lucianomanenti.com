@@ -93,3 +93,16 @@ dev/*
 # woowoo2-mie.js invece si versiona: era una copia dei quadri del dischetto,
 # ma i livelli N..X sono stati svuotati e resta disegnata solo M, che e' roba
 # nostra. La copia integra di prima e' in dev/dischetto/.
+
+# --- Rumore di lavorazione ---
+# scratch/ e' il banco: ritagli di video, prove di suono, scriptini usa e
+# getta. I cinquantaquattro script che erano gia' versionati restano dentro -
+# un file gia' tracciato non lo esclude niente - cosi' da qui in avanti
+# nessuno dei nuovi si presenta piu' da solo in git status.
+scratch/
+__pycache__/
+
+# Le misure estratte dai video di Locomotion per tarare il contatore e
+# l'emissione. Il risultato e' finito nei parametri dei quadri e nella nota di
+# memoria; le tabelle di partenza non servono piu' a nessuno.
+locomotion_*.csv
