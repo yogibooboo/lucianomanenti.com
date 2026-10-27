@@ -3148,9 +3148,37 @@ var scala = {
 		if (trovatotris && ((ncarte - numerojollytotale) < minimocartescala)) trovatotris = false;
 		if (trovatotris) {
 			if (primonumero2 < 3) primonumero2 += 13;
+			var iniziosc = primonumero2 - i;
+			/* Pezza del 27/10/2026: sotto l'asso non c'è niente. Quando il blocco
+			   comincia con uno o più jolly, l'ancoraggio qui sopra adotta il valore
+			   della prima carta reale senza chiedersi se sotto ci sia posto per i
+			   jolly che la precedono: con A-2-3 in tavola e un jolly agganciato
+			   davanti all'asso il conto dava una scala che parte da 0, da -1 con due
+			   jolly. Il blocco veniva accettato, il jolly prendeva il nome di una
+			   carta inesistente ("seme0") e restava per sempre non riscattabile
+			   (cercajollyrecuperabili lo mette in jollyincampo ma non lo abbina mai
+			   a una carta vera: stessa famiglia del "seme14" segnalato il 12 ago
+			   2026), e i punti del blocco SCENDEVANO, perché calcolapuntitris parte
+			   da primonumero: un tavolo da 46 passava a 45 attaccando una carta. La
+			   coda era già difesa (oltrekappa più il controllo sul 2 dopo il K), la
+			   testa no. Segnalato da un giocatore, ottobre 2026; riprodotto end to
+			   end trascinando il jolly col mouse su un tavolo apparecchiato.
+			   La guardia sta qui, dove il verdetto si forma, e non nelle tre vie che
+			   ci arrivano (l'attacco da checkcarta, la calata da ordinascalasmart
+			   che manda il jolly di scorta all'estremo basso, e piazzajolly).
+			   Misura: enumerazione completa dei blocchi di un seme più jolly,
+			   lunghezze da 3 a 13, ogni disposizione fino a quattro jolly e ogni
+			   partenza compresi gli scavalcamenti del K, 52.646 blocchi. Ne cadono
+			   2.890, TUTTI con un jolly in testa, e nessuna scala legittima viene
+			   rifiutata. Su 685 mani IA vere (841.229 chiamate a questa funzione) il
+			   verdetto cambia una volta sola, nella prova di chiusura con jolly
+			   recuperato (pezza del 7/10/2026), dove il sottoinsieme viene passato
+			   nell'ordine della mano: J+A+2 letto come 0-1-2 cade, mentre le stesse
+			   carte col jolly in coda restano una A-2-3 valida. */
+			if (iniziosc < 1) return esito;
 			esito.valido = true;
 			esito.tipotris = SCALA;
-			esito.primonumero = primonumero2 - i;
+			esito.primonumero = iniziosc;
 			esito.semescala = primoseme;
 		}
 		return esito;
