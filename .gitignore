@@ -104,5 +104,18 @@ __pycache__/
 
 # Le misure estratte dai video di Locomotion per tarare il contatore e
 # l'emissione. Il risultato e' finito nei parametri dei quadri e nella nota di
-# memoria; le tabelle di partenza non servono piu' a nessuno.
+# memoria; le tabelle di partenza non servono piu' a nessuno. Adesso stanno in
+# dev/, che e' escluso per conto suo; la riga resta per i prossimi csv che
+# capitassero qui alla radice.
 locomotion_*.csv
+
+# scivoli/ e' un gioco in lavorazione, non ancora pubblicato: sta tutto in una
+# cartella sua per non presentarsi in git status quattro file alla volta. Le
+# pagine dentro cercano ancora i file del sito come se fossero alla radice.
+scivoli/
+
+# hanon/ e' l'analizzatore degli esercizi di Hanon al pianoforte, con i suoi 42
+# MIDI in complete/: un ramo a se', mai linkato da nessuna pagina del sito e
+# fuori dalla sitemap. Parcheggiato qui intero. Come scivoli/, le pagine dentro
+# cercano ancora i file del sito come se fossero alla radice.
+hanon/
