@@ -659,6 +659,40 @@ h6 {
 	display: none;
 }
 
+/* Scelta degli avversari: tutto il riquadro risponde al tocco, non solo il
+   pallino da 10 px (sul tablet il "1" toccato col dito non selezionava niente). */
+#formnuovo .sceltaavversari {
+	display: inline-block;
+	min-width: 70px;
+	margin: 10px 16px 20px 0;
+	padding: 10px 18px;
+	border: 2px solid #ffffff;
+	border-radius: 10px;
+	font-size: 28px;
+	font-weight: bold;
+	text-align: center;
+	cursor: pointer;
+	user-select: none;
+}
+
+#formnuovo .sceltaavversari input {
+	width: 24px;
+	height: 24px;
+	margin: 0 10px 0 0;
+	vertical-align: middle;
+	cursor: pointer;
+}
+
+#formnuovo .sceltaavversari:has(input:checked) {
+	background-color: #ffd700;
+	border-color: #ffd700;
+	color: #000000;
+}
+
+#formnuovo .bottone1 {
+	display: block;
+}
+
 #testoallerta {
 
 	font-family: "Comic Sans MS", cursive, sans-serif;
