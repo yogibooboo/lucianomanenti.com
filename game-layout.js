@@ -22,7 +22,7 @@ window.registerLayoutResizeListener = function (callback) {
 };
 
 // ─── AMAZON BANNER CONFIG ───────────────────────────────────────────────────
-var AMAZON_BANNERS_ENABLED = false;  // se false, disabilita Amazon a sinistra (ma non a destra se AMAZON_BANNERS_RIGHT = true)
+var AMAZON_BANNERS_ENABLED = true;  // se false, disabilita Amazon a sinistra (ma non a destra se AMAZON_BANNERS_RIGHT = true)
 var AMAZON_BANNERS_RIGHT = true;   // se true, carica Amazon a destra indipendentemente da AMAZON_BANNERS_ENABLED
 var AMAZON_FALLBACK_ON_SHIELD = true; // se true, Amazon subentra a sinistra quando AdSense viene bloccato dallo scudo
 var AMAZON_USE_NEW_DEALS = true;      // se true, usa newdeals.json e i pesi. Se false, usa il deals.json tradizionale
@@ -55,7 +55,7 @@ var INTERSTITIAL_SLOT_FLEXIBLE  = '5075879034';   // slot "interflex" (Display r
 // ─── ADSENSE CONFIG & SHIELD ─────────────────────────────────────────────────
 // NOTA PER L'UTENTE: Durante il bando di 29 giorni, imposta ADSENSE_GLOBAL_ENABLED = false e AMAZON_BANNERS_ENABLED = true; 
 // Al termine, imposta ADSENSE_GLOBAL_ENABLED = true AMAZON_BANNERS_ENABLED = false;  Lo Shield ti proteggerà automaticamente dai click futuri.
-var ADSENSE_GLOBAL_ENABLED = true;  // Interruttore di sicurezza principale
+var ADSENSE_GLOBAL_ENABLED =false; //Interruttore di sicurezza principale
 var ADSENSE_ONLY_LEFT = true;       // Se true, AdSense carica solo a sinistra
 
 // Controllo attivazione blocco annunci su richiesta
@@ -148,6 +148,30 @@ function isAdSenseShieldActive() {
     return Date.now() < parseInt(shieldUntil);
 }
 
+// Rifa' le colonne dei banner a pagina aperta, rompendo il sigillo.
+// Serve quando lo scudo cambia stato: finche' non c'era, lo scudo scattava ma
+// non toccava niente, perche' `populateSidebar' esce subito se la colonna e'
+// gia' piena (`_leftPopulated'). Il sigillo e' giusto - sta li' contro le
+// doppie popolazioni fra DOMContentLoaded e load - ma voleva dire che
+// l'annuncio appena cliccato restava in pagina, e cliccabile, fino alla
+// ricarica seguente. Su un gioco che non ricarica mai restava per tutta la
+// sessione, e il secondo clic era a portata di mano: e' il modo in cui si
+// prende un ban per clic multipli senza che nessuno abbia fatto niente.
+// Gli <ins> si levano a mano prima di ripopolare: il catalogo Amazon arriva
+// per XHR e `populateSidebar' esce senza fare niente se non e' ancora pronto.
+// Meglio una colonna vuota che un annuncio cliccabile.
+// L'annuncio non viene coperto ne' nascosto, viene tolto dalla pagina: e'
+// esattamente quello che fa la ricarica, solo subito invece che dopo.
+function rifaiColonne() {
+    var ins = document.querySelectorAll('ins.adsbygoogle');
+    for (var i = 0; i < ins.length; i++) {
+        if (ins[i].parentNode) ins[i].parentNode.removeChild(ins[i]);
+    }
+    window._leftPopulated = false;
+    if (!ADSENSE_ONLY_LEFT) window._rightPopulated = false;
+    if (typeof adjustLayout === 'function') adjustLayout();
+}
+
 function activateAdSenseShield(isReal) {
     var until = Date.now() + ADSENSE_SHIELD_DURATION;
     localStorage.setItem('adsense_shield_until', until);
@@ -164,13 +188,13 @@ function activateAdSenseShield(isReal) {
     }
 
     console.log('%c[AdSense Shield] PROTEZIONE ATTIVATA per 24h (' + (isReal ? 'REAL' : 'SIM') + ')', 'background: #cc0c39; color: white; font-weight: bold; padding: 2px 5px;');
-    if (typeof adjustLayout === 'function') adjustLayout();
+    rifaiColonne();
 }
 
 function resetAdSenseShield() {
     localStorage.removeItem('adsense_shield_until');
     console.log('[AdSense Shield] Protezione resettata.');
-    if (typeof adjustLayout === 'function') adjustLayout();
+    rifaiColonne();
 }
 
 // ─── SENSORI HOVER CENTRALIZZATI (con debounce anti-race) ────────────────────
@@ -1095,8 +1119,8 @@ function adjustLayout() {
             // cosa si va a vedere, ed e' lo stesso che il pannello scrive
             // sotto la lettera.
             var promoNovita = en ? 'New levels' : 'Nuovi livelli';
-            var promoLivelli = en ? [['C', 'desert'], ['D', 'arctic']]
-                                  : [['C', 'deserto'], ['D', 'artico']];
+            var promoLivelli = en ? [['F', 'space']]
+                                  : [['F', 'spazio']];
             // Un livello per riga: in fila sarebbero stati 237 px su 262, cioe'
             // dentro per un pelo, e in colonna nel pulsante alto 104 lo spazio
             // c'e' lo stesso.

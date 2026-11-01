@@ -212,7 +212,23 @@ html, body {
     background: #000;
     flex: none;
 }
-#w2-canvas { display: block; width: 960px; height: 576px; cursor: pointer; }
+/* Sul tablet il tocco sulla tela faceva un lampo su tutto il tabellone: e'
+   l'evidenziatore del tocco del browser, che vela l'elemento toccato -- e
+   l'elemento toccato qui e' la tela, 960x576, cioe' tutto il quadro. Si
+   spegne senza perdere niente: che lo scambio sia girato si vede dallo
+   scambio.
+   `touch-action: manipulation' toglie il doppio tocco per ingrandire su
+   questa sola tela, e con lui i 300 millesimi che il browser aspettava a
+   ogni tocco per vedere se ne arrivava un secondo: lo scambio gira subito.
+   Il pizzicare per ingrandire resta, qui e in tutto il resto della pagina. */
+#w2-canvas {
+    display: block;
+    width: 960px;
+    height: 576px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+}
 
 /* === ORARIO DEI TRENI ===
    Sta in fondo a sinistra, non di lato: il tabellone 15x9 si prende tutta la
@@ -363,7 +379,7 @@ html, body {
 /* Lo stesso riquadro della modale di fine quadro, ma stretto: qui dentro non
    ci va nessun banner, e una griglia di tasti larga 700 sarebbe tutta vuota. */
 .w2-riquadro.w2-scelta-box {
-    width: 440px;
+    width: 600px;
     padding-bottom: 16px;
 }
 /* Le righe hanno due etichette ("LIVELLO", "QUADRO") perche' senza di quelle
@@ -381,8 +397,19 @@ html, body {
     display: grid;
     gap: 6px;
 }
-/* Le lettere sono poche e larghe uguali. */
-.w2-scelta-box .w2-griglia.lettere { grid-template-columns: repeat(4, 1fr); }
+/* Le lettere non stanno piu' in colonne fisse: sono una fila che va a capo
+   da sola, centrata. Il tasto e' largo 87 px -- quanto serve alla parola piu'
+   lunga del tema, "GIURASSICO", per non venire tagliata -- e nella scatola da
+   600 ce ne stanno sei per riga (6x87 + 5 spazi da 6 = 552 su 560 liberi).
+   Fatto cosi' perche' con le colonne fisse ogni livello nuovo obbligava a
+   ritoccare qui il numero e la larghezza della scatola, e intanto l'ultima
+   lettera restava spaiata a sinistra. Adesso la settima andra' sotto in mezzo
+   alle altre, e a dodici verranno due righe piene. */
+.w2-scelta-box .w2-griglia.lettere {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
 /* I numeri erano una fila di sei. Adesso quella fila e' spezzata in due
    terzine, perche' tre quadri di fila sono lo stesso giro del livello e
    picchiano uguale: due terzine per riga, tre tasti per terzina, e sopra
@@ -427,6 +454,8 @@ html, body {
    tema del livello in piccolo. Serve piu' altezza, e le due righe si
    impilano al centro. */
 .w2-scelta-box .w2-griglia.lettere button {
+    width: 87px;
+    flex: 0 0 auto;
     height: 50px;
     display: flex;
     flex-direction: column;

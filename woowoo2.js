@@ -171,7 +171,9 @@
         A: EN ? 'country' : 'country',
         B: EN ? 'swamp' : 'palude',
         C: EN ? 'desert' : 'deserto',
-        D: EN ? 'arctic' : 'artico'
+        D: EN ? 'arctic' : 'artico',
+        E: EN ? 'jurassic' : 'giurassico',
+        F: EN ? 'space' : 'spazio'
     };
     function t(k, v) {
         return T[k].replace(/\{(\w+)\}/g, function (m, n) { return v && v[n] !== undefined ? v[n] : m; });
@@ -745,7 +747,7 @@
                 disegnaScelta();
             } else if (t2.id === 'w2-scelta-ok') {
                 chiudiScelta();
-                carica(scelL, scelN);
+                cambiaQuadro(scelL, scelN);
             } else {
                 chiudiScelta();
             }
@@ -760,8 +762,9 @@
         if (b) b.textContent = t('tastoQuadro', { L: L, N: n + 1 });
     }
 
-    // RICOMINCIA rifa' il quadro che si sta giocando, non ricarica la pagina:
-    // ricaricando si tornava al primo quadro e si perdeva la scelta fatta.
+    // RICOMINCIA rifa' il quadro che si sta giocando. Passa da `cambiaQuadro'
+    // come tutto il resto, quindi ricarica la pagina: il quadro in corso e'
+    // scritto nel browser, e la ricarica lo ritrova.
     function montaRicomincia() {
         var b = el('w2-ricomincia');
         if (!b) return;
@@ -769,13 +772,64 @@
             if (!pronto) return;            // il primo quadro non c'e' ancora
             var e = el('w2-modale');
             if (e) e.style.display = 'none';
-            carica(S.livello, S.sub);
+            cambiaQuadro(S.livello, S.sub);
         };
+    }
+
+    // Il quadro in corso, scritto nel browser. Serve perche' il cambio di
+    // quadro adesso ricarica la pagina (vedi `cambiaQuadro'), e senza questo
+    // ogni passaggio riporterebbe al primo quadro della campagna - che e'
+    // esattamente il motivo per cui la ricarica era stata togliere.
+    // Il localStorage puo' essere spento o pieno: in quel caso si riparte dal
+    // primo quadro, come prima, senza dire niente a nessuno.
+    var MEMQ = 'woowoo2_quadro';
+
+    function ricorda(L, nn) {
+        try { localStorage.setItem(MEMQ, L + '|' + nn); } catch (e) { }
+    }
+
+    // Quello che c'e' scritto va ricontrollato, non creduto: i dati cambiano a
+    // ogni salvataggio dell'editor, e una lettera sparita o un numero fuori
+    // squadra farebbe partire il gioco su un quadro che non esiste piu'.
+    function ricordato() {
+        var v = null;
+        try { v = localStorage.getItem(MEMQ); } catch (e) { }
+        if (!v) return null;
+        var pz = v.split('|'), L = pz[0], nn = parseInt(pz[1], 10);
+        if (CAMPAGNA.indexOf(L) < 0) return null;
+        if (!(nn >= 0) || nn >= D.liv[L].sub.length) return null;
+        return [L, nn];
+    }
+
+    // Mettere in piedi un quadro ricarica la pagina, col quadro di arrivo
+    // scritto un attimo prima. Due motivi, nell'ordine: la ricarica e' il solo
+    // momento in cui lo scudo anti-ban puo' rifare le colonne della
+    // pubblicita', che a pagina aperta sono sigillate da `_leftPopulated'; ed
+    // e' il momento in cui l'interstitial e' dovuto, come in tutti gli altri
+    // giochi del sito.
+    // Ci passano tutti e cinque i modi di far partire un quadro - AVANTI,
+    // SELEZIONA, RIPETI, RICOMINCIA e il tasto R - compresi i tre che rifanno
+    // lo stesso quadro: anche quelli nascono da un clic o da un tasto del
+    // giocatore, quindi la ricarica e' dovuta a un gesto e non a un timer, che
+    // e' la distinzione che conta. Non c'e' nessuna scorciatoia sullo stesso
+    // quadro.
+    // `location.reload' qui e' quello rifatto da game-layout.js, che prima di
+    // ricaricare segna che l'interstitial e' dovuto. Se game-layout non c'e' -
+    // o se il browser non si fa riscrivere reload - il quadro parte a pagina
+    // aperta come si e' sempre fatto, e il gioco non se ne accorge.
+    function cambiaQuadro(L, nn) {
+        ricorda(L, nn);
+        if (typeof window.waitForInterstitial === 'function') { location.reload(); return; }
+        carica(L, nn);
     }
 
     function carica(liv, sub) {
         S.livello = liv; S.sub = sub;
         allinea(liv, sub);
+        // Anche quando non si ricarica: cosi' la memoria e' sempre il quadro
+        // che si sta davvero giocando, e una ricarica da barra del browser o
+        // un ritorno piu' tardi ritrovano il posto.
+        ricorda(liv, sub);
         var p = parametri();
         S.stile = stileDi(liv, p.s);
         S.largo = haDipinto(liv, p.s);
@@ -2002,9 +2056,9 @@
 
         function chiudi() { e.style.display = 'none'; }
         var b = el('w2-fine-ripeti');
-        if (b) b.onclick = function () { chiudi(); carica(S.livello, S.sub); };
+        if (b) b.onclick = function () { chiudi(); cambiaQuadro(S.livello, S.sub); };
         b = el('w2-fine-avanti');
-        if (b) b.onclick = function () { chiudi(); carica(dopo[0], dopo[1]); };
+        if (b) b.onclick = function () { chiudi(); cambiaQuadro(dopo[0], dopo[1]); };
         b = el('w2-fine-scegli');
         if (b) b.onclick = function () { chiudi(); apriScelta(); };
 
@@ -2128,7 +2182,7 @@
         if (e.altKey) return;
         // Esc chiude il pannello della scelta senza scegliere niente.
         if (e.key === 'Escape' && sceltaAperta()) { chiudiScelta(); return; }
-        if (e.key === 'r' || e.key === 'R') carica(S.livello, S.sub);
+        if (e.key === 'r' || e.key === 'R') cambiaQuadro(S.livello, S.sub);
         if (e.key === ' ' && S.attivo && !S.pausa) { S.turbo = true; e.preventDefault(); }
     }
     function tastiSu(e) { if (e.key === ' ') S.turbo = false; }
@@ -2160,7 +2214,20 @@
     // dalla registrazione, non aggiunto a gusto.
     // Non ci sono piu' segnaposto: ogni suono del gioco e' una registrazione
     // o una sintesi misurata.
-    var audioOn = true;
+    // Il silenzio e' quello del sito, non di WooWoo: la stessa casella di
+    // localStorage che usano gli altri giochi -- `site-audio-muted', scritta
+    // da site.js e rispecchiata in `window.audioMuted'. Qui va letta a mano
+    // perche' i suoni del gioco non escono da un elemento <audio>: sono Web
+    // Audio costruiti nel nostro contesto, e il play() rifatto da site.js --
+    // che e' il punto dove il sito fa valere il silenzio -- non li vede
+    // passare. Senza questo il muto della pagina non zittiva niente, e il muto
+    // di WooWoo si dimenticava a ogni ricarica: cioe', da quando il cambio di
+    // quadro ricarica, a ogni quadro.
+    function sitoMuto() {
+        if (typeof window.audioMuted === 'boolean') return window.audioMuted;
+        try { return localStorage.getItem('site-audio-muted') === 'true'; } catch (e) { return false; }
+    }
+    var audioOn = !sitoMuto();
     var VOL = {                   // una manopola per suono
         campana: 0.09,            // l'annuncio della stazione
         fischio: 0.09,            // il fischio della partenza
@@ -2661,7 +2728,18 @@
         var bp = el('w2-pausa');
         if (bp) bp.onclick = function () { pausa(); };
         var ba = el('w2-audio');
-        if (ba) ba.onclick = function () { audioOn = !audioOn; ba.textContent = audioOn ? '🔊' : '🔇'; };
+        if (ba) {
+            // Il tasto parte da com'e' messo il sito, non sempre acceso.
+            ba.textContent = audioOn ? '🔊' : '🔇';
+            ba.onclick = function () {
+                audioOn = !audioOn;
+                // Si scrive dove scrivono gli altri: zittire qui zittisce il
+                // sito, e viceversa.
+                window.audioMuted = !audioOn;
+                try { localStorage.setItem('site-audio-muted', String(!audioOn)); } catch (e) { }
+                ba.textContent = audioOn ? '🔊' : '🔇';
+            };
+        }
 
         // Senza un quadro disegnato non c'e' niente da giocare. Prima la
         // campagna cadeva sul dischetto e non succedeva mai; adesso il
@@ -2707,7 +2785,11 @@
                         ' schema ' + m + ' non ha un dipinto: si gioca ma non si vede');
                 });
             });
-            pronto = true; carica(CAMPAGNA[0], 0); ciclo();
+            // Si riprende dal quadro dove si era: ci si arriva da una
+            // ricarica di cambio quadro, e senza questo ogni cambio
+            // riporterebbe al primo.
+            var ri = ricordato() || [CAMPAGNA[0], 0];
+            pronto = true; carica(ri[0], ri[1]); ciclo();
         });
     }
 
@@ -2728,6 +2810,14 @@
         disegna();
     }
 
-    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', avvia);
-    else avvia();
+    // Arrivando da una ricarica di cambio quadro l'interstitial e' dovuto, e
+    // va mostrato prima che il gioco parta: stessa riga che hanno gli altri
+    // giochi del sito. Senza game-layout.js si parte diretti.
+    function parti() {
+        if (typeof window.waitForInterstitial === 'function') window.waitForInterstitial(avvia);
+        else avvia();
+    }
+
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', parti);
+    else parti();
 })();
