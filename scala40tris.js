@@ -87,6 +87,7 @@ var translations = {
 		btn_azzera_torneo: "AZZERA TORNEO",
 		btn_azzera_albo: "AZZERA QUESTO ALBO",
 		btn_azzera_tutto: "AZZERA TUTTI GLI ALBI",
+		alb_conferma_torneo: "Azzero i totali del torneo in corso e lo faccio ricominciare da capo?",
 		alb_conferma_albo: "Azzero l'albo \"%s\" per %s?",
 		alb_conferma_config: "Azzero tutti i periodi dell'albo per %s?",
 		alb_conferma_tutto: "Azzero TUTTI gli albi, per tutti i periodi e tutti i numeri di avversari? Non si torna indietro.",
@@ -168,6 +169,7 @@ var translations = {
 		btn_azzera_torneo: "RESET TOURNAMENT",
 		btn_azzera_albo: "RESET THIS TABLE",
 		btn_azzera_tutto: "RESET ALL TABLES",
+		alb_conferma_torneo: "Reset the totals of the current tournament and start it over?",
 		alb_conferma_albo: "Reset the \"%s\" table for %s?",
 		alb_conferma_config: "Reset every period of the table for %s?",
 		alb_conferma_tutto: "Reset ALL tables, every period and every number of opponents? This cannot be undone.",
@@ -1616,8 +1618,7 @@ var scala = {
 		}
 
 		$$.on('#albazzeratorneo', 'click', function () {
-			scala.azzeratotale();
-			scala.disegnapunteggi();
+			scala.azzeratorneo();
 		});
 
 		$$.on('#albazzeraalbo', 'click', function () {
@@ -5334,6 +5335,10 @@ var scala = {
 
 	PERIODI: ['g', 's', 'm', 'a'],
 
+	/* Il dialogo sotto l'albo, quando l'albo si apre sopra una modale
+	   (v. mostrapunteggi/chiudipunteggi). Fuori da li' resta null. */
+	dialogosospeso: null,
+
 	/* "3 avversari" ma "1 avversario": la scritta compare nel pulsante e
 	   nelle due domande di conferma, e si scrive in un posto solo. */
 	etichettaconfig: function () {
@@ -5532,6 +5537,16 @@ var scala = {
 			});
 	},
 
+	/* L'azzeramento del torneo in corso buttava via i totali senza chiedere
+	   niente, a differenza degli altri due pulsanti del pannello: un dito
+	   sbagliato e il torneo ripartiva da zero. Dal 10/11/2026 passa dalla
+	   stessa conferma (ed e' quel che dicono le regole). */
+	azzeratorneo: function () {
+		this.confermapunteggi(t('alb_conferma_torneo'), function () {
+			scala.azzeratotale();
+		});
+	},
+
 	azzeratuttialbi: function () {
 		this.confermapunteggi(t('alb_conferma_tutto'), function () {
 			try { localStorage.removeItem('scala40tris_albo'); } catch (e) { }
@@ -5548,12 +5563,54 @@ var scala = {
 		this.mydialog("formconferma", function () { azione(); torna(); }, torna);
 	},
 
+	/* L'albo si puo' aprire anche sopra una modale di fine mano o di fine
+	   torneo, ed e' il momento in cui uno ci guarda piu' volentieri. Ma
+	   mydialog ha un posto solo (formtohide piu' le due funzioni dei pulsanti)
+	   e mostradialogo non spegne quello che c'era prima: l'albo si apriva
+	   sopra la modale ancora accesa, e il suo CHIUDI -- che e' il bottone2 di
+	   tutti -- portava via lo schermo lasciando la modale li', con NUOVO
+	   TORNEO e GIOCA ANCORA ormai legati a hidedialog. Da li' non si usciva
+	   piu' (segnalato da un giocatore il 10/11/2026). Qui il dialogo di sotto
+	   si mette da parte e si rimette com'era; vale anche per il pannello
+	   minimale di VEDI CARTE, che vive fuori dalle modali ma usa le stesse
+	   due funzioni. */
 	mostrapunteggi: function () {
+		if ((scala.formtohide !== '#formpunteggi') && (scala.formtohide !== '#formconferma')) {
+			var minimale = document.getElementById('scala-minimal-win-panel');
+			this.dialogosospeso = {
+				form: scala.formtohide,
+				b1: scala.funzbottone1,
+				b2: scala.funzbottone2,
+				modale: this.fmodale,
+				minimale: !!(minimale && (minimale.style.display !== 'none'))
+			};
+		}
 		this.disegnapunteggi();
-		this.mydialog("formpunteggi");
+		this.mydialog("formpunteggi", this.chiudipunteggi, this.chiudipunteggi);
 		/* Come in apriopzioni: $$.show scrive display:block in linea. */
 		var pannello = document.getElementById('formpunteggi');
 		if (pannello) pannello.style.display = 'flex';
+	},
+
+	/* Il CHIUDI dell'albo: spegne l'albo e rimette in piedi quello che c'era
+	   sotto. Se sotto non c'era niente si comporta come hidedialog. */
+	chiudipunteggi: function () {
+		$$.hide("#formpunteggi");
+		var s = scala.dialogosospeso;
+		scala.dialogosospeso = null;
+		if (!s) {
+			scala.formtohide = "#formpunteggi";
+			return scala.hidedialog();
+		}
+		scala.formtohide = s.form || "#formpunteggi";
+		scala.funzbottone1 = s.b1 || scala.hidedialog;
+		scala.funzbottone2 = s.b2 || scala.hidedialog;
+		scala.fmodale = s.modale;
+		if (!s.modale) $$.hide("#schermo");
+		if (s.minimale) {
+			var minimale = document.getElementById('scala-minimal-win-panel');
+			if (minimale) minimale.style.display = 'block';
+		}
 	},
 
 	/* Una tabella sola: le sedie in riga, e in colonna i quattro periodi piu'
