@@ -991,3 +991,274 @@ transform: scale(1.1);
 	box-shadow: 0 0 14px rgba(255, 215, 0, 0.65);
 }
 
+
+/* === ALBO DEI PUNTEGGI ===
+   Stessa impalcatura del pannello opzioni (.formistruzioni + .opzioni-corpo
+   + .opzioni-bottoni), e display:flex lo mette il js all'apertura perche'
+   $$.show scrive display:block in linea. Tutte le regole dei pulsanti sono
+   agganciate a un id: ".formistruzioni button" ha position:relative e
+   left:300px, e un selettore di sola classe non lo batterebbe. */
+#formpunteggi {
+	width: 960px;
+	left: 32px;
+	top: 16px;
+	box-sizing: border-box;
+	max-height: calc(100% - 32px);
+	flex-direction: column;
+	overflow: hidden;
+	padding: 20px 24px 18px;
+}
+
+#formpunteggi .opzioni-titolo {
+	margin-bottom: 10px;
+}
+
+#formpunteggi .opzioni-nota {
+	margin-top: 6px;
+	font-size: 11px;
+}
+
+#formpunteggi .albo-tabella {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 13px;
+}
+
+#formpunteggi .albo-tabella th,
+#formpunteggi .albo-tabella td {
+	padding: 4px 4px;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+	text-align: right;
+	white-space: nowrap;
+}
+
+/* La colonna dei nomi: TU, A1..A3, TOTALE. */
+#formpunteggi .albo-tabella tr th:first-child {
+	text-align: left;
+	font-weight: 700;
+	padding-left: 0;
+}
+
+/* Riga delle misure (Tornei, Mani, Neg., Pos.), ripetuta per ogni gruppo. */
+#formpunteggi .albo-misure th {
+	font-size: 10px;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	opacity: 0.75;
+}
+
+/* Stacco fra un gruppo di colonne e il successivo. */
+#formpunteggi .albo-bordo {
+	border-left: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+/* Un colore per periodo: tinge il tag, le misure e i numeri del gruppo.
+   Il torneo in corso (pt) resta bianco, che non e' un periodo. */
+#formpunteggi .albo-pg {
+	color: #ffd166;
+	background: rgba(255, 209, 102, 0.07);
+}
+
+#formpunteggi .albo-ps {
+	color: #7ec8ff;
+	background: rgba(126, 200, 255, 0.07);
+}
+
+#formpunteggi .albo-pm {
+	color: #5fd9c8;
+	background: rgba(95, 217, 200, 0.07);
+}
+
+#formpunteggi .albo-pa {
+	color: #d7a6ff;
+	background: rgba(215, 166, 255, 0.07);
+}
+
+#formpunteggi .albo-pt {
+	color: #ffffff;
+	background: rgba(255, 255, 255, 0.07);
+}
+
+/* Il tag e' anche l'intestazione del gruppo: prende il colore del periodo da
+   currentColor, cosi' le quattro regole di sopra bastano a tutto. */
+#formpunteggi .albo-tagriga th {
+	padding-bottom: 6px;
+	text-align: center;
+	border-bottom: 0;
+}
+
+#formpunteggi .albo-tag {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+	padding: 2px 3px 2px 9px;
+	border: 1px solid currentColor;
+	border-radius: 999px;
+	background: rgba(0, 0, 0, 0.3);
+	font-size: 10px;
+	font-weight: 700;
+	letter-spacing: 1px;
+	text-transform: uppercase;
+}
+
+/* La crocetta che azzera il periodo. Come tutti i pulsanti del pannello va
+   agganciata a un id: ".formistruzioni button" ha position:relative,
+   left:300px e width:100px, e una sola classe non lo batterebbe. */
+#formpunteggi .albo-azz {
+	position: static;
+	left: auto;
+	width: 15px;
+	height: 15px;
+	min-width: 0;
+	padding: 0;
+	border: 0;
+	border-radius: 50%;
+	background: rgba(255, 255, 255, 0.16);
+	color: inherit;
+	font-family: inherit;
+	font-size: 12px;
+	line-height: 1;
+	cursor: pointer;
+	transition: all 0.15s;
+}
+
+#formpunteggi .albo-azz:hover {
+	background: #ffffff;
+	color: #143820;
+}
+
+/* La riga del giocatore umano: in grassetto, col nome in oro. Il colore dei
+   numeri resta quello del periodo, che e' la distinzione che conta qui. */
+#formpunteggi .albo-tabella tr.albo-io th,
+#formpunteggi .albo-tabella tr.albo-io td {
+	font-weight: 700;
+}
+
+#formpunteggi .albo-tabella tr.albo-io th:first-child {
+	color: #ffd700;
+}
+
+#formpunteggi .albo-tabella tr.albo-totale th,
+#formpunteggi .albo-tabella tr.albo-totale td {
+	border-top: 1px solid rgba(255, 255, 255, 0.3);
+	border-bottom: 0;
+	font-weight: 700;
+	font-size: 11px;
+	opacity: 0.8;
+}
+
+#formpunteggi .opzioni-bottoni button {
+	position: static;
+	left: auto;
+	width: auto;
+	min-width: 0;
+	height: 40px;
+	padding: 0 16px;
+	border-radius: 10px;
+	cursor: pointer;
+	font-family: inherit;
+	font-size: 13px;
+	font-weight: 700;
+	letter-spacing: 1px;
+	background: transparent;
+	color: rgba(255, 255, 255, 0.75);
+	border: 1px solid rgba(255, 255, 255, 0.2);
+	transition: all 0.15s;
+}
+
+#formpunteggi .opzioni-bottoni button:hover {
+	color: #ffffff;
+	border-color: rgba(255, 215, 0, 0.6);
+	background: rgba(255, 255, 255, 0.06);
+}
+
+/* CHIUDI staccato dai tre azzeramenti, cosi' non si premono per sbaglio. */
+#formpunteggi .opzioni-bottoni .bottone2 {
+	margin-left: auto;
+	color: #ffffff;
+	border-color: rgba(255, 255, 255, 0.35);
+}
+
+/* Conferma a due pulsanti: #allerta ne ha uno solo. */
+#formconferma {
+	width: 520px;
+	left: 252px;
+	top: 240px;
+	padding: 24px 28px;
+}
+
+#formconferma button {
+	position: static;
+	left: auto;
+	width: auto;
+	min-width: 120px;
+	height: 40px;
+	padding: 0 18px;
+	border-radius: 10px;
+	cursor: pointer;
+	font-family: inherit;
+	font-size: 14px;
+	font-weight: 700;
+	letter-spacing: 1px;
+	background: transparent;
+	color: #ffffff;
+	border: 1px solid rgba(255, 255, 255, 0.35);
+	transition: all 0.15s;
+}
+
+#formconferma .bottone1 {
+	background: #ffd700;
+	color: #143820;
+	border: 1px solid #cca300;
+}
+
+#formconferma .bottone1:hover {
+	background: #ffe14d;
+}
+
+/* PUNTEGGI e' piu' lungo di AZZERA e non sta nei 100px di .pulsanteazz. */
+#punteggi {
+	font-size: 12px;
+}
+
+/* La pillola NUOVO appiccicata all'angolo del pulsante. Stessi colori della
+   .new-tag della home, ma non il suo font: nelle pagine di gioco Outfit non
+   c'e'. Non intercetta il click, che deve restare del pulsante. */
+#punteggi .tag-nuovo {
+	position: absolute;
+	top: -7px;
+	right: -2px;
+	padding: 1px 5px 2px;
+	border-radius: 20px;
+	background: linear-gradient(135deg, #ff3b30, #ff9500);
+	color: #ffffff;
+	font-family: "Segoe UI", system-ui, Tahoma, Arial, sans-serif;
+	font-size: 9px;
+	font-weight: bold;
+	letter-spacing: 0.5px;
+	line-height: 1;
+	text-shadow: none;
+	pointer-events: none;
+}
+
+/* Riga del miglior perdente dentro la modale della sconfitta. La .form viene
+   ridimensionata in linea dal banner di fine partita (700x300) e in alto c'e'
+   gia' la scelta del suono: la nota e' ancorata al fondo e ai due lati, sopra
+   la fila dei pulsanti, e non a misure fisse. */
+#testomigliorperdente {
+	position: absolute;
+	bottom: 64px;
+	left: 12px;
+	right: 12px;
+	padding: 8px 12px;
+	border-radius: 10px;
+	background: rgba(0, 0, 0, 0.85);
+	border: 1px solid rgba(255, 215, 0, 0.5);
+	color: #ffd700;
+	font-family: "Segoe UI", system-ui, Tahoma, Arial, sans-serif;
+	font-size: 14px;
+	line-height: 130%;
+	text-align: center;
+	z-index: 200;
+}

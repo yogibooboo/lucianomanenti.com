@@ -60,7 +60,39 @@ var translations = {
 		audio_lacrimosa: "Mozart: Lacrimosa",
 		sigla_giocatore: "G",
 		sigla_avversario: "A",
-		stallo_testo: "Nessuno può più formare o allungare combinazioni: la smazzata è in stallo. Verrà annullata e le carte ridistribuite (i totali del torneo restano invariati)."
+		stallo_testo: "Nessuno può più formare o allungare combinazioni: la smazzata è in stallo. Verrà annullata e le carte ridistribuite (i totali del torneo restano invariati).",
+		/* Albo dei punteggi (pannello PUNTEGGI) */
+		btn_punteggi: "PUNTEGGI",
+		tag_nuovo: "NUOVO",
+		alb_titolo: "PUNTEGGI",
+		alb_oggi: "OGGI",
+		alb_settimana: "SETTIMANA",
+		alb_mese: "MESE",
+		alb_sempre: "SEMPRE",
+		alb_torneo: "torneo in corso",
+		alb_tu: "TU",
+		alb_totale: "TOTALE",
+		alb_c_tornei: "Tornei",
+		alb_c_mani: "Mani",
+		alb_c_neg: "Neg.",
+		alb_c_pos: "Pos.",
+		alb_config: "avversari",
+		alb_config_uno: "avversario",
+		alb_legenda: "Tornei = tornei vinti, Mani = mani vinte, Neg. = punti negativi, Pos. = punti depositati. Nella riga TOTALE, Tornei e Mani sono i tornei finiti e le mani giocate.",
+		alb_azz_periodo: "Azzera %s",
+		alb_nota_positivi: "I punti positivi sono il valore delle carte che hai depositato tu, nel momento in cui le hai depositate: restano tuoi anche se poi qualcuno ti recupera il jolly, e le carte che gli altri attaccano alle tue combinazioni non te le contano.",
+		alb_nota_periodi: "Oggi, settimana e mese si azzerano da soli al cambio di periodo (la settimana comincia il lunedì), secondo l'orologio di questo dispositivo.",
+		alb_nota_albo: "Ogni numero di avversari ha il suo albo: contro un avversario solo vincere è più facile che contro tre, e i totali non si mescolano.",
+		alb_nota_locale: "I punteggi stanno solo in questo browser: si perdono svuotando i dati del sito e non passano da un dispositivo all'altro.",
+		btn_azzera_torneo: "AZZERA TORNEO",
+		btn_azzera_albo: "AZZERA QUESTO ALBO",
+		btn_azzera_tutto: "AZZERA TUTTI GLI ALBI",
+		alb_conferma_albo: "Azzero l'albo \"%s\" per %s?",
+		alb_conferma_config: "Azzero tutti i periodi dell'albo per %s?",
+		alb_conferma_tutto: "Azzero TUTTI gli albi, per tutti i periodi e tutti i numeri di avversari? Non si torna indietro.",
+		alb_miglior_perdente: "Hai passato il limite, ma sei quello con meno punti negativi: il punto del torneo è tuo.",
+		btn_conferma: "AZZERA",
+		btn_annulla: "ANNULLA"
 	},
 	en: {
 		undo: "UNDO",
@@ -109,7 +141,39 @@ var translations = {
 		audio_lacrimosa: "Mozart: Lacrimosa",
 		sigla_giocatore: "P",
 		sigla_avversario: "O",
-		stallo_testo: "No one can form or extend any more combinations: the deal is stuck. It will be cancelled and the cards redealt (tournament totals stay unchanged)."
+		stallo_testo: "No one can form or extend any more combinations: the deal is stuck. It will be cancelled and the cards redealt (tournament totals stay unchanged).",
+		/* Scores table (SCORES panel) */
+		btn_punteggi: "SCORES",
+		tag_nuovo: "NEW",
+		alb_titolo: "SCORES",
+		alb_oggi: "TODAY",
+		alb_settimana: "WEEK",
+		alb_mese: "MONTH",
+		alb_sempre: "ALL TIME",
+		alb_torneo: "current tournament",
+		alb_tu: "YOU",
+		alb_totale: "TOTAL",
+		alb_c_tornei: "Tourn.",
+		alb_c_mani: "Hands",
+		alb_c_neg: "Pen.",
+		alb_c_pos: "Laid",
+		alb_config: "opponents",
+		alb_config_uno: "opponent",
+		alb_legenda: "Tourn. = tournaments won, Hands = hands won, Pen. = penalty points, Laid = points laid down. In the TOTAL row, Tourn. and Hands are the tournaments finished and the hands played.",
+		alb_azz_periodo: "Reset %s",
+		alb_nota_positivi: "Points laid down are the value of the cards YOU put on the table, counted when you put them there: they stay yours even if someone later takes back the joker, and cards the others attach to your combinations are not counted for you.",
+		alb_nota_periodi: "Today, week and month reset themselves when the period changes (the week starts on Monday), according to this device's clock.",
+		alb_nota_albo: "Each number of opponents has its own table: winning against one opponent is easier than against three, so the totals are kept apart.",
+		alb_nota_locale: "Scores live in this browser only: clearing the site data loses them, and they do not travel between devices.",
+		btn_azzera_torneo: "RESET TOURNAMENT",
+		btn_azzera_albo: "RESET THIS TABLE",
+		btn_azzera_tutto: "RESET ALL TABLES",
+		alb_conferma_albo: "Reset the \"%s\" table for %s?",
+		alb_conferma_config: "Reset every period of the table for %s?",
+		alb_conferma_tutto: "Reset ALL tables, every period and every number of opponents? This cannot be undone.",
+		alb_miglior_perdente: "You went over the limit, but you are the one with the fewest penalty points: the tournament point is yours.",
+		btn_conferma: "RESET",
+		btn_annulla: "CANCEL"
 	}
 };
 
@@ -395,6 +459,43 @@ function creaframmentitris() {
 			'</div>');
 	}
 
+	/* Albo dei punteggi. Come #formopzioni: markup costruito qui con t(), così
+	   le due lingue vengono da un posto solo e le pagine non hanno niente da
+	   aggiungere. */
+	if (!$$.one("#formpunteggi")) {
+		$$.append(campo,
+			'<div id="formpunteggi" class="formistruzioni">' +
+			'<h2 class="opzioni-titolo">' + t('alb_titolo') + '</h2>' +
+			'<div class="opzioni-corpo">' +
+			'<div id="albotabella"></div>' +
+			'<div class="opzioni-nota">' + t('alb_legenda') + '</div>' +
+			'<div class="opzioni-nota">' + t('alb_nota_albo') + '</div>' +
+			'<div class="opzioni-nota">' + t('alb_nota_positivi') + '</div>' +
+			'<div class="opzioni-nota">' + t('alb_nota_periodi') + '</div>' +
+			'<div class="opzioni-nota">' + t('alb_nota_locale') + '</div>' +
+			'</div>' +
+			'<div class="opzioni-bottoni">' +
+			'<button id="albazzeratorneo" class="bottone3" type="button">' + t('btn_azzera_torneo') + '</button>' +
+			'<button id="albazzeraalbo" class="bottone3" type="button">' + t('btn_azzera_albo') + '</button>' +
+			'<button id="albazzeratutto" class="bottone3" type="button">' + t('btn_azzera_tutto') + '</button>' +
+			'<button class="bottone2" type="button">' + t('btn_chiudi') + '</button>' +
+			'</div>' +
+			'</div>');
+	}
+
+	/* Conferma a due pulsanti: #allerta ne ha uno solo (OK), e un azzeramento
+	   che non si può annullare non si chiede con un solo pulsante. */
+	if (!$$.one("#formconferma")) {
+		$$.append(campo,
+			'<div id="formconferma" class="formistruzioni">' +
+			'<div id="testoconferma"></div>' +
+			'<div class="opzioni-bottoni">' +
+			'<button class="bottone2" type="button">' + t('btn_annulla') + '</button>' +
+			'<button class="bottone1" type="button">' + t('btn_conferma') + '</button>' +
+			'</div>' +
+			'</div>');
+	}
+
 	if (!$$.one("#opzioni")) {
 		$$.append($$.one("#nonpertest") || campo,
 			'<div id="opzioni" class="pulsante2" style="top: 53px; left: 10px; z-index:1000">' + t('btn_nuovo') +
@@ -407,6 +508,19 @@ function creaframmentitris() {
 	   #formopzioni). Sulla pagina tris dedicata non esistono: no-op. */
 	$$.hide("#nuovo");
 	$$.hide("#formnuovo");
+
+	/* AZZERA diventa PUNTEGGI, ma solo qui: nelle pagine il pulsante resta
+	   #azzeratotale perché il motore classico (scala40codeV1.js, che non si
+	   tocca) lo cerca con quel nome. Rinominarlo nel markup condiviso gli
+	   toglierebbe il suo AZZERA. Il testo viene da t(), come i pannelli. */
+	var tastoazz = $$.one("#azzeratotale");
+	if (tastoazz) {
+		tastoazz.id = "punteggi";
+		/* La pillola NUOVO e' decorativa: pointer-events none nel css, cosi'
+		   il click resta tutto del pulsante sotto. */
+		tastoazz.innerHTML = t('btn_punteggi') +
+			'<span class="tag-nuovo">' + t('tag_nuovo') + '</span>';
+	}
 
 	if (!document.getElementById("lacrimosa")) {
 		/* ~1.3MB contro i ~15KB di thunder.mp3: su rete reale (non
@@ -425,6 +539,15 @@ function creaframmentitris() {
 			'<label style="display:block; cursor:pointer;"><input type="radio" name="audiotorneo" id="audiotorneothunder" value="thunder"> ' + t('audio_tuono') + '</label>' +
 			'<label style="display:block; cursor:pointer;"><input type="radio" name="audiotorneo" id="audiotorneolacrimosa" value="lacrimosa" checked> ' + t('audio_lacrimosa') + '</label>' +
 			'</div>');
+	}
+
+	/* Riga del "miglior perdente": il punto del torneo può essere del giocatore
+	   anche quando ha passato il limite (v. assegnapuntotorneo). La modale resta
+	   quella della sconfitta, con questa riga in più quando serve; chi la mostra
+	   la accende e la spegne a mano, così non resta appesa alla volta dopo. */
+	if (modaletorneo && !document.getElementById("testomigliorperdente")) {
+		modaletorneo.insertAdjacentHTML('beforeend',
+			'<div id="testomigliorperdente" style="display:none;">' + t('alb_miglior_perdente') + '</div>');
 	}
 }
 creaframmentitris();
@@ -653,6 +776,11 @@ function Snapshot(commento) {
 	   carta vincolata e poi annullare la mossa li ripristina). */
 	this.jollydarigiocare = scala.jollydarigiocare;
 	this.cartascartidagiocare = scala.cartascartidagiocare;
+	/* Punti positivi della mano, per sedia: sono accreditati nell'istante in cui
+	   la carta viene depositata, quindi devono seguire l'undo esattamente come
+	   f40giocatore. Stanno nello Snapshot proprio per questo: un contatore
+	   tenuto fuori resterebbe gonfio dopo un annulla. */
+	this.puntipositivimano = (scala.puntipositivimano || [0, 0, 0, 0]).slice();
 
 	this.gruppi = {};
 	for (var j = 0; j < Snapshot.NOMIGRUPPI.length; j++) {
@@ -729,6 +857,8 @@ Snapshot.prototype.restore = function () {
 	for (var m = 0; m < this.f40avversario.length; m++) scala.f40avversario[m] = this.f40avversario[m];
 	scala.commento = this.commento;
 	scala.salvasuono = this.salvasuono;
+	if (!scala.puntipositivimano) scala.puntipositivimano = [0, 0, 0, 0];
+	for (var q = 0; q < 4; q++) scala.puntipositivimano[q] = this.puntipositivimano[q] || 0;
 
 	/* Azzeramento completo (array + flag selected + classe): il loop iniziale
 	   su this.carte pulisce il flag solo sulle carte presenti nello snapshot,
@@ -846,6 +976,16 @@ var scala = {
 		this.totaleavversario3 = 0;
 		this.totalegiocatore = 0;
 
+		/* Albo dei punteggi. Indice 0 = giocatore, 1..3 = avversari.
+		   puntipositivimano è il parziale della mano in corso e vive dentro lo
+		   Snapshot (segue l'undo); a fine mano calcolatotali lo versa nei
+		   parziali del torneo e negli albi. */
+		this.puntipositivimano = [0, 0, 0, 0];
+		this.puntipositivitorneo = [0, 0, 0, 0];
+		this.manivintetorneo = [0, 0, 0, 0];
+		this.fintorneo = false;
+		this.vincitoretorneo = -1;
+
 		var _stato = null;
 		try { _stato = JSON.parse(localStorage.getItem('scala40tris_stato') || 'null'); } catch (e) { }
 		localStorage.removeItem('scala40tris_stato');
@@ -857,6 +997,8 @@ var scala = {
 			if (!isNaN(_stato.tl)) this.totalelimite = _stato.tl;
 			if (!isNaN(_stato.tp)) this.totalepartite = _stato.tp;
 			if (_stato.na > 0 && _stato.na < 4) this.numeroavversari = _stato.na;
+			if (_stato.pp) this.puntipositivitorneo = this.quattro(_stato.pp);
+			if (_stato.mv) this.manivintetorneo = this.quattro(_stato.mv);
 		}
 
 		this.tscalauptouch = 0;
@@ -1452,14 +1594,38 @@ var scala = {
 			anteprima.currentTime = 0;
 			anteprima.play();
 		});
-		$$.on('#azzeratotale', 'click', function () {
-			scala.azzeratotale();
+		/* Il vecchio #azzeratotale è diventato #punteggi: apre l'albo, e
+		   l'azzeramento del torneo è uno dei pulsanti del pannello.
+		   Qui stava anche una sonda da banco di prova sul contatore A1 (un
+		   click spostava una carta dal mazzo agli scarti), senza nessuna
+		   guardia su dev_mode: in produzione era una mossa illegale a portata
+		   di dito. Rimossa il 10/11/2026. */
+		$$.on('#punteggi', 'click', function () {
+			scala.mostrapunteggi();
 		});
 
-		$$.on('#totaleavversario1', 'click', function () {
-			scala.muovicarta(scala.mazzo, scala.scarti, "faceUp", "nopush");
-			scala.render();
-			log(scala.mazzo.carte.length);
+		/* La tabella dell'albo si rifa' con innerHTML a ogni apertura e $$.on
+		   non delega: il click sulla crocetta del tag si ascolta sul pannello,
+		   che invece sta fermo. */
+		var pannellopunteggi = $$.one('#formpunteggi');
+		if (pannellopunteggi) {
+			pannellopunteggi.addEventListener('click', function (ev) {
+				var b = ev.target && ev.target.closest ? ev.target.closest('.albo-azz') : null;
+				if (b) scala.azzeraperiodo(b.getAttribute('data-periodo'));
+			});
+		}
+
+		$$.on('#albazzeratorneo', 'click', function () {
+			scala.azzeratotale();
+			scala.disegnapunteggi();
+		});
+
+		$$.on('#albazzeraalbo', 'click', function () {
+			scala.azzeraalbo();
+		});
+
+		$$.on('#albazzeratutto', 'click', function () {
+			scala.azzeratuttialbi();
 		});
 
 		$$.on('.bottone1', 'click', function () {
@@ -1953,6 +2119,12 @@ var scala = {
 			/* Regola opzionale: il jolly recuperato dal giocatore va giocato
 			   nello stesso turno (render lo evidenzia, scarta lo pretende). */
 			if (scala.jollyimmediato && (contenitore1 === scala.giocatore)) scala.jollydarigiocare = cartasel;
+			/* Punti positivi: chi riscatta il jolly deposita una carta vera e ne
+			   prende il valore posizionale. Il blocco non cambia di valore,
+			   quindi un conto fatto sul blocco non accrediterebbe nulla. Chi
+			   l'aveva calato tiene i suoi: i positivi valorizzano quel che si è
+			   depositato, non quel che resta in tavola. */
+			this.accreditapositivi(this.sediadigruppo(contenitore1), this.valorecarta(contenitore2, carta));
 			this.render();
 			suona(perjolly);
 			scala.pushstato("scambiajolly");
@@ -1968,6 +2140,11 @@ var scala = {
 		if (esegui) {
 			scala.jollyestremiswappabili = [];
 			scala.jollymodificabili = [];
+			/* Chi deposita è il proprietario della MANO di provenienza, non di
+			   cont: attaccando a una combinazione altrui il punto è suo, e le
+			   carte che gli altri attaccano alle sue non gliele contano. Va letto
+			   prima della remove, che azzera carta.gruppo. */
+			var sediadeposito = this.sediadigruppo(carta.gruppo);
 			carta.gruppo.remove(carta);
 			carta.ntris = cartasel.ntris;
 			carta.tipotris = cartasel.tipotris;
@@ -2005,6 +2182,10 @@ var scala = {
 			}
 			carta.faceUp = true;
 			cont.add(carta, indice);
+			/* Punti positivi: la casella posizionale della carta appena inserita,
+			   sul blocco ricostruito (vale anche per il jolly e per l'asso in
+			   coda alla scala). */
+			this.accreditapositivi(sediadeposito, this.valorecarta(cont, carta));
 			suona(slitta);
 			this.pushstato("aggiungitris " + carta.shortName);
 
@@ -2202,7 +2383,7 @@ var scala = {
 			   e chiusura dell'IA). L'incremento in questo punto era un
 			   doppione storico che faceva avanzare il contatore di 2 sulle
 			   sole mani vinte dal giocatore. */
-			var vintotorneo = this.calcolatotali();
+			var vintotorneo = this.calcolatotali(0);
 
 			$$.css($$.one("#puntigiocatore"), { "z-index": "40000" });
 			$$.hide("#puntitrisgiocatore");
@@ -2568,7 +2749,9 @@ var scala = {
 			tg: this.totalegiocatore,
 			tl: this.totalelimite,
 			tp: this.totalepartite,
-			na: this.numeroavversari
+			na: this.numeroavversari,
+			pp: this.puntipositivitorneo,
+			mv: this.manivintetorneo
 		}));
 		location.reload();
 	},
@@ -2579,6 +2762,10 @@ var scala = {
 		this.totaleavversario3 = 0;
 		this.totalegiocatore = 0;
 		this.totalepartite = 0;
+		/* Azzera il torneo in corso, non gli albi: quelli hanno i loro pulsanti. */
+		this.puntipositivimano = [0, 0, 0, 0];
+		this.puntipositivitorneo = [0, 0, 0, 0];
+		this.manivintetorneo = [0, 0, 0, 0];
 		this.render();
 	},
 
@@ -2676,6 +2863,10 @@ var scala = {
 
 			this.muovicarta(carta, gruppotris, "faceUp", "nopush");
 		}
+		/* Punti positivi: il valore del blocco calato va a chi lo cala (si cala
+		   solo dalla propria mano sul proprio tavolo). Prima di pushstato, così
+		   l'accredito finisce nello Snapshot della mossa e l'undo lo riavvolge. */
+		this.accreditapositivi(this.sediadigruppo(gruppotris), this.sommapuntiblocco(tris));
 		suona(scartatris);
 		this.pushstato("scartatris");
 
@@ -3926,7 +4117,7 @@ var scala = {
 
 					var salvapunti = scala.totalegiocatore;
 
-					var vintotorneo = scala.calcolatotali();
+					var vintotorneo = scala.calcolatotali(avv + 1);
 					scala.render();
 
 					$$.css($$.one("#puntigiocatore"), { "z-index": "40000" });
@@ -3941,6 +4132,8 @@ var scala = {
 						var suonotorneo = (localStorage.getItem('scala40tris_audiotorneo') === 'thunder') ? thunder : lacrimosa;
 						suonotorneo.currentTime = 0;
 						suonotorneo.play().catch(function () { });
+						var notamp = $$.one("#testomigliorperdente");
+						if (notamp) notamp.style.display = (scala.vincitoretorneo === 0) ? 'block' : 'none';
 						scala.mydialog("haipersotorneo", function () { scala.azzeratotale(); scala.nuovo(); }, scala.nuovo);
 						return;
 					}
@@ -4572,24 +4765,58 @@ var scala = {
 			jollyrecuperati.push(coppia["jolly"]);
 			this.cercajollyrecuperabili(this.campiavversario[avv]);
 		}
-		/* Pezza del 7/10/2026: chiusura con un jolly appena recuperato.
-		   Se il recupero qui sopra ha fatto rientrare un jolly in mano e
-		   restano quattro carte di cui tre formano un blocco valido, l'IA
+		/* Pezza del 7/10/2026: chiusura con un jolly in mano.
+		   Se restano quattro carte di cui tre formano un blocco valido, l'IA
 		   cala subito, prima che gestisciattaccabili spenda quelle carte
 		   negli attacchi al tavolo. Senza la pezza il caso sfuggiva: il
-		   primo ciclo di trisconjolly (riga 4472) gira prima del recupero,
-		   e la rivalutazione più sotto pretende più di tre carte in mano,
-		   quindi lì non scatta mai.
+		   primo ciclo di trisconjolly (riga 4472) gira prima del recupero
+		   dei jolly, e la rivalutazione più sotto pretende più di tre carte
+		   in mano, quindi lì non scatta mai.
 		   Misura su banco appaiato in lockstep, 20.000 mani per braccio,
 		   una sola sedia rattoppata: cala 522 volte e chiude sempre nello
 		   stesso turno, le chiusure mancate scendono da 102 a 62, 22 mani
 		   vinte in più e nessuna persa (z 4,69), zero blocchi illegali.
 		   Nelle 19.444 mani in cui non scatta lo stato resta identico
-		   turno per turno. */
-		if ((jollyrecuperati.length > 0) && this.f40avversario[avv]
-			&& (this.campiavversario[avv].carte.length == 4)) {
+		   turno per turno.
+
+		   Correzione del 9/11/2026: la pezza era chiusa dentro
+		   "jollyrecuperati.length > 0", cioè pretendeva che il jolly fosse
+		   stato recuperato dal tavolo in questo turno. Ma il jolly può
+		   arrivare anche dal mazzo o dagli scarti, e in quel caso il
+		   cancello la bloccava: un giocatore ha filmato l'IA che, aperta e
+		   con 3F 3Q 4C in mano, pesca un jolly dal mazzo e invece di calare
+		   3F 3Q J e chiudere attacca il 3Q al tris del tavolo e scarta il
+		   4C. Al suo posto c'è la condizione che serve davvero, un jolly in
+		   mano, controllata PRIMA di ordinacarte così nei turni senza jolly
+		   non si tocca nemmeno l'ordine della mano (che conta: nel ciclo
+		   degli attacchi calcolacarteattaccabili scarta i doppioni
+		   guardando la carta adiacente, e il ciclo prende l'ultima della
+		   lista con pop). È la stessa condizione del test tre righe più
+		   sotto, perché ordinacarte ordina per numero crescente e i jolly
+		   finiscono in coda.
+		   Il tetto delle quattro carte NON si allarga, ed è misurato, non
+		   ereditato: alzandolo la calata anticipata non chiude più la mano
+		   e il bilancio si gira subito. Su banco appaiato, 16.000 mani per
+		   braccio su due semi, una sedia rattoppata, mani vinte in più meno
+		   quelle perse: mano == 4 +8 e nessuna persa (z 2,83); mano <= 5 -3;
+		   mano <= 6 -7; mano == 4 oppure 7 -5; qualunque mano ma solo quando
+		   una carta del blocco è attaccabile al tavolo (il caso descritto
+		   dal giocatore) -20 (z -1,98); qualunque mano sempre -39 (z -2,39),
+		   con 0,07 punti in più lasciati in mano. Il perché sta in un altro
+		   numero: il jolly tenuto in mano si trasforma in una chiusura una
+		   volta su undici turni in cui lo si ha (503 chiusure su 5.748
+		   turni), e l'attacco che si risparmia vale una carta sola. Lo
+		   scambio conviene solo quando la calata incassa la mano, cioè a
+		   quattro carte. Il caso "quattro carte, blocco valido, nessun
+		   jolly in mano" non esiste: un blocco di sole carte vere lo cala
+		   già il primo giro di alavora (0 occorrenze su 16.000 mani). */
+		if (this.f40avversario[avv] && (this.campiavversario[avv].carte.length == 4)) {
+			var jollyinmano = false;
+			for (var ij = 0; ij < 4; ij++) {
+				if (this.campiavversario[avv].carte[ij].numero > 49) { jollyinmano = true; break; }
+			}
 			var chiudibile = false;
-			for (var ic = 0; (ic < 4) && !chiudibile; ic++) {
+			for (var ic = 0; jollyinmano && (ic < 4) && !chiudibile; ic++) {
 				var sottoinsieme = [];
 				for (var jc = 0; jc < 4; jc++) {
 					if (jc != ic) sottoinsieme.push(this.campiavversario[avv].carte[jc]);
@@ -4597,7 +4824,7 @@ var scala = {
 				chiudibile = this.analizzatris(sottoinsieme).valido;
 			}
 			if (chiudibile) {
-				log("chiusura con jolly recuperato, avversario " + avv);
+				log("chiusura con jolly in mano, avversario " + avv);
 				this.ordinacarte(this.campiavversario[avv]);
 				var giri = 0;
 				if (this.campiavversario[avv].carte[this.campiavversario[avv].carte.length - 1].numero > 49) {
@@ -5098,7 +5325,330 @@ var scala = {
 		return this.calcolapunti(carte);
 	},
 
-	calcolatotali: function () {
+	/* ======================================================================
+	   ALBO DEI PUNTEGGI
+	   Quattro periodi (giorno, settimana, mese, sempre), un albo per ogni
+	   configurazione di avversari: un torneo contro uno non e' confrontabile
+	   con un torneo contro tre. Tutto in localStorage, niente server.
+	   ====================================================================== */
+
+	PERIODI: ['g', 's', 'm', 'a'],
+
+	/* "3 avversari" ma "1 avversario": la scritta compare nel pulsante e
+	   nelle due domande di conferma, e si scrive in un posto solo. */
+	etichettaconfig: function () {
+		var n = this.numeroconfig();
+		return n + ' ' + ((n === 1) ? t('alb_config_uno') : t('alb_config'));
+	},
+
+	numeroconfig: function () {
+		var n = parseInt(this.numeroavversari, 10);
+		if (!(n >= 1 && n <= 3)) n = 3;
+		return n;
+	},
+
+	quattro: function (a) {
+		var o = [0, 0, 0, 0];
+		if (!a) return o;
+		for (var k = 0; k < 4; k++) { var v = Number(a[k]); if (isFinite(v)) o[k] = v; }
+		return o;
+	},
+
+	/* Sedia di un contenitore: 0 = giocatore, 1..3 = avversari, -1 = altro
+	   (mazzo, scarti). Vale sia per la mano che per il tavolo. */
+	sediadigruppo: function (cont) {
+		if ((cont === this.giocatore) || (cont === this.trisgiocatore)) return 0;
+		if ((cont === this.avversario1) || (cont === this.trisavversario1)) return 1;
+		if ((cont === this.avversario2) || (cont === this.trisavversario2)) return 2;
+		if ((cont === this.avversario3) || (cont === this.trisavversario3)) return 3;
+		return -1;
+	},
+
+	accreditapositivi: function (sedia, punti) {
+		if (!this.puntipositivimano) this.puntipositivimano = [0, 0, 0, 0];
+		if ((sedia < 0) || !(punti > 0)) return;
+		this.puntipositivimano[sedia] += punti;
+	},
+
+	/* Valore di ogni carta del blocco, nello stesso modo di calcolapuntitris
+	   ma CARTA PER CARTA e senza guardare ntris: serve anche su un blocco
+	   appena formato, che i numeri non li ha ancora. */
+	puntiblocco: function (tris) {
+		var per = [], valore, k;
+		if (!tris || (tris.length == 0)) return per;
+		var esito = this.analizzatris(tris);
+		if (esito.tipotris == TRIS) {
+			valore = esito.primonumero;
+			if (valore == 1) valore = 11;
+			else if (valore > 10) valore = 10;
+			for (k = 0; k < tris.length; k++) per.push(valore);
+		}
+		else {
+			valore = esito.primonumero;
+			for (k = 0; k < tris.length; k++, valore++) {
+				if (valore < 11) per.push(valore);
+				else if (valore < 14) per.push(10);
+				else per.push(11);
+			}
+		}
+		return per;
+	},
+
+	sommapuntiblocco: function (tris) {
+		var per = this.puntiblocco(tris), tot = 0;
+		for (var k = 0; k < per.length; k++) tot += per[k];
+		return tot;
+	},
+
+	/* Quanto vale UNA carta dentro il blocco in cui si trova adesso. */
+	valorecarta: function (cont, carta) {
+		var blocco = [], i;
+		for (i = 0; i < cont.carte.length; i++) {
+			if (cont.carte[i].ntris == carta.ntris) blocco.push(cont.carte[i]);
+		}
+		var per = this.puntiblocco(blocco);
+		var pos = blocco.indexOf(carta);
+		return ((pos < 0) || (pos >= per.length)) ? 0 : per[pos];
+	},
+
+	/* Etichetta del periodo in corso. Se quella scritta nell'albo non coincide
+	   piu' con questa, il periodo e' cambiato e l'albo riparte da zero da se'.
+	   Settimana da lunedi'. L'orologio e' quello del dispositivo. */
+	periodoid: function (p, quando) {
+		var d = quando || new Date();
+		var due = function (n) { return (n < 10 ? '0' : '') + n; };
+		if (p === 'a') return 'sempre';
+		if (p === 'm') return d.getFullYear() + '-' + due(d.getMonth() + 1);
+		var g = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+		if (p === 's') g.setDate(g.getDate() - ((g.getDay() + 6) % 7));
+		return g.getFullYear() + '-' + due(g.getMonth() + 1) + '-' + due(g.getDate());
+	},
+
+	albovuoto: function (p) {
+		return {
+			da: this.periodoid(p), mani: 0, tornei: 0,
+			mv: [0, 0, 0, 0], tv: [0, 0, 0, 0], pn: [0, 0, 0, 0], pp: [0, 0, 0, 0]
+		};
+	},
+
+	leggialbo: function () {
+		var dati = null;
+		try { dati = JSON.parse(localStorage.getItem('scala40tris_albo') || 'null'); } catch (e) { }
+		if (!dati || (typeof dati !== 'object')) dati = {};
+		for (var n = 1; n <= 3; n++) {
+			if (!dati[n] || (typeof dati[n] !== 'object')) dati[n] = {};
+			for (var i = 0; i < this.PERIODI.length; i++) {
+				var p = this.PERIODI[i], r = dati[n][p];
+				/* Rollover: il periodo scritto non e' quello di adesso, l'albo
+				   riparte da zero senza che nessuno debba premere niente. */
+				if (!r || (typeof r !== 'object') || (r.da !== this.periodoid(p))) {
+					dati[n][p] = this.albovuoto(p);
+					continue;
+				}
+				dati[n][p] = {
+					da: r.da,
+					mani: (Number(r.mani) > 0) ? Number(r.mani) : 0,
+					tornei: (Number(r.tornei) > 0) ? Number(r.tornei) : 0,
+					mv: this.quattro(r.mv), tv: this.quattro(r.tv),
+					pn: this.quattro(r.pn), pp: this.quattro(r.pp)
+				};
+			}
+		}
+		return dati;
+	},
+
+	scrivialbo: function (dati) {
+		try { localStorage.setItem('scala40tris_albo', JSON.stringify(dati)); } catch (e) { }
+	},
+
+	/* Versa la mano appena finita in tutti e quattro gli albi della
+	   configurazione in corso. Il merito e' accreditato nel momento in cui
+	   viene guadagnato: una mano vinta stasera resta nell'albo di oggi anche
+	   se il torneo finisce domani. */
+	versaalbo: function (vincitore, negativi, finetorneo) {
+		var n = this.numeroconfig();
+		var dati = this.leggialbo();
+		for (var i = 0; i < this.PERIODI.length; i++) {
+			var r = dati[n][this.PERIODI[i]];
+			r.mani++;
+			if (vincitore >= 0) r.mv[vincitore]++;
+			for (var sd = 0; sd < 4; sd++) {
+				r.pn[sd] += negativi[sd];
+				r.pp[sd] += this.puntipositivimano[sd];
+			}
+			if (finetorneo) {
+				r.tornei++;
+				if (this.vincitoretorneo >= 0) r.tv[this.vincitoretorneo]++;
+			}
+		}
+		this.scrivialbo(dati);
+	},
+
+	/* Il punto del torneo va a chi ha MENO punti negativi, e puo' essere il
+	   giocatore stesso anche quando e' lui a passare il limite: in quel caso
+	   e' il miglior perdente e il punto e' suo (v. #testomigliorperdente).
+	   Parita' sui negativi -> piu' punti positivi; parita' ancora -> a sorte.
+	   Una formula sola, senza rami separati per vinto e perso. */
+	assegnapuntotorneo: function (negativi) {
+		var n = this.numeroconfig();
+		var pos = this.puntipositivitorneo || [0, 0, 0, 0];
+		var migliori = [0];
+		for (var sd = 1; sd <= n; sd++) {
+			var c = negativi[sd] - negativi[migliori[0]];
+			if (c === 0) c = pos[migliori[0]] - pos[sd];
+			if (c < 0) migliori = [sd];
+			else if (c === 0) migliori.push(sd);
+		}
+		return migliori[Math.floor(Math.random() * migliori.length)];
+	},
+
+	/* La crocetta dentro il tag colorato: azzera quel solo periodo, per questo
+	   numero di avversari. */
+	azzeraperiodo: function (p) {
+		if (this.PERIODI.indexOf(p) < 0) return;
+		var titoli = { g: t('alb_oggi'), s: t('alb_settimana'), m: t('alb_mese'), a: t('alb_sempre') };
+		var n = this.numeroconfig();
+		this.confermapunteggi(
+			t('alb_conferma_albo').replace('%s', titoli[p]).replace('%s', this.etichettaconfig()),
+			function () {
+				var dati = scala.leggialbo();
+				dati[n][p] = scala.albovuoto(p);
+				scala.scrivialbo(dati);
+			});
+	},
+
+	/* Tutti e quattro i periodi, ma solo dell'albo di questo numero di
+	   avversari: gli altri albi non si toccano. */
+	azzeraalbo: function () {
+		var n = this.numeroconfig();
+		this.confermapunteggi(
+			t('alb_conferma_config').replace('%s', this.etichettaconfig()),
+			function () {
+				var dati = scala.leggialbo(), i;
+				for (i = 0; i < scala.PERIODI.length; i++) {
+					dati[n][scala.PERIODI[i]] = scala.albovuoto(scala.PERIODI[i]);
+				}
+				scala.scrivialbo(dati);
+			});
+	},
+
+	azzeratuttialbi: function () {
+		this.confermapunteggi(t('alb_conferma_tutto'), function () {
+			try { localStorage.removeItem('scala40tris_albo'); } catch (e) { }
+		});
+	},
+
+	confermapunteggi: function (messaggio, azione) {
+		var el = $$.one("#testoconferma");
+		if (el) el.textContent = messaggio;
+		/* hidedialog spegne solo scala.formtohide: senza questa riga la
+		   conferma si aprirebbe sopra l'albo lasciandolo acceso sotto. */
+		$$.hide("#formpunteggi");
+		var torna = function () { $$.hide("#formconferma"); scala.mostrapunteggi(); };
+		this.mydialog("formconferma", function () { azione(); torna(); }, torna);
+	},
+
+	mostrapunteggi: function () {
+		this.disegnapunteggi();
+		this.mydialog("formpunteggi");
+		/* Come in apriopzioni: $$.show scrive display:block in linea. */
+		var pannello = document.getElementById('formpunteggi');
+		if (pannello) pannello.style.display = 'flex';
+	},
+
+	/* Una tabella sola: le sedie in riga, e in colonna i quattro periodi piu'
+	   il torneo in corso. Ogni gruppo di colonne ha il suo colore, e la sua
+	   intestazione e' il tag colorato con dentro la crocetta che lo azzera.
+	   Il torneo in corso non ha la crocetta: lo azzera il pulsante in fondo,
+	   che lo dice a parole. */
+	disegnapunteggi: function () {
+		var el = $$.one("#albotabella");
+		if (!el) return;
+		var n = this.numeroconfig();
+		var alb = this.leggialbo()[n];
+		var P = this.PERIODI;
+		var titoli = { g: t('alb_oggi'), s: t('alb_settimana'), m: t('alb_mese'), a: t('alb_sempre') };
+		var nomi = [t('alb_tu'), 'A1', 'A2', 'A3'];
+		var mv = this.manivintetorneo || [0, 0, 0, 0];
+		var pp = this.puntipositivitorneo || [0, 0, 0, 0];
+		var pm = this.puntipositivimano || [0, 0, 0, 0];
+		var neg = [this.totalegiocatore, this.totaleavversario1, this.totaleavversario2, this.totaleavversario3];
+		var i, sd, p, r, cl, sneg, spos, html = '';
+
+		/* prima riga: i tag */
+		html += '<table class="albo-tabella"><tr class="albo-tagriga"><th></th>';
+		for (i = 0; i < P.length; i++) {
+			p = P[i];
+			html += '<th colspan="4" class="albo-p' + p + ' albo-bordo"><span class="albo-tag">' +
+				titoli[p] + '<button type="button" class="albo-azz" data-periodo="' + p +
+				'" title="' + t('alb_azz_periodo').replace('%s', titoli[p]) + '">&times;</button></span></th>';
+		}
+		html += '<th colspan="3" class="albo-pt albo-bordo"><span class="albo-tag">' +
+			t('alb_torneo') + '</span></th></tr>';
+
+		/* seconda riga: le quattro misure, ripetute per gruppo */
+		html += '<tr class="albo-misure"><th></th>';
+		for (i = 0; i < P.length; i++) {
+			cl = ' class="albo-p' + P[i] + '"';
+			html += '<th class="albo-p' + P[i] + ' albo-bordo">' + t('alb_c_tornei') + '</th>' +
+				'<th' + cl + '>' + t('alb_c_mani') + '</th>' +
+				'<th' + cl + '>' + t('alb_c_neg') + '</th>' +
+				'<th' + cl + '>' + t('alb_c_pos') + '</th>';
+		}
+		html += '<th class="albo-pt albo-bordo">' + t('alb_c_mani') + '</th>' +
+			'<th class="albo-pt">' + t('alb_c_neg') + '</th>' +
+			'<th class="albo-pt">' + t('alb_c_pos') + '</th></tr>';
+
+		/* una riga per sedia */
+		for (sd = 0; sd <= n; sd++) {
+			html += '<tr' + ((sd === 0) ? ' class="albo-io"' : '') + '><th>' + nomi[sd] + '</th>';
+			for (i = 0; i < P.length; i++) {
+				r = alb[P[i]];
+				cl = ' class="albo-p' + P[i] + '"';
+				html += '<td class="albo-p' + P[i] + ' albo-bordo">' + r.tv[sd] + '</td>' +
+					'<td' + cl + '>' + r.mv[sd] + '</td>' +
+					'<td' + cl + '>' + r.pn[sd] + '</td>' +
+					'<td' + cl + '>' + r.pp[sd] + '</td>';
+			}
+			html += '<td class="albo-pt albo-bordo">' + mv[sd] + '</td>' +
+				'<td class="albo-pt">' + neg[sd] + '</td>' +
+				'<td class="albo-pt">' + (pp[sd] + pm[sd]) + '</td></tr>';
+		}
+
+		/* riga TOTALE: i punti sono la somma della colonna; tornei e mani si
+		   leggono dai contatori dell'albo, che danno lo stesso numero della
+		   somma dei vinti (una mano finisce sempre perche' qualcuno chiude:
+		   il mazzo si rimescola dagli scarti e lo stallo annulla la mano
+		   senza contarla), ma senza doverla rifare. */
+		html += '<tr class="albo-totale"><th>' + t('alb_totale') + '</th>';
+		for (i = 0; i < P.length; i++) {
+			r = alb[P[i]];
+			sneg = 0; spos = 0;
+			for (sd = 0; sd <= n; sd++) { sneg += r.pn[sd]; spos += r.pp[sd]; }
+			cl = ' class="albo-p' + P[i] + '"';
+			html += '<td class="albo-p' + P[i] + ' albo-bordo">' + r.tornei + '</td>' +
+				'<td' + cl + '>' + r.mani + '</td>' +
+				'<td' + cl + '>' + sneg + '</td>' +
+				'<td' + cl + '>' + spos + '</td>';
+		}
+		sneg = 0; spos = 0;
+		for (sd = 0; sd <= n; sd++) { sneg += neg[sd]; spos += pp[sd] + pm[sd]; }
+		html += '<td class="albo-pt albo-bordo">' + this.totalepartite + '</td>' +
+			'<td class="albo-pt">' + sneg + '</td>' +
+			'<td class="albo-pt">' + spos + '</td></tr></table>';
+		el.innerHTML = html;
+
+		/* Il numero di avversari cambia in corsa, quindi la scritta del
+		   pulsante si rifa' qui e non una volta per tutte nel markup. */
+		var tasto = $$.one('#albazzeraalbo');
+		if (tasto) tasto.textContent = t('btn_azzera_albo') + ' (' + this.etichettaconfig() + ')';
+	},
+
+	/* vincitore: sedia che ha chiuso la mano (0 = giocatore, 1..3 = avversari),
+	   -1 se nessuno. Va passata dal chiamante: un avversario escluso dal torneo
+	   (opzione escludiavversariesuperano) non riceve carte, quindi "mano vuota"
+	   non basta a riconoscere chi ha chiuso. */
+	calcolatotali: function (vincitore) {
 
 		/* Mano conclusa: il mazziere ruota al giocatore successivo
 		   (varrà dalla prossima mano). */
@@ -5115,14 +5665,45 @@ var scala = {
 			&& ((this.numeroavversari < 3) || (this.totaleavversario3 >= this.totalelimite))
 		) vintot = false;
 
-		this.totalegiocatore += this.puntifinemano(this.giocatore.carte, this.f40giocatore);
-		this.totaleavversario1 += this.puntifinemano(this.avversario1.carte, this.f40avversario[0]);
-		if (this.numeroavversari > 1) this.totaleavversario2 += this.puntifinemano(this.avversario2.carte, this.f40avversario[1]);
-		if (this.numeroavversari > 2) this.totaleavversario3 += this.puntifinemano(this.avversario3.carte, this.f40avversario[2]);
+		var salvagiocatore = this.totalegiocatore;
+
+		/* Punti negativi della SOLA mano appena finita: i totali del torneo li
+		   sommano qui sotto, l'albo vuole il parziale. */
+		var negativi = [0, 0, 0, 0];
+		negativi[0] = this.puntifinemano(this.giocatore.carte, this.f40giocatore);
+		negativi[1] = this.puntifinemano(this.avversario1.carte, this.f40avversario[0]);
+		if (this.numeroavversari > 1) negativi[2] = this.puntifinemano(this.avversario2.carte, this.f40avversario[1]);
+		if (this.numeroavversari > 2) negativi[3] = this.puntifinemano(this.avversario3.carte, this.f40avversario[2]);
+
+		this.totalegiocatore += negativi[0];
+		this.totaleavversario1 += negativi[1];
+		this.totaleavversario2 += negativi[2];
+		this.totaleavversario3 += negativi[3];
 
 		if (this.totaleavversario1 < this.totalelimite) vintot = false;
 		if ((this.numeroavversari > 1) && (this.totaleavversario2 < this.totalelimite)) vintot = false;
 		if ((this.numeroavversari > 2) && (this.totaleavversario3 < this.totalelimite)) vintot = false;
+
+		/* Albo: i positivi della mano entrano nei parziali del torneo, e la
+		   mano intera viene versata nei quattro periodi. */
+		if (!this.puntipositivimano) this.puntipositivimano = [0, 0, 0, 0];
+		if (!this.puntipositivitorneo) this.puntipositivitorneo = [0, 0, 0, 0];
+		if (!this.manivintetorneo) this.manivintetorneo = [0, 0, 0, 0];
+		for (var sd = 0; sd < 4; sd++) this.puntipositivitorneo[sd] += this.puntipositivimano[sd];
+		var vinc = ((vincitore >= 0) && (vincitore < 4)) ? vincitore : -1;
+		if (vinc >= 0) this.manivintetorneo[vinc]++;
+
+		/* Il torneo finisce sia quando sono tutti gli avversari a superare il
+		   limite (vintot) sia quando lo supera il giocatore: l'assegnazione del
+		   punto e' la stessa nei due casi, chi ha meno punti negativi. */
+		var persotorneo = (this.totalegiocatore >= this.totalelimite) && (salvagiocatore < this.totalelimite);
+		this.fintorneo = vintot || persotorneo;
+		this.vincitoretorneo = this.fintorneo
+			? this.assegnapuntotorneo([this.totalegiocatore, this.totaleavversario1, this.totaleavversario2, this.totaleavversario3])
+			: -1;
+
+		this.versaalbo(vinc, negativi, this.fintorneo);
+		this.puntipositivimano = [0, 0, 0, 0];
 
 		return vintot;
 	},

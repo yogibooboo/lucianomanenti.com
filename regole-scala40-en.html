@@ -211,8 +211,7 @@
 				is out of the tournament. You win the tournament by staying below the limit once everyone else has
 				passed it, and lose it when you are the one who passes it.</p>
 			<p>The limit can be changed by <strong>clicking on it</strong>: a box opens where you can type the new
-				value, from 10 to 999. The choice is saved on your device and applies to later games too. The
-				<strong>RESET</strong> button clears all the totals and starts a fresh tournament.</p>
+				value, from 10 to 999. The choice is saved on your device and applies to later games too.</p>
 
 			<div id="istruzioni-classica-en">
 				<h2>How to play "Scala40 Luciano" (Classic Version)</h2>
@@ -239,6 +238,7 @@
 					<li><strong>↩ (Undo):</strong> undo the most recent moves.</li>
 					<li><strong>FACE UP:</strong> play with open cards (for practice).</li>
 					<li><strong>OPPONENTS:</strong> choose the number of opponents (1, 2, or 3) and/or start a new game.</li>
+					<li><strong>RESET:</strong> clears all the totals and starts a fresh tournament.</li>
 					<li><strong>&#x1F50A; / &#x1F507; (Audio):</strong> enables or disables the game sound effects.
 						Your preference is saved and applied across all games on the site.
 						Note: if your browser or operating system has muted audio for this tab,
@@ -305,10 +305,51 @@
 					<li><strong>FACE UP:</strong> play with open cards (for practice).</li>
 					<li><strong>NEW (gear icon):</strong> opens the options panel (opponents and optional rules)
 						and lets you start a new game.</li>
+					<li><strong>SCORES:</strong> at the bottom of the Total panel, opens the scores table
+						(below). The current tournament is reset from there too.</li>
 					<li><strong>&#x1F50A; / &#x1F507; (Audio):</strong> enables or disables the game sound effects.
 						Your preference is saved and applied across all games on the site.
 					</li>
 				</ul>
+
+				<h2>Scores table</h2>
+				<p>The <strong>SCORES</strong> button, at the bottom of the Total panel, opens the scores table:
+					a record of how things have gone, for you and for each opponent.</p>
+				<p>Four things are counted for each player:</p>
+				<ul>
+					<li><strong>Tourn.:</strong> tournaments won.</li>
+					<li><strong>Hands:</strong> hands won, that is, the hands you went out of first.</li>
+					<li><strong>Pen.:</strong> penalty points, the value of the cards left in hand at the end of a
+						hand. They are the same points that build up in the Total panel and that put a player out
+						of the tournament once they pass the limit.</li>
+					<li><strong>Laid:</strong> the points laid down, that is, the value of the cards put on the
+						table, counted <strong>at the moment they are laid</strong>. They stay yours even if an
+						opponent later takes back a joker you had covered, and cards the others add to your melds
+						are not counted for you. It is a separate tally with no effect on the tournament: it only
+						measures how much you managed to play.</li>
+				</ul>
+				<p>The four measures are repeated for <strong>four periods</strong>, each with its own colour:
+					<strong>today</strong>, <strong>week</strong> (starting on Monday), <strong>month</strong> and
+					<strong>all time</strong>. The first three clear themselves when the period changes, according
+					to the device clock. On the far right are the running figures of the <strong>current
+					tournament</strong>. The last row, <strong>TOTAL</strong>, closes each period with the
+					tournaments finished, the hands played and everyone's points added up.</p>
+				<p><strong>Who gets the tournament point.</strong> When a tournament ends, the point goes to
+					whoever has the <strong>fewest penalty points</strong>. Usually that is the winner, but not
+					always: if you are the one who passes the limit while the opponents' totals are higher still,
+					the point is yours anyway, and the end-of-tournament window says so. If penalty points are
+					tied, the point goes to whoever laid down more; if those tie too, it is drawn at random.</p>
+				<p><strong>One table per number of opponents.</strong> Playing against a single opponent is not
+					the same as playing against three, so the tallies are kept apart: change the number of
+					opponents in the options panel and you see the matching table, and the reset button names in
+					brackets the table it refers to.</p>
+				<p><strong>Clearing.</strong> The cross inside a coloured label clears that period only. At the
+					bottom of the panel are <strong>RESET TOURNAMENT</strong>, which restarts the current
+					tournament without touching the table, <strong>RESET THIS TABLE</strong>, which empties all
+					four periods for the current number of opponents, and <strong>RESET ALL TABLES</strong>,
+					which clears everything. Each of them asks for confirmation.</p>
+				<p>The scores are saved <strong>in this browser only</strong>, on this device: they do not travel
+					from one device to another and are lost if you clear the site data.</p>
 			</div>
 
 			<p style="text-align: center;"><a href="#" onclick="goBack(); return false;" class="play-btn">Close</a></p>

@@ -211,8 +211,7 @@
 				o lo supera e' fuori dal torneo. Vince il torneo chi resta sotto il limite quando tutti gli altri
 				l'hanno superato; si perde quando a superarlo siamo noi.</p>
 			<p>Il limite si cambia <strong>cliccandoci sopra</strong>: si apre una casella in cui scrivere il nuovo
-				valore, da 10 a 999. La scelta resta salvata sul dispositivo e vale anche per le partite successive.
-				Il pulsante <strong>AZZERA</strong> riporta a zero tutti i totali e fa ricominciare il torneo da capo.</p>
+				valore, da 10 a 999. La scelta resta salvata sul dispositivo e vale anche per le partite successive.</p>
 
 			<div id="istruzioni-classica-it">
 				<h2>Come giocare a "Scala40 Luciano" (Versione Classica)</h2>
@@ -239,6 +238,7 @@
 					<li><strong>↩ (Annulla):</strong> annulla le mosse più recenti.</li>
 					<li><strong>SCOPERTE:</strong> gioca a carte scoperte (per esercitarsi).</li>
 					<li><strong>AVVERSARI:</strong> scegli il numero di avversari (1, 2 o 3) e/o inizia una nuova partita.</li>
+					<li><strong>AZZERA:</strong> riporta a zero tutti i totali e fa ricominciare il torneo da capo.</li>
 					<li><strong>&#x1F50A; / &#x1F507; (Audio):</strong> abilita o disabilita gli effetti sonori del gioco.
 						La preferenza viene salvata e applicata a tutti i giochi del sito.
 						Nota: se il browser o il sistema operativo hanno disattivato l'audio per questa scheda,
@@ -307,6 +307,8 @@
 					<li><strong>SCOPERTE:</strong> gioca a carte scoperte (per esercitarsi).</li>
 					<li><strong>NUOVO (ingranaggio):</strong> apre il pannello opzioni (avversari e regole
 						facoltative) e permette di iniziare una nuova partita.</li>
+					<li><strong>PUNTEGGI:</strong> in fondo al pannello Totale, apre l'albo dei punteggi
+						(qui sotto). Da l&igrave; si azzera anche il torneo in corso.</li>
 					<li><strong>&#x1F50A; / &#x1F507; (Audio):</strong> abilita o disabilita gli effetti sonori del gioco.
 						La preferenza viene salvata e applicata a tutti i giochi del sito.
 						Nota: se il browser o il sistema operativo hanno disattivato l'audio per questa scheda,
@@ -314,6 +316,47 @@
 						&egrave; gestito dal browser al di fuori della pagina.
 					</li>
 				</ul>
+
+				<h2>Albo dei punteggi</h2>
+				<p>Il pulsante <strong>PUNTEGGI</strong>, in fondo al pannello Totale, apre l'albo: una tabella
+					che tiene il conto di come &egrave; andata, per te e per ciascun avversario.</p>
+				<p>Di ognuno si contano quattro cose:</p>
+				<ul>
+					<li><strong>Tornei:</strong> i tornei vinti.</li>
+					<li><strong>Mani:</strong> le mani vinte, cio&egrave; quelle chiuse per primi.</li>
+					<li><strong>Neg.:</strong> i punti negativi, quelli delle carte rimaste in mano a fine mano.
+						Sono gli stessi che si accumulano nel pannello Totale e che mandano fuori dal torneo chi
+						supera il limite.</li>
+					<li><strong>Pos.:</strong> i punti depositati, cio&egrave; il valore delle carte calate in
+						tavola, contato <strong>nel momento in cui si depositano</strong>. Restano tuoi anche se
+						pi&ugrave; tardi un avversario si riprende il jolly che avevi coperto, e le carte che gli
+						altri attaccano alle tue combinazioni non vengono contate a te. &Egrave; un conto a parte,
+						che non ha nessun effetto sul torneo: serve solo a misurare quanto si &egrave; riusciti a
+						giocare.</li>
+				</ul>
+				<p>Le quattro misure si ripetono per <strong>quattro periodi</strong>, ognuno con il suo colore:
+					<strong>oggi</strong>, <strong>settimana</strong> (che comincia il luned&igrave;),
+					<strong>mese</strong> e <strong>sempre</strong>. I primi tre si azzerano da soli quando il
+					periodo cambia, secondo l'orologio del dispositivo. All'estrema destra ci sono i parziali del
+					<strong>torneo in corso</strong>. L'ultima riga, <strong>TOTALE</strong>, chiude ogni periodo
+					con i tornei finiti, le mani giocate e la somma dei punti di tutti.</p>
+				<p><strong>Chi prende il punto del torneo.</strong> Quando un torneo finisce, il punto va a chi ha
+					<strong>meno punti negativi</strong>. Di solito &egrave; chi ha vinto, ma non sempre: se sei tu
+					a superare il limite mentre gli avversari hanno totali ancora pi&ugrave; alti, il punto
+					&egrave; comunque tuo, e la finestra di fine torneo te lo dice. A parit&agrave; di punti
+					negativi il punto va a chi ha depositato di pi&ugrave;; se pareggiano anche quelli, si tira a
+					sorte.</p>
+				<p><strong>Un albo per ogni numero di avversari.</strong> Giocare contro un avversario solo non
+					&egrave; come giocare contro tre, quindi i conti non si mescolano: cambiando il numero di
+					avversari nel pannello opzioni si vede l'albo corrispondente, e il pulsante di azzeramento
+					dice fra parentesi a quale albo si riferisce.</p>
+				<p><strong>Azzeramenti.</strong> La crocetta dentro l'etichetta colorata azzera quel solo periodo.
+					In fondo al pannello ci sono poi <strong>AZZERA TORNEO</strong>, che fa ripartire da zero il
+					torneo in corso senza toccare l'albo, <strong>AZZERA QUESTO ALBO</strong>, che vuota tutti e
+					quattro i periodi del numero di avversari corrente, e <strong>AZZERA TUTTI GLI ALBI</strong>,
+					che cancella tutto. Ogni azzeramento chiede conferma.</p>
+				<p>I punteggi sono salvati <strong>solo in questo browser</strong>, su questo dispositivo: non
+					passano da un dispositivo all'altro e si perdono svuotando i dati del sito.</p>
 			</div>
 
 			<p style="text-align: center;"><a href="#" onclick="goBack(); return false;" class="play-btn">Chiudi</a></p>
