@@ -3,7 +3,22 @@
 // Editare direttamente questo file per modificare la strategia dell'AI.
 // Viene caricato prima di burraco-engine-default.js tramite tag <script>.
 //
-// 17/09/2026 - AGGIUNTO moltScartoSostMatta, qui SPENTO (vale 1).
+// 12/11/2026 - PROMOSSO il pacchetto che era in prova in B dal 17/09:
+// penScarto4c/5c/6c passano da 3/3/5 a 2/4/7 (base "scalata") e
+// moltScartoSostMatta da 1 a 1,5 (acceso). Le due cose viaggiano insieme
+// perche' l'esperimento non le ha mai separate: si promuove il pacchetto.
+// Letto su 270.374 mani vere 2v2 (bracci A/B/C dal 17/09 al 12/11), effetto
+// per sedia x = -0,47 +/- 1,21 punti, t = -0,77: NULLO, con l'intervallo
+// [-1,68; +0,74] stretto abbastanza da escludere qualunque vantaggio sopra
+// 0,7 punti. Controlli per giorno (-0,47 +/- 1,22) e per giocatore
+// (+1,07 +/- 3,29) d'accordo.
+// Non si promuove perche' fa vincere - non fa vincere. Si promuove perche' al
+// banco appaiato toglie il 13,8% dei regali (lo scarto che va a sostituire una
+// matta avversaria, una papera che si vede) e sistema il caso Rocco Q spade,
+// e il campo dice che quel miglioramento non costa niente.
+//
+// 17/09/2026 - AGGIUNTO moltScartoSostMatta, allora SPENTO (valeva 1).
+// SUPERATO il 12/11/2026, vedi la nota in testa: adesso vale 1,5.
 // Il termine sta in burraco-core.js dentro calcolaScartoPer: quando lo scarto
 // non si limita ad allungare una combinazione avversaria ma prende il posto di
 // una matta, la penalita' penScarto4c/5c/6c viene moltiplicata. La matta non
@@ -15,7 +30,8 @@
 // 1.200 mani): 0,79 regali a mano, nel 47% delle mani, 5,8% degli scarti - di
 // cui l'87% sostituzioni interne e i due terzi su un TRIS, per questo il malus
 // non e' ristretto alle scale come il premio gemello.
-// La variante in prova online da oggi (2/4/7 + x1,5) sta in B, vedi quel file.
+// La variante (2/4/7 + x1,5) e' stata in prova in B dal 17/09 al 12/11, poi
+// promossa qui.
 //
 // 11/09/2026 - penScartoTrisPozzo da 9 a 24, e il termine in burraco-core.js
 // ora vede anche le SCALE (un 6 di fiori buttato sopra 5F e 7F lascia li' una
@@ -98,10 +114,10 @@ window.coeffScoreOpz = {
     // --- SCARTO ---
     coeffScartoDecent:            3,  // Peso della decentralizzazione nella scelta dello scarto (favorisce scarti di carte non centrali)
     coeffScartoConn:              4,  // Penalità per scartare carte connesse ad altre in mano
-    penScarto6c:                  5,  // Penalità per scartare carta che completerebbe combo avversaria a 6 — promosso 01/09 (era 25)
-    penScarto5c:                  3,  // Penalità per scartare carta che completerebbe combo avversaria a 5 — promosso 01/09 (era 15)
-    penScarto4c:                  3,  // Penalità per scartare carta che completerebbe combo avversaria a 4 — promosso 01/09 (era 7)
-    moltScartoSostMatta:          1,  // Moltiplicatore su penScarto4c/5c/6c quando lo scarto sostituisce una matta avversaria. 1 = SPENTO: la variante viva sta in burraco-engine-b.coeffs.js
+    penScarto6c:                  7,  // Penalità per scartare carta che completerebbe combo avversaria a 6 — promosso 12/11 (era 5)
+    penScarto5c:                  4,  // Penalità per scartare carta che completerebbe combo avversaria a 5 — promosso 12/11 (era 3)
+    penScarto4c:                  2,  // Penalità per scartare carta che completerebbe combo avversaria a 4 — promosso 12/11 (era 3)
+    moltScartoSostMatta:        1.5,  // Moltiplicatore su penScarto4c/5c/6c quando lo scarto sostituisce una matta avversaria — promosso 12/11 (era 1, spento)
     penScartoCalabile:            7,  // Penalità per scartare carta calabile su combo propria a terra
     penScartoMatta:              50,  // Penalità pesante per scartare una matta
     penScartoCoppiaPozzo:         3,  // Penalità se la carta forma una COPPIA nel monte scarti — misurato 10/09/2026

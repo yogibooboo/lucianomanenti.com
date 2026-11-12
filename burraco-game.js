@@ -2338,7 +2338,14 @@ var _fastTick = (function () {
 // MEGLIO. Dettagli e numeri del banco in testa a burraco-engine-b.coeffs.js.
 // La versione del gioco sale a 9.14 apposta, per separare nel database le mani
 // del secondo giro da quelle del primo senza doversi fidare del solo motore.
-var AB_ATTIVO = true;
+// SPENTO il 2 novembre 2026, insieme alla raccolta delle statistiche: il tag di
+// burraco-stats.js e' commentato in burraco.html e burraco-en.html, quindi
+// window.BurracoStats non esiste piu'. Attenzione a non rimettere 'true' da
+// solo: la riga qui sotto che fa uscire col braccio 'A' si appoggia a
+// BurracoStats, e senza di lui NON scatta - i bracci girerebbero per tutti
+// senza che nessuno misuri niente. Per riaprire l'esperimento vanno riaccese
+// tutte e due le cose insieme.
+var AB_ATTIVO = false;
 
 // I TRE BRACCI
 //   'A'  nessuno modificato          - l'ancora

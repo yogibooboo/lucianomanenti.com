@@ -1,6 +1,16 @@
 // ============================================================================
 // COEFFICIENTI MOTORE AI — B
 //
+// 12/11/2026 — ESPERIMENTO CHIUSO, pacchetto PROMOSSO di serie.
+// Su 270.374 mani vere l'effetto per sedia e' x = -0,47 +/- 1,21 punti (t -0,77),
+// cioe' nullo con un intervallo stretto: la variante non gioca ne' meglio ne'
+// peggio. Promossa lo stesso perche' al banco toglie il 13,8% dei regali di
+// matta, e il campo dice che non costa niente. Questa tabella torna percio'
+// IDENTICA alla serie: finche' resta cosi' il braccio B produce le stesse
+// decisioni di A, ed e' voluto — e' il posto dove si scrive il prossimo
+// esperimento, non un motore vivo. (E comunque AB_ATTIVO e' false.)
+//
+// ─── storia ───
 // 17/09/2026 — NUOVO ESPERIMENTO, e il verso torna QUELLO NORMALE.
 // In prova c'è il pacchetto sugli scarti pericolosi:
 //     penScarto4c/5c/6c  3/3/5 → 2/4/7   (base "scalata")
@@ -110,10 +120,10 @@ window.coeffScoreOpzB = {
     // --- SCARTO ---
     coeffScartoDecent:            3,  // Peso della decentralizzazione nella scelta dello scarto (favorisce scarti di carte non centrali)
     coeffScartoConn:              4,  // Penalità per scartare carte connesse ad altre in mano
-    penScarto6c:                    7,  // IN PROVA 17/09 - base scalata (di serie 5)
-    penScarto5c:                    4,  // IN PROVA 17/09 - base scalata (di serie 3)
-    penScarto4c:                    2,  // IN PROVA 17/09 - base scalata (di serie 3)
-    moltScartoSostMatta:          1.5,  // IN PROVA 17/09 - malus x1,5 se lo scarto sostituisce una matta avversaria (di serie 1, spento)
+    penScarto6c:                    7,  // riallineato al valore di serie: l'esperimento si chiude qui (12/11)
+    penScarto5c:                    4,  // riallineato al valore di serie: l'esperimento si chiude qui (12/11)
+    penScarto4c:                    2,  // riallineato al valore di serie: l'esperimento si chiude qui (12/11)
+    moltScartoSostMatta:          1.5,  // riallineato al valore di serie: l'esperimento si chiude qui (12/11)
     penScartoCalabile:            7,  // Penalità per scartare carta calabile su combo propria a terra
     penScartoMatta:              50,  // Penalità pesante per scartare una matta
     penScartoCoppiaPozzo:           3,  // riallineato al valore di serie: l'esperimento monte-scarti si chiude qui (17/09)
