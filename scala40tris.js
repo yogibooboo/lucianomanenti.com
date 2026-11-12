@@ -5272,11 +5272,31 @@ var scala = {
 			}
 		}
 
+		/* A pari utilita' si scarta l'asso, che a fine mano costa 11. Con la
+		   variante assosingolo accesa l'asso rimasto DA SOLO costa 1, cioe' e'
+		   la carta piu' economica da tenere, e a pari utilita' va scartata
+		   l'altra. Il limite alle due carte in mano non e' un dettaglio: e'
+		   l'unico caso in cui lo scarto lascia davvero una carta sola; con la
+		   mano piu' lunga l'asso torna a valere 11, e invertire il pareggio
+		   anche la' farebbe covare 11 punti per un risparmio di 1 che non
+		   arriva mai. Si tocca solo il pareggio, non la scelta per utilita':
+		   a due carte dalla fine una carta giocabile puo' valere la chiusura.
+		   Segnalato dal giocatore che aveva proposto la variante (12/11/2026);
+		   con assosingolo spenta -- il default -- qui non cambia niente. */
+		var carte = this.campiavversario[avv].carte;
+		var assodatenere = this.assosingolo && (carte.length == 2);
+		/* True se, a pari utilita', conviene passare dalla carta gia' scelta
+		   alla nuova. */
+		var vinceilpareggio = function (nuova, scelta) {
+			if (assodatenere) return (scelta.numero == 1) && (nuova.numero != 1);
+			return (nuova.numero == 1);
+		};
+
 		if (this.f40avversario[avv]) {
-			for (var i = this.campiavversario[avv].carte.length - 1; i >= 0; i--) {
-				if ((this.campiavversario[avv].carte[i].punteggio < minimo)
-					|| ((this.campiavversario[avv].carte[i].punteggio == minimo) && (this.campiavversario[avv].carte[i].numero == 1))) {
-					minimo = this.campiavversario[avv].carte[i].punteggio;
+			for (var i = carte.length - 1; i >= 0; i--) {
+				if ((carte[i].punteggio < minimo)
+					|| ((carte[i].punteggio == minimo) && vinceilpareggio(carte[i], carte[indiceminimo]))) {
+					minimo = carte[i].punteggio;
 					indiceminimo = i;
 				}
 			}
