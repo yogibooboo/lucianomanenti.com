@@ -5650,7 +5650,20 @@ var scala = {
 		var pp = this.puntipositivitorneo || [0, 0, 0, 0];
 		var pm = this.puntipositivimano || [0, 0, 0, 0];
 		var neg = [this.totalegiocatore, this.totaleavversario1, this.totaleavversario2, this.totaleavversario3];
-		var i, sd, p, r, cl, sneg, spos, html = '';
+
+		/* L'ordine delle righe. Le sedie sono numerate 0 = giocatore, 1..3 =
+		   avversari, ma sul tabellone i contatori stanno nell'ordine opposto:
+		   gli avversari in alto e l'umano in fondo, come a tavolo (v. le
+		   coordinate in creacampo). L'albo era l'unico posto del gioco che
+		   partiva dal giocatore, e un giocatore l'ha fatto notare: qui le righe
+		   escono A1, A2, A3, TU, cosi' la tabella si legge come il tabellone.
+		   Solo l'ordine di stampa: la somma della riga TOTALE cicla per conto
+		   suo e non la riguarda, e l'evidenza della riga umana e' la classe
+		   albo-io, non la posizione. (13/11/2026) */
+		var i, k, sd, p, r, cl, sneg, spos, html = '';
+		var sedie = [];
+		for (sd = 1; sd <= n; sd++) sedie.push(sd);
+		sedie.push(0);
 
 		/* prima riga: i tag */
 		html += '<table class="albo-tabella"><tr class="albo-tagriga"><th></th>';
@@ -5677,7 +5690,8 @@ var scala = {
 			'<th class="albo-pt">' + t('alb_c_pos') + '</th></tr>';
 
 		/* una riga per sedia */
-		for (sd = 0; sd <= n; sd++) {
+		for (k = 0; k < sedie.length; k++) {
+			sd = sedie[k];
 			html += '<tr' + ((sd === 0) ? ' class="albo-io"' : '') + '><th>' + nomi[sd] + '</th>';
 			for (i = 0; i < P.length; i++) {
 				r = alb[P[i]];
