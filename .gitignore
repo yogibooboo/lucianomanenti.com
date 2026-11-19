@@ -97,11 +97,19 @@ dev/*
 
 # --- Rumore di lavorazione ---
 # scratch/ e' il banco: ritagli di video, prove di suono, scriptini usa e
-# getta. I cinquantaquattro script che erano gia' versionati restano dentro -
-# un file gia' tracciato non lo esclude niente - cosi' da qui in avanti
-# nessuno dei nuovi si presenta piu' da solo in git status.
+# getta. I cinquantaquattro script che erano versionati sono usciti dal repo
+# il 19/11/2026 (git rm --cached): restano sul disco, non piu' in git.
 scratch/
 __pycache__/
+
+# Copia del server scaricata da Aruba il 12/07/2026: non e' il sito, e' una
+# fotografia di com'era. Uscita dal repo il 19/11/2026, resta sul disco.
+lucianomanenti.com_Backup_Giornaliero/
+
+# cronotermostato/ e' un vecchio lavoro, ancora raggiungibile online ma non
+# linkato da nessuna pagina e fuori dal sitemap. Resta sul disco e sul server,
+# fuori dal repo dal 19/11/2026.
+cronotermostato/
 
 # Le misure estratte dai video di Locomotion per tarare il contatore e
 # l'emissione. Il risultato e' finito nei parametri dei quadri e nella nota di
