@@ -1,0 +1,22 @@
+# Immagini delle promozioni: un giorno di cache invece dell'anno del resto
+# del sito (19/11/2026).
+#
+# Le altre immagini non cambiano mai, queste si': quando se ne sostituisce una
+# tenendo lo stesso nome, con l'anno di cache chi l'aveva gia' vista se la
+# terrebbe per dodici mesi. Con un giorno il browser per 24 ore non chiede
+# niente al server (nessun costo per pagina, nemmeno nelle rotazioni) e una
+# sostituzione arriva a tutti entro il giorno dopo.
+#
+# Scartate: "no-cache" (una domanda al server a ogni immagine mostrata) e un
+# ?v= sugli indirizzi gestito da promozioni.js e dall'editor (si dimentica, e
+# chi sostituisce un file a mano lo salta).
+#
+# Questi ExpiresByType valgono solo in questa cartella e prendono il posto di
+# quelli del .htaccess della radice. mod_expires scrive anche il
+# Cache-Control: max-age=86400 corrispondente.
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType image/jpeg "access plus 1 day"
+    ExpiresByType image/svg+xml "access plus 1 day"
+    ExpiresByType image/png "access plus 1 day"
+</IfModule>
