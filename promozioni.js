@@ -76,33 +76,38 @@
     var GIOCHI = {
         scala40: {
             immagini: 1, inLingua: { en: [1] }, regole: 'regole-scala40',
-            it: { nome: 'Scala 40', testo: 'Si apre con quaranta punti, poi scale, tris e jolly: vince chi resta per primo senza carte.' },
-            en: { nome: 'Scala 40', testo: 'Open with forty points, then runs, sets and jokers: the first to get rid of every card wins.' }
+            it: { nome: 'Scala 40', testo: 'Si apre con quaranta punti, poi scale, tris e jolly: vince chi resta per primo senza carte. E\' il gioco classico di questo sito che ha tanti affezionati giocatori da più di 15 anni.' },
+            en: { nome: 'Scala 40', testo: 'Open with forty points, then runs, sets and jokers: the first to get rid of every card wins. It is the classic game of this site, with many loyal players for more than 15 years.' }
         },
         burraco: {
             immagini: 1, inLingua: { en: [1] }, regole: 'regole-burraco',
-            it: { nome: 'Burraco', testo: 'In coppia o da soli contro il computer: scale, combinazioni, pozzetti e burrachi puliti.' },
-            en: { nome: 'Burraco', testo: 'With a partner or on your own against the computer: runs, sets, pots and clean burracos.' }
+            it: { nome: 'Burraco', testo: 'Un grande classico introdotto di recente nel sito ma che ha già conquistato molti giocatori.' },
+            en: { nome: 'Burraco', testo: 'A great classic, added to the site only recently but already loved by many players.' }
         },
         scopa: {
             immagini: 3, inLingua: { en: [1, 2, 3] }, regole: 'regole-scopa',
-            it: { nome: 'Scopa', testo: 'Il classico delle carte italiane: prese, scope, settebello e primiera contro il computer.' },
-            en: { nome: 'Scopa', testo: 'The Italian card classic: captures, sweeps, the seven of coins and primiera against the computer.' }
+            it: { nome: 'Scopa', testo: 'Il classico delle carte italiane: prese, scope, settebello e primiera contro il computer. Si gioca con carte francesi, napoletane o bresciane.' },
+            en: { nome: 'Scopa', testo: 'The Italian card classic: captures, sweeps, the seven of coins and primiera against the computer. Play with French, Neapolitan or Brescian cards.' }
+        },
+        'scopa-bresciana': {
+            immagini: [3], inLingua: { en: [3] }, pagina: 'scopa', regole: 'regole-scopa',
+            it: { nome: 'Scopa Bresciana', testo: 'La scopa bresciana è molto più ricca della scopa normale... Ci sono piccate, simili, quadriglie, napola... Provatela.' },
+            en: { nome: 'Brescian Scopa', testo: 'Brescian Scopa is much richer than ordinary Scopa... There are Piccate, Simili, Quadriglie, Napola... Give it a try.' }
         },
         machiavelli: {
             immagini: 1, inLingua: { en: [1] }, regole: 'regole-machiavelli',
-            it: { nome: 'Machiavelli', testo: 'Il tavolo è di tutti: smonta e ricomponi scale e tris già calati per liberarti delle tue carte.' },
-            en: { nome: 'Machiavelli', testo: 'The table belongs to everyone: break up and rebuild the runs and sets already down to get rid of your cards.' }
+            it: { nome: 'Machiavelli', testo: 'Il grande classico di questo sito, da 15 anni insieme con scala40. Ne vado particolarmente orgoglioso. La sua abilità stupisce anche me che l\'ho creato...' },
+            en: { nome: 'Machiavelli', testo: 'The great classic of this site, here for 15 years together with Scala 40. I am especially proud of it. How well it plays surprises even me, and I made it...' }
         },
         rummy: {
             immagini: 1, inLingua: { en: [1] }, regole: 'regole-rummy',
-            it: { nome: 'Gin Rummy', testo: 'Dieci carte, un avversario: combina tris e scale e bussa quando ti resta poco in mano.' },
-            en: { nome: 'Gin Rummy', testo: 'Ten cards, one opponent: build sets and runs and knock when there is little left in your hand.' }
+            it: { nome: 'Gin Rummy', testo: 'Dieci carte, un avversario: combina tris e scale e bussa quando ti resta poco in mano. E\' un classico americano che non conosco molto. Spero che giochi in modo decente.' },
+            en: { nome: 'Gin Rummy', testo: 'Ten cards, one opponent: build sets and runs and knock when there is little left in your hand. It is an American classic I do not know very well. I hope it plays decently.' }
         },
         spider: {
             immagini: 1, inLingua: { en: [1] }, regole: 'regole-spider',
-            it: { nome: 'Solitario Spider', testo: 'Dieci colonne e due mazzi: componi le scale dal re all\'asso, a uno, due o quattro semi.' },
-            en: { nome: 'Spider Solitaire', testo: 'Ten columns and two decks: build the runs from king down to ace, with one, two or four suits.' }
+            it: { nome: 'Solitario Spider', testo: 'Dieci colonne e due mazzi: componi le scale dal re all\'asso, a uno, due o quattro semi. Un grande classico.' },
+            en: { nome: 'Spider Solitaire', testo: 'Ten columns and two decks: build the runs from king down to ace, with one, two or four suits. A great classic.' }
         },
         klondike: {
             immagini: 1, inLingua: { en: [1] }, regole: 'regole-klondike',
@@ -111,38 +116,38 @@
         },
         briscola: {
             immagini: 3, inLingua: { en: [1, 2, 3] }, regole: 'regole-briscola',
-            it: { nome: 'Briscola', testo: 'Uno contro uno o in coppia, con le carte napoletane, bresciane o francesi: 120 punti in palio.' },
-            en: { nome: 'Briscola', testo: 'One against one or in pairs, with Neapolitan, Brescian or French cards: 120 points to play for.' }
+            it: { nome: 'Briscola', testo: 'Chi non ha mai giocato a briscola (in Italia) alzi la mano. Uno contro uno o in coppia, con le carte napoletane, bresciane o francesi: 120 punti in palio.' },
+            en: { nome: 'Briscola', testo: 'Raise your hand if you have never played Briscola (in Italy, that is). One against one or in pairs, with Neapolitan, Brescian or French cards: 120 points to play for.' }
         },
         tressette: {
             immagini: 3, inLingua: { en: [1, 2, 3] }, regole: 'regole-tressette',
-            it: { nome: 'Tressette', testo: 'In quattro, a coppie: si risponde al seme e si contano i punti. C\'è anche il Traversone, dove vince chi ne fa meno.' },
+            it: { nome: 'Tressette', testo: 'In quattro, a coppie: si risponde al seme e si contano i punti. C\'è anche il Traversone (ciapanò), dove vince chi ne fa meno.' },
             en: { nome: 'Tressette', testo: 'Four players in pairs: follow suit and count the points. There is also Traversone, where the fewest points win.' }
         },
         woowoo: {
             immagini: 1, inLingua: { en: [1] }, regole: 'regole-woowoo',
-            it: { nome: 'WooWoo', testo: 'Gira gli scambi e porta ogni treno alla sua stazione prima che scada il tempo, senza farli scontrare.' },
-            en: { nome: 'WooWoo', testo: 'Turn the switches and bring every train to its station before time runs out, without letting them crash.' }
+            it: { nome: 'WooWoo', testo: 'Gira gli scambi e porta ogni treno alla sua stazione prima che scada il tempo, senza farli scontrare. Mi piace molto e ne vado molto orgoglioso, ma sembra che ai miei giocatori non interessi molto. Forse perché non lo conoscete...' },
+            en: { nome: 'WooWoo', testo: 'Turn the switches and bring every train to its station before time runs out, without letting them crash. I like it a lot and I am very proud of it, but my players do not seem very interested. Maybe because you do not know it yet...' }
         },
         quindici: {
             immagini: 1, inLingua: { en: [1] }, regole: 'regole-quindici',
-            it: { nome: 'Gioco del 15', testo: 'Fai scorrere le tessere nel vuoto e rimettile in ordine da 1 a 15, con meno mosse che puoi.' },
-            en: { nome: '15 Puzzle', testo: 'Slide the tiles into the gap and put them back in order from 1 to 15, in as few moves as you can.' }
+            it: { nome: 'Gioco del 15', testo: 'Un semplice classico passatempo. Fai scorrere le tessere nel vuoto e rimettile in ordine da 1 a 15, con meno mosse che puoi.' },
+            en: { nome: '15 Puzzle', testo: 'A simple classic pastime. Slide the tiles into the gap and put them back in order from 1 to 15, in as few moves as you can.' }
         },
         sudoku: {
             immagini: 1, inLingua: { en: [1] }, regole: 'regole-sudoku',
-            it: { nome: 'Sudoku', testo: 'Tre livelli, la matita per gli appunti e i suggerimenti quando servono.' },
-            en: { nome: 'Sudoku', testo: 'Three levels, a pencil for your notes and hints when you need them.' }
+            it: { nome: 'Sudoku', testo: 'Tre livelli, la matita per gli appunti e i suggerimenti quando servono. Il passatempo degli anni 2000.' },
+            en: { nome: 'Sudoku', testo: 'Three levels, a pencil for your notes and hints when you need them. The pastime of the 2000s.' }
         },
         calcolo: {
             immagini: 1, inLingua: { en: [1] }, regole: 'regole-calcolo',
-            it: { nome: 'Calcolo Enigmatico', testo: 'A ogni lettera una cifra: ricostruisci le sei operazioni a forza di logica.' },
-            en: { nome: 'Cross Figure', testo: 'One digit for each letter: work out the six sums by logic alone.' }
+            it: { nome: 'Calcolo Enigmatico', testo: 'A ogni lettera una cifra: ricostruisci le sei operazioni a forza di logica. Un classico dei settimanali di enigmistica.' },
+            en: { nome: 'Cross Figure', testo: 'One digit for each letter: work out the six sums by logic alone. A classic of Italian puzzle magazines.' }
         },
         quadrati: {
             immagini: 1, inLingua: { en: [1] }, regole: 'regole-quadrati',
-            it: { nome: 'Quadrati', testo: 'Un lato a testa fra i puntini: chi chiude un quadretto se lo prende e gioca ancora.' },
-            en: { nome: 'Dots and Boxes', testo: 'One side each between the dots: close a box and it is yours, and you move again.' }
+            it: { nome: 'Quadrati', testo: 'Un lato a testa fra i puntini: chi chiude un quadretto se lo prende e gioca ancora. Si giocava a scuola sui fogli a quadretti.' },
+            en: { nome: 'Dots and Boxes', testo: 'One side each between the dots: close a box and it is yours, and you move again. We used to play it at school on squared paper.' }
         },
         dama: {
             immagini: 1, inLingua: { en: [1] }, regole: 'regole-dama',
@@ -156,13 +161,13 @@
         },
         mulino: {
             immagini: 1, inLingua: { en: [1] }, regole: 'regole-mulino',
-            it: { nome: 'Mulino (Filetto)', testo: 'Nove pedine a testa: metti in fila tre delle tue e togline una all\'avversario.' },
-            en: { nome: 'Nine Men\'s Morris', testo: 'Nine pieces each: line up three of yours and take one from your opponent.' }
+            it: { nome: 'Mulino (Filetto)', testo: 'Nove pedine a testa: metti in fila tre delle tue e togline una all\'avversario. Famoso perché si trova sul retro delle scacchiere.' },
+            en: { nome: 'Nine Men\'s Morris', testo: 'Nine pieces each: line up three of yours and take one from your opponent. Famous for being printed on the back of chessboards.' }
         },
         'battaglia-navale': {
             immagini: 1, inLingua: { en: [1] }, regole: 'regole-battaglia-navale',
-            it: { nome: 'Battaglia Navale', testo: 'Schiera la flotta e affonda quella del computer, un colpo alla volta.' },
-            en: { nome: 'Battleship', testo: 'Deploy your fleet and sink the computer\'s, one shot at a time.' }
+            it: { nome: 'Battaglia Navale', testo: 'Schiera la flotta e affonda quella del computer, un colpo alla volta. Classica distrazione dei tempi della scuola.' },
+            en: { nome: 'Battleship', testo: 'Deploy your fleet and sink the computer\'s, one shot at a time. The classic distraction of school days.' }
         },
         navale: {
             immagini: 1, inLingua: { en: [1] }, regole: 'regole-navale',
@@ -171,8 +176,8 @@
         },
         mahjong: {
             immagini: 1, inLingua: { en: [1] }, regole: 'regole-mahjong',
-            it: { nome: 'Mahjong', testo: 'Il solitario delle tessere: togli le coppie libere fino a smontare tutta la figura.' },
-            en: { nome: 'Mahjong', testo: 'The tile solitaire: remove the free pairs until the whole layout is gone.' }
+            it: { nome: 'Mahjong', testo: 'Il solitario cinese delle tessere: togli le coppie libere fino a smontare tutta la figura.' },
+            en: { nome: 'Mahjong', testo: 'The Chinese tile solitaire: remove the free pairs until the whole layout is gone.' }
         },
         domino: {
             immagini: 1, inLingua: { en: [1] }, regole: 'regole-domino',
@@ -181,13 +186,13 @@
         },
         minato: {
             immagini: 1, inLingua: { en: [1] }, regole: 'regole-minato',
-            it: { nome: 'Campo Minato', testo: 'Scopri le caselle senza toccare le mine: i numeri dicono quante ce ne sono intorno.' },
-            en: { nome: 'Minesweeper', testo: 'Uncover the squares without hitting a mine: the numbers tell you how many are around.' }
+            it: { nome: 'Campo Minato', testo: 'Scopri le caselle senza toccare le mine: i numeri dicono quante ce ne sono intorno. Nostalgia di windows 95?' },
+            en: { nome: 'Minesweeper', testo: 'Uncover the squares without hitting a mine: the numbers tell you how many are around. Missing Windows 95?' }
         },
         'codice-segreto': {
             immagini: 1, inLingua: { en: [1] }, regole: 'regole-codice-segreto',
-            it: { nome: 'Codice Segreto', testo: 'Indovina la combinazione di colori in dieci tentativi, leggendo gli indizi a ogni prova.' },
-            en: { nome: 'Secret Code', testo: 'Guess the colour combination in ten tries, reading the clues after each attempt.' }
+            it: { nome: 'Codice Segreto', testo: 'Indovina la combinazione di colori in dieci tentativi, leggendo gli indizi a ogni prova. Era famoso con un altro nome, ma non ve lo posso dire... Se ve lo ricordate scrivetemelo 😉' },
+            en: { nome: 'Secret Code', testo: 'Guess the colour combination in ten tries, reading the clues after each attempt. It was famous under another name, but I cannot tell you... If you remember it, write to me 😉' }
         },
         mattoncini: {
             immagini: 1, inLingua: { en: [1] }, regole: 'regole-mattoncini',
@@ -225,7 +230,11 @@
     //   tipo 'testo'   un messaggio libero: titolo e testo per lingua, e
     //                  facoltativi "immagine" (un file della cartella, o un
     //                  elenco di file che ruotano), "pulsante" (l'etichetta,
-    //                  dentro it/en) e "link" (dove porta). Anche qui
+    //                  dentro it/en) e "link" (dove porta). Un link a una
+    //                  pagina del sito ('/aboutme.html') va scritto in
+    //                  italiano: in inglese diventa da solo '/aboutme-en.html',
+    //                  e si apre in una scheda nuova come gli altri link a
+    //                  aboutme del sito (il suo CHIUDI la richiude). Anche qui
     //                  "immaginiSpente" e' il promemoria dell'editor.
     // Per tutti:
     //   id       il nome con cui il messaggio finisce in Analytics
@@ -236,66 +245,67 @@
     //   soloSu   facoltativo, elenco di giochi: esce solo su quelle pagine
     //   nonSu    facoltativo, elenco di giochi: su quelle pagine non esce
     var MESSAGGI = [
-        { id: 'scala40',          tipo: 'gioco', gioco: 'scala40',          peso: 1, dove: ['colonne', 'fine'] },
-        { id: 'burraco',          tipo: 'gioco', gioco: 'burraco',          peso: 1, dove: ['colonne', 'fine'] },
-        { id: 'scopa',            tipo: 'gioco', gioco: 'scopa',            peso: 1, dove: ['colonne', 'fine'] },
-        { id: 'machiavelli',      tipo: 'gioco', gioco: 'machiavelli',      peso: 1, dove: ['colonne', 'fine'] },
+        { id: 'scala40',          tipo: 'gioco', gioco: 'scala40',          peso: 2, dove: ['colonne', 'fine'] },
+        { id: 'burraco',          tipo: 'gioco', gioco: 'burraco',          peso: 4, dove: ['colonne', 'fine'] },
+        { id: 'scopa',            tipo: 'gioco', gioco: 'scopa',            peso: 2, dove: ['colonne', 'fine'] },
+        { id: 'scopa-bresciana',  tipo: 'gioco', gioco: 'scopa-bresciana',  peso: 2, dove: ['colonne', 'fine'], nonSu: ['scopa'] },
+        { id: 'machiavelli',      tipo: 'gioco', gioco: 'machiavelli',      peso: 4, dove: ['colonne', 'fine'] },
         { id: 'rummy',            tipo: 'gioco', gioco: 'rummy',            peso: 1, dove: ['colonne', 'fine'] },
-        { id: 'spider',           tipo: 'gioco', gioco: 'spider',           peso: 1, dove: ['colonne', 'fine'] },
-        { id: 'klondike',         tipo: 'gioco', gioco: 'klondike',         peso: 1, dove: ['colonne', 'fine'] },
-        { id: 'briscola',         tipo: 'gioco', gioco: 'briscola',         peso: 1, dove: ['colonne', 'fine'] },
-        { id: 'tressette',        tipo: 'gioco', gioco: 'tressette',        peso: 1, dove: ['colonne', 'fine'] },
-        { id: 'woowoo',           tipo: 'gioco', gioco: 'woowoo',           peso: 1, dove: ['colonne', 'fine'] },
-        { id: 'quindici',         tipo: 'gioco', gioco: 'quindici',         peso: 1, dove: ['colonne', 'fine'] },
-        { id: 'sudoku',           tipo: 'gioco', gioco: 'sudoku',           peso: 1, dove: ['colonne', 'fine'] },
-        { id: 'calcolo',          tipo: 'gioco', gioco: 'calcolo',          peso: 1, dove: ['colonne', 'fine'] },
-        { id: 'quadrati',         tipo: 'gioco', gioco: 'quadrati',         peso: 1, dove: ['colonne', 'fine'] },
-        { id: 'dama',             tipo: 'gioco', gioco: 'dama',             peso: 1, dove: ['colonne', 'fine'] },
-        { id: 'scacchi',          tipo: 'gioco', gioco: 'scacchi',          peso: 1, dove: ['colonne', 'fine'] },
-        { id: 'mulino',           tipo: 'gioco', gioco: 'mulino',           peso: 1, dove: ['colonne', 'fine'] },
-        { id: 'battaglia-navale', tipo: 'gioco', gioco: 'battaglia-navale', peso: 1, dove: ['colonne', 'fine'] },
+        { id: 'spider',           tipo: 'gioco', gioco: 'spider',           peso: 3, dove: ['colonne', 'fine'] },
+        { id: 'klondike',         tipo: 'gioco', gioco: 'klondike',         peso: 3, dove: ['colonne', 'fine'] },
+        { id: 'briscola',         tipo: 'gioco', gioco: 'briscola',         peso: 3, dove: ['colonne', 'fine'] },
+        { id: 'tressette',        tipo: 'gioco', gioco: 'tressette',        peso: 2, dove: ['colonne', 'fine'] },
+        { id: 'woowoo',           tipo: 'gioco', gioco: 'woowoo',           peso: 6, dove: ['colonne', 'fine'] },
+        { id: 'quindici',         tipo: 'gioco', gioco: 'quindici',         peso: 4, dove: ['colonne', 'fine'] },
+        { id: 'sudoku',           tipo: 'gioco', gioco: 'sudoku',           peso: 5, dove: ['colonne', 'fine'] },
+        { id: 'calcolo',          tipo: 'gioco', gioco: 'calcolo',          peso: 4, dove: ['colonne', 'fine'] },
+        { id: 'quadrati',         tipo: 'gioco', gioco: 'quadrati',         peso: 2, dove: ['colonne', 'fine'] },
+        { id: 'dama',             tipo: 'gioco', gioco: 'dama',             peso: 2, dove: ['colonne', 'fine'] },
+        { id: 'scacchi',          tipo: 'gioco', gioco: 'scacchi',          peso: 2, dove: ['colonne', 'fine'] },
+        { id: 'mulino',           tipo: 'gioco', gioco: 'mulino',           peso: 3, dove: ['colonne', 'fine'] },
+        { id: 'battaglia-navale', tipo: 'gioco', gioco: 'battaglia-navale', peso: 4, dove: ['colonne', 'fine'] },
         { id: 'navale',           tipo: 'gioco', gioco: 'navale',           peso: 1, dove: ['colonne', 'fine'] },
-        { id: 'mahjong',          tipo: 'gioco', gioco: 'mahjong',          peso: 1, dove: ['colonne', 'fine'] },
-        { id: 'domino',           tipo: 'gioco', gioco: 'domino',           peso: 1, dove: ['colonne', 'fine'] },
-        { id: 'minato',           tipo: 'gioco', gioco: 'minato',           peso: 1, dove: ['colonne', 'fine'] },
+        { id: 'mahjong',          tipo: 'gioco', gioco: 'mahjong',          peso: 2, dove: ['colonne', 'fine'] },
+        { id: 'domino',           tipo: 'gioco', gioco: 'domino',           peso: 4, dove: ['colonne', 'fine'] },
+        { id: 'minato',           tipo: 'gioco', gioco: 'minato',           peso: 2, dove: ['colonne', 'fine'] },
         { id: 'codice-segreto',   tipo: 'gioco', gioco: 'codice-segreto',   peso: 1, dove: ['colonne', 'fine'] },
-        { id: 'mattoncini',       tipo: 'gioco', gioco: 'mattoncini',       peso: 1, dove: ['colonne', 'fine'] },
-        { id: 'intervalli',       tipo: 'gioco', gioco: 'intervalli',       peso: 1, dove: ['colonne', 'fine'] },
-        { id: 'accordi',          tipo: 'gioco', gioco: 'accordi',          peso: 1, dove: ['colonne', 'fine'] },
-        { id: 'scale',            tipo: 'gioco', gioco: 'scale',            peso: 1, dove: ['colonne', 'fine'] },
-        { id: 'metronome',        tipo: 'gioco', gioco: 'metronome',        peso: 1, dove: ['colonne', 'fine'] },
+        { id: 'mattoncini',       tipo: 'gioco', gioco: 'mattoncini',       peso: 4, dove: ['colonne', 'fine'] },
+        { id: 'intervalli',       tipo: 'gioco', gioco: 'intervalli',       peso: 3, dove: ['colonne', 'fine'] },
+        { id: 'accordi',          tipo: 'gioco', gioco: 'accordi',          peso: 3, dove: ['colonne', 'fine'] },
+        { id: 'scale',            tipo: 'gioco', gioco: 'scale',            peso: 3, dove: ['colonne', 'fine'] },
+        { id: 'metronome',        tipo: 'gioco', gioco: 'metronome',        peso: 3, dove: ['colonne', 'fine'] },
         {
-            id: 'scrivetemi', tipo: 'testo', peso: 3, dove: ['colonne', 'fine'],
+            id: 'scrivetemi', tipo: 'testo', peso: 8, dove: ['colonne', 'fine'],
             immagine: 'busta.svg',
-            link: 'mailto:postmaster@lucianomanenti.com',
+            link: '/aboutme.html',
             it: {
                 titolo: 'Scrivetemi',
-                testo: 'Questo sito è stato creato solo per il mio e il vostro divertimento. Mi fa piacere ricevere i vostri suggerimenti e le vostre opinioni.',
+                testo: 'Questo sito è stato creato solo per il mio e il vostro divertimento. Mi fa piacere ricevere i vostri suggerimenti e le vostre opinioni. O anche un saluto.\npostmaster@lucianomanenti.com',
                 pulsante: 'SCRIVIMI'
             },
             en: {
                 titolo: 'Write to me',
-                testo: 'This site was made only for my enjoyment and yours. I am always glad to receive your suggestions and opinions.',
+                testo: 'This site was made only for my enjoyment and yours. I am always glad to receive your suggestions and opinions. Or just a hello.\npostmaster@lucianomanenti.com',
                 pulsante: 'WRITE TO ME'
             }
         },
         {
-            id: 'lavori', tipo: 'testo', peso: 3, dove: ['colonne', 'fine'],
+            id: 'lavori', tipo: 'testo', peso: 4, dove: ['colonne', 'fine'],
             immagine: 'niente-pubblicita2.svg',
+            link: '/aboutme.html',
             it: {
                 titolo: 'Niente più pubblicità',
-                testo: 'Ho deciso di togliere la pubblicità, ma il sito continua. Lo sto risistemando un gioco alla volta: se qualcosa non funziona, fatemelo sapere.'
+                testo: 'Ho deciso di togliere la pubblicità, ma il sito continua. Ho colto l\'occasione per ripulire il codice. Se qualcosa non funziona, fatemelo sapere. postmaster@lucianomanenti.com',
+                pulsante: 'SCRIVIMI'
             },
             en: {
                 titolo: 'No more advertising',
-                testo: 'I have decided to remove the advertising, but the site goes on. I am reworking it one game at a time: if something does not work, please let me know.'
+                testo: 'I have decided to remove the advertising, but the site goes on. I took the chance to clean up the code. If something does not work, please let me know. postmaster@lucianomanenti.com',
+                pulsante: 'WRITE TO ME'
             }
         },
         {
-            // Chi gioca una volta spesso non ritrova piu' il sito: le ricerche
-            // "(gioco) luciano" portano gia' qui in prima posizione (Search
-            // Console, 18/11/2026), e chi le fa clicca quasi sempre.
-            id: 'ritrovarmi', tipo: 'testo', peso: 3, dove: ['colonne', 'fine'],
+            id: 'ritrovarmi', tipo: 'testo', peso: 6, dove: ['colonne', 'fine'],
             immagine: 'ritrovarmi.svg',
             it: {
                 titolo: 'Per ritrovarmi',
@@ -321,6 +331,14 @@
     // Le pagine e le immagini in lingua hanno il suffisso della lingua,
     // l'italiano non ne ha: rummy.html, rummy-en.html.
     function suffisso() { return lingua() === 'it' ? '' : '-' + lingua(); }
+
+    // Il link di un messaggio di testo: una pagina del sito scritta in
+    // italiano ('/aboutme.html') prende la lingua di chi legge; gli altri
+    // (mailto:, indirizzi esterni) restano come sono.
+    function linkTesto(link) {
+        var m = /^(\/[\w\/-]+)\.html$/.exec(link);
+        return m ? m[1] + suffisso() + '.html' : link;
+    }
 
     // Il gioco in cui siamo: il percorso della pagina, senza lingua e senza
     // .html, cercato nel catalogo. Se non c'e' resta il nome della pagina.
@@ -475,6 +493,7 @@
     function collegamento(classe, href, m, dove, azione) {
         var a = crea('a', classe);
         a.href = href;
+        if (/^\/aboutme(-[a-z]+)?\.html$/.test(href)) { a.target = '_blank'; a.rel = 'noopener'; }
         a.addEventListener('click', function () { conta('promo_clic', m, dove, azione); });
         return a;
     }
@@ -504,8 +523,8 @@
             titolo = t.titolo;
             testo = t.testo;
             if (m.link) {
-                principale = m.link;
-                if (t.pulsante) pulsanti.push({ etichetta: t.pulsante, href: m.link, azione: 'pulsante', classe: 'promo-pulsante promo-primo' });
+                principale = linkTesto(m.link);
+                if (t.pulsante) pulsanti.push({ etichetta: t.pulsante, href: principale, azione: 'pulsante', classe: 'promo-pulsante promo-primo' });
             }
         }
 
