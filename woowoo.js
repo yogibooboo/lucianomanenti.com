@@ -797,6 +797,10 @@
     function ricordato() {
         var v = null;
         try { v = localStorage.getItem(MEMQ); } catch (e) { }
+        // Fino al 19/11/2026 online il gioco si chiamava woowoo2 e scriveva
+        // qui sotto: stessi quadri e stesso formato, quindi chi ci giocava
+        // riprende da dove era arrivato invece che dal primo quadro.
+        if (!v) { try { v = localStorage.getItem('woowoo2_quadro'); } catch (e) { } }
         if (!v) return null;
         var pz = v.split('|'), L = pz[0], nn = parseInt(pz[1], 10);
         if (CAMPAGNA.indexOf(L) < 0) return null;

@@ -71,6 +71,14 @@ RedirectMatch 301 ^/metronome\.html$ /musica/metronomo/
 RedirectMatch 301 ^/guida-metronomo-en\.html$ /musica/metronomo/regole-metronomo-en.html
 RedirectMatch 301 ^/guida-metronomo\.html$ /musica/metronomo/regole-metronomo.html
 
+# 1q. Indirizzi vecchi che Search Console vede ancora e oggi danno 404
+# (19/11/2026): la guida del vecchio Tetra, la vecchia pagina personale e i
+# percorsi con la cartella del sito ripetuta davanti.
+RedirectMatch 301 ^/guida-tetra-en\.html$ /regole-mattoncini-en.html
+RedirectMatch 301 ^/guida-tetra\.html$ /regole-mattoncini.html
+RedirectMatch 301 ^/lucianomanenti\.html$ /
+RedirectMatch 301 ^/lucianomanenti(\.com)?/(.*)$ /$2
+
 # 2. Optimized Caching Rules
 <IfModule mod_expires.c>
     ExpiresActive On
