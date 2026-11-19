@@ -1,4 +1,4 @@
-// rummy-ui.js v2.7
+// rummy-ui.js
 // Gin Rummy — rendering, event handling, language, modals
 
 'use strict';
@@ -61,6 +61,19 @@
             var btn = document.getElementById('btn-lang-' + l);
             if (btn) btn.classList.toggle('active', l === window.currentLang);
         });
+
+        aggiornaScrittaScoperte();
+    }
+
+    // Il pulsante dice che cosa fa il prossimo clic: SCOPERTE quando le carte
+    // dell'avversario sono coperte, COPERTE quando sono in vista. Prima si
+    // limitava ad accendere una classe "attivo" che nessun foglio di stile
+    // guardava, quindi a video non cambiava niente.
+    function aggiornaScrittaScoperte() {
+        var btn = document.getElementById('btn-scoperte');
+        if (!btn) return;
+        var el = btn.querySelector('span') || btn;
+        el.textContent = Core.t(_scoperte ? 'btn-coperte' : 'btn-scoperte');
     }
 
     // ─── CARD RENDERING ──────────────────────────────────────────────────────
@@ -395,12 +408,12 @@
 
         var isUpcard = game.fase === 'upcard' && game.turno === 'giocatore';
         if (btnPrendi) {
-            btnPrendi.style.display = isUpcard ? 'inline-block' : 'none';
+            btnPrendi.style.display = isUpcard ? '' : 'none';
             // In forced-draw state, change label to PESCA
             var prendiSpan = btnPrendi.querySelector('span') || btnPrendi;
             prendiSpan.textContent = _forcedDraw ? Core.t('btn-pesca-forzata') : Core.t('btn-prendi-upcard');
         }
-        if (btnPassa)  btnPassa.style.display  = (isUpcard && !_forcedDraw) ? 'inline-block' : 'none';
+        if (btnPassa)  btnPassa.style.display  = (isUpcard && !_forcedDraw) ? '' : 'none';
 
         if (btnKnock) {
             btnKnock.classList.toggle('visibile', !isUpcard && Game.canKnock() && !Game.canGin());
@@ -615,6 +628,13 @@
         }
     }
 
+    // Il tipo di partita per Analytics: "classico/torneo/100", "oklahoma/singola".
+    function _varianteGA() {
+        var v = game.variante + '/' + game.tipoPartita;
+        if (game.tipoPartita !== 'singola') v += '/' + game.limitePartita;
+        return v;
+    }
+
     function mostraModalFine(partitaFinita, vincitorePartita, risultato) {
         if (partitaFinita) {
             nascondiModal('modal-nuova');
@@ -640,11 +660,10 @@
     // ─── EVENT HANDLERS ──────────────────────────────────────────────────────
 
     function setupEventi() {
-        // Lang switcher
-        ['it', 'en'].forEach(function (l) {
-            var btn = document.getElementById('btn-lang-' + l);
-            if (btn) btn.addEventListener('click', function () { setLanguage(l); });
-        });
+        // I pulsanti IT/EN sono due link alle due pagine, non cambiano piu' la
+        // lingua sul posto: qui non c'e' piu' niente da collegare. Il vecchio
+        // listener su setLanguage girava comunque appena prima che la pagina
+        // se ne andasse, quindi faceva lavoro buttato.
 
         // Draw from deck
         var btnMazzo = document.getElementById('mazzo');
@@ -829,7 +848,7 @@
             nascondiModal('modal-conferma-nuova');
             // Il banner resterebbe parcheggiato nella modale nascosta: con AdSense
             // reale e' un'unita' servita ma invisibile, meglio rimuoverla.
-            var vecchio = document.querySelector('#modal-conferma-nuova .finish-banner');
+            var vecchio = document.querySelector('#modal-conferma-nuova .finish-banner, #modal-conferma-nuova .spazio-sito');
             if (vecchio) vecchio.remove();
         });
         var btnConfSi = document.getElementById('btn-conferma-si');
@@ -840,7 +859,7 @@
         if (btnScoperte) {
             btnScoperte.addEventListener('click', function () {
                 _scoperte = !_scoperte;
-                btnScoperte.classList.toggle('attivo', _scoperte);
+                aggiornaScrittaScoperte();
                 render();
             });
         }
@@ -867,13 +886,13 @@
                 }
                 nascondiModal('modal-nuova');
                 Game.nuovaPartita(variante, tipo, limite);
+                if (window.sitoPartita) window.sitoPartita.inizio(_varianteGA());
                 selectedCardId = null;
                 _pendingKnock = false; _pendingGin = false;
                 layoffSelected.clear();
                 _forcedDraw = false;
                 _scoperte = false;
-                var btnSc = document.getElementById('btn-scoperte');
-                if (btnSc) btnSc.classList.remove('attivo');
+                aggiornaScrittaScoperte();
                 nascondiKnockPanel();
                 render();
                 _animaDeal(function () { _avviaFaseUpcard(); });
@@ -1247,6 +1266,7 @@
         aggiornaPunteggi();
 
         if (res.partitaFinita) {
+            if (window.sitoPartita) window.sitoPartita.fine(res.vincitorePartita === 'giocatore' ? 'won' : 'lost');
             _playSound(res.vincitorePartita === 'giocatore' ? 'vittoria' : 'sconfitta');
             setTimeout(function () {
                 mostraModalFine(true, res.vincitorePartita, r);
@@ -1465,6 +1485,8 @@
             try {
                 var resume = JSON.parse(resumeStr);
                 Game.nuovaPartita(resume.variante, resume.tipoPartita, resume.limitePartita);
+                // Partita gia' contata prima del cambio di lingua: non e' un inizio.
+                if (window.sitoPartita) window.sitoPartita.riprende(_varianteGA());
                 game.puntiGiocatore = resume.puntiGiocatore || 0;
                 game.puntiAvversario = resume.puntiAvversario || 0;
                 aggiornaPunteggi();

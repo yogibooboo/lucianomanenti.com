@@ -2,7 +2,6 @@
 
 // ============================================================================
 // BURRACO - Gioco di carte italiano
-// Versione 3.0 - Riscrittura completa
 // Supporta 1v1 e 2v2
 //
 // FILE: burraco-core.js
@@ -26,7 +25,7 @@ const burracoTranslations = {
         'label-totale': 'Totale',
         'label-scarti': 'Scarti',
         'label-giocatore': 'Giocatore',
-        'btn-istruzioni': 'ISTRUZIONI',
+        'btn-istruzioni': 'REGOLE',
         'btn-nuova': 'NUOVA',
         'btn-scoperte': 'SCOPERTE',
         'modal-nuova-titolo': 'Nuova Partita',
@@ -175,8 +174,6 @@ const burracoTranslations = {
         'label-burraco-sporco': 'DIRTY'
     }
 };
-
-window.currentLang = window.currentLang || 'it';
 
 window.t = function(key) {
     if (!burracoTranslations[window.currentLang]) return key;

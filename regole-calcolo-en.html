@@ -2,138 +2,40 @@
 <html lang="en">
 
 <head>
-	<meta charset="UTF-8">
+	<meta charset="utf-8">
+
+	<!-- Site-wide functions: GA, icons, navigation, consent box -->
+	<script src="site.js" defer></script>
+
+	<title>Cross Figure Puzzle Rules - How to play - lucianomanenti.com</title>
+	<link rel="canonical" href="https://www.lucianomanenti.com/regole-calcolo-en.html">
+	<link rel="alternate" hreflang="it" href="https://www.lucianomanenti.com/regole-calcolo.html">
+	<link rel="alternate" hreflang="en" href="https://www.lucianomanenti.com/regole-calcolo-en.html">
+	<link rel="alternate" hreflang="x-default" href="https://www.lucianomanenti.com/regole-calcolo.html">
+	<link rel="manifest" href="/favicon/site.webmanifest">
+
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
-	<script>
-		window.dataLayer = window.dataLayer || [];
-		function gtag() { dataLayer.push(arguments); }
-		gtag('js', new Date());
-		gtag('config', 'G-WRBDRDQ4L8');
-		window.currentLang = 'en';
-	</script>
-	<title>Cross Figure Puzzle Rules - How to play</title>
 	<meta name="Description"
 		content="Rules of the Cross Figure cryptarithm: nine numbers in a 3x3 matrix, digits hidden behind letters and six operations that must all balance. Complete guide and solving techniques.">
-	<link rel="alternate" hreflang="it" href="regole-calcolo.html">
-	<link rel="alternate" hreflang="en" href="regole-calcolo-en.html">
-	<link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
-	<link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
-	<link rel="shortcut icon" href="favicon/favicon.ico">
-	<link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+
+	<link rel="stylesheet" href="/testo.css">
+
+	<!-- Quello che testo.css non ha: i titoletti, la tabella delle ampiezze,
+	     l'evidenziatore e gli schemi d'esempio -->
 	<style>
-		body {
-			font-family: sans-serif;
-			line-height: 1.7;
-			max-width: 800px;
-			margin: 40px auto;
-			padding: 20px;
-			color: #333;
-			background-color: #f9f9f9;
-		}
-
-		h1 {
-			color: #2c3e50;
-			border-bottom: 2px solid #ffd700;
-			padding-bottom: 10px;
-		}
-
-		h2 {
-			color: #2c3e50;
-			margin-top: 30px;
-		}
-
 		h3 {
 			color: #2c3e50;
 			font-size: 1.1em;
 			margin-top: 20px;
 		}
 
-		.lang-switch {
-			text-align: right;
-			margin-bottom: 20px;
-		}
-
-		.lang-switch a {
-			display: inline-block;
-			padding: 6px 16px;
-			margin-left: 5px;
-			text-decoration: none;
-			border-radius: 5px;
-			font-weight: bold;
-			font-size: 14px;
-		}
-
-		.lang-switch a.active {
-			background: #2c3e50;
-			color: white;
-		}
-
-		.lang-switch a:not(.active) {
-			background: #ddd;
-			color: #333;
-			cursor: pointer;
-		}
-
-		.content-box {
-			background: white;
-			padding: 30px;
-			border-radius: 8px;
-			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-		}
-
-		.play-btn {
-			display: inline-block;
-			margin-top: 25px;
-			padding: 12px 30px;
-			background: #27ae60;
-			color: white;
-			text-decoration: none;
-			border-radius: 8px;
-			font-size: 18px;
-			font-weight: bold;
-		}
-
-		.nav-links {
-			text-align: center;
-			margin-top: 30px;
-			font-size: 14px;
-		}
-
-		.nav-links a {
-			color: #3498db;
-			text-decoration: none;
-			margin: 0 10px;
-		}
-
-		.banner {
-			width: 100%;
-			height: 150px;
-			background-image: url('images/home/castagne.jpg');
-			background-size: cover;
-			background-position: center;
-			border-radius: 8px;
-			margin: 20px 0;
-			box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-		}
-
 		.score-table {
-			width: 100%;
-			border-collapse: collapse;
 			margin-top: 10px;
 			margin-bottom: 20px;
 		}
 
-		.score-table th,
-		.score-table td {
-			border: 1px solid #ddd;
-			padding: 8px;
-			text-align: left;
-		}
-
 		.score-table th {
 			background-color: #f2f2f2;
-			font-weight: bold;
 		}
 
 		.highlight {
@@ -156,17 +58,16 @@
 </head>
 
 <body>
-	<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-		<a href="#" id="btn-back" onclick="goBack(); return false;"
-			style="display: inline-block; padding: 6px 16px; background: #e74c3c; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 14px;">&#x2190;
+	<div class="top-bar">
+		<a href="calcolo-en.html" id="btn-back" class="back-btn" onclick="goBack(); return false;">&#x2190;
 			Back</a>
-		<div class="lang-switch" style="margin-bottom: 0;">
+		<div class="lang-switch">
 			<a href="regole-calcolo.html" id="btn-it">Italiano</a>
 			<a href="regole-calcolo-en.html" id="btn-en" class="active">English</a>
 		</div>
 	</div>
 
-	<div class="banner"></div>
+	<div class="striscia"></div>
 
 	<div class="content-box">
 		<div id="lang-en">
@@ -272,70 +173,59 @@ BD  &minus;  AE  =  E</p>
 
 			<h3>Game buttons</h3>
 			<ul>
-				<li><strong>&#8630; Undo:</strong> undoes the last assignment, restoring the matrix as it was too (also with <strong>Ctrl+Z</strong>).</li>
-				<li><strong>&#128161; Hint:</strong> highlights a letter that can be deduced from the assignments made so far (or a wrong digit, if there is one) and opens a panel with three choices: <strong>Explanation</strong> shows the reasoning, <strong>Assign the digit</strong> fills it in, <strong>Close</strong> cancels without changing anything. Opening a hint costs <strong>10 seconds</strong>; the <strong>Explanation</strong> or the assignment add <strong>another 20 seconds</strong>, once only even if you use both.</li>
+				<li><strong>&#8634; Undo:</strong> undoes the last assignment, restoring the matrix as it was too (also with <strong>Ctrl+Z</strong>).</li>
+				<li><strong>&#128161; Hint:</strong> sits next to Undo, above the matrix. The button highlights a letter that can be deduced from the assignments made so far (or a wrong digit, if there is one) and opens a panel with three choices: <strong>Explanation</strong> shows the reasoning, <strong>Assign the digit</strong> fills it in, <strong>Close</strong> cancels without changing anything. Opening a hint costs <strong>10 seconds</strong>; the <strong>Explanation</strong> or the assignment add <strong>another 20 seconds</strong>, once only even if you use both.</li>
 			</ul>
 
+			<h3>The calculator</h3>
+			<p>At the bottom of the right-hand column, below <strong>NEW GAME</strong>, there is a <strong>calculator</strong> always at hand, for the sums you cannot do in your head: a four-digit multiplication, a division, checking an operation of the grid. It does the four operations and the square root (<strong>&#8730;</strong>); <strong>C</strong> clears and <strong>&#9003;</strong> deletes the last digit. Its results do not touch the puzzle: the calculator never assigns anything.</p>
+			<p>You can use it with the mouse or with the keyboard. When you <strong>click inside it</strong>, the calculator lights up with a light-blue frame and takes over the keyboard: the digits, <strong>+ &minus; * /</strong>, the decimal point, <strong>Enter</strong> for the result, <strong>Backspace</strong> and <strong>C</strong>. A <strong>click outside</strong> or the <strong>Esc</strong> key switches it off, and the keyboard goes back to the game: digits assign again and letters select.</p>
+
 			<h3>The two options</h3>
-			<p>Below the buttons there are two options, both remembered by the browser and changeable <strong>at any time</strong>, even mid-game.</p>
+			<p>In the right-hand column, below time and mistakes, there are two options, both remembered by the browser and changeable <strong>at any time</strong>, even mid-game.</p>
 			<p><strong>Flag wrong exclusions and assignments right away.</strong> With the option on, a wrong assignment is shown in red and counts as a mistake, with a <strong>30-second penalty</strong>. The same goes for an <strong>&times;</strong> exclusion placed on the correct digit: the square turns red, and that red is help in all but name (it tells you the answer is right there), so it costs a mistake and 30 seconds too. It is charged once per square, and only when the exclusion is placed: removing it and putting it back adds no further penalty. Turn it off and you play "the old-fashioned way": you will only notice the mistake from the arithmetic that fails to add up.</p>
 			<p><strong>Cross out the columns of the digits missing from the puzzle.</strong> There are 8, 9 or 10 letters in play, so <strong>one or two digits may not appear at all</strong>. This makes reasoning "by column" lame: a column with a single free cell proves nothing as long as that digit might be out of play. With the option on, the dead columns are crossed out from the start and the matrix becomes a full square again, where reasoning by column is worth as much as reasoning by row. It is a help in every sense, so it is <strong>off</strong> by default; switching it on and off crosses out and frees the columns, and never touches the <strong>&times;</strong> marks you made yourself.</p>
 
 			<h2>Control Buttons</h2>
 			<ul>
 				<li><strong>NEW GAME:</strong> abandons the current puzzle (after confirmation) and opens the panel where you choose the size of the numbers.</li>
-				<li><strong>HOW TO PLAY:</strong> opens this guide.</li>
+				<li><strong>RULES:</strong> opens this guide.</li>
 				<li><strong>&#x1F50A; / &#x1F507; (Audio):</strong> enables or disables sound effects. Your preference is global and will be remembered by the browser across every page of the site.</li>
 			</ul>
 
 			<h2>Automatic Saving</h2>
 			<p>The game is <strong>saved automatically</strong> in your browser after every move: if you close the page or the computer, next time you will resume exactly where you left off, with time, mistakes, assignments and exclusions preserved.</p>
 
-			<p style="text-align: center;"><a href="#" onclick="goBack(); return false;" class="play-btn">Close</a></p>
+			<p style="text-align: center;"><a href="calcolo-en.html" onclick="goBack(); return false;" class="play-btn">Close</a></p>
 		</div>
 	</div>
 
+	<div class="striscia"></div>
 
-	<div class="banner"></div>
+	<div class="nav-links" data-comune></div>
 
-	<div class="nav-links">
-		<a href="index-en.html">Home</a> |
-		<a href="calcolo-en.html">Cross Figure</a> |
-		<a href="regole-sudoku-en.html">Sudoku</a> |
-		<a href="regole-scopa-en.html">Scopa</a> |
-		<a href="regole-burraco-en.html">Burraco</a> |
-		<a href="regole-scala40-en.html">Scala 40</a> |
-		<a href="regole-machiavelli-en.html">Machiavelli</a> |
-		<a href="regole-spider-en.html">Spider</a> |
-		<a href="regole-rummy-en.html">Gin Rummy</a> |
-		<a href="privacy-en.html">Privacy</a> |
-		<a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)">Manage Cookies</a>
-	</div>
-
-	<p style="text-align: center; font-size: 0.8em; color: #999; margin-top: 10px;">
+	<p class="copyright">
 		© 2026 Luciano Manenti
 	</p>
 
 	<script>
+		// Dove va questa pagina quando si preme "indietro": il gioco di cui parla.
+		var PAGINA_GIOCO = 'calcolo-en.html';
+
 		function goBack() {
+			// Cronologia lunga: siamo arrivati da fuori, tipicamente da Google.
+			// Portiamolo al gioco, che da qui altrimenti non raggiungerebbe: la
+			// pagina delle istruzioni, trovata con una ricerca, e' un vicolo cieco.
+			if (window.history.length > 1) {
+				window.location.href = PAGINA_GIOCO;
+				return;
+			}
+			// Scheda nuova: l'ha aperta il gioco con target="_blank". Si chiude,
+			// e il gioco rimasto sotto torna in primo piano. Se invece la scheda
+			// l'ha aperta l'utente (Ctrl+clic da Google) il browser rifiuta la
+			// chiusura in silenzio: caso raro, lasciato scoperto apposta.
 			window.close();
 		}
-		(function() {
-			var nascosto = false;
-			var observer = new MutationObserver(function() {
-				if (nascosto) return;
-				var divs = document.querySelectorAll('body > div');
-				for (var i = 0; i < divs.length; i++) {
-					if (divs[i].shadowRoot && !divs[i].className && (divs[i].getAttribute('style')||'').length > 5000) {
-						divs[i].style.setProperty('display', 'none', 'important');
-						nascosto = true;
-						observer.disconnect();
-						return;
-					}
-				}
-			});
-			observer.observe(document.body, { childList: true });
-		})();
 	</script>
 </body>
 

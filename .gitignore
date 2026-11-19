@@ -71,8 +71,8 @@ stats/stats-config.php
 stats/stats-config.locale.php
 
 # --- WooWoo ---
-# Il gioco si chiama WooWoo ma i file portano il nome woowoo2: il primo
-# tentativo, quello coi file woowoo.*, resta solo sul disco.
+# I file del gioco si chiamavano woowoo2.* fino al 17/11/2026, quando hanno
+# preso il nome del gioco. Gli strumenti in dev/ tengono il nome vecchio.
 
 # La cartella dev/ tiene il materiale che viene dal dischetto Kingsoft del
 # 1992: le piastrelle estratte da Loco1.ilbm, i quarantacinque quadri
@@ -86,11 +86,12 @@ stats/stats-config.locale.php
 # doversene ricordare. Gli strumenti nostri, che di Kingsoft non hanno niente,
 # si versionano uno per uno.
 dev/*
+!dev/promozioni-editor.html
 !dev/woowoo2-editor.html
 !dev/woowoo2-innesto-vecchio.js
 !dev/woowoo2-schemi-nostri.json
 
-# woowoo2-mie.js invece si versiona: era una copia dei quadri del dischetto,
+# woowoo-mie.js invece si versiona: era una copia dei quadri del dischetto,
 # ma i livelli N..X sono stati svuotati e resta disegnata solo M, che e' roba
 # nostra. La copia integra di prima e' in dev/dischetto/.
 
@@ -119,3 +120,6 @@ scivoli/
 # fuori dalla sitemap. Parcheggiato qui intero. Come scivoli/, le pagine dentro
 # cercano ancora i file del sito come se fossero alla radice.
 hanon/
+
+# Configurazione dei server MCP di Claude: percorsi di questo PC
+.mcp.json

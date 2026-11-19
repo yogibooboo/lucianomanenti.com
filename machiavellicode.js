@@ -151,6 +151,8 @@ var scala = {
 		this.shuffle();   //provo a mescolare 2 volte
 		this.createDeckElements();
 		this.givecards();
+		// Analytics: la partita comincia qui; la variante e' il numero di avversari.
+		if (window.sitoPartita) window.sitoPartita.inizio(String(this.numeroavversari));
 		return;
 	},
 
@@ -1373,8 +1375,13 @@ var scala = {
 	},
 
 	nuovo: function () {
+		// Analytics: di qui passano tutte le strade che ricominciano (NUOVO,
+		// GIOCATORI, i modali di fine). Se la partita era ancora aperta e'
+		// lasciata a meta'; se era gia' vinta o persa site.js non manda niente.
+		if (window.sitoPartita) window.sitoPartita.fine('abandoned');
 		localStorage.setItem('machiavelli_numeroavversari', this.numeroavversari);
-		location.reload();
+		if (typeof window.reloadWithInterstitial === 'function') window.reloadWithInterstitial();
+		else location.reload();
 	},
 
 	azzeratotale: function () {
@@ -1494,6 +1501,7 @@ var scala = {
 			// il tavolo. In quel secondo il pulsante "Nuovo" e' ancora cliccabile: il
 			// flag impedisce che confirmNuovo apra 'confermatermina' sopra 'haivinto'.
 			scala.finepartita = true;
+			if (window.sitoPartita) window.sitoPartita.fine('won');
 			window.setTimeout(function () { tada.play(); scala.mydialog("haivinto", scala.nuovo) }, 1000)
 		}
 
@@ -1597,6 +1605,17 @@ var scala = {
 			else $("#etavversario" + scala.etichette[j]).css({ "color": "#888888" });
 		}
 		if (scala.fscartigiocatore) $("#etgiocatore").css({ "color": "red" });
+
+		// Suggerimento sotto GIOCATORE: il clic sul campo pesca (scritta gialla)
+		// oppure passa il turno se si e' gia' depositato qualcosa (scritta rossa)
+		var en = (window.currentLang === 'en');
+		if (scala.turno == -1 && !scala.pescato) {
+			if (scala.fscartigiocatore)
+				$("#suggerimentogiocatore").text(en ? "meld more or click to end turn" : "cala ancora o clicca per passare").css({ "color": "#ff4040", "border-color": "#ff4040", "display": "block" });
+			else
+				$("#suggerimentogiocatore").text(en ? "meld or click to draw" : "cala o clicca per pescare").css({ "color": "yellow", "border-color": "yellow", "display": "block" });
+		}
+		else $("#suggerimentogiocatore").css({ "display": "none" });
 	},
 
 
@@ -2684,6 +2703,9 @@ var scala = {
 					// dell'avversario, e il flag protegge la finestra. Se la partita
 					// prosegue con gli altri avversari, testfine() lo rimette a false.
 					scala.finepartita = true;
+					// Analytics: persa quando il primo avversario finisce le carte. Se poi
+					// si continua contro gli altri, le fini successive non si contano.
+					if (window.sitoPartita) window.sitoPartita.fine('lost');
 					window.setTimeout(function () { haiperso.play(); scala.mydialog("haiperso", scala.nuovo, scala.testfine) }, 500);
 
 					return;

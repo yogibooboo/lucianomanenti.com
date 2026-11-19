@@ -178,6 +178,7 @@ var scala = {
 		this.shuffle();   //provo a mescolare 2 volte
 		this.createDeckElements();
 		//this.givecards(); 
+		if (window.sitoPartita) window.sitoPartita.inizio('');
 		window.requestAnimationFrame(scala.refresh);
 		return;
 	},
@@ -452,6 +453,7 @@ var scala = {
 				if (scala.moves < scala.bestscore) scala.bestscore = scala.moves;
 				if (scala.currenttime < scala.besttime) scala.besttime = scala.currenttime;
 			}
+			if (window.sitoPartita) window.sitoPartita.fine('won');
 			scala.mydialog("haivinto", scala.nuovo);
 			suona(tada);
 		}
@@ -751,6 +753,7 @@ var scala = {
 					if (scala.currenttime < scala.besttime) scala.besttime = scala.currenttime;
 				}
 				scala.fautocomplete = false;
+				if (window.sitoPartita) window.sitoPartita.fine('won');
 				scala.mydialog("haivinto", scala.nuovo);
 				suona(tada);
 			}
@@ -999,16 +1002,10 @@ var scala = {
 		});
 
 
-		$('.pulsantehelp').click(function () {
-			var langSuffix = (window.currentLang === 'en') ? '-en.html' : '.html';
-			window.location.assign('regole-spider' + langSuffix);
-		});
-
-
-		$('.pulsanteaiuto').click(function () {
-			var langSuffix = (window.currentLang === 'en') ? '-en.html' : '.html';
-			window.location.assign('regole-spider' + langSuffix);
-		});
+		// AIUTO / HELP: nessun gestore qui. Il pulsante sta dentro un
+		// <a target="_blank"> che apre gia' le regole in una scheda nuova; il
+		// vecchio location.assign portava alle regole ANCHE la scheda del
+		// gioco, e la partita in corso andava persa.
 
 		var btnNuovo = document.getElementById('nuovo');
 		if (btnNuovo) {
@@ -1038,6 +1035,8 @@ var scala = {
 		var btnSi = document.querySelector('#confermatermina .btn-si-termina');
 		if (btnSi) {
 			btnSi.addEventListener('click', function () {
+				// Partita lasciata a meta', confermata dal giocatore
+				if (window.sitoPartita) window.sitoPartita.fine('abandoned');
 				scala.nuovo();
 			});
 		}
@@ -1290,7 +1289,11 @@ var scala = {
 	nuovo: function () {
 		scala.games++;
 		localStorage.setItem('spider_games', scala.games);
-		location.reload();
+		if (typeof window.reloadWithInterstitial === 'function') {
+			window.reloadWithInterstitial();
+		} else {
+			location.reload();
+		}
 	},
 	confirmNuovo: function () {
 		// Durante l'autocompletamento la partita e' di fatto gia' vinta: refresh()

@@ -1,0 +1,1208 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Editor promozioni</title>
+<!--
+  Editor dei messaggi di promozioni.js.
+
+  Non ha dati suoi: all'apertura legge ../promozioni.js, ne tira fuori il
+  catalogo dei giochi, i messaggi, le etichette e gli interruttori, e al
+  salvataggio riscrive nel file SOLO quei pezzi. Il meccanismo che sta sotto
+  non lo tocca.
+
+  L'anteprima non e' una copia della scheda: e' promozioni.js stesso, fatto
+  girare qui dentro con i dati che si stanno modificando e un sitoSpazi finto.
+  Quello che si vede e' quello che uscira'.
+
+  Si salva con la File System Access API (Chrome, Edge), come l'editor di
+  woowoo2: la prima volta si indica la cartella del sito, poi il browser se
+  la ricorda.
+-->
+<style>
+:root{
+  --fondo:#1d2126; --pannello:#262b32; --bordo:#3a424c; --testo:#e6e9ed;
+  --fioco:#98a2b0; --acc:#6fb3e0; --ok:#7fc98a; --male:#e07b6f; --giallo:#e0c06f;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--fondo);color:var(--testo);
+  font:14px/1.45 "Segoe UI",system-ui,sans-serif}
+header{display:flex;flex-wrap:wrap;gap:8px;align-items:center;position:sticky;top:0;z-index:60000;
+  padding:8px 12px;background:var(--pannello);border-bottom:1px solid var(--bordo)}
+header h1{font-size:15px;margin:0 12px 0 0;font-weight:600;letter-spacing:.02em}
+button,select,input,textarea{font:inherit;color:var(--testo);background:#323945;
+  border:1px solid var(--bordo);border-radius:5px;padding:4px 8px}
+button,select{cursor:pointer;padding:4px 10px}
+button:hover,select:hover{background:#3c4452}
+button:disabled{opacity:.4;cursor:default}
+button.acc{background:#2c4f68;border-color:#3d6c8e}
+button.acc:hover{background:#356083}
+button.male{color:var(--male)}
+input[type=text],input[type=date],input[type=number],textarea{background:#1a1e23;width:100%}
+input[type=number]{width:80px}
+input[type=date]{width:150px}
+textarea{resize:vertical;min-height:62px}
+input:focus,textarea:focus{outline:1px solid var(--acc)}
+.sp{flex:1}
+#stato{font-size:12px;color:var(--fioco)}
+#stato.sporco{color:var(--giallo)}
+#stato.male{color:var(--male)}
+main{display:flex;gap:12px;padding:12px;align-items:flex-start}
+.box{background:var(--pannello);border:1px solid var(--bordo);border-radius:6px;padding:10px}
+.box h2{font-size:12px;text-transform:uppercase;letter-spacing:.08em;
+  color:var(--fioco);margin:14px 0 8px;font-weight:600}
+.box h2:first-child{margin-top:0}
+#lista{width:300px;flex-shrink:0;padding:6px;max-height:calc(100vh - 70px);overflow:auto;position:sticky;top:58px}
+.voce{display:flex;gap:8px;align-items:center;padding:5px 6px;border-radius:5px;cursor:pointer}
+.voce:hover{background:#2e343c}
+.voce.scelta{background:#2c4f68}
+.voce.spenta>:not(input){opacity:.45}
+.voce input{flex-shrink:0;margin:0;cursor:pointer}
+.testaLista{display:flex;gap:6px;align-items:center;padding:2px 2px 6px;position:sticky;top:-6px;background:inherit;z-index:1}
+.testaLista button{font-size:11px;padding:2px 8px}
+.testaLista span{margin-left:auto;font-size:11px;color:var(--fioco)}
+.voce img,.voce .niente{width:52px;height:38px;object-fit:cover;border-radius:3px;flex-shrink:0;background:#14171b}
+.voce .t{flex:1;min-width:0}
+.voce .t b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600}
+.voce .t span{font-size:11px;color:var(--fioco)}
+.voce .t span.avv{color:var(--giallo)}
+#scheda{flex:1;min-width:340px;max-width:640px}
+.riga{display:flex;gap:10px;align-items:flex-start;margin-bottom:8px}
+.riga>label{width:112px;flex-shrink:0;color:var(--fioco);font-size:12px;padding-top:6px}
+.riga>div{flex:1;min-width:0}
+.riga small{display:block;color:var(--fioco);font-size:11px;margin-top:2px}
+.spunta{display:inline-flex;gap:5px;align-items:center;margin-right:14px;padding-top:5px}
+.spunta input{width:auto}
+.fila{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.pollici{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.pollici figure{margin:0;text-align:center;font-size:10px;color:var(--fioco)}
+.pollici img{display:block;height:64px;border-radius:3px;background:#14171b;margin:0 auto 2px}
+.pollici span{display:block;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pollici figure.spenta img{opacity:.3}
+.pollici button{font-size:10px;padding:1px 6px;margin:2px 1px 0}
+#avvisi{font-size:12px;color:var(--giallo);margin-top:10px;white-space:pre-line}
+#avvisi.ok{color:var(--ok)}
+#anteprima{flex-shrink:0;width:724px;position:sticky;top:58px}
+#antCol{display:flex;flex-direction:column;align-items:center;background:#1a5c2e;
+  min-height:120px;margin:0 auto 12px;border-radius:4px;padding-bottom:12px}
+#antFine{position:relative;width:700px;height:170px;background:#0f4a22;border-radius:4px}
+#antErr{color:var(--male);font-size:12px;white-space:pre-wrap}
+dialog{background:var(--pannello);color:var(--testo);border:1px solid var(--bordo);
+  border-radius:8px;padding:16px;max-width:560px}
+dialog::backdrop{background:rgba(0,0,0,.6)}
+dialog h3{margin:0 0 10px;font-size:15px}
+dialog .pul{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
+@media (max-width:1400px){main{flex-wrap:wrap}#anteprima{position:static}}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Promozioni</h1>
+  <button id="bGioco">+ Gioco</button>
+  <button id="bTesto">+ Messaggio</button>
+  <button id="bImpo">Impostazioni…</button>
+  <span class="sp"></span>
+  <span id="stato">carico…</span>
+  <button id="bRicarica" title="Butta via le modifiche e rilegge promozioni.js">Rileggi</button>
+  <button id="bSalva" class="acc" title="Ctrl+S">Salva</button>
+</header>
+
+<main>
+  <div id="lista" class="box"></div>
+  <div id="scheda" class="box"></div>
+  <div id="anteprima" class="box">
+    <h2>Anteprima</h2>
+    <div class="fila" style="margin-bottom:10px">
+      <select id="antLingua"><option value="it">Italiano</option><option value="en">English</option></select>
+      <label style="color:var(--fioco);font-size:12px">colonna larga
+        <input type="range" id="antLarg" min="160" max="600" step="10" value="290" style="vertical-align:middle;width:180px;padding:0">
+        <span id="antLargN">290</span> px</label>
+    </div>
+    <div id="antCol"></div>
+    <div style="color:var(--fioco);font-size:12px;margin-bottom:4px">a fine partita (700 × 170)</div>
+    <div id="antFine"></div>
+    <div id="antErr"></div>
+  </div>
+</main>
+
+<dialog id="dlgImpo">
+  <h3>Impostazioni</h3>
+  <div id="impoCorpo"></div>
+  <div class="pul"><button id="impoOk" class="acc">Chiudi</button></div>
+</dialog>
+
+<dialog id="dlgCartella">
+  <h3>La cartella del sito</h3>
+  <p>Per scrivere <b>promozioni.js</b> e copiare le immagini in <b>promozioni/</b> il browser
+  vuole sapere dov'è il sito sul disco. Indica la cartella <b>lucianomanenti.com</b>, quella che
+  contiene promozioni.js, e concedi la modifica. Si fa una volta: poi se la ricorda.</p>
+  <div class="pul"><button id="carNo">Annulla</button><button id="carSi" class="acc">Scegli la cartella…</button></div>
+</dialog>
+
+<input type="file" id="fileImm" accept="image/*" hidden>
+
+<script>
+'use strict';
+
+// <puro>
+// ═══ LEGGERE E RISCRIVERE promozioni.js ══════════════════════════════════
+// Queste funzioni non toccano la pagina: prendono il testo del file e lo
+// stato, e restituiscono testo. Stanno fra i due segni perche' la prova in
+// node le pesca da qui.
+
+var LINGUE = ['it', 'en'];
+var POSTI = ['colonne', 'fine'];
+
+function trova(t, inizio, fine) {
+    var a = t.indexOf(inizio);
+    if (a < 0) throw new Error('In promozioni.js non trovo "' + inizio.trim() + '"');
+    var b = t.indexOf(fine, a);
+    if (b < 0) throw new Error('In promozioni.js non trovo la fine di "' + inizio.trim() + '"');
+    return { a: a, b: b + fine.length };
+}
+function aCapo(t) { return t.indexOf('\r\n') >= 0 ? '\r\n' : '\n'; }
+
+// I pezzi del file che sono dati. "inizio" comprende il nome della variabile,
+// "apre" e' la parentesi da cui parte il valore.
+var PEZZI = [
+    { nome: 'giochi', inizio: '    var GIOCHI = ', fine: '    };' },
+    { nome: 'messaggi', inizio: '    var MESSAGGI = ', fine: '    ];' },
+    { nome: 'etichette', inizio: '    var ETICHETTE = ', fine: '    };' }
+];
+var INTERRUTTORI = [
+    { nome: 'uguali', re: /(var COLONNE_UGUALI = )(true|false)(;)/ },
+    { nome: 'fineUguale', re: /(var FINE_UGUALE = )(true|false)(;)/ },
+    { nome: 'secondi', re: /(var SECONDI_IMMAGINE = )(\d+(?:\.\d+)?)(;)/ }
+];
+
+function leggi(t) {
+    var nl = aCapo(t), S = {};
+    PEZZI.forEach(function (p) {
+        var d = trova(t, p.inizio, nl + p.fine);
+        // dal valore in poi, senza il punto e virgola
+        S[p.nome] = new Function('return ' + t.slice(d.a + p.inizio.length, d.b - 1))();
+    });
+    INTERRUTTORI.forEach(function (i) {
+        var m = i.re.exec(t);
+        if (!m) throw new Error('In promozioni.js non trovo l\'interruttore ' + i.re.source);
+        S[i.nome] = m[2] === 'true' ? true : m[2] === 'false' ? false : Number(m[2]);
+    });
+    return S;
+}
+
+// I dati cosi' come stanno scritti nel file: serve a capire se qualcun altro
+// li ha cambiati mentre l'editor era aperto.
+function datiGrezzi(t) {
+    var nl = aCapo(t), fuori = [];
+    PEZZI.forEach(function (p) {
+        var d = trova(t, p.inizio, nl + p.fine);
+        fuori.push(t.slice(d.a, d.b));
+    });
+    INTERRUTTORI.forEach(function (i) { fuori.push((i.re.exec(t) || [''])[0]); });
+    return fuori.join('\n').replace(/\r\n/g, '\n');
+}
+
+function q(s) {
+    return "'" + String(s).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\r?\n/g, '\\n') + "'";
+}
+function chiaveJs(k) { return /^[A-Za-z_$][\w$]*$/.test(k) ? k : q(k); }
+function elencoJs(a) { return '[' + a.map(q).join(', ') + ']'; }
+function pieno(v) { return v !== undefined && v !== null && v !== '' && !(Array.isArray(v) && !v.length); }
+
+// Le immagini di un gioco: nel file un numero ("da 1 a N") oppure, se la
+// numerazione ha dei buchi, l'elenco dei numeri. Qui dentro sempre l'elenco.
+function numeriDi(v) {
+    if (Array.isArray(v)) return v.slice();
+    var a = [];
+    for (var i = 1; i <= (v || 0); i++) a.push(i);
+    return a;
+}
+function immaginiJs(v) {
+    var a = numeriDi(v);
+    var inFila = a.every(function (x, i) { return x === i + 1; });
+    return inFila ? String(a.length) : '[' + a.join(', ') + ']';
+}
+function elencoDi(v) { return !pieno(v) ? [] : Array.isArray(v) ? v.slice() : [v]; }
+
+// Tutti i file di promozioni/ che un gioco o un messaggio si porta dietro,
+// accesi e spenti, comprese le versioni in lingua.
+function fileDelGioco(k, g) {
+    var f = [];
+    numeriDi(g.immagini).concat(g.immaginiSpente || []).forEach(function (n) {
+        f.push(k + n + '.jpg');
+        Object.keys(g.inLingua || {}).forEach(function (l) {
+            if ((g.inLingua[l] || []).indexOf(n) >= 0) f.push(k + n + '-' + l + '.jpg');
+        });
+    });
+    return f;
+}
+function fileDelMessaggio(m) { return elencoDi(m.immagine).concat(m.immaginiSpente || []); }
+function fileUsati(S) {
+    var f = [];
+    Object.keys(S.giochi).forEach(function (k) { f = f.concat(fileDelGioco(k, S.giochi[k])); });
+    S.messaggi.forEach(function (m) { if (m.tipo !== 'gioco') f = f.concat(fileDelMessaggio(m)); });
+    return f;
+}
+
+function scriviGiochi(G) {
+    var r = ['    var GIOCHI = {'], chiavi = Object.keys(G);
+    chiavi.forEach(function (k, n) {
+        var g = G[k], testa = ['immagini: ' + immaginiJs(g.immagini)];
+        if (pieno(g.immaginiSpente)) testa.push('immaginiSpente: [' + g.immaginiSpente.join(', ') + ']');
+        if (g.inLingua) {
+            var il = [];
+            Object.keys(g.inLingua).forEach(function (l) {
+                if (g.inLingua[l] && g.inLingua[l].length) il.push(l + ': [' + g.inLingua[l].join(', ') + ']');
+            });
+            if (il.length) testa.push('inLingua: { ' + il.join(', ') + ' }');
+        }
+        if (g.strumento) testa.push('strumento: true');
+        if (pieno(g.pagina)) testa.push('pagina: ' + q(g.pagina));
+        if (pieno(g.regole)) testa.push('regole: ' + q(g.regole));
+        r.push('        ' + chiaveJs(k) + ': {');
+        r.push('            ' + testa.join(', ') + ',');
+        LINGUE.forEach(function (l, i) {
+            var x = g[l] || {};
+            r.push('            ' + l + ': { nome: ' + q(x.nome || '') + ', testo: ' + q(x.testo || '') + ' }' +
+                (i < LINGUE.length - 1 ? ',' : ''));
+        });
+        r.push('        }' + (n < chiavi.length - 1 ? ',' : ''));
+    });
+    r.push('    };');
+    return r;
+}
+
+// I campi che valgono per tutti i messaggi, dopo "dove".
+function coda(m) {
+    var c = [];
+    if (m.spento) c.push('spento: true');
+    if (pieno(m.dal)) c.push('dal: ' + q(m.dal));
+    if (pieno(m.al)) c.push('al: ' + q(m.al));
+    if (pieno(m.soloSu)) c.push('soloSu: ' + elencoJs(m.soloSu));
+    if (pieno(m.nonSu)) c.push('nonSu: ' + elencoJs(m.nonSu));
+    return c;
+}
+
+function scriviMessaggi(M) {
+    var r = ['    var MESSAGGI = ['], largo = 0;
+    M.forEach(function (m) { if (m.tipo === 'gioco') largo = Math.max(largo, q(m.id).length, q(m.gioco).length); });
+    function pari(s) { s += ','; while (s.length < largo + 1) s += ' '; return s; }
+    M.forEach(function (m, n) {
+        var virgola = n < M.length - 1 ? ',' : '';
+        var comuni = ['peso: ' + (m.peso || 1), 'dove: ' + elencoJs(m.dove || [])].concat(coda(m));
+        if (m.tipo === 'gioco') {
+            r.push('        { id: ' + pari(q(m.id)) + ' tipo: \'gioco\', gioco: ' + pari(q(m.gioco)) + ' ' +
+                comuni.join(', ') + ' }' + virgola);
+            return;
+        }
+        var righe = ['id: ' + q(m.id) + ', tipo: \'testo\', ' + comuni.join(', ')];
+        if (pieno(m.immagine)) {
+            righe.push('immagine: ' + (Array.isArray(m.immagine)
+                ? (m.immagine.length === 1 ? q(m.immagine[0]) : elencoJs(m.immagine)) : q(m.immagine)));
+        }
+        if (pieno(m.immaginiSpente)) righe.push('immaginiSpente: ' + elencoJs(m.immaginiSpente));
+        if (pieno(m.link)) righe.push('link: ' + q(m.link));
+        r.push('        {');
+        var blocchi = [];
+        LINGUE.forEach(function (l) {
+            var x = m[l] || {}, campi = [];
+            ['titolo', 'testo', 'pulsante'].forEach(function (c) {
+                if (pieno(x[c])) campi.push('                ' + c + ': ' + q(x[c]));
+            });
+            if (campi.length) blocchi.push('            ' + l + ': {\n' + campi.join(',\n') + '\n            }');
+        });
+        r.push(righe.map(function (x) { return '            ' + x; }).join(',\n') + (blocchi.length ? ',' : ''));
+        if (blocchi.length) r.push(blocchi.join(',\n'));
+        r.push('        }' + virgola);
+    });
+    r.push('    ];');
+    return r;
+}
+
+function scriviEtichette(E) {
+    var r = ['    var ETICHETTE = {'];
+    LINGUE.forEach(function (l, i) {
+        var x = E[l] || {};
+        r.push('        ' + l + ': { ' + Object.keys(x).map(function (k) { return k + ': ' + q(x[k]); }).join(', ') +
+            ' }' + (i < LINGUE.length - 1 ? ',' : ''));
+    });
+    r.push('    };');
+    return r;
+}
+
+// Il testo del file con i dati di S al posto di quelli che c'erano.
+function componi(t, S) {
+    var nl = aCapo(t);
+    var nuovi = {
+        giochi: scriviGiochi(S.giochi),
+        messaggi: scriviMessaggi(S.messaggi),
+        etichette: scriviEtichette(S.etichette)
+    };
+    PEZZI.forEach(function (p) {
+        var d = trova(t, p.inizio, nl + p.fine);
+        t = t.slice(0, d.a) + nuovi[p.nome].join('\n').replace(/\n/g, nl) + t.slice(d.b);
+    });
+    INTERRUTTORI.forEach(function (i) {
+        t = t.replace(i.re, function (tutto, prima, vecchio, dopo) { return prima + String(S[i.nome]) + dopo; });
+    });
+    return t;
+}
+
+// I campi che l'editor conosce: gli altri al salvataggio andrebbero persi, e
+// allora lo si dice subito.
+var NOTI_GIOCO = ['immagini', 'immaginiSpente', 'inLingua', 'regole', 'pagina', 'strumento'].concat(LINGUE);
+var NOTI_MESS = ['id', 'tipo', 'gioco', 'peso', 'dove', 'spento', 'dal', 'al', 'soloSu', 'nonSu',
+    'immagine', 'immaginiSpente', 'link'].concat(LINGUE);
+function campiIgnoti(S) {
+    var f = [];
+    Object.keys(S.giochi).forEach(function (k) {
+        Object.keys(S.giochi[k]).forEach(function (c) { if (NOTI_GIOCO.indexOf(c) < 0) f.push('catalogo ' + k + ': ' + c); });
+    });
+    S.messaggi.forEach(function (m) {
+        Object.keys(m).forEach(function (c) { if (NOTI_MESS.indexOf(c) < 0) f.push('messaggio ' + m.id + ': ' + c); });
+    });
+    return f;
+}
+// </puro>
+
+// ═══ LO STATO ════════════════════════════════════════════════════════════
+
+var FILE = '../promozioni.js';
+var CARTELLA = '/promozioni/';
+var testo0 = '';       // il file com'era quando lo si e' letto
+var S = null;          // i dati che si stanno modificando
+var scelto = 0;        // l'indice in S.messaggi
+var sporco = false;
+// I file di promozioni/ da cancellare al prossimo Salva: immagini tolte, o di
+// una voce eliminata. Non si cancellano subito perche' fino al Salva il file
+// sul disco li nomina ancora, e un "Rileggi" deve poter tornare indietro.
+var daCancellare = [];
+var timbro = Date.now();   // per non farsi servire dalla cache un'immagine appena sostituita
+
+function $(id) { return document.getElementById(id); }
+function crea(tag, attr, figli) {
+    var e = document.createElement(tag), k;
+    for (k in (attr || {})) {
+        if (k === 'testo') e.textContent = attr[k];
+        else if (k === 'classe') e.className = attr[k];
+        else if (k.indexOf('on') === 0) e[k] = attr[k];
+        else e.setAttribute(k, attr[k]);
+    }
+    (figli || []).forEach(function (f) { if (f) e.appendChild(typeof f === 'string' ? document.createTextNode(f) : f); });
+    return e;
+}
+
+function stato(testo, classe) {
+    var s = $('stato');
+    s.textContent = testo;
+    s.className = classe || '';
+}
+function segnaSporco() {
+    sporco = true;
+    stato('modifiche non salvate', 'sporco');
+}
+
+function sistema(S) {
+    // Ogni voce ha i suoi blocchi di lingua, anche vuoti: i campi del modulo
+    // hanno bisogno di un posto dove scrivere.
+    // Le immagini qui dentro sono sempre elenchi: numeri per i giochi, nomi
+    // di file per i messaggi.
+    Object.keys(S.giochi).forEach(function (k) {
+        var g = S.giochi[k];
+        LINGUE.forEach(function (l) { if (!g[l]) g[l] = {}; });
+        g.immagini = numeriDi(g.immagini);
+        if (!g.immaginiSpente) g.immaginiSpente = [];
+        if (!g.inLingua) g.inLingua = {};
+    });
+    S.messaggi.forEach(function (m) {
+        if (!m.dove) m.dove = POSTI.slice();
+        if (m.tipo === 'gioco') return;
+        LINGUE.forEach(function (l) { if (!m[l]) m[l] = {}; });
+        m.immagine = elencoDi(m.immagine);
+        if (!m.immaginiSpente) m.immaginiSpente = [];
+    });
+    // Un gioco del catalogo senza messaggio non uscirebbe mai e qui non si
+    // vedrebbe: gli si da' un messaggio spento.
+    Object.keys(S.giochi).forEach(function (k) {
+        if (!S.messaggi.some(function (m) { return m.tipo === 'gioco' && m.gioco === k; })) {
+            S.messaggi.push({ id: k, tipo: 'gioco', gioco: k, peso: 1, dove: POSTI.slice(), spento: true });
+        }
+    });
+    return S;
+}
+
+async function carica() {
+    try {
+        testo0 = await (await fetch(FILE + '?t=' + Date.now(), { cache: 'no-store' })).text();
+        S = sistema(leggi(testo0));
+    } catch (e) {
+        stato('Non riesco a leggere promozioni.js: ' + e.message, 'male');
+        return;
+    }
+    sporco = false;
+    daCancellare = [];
+    if (scelto >= S.messaggi.length) scelto = 0;
+    var ignoti = campiIgnoti(S);
+    stato(ignoti.length ? 'ATTENZIONE, campi che non conosco e che salvando si perdono: ' + ignoti.join('; ')
+        : S.messaggi.length + ' messaggi', ignoti.length ? 'male' : '');
+    disegnaLista();
+    disegnaScheda();
+}
+
+// ═══ LA LISTA ════════════════════════════════════════════════════════════
+
+function oggi() {
+    var d = new Date();
+    function due(n) { return (n < 10 ? '0' : '') + n; }
+    return d.getFullYear() + '-' + due(d.getMonth() + 1) + '-' + due(d.getDate());
+}
+function titoloDi(m) {
+    if (m.tipo === 'gioco') return ((S.giochi[m.gioco] || {}).it || {}).nome || m.gioco;
+    return (m.it && m.it.titolo) || m.id;
+}
+function primaImmagine(m) {
+    if (m.tipo === 'gioco') {
+        var g = S.giochi[m.gioco];
+        return g && g.immagini.length ? m.gioco + g.immagini[0] + '.jpg' : '';
+    }
+    return m.immagine[0] || '';
+}
+function attivo(m) {
+    var g = oggi();
+    return !m.spento && !(m.dal && g < m.dal) && !(m.al && g > m.al) && m.dove.length > 0;
+}
+
+function disegnaLista() {
+    var L = $('lista'), totale = 0;
+    L.textContent = '';
+    S.messaggi.forEach(function (m) { if (attivo(m)) totale += (m.peso || 1); });
+    // In testa: accendere o spegnere tutto in un colpo.
+    var accesi = S.messaggi.filter(function (m) { return !m.spento; }).length;
+    function tutti(spento) {
+        S.messaggi.forEach(function (m) { if (spento) m.spento = true; else delete m.spento; });
+        segnaSporco();
+        disegnaLista();
+        disegnaScheda();
+    }
+    L.appendChild(crea('div', { classe: 'testaLista' }, [
+        crea('button', { testo: 'Abilita tutto', onclick: function () { tutti(false); } }),
+        crea('button', { testo: 'Disabilita tutto', onclick: function () { tutti(true); } }),
+        crea('span', { testo: accesi + ' su ' + S.messaggi.length })
+    ]));
+    S.messaggi.forEach(function (m, i) {
+        // La spunta e' lo stesso "Acceso" della scheda.
+        var spunta = crea('input', { type: 'checkbox', title: 'Acceso' });
+        spunta.checked = !m.spento;
+        spunta.onclick = function (e) { e.stopPropagation(); };
+        spunta.onchange = function () {
+            if (spunta.checked) delete m.spento; else m.spento = true;
+            segnaSporco();
+            disegnaLista();
+            if (i === scelto) disegnaScheda();
+        };
+        var imm = primaImmagine(m), g = oggi();
+        var nota = (m.tipo === 'gioco' ? ((S.giochi[m.gioco] || {}).strumento ? 'strumento' : 'gioco') : 'messaggio') +
+            ' · peso ' + (m.peso || 1);
+        var avviso = '';
+        if (m.spento) avviso = 'spento';
+        else if (m.al && g > m.al) avviso = 'scaduto il ' + m.al;
+        else if (m.dal && g < m.dal) avviso = 'dal ' + m.dal;
+        else if (!m.dove.length) avviso = 'nessun posto';
+        else nota += ' · ' + ((m.peso || 1) * 100 / totale).toFixed(1).replace('.', ',') + '%';
+        var v = crea('div', { classe: 'voce' + (i === scelto ? ' scelta' : '') + (attivo(m) ? '' : ' spenta') }, [
+            spunta,
+            imm ? crea('img', { src: CARTELLA + imm + '?t=' + timbro, alt: '' }) : crea('div', { classe: 'niente' }),
+            crea('div', { classe: 't' }, [
+                crea('b', { testo: titoloDi(m) }),
+                crea('span', { testo: nota }),
+                avviso ? crea('span', { classe: 'avv', testo: ' · ' + avviso }) : null
+            ])
+        ]);
+        v.onclick = function () { scelto = i; disegnaLista(); disegnaScheda(); };
+        L.appendChild(v);
+    });
+}
+
+// ═══ LA SCHEDA ═══════════════════════════════════════════════════════════
+
+var attesa = null;
+function cambiato() {
+    segnaSporco();
+    clearTimeout(attesa);
+    attesa = setTimeout(function () { disegnaLista(); anteprima(); }, 250);
+}
+
+// Una riga del modulo. "leggi" e "scrivi" fanno da ponte col dato: cosi' lo
+// stesso campo serve per una stringa, un elenco o una spunta.
+function riga(etichetta, tipo, leggi, scrivi, nota) {
+    var c;
+    if (tipo === 'area') { c = crea('textarea'); c.value = leggi() || ''; }
+    else if (tipo === 'spunta') { c = crea('input', { type: 'checkbox' }); c.checked = !!leggi(); }
+    else { c = crea('input', { type: tipo === 'numero' ? 'number' : tipo === 'data' ? 'date' : 'text' }); c.value = leggi() === undefined ? '' : leggi(); }
+    if (tipo === 'numero') { c.min = 0; c.step = 1; }
+    c.spellcheck = tipo === 'area';
+    c.oninput = function () {
+        scrivi(tipo === 'spunta' ? c.checked : tipo === 'numero' ? Number(c.value) : c.value);
+        cambiato();
+    };
+    return crea('div', { classe: 'riga' }, [
+        crea('label', { testo: etichetta }),
+        crea('div', {}, [c, nota ? crea('small', { testo: nota }) : null])
+    ]);
+}
+// Il campo di un oggetto: vuoto vuol dire che il campo non c'e'.
+function campo(etichetta, tipo, ogg, nome, nota) {
+    return riga(etichetta, tipo, function () { return ogg[nome]; }, function (v) {
+        if (v === '' || v === false) delete ogg[nome]; else ogg[nome] = typeof v === 'string' ? v.trim() : v;
+    }, nota);
+}
+// Un elenco scritto con le virgole.
+function campoElenco(etichetta, ogg, nome, nota, numeri) {
+    return riga(etichetta, 'testo', function () { return (ogg[nome] || []).join(', '); }, function (v) {
+        var a = v.split(',').map(function (x) { return x.trim(); }).filter(Boolean);
+        if (numeri) a = a.map(Number).filter(function (x) { return x > 0; });
+        if (a.length) ogg[nome] = a; else delete ogg[nome];
+    }, nota);
+}
+
+function disegnaScheda() {
+    var D = $('scheda'), m = S.messaggi[scelto];
+    D.textContent = '';
+    if (!m) { D.textContent = 'Nessun messaggio.'; anteprima(); return; }
+    var g = m.tipo === 'gioco' ? S.giochi[m.gioco] : null;
+
+    D.appendChild(crea('h2', { testo: m.tipo === 'gioco' ? 'Gioco: ' + m.gioco : 'Messaggio: ' + m.id }));
+
+    // ── quando e dove esce ──
+    D.appendChild(riga('Acceso', 'spunta', function () { return !m.spento; },
+        function (v) { if (v) delete m.spento; else m.spento = true; },
+        'Spento resta nel file ma non esce mai.'));
+    D.appendChild(riga('Peso', 'numero', function () { return m.peso || 1; }, function (v) { m.peso = v > 0 ? v : 1; },
+        'Quanto spesso esce rispetto agli altri: con peso 3 esce il triplo di uno con peso 1.'));
+    var posti = crea('div', {}, POSTI.map(function (p) {
+        var c = crea('input', { type: 'checkbox' });
+        c.checked = m.dove.indexOf(p) >= 0;
+        c.oninput = function () {
+            m.dove = POSTI.filter(function (x) { return x === p ? c.checked : m.dove.indexOf(x) >= 0; });
+            cambiato();
+        };
+        return crea('label', { classe: 'spunta' }, [c, p === 'colonne' ? 'nelle colonne ai lati' : 'a fine partita']);
+    }));
+    D.appendChild(crea('div', { classe: 'riga' }, [crea('label', { testo: 'Dove' }), posti]));
+    var date = crea('div', { classe: 'fila' });
+    ['dal', 'al'].forEach(function (n) {
+        var c = crea('input', { type: 'date' });
+        c.value = m[n] || '';
+        c.oninput = function () { if (c.value) m[n] = c.value; else delete m[n]; cambiato(); };
+        date.appendChild(crea('span', { testo: n }));
+        date.appendChild(c);
+    });
+    D.appendChild(crea('div', { classe: 'riga' }, [crea('label', { testo: 'Periodo' }),
+        crea('div', {}, [date, crea('small', { testo: 'Giorni compresi. Vuoto: sempre.' })])]));
+    D.appendChild(campoElenco('Solo su', m, 'soloSu', 'Nomi di pagina separati da virgola (burraco, scala40). Vuoto: dappertutto.'));
+    D.appendChild(campoElenco('Non su', m, 'nonSu', 'Le pagine dove non deve uscire.'));
+
+    if (g) {
+        // ── il gioco del catalogo ──
+        D.appendChild(crea('h2', { testo: 'La pagina' }));
+        D.appendChild(campo('Strumento', 'spunta', g, 'strumento', 'Non è un gioco: il secondo pulsante dice GUIDA invece di REGOLE.'));
+        D.appendChild(campo('Pagina', 'testo', g, 'pagina',
+            'Solo se non è ' + m.gioco + '.html nella radice: il percorso senza lingua e senza .html (musica/accordi/index).'));
+        D.appendChild(campo('Regole', 'testo', g, 'regole',
+            'La pagina di regole, senza .html. Vuoto: niente secondo pulsante.'));
+        D.appendChild(crea('h2', { testo: 'Immagini' }));
+        D.appendChild(crea('div', { classe: 'riga' }, [crea('label', { testo: 'Immagini' }), crea('div', {}, [
+            crea('button', { testo: 'Aggiungi immagine…', onclick: function () { scegliImmagine(m); } }),
+            crea('button', { testo: 'Incolla dagli appunti', title: 'Anche con Ctrl+V', onclick: function () { incollaImmagine(m); } }),
+            crea('div', { classe: 'pollici', id: 'pollici' }),
+            crea('small', { testo: 'Si chiamano ' + m.gioco + '1.jpg, ' + m.gioco + '2.jpg… Quelle aggiunte da qui ' +
+                'vengono ridotte a 800 di larghezza e compresse. Spenta: resta sul disco ma non si mostra. ' +
+                'Tolta: al Salva si cancella dal disco, se non la usa nessun altro.' })
+        ])]));
+        D.appendChild(campoElenco('Anche in inglese', g.inLingua, 'en',
+            'I numeri delle immagini che hanno la versione ' + m.gioco + 'N-en.jpg (il file va messo a mano).', true));
+        LINGUE.forEach(function (l) {
+            D.appendChild(crea('h2', { testo: l === 'it' ? 'Italiano' : 'English' }));
+            D.appendChild(campo('Nome', 'testo', g[l], 'nome'));
+            D.appendChild(campo('Descrizione', 'area', g[l], 'testo'));
+        });
+    } else {
+        D.appendChild(crea('h2', { testo: 'Contenuto' }));
+        D.appendChild(riga('Immagine', 'testo', function () { return m.immagine.join(', '); }, function (v) {
+            m.immagine = v.split(',').map(function (x) { return x.trim(); }).filter(Boolean);
+            m.immaginiSpente = m.immaginiSpente.filter(function (x) { return m.immagine.indexOf(x) < 0; });
+            disegnaPollici(m);
+        }, 'I file accesi, nella cartella promozioni/. Più di uno, con la virgola: ruotano. ' +
+            'Scrivendo qui un nome si può usare un file che c\'è già.'));
+        D.appendChild(crea('div', { classe: 'riga' }, [crea('label'), crea('div', {}, [
+            crea('button', { testo: 'Aggiungi immagine…', onclick: function () { scegliImmagine(m); } }),
+            crea('button', { testo: 'Incolla dagli appunti', title: 'Anche con Ctrl+V', onclick: function () { incollaImmagine(m); } }),
+            crea('div', { classe: 'pollici', id: 'pollici' }),
+            crea('small', { testo: 'Spenta: resta sul disco ma non si mostra. ' +
+                'Tolta: al Salva si cancella dal disco, se non la usa nessun altro.' })
+        ])]));
+        D.appendChild(campo('Collegamento', 'testo', m, 'link',
+            'Dove porta il clic: una pagina (/info.html), un indirizzo, un mailto:. Vuoto: non si clicca.'));
+        LINGUE.forEach(function (l) {
+            D.appendChild(crea('h2', { testo: l === 'it' ? 'Italiano' : 'English' }));
+            D.appendChild(campo('Titolo', 'testo', m[l], 'titolo'));
+            D.appendChild(campo('Testo', 'area', m[l], 'testo'));
+            D.appendChild(campo('Pulsante', 'testo', m[l], 'pulsante', 'Compare solo se c\'è il collegamento.'));
+        });
+    }
+
+    D.appendChild(crea('div', { id: 'avvisi' }));
+    D.appendChild(crea('div', { classe: 'fila', style: 'margin-top:14px' }, [
+        m.tipo === 'testo' ? crea('button', { testo: 'Duplica', onclick: duplica }) : null,
+        crea('span', { classe: 'sp' }),
+        crea('button', { classe: 'male', testo: 'Elimina…', onclick: elimina })
+    ]));
+    disegnaPollici(m);
+    anteprima();
+    controlla(m);
+}
+
+// Le immagini accese, per nome di file.
+function nomiImmagini(m) {
+    if (m.tipo === 'gioco') {
+        return S.giochi[m.gioco].immagini.map(function (n) { return m.gioco + n + '.jpg'; });
+    }
+    return m.immagine.slice();
+}
+// Tutte, accese e spente: { nome, chiave, spenta }. La chiave e' quello che
+// sta negli elenchi: il numero per un gioco, il nome del file per un messaggio.
+function tutteLeImmagini(m) {
+    if (m.tipo === 'gioco') {
+        var g = S.giochi[m.gioco];
+        return g.immagini.concat(g.immaginiSpente).sort(function (a, b) { return a - b; }).map(function (n) {
+            return { nome: m.gioco + n + '.jpg', chiave: n, spenta: g.immagini.indexOf(n) < 0 };
+        });
+    }
+    return m.immagine.map(function (n) { return { nome: n, chiave: n, spenta: false }; })
+        .concat(m.immaginiSpente.map(function (n) { return { nome: n, chiave: n, spenta: true }; }));
+}
+// I due elenchi (accese, spente) di una voce.
+function elenchi(m) {
+    var o = m.tipo === 'gioco' ? S.giochi[m.gioco] : m;
+    return { o: o, accese: m.tipo === 'gioco' ? 'immagini' : 'immagine' };
+}
+function senza(a, x) { return a.filter(function (y) { return y !== x; }); }
+
+function spegniAccendi(m, im) {
+    var e = elenchi(m), o = e.o;
+    if (im.spenta) {
+        o.immaginiSpente = senza(o.immaginiSpente, im.chiave);
+        o[e.accese] = o[e.accese].concat([im.chiave]);
+        if (m.tipo === 'gioco') o[e.accese].sort(function (a, b) { return a - b; });
+    } else {
+        o[e.accese] = senza(o[e.accese], im.chiave);
+        o.immaginiSpente = o.immaginiSpente.concat([im.chiave]);
+    }
+    segnaSporco();
+    disegnaLista();
+    disegnaScheda();
+}
+function togliImmagine(m, im) {
+    if (!confirm('Tolgo "' + im.nome + '"?\n\nAl prossimo Salva il file viene anche cancellato dal disco, ' +
+        'se non lo usa nessun altro messaggio.\nSe vuoi solo che non si veda, basta spegnerla.')) return;
+    var e = elenchi(m), o = e.o, via = [im.nome];
+    if (m.tipo === 'gioco') {
+        Object.keys(o.inLingua).forEach(function (l) {
+            if ((o.inLingua[l] || []).indexOf(im.chiave) >= 0) {
+                via.push(m.gioco + im.chiave + '-' + l + '.jpg');
+                o.inLingua[l] = senza(o.inLingua[l], im.chiave);
+            }
+        });
+    }
+    o[e.accese] = senza(o[e.accese], im.chiave);
+    o.immaginiSpente = senza(o.immaginiSpente, im.chiave);
+    daCancellare = daCancellare.concat(via);
+    segnaSporco();
+    disegnaLista();
+    disegnaScheda();
+}
+function disegnaPollici(m) {
+    var P = $('pollici');
+    if (!P) return;
+    P.textContent = '';
+    tutteLeImmagini(m).forEach(function (im) {
+        P.appendChild(crea('figure', { classe: im.spenta ? 'spenta' : '' }, [
+            crea('img', { src: CARTELLA + im.nome + '?t=' + timbro, alt: im.nome }),
+            crea('span', { testo: im.nome + (im.spenta ? ' (spenta)' : '') }),
+            crea('div', {}, [
+                crea('button', { testo: im.spenta ? 'accendi' : 'spegni', onclick: function () { spegniAccendi(m, im); } }),
+                crea('button', { classe: 'male', testo: 'togli', onclick: function () { togliImmagine(m, im); } })
+            ])
+        ]));
+    });
+}
+
+// ── i controlli: le pagine e le immagini ci sono? ──
+var giroControllo = 0;
+async function controlla(m) {
+    var mio = ++giroControllo, cose = [], A = $('avvisi');
+    if (m.tipo === 'gioco') {
+        var g = S.giochi[m.gioco];
+        ['', '-en'].forEach(function (s) {
+            cose.push('/' + (g.pagina || m.gioco) + s + '.html');
+            if (g.regole) cose.push('/' + g.regole + s + '.html');
+        });
+        ((g.inLingua || {}).en || []).forEach(function (n) { cose.push(CARTELLA + m.gioco + n + '-en.jpg'); });
+    } else if (m.link && m.link.charAt(0) === '/') {
+        cose.push(m.link);
+    }
+    nomiImmagini(m).forEach(function (n) { cose.push(CARTELLA + n); });
+    var mancano = [];
+    await Promise.all(cose.map(async function (u) {
+        try {
+            var r = await fetch(u.split('#')[0], { method: 'HEAD', cache: 'no-store' });
+            if (!r.ok) mancano.push(u);
+        } catch (e) { mancano.push(u); }
+    }));
+    if (mio !== giroControllo || !A.isConnected) return;
+    A.className = mancano.length ? '' : 'ok';
+    A.textContent = mancano.length ? 'Non trovo:\n' + mancano.sort().join('\n') : (cose.length ? 'Pagine e immagini ci sono tutte.' : '');
+}
+
+// ═══ AGGIUNGERE, DUPLICARE, TOGLIERE ═════════════════════════════════════
+
+function idLibero(id) { return !S.messaggi.some(function (m) { return m.id === id; }); }
+function chiediNome(domanda, proposta) {
+    var n = prompt(domanda, proposta || '');
+    if (n === null) return null;
+    n = n.trim().toLowerCase().replace(/\.html?$/, '');
+    if (!/^[a-z0-9][a-z0-9-]*$/.test(n)) { alert('Solo lettere minuscole, cifre e trattini.'); return null; }
+    if (!idLibero(n) || S.giochi[n]) { alert('"' + n + '" c\'è già.'); return null; }
+    return n;
+}
+function aggiunto(m) {
+    S.messaggi.push(m);
+    scelto = S.messaggi.length - 1;
+    segnaSporco();
+    disegnaLista();
+    disegnaScheda();
+    var v = document.querySelector('.voce.scelta');
+    if (v) v.scrollIntoView({ block: 'nearest' });
+}
+
+$('bGioco').onclick = function () {
+    var k = chiediNome('Il nome della pagina del gioco, senza .html e senza lingua.\n' +
+        'Per "burraco.html" e "burraco-en.html" si scrive: burraco\n' +
+        '(Se la pagina sta in una sottocartella scrivi un nome corto, il percorso si mette dopo.)');
+    if (!k) return;
+    S.giochi[k] = { immagini: [], immaginiSpente: [], regole: 'regole-' + k, inLingua: {}, it: {}, en: {} };
+    aggiunto({ id: k, tipo: 'gioco', gioco: k, peso: 1, dove: POSTI.slice() });
+};
+$('bTesto').onclick = function () {
+    var k = chiediNome('Un nome corto per il messaggio: è quello con cui finisce in Analytics.');
+    if (!k) return;
+    aggiunto({ id: k, tipo: 'testo', peso: 3, dove: POSTI.slice(), immagine: [], immaginiSpente: [], it: {}, en: {} });
+};
+function duplica() {
+    var m = S.messaggi[scelto];
+    var k = chiediNome('Il nome della copia:', m.id + '2');
+    if (!k) return;
+    var c = JSON.parse(JSON.stringify(m));
+    c.id = k;
+    aggiunto(c);
+}
+function elimina() {
+    var m = S.messaggi[scelto];
+    var altri = m.tipo === 'gioco' && S.messaggi.some(function (x) { return x !== m && x.tipo === 'gioco' && x.gioco === m.gioco; });
+    // Le immagini se ne vanno con la voce; quelle che usa anche qualcun
+    // altro le salva il controllo che si fa al Salva.
+    var sue = m.tipo !== 'gioco' ? fileDelMessaggio(m) : altri ? [] : fileDelGioco(m.gioco, S.giochi[m.gioco]);
+    if (!confirm('Elimino "' + titoloDi(m) + '"?' +
+        (m.tipo === 'gioco' && !altri ? '\nSe ne va anche dal catalogo, con nome e descrizione.' : '') +
+        (sue.length ? '\nAl prossimo Salva si cancellano dal disco anche le sue immagini (' + sue.join(', ') +
+            '), se non le usa nessun altro.' : '') +
+        '\n\nSe vuoi solo che non esca, basta spegnerlo.')) return;
+    S.messaggi.splice(scelto, 1);
+    if (m.tipo === 'gioco' && !altri) delete S.giochi[m.gioco];
+    daCancellare = daCancellare.concat(sue);
+    if (scelto >= S.messaggi.length) scelto = S.messaggi.length - 1;
+    segnaSporco();
+    disegnaLista();
+    disegnaScheda();
+}
+
+// ═══ LE IMPOSTAZIONI ═════════════════════════════════════════════════════
+
+$('bImpo').onclick = function () {
+    var C = $('impoCorpo');
+    C.textContent = '';
+    C.appendChild(campoSempre('Colonne uguali', 'spunta', S, 'uguali', 'Lo stesso messaggio a sinistra e a destra. Spento: due diversi.'));
+    C.appendChild(campoSempre('Fine uguale', 'spunta', S, 'fineUguale', 'A fine partita si ripete il messaggio delle colonne. Conta solo a colonne uguali.'));
+    C.appendChild(campoSempre('Secondi', 'numero', S, 'secondi', 'Ogni quanti secondi cambia l\'immagine, quando ce n\'è più di una.'));
+    C.appendChild(crea('h2', { testo: 'Le etichette dei pulsanti', style: 'font-size:12px;color:var(--fioco);margin:14px 0 8px' }));
+    var nomi = { gioca: 'Gioco', regole: 'Regole', apri: 'Strumento', guida: 'Guida' };
+    Object.keys(nomi).forEach(function (k) {
+        var fila = crea('div', { classe: 'fila', style: 'flex-wrap:nowrap' });
+        LINGUE.forEach(function (l) {
+            var c = crea('input', { type: 'text', placeholder: l });
+            c.value = S.etichette[l][k] || '';
+            c.oninput = function () { S.etichette[l][k] = c.value.trim(); cambiato(); };
+            fila.appendChild(c);
+        });
+        C.appendChild(crea('div', { classe: 'riga' }, [crea('label', { testo: nomi[k] }), fila]));
+    });
+    $('dlgImpo').showModal();
+};
+$('impoOk').onclick = function () { $('dlgImpo').close(); };
+// Come campo(), ma il valore resta anche quando e' falso.
+function campoSempre(etichetta, tipo, ogg, nome, nota) {
+    return riga(etichetta, tipo, function () { return ogg[nome]; }, function (v) {
+        ogg[nome] = tipo === 'numero' ? (v > 0 ? v : 1) : v;
+    }, nota);
+}
+
+// ═══ L'ANTEPRIMA ═════════════════════════════════════════════════════════
+// promozioni.js vero, con un solo messaggio dentro (quello scelto, liberato
+// da date, pagine e interruttore) e un sitoSpazi finto che gli da' i due
+// posti dove mettersi.
+
+var orologi = [];
+function anteprima() {
+    var col = $('antCol'), fine = $('antFine'), err = $('antErr');
+    orologi.forEach(clearInterval);
+    orologi = [];
+    col.textContent = '';
+    fine.textContent = '';
+    err.textContent = '';
+    var m = S && S.messaggi[scelto];
+    if (!m) return;
+    var solo = JSON.parse(JSON.stringify(m));
+    delete solo.spento; delete solo.dal; delete solo.al; delete solo.soloSu; delete solo.nonSu;
+    solo.dove = POSTI.slice();
+    var largo = Number($('antLarg').value);
+    $('antLargN').textContent = largo;
+    col.style.width = largo + 'px';
+    try {
+        var sorgente = componi(testo0, {
+            giochi: S.giochi, messaggi: [solo], etichette: S.etichette,
+            uguali: true, fineUguale: true, secondi: S.secondi
+        });
+        var fornitore = null;
+        window.currentLang = $('antLingua').value;
+        window.sitoSpazi = {
+            registra: function (f) { fornitore = f; },
+            postoFinePartita: function () { return { modale: fine, larghezza: 700, altezza: 170, su: 0, sinistra: 0 }; }
+        };
+        // setInterval passa di qui, cosi' la rotazione delle immagini si puo'
+        // fermare quando l'anteprima si rifa'.
+        new Function('setInterval', sorgente)(function (f, ms) {
+            var id = window.setInterval(f, ms);
+            orologi.push(id);
+            return id;
+        });
+        if (!fornitore) throw new Error('promozioni.js non si è registrato');
+        fornitore.colonne({ sinistra: col, destra: crea('div'), larghezzaSinistra: largo, larghezzaDestra: 0, altezza: 3000 });
+        fornitore.finePartita('anteprima', {});
+        // Qui i collegamenti si guardano, non si seguono.
+        document.querySelectorAll('#anteprima a').forEach(function (a) {
+            a.title = a.getAttribute('href');
+            a.onclick = function (e) { e.preventDefault(); };
+        });
+    } catch (e) {
+        err.textContent = 'Anteprima non riuscita: ' + e.message;
+    }
+}
+$('antLingua').onchange = anteprima;
+$('antLarg').oninput = anteprima;
+
+// ═══ IL DISCO ════════════════════════════════════════════════════════════
+
+var manico = null;   // la cartella del sito
+
+function manicoDB(modo, h) {
+    return new Promise(function (finito) {
+        var r;
+        try { r = indexedDB.open('promozioni-editor', 1); } catch (e) { finito(null); return; }
+        r.onupgradeneeded = function () { r.result.createObjectStore('manici'); };
+        r.onerror = function () { finito(null); };
+        r.onsuccess = function () {
+            var db = r.result;
+            try {
+                var st = db.transaction('manici', modo === 'leggi' ? 'readonly' : 'readwrite').objectStore('manici');
+                var rq = modo === 'leggi' ? st.get('sito') : st.put(h, 'sito');
+                rq.onsuccess = function () { db.close(); finito(modo === 'leggi' ? rq.result : true); };
+                rq.onerror = function () { db.close(); finito(null); };
+            } catch (e) { db.close(); finito(null); }
+        };
+    });
+}
+async function permesso(h) {
+    var o = { mode: 'readwrite' };
+    try {
+        if (await h.queryPermission(o) === 'granted') return true;
+        return (await h.requestPermission(o)) === 'granted';
+    } catch (e) { return false; }
+}
+// Il selettore vuole un clic "fresco": lo fa partire il pulsante della
+// finestrella, non questa funzione.
+function chiediCartella() {
+    return new Promise(function (ris) {
+        var d = $('dlgCartella');
+        $('carNo').onclick = function () { d.close(); ris(null); };
+        $('carSi').onclick = async function () {
+            d.close();
+            try { ris(await window.showDirectoryPicker({ id: 'sito', mode: 'readwrite' })); }
+            catch (e) {
+                if (e && e.name !== 'AbortError') alert('Non riuscito: ' + e.message);
+                ris(null);
+            }
+        };
+        d.showModal();
+    });
+}
+async function cartellaSito() {
+    if (!window.showDirectoryPicker) {
+        alert('Questo browser non sa scrivere sul disco: serve Chrome o Edge, e la pagina aperta da localhost.');
+        return null;
+    }
+    var h = manico || await manicoDB('leggi');
+    if (h && !(await permesso(h))) h = null;
+    if (!h) h = await chiediCartella();
+    if (!h) return null;
+    try {
+        await h.getFileHandle('promozioni.js');
+        await h.getDirectoryHandle('promozioni');
+    } catch (e) {
+        alert('In "' + h.name + '" non ci sono promozioni.js e la cartella promozioni: non è la cartella del sito.');
+        manico = null;
+        return null;
+    }
+    manico = h;
+    manicoDB('scrivi', h);
+    return h;
+}
+async function scriviFile(cartella, nome, contenuto) {
+    var f = await cartella.getFileHandle(nome, { create: true });
+    var w = await f.createWritable();
+    await w.write(contenuto);
+    await w.close();
+}
+async function esiste(cartella, nome) {
+    try { await cartella.getFileHandle(nome); return true; } catch (e) { return false; }
+}
+
+// ── il salvataggio ──
+function difetti() {
+    var d = [], visti = {};
+    S.messaggi.forEach(function (m) {
+        if (visti[m.id]) d.push('Due messaggi si chiamano "' + m.id + '".');
+        visti[m.id] = true;
+        if (m.tipo === 'gioco') {
+            var g = S.giochi[m.gioco];
+            if (!g) d.push('"' + m.id + '": il gioco "' + m.gioco + '" non è nel catalogo.');
+            else if (!g.it.nome) d.push('"' + m.id + '": manca il nome in italiano.');
+        } else if (!m.it.titolo && !m.it.testo) {
+            d.push('"' + m.id + '": manca il testo in italiano.');
+        }
+    });
+    return d;
+}
+
+var salvando = false;
+async function salva() {
+    if (!S || salvando) return;
+    var d = difetti();
+    if (d.length) { alert('Così non si può salvare:\n\n' + d.join('\n')); return; }
+    salvando = true;
+    try {
+        var sito = await cartellaSito();
+        if (!sito) return;
+        var f = await sito.getFileHandle('promozioni.js');
+        var adesso = await (await f.getFile()).text();
+        // I dati si innestano nel file com'e' ADESSO sul disco: se nel
+        // frattempo e' cambiato il meccanismo, resta quello nuovo.
+        if (datiGrezzi(adesso) !== datiGrezzi(testo0) &&
+            !confirm('promozioni.js è cambiato sul disco da quando l\'hai aperto qui: i suoi messaggi non sono ' +
+                'più quelli di partenza.\n\nSalvando, quelli sul disco vengono sostituiti da quelli che vedi qui. Continuo?')) return;
+        var nuovo = componi(adesso, S);
+        // La riprova: quello che si sta per scrivere si rilegge uguale?
+        if (JSON.stringify(leggi(nuovo).messaggi) !== JSON.stringify(leggi(componi(nuovo, leggi(nuovo))).messaggi)) {
+            throw new Error('il file composto non si rilegge uguale, non scrivo niente');
+        }
+        await scriviFile(sito, 'promozioni.js', nuovo);
+        testo0 = nuovo;
+        sporco = false;
+        // Solo adesso, a file scritto, le immagini tolte si cancellano: e
+        // solo quelle che nei dati appena salvati non nomina piu' nessuno.
+        var usati = fileUsati(S), cancellati = [], rimasti = [];
+        var dir = daCancellare.length ? await sito.getDirectoryHandle('promozioni') : null;
+        for (var i = 0; i < daCancellare.length; i++) {
+            var nome = daCancellare[i];
+            if (usati.indexOf(nome) >= 0 || cancellati.indexOf(nome) >= 0) continue;
+            try { await dir.removeEntry(nome); cancellati.push(nome); }
+            catch (e) { if (e.name !== 'NotFoundError') rimasti.push(nome); }
+        }
+        daCancellare = [];
+        stato('salvato alle ' + new Date().toLocaleTimeString('it-IT') +
+            (cancellati.length ? ' — cancellati dal disco: ' + cancellati.join(', ') : '') +
+            (rimasti.length ? ' — NON sono riuscito a cancellare: ' + rimasti.join(', ') : ''),
+            rimasti.length ? 'male' : '');
+    } catch (e) {
+        stato('NON salvato: ' + e.message, 'male');
+        alert('Non salvato: ' + e.message);
+    } finally {
+        salvando = false;
+    }
+}
+$('bSalva').onclick = salva;
+$('bRicarica').onclick = function () {
+    if (sporco && !confirm('Butto via le modifiche non salvate e rileggo il file?')) return;
+    carica();
+};
+document.addEventListener('keydown', function (e) {
+    if ((e.ctrlKey || e.metaKey) && !e.altKey && e.key.toLowerCase() === 's') { e.preventDefault(); salva(); }
+});
+window.addEventListener('beforeunload', function (e) { if (sporco) { e.preventDefault(); e.returnValue = ''; } });
+
+// ── le immagini ──
+// Il file scelto si copia SUBITO in promozioni/, col nome giusto; il dato
+// (quante immagini, quali) cambia qui e si scrive col prossimo Salva.
+var perChi = null;
+function scegliImmagine(m) {
+    perChi = m;
+    $('fileImm').value = '';
+    $('fileImm').click();
+}
+// Le immagini si portano alla misura delle schede: larghe al massimo 800
+// (lo standard e' 800x586) e compresse. Una gia' piccola non si ingrandisce.
+// Le proporzioni non si toccano: la finestra della scheda mostra l'immagine
+// intera, non la ritaglia.
+var LARGHEZZA_IMMAGINE = 800;
+var QUALITA_JPEG = 0.85;
+function riduci(file, tipo) {
+    return new Promise(function (ris, no) {
+        var img = new Image(), u = URL.createObjectURL(file);
+        img.onload = function () {
+            var k = Math.min(1, LARGHEZZA_IMMAGINE / img.naturalWidth);
+            var c = document.createElement('canvas');
+            c.width = Math.round(img.naturalWidth * k);
+            c.height = Math.round(img.naturalHeight * k);
+            var x = c.getContext('2d');
+            // Il JPEG non ha trasparenza: sotto ci va il bianco.
+            if (tipo === 'image/jpeg') { x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height); }
+            x.imageSmoothingQuality = 'high';
+            x.drawImage(img, 0, 0, c.width, c.height);
+            URL.revokeObjectURL(u);
+            c.toBlob(function (b) {
+                if (b) ris({ dato: b, largo: c.width, alto: c.height });
+                else no(new Error('conversione non riuscita'));
+            }, tipo, QUALITA_JPEG);
+        };
+        img.onerror = function () { URL.revokeObjectURL(u); no(new Error('non è una figura che so leggere')); };
+        img.src = u;
+    });
+}
+function kb(n) { return Math.round(n / 1024) + ' KB'; }
+$('fileImm').onchange = function () { aggiungiImmagine(this.files[0], perChi, false); };
+
+// Dagli appunti: col pulsante, oppure con Ctrl+V a scheda aperta. Quello che
+// si copia da un programma di disegno o da una cattura dello schermo arriva
+// come PNG senza nome: qui diventa sempre JPEG, e per un messaggio il nome
+// si chiede.
+function figuraFra(elementi) {
+    for (var i = 0; i < elementi.length; i++) {
+        if (elementi[i].kind === 'file' && /^image\//.test(elementi[i].type)) return elementi[i].getAsFile();
+    }
+    return null;
+}
+async function incollaImmagine(m) {
+    try {
+        // Prima la cartella: il suo permesso vuole il clic ancora "fresco".
+        if (!await cartellaSito()) return;
+        var voci = await navigator.clipboard.read(), file = null;
+        for (var i = 0; i < voci.length && !file; i++) {
+            var tipo = voci[i].types.filter(function (t) { return /^image\//.test(t); })[0];
+            if (tipo) file = await voci[i].getType(tipo);
+        }
+        if (!file) { alert('Negli appunti non c\'è un\'immagine.'); return; }
+        aggiungiImmagine(file, m, true);
+    } catch (e) {
+        alert('Non riesco a leggere gli appunti: ' + e.message + '\nProva con Ctrl+V.');
+    }
+}
+document.addEventListener('paste', function (e) {
+    var file = e.clipboardData && figuraFra(e.clipboardData.items), m = S && S.messaggi[scelto];
+    if (!file || !m || document.querySelector('dialog[open]')) return;
+    e.preventDefault();
+    aggiungiImmagine(file, m, true);
+});
+// Un nome libero per l'immagine incollata in un messaggio: id-1.jpg, id-2.jpg…
+function nomeLibero(m) {
+    var usati = fileUsati(S).concat(daCancellare), n = 1;
+    while (usati.indexOf(m.id + '-' + n + '.jpg') >= 0) n++;
+    return m.id + '-' + n + '.jpg';
+}
+
+async function aggiungiImmagine(file, m, daAppunti) {
+    if (!file || !m) return;
+    try {
+        var sito = await cartellaSito();
+        if (!sito) return;
+        var dir = await sito.getDirectoryHandle('promozioni');
+        var nome, dato = file, fatto = null;
+        if (m.tipo === 'gioco') {
+            // Le immagini dei giochi sono .jpg per forza: il nome lo compone
+            // promozioni.js.
+            var g = S.giochi[m.gioco];
+            // Il numero dopo il piu' alto, contando anche le spente.
+            var numero = Math.max.apply(null, [0].concat(g.immagini, g.immaginiSpente)) + 1;
+            nome = m.gioco + numero + '.jpg';
+            fatto = await riduci(file, 'image/jpeg');
+        } else if (daAppunti) {
+            nome = prompt('Che nome do all\'immagine incollata? (in promozioni/, diventa un .jpg)', nomeLibero(m));
+            if (!nome) return;
+            nome = nome.trim().toLowerCase().replace(/\.[a-z0-9]+$/, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') + '.jpg';
+            if (nome === '.jpg') return;
+            fatto = await riduci(file, 'image/jpeg');
+        } else {
+            nome = file.name.toLowerCase().replace(/[^a-z0-9.]+/g, '-').replace(/^-+|-+(?=\.)/g, '');
+            // I disegni vettoriali e le GIF restano come sono; un PNG resta
+            // PNG (puo' avere la trasparenza), il resto diventa JPEG.
+            if (!/\.(svg|gif)$/.test(nome)) {
+                var png = file.type === 'image/png';
+                fatto = await riduci(file, png ? 'image/png' : 'image/jpeg');
+                nome = nome.replace(/\.[a-z0-9]+$/, '') + (png ? '.png' : '.jpg');
+            }
+        }
+        // Se dopo il giro pesa piu' di prima (un JPEG gia' piccolo e gia'
+        // compresso) si tiene l'originale.
+        var nota = '';
+        if (fatto) {
+            var stessoTipo = !daAppunti && file.type === fatto.dato.type;
+            if (stessoTipo && fatto.dato.size >= file.size) nota = nome + ': già a posto, copiata senza toccarla (' + kb(file.size) + ')';
+            else {
+                dato = fatto.dato;
+                nota = nome + ': ' + fatto.largo + '×' + fatto.alto + ', ' + kb(file.size) + ' → ' + kb(dato.size);
+            }
+        }
+        if (await esiste(dir, nome) && !confirm('In promozioni/ c\'è già "' + nome + '". La sostituisco?')) return;
+        await scriviFile(dir, nome, dato);
+        if (m.tipo === 'gioco') S.giochi[m.gioco].immagini.push(numero);
+        else {
+            if (m.immagine.indexOf(nome) < 0) m.immagine.push(nome);
+            m.immaginiSpente = senza(m.immaginiSpente, nome);
+        }
+        // Appena riscritto: non e' piu' da cancellare.
+        daCancellare = senza(daCancellare, nome);
+        timbro = Date.now();
+        segnaSporco();
+        disegnaLista();
+        disegnaScheda();
+        if (nota) stato(nota + ' — da salvare', 'sporco');
+    } catch (e) {
+        alert('Immagine non copiata: ' + e.message);
+    }
+}
+
+carica();
+</script>
+</body>
+</html>

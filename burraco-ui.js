@@ -20,24 +20,9 @@ window.setLanguage = function(lang) {
     localStorage.setItem('userLanguage', lang);
     window.updateUILabels();
     
-    // Aggiorna bottoni switcher
-    document.querySelectorAll('.btn-lang').forEach(btn => {
-        btn.style.background = 'rgba(0,0,0,0.4)';
-        btn.style.borderColor = '#6b9b7a';
-        btn.style.color = '#fff';
-    });
-    // Due coppie di selettori: quella in campo e quella nel modale di nuova partita
-    // (id '-modal', distinti per non duplicare gli id). Il ciclo qui sopra spegne
-    // tutti i .btn-lang, quindi vanno riaccesi entrambi.
-    ['btn-lang-' + lang, 'btn-lang-' + lang + '-modal'].forEach(id => {
-        const activeBtn = document.getElementById(id);
-        if (activeBtn) {
-            activeBtn.style.background = '#ffd700';
-            activeBtn.style.borderColor = '#ffd700';
-            activeBtn.style.color = '#2c3e50';
-        }
-    });
-    
+    // I selettori di lingua sono link alla pagina gemella: quale dei due e'
+    // acceso lo dice la classe active nella pagina, lo stile sta in burraco.css.
+
     // Rendi nuovamente (per aggiornare scritte dinamiche come "Carte: X")
     // Solo se il gioco è già inizializzato
     if (typeof render === 'function' && game && game.fase && game.fase !== 'attesa') {
@@ -305,6 +290,16 @@ function setupEventi() {
     // eventi, dopo che quel gestore ha già chiuso.
     $('#btn-conferma-no').addEventListener('click', chiudiModals);
     $('#btn-conferma-si').addEventListener('click', () => {
+        // Analytics: la mano lasciata a meta'. Se c'era un torneo parte solo
+        // l'abbandono del torneo: che si lasci anche la mano e' sottinteso.
+        if (window.sitoPartita && !game.autoRun) {
+            if (game.torneo && !game._torneoChiusoGA) {
+                game._torneoChiusoGA = true;
+                window.sitoPartita.torneo.fine('abandoned', _varianteGA());
+            } else {
+                window.sitoPartita.fine('abandoned');
+            }
+        }
         setTimeout(() => mostraModal('modal-nuova'), 0);
     });
     $('#btn-undo').addEventListener('click', undo);
@@ -452,10 +447,13 @@ function setupEventi() {
     });
 
     // Automa: apre il modale di configurazione.
-    // Strumento di sviluppo: visibile solo in dev mode (Ctrl+Alt+Q, vedi game-layout.js).
+    // Strumento di sviluppo: visibile solo in dev mode (Ctrl+Alt+Q, vedi site.js).
     var _btnAutoma = document.getElementById('btn-avvia-automa');
     if (_btnAutoma) {
-        if (window.devMode) {
+        // dev_mode letto qui: lo esponeva game-layout.js, site.js no.
+        var _inProva = false;
+        try { _inProva = localStorage.getItem('dev_mode') === '1'; } catch (e) { }
+        if (_inProva) {
             _btnAutoma.addEventListener('click', function () {
                 chiudiModals();
                 _buildAutomaConfigModal();

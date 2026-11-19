@@ -1,50 +1,31 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9335537153013492" crossorigin="anonymous"></script>
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag() { dataLayer.push(arguments); }
-        gtag('js', new Date());
-        gtag('config', 'G-WRBDRDQ4L8');
-        window.currentLang = 'en';
-    </script>
+    <meta charset="utf-8">
+
+    <!-- Site-wide functions: GA, icons, audio, navigation, consent box -->
+    <script src="../site.js"></script>
 
     <title>Music - Ear Training - lucianomanenti.com</title>
-    <meta charset="utf-8">
+    <link rel="canonical" href="https://www.lucianomanenti.com/musica/index-en.html">
+    <link rel="alternate" hreflang="it" href="https://www.lucianomanenti.com/musica/">
+    <link rel="alternate" hreflang="en" href="https://www.lucianomanenti.com/musica/index-en.html">
+    <link rel="alternate" hreflang="x-default" href="https://www.lucianomanenti.com/musica/">
+    <link rel="manifest" href="/favicon/site.webmanifest">
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="alternate" hreflang="it" href="index.html">
-    <link rel="alternate" hreflang="en" href="index-en.html">
-    <link rel="icon" type="image/png" href="../favicon/favicon-96x96.png" sizes="96x96">
-    <link rel="icon" type="image/svg+xml" href="../favicon/favicon.svg">
-    <link rel="shortcut icon" href="../favicon/favicon.ico">
-    <link rel="apple-touch-icon" sizes="180x180" href="../favicon/apple-touch-icon.png">
-    <link rel="manifest" href="../favicon/site.webmanifest">
-    <link rel="stylesheet" href="musica.css?v=1.2">
     <meta name="Description" content="Online music ear training: identify intervals and chords, use the metronome. Free, no registration required.">
 
+    <link rel="stylesheet" href="musica.css?v=1.2">
+
     <script>
-        window.gameConfig = {
-            gaPrefix: 'MUS_',
-            hideLegalFooter: true,
-            adsenseActive: true,
-            adsenseSlots: {
-                '300x600': '5266697442',
-                '160x600': '1167670336',
-                '300x250': '8471445288',
-                '160x250': '8663016975'
-            }
-        };
+        // spazi: false = no promotions in the side columns: on an index page they only confuse
+        window.gameConfig = { gaPrefix: 'MUS_', spazi: false };
     </script>
-    <script src="../game-layout.js?v=4.6"></script>
 </head>
 <body>
 
 <div class="main-container">
-    <div id="sidebar-left" class="sidebar"></div>
-    <div id="sidebar-right" class="sidebar"></div>
-
     <div id="campogioco">
 
         <div class="lang-switch-game">
@@ -80,19 +61,6 @@
             </div>
         </a>
 
-        <!-- Card Chords 2 (experimental alternative version) -->
-        <a href="accordi2/index-en.html" style="text-decoration:none; position:absolute; top:434px; left:278px; width:220px; height:112px; display:block;">
-            <div style="width:100%; height:100%; background:linear-gradient(135deg,#1e4a3a 0%,#2d7a5e 100%); border:1px dashed rgba(255,215,0,0.45); border-radius:16px; cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; box-shadow:0 8px 32px rgba(0,0,0,0.5); transition:border-color 0.2s, box-shadow 0.2s; position:relative; box-sizing:border-box;"
-                onmouseover="this.style.borderColor='rgba(255,215,0,0.85)'; this.style.boxShadow='0 8px 40px rgba(255,215,0,0.15)';"
-                onmouseout="this.style.borderColor='rgba(255,215,0,0.45)'; this.style.boxShadow='0 8px 32px rgba(0,0,0,0.5)';">
-                <div style="position:absolute; top:8px; right:12px; font-size:9px; color:#ffd700; border:1px solid rgba(255,215,0,0.5); border-radius:10px; padding:1px 8px; letter-spacing:1.5px;">BETA</div>
-                <div style="font-family:Georgia,serif; font-size:22px; color:#ffd700; letter-spacing:2px;">Chords 2</div>
-                <div style="font-size:11px; color:rgba(255,255,255,0.45); margin-top:6px; letter-spacing:0.5px; text-align:center; padding:0 14px;">Experimental alternative version</div>
-            </div>
-        </a>
-        <a href="../aboutme-en.html" target="_blank" style="position:absolute; top:556px; left:278px; width:220px; text-align:center; font-size:11px; color:rgba(255,215,0,0.6); text-decoration:none; letter-spacing:0.5px;"
-           onmouseover="this.style.color='#ffd700';" onmouseout="this.style.color='rgba(255,215,0,0.6)';">&#9993; Write me which version you prefer</a>
-
         <!-- Card Scales -->
         <a href="scale/index-en.html" style="text-decoration:none; position:absolute; top:220px; left:527px; width:220px; height:190px; display:block;">
             <div style="width:100%; height:100%; background:linear-gradient(135deg,#3b1e3d 0%,#6c3473 100%); border:1px solid rgba(255,215,0,0.25); border-radius:16px; cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; box-shadow:0 8px 32px rgba(0,0,0,0.5); transition:border-color 0.2s, box-shadow 0.2s;"
@@ -105,7 +73,7 @@
         </a>
 
         <!-- Card Metronome -->
-        <a href="../metronome-en.html" style="text-decoration:none; position:absolute; top:220px; left:776px; width:220px; height:190px; display:block;">
+        <a href="metronomo/index-en.html" style="text-decoration:none; position:absolute; top:220px; left:776px; width:220px; height:190px; display:block;">
             <div style="width:100%; height:100%; background:linear-gradient(135deg,#2e1e0a 0%,#5a3a12 100%); border:1px solid rgba(255,215,0,0.25); border-radius:16px; cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; box-shadow:0 8px 32px rgba(0,0,0,0.5); transition:border-color 0.2s, box-shadow 0.2s;"
                 onmouseover="this.style.borderColor='rgba(255,215,0,0.7)'; this.style.boxShadow='0 8px 40px rgba(255,215,0,0.15)';"
                 onmouseout="this.style.borderColor='rgba(255,215,0,0.25)'; this.style.boxShadow='0 8px 32px rgba(0,0,0,0.5)';">
@@ -122,7 +90,7 @@
                 <a href="../aboutme-en.html" target="_blank" class="btn-nav btn-nav-contact">Write to me</a>
             </div>
             <div class="nav-links-small">
-                <a href="../privacy.html" target="_blank">Privacy</a>
+                <a href="../privacy-en.html" target="_blank">Privacy</a>
                 <a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)">Manage Cookies</a>
             </div>
         </div>
@@ -130,24 +98,5 @@
     </div><!-- campogioco -->
 </div>
 
-<script src="../site.js?v=1.1"></script>
-<script>
-    (function() {
-        var nascosto = false;
-        var observer = new MutationObserver(function() {
-            if (nascosto) return;
-            var divs = document.querySelectorAll('body > div');
-            for (var i = 0; i < divs.length; i++) {
-                if (divs[i].shadowRoot && !divs[i].className && (divs[i].getAttribute('style')||'').length > 5000) {
-                    divs[i].style.setProperty('display', 'none', 'important');
-                    nascosto = true;
-                    observer.disconnect();
-                    return;
-                }
-            }
-        });
-        observer.observe(document.body, { childList: true });
-    })();
-</script>
 </body>
 </html>

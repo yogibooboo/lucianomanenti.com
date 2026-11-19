@@ -723,31 +723,49 @@ html, body {
 
 /* === PULSANTI === */
 
+/* I pulsanti NUOVA / REGOLE / SCOPERTE / UNDO hanno lo stesso aspetto del
+   burraco: fondo verde sfumato, cornice da 2 px, angoli da 8, ombra sul
+   testo e la stessa reazione al passaggio e al clic. Le misure no: quelle
+   restano della rummy, che ha la barra piu' stretta, e stanno nelle regole
+   per id qui sotto. La scritta si centra con flex e non con line-height,
+   cosi' resta in mezzo anche nei pulsanti alti 28 px senza doverlo ridire
+   per ognuno. */
 .pulsante2 {
     position: absolute;
-    background: rgba(0,0,0,0.5);
-    border: 1px solid #6b9b7a;
-    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    background: linear-gradient(180deg, #4a7c59 0%, #2d5a3d 100%);
+    border: 2px solid #6b9b7a;
+    border-radius: 8px;
     color: #fff;
     font-size: 13px;
     font-weight: bold;
     padding: 0 10px;
     height: 32px;
-    line-height: 32px;
     text-align: center;
     cursor: pointer;
     user-select: none;
-    transition: background 0.15s, border-color 0.15s;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    transition: all 0.2s;
     z-index: 20;
 }
 
 .pulsante2:hover {
-    background: rgba(0,0,0,0.7);
-    border-color: #ffd700;
+    background: linear-gradient(180deg, #5a8c69 0%, #3d6a4d 100%);
+    transform: scale(1.05);
 }
 
-#btn-nuova    { top: 50px; left: 10px; width: 72px; height: 28px; line-height: 28px; font-size: 13px; }
-#btn-undo     { top: 48px; right: 4px; width: 80px; background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><path d='M18 6v5c0 2-1 3-3 3H4'/><polyline points='8,10 4,14 8,18'/></svg>"); background-size: 22px 22px; background-repeat: no-repeat; background-position: center; font-size: 0; }
+.pulsante2:active {
+    transform: scale(0.95);
+}
+
+#btn-nuova    { top: 50px; left: 10px; width: 72px; height: 28px; }
+/* La freccia va messa SOPRA la sfumatura, non al suo posto: sono entrambe
+   background-image, e indicarne una sola cancellerebbe l'altra lasciando il
+   pulsante trasparente. Stesso accorgimento del burraco. */
+#btn-undo     { top: 48px; right: 4px; width: 80px; background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><path d='M18 6v5c0 2-1 3-3 3H4'/><polyline points='8,10 4,14 8,18'/></svg>"), linear-gradient(180deg, #4a7c59 0%, #2d5a3d 100%); background-size: 22px 22px, auto; background-repeat: no-repeat, no-repeat; background-position: center, center; font-size: 0; }
 #btn-scoperte { top: 10px; right: 4px; width: 80px; }
 
 /* Pulsanti ordinamento carte */
@@ -774,7 +792,7 @@ html, body {
 }
 #btn-ordina-numero { left: 154px; bottom: 101px; }
 #btn-ordina-seme   { left: 154px; bottom: 55px; }
-#btn-istruzioni { top: 88px; left: 10px; width: 72px; height: 28px; line-height: 28px; font-size: 13px; }
+#btn-istruzioni { top: 88px; left: 10px; width: 72px; height: 28px; }
 
 #btn-knock {
     bottom: 172px;
@@ -785,7 +803,7 @@ html, body {
     display: none;
 }
 #btn-knock:hover { background: rgba(180,100,0,0.9); }
-#btn-knock.visibile { display: block; }
+#btn-knock.visibile { display: flex; }
 
 #btn-gin {
     bottom: 172px;
@@ -796,7 +814,7 @@ html, body {
     display: none;
 }
 #btn-gin:hover { background: rgba(0,120,0,0.9); }
-#btn-gin.visibile { display: block; }
+#btn-gin.visibile { display: flex; }
 
 /* === LINK ALTRI GIOCHI === */
 
@@ -825,10 +843,13 @@ html, body {
     font-size: 11px;
     font-weight: bold;
     text-align: center;
-    line-height: 30px;
+    /* centratura con flex: tiene la scritta in mezzo anche a #btn-scrivetemi,
+       che e' alto 32 px invece di 30, senza ripetere il line-height */
     text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
     text-decoration: none;
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .pulsante-link:hover { transform: scale(1.1); }
@@ -844,19 +865,23 @@ html, body {
    dai link ai singoli giochi — cornice dorata e fondo caldo. La larghezza
    resta quella della colonna (90px, .pulsante-link): qui la barra è
    verticale e allargare solo questo lo farebbe sporgere dalla fila. Il
-   testo è lungo, quindi font piccolo e nessuna spaziatura extra: sta in
-   una riga sola perché il nowrap impedisce che vada a capo sforando i
-   30px di altezza. */
+   testo è lungo, quindi nessuna spaziatura extra, e il font è il più
+   grande che ci sta: a 10.5px "TUTTI I GIOCHI" misura 83,7px sugli 86
+   utili, a 11px (la misura degli altri pulsanti) ne misura 87,7 e tocca
+   la cornice. Misurato in Chrome con Segoe UI il 12/11/2026. Sta in una
+   riga sola perché il nowrap impedisce che vada a capo sforando i 30px
+   di altezza. */
 .pulsante-home {
     background: linear-gradient(135deg, #c9720f, #8a4a08);
     border-color: #ffd700;
-    font-size: 9px;
+    font-size: 10.5px;
     letter-spacing: 0;
     white-space: nowrap;
     box-shadow: 0 0 8px rgba(255, 215, 0, 0.35);
 }
 
 .pulsante-home:hover {
+    background: linear-gradient(135deg, #e08514, #a3580a);
     box-shadow: 0 0 14px rgba(255, 215, 0, 0.65);
 }
 
@@ -891,10 +916,15 @@ html, body {
     left: 10px;
     display: flex;
     gap: 4px;
-    z-index: 20;
+    align-items: center;
+    z-index: 2000;
 }
 
 .btn-lang {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
     background: rgba(0,0,0,0.4);
     border: 1px solid #6b9b7a;
     color: white;
@@ -908,8 +938,9 @@ html, body {
 }
 
 .btn-lang.active {
-    background: #e07840;
-    border-color: #e07840;
+    background: #ffd700;
+    color: #2c3e50;
+    border-color: #ffd700;
 }
 
 /* === WRITE TO ME BUTTON === */
@@ -920,9 +951,8 @@ html, body {
     left: 4px;
     width: 95px;
     height: 32px;
-    line-height: 32px;
     padding: 0 5px;
-    background-color: #2d5a3d;
+    background-color: #3a3a5a;
     z-index: 100;
     box-sizing: border-box;
     text-decoration: none;
@@ -932,12 +962,12 @@ html, body {
 
 .legal-links-text {
     position: absolute;
-    bottom: 4px;
+    bottom: 10px;
     right: 10px;
     font-size: 10px;
     color: rgba(255,255,255,0.4);
     display: flex;
-    gap: 10px;
+    gap: 15px;
     z-index: 10;
 }
 .legal-links-text a { color: inherit; text-decoration: none; }
@@ -1001,6 +1031,21 @@ html, body {
     margin-top: 6px;
 }
 .btn-modal:hover { background: linear-gradient(180deg, #4a8a5a, #3a6a4a); }
+
+/* INIZIA e' l'azione principale della modale d'inizio: oro pieno come il
+   selettore di lingua acceso (#ffd700 con la scritta scura), per staccarlo
+   dalle scelte verdi che ha sopra. Il :hover con l'id batte quello di
+   .btn-modal, che rimetterebbe il gradiente verde. */
+#btn-inizia {
+    background: #ffd700;
+    border-color: #ffd700;
+    color: #2c3e50;
+}
+
+#btn-inizia:hover {
+    background: #ffe44d;
+    border-color: #ffe44d;
+}
 
 /* Variante secondaria (es. Abbandona) */
 .btn-modal.secondario {

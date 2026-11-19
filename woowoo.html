@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <meta charset="utf-8">
+
+    <!-- Funzioni comuni del sito: GA, icone, audio, navigazione, riquadro di consenso -->
+    <script src="site.js"></script>
+
+    <title>WooWoo Luciano — Scambi, treni e stazioni</title>
+    <link rel="canonical" href="https://www.lucianomanenti.com/woowoo.html">
+    <link rel="alternate" hreflang="it" href="https://www.lucianomanenti.com/woowoo.html">
+    <link rel="alternate" hreflang="en" href="https://www.lucianomanenti.com/woowoo-en.html">
+    <link rel="alternate" hreflang="x-default" href="https://www.lucianomanenti.com/woowoo.html">
+    <link rel="manifest" href="favicon/site.webmanifest">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="Description"
+        content="WooWoo Luciano: il rompicapo ferroviario in tempo reale. Aziona gli scambi, porta ogni treno alla stazione giusta ed evita gli scontri.">
+
+    <link rel="stylesheet" href="woowoo.css?v=3.0" />
+
+    <script>
+        window.gameConfig = { gaPrefix: 'WOOWOO_' };
+    </script>
+</head>
+
+<body>
+
+    <div class="main-container">
+        <div id="campogioco">
+            <div id="schermo"></div>
+
+            <!-- ================= HEADER ================= -->
+            <div id="header-bar">
+                <div class="header-left">
+                    <div class="lang-switch-header">
+                        <a href="woowoo.html" class="active">IT</a>
+                        <a href="woowoo-en.html">EN</a>
+                    </div>
+                    <button id="w2-audio" class="bottone" style="height:26px;padding:0 10px;"
+                        aria-label="Audio">&#128266;</button>
+                    <div id="titolo-gioco">WooWoo Luciano &#128642;</div>
+                </div>
+
+                <div class="header-center">
+                    <div class="quadrante ok"><span>CONSEGNE</span><b id="w2-consegne">0</b></div>
+                    <div class="quadrante ko"><span>SCONTRI</span><b id="w2-scontri">0</b></div>
+                    <div class="quadrante tempo">
+                        <span>TEMPO <i id="w2-turbo"></i></span>
+                        <b id="w2-tempo">0</b>
+                        <div class="barra-esterna"><div class="barra-piena" id="w2-barra"></div></div>
+                    </div>
+                </div>
+
+                <div class="header-right">
+                    <div class="targa-quadro">
+                        <div class="tq-voce"><span>QUADRO</span><b id="w2-livello">A &middot; 1/12</b></div>
+                        <div class="tq-voce"><span>DIFFICOLT&Agrave;</span><b id="w2-grado">facile</b></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= AREA CENTRALE ================= -->
+            <div id="area-tabellone">
+                <div id="canvas-wrapper">
+                    <canvas id="w2-canvas" width="960" height="576"></canvas>
+                    <!-- Cartello di fine quadro: sta sopra il quadro per tre secondi,
+                         prima della modale. Lo riempie il motore. -->
+                    <div id="w2-annuncio" class="w2-annuncio"></div>
+                </div>
+            </div>
+
+            <!-- ================= BARRA INFERIORE ================= -->
+            <!-- L'orario: i treni annunciati e quelli gia' in giro, con
+                 il loro stato. Sta per conto suo, non dentro la barra: qui
+                 sotto e' l'unica cosa che ha bisogno di altezza e scende
+                 fino al bordo. Lo riempie aggiornaHud. -->
+            <div id="w2-coda" title="Treni annunciati e treni in viaggio"></div>
+
+            <div id="w2-messaggio">Caricamento del quadro&hellip;</div>
+
+            <div id="barra-inferiore">
+                <div id="w2-comandi">
+                    <button class="bottone" id="w2-quadro" title="Scegli il quadro da giocare">SCEGLI IL QUADRO</button>
+                    <button class="bottone" id="w2-pausa" aria-pressed="false" title="Ferma il gioco: il tasto lampeggia finche' si e' in pausa">PAUSA</button>
+                    <button class="bottone principale" id="w2-ricomincia" title="Rifa' da capo il quadro scelto">RICOMINCIA</button>
+                </div>
+            </div>
+
+            <!-- Modale di fine quadro, riempita dal motore -->
+            <div id="w2-modale"></div>
+
+            <!-- Pannello per scegliere il quadro, riempito dal motore -->
+            <div id="w2-scelte"></div>
+
+            <!-- ================= PIEDINO ================= -->
+            <div class="legal-links-w2">
+                <a href="privacy.html" target="_blank">Privacy Policy</a>
+                <a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)">Gestisci Cookie</a>
+            </div>
+
+            <div class="link-giochi-w2">
+                <a href="aboutme.html" target="_blank" class="pulsante-link-w2 pulsante-scrivetemi-w2">Scrivetemi</a>
+                <a href="regole-woowoo.html" target="_blank" class="pulsante-link-w2">REGOLE</a>
+                <a href="index.html" class="pulsante-link-w2 pulsante-home-w2">TUTTI I GIOCHI</a>
+            </div>
+
+        </div><!-- /campogioco -->
+    </div><!-- /main-container -->
+
+    <!-- Un file di dati solo: i quadri del gioco, A..L. Fino al 9/10/2026 qui
+         si caricava anche l'estrazione del dischetto (dev/woowoo2-dati.js), e
+         solo in modalita' sviluppo, perche' dev/ non si carica sul server:
+         quello e' materiale Kingsoft, riferimento tecnico e non roba da
+         pubblicare. Adesso il gioco non lo guarda piu' -- lo apre soltanto
+         l'editor, dove le lettere del dischetto sono M..X -- e qui non c'e'
+         piu' niente che dipenda da dev/. -->
+    <!-- I codici delle piastrelle: cosa fa ogni numero. Vanno prima dei
+         quadri, che il contenitore se lo fa questo file. -->
+    <script src="woowoo-codici.js?v=1.3"></script>
+    <script src="woowoo-mie.js?v=5.3"></script>
+    <script src="woowoo-binari.js?v=2.2"></script>
+    <script src="woowoo.js?v=1.80"></script>
+
+</body>
+
+</html>

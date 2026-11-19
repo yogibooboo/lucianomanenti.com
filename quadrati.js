@@ -219,6 +219,14 @@ function nuovaPartita(fmt, diff, rLib, cLib) {
     renderTutto();
     setMessaggio(QUAD_LANG.turnoTuo);
     salvaPartita();
+    if (window.sitoPartita) window.sitoPartita.inizio(varianteGA());
+}
+
+// La variante per Analytics (testa-canonica 10.9): formato e livello, come
+// 'medio/difficile'. Il formato libero resta 'libero' senza le misure: ogni
+// misura diversa sarebbe una riga in piu' nei rapporti.
+function varianteGA() {
+    return formato + '/' + difficolta;
 }
 
 // Traccia un lato e assegna le caselle eventualmente chiuse.
@@ -403,7 +411,7 @@ function clickLato(l) {
     const primaAperte = quanteRegalabili();
 
     const chiuse = tracciaLato(l, 1);
-    riproduciAudio(chiuse ? 'audio/tris.mp3' : 'audio/carta.mp3');
+    riproduciAudio(chiuse ? 'sounds/scala40/cardslide1.mp3' : 'sounds/scala40/cardplace1.mp3');
 
     if (chiuse === 0) {
         const dopoAperte = quanteRegalabili();
@@ -452,7 +460,7 @@ function mossaPc() {
     if (!l) { pcSta = false; finePartita(); return; }
 
     const chiuse = tracciaLato(l, 2);
-    riproduciAudio(chiuse ? 'audio/tris.mp3' : 'audio/carta.mp3');
+    riproduciAudio(chiuse ? 'sounds/scala40/cardslide1.mp3' : 'sounds/scala40/cardplace1.mp3');
     renderTutto();
     salvaPartita();
 
@@ -861,13 +869,29 @@ function finePartita() {
 
     setMessaggio(esito === 1 ? QUAD_LANG.statoVinta :
                  esito === 2 ? QUAD_LANG.statoPersa : QUAD_LANG.statoPari);
-    riproduciAudio(esito === 1 ? 'audio/applausi.mp3' : 'audio/lacrimosa.mp3');
+    // Gli stessi suoni di fine partita di dama e mulino
+    riproduciAudio(esito === 1 ? 'sounds/scala40/tada.mp3' :
+                   esito === 2 ? 'sounds/scala40/haiperso.mp3' : 'sounds/scala40/dindon.mp3');
+
+    if (window.sitoPartita) {
+        window.sitoPartita.fine(esito === 1 ? 'won' : esito === 2 ? 'lost' : 'draw');
+    }
 
     const nuovoRecord = aggiornaRecords();
     setTimeout(function () { mostraFine(nuovoRecord); }, 700);
 }
 
 // === MODALI ===
+// Un'altra partita = ricaricare la pagina, passando dall'interstitial come
+// negli altri giochi del sito. Formato e livello restano in 'quadrati-pref'.
+function ricaricaPerNuovaPartita() {
+    if (typeof window.reloadWithInterstitial === 'function') {
+        window.reloadWithInterstitial();
+    } else {
+        location.reload();
+    }
+}
+
 function chiudiModali() {
     document.getElementById('schermo').style.display = 'none';
     document.getElementById('modale-inizio').style.display = 'none';
@@ -986,6 +1010,7 @@ function caricaPartita() {
 
 function riprendiPartita() {
     chiudiModali();
+    if (window.sitoPartita) window.sitoPartita.riprende(varianteGA());
     costruisciGriglia();
     renderTutto();
     setMessaggio(QUAD_LANG.turnoTuo);
@@ -1154,7 +1179,12 @@ function init() {
     // NUOVA PARTITA a partita in corso chiede conferma: un click per sbaglio
     // butterebbe via una partita lunga.
     document.getElementById('btn-nuova-partita').addEventListener('click', function () {
-        if (partitaFinita || (puntiTu + puntiPc === 0 && !ultimoLato)) {
+        // Partita finita: un'altra si fa ricaricando, come dalla finestra di fine
+        if (partitaFinita) {
+            ricaricaPerNuovaPartita();
+            return;
+        }
+        if (puntiTu + puntiPc === 0 && !ultimoLato) {
             apriModaleInizio(false);
             return;
         }
@@ -1173,9 +1203,9 @@ function init() {
     });
     document.getElementById('btn-no-continua').addEventListener('click', chiudiModali);
     document.getElementById('btn-si-termina').addEventListener('click', function () {
-        chiudiModali();
         localStorage.removeItem('quadrati-save');
-        apriModaleInizio(false);
+        if (window.sitoPartita) window.sitoPartita.fine('abandoned');
+        ricaricaPerNuovaPartita();
     });
 
     const ripresa = caricaPartita();
@@ -1203,7 +1233,7 @@ function init() {
     }
 }
 
-// waitForInterstitial e' fornito da game-layout.js: se e' dovuto un interstitial
+// waitForInterstitial e' fornito da site.js: se e' dovuto un interstitial
 // lo mostra e poi chiama init(), altrimenti chiama init() subito.
 window.addEventListener('load', function () {
     if (typeof window.waitForInterstitial === 'function') window.waitForInterstitial(init);

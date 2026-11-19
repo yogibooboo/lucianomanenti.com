@@ -17,6 +17,7 @@ const MINATO_LANG = (window.currentLang === 'en') ? {
     vittoria: 'CONGRATULATIONS!<br>Field cleared!',
     sconfitta: 'BOOM!<br>You hit a mine',
     statoVinta: 'Field cleared!',
+    statoVintaFesta: 'FIELD CLEARED!!!',
     statoPersa: 'Mine hit — all the mines are now shown',
     tempo: 'Time',
     mine: 'Mines',
@@ -38,6 +39,7 @@ const MINATO_LANG = (window.currentLang === 'en') ? {
     vittoria: 'COMPLIMENTI!<br>Campo bonificato!',
     sconfitta: 'BOOM!<br>Hai preso una mina',
     statoVinta: 'Campo bonificato!',
+    statoVintaFesta: 'CAMPO BONIFICATO!!!',
     statoPersa: 'Mina presa — ora le mine sono tutte visibili',
     tempo: 'Tempo',
     mine: 'Mine',
@@ -101,7 +103,10 @@ let partitaFinita = false;
 let vinta = false;
 let cellaFatale = -1;      // indice della mina che ha chiuso la partita, per l'annulla
 let annulliUsati = 0;      // quanti annulli in questa partita: decide il costo del prossimo
-let records = {};          // { principiante: { daily:{key,sec}, weekly:{key,sec}, all:{sec,date} }, ... }
+let records = {};
+// Pausa fra l'ultima casella scoperta e la modale di vittoria
+const ATTESA_VITTORIA_MS = 2500;
+let attesaVittoria = null;          // { principiante: { daily:{key,sec}, weekly:{key,sec}, all:{sec,date} }, ... }
 
 // Riproduci audio rispettando la disattivazione globale del sito
 function riproduciAudio(src) {
@@ -287,6 +292,8 @@ function piazzaMineRisolvibili(primo) {
 
 // === PARTITA ===
 function nuovaPartita(diff, risolvibile) {
+    // Una sconfitta lasciata col NUOVA PARTITA del pannello, che non ricarica
+    contaSconfitta();
     difficolta = diff;
     sempreRisolvibile = !!risolvibile;
     localStorage.setItem('minato-difficolta', diff);
@@ -419,7 +426,9 @@ function costoAnnulliPagato() {
 }
 
 function setMessaggio(txt) {
-    document.getElementById('messaggio-stato').innerHTML = txt;
+    const el = document.getElementById('messaggio-stato');
+    el.classList.remove('festa');
+    el.innerHTML = txt;
 }
 
 // === INTERAZIONE ===
@@ -468,6 +477,7 @@ function primaMossa(i) {
     if (!sempreRisolvibile) {
         piazzaMine(i);
         minePiazzate = true;
+        if (window.sitoPartita) window.sitoPartita.inizio(varianteGA());
         avviaTimer();
         setMessaggio(MINATO_LANG.partitaInCorso);
         scava(i);
@@ -478,6 +488,7 @@ function primaMossa(i) {
     setTimeout(function () {
         const ok = piazzaMineRisolvibili(i);
         minePiazzate = true;
+        if (window.sitoPartita) window.sitoPartita.inizio(varianteGA());
         avviaTimer();
         setMessaggio(ok ? MINATO_LANG.partitaInCorso : MINATO_LANG.generazioneFallita);
         scava(i);
@@ -552,15 +563,26 @@ function finePartita(haVinto) {
         // bonificato, e non c'e' piu' niente da dedurre.
         for (let i = 0; i < mine.length; i++) if (mine[i]) bandiere[i] = true;
         renderTutto();
-        setMessaggio(MINATO_LANG.statoVinta);
-        mostraVittoria();
+        if (window.sitoPartita) window.sitoPartita.fine('won', { dettagli: dettagliGA() });
+        // Un paio di secondi col campo in chiaro prima della modale: e' il
+        // momento di guardare quello che si e' fatto. I click sulla griglia
+        // sono gia' inerti (partitaFinita).
+        // La festa parte qui, non all'apertura della modale: scritta che
+        // lampeggia e "tada" insieme all'ultima casella scoperta.
+        setMessaggio(MINATO_LANG.statoVintaFesta);
+        document.getElementById('messaggio-stato').classList.add('festa');
+        riproduciAudio('sounds/scala40/tada.mp3');
+        attesaVittoria = setTimeout(function () {
+            attesaVittoria = null;
+            mostraVittoria();
+        }, ATTESA_VITTORIA_MS);
     } else {
         // Si scoprono tutte le mine: e' il momento in cui si capisce dov'era il
         // ragionamento sbagliato.
         for (let i = 0; i < mine.length; i++) if (mine[i]) scoperte[i] = true;
         renderTutto();
         setMessaggio(MINATO_LANG.statoPersa);
-        riproduciAudio('sounds/scala40/knock.mp3');
+        riproduciAudio('sounds/scala40/haiperso.mp3');
         mostraSconfitta();
     }
 }
@@ -758,6 +780,7 @@ function ripristinaBottoniReset() {
 
 // === MODALI ===
 function chiudiModali() {
+    if (attesaVittoria) { clearTimeout(attesaVittoria); attesaVittoria = null; }
     document.getElementById('schermo').style.display = 'none';
     document.getElementById('modale-inizio').style.display = 'none';
     document.getElementById('confermatermina').style.display = 'none';
@@ -767,6 +790,7 @@ function chiudiModali() {
 }
 
 function apriModaleInizio(mostraRiprendi) {
+    if (attesaVittoria) { clearTimeout(attesaVittoria); attesaVittoria = null; }
     document.getElementById('btn-riprendi').style.display = mostraRiprendi ? 'block' : 'none';
     document.getElementById('schermo').style.display = 'block';
     document.getElementById('modale-inizio').style.display = 'flex';
@@ -783,7 +807,6 @@ function mostraVittoria() {
         (nuovo ? MINATO_LANG.nuovoRecord : '');
     document.getElementById('schermo').style.display = 'block';
     document.getElementById('haivinto').style.display = 'flex';
-    riproduciAudio('sounds/scala40/tada.mp3');
     if (typeof setupAmazonFinishBanner === 'function') {
         setupAmazonFinishBanner('haivinto', {
             modalStyle: { overflow: 'visible' },
@@ -820,6 +843,7 @@ function riprendiPartita() {
     // Il cronometro riparte solo se la partita era gia' cominciata: se era stata
     // salvata prima del primo click, si aspetta ancora il primo click.
     if (minePiazzate) {
+        if (window.sitoPartita) window.sitoPartita.riprende(varianteGA());
         avviaTimer();
         setMessaggio(MINATO_LANG.partitaInCorso);
     } else {
@@ -840,9 +864,40 @@ function confermaEAvviaPartita() {
     nuovaPartita(tempDifficolta, document.getElementById('chk-risolvibile').checked);
 }
 
+// === STATISTICHE (site.js) ===
+// La partita si conta al primo click, quando nascono le mine e parte il
+// cronometro: aprire un campo e non toccarlo non e' una partita.
+function varianteGA() {
+    return difficolta + '/' + (sempreRisolvibile ? 'risolvibile' : 'libero');
+}
+// "errori" sono le mine prese, come nel riquadro Errori: quelle annullate piu',
+// a partita persa, l'ultima.
+function dettagliGA() {
+    const errori = annulliUsati + ((partitaFinita && !vinta) ? 1 : 0);
+    return 'tempo=' + secondi + ';errori=' + errori;
+}
+// La sconfitta si conta solo quando si lascia il campo: finche' la modale e'
+// aperta l'annulla della mossa fatale puo' ancora rimettere in gioco la partita.
+// Una seconda chiamata non fa danni: sitoPartita.fine ignora una partita gia' chiusa.
+function contaSconfitta() {
+    if (partitaFinita && !vinta && window.sitoPartita) {
+        window.sitoPartita.fine('lost', { dettagli: dettagliGA() });
+    }
+}
+window.addEventListener('pagehide', contaSconfitta);
+
+window.ricaricaPerNuovaPartita = function () {
+    contaSconfitta();
+    if (typeof window.reloadWithInterstitial === 'function') window.reloadWithInterstitial();
+    else location.reload();
+};
+
 // === AVVIO ===
 function init() {
     caricaRecords();
+
+    // Pulsante dell'audio: quello comune del sito
+    if (window.initAudioToggle) window.initAudioToggle('#btn-audio');
 
     document.getElementById('modo-scava').addEventListener('click', function () { impostaModo(false); });
     document.getElementById('modo-bandiera').addEventListener('click', function () { impostaModo(true); });
@@ -875,13 +930,14 @@ function init() {
     });
     document.getElementById('btn-no-continua').addEventListener('click', chiudiModali);
     document.getElementById('btn-si-termina').addEventListener('click', function () {
+        if (window.sitoPartita) window.sitoPartita.fine('abandoned', { dettagli: dettagliGA() });
         chiudiModali();
         localStorage.removeItem('minato-save');
         apriModaleInizio(false);
     });
 
-    // "Come si Gioca" non ha piu' un listener: e' un normale link a
-    // guida-minato.html, che apre la pagina delle regole in una scheda nuova.
+    // REGOLE non ha un listener: e' un normale link a regole-minato.html,
+    // che apre la pagina delle regole in una scheda nuova.
 
     // Barra spaziatrice: cambia modo senza staccare la mano dal mouse. Utile
     // soprattutto su portatile, dove il tasto destro del trackpad e' scomodo.

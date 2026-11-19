@@ -885,20 +885,6 @@ body {
 }
 
 /* Pulsanti uno sopra l'altro */
-#btn-audio {
-    left: 100px;
-    top: 4px;
-    font-size: 0;
-    background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='white' d='M3 9v6h4l5 5V4L7 9H3z'/><path fill='white' d='M16.5 12c0-1.77-1.02-3.29-2.5-4.03v8.06c1.48-.73 2.5-2.25 2.5-4.03z'/><path fill='white' fill-opacity='0.65' d='M14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z'/></svg>");
-    background-size: 26px;
-    background-repeat: no-repeat;
-    background-position: center;
-}
-
-#btn-audio.muted {
-    background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='white' fill-opacity='0.45' d='M3 9v6h4l5 5V4L7 9H3z'/><path fill='white' fill-opacity='0.2' d='M16.5 12c0-1.77-1.02-3.29-2.5-4.03v8.06c1.48-.73 2.5-2.25 2.5-4.03z'/><path fill='white' fill-opacity='0.2' d='M14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z'/><line x1='3' y1='21' x2='21' y2='3' stroke='%23ee1111' stroke-width='2.5' stroke-linecap='round'/></svg>");
-}
-
 #btn-ordina-numero {
     left: 130px;
     bottom: 53px;
@@ -1608,3 +1594,77 @@ body.modalita-1v1 #combinazioni-noi {
     color: #ccc;
     flex: 1;
 }
+
+/* === SELETTORE DELLE LINGUE (forma canonica, doc/testa-canonica.md 11) === */
+
+/* Sul campo */
+#lang-switcher {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    z-index: 2000;
+}
+.btn-lang {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 32px;
+    padding: 4px 10px;
+    box-sizing: border-box;
+    text-decoration: none;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.btn-lang.active { background: #ffd700; color: #1a1a2e; border-color: #b8860b; }
+.btn-lang:hover:not(.active) { background: rgba(255, 255, 255, 0.3); }
+
+/* Audio: accanto alle lingue, alto come loro */
+.btn-audio-game {
+    width: 32px;
+    height: 32px;
+    box-sizing: border-box;
+    border-radius: 4px;
+    cursor: pointer;
+    background-color: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='white' d='M3 9v6h4l5 5V4L7 9H3z'/><path fill='white' d='M16.5 12c0-1.77-1.02-3.29-2.5-4.03v8.06c1.48-.73 2.5-2.25 2.5-4.03z'/><path fill='white' fill-opacity='0.65' d='M14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z'/></svg>");
+    background-size: 20px;
+    background-repeat: no-repeat;
+    background-position: center;
+    transition: background-color 0.2s;
+    flex-shrink: 0;
+}
+.btn-audio-game:hover { background-color: rgba(255, 255, 255, 0.3); }
+.btn-audio-game.muted {
+    background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='white' fill-opacity='0.45' d='M3 9v6h4l5 5V4L7 9H3z'/><path fill='white' fill-opacity='0.2' d='M16.5 12c0-1.77-1.02-3.29-2.5-4.03v8.06c1.48-.73 2.5-2.25 2.5-4.03z'/><path fill='white' fill-opacity='0.2' d='M14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z'/><line x1='3' y1='21' x2='21' y2='3' stroke='%23ee1111' stroke-width='2.5' stroke-linecap='round'/></svg>");
+}
+
+/* Nella finestra di nuova partita */
+.lang-switch-modale { position: absolute; top: 10px; right: 12px; display: flex; gap: 4px; z-index: 1; }
+.lang-switch-modale a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 24px;
+    padding: 0 9px;
+    box-sizing: border-box;
+    text-decoration: none;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    color: white;
+    font-size: 11px;
+    font-weight: bold;
+    transition: all 0.2s;
+}
+.lang-switch-modale a.active { background: #ffd700; color: #1a1a2e; border-color: #b8860b; }
+.lang-switch-modale a:hover:not(.active) { background: rgba(255, 255, 255, 0.3); }

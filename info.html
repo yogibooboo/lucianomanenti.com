@@ -2,80 +2,26 @@
 <html lang="it">
 
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
-	<script>
-		window.dataLayer = window.dataLayer || [];
-		function gtag() { dataLayer.push(arguments); }
-		gtag('js', new Date());
-		gtag('config', 'G-WRBDRDQ4L8');
-		window.currentLang = 'it';
-	</script>
+	<meta charset="utf-8">
+
+	<!-- Funzioni comuni del sito: GA, icone, navigazione, riquadro di consenso -->
+	<script src="site.js" defer></script>
+
 	<title>Giochi di Carte Gratuiti Online (... e non solo) - lucianomanenti.com</title>
+	<link rel="canonical" href="https://www.lucianomanenti.com/info.html">
+	<link rel="alternate" hreflang="it" href="https://www.lucianomanenti.com/info.html">
+	<link rel="alternate" hreflang="en" href="https://www.lucianomanenti.com/info-en.html">
+	<link rel="alternate" hreflang="x-default" href="https://www.lucianomanenti.com/info.html">
+	<link rel="manifest" href="/favicon/site.webmanifest">
+
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta name="Description"
-		content="Gioca gratis online a Tressette e Traversone (Ciapanò), Scala 40, Gin Rummy, Machiavelli, Burraco, Scopa, Briscola, Solitari Spider e Klondike, Mahjong Solitario, Domino, Sudoku, Calcolo Enigmatico, Codice Segreto, Campo Minato, Battaglia Navale Classica, Solitario Navale, Dama, Scacchi, Mulino, Scorciatoie e Mattoncini. Include ear training musicale (intervalli e accordi) e un metronomo avanzato.">
-	<link rel="alternate" hreflang="it" href="info.html">
-	<link rel="alternate" hreflang="en" href="info-en.html">
-	<link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
-	<link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
-	<link rel="shortcut icon" href="favicon/favicon.ico">
-	<link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+		content="Gioca gratis online a Tressette e Traversone (Ciapanò), Scala 40, Gin Rummy, Machiavelli, Burraco, Scopa, Briscola, Solitari Spider e Klondike, Mahjong Solitario, Domino, Sudoku, Calcolo Enigmatico, Codice Segreto, Campo Minato, Battaglia Navale Classica, Solitario Navale, Gioco dei Quadrati, Dama, Scacchi, Mulino, Scorciatoie, Mattoncini e WooWoo. Include ear training musicale (intervalli, accordi e scale) e un metronomo avanzato.">
+
+	<link rel="stylesheet" href="/testo.css">
+
+	<!-- Le regole che testo.css non ha: le schede dei giochi coi loro pulsanti -->
 	<style>
-		body {
-			font-family: sans-serif;
-			line-height: 1.7;
-			max-width: 800px;
-			margin: 40px auto;
-			padding: 20px;
-			color: #333;
-			background-color: #f9f9f9;
-		}
-
-		h1 {
-			color: #2c3e50;
-			border-bottom: 2px solid #ffd700;
-			padding-bottom: 10px;
-		}
-
-		h2 {
-			color: #2c3e50;
-			margin-top: 30px;
-		}
-
-		.lang-switch {
-			text-align: right;
-			margin-bottom: 20px;
-		}
-
-		.lang-switch a {
-			display: inline-block;
-			padding: 6px 16px;
-			margin-left: 5px;
-			text-decoration: none;
-			border-radius: 5px;
-			font-weight: bold;
-			font-size: 14px;
-		}
-
-		.lang-switch a.active {
-			background: #2c3e50;
-			color: white;
-		}
-
-		.lang-switch a:not(.active) {
-			background: #ddd;
-			color: #333;
-			cursor: pointer;
-		}
-
-		.content-box {
-			background: white;
-			padding: 30px;
-			border-radius: 8px;
-			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-		}
-
 		.game-card {
 			border-left: 4px solid #ffd700;
 			padding: 15px 20px;
@@ -114,44 +60,22 @@
 			background: #3498db;
 			color: white;
 		}
-
-		.nav-links {
-			text-align: center;
-			margin-top: 30px;
-			font-size: 14px;
-		}
-
-		.nav-links a {
-			color: #3498db;
-			text-decoration: none;
-			margin: 0 10px;
-		}
-
-		.banner {
-			width: 100%;
-			height: 150px;
-			background-image: url('images/home/castagne.jpg');
-			background-size: cover;
-			background-position: center;
-			border-radius: 8px;
-			margin: 20px 0;
-			box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-		}
 	</style>
 </head>
 
 <body>
-	<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-		<a href="#" id="btn-back" onclick="goBack(); return false;"
-			style="display: inline-block; padding: 6px 16px; background: #e74c3c; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 14px;">&#x2190;
+	<!-- Alla pagina si arriva dalla home nella stessa scheda: "Indietro" e' un
+	     semplice link alla home, che vale anche per chi arriva da Google -->
+	<div class="top-bar">
+		<a href="index.html" id="btn-back" class="back-btn">&#x2190;
 			Indietro</a>
-		<div class="lang-switch" style="margin-bottom: 0;">
+		<div class="lang-switch">
 			<a href="info.html" id="btn-it" class="active">Italiano</a>
 			<a href="info-en.html" id="btn-en">English</a>
 		</div>
 	</div>
 
-	<div class="banner"></div>
+	<div class="striscia"></div>
 
 	<div class="content-box">
 		<div id="lang-it">
@@ -167,65 +91,65 @@
 			<h2>I Miei Giochi</h2>
 
 			<div class="game-card">
-				<h3><a href="scala40.html">Scala 40</a></h3>
+				<h3><a href="scala40.html">Scala 40 Luciano</a></h3>
 				<p>Il classico gioco di carte italiano con combinazioni e scale. Forma tris e scale per liberarti di
 					tutte le carte. Gioca contro 1, 2 o 3 avversari controllati dal computer. Per aprire servono almeno
 					40 punti di combinazioni.</p>
 				<div class="links">
 					<a href="scala40.html" class="btn-play">Gioca</a>
-					<a href="regole-scala40.html" class="btn-rules" target="_blank" rel="opener">Regole</a>
+					<a href="regole-scala40.html" class="btn-rules" target="_blank">Regole</a>
 				</div>
 			</div>
 
 			<div class="game-card">
-				<h3><a href="rummy.html">Gin Rummy</a></h3>
+				<h3><a href="rummy.html">Gin Rummy Luciano</a></h3>
 				<p>Gioco di carte per due persone della famiglia Rummy. A differenza della Scala 40, le combinazioni
 					rimangono segrete in mano fino alla chiusura. Si vince bussando con poche carte morte o facendo Gin
 					(mano perfetta). Richiede memoria, strategia e grande attenzione agli scarti dell’avversario.</p>
 				<div class="links">
 					<a href="rummy.html" class="btn-play">Gioca</a>
-					<a href="regole-rummy.html" class="btn-rules" target="_blank" rel="opener">Regole</a>
+					<a href="regole-rummy.html" class="btn-rules" target="_blank">Regole</a>
 				</div>
 			</div>
 
 			<div class="game-card">
-				<h3><a href="machiavelli.html">Machiavelli</a></h3>
+				<h3><a href="machiavelli.html">Machiavelli Luciano</a></h3>
 				<p>La variante piu' strategica della Scala 40: puoi manipolare le combinazioni gia' presenti sul
 					tavolo, spezzarle e ricombinarle a tuo vantaggio. Disponibile anche su tablet. Un gioco che
 					richiede astuzia e visione d'insieme.</p>
 				<div class="links">
 					<a href="machiavelli.html" class="btn-play">Gioca</a>
-					<a href="regole-machiavelli.html" class="btn-rules" target="_blank" rel="opener">Regole</a>
+					<a href="regole-machiavelli.html" class="btn-rules" target="_blank">Regole</a>
 				</div>
 			</div>
 
 			<div class="game-card">
-				<h3><a href="spider.html">Spider Solitaire</a></h3>
+				<h3><a href="spider.html">Spider Solitaire Luciano</a></h3>
 				<p>Il celebre solitario con le carte: ordina tutte le colonne dal Re all'Asso. Richiede pazienza e
 					strategia. Cerca di liberare colonne intere per avere piu' spazio di manovra.</p>
 				<div class="links">
 					<a href="spider.html" class="btn-play">Gioca</a>
-					<a href="regole-spider.html" class="btn-rules" target="_blank" rel="opener">Regole</a>
+					<a href="regole-spider.html" class="btn-rules" target="_blank">Regole</a>
 				</div>
 			</div>
 
 			<div class="game-card">
-				<h3><a href="klondike.html">Solitario Klondike</a></h3>
+				<h3><a href="klondike.html">Solitario Klondike Luciano</a></h3>
 				<p>Il classico solitario con le carte, quello che tutti hanno giocato almeno una volta. Costruisci le 4 fondamenta dall'Asso al Re spostando le carte nel tableau in ordine decrescente alternando i colori. Pesca dal mazzo quando sei bloccato e completa tutte le fondamenta per vincere. Con completamento automatico quando tutte le carte sono scoperte.</p>
 				<div class="links">
 					<a href="klondike.html" class="btn-play">Gioca</a>
-					<a href="regole-klondike.html" class="btn-rules" target="_blank" rel="opener">Regole</a>
+					<a href="regole-klondike.html" class="btn-rules" target="_blank">Regole</a>
 				</div>
 			</div>
 
 			<div class="game-card">
-				<h3><a href="burraco.html">Burraco</a></h3>
+				<h3><a href="burraco.html">Burraco Luciano</a></h3>
 				<p>Il popolarissimo gioco di carte italiano, realizzato a grande richiesta dei nostri giocatori. Per
 					il momento si gioca in coppia (2 vs 2). Forma burrachi puliti e sporchi per
 					accumulare punti. Il gioco e' in costante miglioramento: consigli e osservazioni sono benvenuti.</p>
 				<div class="links">
 					<a href="burraco.html" class="btn-play">Gioca</a>
-					<a href="regole-burraco.html" class="btn-rules" target="_blank" rel="opener">Regole</a>
+					<a href="regole-burraco.html" class="btn-rules" target="_blank">Regole</a>
 				</div>
 			</div>
 
@@ -234,25 +158,25 @@
 				<p>Il celeberrimo gioco di carte tradizionale italiano. Sfida gli avversari controllati dal computer in modalit&agrave; testa a testa (1 contro 1) o a squadre (2 contro 2). Segui in tempo reale il punteggio delle prese, delle carte e della Primiera, con notifiche sonore e avvisi di soglia superata.</p>
 				<div class="links">
 					<a href="scopa.html" class="btn-play">Gioca</a>
-					<a href="regole-scopa.html" class="btn-rules" target="_blank" rel="opener">Regole</a>
+					<a href="regole-scopa.html" class="btn-rules" target="_blank">Regole</a>
 				</div>
 			</div>
 
 			<div class="game-card">
-				<h3><a href="briscola.html">Briscola</a></h3>
+				<h3><a href="briscola.html">Briscola Luciano</a></h3>
 				<p>Il gioco di carte italiano piu' diffuso in assoluto. Sfida gli avversari controllati dal computer in modalit&agrave; testa a testa (1 contro 1) o a squadre (2 contro 2), con l'opzione dei segnali tra compagni per condividere a colpo d'occhio le briscole in mano.</p>
 				<div class="links">
 					<a href="briscola.html" class="btn-play">Gioca</a>
-					<a href="regole-briscola.html" class="btn-rules" target="_blank" rel="opener">Regole</a>
+					<a href="regole-briscola.html" class="btn-rules" target="_blank">Regole</a>
 				</div>
 			</div>
 
 			<div class="game-card">
-				<h3><a href="tressette.html">Tressette e Traversone (Ciapanò)</a></h3>
+				<h3><a href="tressette.html">Tressette e Traversone (Ciapanò) Luciano</a></h3>
 				<p>Due grandi classici della tradizione italiana in un unico gioco: il Tressette classico a coppie (2 contro 2), con accuse (Bongioco e Napoli), e la celebre variante Traversone (detta anche Ciapanò o "Chi perde vince") tutti contro tutti con la regola speciale opzionale dell'Asso di Bastoni o di Picche. Include obbligo di risposta a seme, annulla mossa e visualizzazione del dettaglio punti.</p>
 				<div class="links">
 					<a href="tressette.html" class="btn-play">Gioca</a>
-					<a href="regole-tressette.html" class="btn-rules" target="_blank" rel="opener">Regole</a>
+					<a href="regole-tressette.html" class="btn-rules" target="_blank">Regole</a>
 				</div>
 			</div>
 
@@ -261,7 +185,7 @@
 				<p>Il celebre rompicapo logico giapponese. Tre livelli di difficolt&agrave; con schemi generati sempre a soluzione unica, note a matita, suggerimenti "didattici" che indicano le caselle deducibili, record dei tempi migliori e salvataggio automatico della partita.</p>
 				<div class="links">
 					<a href="sudoku.html" class="btn-play">Gioca</a>
-					<a href="regole-sudoku.html" class="btn-rules" target="_blank" rel="opener">Regole</a>
+					<a href="regole-sudoku.html" class="btn-rules" target="_blank">Regole</a>
 				</div>
 			</div>
 
@@ -270,7 +194,7 @@
 				<p>Il crittogramma matematico in stile Settimana Enigmistica: nove numeri in una matrice 3&times;3, con ogni cifra nascosta da una lettera. A lettera uguale corrisponde cifra uguale, e le tre operazioni orizzontali e le tre verticali devono tornare tutte insieme. Si risolve per esclusione con la matrice delle possibilit&agrave;, come si farebbe a matita. Tre livelli di difficolt&agrave;, schemi sempre a soluzione unica, suggerimenti con spiegazione del ragionamento, record dei tempi migliori e salvataggio automatico.</p>
 				<div class="links">
 					<a href="calcolo.html" class="btn-play">Gioca</a>
-					<a href="regole-calcolo.html" class="btn-rules" target="_blank" rel="opener">Regole</a>
+					<a href="regole-calcolo.html" class="btn-rules" target="_blank">Regole</a>
 				</div>
 			</div>
 
@@ -279,7 +203,7 @@
 				<p>Il classico gioco di logica: scopri tutte le caselle libere senza mai toccare una mina, leggendo i numeri che dicono quante mine ci sono intorno. Tre livelli (9&times;9, 16&times;16 e 30&times;16), il primo click non &egrave; mai una mina e c'&egrave; l'opzione dello <strong>schema sempre risolvibile con la logica</strong>, senza mai dover tirare a indovinare. Se prendi una mina puoi annullare la mossa pagando una penalit&agrave; in secondi che raddoppia ogni volta. Bandierine con il tasto destro, contatore delle mine e degli errori, record dei tempi migliori e salvataggio automatico.</p>
 				<div class="links">
 					<a href="minato.html" class="btn-play">Gioca</a>
-					<a href="guida-minato.html" class="btn-rules" target="_blank" rel="opener">Regole</a>
+					<a href="regole-minato.html" class="btn-rules" target="_blank">Regole</a>
 				</div>
 			</div>
 
@@ -288,7 +212,7 @@
 				<p>Gli scacchi con le regole complete (arrocco, en passant, promozione, patte automatiche) contro il motore <strong>Stockfish</strong> in esecuzione nel browser. Tre livelli di difficolt&agrave;, scelta del colore, suggerimenti del motore, notazione algebrica, annullamento mosse e salvataggio automatico.</p>
 				<div class="links">
 					<a href="scacchi.html" class="btn-play">Gioca</a>
-					<a href="regole-scacchi.html" class="btn-rules" target="_blank" rel="opener">Regole</a>
+					<a href="regole-scacchi.html" class="btn-rules" target="_blank">Regole</a>
 				</div>
 			</div>
 
@@ -297,7 +221,7 @@
 				<p>La dama italiana con le regole ufficiali FID: presa obbligatoria con le precedenze regolamentari, la pedina che non pu&ograve; catturare la dama, promozione che interrompe la presa. Tre livelli di difficolt&agrave;, scelta del colore, suggerimenti, annullamento mosse e salvataggio automatico.</p>
 				<div class="links">
 					<a href="dama.html" class="btn-play">Gioca</a>
-					<a href="regole-dama.html" class="btn-rules" target="_blank" rel="opener">Regole</a>
+					<a href="regole-dama.html" class="btn-rules" target="_blank">Regole</a>
 				</div>
 			</div>
 
@@ -306,7 +230,7 @@
 				<p>Il Mulino (detto anche <strong>Filetto</strong> o <strong>Tris</strong>), uno dei giochi da tavolo pi&ugrave; antichi che si conoscano: allinea tre pedine per chiudere un mulino e togliere una pedina all'avversario. Le tre fasi di piazzamento, spostamento e volo, tre livelli di difficolt&agrave;, scelta del colore, suggerimenti, annullamento mosse e salvataggio automatico.</p>
 				<div class="links">
 					<a href="mulino.html" class="btn-play">Gioca</a>
-					<a href="regole-mulino.html" class="btn-rules" target="_blank" rel="opener">Regole</a>
+					<a href="regole-mulino.html" class="btn-rules" target="_blank">Regole</a>
 				</div>
 			</div>
 
@@ -315,7 +239,7 @@
 				<p>La celebre battaglia navale a due giocatori giocabile gratis online contro il computer: disponi la tua flotta regolamentare di 10 navi (1 Corazzata, 2 Incrociatori, 3 Cacciatorpediniere, 4 Sottomarini) con rotazione rapida (click destro o tasto spazio), spostamento/rimozione e regola del non contatto, oppure opta per lo schieramento casuale istantaneo. Fai fuoco a turno sul radar nemico, guadagna un colpo bonus a ogni bersaglio centrato e affonda tutti i vascelli avversari prima che annientino la tua flotta. Tre livelli di difficolt&agrave; (Marinaio, Capitano, Ammiraglio) con intelligenza artificiale dotata di caccia direzionale e ricerca a scacchiera, statistiche salvate e layout a tutto schermo.</p>
 				<div class="links">
 					<a href="battaglia-navale.html" class="btn-play">Gioca</a>
-					<a href="guida-battaglia-navale.html" class="btn-rules" target="_blank" rel="opener">Regole</a>
+					<a href="regole-battaglia-navale.html" class="btn-rules" target="_blank">Regole</a>
 				</div>
 			</div>
 
@@ -324,7 +248,7 @@
 				<p>Non la battaglia navale a due giocatori, ma il <strong>solitario logico</strong>: la flotta &egrave; nascosta in un'unica disposizione possibile e va trovata ragionando, non sparando a caso. I numeri a bordo griglia dicono quante caselle di nave ci sono in ogni riga e colonna, e da l&igrave; si deduce tutto per esclusione. Tre formati (6&times;6, 8&times;8 e 10&times;10), click sinistro per l'acqua e destro per la nave, suggerimenti con la spiegazione del ragionamento, annullamento mosse, record dei tempi migliori e salvataggio automatico.</p>
 				<div class="links">
 					<a href="navale.html" class="btn-play">Gioca</a>
-					<a href="guida-navale.html" class="btn-rules" target="_blank" rel="opener">Regole</a>
+					<a href="regole-navale.html" class="btn-rules" target="_blank">Regole</a>
 				</div>
 			</div>
 
@@ -333,7 +257,7 @@
 				<p>Il celebre solitario di abbinamento tessere (noto come <strong>Shanghai Mahjong</strong>): 144 tessere 3D multilivello (Pallini, Bamb&ugrave;, Caratteri, Venti, Draghi, Fiori e Stagioni). Abbina a due a due le tessere libere uguali per liberare l'intero tavolo. Include 4 layout selezionabili (La Tartaruga Classica, Piramide, Fortezza, Arena), generatore di partite <strong>sempre risolvibili con la logica</strong>, evidenziazione delle tessere libere, suggerimenti, annullamento mosse, rimescolamento anti-stallo, effetti sonori realistici e salvataggio statistiche.</p>
 				<div class="links">
 					<a href="mahjong.html" class="btn-play">Gioca</a>
-					<a href="guida-mahjong.html" class="btn-rules" target="_blank" rel="opener">Regole</a>
+					<a href="regole-mahjong.html" class="btn-rules" target="_blank">Regole</a>
 				</div>
 			</div>
 
@@ -342,7 +266,7 @@
 				<p>Il gioco del foglio a quadretti che si faceva a scuola, noto nel mondo come <strong>Dots and Boxes</strong>: a turno si unisce un puntino a quello vicino, e chi chiude un quadretto se lo prende <strong>e gioca ancora</strong>. &Egrave; quella regola a decidere le partite, perch&eacute; una catena di caselle si incassa tutta in un turno solo. Si impara in mezzo minuto, ma dietro c'&egrave; una strategia vera: il trucco &egrave; far restare l'avversario senza mosse sicure, e a volte conviene <strong>rifiutare</strong> le ultime due caselle di una fila per costringerlo ad aprire la successiva. Tre formati (5&times;5, 8&times;8 e 11&times;11) pi&ugrave; uno libero fino a 12&times;14, computer con tre livelli &mdash; il pi&ugrave; forte conosce il gioco delle catene e usa il sacrificio &mdash; partite vinte e miglior scarto per livello, e salvataggio automatico.</p>
 				<div class="links">
 					<a href="quadrati.html" class="btn-play">Gioca</a>
-					<a href="guida-quadrati.html" class="btn-rules" target="_blank" rel="opener">Regole</a>
+					<a href="regole-quadrati.html" class="btn-rules" target="_blank">Regole</a>
 				</div>
 			</div>
 
@@ -351,7 +275,7 @@
 				<p>Il rompicapo di deduzione che discende dal vecchio <strong>Bulls and Cows</strong>: il computer nasconde un codice di colori e tu devi indovinarlo, un tentativo alla volta. A ogni fila il gioco risponde con due soli segnali &mdash; quanti colori sono <strong>al posto giusto</strong> e quanti sono <strong>giusti ma spostati</strong> &mdash; e da l&igrave; si procede per esclusione, senza mai tirare a indovinare. Tre livelli (4 caselle e 6 colori, 4 caselle e 8 colori, 5 caselle e 8 colori), con la possibilit&agrave; di vietare i colori ripetuti; una matrice delle possibilit&agrave; per segnare quello che hai gi&agrave; escluso, tre aiuti facoltativi da accendere a piacere, suggerimenti che spiegano il ragionamento, record dei tentativi migliori e salvataggio automatico.</p>
 				<div class="links">
 					<a href="codice-segreto.html" class="btn-play">Gioca</a>
-					<a href="regole-codice-segreto.html" class="btn-rules" target="_blank" rel="opener">Regole</a>
+					<a href="regole-codice-segreto.html" class="btn-rules" target="_blank">Regole</a>
 				</div>
 			</div>
 
@@ -360,7 +284,7 @@
 				<p>Il celebre gioco tradizionale di tessere: sfida il computer in sfide a <strong>Domino a Pesca</strong> (Draw Domino) o a <strong>Domino a Blocchi</strong> (Block Domino). Tessere 3D realistiche con grafica incisa e animazioni a catena, 3 livelli di difficolt&agrave; (Facile, Medio, Difficile con memoria dei semi e blocco strategico), opzione tessere avversario scoperte, suggerimenti di mossa, annullamento mosse, obiettivi a 50 o 100 punti e salvataggio automatico delle statistiche.</p>
 				<div class="links">
 					<a href="domino.html" class="btn-play">Gioca</a>
-					<a href="guida-domino.html" class="btn-rules" target="_blank" rel="opener">Regole</a>
+					<a href="regole-domino.html" class="btn-rules" target="_blank">Regole</a>
 				</div>
 			</div>
 
@@ -370,25 +294,25 @@
 				<p style="font-style: italic; color: #64748b; font-size: 0.95em; margin-top: 6px;"><em>Nota dell'autore:</em> Questo gioco nasce da un ricordo di giovent&ugrave; a cui sono particolarmente legato. L'ho inventato da ragazzino per giocare con i miei fratelli e gli amici, disegnando le piste sui fogli di protocollo a quadretti e incollandone insieme diversi con lo scotch per creare tabelloni enormi su cui giocare per interi pomeriggi.</p>
 				<div class="links">
 					<a href="scorciatoie.html" class="btn-play">Gioca</a>
-					<a href="guida-scorciatoie.html" class="btn-rules" target="_blank" rel="opener">Regole</a>
+					<a href="regole-scorciatoie.html" class="btn-rules" target="_blank">Regole</a>
 				</div>
 			</div>
 
 			<div class="game-card">
-				<h3><a href="mattoncini.html">Mattoncini</a></h3>
+				<h3><a href="mattoncini.html">Mattoncini Luciano</a></h3>
 				<p>Il grande classico dei blocchi a incastro che cadono (falling block puzzle) ripensato nello stile del sito: posiziona le 7 forme geometriche (I, J, L, O, S, T, Z) per completare e cancellare le righe orizzontali. Include rotazioni avanzate con <strong>scostamento al muro e al pavimento</strong>, funzione <strong>Scambio / Trattieni (Hold)</strong> per mettere da parte un pezzo, anteprima dei prossimi 3 pezzi, ombra di caduta (Ghost piece) e caduta istantanea. Offre 3 modalit&agrave; di gioco &mdash; <strong>Maratona</strong> classica (livelli crescenti e velocit&agrave; progressiva), <strong>Sprint</strong> (completa 40 righe nel minor tempo possibile) e <strong>Ultra</strong> (massimizza il punteggio in 2 minuti esatti) &mdash; con sistema di record personali azzerabili (giornalieri, settimanali e assoluti), controlli touch integrati per smartphone e tablet, ed effetti sonori sintetizzati.</p>
 				<div class="links">
 					<a href="mattoncini.html" class="btn-play">Gioca</a>
-					<a href="guida-mattoncini.html" class="btn-rules" target="_blank" rel="opener">Regole</a>
+					<a href="regole-mattoncini.html" class="btn-rules" target="_blank">Regole</a>
 				</div>
 			</div>
 
 			<div class="game-card">
-				<h3><a href="woowoo2.html">WooWoo</a></h3>
+				<h3><a href="woowoo.html">WooWoo Luciano</a></h3>
 				<p>Un rompicapo ferroviario in tempo reale: su ogni quadro c'&egrave; una rete di binari con le sue stazioni, e tocca a te girare gli <strong>scambi</strong> perch&eacute; ogni treno finisca nella stazione giusta, quella della lettera che si porta scritta addosso. Il quadro chiede un certo numero di <strong>consegne</strong> e si perde in due modi: se finisce il <strong>tempo</strong>, oppure se esaurisci gli <strong>scontri</strong> concessi. La regola che cambia tutto il modo di giocare &egrave; che il tempo scende solo mentre ci sono treni sul tabellone, e tanto pi&ugrave; in fretta quanti pi&ugrave; ce ne sono: conviene farne viaggiare pochi per volta e sbrigarli in fretta. C'&egrave; l'<strong>orario</strong> che annuncia in anticipo chi parte, da dove e per dove, un acceleratore sul tasto destro del mouse per quando la strada &egrave; gi&agrave; pronta, e i quadri si susseguono uno dopo l'altro.</p>
 				<div class="links">
-					<a href="woowoo2.html" class="btn-play">Gioca</a>
-					<a href="guida-woowoo.html" class="btn-rules" target="_blank" rel="opener">Regole</a>
+					<a href="woowoo.html" class="btn-play">Gioca</a>
+					<a href="regole-woowoo.html" class="btn-rules" target="_blank">Regole</a>
 				</div>
 			</div>
 
@@ -399,14 +323,14 @@
 					<li><strong><a href="musica/intervalli/" style="color:#2c3e50;">Ear Training — Intervalli</a></strong>: allena l'orecchio riconoscendo gli intervalli musicali (dalla 2ª minore all'11ª giusta), con pentagramma, tastiera interattiva e 5 livelli di difficoltà.</li>
 					<li><strong><a href="musica/accordi/" style="color:#2c3e50;">Ear Training — Accordi</a></strong>: riconosci gli accordi (maggiori, minori, di settima, jazz e altro) con supporto per inversioni e modalità tastiera.</li>
 					<li><strong><a href="musica/scale/" style="color:#2c3e50;">Ear Training — Scale</a></strong>: allena l'orecchio sul riconoscimento delle scale musicali (maggiori, minori, pentatoniche, blues e modali).</li>
-					<li><strong><a href="metronome.html" style="color:#2c3e50;">Metronomo</a></strong>: aspetto realistico con pendolo oscillante, selezione metro (2/4, 3/4, 4/4 ecc.), toni differenziati e swing. Ideale per ogni strumentista.</li>
+					<li><strong><a href="musica/metronomo/" style="color:#2c3e50;">Metronomo</a></strong>: aspetto realistico con pendolo oscillante, selezione metro (2/4, 3/4, 4/4 ecc.), toni differenziati e swing. Ideale per ogni strumentista.</li>
 				</ul>
 				<div class="links">
 					<a href="musica/" class="btn-play">Apri</a>
-					<a href="musica/intervalli/guida-intervalli.html" class="btn-rules" target="_blank" rel="opener">Guida Intervalli</a>
-					<a href="musica/accordi/guida-accordi.html" class="btn-rules" target="_blank" rel="opener">Guida Accordi</a>
-					<a href="musica/scale/guida-scale.html" class="btn-rules" target="_blank" rel="opener">Guida Scale</a>
-					<a href="guida-metronomo.html" class="btn-rules" target="_blank" rel="opener">Guida Metronomo</a>
+					<a href="musica/intervalli/regole-intervalli.html" class="btn-rules" target="_blank">Guida Intervalli</a>
+					<a href="musica/accordi/regole-accordi.html" class="btn-rules" target="_blank">Guida Accordi</a>
+					<a href="musica/scale/regole-scale.html" class="btn-rules" target="_blank">Guida Scale</a>
+					<a href="musica/metronomo/regole-metronomo.html" class="btn-rules" target="_blank">Guida Metronomo</a>
 				</div>
 			</div>
 
@@ -417,50 +341,18 @@
 		</div>
 	</div>
 
-	<div class="banner"></div>
+	<div class="striscia"></div>
 
-	<div class="nav-links">
-		<a href="index.html">Home</a> |
-		<a href="aboutme.html">Chi Sono</a> |
-		<a href="privacy.html">Privacy Policy</a> |
-		<a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)">Gestisci Cookie</a>
-	</div>
+	<div class="nav-links" data-comune></div>
 
 	<p style="text-align: center; font-size: 0.8em; color: #888; max-width: 600px; margin: 20px auto 10px; line-height: 1.5;">
 		Le immagini delle carte Bresciane sono basate sull'opera <a href="https://commons.wikimedia.org/wiki/File:Carte_bresciane_al_completo.svg" target="_blank" style="color: #3498db; text-decoration: none;">Carte bresciane al completo.svg</a> di <strong>ZZandro</strong> (Wikimedia Commons), modificate e utilizzate sotto licenza <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.it" target="_blank" style="color: #3498db; text-decoration: none;">CC BY-SA 4.0</a>.<br>
 		Le immagini delle carte Napoletane sono basate sui disegni vettoriali di <strong>Florixc</strong> (Wikimedia Commons), modificate e utilizzate sotto licenza <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.it" target="_blank" style="color: #3498db; text-decoration: none;">CC BY-SA 4.0</a>.
 	</p>
 
-	<p style="text-align: center; font-size: 0.8em; color: #999; margin-top: 15px;">
+	<p class="copyright">
 		© 2026 Luciano Manenti
 	</p>
-
-	<script>
-		function goBack() {
-			if (window.opener) {
-				window.close();
-			} else {
-				window.location.href = 'index.html';
-			}
-		}
-
-		(function() {
-			var nascosto = false;
-			var observer = new MutationObserver(function() {
-				if (nascosto) return;
-				var divs = document.querySelectorAll('body > div');
-				for (var i = 0; i < divs.length; i++) {
-					if (divs[i].shadowRoot && !divs[i].className && (divs[i].getAttribute('style')||'').length > 5000) {
-						divs[i].style.setProperty('display', 'none', 'important');
-						nascosto = true;
-						observer.disconnect();
-						return;
-					}
-				}
-			});
-			observer.observe(document.body, { childList: true });
-		})();
-	</script>
 </body>
 
 </html>

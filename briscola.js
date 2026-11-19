@@ -6,8 +6,6 @@
    Stile e struttura coerenti con gli altri giochi del sito (Scopa, Dama).
    ============================================================================ */
 
-window.scriptVersion = '1.53';
-
 // === TESTI MULTILINGUA ===
 const BRISCOLA_LANG = (window.currentLang === 'en') ? {
     tuoTurno: 'Your turn — play a card',
@@ -1124,6 +1122,8 @@ function ruoloQuartoDiMano(g) {
 }
 
 // === FLUSSO DI GIOCO ===
+// La variante per Analytics (sitoPartita, in site.js): modalita' e livello.
+function varianteGA() { return (modalita === 4 ? '2v2' : '1v1') + '/' + difficolta; }
 let motoreAI = localStorage.getItem('briscola-motore-ai') || 'euristico';
 
 function nuovaPartita(diff, mod) {
@@ -1163,6 +1163,7 @@ function nuovaPartita(diff, mod) {
     renderTutto();
     setMessaggio(primoDiMano === 0 ? BRISCOLA_LANG.inizioTu : BRISCOLA_LANG.inizioAltro(nomiGiocatori[primoDiMano].nome));
     snapshotIniziale = creaSnapshotStato(); // per CTRL+ALT+I
+    if (window.sitoPartita) window.sitoPartita.inizio(varianteGA());
     prossimaMossa();
 }
 
@@ -1362,16 +1363,7 @@ function finePartita() {
     document.getElementById('fine-dettagli').innerHTML =
         BRISCOLA_LANG.riepilogo(mie, sue) + '<br>' + BRISCOLA_LANG.bilancio(s);
 
-    if (typeof gtag === 'function') {
-        const prefix = (window.gameConfig && window.gameConfig.gaPrefix) || '';
-        gtag('event', prefix + 'game_' + (esito === 'vinta' ? 'won' : (esito === 'persa' ? 'lost' : 'draw')), {
-            'event_category': 'Briscola',
-            'difficulty': difficolta,
-            'mode': modalita,
-            'my_points': mie,
-            'version': window.scriptVersion || 'unknown'
-        });
-    }
+    if (window.sitoPartita) window.sitoPartita.fine(esito === 'vinta' ? 'won' : (esito === 'persa' ? 'lost' : 'draw'));
 
     setTimeout(function () {
         document.getElementById('schermo').style.display = 'block';
@@ -1715,6 +1707,8 @@ function aggiornaLabelMazzo() {
 
 function riprendiPartita() {
     chiudiModali();
+    // Partita gia' contata prima della ricarica: non e' un inizio.
+    if (window.sitoPartita) window.sitoPartita.riprende(varianteGA());
     document.getElementById('campogioco').classList.toggle('quattro', modalita === 4);
     undoStack = [];
     maniScoperte = false;
@@ -2002,10 +1996,21 @@ function confermaEAvviaPartita() {
     nuovaPartita('difficile', tempModalita, tempSegnali);
 }
 
+// Ricarica per un'altra partita. Si passa da reloadWithInterstitial (site.js)
+// e non da location.reload(): e' lui che, se l'interstitial e' abilitato, lo
+// arma per la pagina che si riapre. Regola in doc/testa-canonica.md, 11.3.
+function ricaricaPerNuovaPartita() {
+    if (typeof window.reloadWithInterstitial === 'function') {
+        window.reloadWithInterstitial();
+    } else {
+        location.reload();
+    }
+}
+
 function richiediNuovaPartita() {
     // Partita conclusa: il reload rinnova pubblicità, interstitial e statistiche
     if (partitaFinita) {
-        location.reload();
+        ricaricaPerNuovaPartita();
         return;
     }
     if (!mani.length || mani.every(function (m) { return m.length === 0; })) {
@@ -2074,7 +2079,7 @@ function initBriscola() {
     addEv('btn-no-continua', 'click', chiudiModali);
     addEv('btn-si-termina', 'click', function () {
         localStorage.removeItem('briscola-save');
-        location.reload();
+        ricaricaPerNuovaPartita();
     });
 
     caricaStats();

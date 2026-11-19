@@ -6,8 +6,6 @@
    Stile e struttura coerenti con gli altri giochi del sito (Dama, Sudoku, Scopa).
    ============================================================================ */
 
-window.scriptVersion = '1.0';
-
 // === TESTI MULTILINGUA ===
 const MULINO_LANG = (window.currentLang === 'en') ? {
     tuoTurnoPiazza: 'Your turn — place a piece',
@@ -803,15 +801,12 @@ function finePartita(esito, motivo) {
     document.getElementById('fine-dettagli').textContent =
         (motivo ? motivo + ' — ' : '') + MULINO_LANG.riepilogo(difficolta, Math.ceil(mosseGiocate / 2), suggCount);
 
-    if (typeof gtag === 'function') {
-        const prefix = (window.gameConfig && window.gameConfig.gaPrefix) || '';
-        gtag('event', prefix + 'game_' + (esito === 'vinta' ? 'won' : (esito === 'persa' ? 'lost' : 'draw')), {
-            'event_category': 'Mulino',
-            'difficulty': difficolta,
-            'moves': Math.ceil(mosseGiocate / 2),
-            'hints': suggCount,
-            'version': window.scriptVersion || 'unknown'
-        });
+    // Analytics (testa-canonica 10.9). Le mosse giocate non si mandano: sono
+    // troppi valori diversi per un parametro di testo, e la durata la da'
+    // gia' 'seconds'.
+    if (window.sitoPartita) {
+        window.sitoPartita.fine(esito === 'vinta' ? 'won' : (esito === 'persa' ? 'lost' : 'draw'),
+            { dettagli: 'aiuti=' + suggCount });
     }
 
     setTimeout(function () {
@@ -907,9 +902,26 @@ function nuovaPartita(diff, colore) {
     chiudiModali();
     renderStats();
     renderTabellone();
+    if (window.sitoPartita) window.sitoPartita.inizio(varianteGA());
     // Muove sempre per primo il Bianco
     if (giocatore === 1) turnoGiocatore();
     else turnoComputer();
+}
+
+// La variante per Analytics (testa-canonica 10.9): livello e colore del
+// giocatore, come 'medio/nero'.
+function varianteGA() {
+    return difficolta + '/' + (giocatore === 1 ? 'bianco' : 'nero');
+}
+
+// Un'altra partita = ricaricare la pagina, passando dall'interstitial come
+// negli altri giochi del sito. Livello e colore restano in localStorage.
+function ricaricaPerNuovaPartita() {
+    if (typeof window.reloadWithInterstitial === 'function') {
+        window.reloadWithInterstitial();
+    } else {
+        location.reload();
+    }
 }
 
 // === MODALI ===
@@ -918,7 +930,6 @@ function chiudiModali() {
     document.getElementById('modale-inizio').style.display = 'none';
     document.getElementById('confermatermina').style.display = 'none';
     document.getElementById('finepartita').style.display = 'none';
-    document.getElementById('modale-regole').style.display = 'none';
     document.querySelectorAll('#campogioco .finish-banner').forEach(function (b) { b.remove(); });
 }
 
@@ -931,6 +942,7 @@ function apriModaleInizio(mostraRiprendi) {
 }
 
 function riprendiPartita() {
+    if (window.sitoPartita) window.sitoPartita.riprende(varianteGA());
     chiudiModali();
     renderStats();
     renderTabellone();
@@ -958,7 +970,7 @@ function richiediNuovaPartita() {
     // Partita conclusa: il reload rinnova pubblicità, interstitial e statistiche
     // di pagina (al ricaricamento appare direttamente la scelta della difficoltà)
     if (partitaFinita) {
-        location.reload();
+        ricaricaPerNuovaPartita();
         return;
     }
     if (board.length === 0 || mosseGiocate === 0) {
@@ -979,11 +991,6 @@ function richiediNuovaPartita() {
     }
 }
 
-function apriRegole() {
-    document.getElementById('schermo').style.display = 'block';
-    document.getElementById('modale-regole').style.display = 'flex';
-}
-
 // === TASTIERA ===
 document.addEventListener('keydown', function (e) {
     if (partitaFinita) return;
@@ -997,6 +1004,8 @@ document.addEventListener('keydown', function (e) {
 });
 
 // === INIZIALIZZAZIONE DELLA PAGINA ===
+// waitForInterstitial viene da site.js: aspetta che l'interstitial di casa,
+// se c'e', sia chiuso.
 document.addEventListener('DOMContentLoaded', function () {
     if (typeof window.waitForInterstitial === 'function') {
         window.waitForInterstitial(initMulino);
@@ -1026,7 +1035,6 @@ function initMulino() {
     document.getElementById('btn-annulla').addEventListener('click', annullaMossa);
     document.getElementById('btn-hint').addEventListener('click', suggerimento);
     document.getElementById('btn-nuova-partita').addEventListener('click', richiediNuovaPartita);
-    document.getElementById('btn-regole-top').addEventListener('click', apriRegole);
     document.getElementById('btn-riprendi').addEventListener('click', riprendiPartita);
     document.getElementById('btn-reset-stats').addEventListener('click', azzeraStats);
     // "Vedi il tabellone": chiude modale, schermo e banner; per ripartire
@@ -1035,7 +1043,8 @@ function initMulino() {
     document.getElementById('btn-no-continua').addEventListener('click', chiudiModali);
     document.getElementById('btn-si-termina').addEventListener('click', function () {
         localStorage.removeItem('mulino-save');
-        location.reload();
+        if (window.sitoPartita) window.sitoPartita.fine('abandoned');
+        ricaricaPerNuovaPartita();
     });
 
     caricaStats();

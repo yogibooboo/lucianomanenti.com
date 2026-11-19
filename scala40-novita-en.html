@@ -2,116 +2,27 @@
 <html lang="en">
 
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
-	<script>
-		window.dataLayer = window.dataLayer || [];
-		function gtag() { dataLayer.push(arguments); }
-		gtag('js', new Date());
-		gtag('config', 'G-WRBDRDQ4L8');
-		window.currentLang = 'en';
-	</script>
+	<meta charset="utf-8">
+
+	<!-- Funzioni comuni del sito: GA, icone, navigazione, riquadro di consenso -->
+	<script src="site.js" defer></script>
+
 	<title>Scala 40 What's New - What changes in the new version - lucianomanenti.com</title>
-	<link rel="alternate" hreflang="it" href="scala40-novita.html">
-	<link rel="alternate" hreflang="en" href="scala40-novita-en.html">
+	<link rel="canonical" href="https://www.lucianomanenti.com/scala40-novita-en.html">
+	<link rel="alternate" hreflang="it" href="https://www.lucianomanenti.com/scala40-novita.html">
+	<link rel="alternate" hreflang="en" href="https://www.lucianomanenti.com/scala40-novita-en.html">
+	<link rel="alternate" hreflang="x-default" href="https://www.lucianomanenti.com/scala40-novita.html">
+	<link rel="manifest" href="/favicon/site.webmanifest">
+
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta name="Description"
-		content="Everything new in the new version of Scala 40: bigger cards, optional FISCA rules, fixes and improvements over the classic version.">
+		content="Everything new in the new version of Scala 40: statistics with the scores table, bigger cards, optional FISCA rules, fixes and improvements over the classic version.">
 	<meta name="robots" content="noindex, follow">
-	<link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
-	<link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
-	<link rel="shortcut icon" href="favicon/favicon.ico">
-	<link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+
+	<link rel="stylesheet" href="/testo.css">
+
+	<!-- Le regole che testo.css non ha: le voci numerate e le etichette colorate -->
 	<style>
-		body {
-			font-family: sans-serif;
-			line-height: 1.7;
-			max-width: 800px;
-			margin: 40px auto;
-			padding: 20px;
-			color: #333;
-			background-color: #f9f9f9;
-		}
-
-		h1 {
-			color: #2c3e50;
-			border-bottom: 2px solid #ffd700;
-			padding-bottom: 10px;
-		}
-
-		h2 {
-			color: #2c3e50;
-			margin-top: 30px;
-		}
-
-		.lang-switch {
-			text-align: right;
-			margin-bottom: 20px;
-		}
-
-		.lang-switch a {
-			display: inline-block;
-			padding: 6px 16px;
-			margin-left: 5px;
-			text-decoration: none;
-			border-radius: 5px;
-			font-weight: bold;
-			font-size: 14px;
-		}
-
-		.lang-switch a.active {
-			background: #2c3e50;
-			color: white;
-		}
-
-		.lang-switch a:not(.active) {
-			background: #ddd;
-			color: #333;
-			cursor: pointer;
-		}
-
-		.content-box {
-			background: white;
-			padding: 30px;
-			border-radius: 8px;
-			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-		}
-
-		.play-btn {
-			display: inline-block;
-			margin-top: 25px;
-			padding: 12px 30px;
-			background: #27ae60;
-			color: white;
-			text-decoration: none;
-			border-radius: 8px;
-			font-size: 18px;
-			font-weight: bold;
-		}
-
-		.nav-links {
-			text-align: center;
-			margin-top: 30px;
-			font-size: 14px;
-		}
-
-		.nav-links a {
-			color: #3498db;
-			text-decoration: none;
-			margin: 0 10px;
-		}
-
-		.banner {
-			width: 100%;
-			height: 150px;
-			background-image: url('images/home/castagne.jpg');
-			background-size: cover;
-			background-position: center;
-			border-radius: 8px;
-			margin: 20px 0;
-			box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-		}
-
 		.novita-item {
 			display: flex;
 			gap: 14px;
@@ -171,17 +82,16 @@
 </head>
 
 <body>
-	<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-		<a href="#" id="btn-back" onclick="goBack(); return false;"
-			style="display: inline-block; padding: 6px 16px; background: #e74c3c; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 14px;">&#x2190;
+	<div class="top-bar">
+		<a href="scala40-en.html" id="btn-back" class="back-btn" onclick="goBack(); return false;">&#x2190;
 			Back</a>
-		<div class="lang-switch" style="margin-bottom: 0;">
-			<a href="scala40-novita.html">Italiano</a>
-			<a href="scala40-novita-en.html" class="active">English</a>
+		<div class="lang-switch">
+			<a href="scala40-novita.html" id="btn-it">Italiano</a>
+			<a href="scala40-novita-en.html" id="btn-en" class="active">English</a>
 		</div>
 	</div>
 
-	<div class="banner"></div>
+	<div class="striscia"></div>
 
 	<div class="content-box">
 		<h1>What's new in the New version of Scala 40</h1>
@@ -358,49 +268,63 @@
 			</div>
 		</div>
 
+		<div class="novita-item">
+			<div class="novita-icona">16</div>
+			<div class="novita-testo">
+				<h3>Statistics: the scores table</h3>
+				<p>At the bottom of the Total panel there is the <strong>SCORES</strong> button, which opens the
+					scores table: a record of how things are going, for you and for each opponent. For every
+					player it counts <strong>tournaments won</strong>, <strong>hands won</strong>,
+					<strong>penalty points</strong> (the ones in the Total panel) and <strong>points
+					laid</strong>, that is the value of the cards put on the table, credited the moment you lay
+					them down.</p>
+				<p style="margin-top: 8px;">Everything is repeated for four periods, each with its own colour:
+					<strong>today</strong>, <strong>week</strong>, <strong>month</strong> and <strong>all
+					time</strong>, plus the <strong>current tournament</strong> on the far right. There is a
+					separate table for each number of opponents, because beating one is not the same as beating
+					three. Players are listed in the same order as on the scoreboard, with you at the bottom. Each
+					period can be cleared on its own, and every reset asks for confirmation. The data stays in
+					this browser only, on this device. The details, including who gets the tournament point, are
+					on the <a href="regole-scala40-en.html">rules page</a>.</p>
+			</div>
+		</div>
+
 		<p style="margin-top: 30px;">For the full list of controls and game rules, including the point-by-point
 			differences between the two versions, see the <a href="regole-scala40-en.html">rules page</a>.</p>
 
-		<p style="text-align: center;"><a href="#" onclick="goBack(); return false;" class="play-btn">Close</a></p>
+		<p style="text-align: center;"><a href="scala40-en.html" onclick="goBack(); return false;" class="play-btn">Close</a></p>
 
 		<p style="font-size: 13px; color: #666; margin-top: 25px;">For bug reports, suggestions, or just to say
 			hi: <a href="mailto:postmaster@lucianomanenti.com">postmaster@lucianomanenti.com</a></p>
 	</div>
 
-	<div class="banner"></div>
+	<div class="striscia"></div>
 
-	<div class="nav-links">
-		<a href="index-en.html">Home</a> |
-		<a href="regole-scala40-en.html">Scala 40 Rules</a> |
-		<a href="privacy-en.html">Privacy</a> |
-		<a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)">Manage Cookies</a>
-	</div>
+	<div class="nav-links" data-comune></div>
 
-	<p style="text-align: center; font-size: 0.8em; color: #999; margin-top: 15px;">
+	<p class="copyright">
 		© 2026 Luciano Manenti
 	</p>
 
 	<script>
+		// Dove va questa pagina quando si preme "indietro": il gioco di cui parla.
+		var PAGINA_GIOCO = 'scala40-en.html';
+
 		function goBack() {
+			// Cronologia lunga: siamo arrivati da fuori, tipicamente da Google.
+			// Portiamolo al gioco, che da qui altrimenti non raggiungerebbe: la
+			// pagina delle novita', trovata con una ricerca, e' un vicolo cieco.
+			if (window.history.length > 1) {
+				window.location.href = PAGINA_GIOCO;
+				return;
+			}
+			// Scheda nuova: l'ha aperta il gioco o la pagina delle regole con
+			// target="_blank". Si chiude, e la pagina rimasta sotto torna in
+			// primo piano. Se invece la scheda l'ha aperta l'utente (Ctrl+clic)
+			// il browser rifiuta la chiusura in silenzio: caso raro, lasciato
+			// scoperto apposta.
 			window.close();
 		}
-
-		(function() {
-			var nascosto = false;
-			var observer = new MutationObserver(function() {
-				if (nascosto) return;
-				var divs = document.querySelectorAll('body > div');
-				for (var i = 0; i < divs.length; i++) {
-					if (divs[i].shadowRoot && !divs[i].className && (divs[i].getAttribute('style')||'').length > 5000) {
-						divs[i].style.setProperty('display', 'none', 'important');
-						nascosto = true;
-						observer.disconnect();
-						return;
-					}
-				}
-			});
-			observer.observe(document.body, { childList: true });
-		})();
 	</script>
 </body>
 

@@ -2,80 +2,26 @@
 <html lang="en">
 
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
-	<script>
-		window.dataLayer = window.dataLayer || [];
-		function gtag() { dataLayer.push(arguments); }
-		gtag('js', new Date());
-		gtag('config', 'G-WRBDRDQ4L8');
-		window.currentLang = 'en';
-	</script>
+	<meta charset="utf-8">
+
+	<!-- Funzioni comuni del sito: GA, icone, navigazione, riquadro di consenso -->
+	<script src="site.js" defer></script>
+
 	<title>Free Online Card Games (... and more) - lucianomanenti.com</title>
+	<link rel="canonical" href="https://www.lucianomanenti.com/info-en.html">
+	<link rel="alternate" hreflang="it" href="https://www.lucianomanenti.com/info.html">
+	<link rel="alternate" hreflang="en" href="https://www.lucianomanenti.com/info-en.html">
+	<link rel="alternate" hreflang="x-default" href="https://www.lucianomanenti.com/info.html">
+	<link rel="manifest" href="/favicon/site.webmanifest">
+
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta name="Description"
-		content="Play free online: Tressette and Traversone (Ciapanò), Scala 40, Gin Rummy, Machiavelli, Burraco, Scopa, Briscola, Spider and Klondike Solitaire, Mahjong Solitaire, Domino, Sudoku, Cross Figure puzzles, Secret Code, Minesweeper, Classic Battleship, Battleship Solitaire, Italian Checkers, Chess, Nine Men's Morris, Shortcuts and Bricks. No registration required. Also featuring music ear training and an advanced metronome.">
-	<link rel="alternate" hreflang="it" href="info.html">
-	<link rel="alternate" hreflang="en" href="info-en.html">
-	<link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
-	<link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
-	<link rel="shortcut icon" href="favicon/favicon.ico">
-	<link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+		content="Play free online: Tressette and Traversone (Ciapanò), Scala 40, Gin Rummy, Machiavelli, Burraco, Scopa, Briscola, Spider and Klondike Solitaire, Mahjong Solitaire, Domino, Sudoku, Cross Figure puzzles, Secret Code, Minesweeper, Classic Battleship, Battleship Solitaire, Dots and Boxes, Italian Checkers, Chess, Nine Men's Morris, Shortcuts, Bricks and WooWoo. No registration required. Also featuring music ear training (intervals, chords and scales) and an advanced metronome.">
+
+	<link rel="stylesheet" href="/testo.css">
+
+	<!-- Le regole che testo.css non ha: le schede dei giochi coi loro pulsanti -->
 	<style>
-		body {
-			font-family: sans-serif;
-			line-height: 1.7;
-			max-width: 800px;
-			margin: 40px auto;
-			padding: 20px;
-			color: #333;
-			background-color: #f9f9f9;
-		}
-
-		h1 {
-			color: #2c3e50;
-			border-bottom: 2px solid #ffd700;
-			padding-bottom: 10px;
-		}
-
-		h2 {
-			color: #2c3e50;
-			margin-top: 30px;
-		}
-
-		.lang-switch {
-			text-align: right;
-			margin-bottom: 20px;
-		}
-
-		.lang-switch a {
-			display: inline-block;
-			padding: 6px 16px;
-			margin-left: 5px;
-			text-decoration: none;
-			border-radius: 5px;
-			font-weight: bold;
-			font-size: 14px;
-		}
-
-		.lang-switch a.active {
-			background: #2c3e50;
-			color: white;
-		}
-
-		.lang-switch a:not(.active) {
-			background: #ddd;
-			color: #333;
-			cursor: pointer;
-		}
-
-		.content-box {
-			background: white;
-			padding: 30px;
-			border-radius: 8px;
-			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-		}
-
 		.game-card {
 			border-left: 4px solid #ffd700;
 			padding: 15px 20px;
@@ -114,44 +60,22 @@
 			background: #3498db;
 			color: white;
 		}
-
-		.nav-links {
-			text-align: center;
-			margin-top: 30px;
-			font-size: 14px;
-		}
-
-		.nav-links a {
-			color: #3498db;
-			text-decoration: none;
-			margin: 0 10px;
-		}
-
-		.banner {
-			width: 100%;
-			height: 150px;
-			background-image: url('images/home/castagne.jpg');
-			background-size: cover;
-			background-position: center;
-			border-radius: 8px;
-			margin: 20px 0;
-			box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-		}
 	</style>
 </head>
 
 <body>
-	<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-		<a href="#" id="btn-back" onclick="goBack(); return false;"
-			style="display: inline-block; padding: 6px 16px; background: #e74c3c; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 14px;">&#x2190;
+	<!-- Alla pagina si arriva dalla home nella stessa scheda: "Back" e' un
+	     semplice link alla home, che vale anche per chi arriva da Google -->
+	<div class="top-bar">
+		<a href="index-en.html" id="btn-back" class="back-btn">&#x2190;
 			Back</a>
-		<div class="lang-switch" style="margin-bottom: 0;">
+		<div class="lang-switch">
 			<a href="info.html" id="btn-it">Italiano</a>
 			<a href="info-en.html" id="btn-en" class="active">English</a>
 		</div>
 	</div>
 
-	<div class="banner"></div>
+	<div class="striscia"></div>
 
 	<div class="content-box">
 		<div id="lang-en">
@@ -166,64 +90,64 @@
 			<h2>My Games</h2>
 
 			<div class="game-card">
-				<h3><a href="rummy-en.html">Gin Rummy</a></h3>
+				<h3><a href="rummy-en.html">Gin Rummy Luciano</a></h3>
 				<p>The classic two-player Rummy game. Unlike Scala 40, all melds stay hidden in your hand until you
 					knock or go Gin. A sharp battle of memory and strategy where reading your opponent’s discards is
 					just as important as the cards you hold.</p>
 				<div class="links">
 					<a href="rummy-en.html" class="btn-play">Play</a>
-					<a href="regole-rummy-en.html" class="btn-rules" target="_blank" rel="opener">Rules</a>
+					<a href="regole-rummy-en.html" class="btn-rules" target="_blank">Rules</a>
 				</div>
 			</div>
 
 			<div class="game-card">
-				<h3><a href="scala40-en.html">Scala 40 (Italian Rummy)</a></h3>
+				<h3><a href="scala40-en.html">Scala 40 Luciano (Italian Rummy)</a></h3>
 				<p>The classic Italian card game with sets and runs. Form combinations to get rid of all your cards.
 					Play against 1, 2, or 3 computer opponents. You need at least 40 points to open.</p>
 				<div class="links">
 					<a href="scala40-en.html" class="btn-play">Play</a>
-					<a href="regole-scala40-en.html" class="btn-rules" target="_blank" rel="opener">Rules</a>
+					<a href="regole-scala40-en.html" class="btn-rules" target="_blank">Rules</a>
 				</div>
 			</div>
 
 			<div class="game-card">
-				<h3><a href="machiavelli-en.html">Machiavelli</a></h3>
+				<h3><a href="machiavelli-en.html">Machiavelli Luciano</a></h3>
 				<p>The most strategic variant of Scala 40: you can manipulate combinations already on the table,
 					split them and recombine them to your advantage. Also available on tablet. A game that requires
 					cunning and big-picture thinking.</p>
 				<div class="links">
 					<a href="machiavelli-en.html" class="btn-play">Play</a>
-					<a href="regole-machiavelli-en.html" class="btn-rules" target="_blank" rel="opener">Rules</a>
+					<a href="regole-machiavelli-en.html" class="btn-rules" target="_blank">Rules</a>
 				</div>
 			</div>
 
 			<div class="game-card">
-				<h3><a href="spider-en.html">Spider Solitaire</a></h3>
+				<h3><a href="spider-en.html">Spider Solitaire Luciano</a></h3>
 				<p>The famous card solitaire: arrange all columns from King to Ace. Requires patience and strategy.
 					Try to free entire columns for more room to maneuver.</p>
 				<div class="links">
 					<a href="spider-en.html" class="btn-play">Play</a>
-					<a href="regole-spider-en.html" class="btn-rules" target="_blank" rel="opener">Rules</a>
+					<a href="regole-spider-en.html" class="btn-rules" target="_blank">Rules</a>
 				</div>
 			</div>
 
 			<div class="game-card">
-				<h3><a href="klondike-en.html">Klondike Solitaire</a></h3>
+				<h3><a href="klondike-en.html">Klondike Solitaire Luciano</a></h3>
 				<p>The classic card solitaire everyone has played at least once. Build the 4 foundations from Ace to King by moving tableau cards in descending alternating-color order. Draw from the stock when stuck, and complete all foundations to win. Features auto-complete once all face-down cards have been revealed.</p>
 				<div class="links">
 					<a href="klondike-en.html" class="btn-play">Play</a>
-					<a href="regole-klondike-en.html" class="btn-rules" target="_blank" rel="opener">Rules</a>
+					<a href="regole-klondike-en.html" class="btn-rules" target="_blank">Rules</a>
 				</div>
 			</div>
 
 			<div class="game-card">
-				<h3><a href="burraco-en.html">Burraco</a></h3>
+				<h3><a href="burraco-en.html">Burraco Luciano</a></h3>
 				<p>The hugely popular Italian card game, created by popular demand from our players. For the moment,
 					it is played in pairs (2 vs 2). Form clean and dirty burracos to score points. The game is
 					constantly being improved: suggestions and feedback are welcome.</p>
 				<div class="links">
 					<a href="burraco-en.html" class="btn-play">Play</a>
-					<a href="regole-burraco-en.html" class="btn-rules" target="_blank" rel="opener">Rules</a>
+					<a href="regole-burraco-en.html" class="btn-rules" target="_blank">Rules</a>
 				</div>
 			</div>
 
@@ -232,25 +156,25 @@
 				<p>The famous traditional Italian card game. Challenge computer-controlled opponents in head-to-head (1 vs 1) or partnership (2 vs 2) matches. Track capture counts, diamonds, and Primiera points in real-time, complete with sound effects and threshold alerts.</p>
 				<div class="links">
 					<a href="scopa-en.html" class="btn-play">Play</a>
-					<a href="regole-scopa-en.html" class="btn-rules" target="_blank" rel="opener">Rules</a>
+					<a href="regole-scopa-en.html" class="btn-rules" target="_blank">Rules</a>
 				</div>
 			</div>
 
 			<div class="game-card">
-				<h3><a href="briscola-en.html">Briscola</a></h3>
+				<h3><a href="briscola-en.html">Briscola Luciano</a></h3>
 				<p>The most widely played Italian card game of all. Challenge computer-controlled opponents head-to-head (1 vs 1) or in partnership (2 vs 2), with an optional partner-signals feature to share your trump cards with your teammate at a glance.</p>
 				<div class="links">
 					<a href="briscola-en.html" class="btn-play">Play</a>
-					<a href="regole-briscola-en.html" class="btn-rules" target="_blank" rel="opener">Rules</a>
+					<a href="regole-briscola-en.html" class="btn-rules" target="_blank">Rules</a>
 				</div>
 			</div>
 
 			<div class="game-card">
-				<h3><a href="tressette-en.html">Tressette and Traversone (Ciapanò)</a></h3>
+				<h3><a href="tressette-en.html">Tressette and Traversone (Ciapanò) Luciano</a></h3>
 				<p>Two great classics of the Italian card tradition in one single game: classic Tressette played in partnerships (2 vs 2) with traditional declarations (Bongioco and Napoli), and the popular trick-avoidance variant Traversone (also known as Ciapanò or "Loser Takes All") with the optional Ace of Spades or Batons penalty rule. Features strict suit-following rules, move undo, and detailed real-time score breakdown.</p>
 				<div class="links">
 					<a href="tressette-en.html" class="btn-play">Play</a>
-					<a href="regole-tressette-en.html" class="btn-rules" target="_blank" rel="opener">Rules</a>
+					<a href="regole-tressette-en.html" class="btn-rules" target="_blank">Rules</a>
 				</div>
 			</div>
 
@@ -259,7 +183,7 @@
 				<p>The famous Japanese logic puzzle. Three difficulty levels with puzzles that always have a unique solution, pencil notes, "didactic" hints that point out deducible cells, best-time records and automatic game saving.</p>
 				<div class="links">
 					<a href="sudoku-en.html" class="btn-play">Play</a>
-					<a href="regole-sudoku-en.html" class="btn-rules" target="_blank" rel="opener">Rules</a>
+					<a href="regole-sudoku-en.html" class="btn-rules" target="_blank">Rules</a>
 				</div>
 			</div>
 
@@ -268,7 +192,7 @@
 				<p>A mathematical cryptarithm in the classic puzzle-magazine style: nine numbers in a 3&times;3 matrix, with every digit hidden behind a letter. The same letter always stands for the same digit, and the three horizontal operations and the three vertical ones must all balance at the same time. You solve it by elimination using the possibility matrix, just as you would with a pencil. Three difficulty levels, puzzles that always have a unique solution, hints that explain the reasoning, best-time records and automatic game saving.</p>
 				<div class="links">
 					<a href="calcolo-en.html" class="btn-play">Play</a>
-					<a href="regole-calcolo-en.html" class="btn-rules" target="_blank" rel="opener">Rules</a>
+					<a href="regole-calcolo-en.html" class="btn-rules" target="_blank">Rules</a>
 				</div>
 			</div>
 
@@ -277,7 +201,7 @@
 				<p>The classic logic game: uncover every safe square without ever touching a mine, reading the numbers that tell you how many mines are around. Three levels (9&times;9, 16&times;16 and 30&times;16), the first click is never a mine, and there is the option of a <strong>field always solvable by logic</strong>, so you never have to guess. If you do hit a mine you can undo the move by paying a penalty in seconds that doubles every time. Flags with the right button, mine and mistake counters, best-time records and automatic game saving.</p>
 				<div class="links">
 					<a href="minato-en.html" class="btn-play">Play</a>
-					<a href="guida-minato-en.html" class="btn-rules" target="_blank" rel="opener">Rules</a>
+					<a href="regole-minato-en.html" class="btn-rules" target="_blank">Rules</a>
 				</div>
 			</div>
 
@@ -286,7 +210,7 @@
 				<p>Chess with the complete rules (castling, en passant, promotion, automatic draws) against the <strong>Stockfish</strong> engine running in your browser. Three difficulty levels, choice of colour, engine hints, algebraic notation, move undo and automatic game saving.</p>
 				<div class="links">
 					<a href="scacchi-en.html" class="btn-play">Play</a>
-					<a href="regole-scacchi-en.html" class="btn-rules" target="_blank" rel="opener">Rules</a>
+					<a href="regole-scacchi-en.html" class="btn-rules" target="_blank">Rules</a>
 				</div>
 			</div>
 
@@ -295,7 +219,7 @@
 				<p>Italian checkers with the official FID rules: mandatory captures with the official precedence rules, men that cannot capture kings, promotion that stops the capture chain. Three difficulty levels, choice of colour, hints, move undo and automatic game saving.</p>
 				<div class="links">
 					<a href="dama-en.html" class="btn-play">Play</a>
-					<a href="regole-dama-en.html" class="btn-rules" target="_blank" rel="opener">Rules</a>
+					<a href="regole-dama-en.html" class="btn-rules" target="_blank">Rules</a>
 				</div>
 			</div>
 
@@ -304,7 +228,7 @@
 				<p>Nine Men's Morris (also known as <strong>Mill</strong> or <strong>Merels</strong>), one of the oldest board games we know of: line up three pieces to close a mill and remove one of your opponent's pieces. The three phases of placing, moving and flying, three difficulty levels, choice of colour, hints, move undo and automatic game saving.</p>
 				<div class="links">
 					<a href="mulino-en.html" class="btn-play">Play</a>
-					<a href="regole-mulino-en.html" class="btn-rules" target="_blank" rel="opener">Rules</a>
+					<a href="regole-mulino-en.html" class="btn-rules" target="_blank">Rules</a>
 				</div>
 			</div>
 
@@ -313,7 +237,7 @@
 				<p>The timeless two-player naval combat game played online for free against the computer: deploy your standard 10-ship fleet (1 Battleship, 2 Cruisers, 3 Destroyers, 4 Submarines) with rapid rotation (right-click or spacebar), move/remove controls, and the no-touch rule, or generate an instant random layout. Fire turn by turn at the enemy radar, earn a bonus shot with every hit, and sink the entire opposing fleet before they sink yours. Three difficulty levels (Seaman, Captain, Admiral) featuring directional hunting AI and checkerboard scouting, saved stats, and full-screen layout.</p>
 				<div class="links">
 					<a href="battaglia-navale-en.html" class="btn-play">Play</a>
-					<a href="guida-battaglia-navale-en.html" class="btn-rules" target="_blank" rel="opener">Rules</a>
+					<a href="regole-battaglia-navale-en.html" class="btn-rules" target="_blank">Rules</a>
 				</div>
 			</div>
 
@@ -322,43 +246,43 @@
 				<p>Not the two-player battleship game, but the <strong>logic solitaire</strong>: the fleet is hidden in one single possible arrangement, and you find it by reasoning rather than by shooting at random. The numbers along the edges tell you how many ship squares are in each row and column, and everything else follows by elimination. Three sizes (6&times;6, 8&times;8 and 10&times;10), left click for water and right click for ship, hints that explain the reasoning, undo, best-time records and autosave.</p>
 				<div class="links">
 					<a href="navale-en.html" class="btn-play">Play</a>
-					<a href="guida-navale-en.html" class="btn-rules" target="_blank" rel="opener">Rules</a>
+					<a href="regole-navale-en.html" class="btn-rules" target="_blank">Rules</a>
 				</div>
 			</div>
 
 			<div class="game-card">
-				<h3><a href="mahjong-en.html">Luciano Mahjong</a></h3>
+				<h3><a href="mahjong-en.html">Mahjong Luciano</a></h3>
 				<p>The famous tile-matching puzzle game (also known as <strong>Shanghai Mahjong</strong>): 144 multi-layer 3D tiles (Dots, Bamboo, Characters, Winds, Dragons, Flowers, and Seasons). Match identical free tiles in pairs to clear the entire board. Features 4 selectable layouts (The Classic Turtle, Pyramid, Fortress, Arena), a <strong>guaranteed solvable game generator</strong>, free-tile highlighting, hints, undo, anti-stalemate shuffle, realistic sound effects, and saved stats.</p>
 				<div class="links">
 					<a href="mahjong-en.html" class="btn-play">Play</a>
-					<a href="guida-mahjong-en.html" class="btn-rules" target="_blank" rel="opener">Rules</a>
+					<a href="regole-mahjong-en.html" class="btn-rules" target="_blank">Rules</a>
 				</div>
 			</div>
 
 			<div class="game-card">
-				<h3><a href="quadrati-en.html">Luciano Dots and Boxes</a></h3>
+				<h3><a href="quadrati-en.html">Dots and Boxes Luciano</a></h3>
 				<p>The squared-paper game played at school: players take turns joining one dot to the next, and whoever closes a box claims it <strong>and plays again</strong>. That rule is what decides games, because a whole chain of boxes gets banked in a single turn. It takes half a minute to learn, but there is real strategy behind it: the goal is to leave your opponent without a safe move, and it is sometimes worth <strong>declining</strong> the last two boxes of a chain to force them to open the next one. Three grid sizes (5&times;5, 8&times;8 and 11&times;11) plus a custom one up to 12&times;14, a computer opponent with three levels &mdash; the strongest knows chain play and uses the sacrifice &mdash; games won and best margin per level, and autosave.</p>
 				<div class="links">
 					<a href="quadrati-en.html" class="btn-play">Play</a>
-					<a href="guida-quadrati-en.html" class="btn-rules" target="_blank" rel="opener">Rules</a>
+					<a href="regole-quadrati-en.html" class="btn-rules" target="_blank">Rules</a>
 				</div>
 			</div>
 
 			<div class="game-card">
-				<h3><a href="codice-segreto-en.html">Luciano Secret Code</a></h3>
+				<h3><a href="codice-segreto-en.html">Secret Code Luciano</a></h3>
 				<p>The deduction puzzle handed down from the old <strong>Bulls and Cows</strong>: the computer hides a colour code and you have to work it out, one guess at a time. Every row is answered with two figures only &mdash; how many colours are <strong>in the right slot</strong> and how many are <strong>the right colour in the wrong slot</strong> &mdash; and from there it is all elimination, never guesswork. Three levels (4 slots and 6 colours, 4 slots and 8 colours, 5 slots and 8 colours), with the option of banning repeated colours; a possibility matrix to record what you have already ruled out, three optional helpers you can switch on as you like, hints that explain the reasoning, best-guess records and autosave.</p>
 				<div class="links">
 					<a href="codice-segreto-en.html" class="btn-play">Play</a>
-					<a href="regole-codice-segreto-en.html" class="btn-rules" target="_blank" rel="opener">Rules</a>
+					<a href="regole-codice-segreto-en.html" class="btn-rules" target="_blank">Rules</a>
 				</div>
 			</div>
 
 			<div class="game-card">
-				<h3><a href="domino-en.html">Luciano Domino</a></h3>
+				<h3><a href="domino-en.html">Domino Luciano</a></h3>
 				<p>The classic tile game: challenge the computer in <strong>Draw Domino</strong> or <strong>Block Domino</strong> matches. Realistic 3D tiles with engraved pips and dynamic snake chain layout, 3 difficulty levels (Easy, Medium, Hard featuring suit memory and strategic blocking), face-up opponent tiles option, move hints, undo, 50 or 100-point match targets, and autosave stats.</p>
 				<div class="links">
 					<a href="domino-en.html" class="btn-play">Play</a>
-					<a href="guida-domino-en.html" class="btn-rules" target="_blank" rel="opener">Rules</a>
+					<a href="regole-domino-en.html" class="btn-rules" target="_blank">Rules</a>
 				</div>
 			</div>
 
@@ -368,25 +292,25 @@
 				<p style="font-style: italic; color: #64748b; font-size: 0.95em; margin-top: 6px;"><em>Author's Note:</em> This game comes from a fond youth memory. I invented it as a boy to play with my brothers and friends, drawing the circuits on squared refill paper and taping multiple sheets together to build massive boards that we played on for entire afternoons.</p>
 				<div class="links">
 					<a href="scorciatoie-en.html" class="btn-play">Play</a>
-					<a href="guida-scorciatoie-en.html" class="btn-rules" target="_blank" rel="opener">Rules</a>
+					<a href="regole-scorciatoie-en.html" class="btn-rules" target="_blank">Rules</a>
 				</div>
 			</div>
 
 			<div class="game-card">
-				<h3><a href="mattoncini-en.html">Bricks</a></h3>
+				<h3><a href="mattoncini-en.html">Bricks Luciano</a></h3>
 				<p>The timeless falling-block puzzle game reimagined in the site's signature style: maneuver the 7 geometric shapes (I, J, L, O, S, T, Z) to create and clear solid horizontal lines. Features advanced rotations with <strong>wall kicks and floor kicks</strong>, a <strong>Hold / Swap queue</strong> to stash a piece for later, next 3 pieces previews, ghost piece projection, and instant hard drop. Enjoy 3 distinct game modes &mdash; <strong>Marathon</strong> (classic endless progression with ramping speeds), <strong>Sprint</strong> (clear 40 lines in the fastest time), and <strong>Ultra</strong> (score as many points as possible in 2 minutes) &mdash; alongside resettable personal records (Daily, Weekly, and All-Time), full touch controls for mobile/tablet devices, and synthesized retro sound effects.</p>
 				<div class="links">
 					<a href="mattoncini-en.html" class="btn-play">Play</a>
-					<a href="guida-mattoncini-en.html" class="btn-rules" target="_blank" rel="opener">Rules</a>
+					<a href="regole-mattoncini-en.html" class="btn-rules" target="_blank">Rules</a>
 				</div>
 			</div>
 
 			<div class="game-card">
-				<h3><a href="woowoo2-en.html">WooWoo</a></h3>
+				<h3><a href="woowoo-en.html">WooWoo Luciano</a></h3>
 				<p>A real-time railway puzzle: every board is a network of track with its own stations, and it is up to you to throw the <strong>switches</strong> so that each train ends up at the right station &mdash; the one whose letter the train carries. A board asks for a given number of <strong>deliveries</strong>, and there are two ways to lose it: running out of <strong>time</strong>, or running out of the <strong>crashes</strong> you are allowed. The rule that shapes the whole game is that time only runs down while there are trains on the board, and the faster the more of them there are: you are better off keeping few trains out at once and clearing them quickly. There is a <strong>timetable</strong> announcing in advance which train leaves, from where and for where, an accelerator on the right mouse button for when the road is already set, and one board follows another.</p>
 				<div class="links">
-					<a href="woowoo2-en.html" class="btn-play">Play</a>
-					<a href="guida-woowoo-en.html" class="btn-rules" target="_blank" rel="opener">Rules</a>
+					<a href="woowoo-en.html" class="btn-play">Play</a>
+					<a href="regole-woowoo-en.html" class="btn-rules" target="_blank">Rules</a>
 				</div>
 			</div>
 
@@ -397,14 +321,14 @@
 					<li><strong><a href="musica/intervalli/index-en.html" style="color:#2c3e50;">Ear Training — Intervals</a></strong>: train your ear by recognizing musical intervals (from minor 2nd to perfect 11th), with staff notation, interactive keyboard, and 5 difficulty levels.</li>
 					<li><strong><a href="musica/accordi/index-en.html" style="color:#2c3e50;">Ear Training — Chords</a></strong>: recognize chords (major, minor, 7th, jazz, and more) with support for inversions and keyboard mode.</li>
 					<li><strong><a href="musica/scale/index-en.html" style="color:#2c3e50;">Ear Training — Scales</a></strong>: train your ear recognizing musical scales (major, minor modes, pentatonic, blues, and modal).</li>
-					<li><strong><a href="metronome-en.html" style="color:#2c3e50;">Metronome</a></strong>: realistic appearance with oscillating pendulum, time signature selection (2/4, 3/4, 4/4, etc.), differentiated tones, and swing. Ideal for all instrumentalists.</li>
+					<li><strong><a href="musica/metronomo/index-en.html" style="color:#2c3e50;">Metronome</a></strong>: realistic appearance with oscillating pendulum, time signature selection (2/4, 3/4, 4/4, etc.), differentiated tones, and swing. Ideal for all instrumentalists.</li>
 				</ul>
 				<div class="links">
 					<a href="musica/index-en.html" class="btn-play">Open</a>
-					<a href="musica/intervalli/guida-intervalli-en.html" class="btn-rules" target="_blank" rel="opener">Intervals Guide</a>
-					<a href="musica/accordi/guida-accordi-en.html" class="btn-rules" target="_blank" rel="opener">Chords Guide</a>
-					<a href="musica/scale/guida-scale-en.html" class="btn-rules" target="_blank" rel="opener">Scales Guide</a>
-					<a href="guida-metronomo-en.html" class="btn-rules" target="_blank" rel="opener">Metronome Guide</a>
+					<a href="musica/intervalli/regole-intervalli-en.html" class="btn-rules" target="_blank">Intervals Guide</a>
+					<a href="musica/accordi/regole-accordi-en.html" class="btn-rules" target="_blank">Chords Guide</a>
+					<a href="musica/scale/regole-scale-en.html" class="btn-rules" target="_blank">Scales Guide</a>
+					<a href="musica/metronomo/regole-metronomo-en.html" class="btn-rules" target="_blank">Metronome Guide</a>
 				</div>
 			</div>
 
@@ -415,50 +339,18 @@
 		</div>
 	</div>
 
-	<div class="banner"></div>
+	<div class="striscia"></div>
 
-	<div class="nav-links">
-		<a href="index-en.html">Home</a> |
-		<a href="aboutme-en.html">About Me</a> |
-		<a href="privacy-en.html">Privacy Policy</a> |
-		<a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)">Manage Cookies</a>
-	</div>
+	<div class="nav-links" data-comune></div>
 
 	<p style="text-align: center; font-size: 0.8em; color: #888; max-width: 600px; margin: 20px auto 10px; line-height: 1.5;">
 		The Brescian playing cards graphics are based on <a href="https://commons.wikimedia.org/wiki/File:Carte_bresciane_al_completo.svg" target="_blank" style="color: #3498db; text-decoration: none;">Carte bresciane al completo.svg</a> by <strong>ZZandro</strong> (Wikimedia Commons), modified and used under <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" style="color: #3498db; text-decoration: none;">CC BY-SA 4.0</a>.<br>
 		The Neapolitan playing cards graphics are based on vector artwork by <strong>Florixc</strong> (Wikimedia Commons), modified and used under <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" style="color: #3498db; text-decoration: none;">CC BY-SA 4.0</a>.
 	</p>
 
-	<p style="text-align: center; font-size: 0.8em; color: #999; margin-top: 15px;">
+	<p class="copyright">
 		© 2026 Luciano Manenti
 	</p>
-
-	<script>
-		function goBack() {
-			if (window.opener) {
-				window.close();
-			} else {
-				window.location.href = 'index-en.html';
-			}
-		}
-
-		(function() {
-			var nascosto = false;
-			var observer = new MutationObserver(function() {
-				if (nascosto) return;
-				var divs = document.querySelectorAll('body > div');
-				for (var i = 0; i < divs.length; i++) {
-					if (divs[i].shadowRoot && !divs[i].className && (divs[i].getAttribute('style')||'').length > 5000) {
-						divs[i].style.setProperty('display', 'none', 'important');
-						nascosto = true;
-						observer.disconnect();
-						return;
-					}
-				}
-			});
-			observer.observe(document.body, { childList: true });
-		})();
-	</script>
 </body>
 
 </html>

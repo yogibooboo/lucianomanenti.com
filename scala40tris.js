@@ -900,6 +900,7 @@ var scala = {
 		this.shuffle();
 		this.createDeckElements();
 		this.givecards();
+		this.containizio();
 		return;
 	},
 
@@ -987,6 +988,7 @@ var scala = {
 		this.manivintetorneo = [0, 0, 0, 0];
 		this.fintorneo = false;
 		this.vincitoretorneo = -1;
+		this.manoripetuta = false;
 
 		var _stato = null;
 		try { _stato = JSON.parse(localStorage.getItem('scala40tris_stato') || 'null'); } catch (e) { }
@@ -1001,6 +1003,9 @@ var scala = {
 			if (_stato.na > 0 && _stato.na < 4) this.numeroavversari = _stato.na;
 			if (_stato.pp) this.puntipositivitorneo = this.quattro(_stato.pp);
 			if (_stato.mv) this.manivintetorneo = this.quattro(_stato.mv);
+			/* Smazzata rifatta dopo uno stallo: il torneo era già cominciato
+			   anche se il contatore delle mani è ancora a zero. */
+			if (_stato.rm) this.manoripetuta = true;
 		}
 
 		this.tscalauptouch = 0;
@@ -1011,10 +1016,6 @@ var scala = {
 		this.fscartiprima40 = true;
 
 		this.carteselezionate = [];
-		this.attacchiturno = [];
-		this.undoturno = 0;
-		this.multiundoturno = 0;
-		this.npopstato = 0;
 		this.f40avversario = [false, false, false];
 		this.f40giocatore = false;
 		this.fscartipesca = false;
@@ -1680,15 +1681,6 @@ var scala = {
 
 		stato.restore();
 
-		/* Sonda: conteggio di TUTTI i ripristini del turno, qualunque sia
-		   l'origine (undo, multiundo, replay IA, rientri interni). undoturno
-		   conta solo il pulsante annulla e multiundo non lo tocca affatto:
-		   con quel solo contatore un multiundo si presentava come "annullato
-		   da solo". Qui si conta il ripristino dove avviene davvero, così
-		   npopstato=0 significa che nulla è stato riavvolto. Sola scrittura
-		   di un contatore, nessun effetto sul gioco. */
-		this.npopstato = (this.npopstato || 0) + 1;
-
 		if (this.statostack.length == 0) $$.css($$.one("#pulsante2"), { "border-color": "#888888" });
 	},
 
@@ -1789,7 +1781,6 @@ var scala = {
 					}
 				}
 				if (attaccataclick) {
-					try { this.registraattacco(cartasel, "click", cont); } catch (e) { }
 					this.tgoff();
 					for (var j = 0; j < scala.numeroavversari; j++) this.taoff(j);
 					this.azzeraselezione();
@@ -1889,17 +1880,13 @@ var scala = {
 		   la carta non si attacca. */
 		var attaccata = false;
 		if ((this.pescato) && (this.giocatore.carte.length != 1)) {
-			/* La carta trascinata va annotata prima dell'aggancio: dopo,
-			   cercamatch l'ha già spostata fuori dalla mano (sonda GA4). */
 			if (this.pointerinelement(ev, "#giocatore")) {
 				attaccata = this.cercamatch(this.trisgiocatore, ESEGUI);
-				if (attaccata) { try { this.registraattacco(carta, "drag", this.trisgiocatore); } catch (e) { } }
 			}
 			if (!attaccata && (this.calcolapuntitris(this.trisgiocatore.carte) > 39)) {
 				for (var j = 0; j < scala.numeroavversari; j++) {
 					if (this.pointerinelement(ev, "#avversario" + (j + 1))) {
 						attaccata = this.cercamatch(this.campitrisavversario[j], ESEGUI);
-						if (attaccata) { try { this.registraattacco(carta, "drag", this.campitrisavversario[j]); } catch (e) { } }
 						break;
 					}
 				}
@@ -2260,108 +2247,6 @@ var scala = {
 		if (punti > 39) this.f40giocatore = true;
 		scarta.play();
 
-		/* Sonda: qui il turno si chiude davvero (le modali di apertura sono
-		   già passate). Se una carta agganciata durante questo turno è
-		   tornata in mano, è il caso segnalato dal giocatore: si spedisce. */
-		try { this.verificaattacchi(carta); } catch (e) { }
-		this.attacchiturno = [];
-		this.undoturno = 0;
-		this.multiundoturno = 0;
-		this.npopstato = 0;
-
-		/* Sonda "scarto con drag appeso": se scaladown è ancora alto quando lo
-		   scarto si concretizza, un trascinamento non si è mai chiuso (mouseup
-		   o touchend mai arrivati): la carta trascinata è visivamente dove
-		   l'ha lasciata il gesto ma logicamente altrove, e i render la saltano
-		   finché il flag resta alto. Sola lettura, nessun effetto sul gioco.
-
-		   Esito della raccolta (12 lug - 8 ago 2026, 10 casi leggibili): NON è
-		   il caso segnalato. In 10 casi su 10 carta_drag coincide con
-		   carta_scartata e drag_top sta fra 508 e 630, cioè nella sola fascia
-		   del giocatore: il gesto scarta la carta che sta trascinando, senza
-		   alcun attacco di mezzo. Il sospetto è il tasto destro premuto mentre
-		   il sinistro è ancora giù (cartadestro non guarda scaladown). */
-		if (this.scaladown) {
-			try {
-				var dragdiv = this.cartadown;
-				var dragcarta = dragdiv ? dragdiv.card : null;
-				var dovelogico = '?';
-				if (dragcarta) {
-					if (dragcarta.gruppo === this.giocatore) dovelogico = 'mano';
-					else if (dragcarta.gruppo === this.trisgiocatore) dovelogico = 'tris';
-					else if (dragcarta.gruppo === this.scarti) dovelogico = 'scarti';
-					else if (dragcarta.gruppo === this.mazzo) dovelogico = 'mazzo';
-					else dovelogico = 'avv';
-				}
-				if (typeof gtag === 'function') {
-					gtag('event', 'scala40_scarto_con_drag', {
-						'event_category': 'Bug_Report',
-						'event_label': (dragcarta ? dragcarta.shortName : '?') + '@' + dovelogico,
-						'carta_drag': dragcarta ? dragcarta.shortName : '?',
-						'drag_dove': dovelogico,
-						'drag_left': dragdiv ? (parseInt(dragdiv.style.left, 10) || 0) : -1,
-						'drag_top': dragdiv ? (parseInt(dragdiv.style.top, 10) || 0) : -1,
-						'drag_mosso': this.scalamove ? 1 : 0,
-						'carta_scartata': carta.shortName,
-						'transport_type': 'beacon'
-					});
-				}
-				if (localStorage.getItem('scala40_devmode') === '1') {
-					console.warn('[scala40] scarto con drag appeso', dragcarta ? dragcarta.shortName : '?', dovelogico);
-				}
-			} catch (e) { }
-		}
-
-		/* Sonda "divergenza visivo/logico": misura il SINTOMO della
-		   segnalazione invece di un evento sospetto. Si legge qui perché il
-		   turno del giocatore è fermo (nessuna animazione in volo) e la carta
-		   scartata non si è ancora mossa. Se una carta è dipinta lontano dal
-		   posto che il render le assegnerebbe, è la condizione descritta:
-		   visivamente in un posto, logicamente in un altro. Sola lettura. */
-		try {
-			var nomescartata = carta.shortName;
-			var eradown = this.scaladown ? 1 : 0;
-			this.divergenzaconferma(function (div) {
-				try {
-					if (div.quante === 0) return;
-					var p = div.peggiore;
-					/* I nomi dei parametri sono RIUSATI da quelli delle sonde
-					   precedenti per non consumare altre dimensioni GA4: qui
-					   alcuni portano un significato diverso da quello che il
-					   nome suggerisce. Legenda per chi legge i report di
-					   scala40_divergenza:
-					     carta_tornata  = carta fuori posto
-					     drag_dove      = suo gruppo logico
-					     drag_left/top  = dove è DIPINTA (osservato nel DOM)
-					     stack_attacco  = X ATTESA dal render
-					     stack_ora      = Y ATTESA dal render
-					     n_popstato     = distanza in pixel (dl + dt)
-					     n_tornate      = quante carte divergono
-					     drag_mosso     = scaladown alto allo scarto (0/1) */
-					if (typeof gtag === 'function') {
-						gtag('event', 'scala40_divergenza', {
-							'event_category': 'Bug_Report',
-							'event_label': (p ? p.nome + '@' + p.logico : '?'),
-							'carta_tornata': p ? p.nome : '?',
-							'drag_dove': p ? p.logico : '?',
-							'drag_left': p ? p.vl : 0,
-							'drag_top': p ? p.vt : 0,
-							'stack_attacco': p ? p.al : 0,
-							'stack_ora': p ? p.at : 0,
-							'n_popstato': p ? p.scarto : 0,
-							'n_tornate': div.quante,
-							'drag_mosso': eradown,
-							'carta_scartata': nomescartata,
-							'transport_type': 'beacon'
-						});
-					}
-					if (localStorage.getItem('scala40_devmode') === '1') {
-						console.warn('[scala40] divergenza visivo/logico', div.quante, p);
-					}
-				} catch (e) { }
-			});
-		} catch (e) { }
-
 		this.azzeraselezione();
 		this.pescato = false;
 
@@ -2413,6 +2298,50 @@ var scala = {
 		this.render();
 	},
 
+	/* Analytics. Il gioco non chiama gtag: chiama sitoPartita di site.js, che
+	   manda game_start e game_end. Ogni mano e' una partita; la prima mano di
+	   un torneo (contatore delle mani a zero) e la mano che lo chiude mandano
+	   l'evento del torneo AL POSTO di quello della mano. Tutto dentro try e
+	   con la guardia su sitoPartita: qualunque cosa vada storta qui, il gioco
+	   non se ne deve accorgere. */
+	variantega: function () {
+		return 'nuova/' + this.numeroavversari + 'avv';
+	},
+	/* Le regole facoltative accese, per il parametro opzioni di game_start:
+	   parole brevi unite da '+', sempre in quest'ordine; 'nessuna' se sono
+	   tutte spente. */
+	opzioniga: function () {
+		var o = [];
+		if (this.jollyimmediato) o.push('jolly');
+		if (this.scartoimmediato) o.push('scarto');
+		if (this.nonscartareattaccanti) o.push('attaccanti');
+		if (this.unacartabasta) o.push('unacarta');
+		if (this.assosingolo) o.push('asso');
+		if (this.scartosingolo) o.push('scartosolo');
+		if (this.penalita100) o.push('pen100');
+		if (this.escludiavversariesuperano) o.push('limite');
+		return o.length ? o.join('+') : 'nessuna';
+	},
+	containizio: function () {
+		try {
+			if (!window.sitoPartita) return;
+			if (this.totalepartite > 0 || this.manoripetuta) window.sitoPartita.inizio(this.variantega(), this.opzioniga());
+			else window.sitoPartita.torneo.inizio(this.variantega(), this.opzioniga());
+		} catch (e) { }
+	},
+	contafine: function (id) {
+		try {
+			if (!window.sitoPartita || this.finecontata) return;
+			if (id === 'haivinto') window.sitoPartita.fine('won');
+			else if (id === 'haiperso') window.sitoPartita.fine('lost');
+			else if (id === 'stallo') window.sitoPartita.fine('draw');
+			else if (id === 'haivintotorneo') window.sitoPartita.torneo.fine('won', this.variantega());
+			else if (id === 'haipersotorneo') window.sitoPartita.torneo.fine('lost', this.variantega());
+			else return;
+			this.finecontata = true;
+		} catch (e) { }
+	},
+
 	mostradialogo: function (dialogo) {
 		var selector = (dialogo.indexOf('#') === 0) ? dialogo : '#' + dialogo;
 		var el = $$.one(selector);
@@ -2428,6 +2357,9 @@ var scala = {
 		$$.css($$.one("#schermo"), { "width": window.innerWidth / window.gameScale });
 		$$.show("#schermo");
 		this.fmodale = true;
+
+		// Analytics: la mano, o il torneo, che finisce (vedi contafine).
+		scala.contafine(dialogo.replace('#', ''));
 
 		// Gestione Amazon Finish Banner per Scala 40
 		if (window.ENABLE_BANNER_ON_FINISH && typeof setupAmazonFinishBanner === 'function') {
@@ -2752,9 +2684,11 @@ var scala = {
 			tp: this.totalepartite,
 			na: this.numeroavversari,
 			pp: this.puntipositivitorneo,
-			mv: this.manivintetorneo
+			mv: this.manivintetorneo,
+			rm: this.manoripetuta ? 1 : 0
 		}));
-		location.reload();
+		if (typeof window.reloadWithInterstitial === 'function') window.reloadWithInterstitial();
+		else location.reload();
 	},
 
 	azzeratotale: function () {
@@ -2763,6 +2697,7 @@ var scala = {
 		this.totaleavversario3 = 0;
 		this.totalegiocatore = 0;
 		this.totalepartite = 0;
+		this.manoripetuta = false;
 		/* Azzera il torneo in corso, non gli albi: quelli hanno i loro pulsanti. */
 		this.puntipositivimano = [0, 0, 0, 0];
 		this.puntipositivitorneo = [0, 0, 0, 0];
@@ -3513,220 +3448,6 @@ var scala = {
 		$$.removeClassAll(".card", "cardselected");
 	},
 
-	/* --- Sonda diagnostica "carta attaccata tornata in mano" ---------------
-	   Segnalazione giocatore non riprodotta: attacca una carta a un blocco in
-	   tavola, scarta, e la carta attaccata si ritrova in mano (mentre lo
-	   scarto resta negli scarti). Quattro ricostruzioni a tavolino sono state
-	   falsificate, quindi si raccoglie il caso reale: registraattacco() annota
-	   ogni aggancio del turno, verificaattacchi() controlla allo scarto se una
-	   di quelle carte è tornata nel gruppo giocatore e in tal caso manda un
-	   evento GA4. Nessun effetto sul gioco: solo lettura e invio.
-
-	   v1.62: l'evento si chiama scala40_attacco_perso (prima
-	   scala40_attacco_annullato) perché la semantica dei contatori è
-	   cambiata e i due insiemi di dati non vanno mescolati. La prima
-	   raccolta mostrava casi con undo_turno=0 che sembravano annullamenti
-	   spontanei: erano multiundo, che non incrementava alcun contatore.
-	   Ora il filtro dei casi genuini è n_popstato=0, cioè nessun
-	   ripristino di alcuna origine durante il turno. */
-	attacchiturno: [],
-
-	registraattacco: function (carta, modo, contenitore) {
-		if (!carta) return;
-		/* I CardGroup non portano un nome: il bersaglio si identifica per
-		   riferimento (tris proprio oppure tris di un avversario). */
-		var dove = "?";
-		if (contenitore === this.trisgiocatore) dove = "tris";
-		else {
-			for (var a = 0; a < this.numeroavversari; a++) {
-				if (contenitore === this.campitrisavversario[a]) { dove = "avv" + (a + 1); break; }
-			}
-		}
-		this.attacchiturno.push({
-			id: carta.id,
-			nome: carta.shortName,
-			modo: modo,
-			dove: dove,
-			stack: this.statostack.length
-		});
-	},
-
-	/* Invariante di mazzo: 108 carte distinte, nessuna in due gruppi, nessuna
-	   con gruppo discordante dall'array che la contiene. Serve a distinguere
-	   una corruzione strutturale da un semplice spostamento indesiderato. */
-	invariantemazzo: function () {
-		var gruppi = [this.giocatore, this.trisgiocatore, this.mazzo, this.scarti];
-		for (var a = 0; a < this.numeroavversari; a++) {
-			gruppi.push(this.campiavversario[a]);
-			gruppi.push(this.campitrisavversario[a]);
-		}
-		var viste = [], doppioni = 0, disallineate = 0;
-		for (var g = 0; g < gruppi.length; g++) {
-			if (!gruppi[g]) continue;
-			for (var c = 0; c < gruppi[g].carte.length; c++) {
-				var carta = gruppi[g].carte[c];
-				if (carta.gruppo !== gruppi[g]) disallineate++;
-				if (viste.indexOf(carta) !== -1) doppioni++; else viste.push(carta);
-			}
-		}
-		return { totale: viste.length, doppioni: doppioni, disallineate: disallineate };
-	},
-
-	/* --- Sonda "divergenza visivo/logico" (v1.63) --------------------------
-	   Le due sonde precedenti guardano eventi (un attacco disfatto, uno scarto
-	   con drag aperto) e nessuna delle due ha catturato il caso segnalato. La
-	   segnalazione però descrive un SINTOMO, non un evento: una carta che si
-	   vede in un posto e sta logicamente in un altro. Qui si misura proprio
-	   quello — per ogni carta si confronta il pixel in cui è dipinta con il
-	   pixel che il render le assegnerebbe (cont.posizione, la stessa usata da
-	   rendicontenitore): se distano più della tolleranza, la carta è dipinta
-	   dove non dovrebbe.
-
-	   Esclusioni necessarie, altrimenti si misura rumore:
-	   - carta in trascinamento: segue il cursore per progetto (riga 2669);
-	   - carta in volo: moveTo scrive la destinazione in carta.left/top
-	     all'INIZIO del tween, quindi durante l'animazione il DOM è
-	     legittimamente indietro. Le animazioni non usano CSS transition ma un
-	     tween in requestAnimationFrame (animateEl), che non lascia alcun flag
-	     leggibile: per distinguerle si misura DUE VOLTE a distanza di un
-	     istante e si tiene solo ciò che non si è mosso. Una carta in volo
-	     cambia pixel fra le due letture, una carta divergente sta ferma.
-	     Questo evita di toccare animateEl, che è codice condiviso.
-
-	   Sola lettura del DOM, nessuna scrittura: non corregge, riporta.
-	   Il chiamante usa la forma asincrona divergenzaconferma(). */
-	divergenzavisiva: function () {
-		var TOLL = 6;   /* px: arrotondamenti e bordi non devono contare */
-		/* scarti e mazzo sono ESCLUSI di proposito: sono pile impilate
-		   (deltax/deltay 0.1) di cui il render muove solo la carta in cima,
-		   mentre le precedenti restano dipinte dove chi le ha scartate le ha
-		   lasciate — nella propria fascia. Per posizione() dovrebbero stare
-		   tutte sulla pila, quindi ogni scarto passato risulterebbe
-		   "divergente": misurato in test, 14 falsi positivi dopo pochi turni e
-		   in crescita. È il comportamento normale del gioco, non un'anomalia.
-		   Il caso segnalato riguarda comunque mano e blocchi in tavola. */
-		var gruppi = [
-			{ c: this.giocatore, n: 'mano' },
-			{ c: this.trisgiocatore, n: 'tris' }
-		];
-		for (var a = 0; a < this.numeroavversari; a++) {
-			gruppi.push({ c: this.campiavversario[a], n: 'manoavv' + (a + 1) });
-			gruppi.push({ c: this.campitrisavversario[a], n: 'trisavv' + (a + 1) });
-		}
-
-		var peggiore = null, quante = 0, elenco = [];
-		for (var g = 0; g < gruppi.length; g++) {
-			var cont = gruppi[g].c;
-			if (!cont || !cont.posizione) continue;
-			for (var i = 0; i < cont.carte.length; i++) {
-				var carta = cont.carte[i];
-				if (!carta || !carta.gui) continue;
-				/* la carta trascinata è fuori dal render per progetto */
-				if (this.scaladown && this.cartadown && (this.cartadown.card === carta)) continue;
-
-				var pos;
-				try { pos = cont.posizione(i, carta); } catch (e) { continue; }
-				if (!pos) continue;
-
-				var vl = parseInt(carta.gui.style.left, 10);
-				var vt = parseInt(carta.gui.style.top, 10);
-				if (isNaN(vl) || isNaN(vt)) continue;
-
-				var dl = Math.abs(vl - pos.left);
-				var dt = Math.abs(vt - pos.top);
-				if ((dl <= TOLL) && (dt <= TOLL)) continue;
-
-				quante++;
-				var scarto = dl + dt;
-				elenco.push({ id: carta.id, vl: vl, vt: vt });
-				if (!peggiore || (scarto > peggiore.scarto)) {
-					peggiore = {
-						id: carta.id,
-						scarto: scarto,
-						nome: carta.shortName,
-						logico: gruppi[g].n,
-						vl: vl, vt: vt,
-						al: pos.left, at: pos.top
-					};
-				}
-			}
-		}
-		return { quante: quante, peggiore: peggiore, elenco: elenco };
-	},
-
-	/* Seconda lettura a distanza di un frame lungo: tiene solo le carte che
-	   divergono in ENTRAMBE le letture e che nel frattempo non si sono mosse
-	   di un pixel. Una carta in volo viene così scartata, una carta ferma nel
-	   posto sbagliato sopravvive. Il ritardo è generoso rispetto ai 400ms di
-	   un tween tipico perché conta solo l'immobilità, non la durata. */
-	divergenzaconferma: function (callback) {
-		var prima = this.divergenzavisiva();
-		if (prima.quante === 0) return callback(prima);
-		var self = this;
-		setTimeout(function () {
-			var dopo = self.divergenzavisiva();
-			if (dopo.quante === 0) return callback(dopo);
-			/* intersezione: stesso id, stessi pixel */
-			var fermi = 0, peggiore = null;
-			for (var i = 0; i < dopo.elenco.length; i++) {
-				var d = dopo.elenco[i];
-				for (var j = 0; j < prima.elenco.length; j++) {
-					var p = prima.elenco[j];
-					if ((p.id === d.id) && (p.vl === d.vl) && (p.vt === d.vt)) {
-						fermi++;
-						if (dopo.peggiore && (dopo.peggiore.id === d.id)) peggiore = dopo.peggiore;
-						break;
-					}
-				}
-			}
-			if (!peggiore && fermi > 0) peggiore = dopo.peggiore;
-			callback({ quante: fermi, peggiore: (fermi > 0 ? peggiore : null) });
-		}, 700);
-	},
-
-	verificaattacchi: function (cartascartata) {
-		if (!this.attacchiturno.length) return;
-		var tornate = [];
-		for (var i = 0; i < this.attacchiturno.length; i++) {
-			var rec = this.attacchiturno[i];
-			for (var j = 0; j < this.giocatore.carte.length; j++) {
-				if (this.giocatore.carte[j].id === rec.id) { tornate.push(rec); break; }
-			}
-		}
-		if (!tornate.length) return;
-
-		var inv = this.invariantemazzo();
-		if (typeof gtag === 'function') {
-			gtag('event', 'scala40_attacco_perso', {
-				'event_category': 'Bug_Report',
-				'event_label': tornate[0].nome + '/' + tornate[0].modo,
-				'modo_attacco': tornate[0].modo,
-				'carta_tornata': tornate[0].nome,
-				'carta_scartata': (cartascartata ? cartascartata.shortName : '?'),
-				'n_tornate': tornate.length,
-				'n_attacchi': this.attacchiturno.length,
-				'dove': tornate[0].dove,
-				'stack_attacco': tornate[0].stack,
-				'stack_ora': this.statostack.length,
-				'undo_turno': this.undoturno || 0,
-				'multiundo_turno': this.multiundoturno || 0,
-				'n_popstato': this.npopstato || 0,
-				'f40giocatore': this.f40giocatore ? 1 : 0,
-				'fscartipesca': this.fscartipesca ? 1 : 0,
-				'punti_tris': this.calcolapuntitris(this.trisgiocatore.carte),
-				'carte_mano': this.giocatore.carte.length,
-				'inv_totale': inv.totale,
-				'inv_doppioni': inv.doppioni,
-				'inv_disallineate': inv.disallineate,
-				'transport_type': 'beacon'
-			});
-		}
-		if (localStorage.getItem('scala40_devmode') === '1') {
-			console.warn('[scala40] attacco perso', tornate, this.invariantemazzo(),
-				'undo=' + (this.undoturno || 0), 'multiundo=' + (this.multiundoturno || 0), 'popstato=' + (this.npopstato || 0));
-		}
-	},
-
 	deselezionacarta: function (divCard) {
 		$$.removeClass(divCard, "cardselected");
 		var a = this.carteselezionate.indexOf(divCard.card);
@@ -3975,10 +3696,6 @@ var scala = {
 	multiundo: function () {
 		/* Rifiuto silenzioso: vedi undoinibito. */
 		if (this.undoinibito) return;
-		/* Come in undo(): il registro attacchi NON si azzera, si conta soltanto.
-		   Contatore separato da undoturno perché i due pulsanti riavvolgono in
-		   modo diverso e la sonda deve poterli distinguere. */
-		this.multiundoturno = (this.multiundoturno || 0) + 1;
 		if (this.pescato) { this.popstato(); this.popstato(-1, true); }
 		else {
 			/* Il while risale finché non ritrova uno stato con pescato=true.
@@ -4033,12 +3750,6 @@ var scala = {
 	undo: function () {
 		this.jollymodificabili = [];
 		this.jollyestremiswappabili = [];
-		/* Il registro attacchi NON si azzera qui di proposito: se il caso
-		   segnalato nascesse da un undo (voluto o spurio), azzerare
-		   cancellerebbe proprio la traccia da catturare. Si conta soltanto,
-		   così l'evento distingue "annullato dal giocatore" da "annullato
-		   da solo". */
-		this.undoturno = (this.undoturno || 0) + 1;
 		this.popstato();
 		this.render();
 	},
@@ -5219,7 +4930,7 @@ var scala = {
 	mostrastallo: function () {
 		var el = $$.one("#testostallo");
 		if (el) el.textContent = t('stallo_testo');
-		this.mydialog("stallo", function () { scala.hidedialog(); scala.nuovo(); });
+		this.mydialog("stallo", function () { scala.hidedialog(); scala.manoripetuta = true; scala.nuovo(); });
 	},
 
 	attaccajolly: function (contx, carta) {

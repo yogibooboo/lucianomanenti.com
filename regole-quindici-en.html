@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8">
+
+	<!-- Funzioni comuni del sito: GA, icone, navigazione, riquadro di consenso -->
+	<script src="site.js" defer></script>
+
+	<title>15 Puzzle Rules - How to play - lucianomanenti.com</title>
+	<link rel="canonical" href="https://www.lucianomanenti.com/regole-quindici-en.html">
+	<link rel="alternate" hreflang="it" href="https://www.lucianomanenti.com/regole-quindici.html">
+	<link rel="alternate" hreflang="en" href="https://www.lucianomanenti.com/regole-quindici-en.html">
+	<link rel="alternate" hreflang="x-default" href="https://www.lucianomanenti.com/regole-quindici.html">
+	<link rel="manifest" href="/favicon/site.webmanifest">
+
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="Description"
+		content="Rules and instructions for playing the 15 Puzzle online for free. How to slide the tiles, the three shuffle levels and the row-by-row method to solve it every time.">
+
+	<link rel="stylesheet" href="/testo.css">
+</head>
+
+<body>
+	<div class="top-bar">
+		<a href="quindici-en.html" id="btn-back" class="back-btn" onclick="goBack(); return false;">&#x2190;
+			Back</a>
+		<div class="lang-switch">
+			<a href="regole-quindici.html" id="btn-it">Italiano</a>
+			<a href="regole-quindici-en.html" id="btn-en" class="active">English</a>
+		</div>
+	</div>
+
+	<div class="striscia"></div>
+
+	<div class="content-box">
+		<h1>15 Puzzle Rules</h1>
+
+		<p>The <strong>15 Puzzle</strong> is the classic sliding puzzle made of a four-by-four square frame containing
+			fifteen tiles numbered from <strong>1 to 15</strong> and one empty space.</p>
+
+		<h2>Goal of the game</h2>
+		<p>The goal is to bring all fifteen tiles back into numerical order from left to right and top to bottom:
+			<strong>1, 2, 3, 4</strong> in the first row, <strong>5, 6, 7, 8</strong> in the second, <strong>9, 10,
+				11, 12</strong> in the third and <strong>13, 14, 15</strong> in the fourth, leaving the empty square in
+			the bottom-right corner.</p>
+
+		<h2>How to play on this page</h2>
+		<p>You can slide any tile that sits in the <strong>same row</strong> or the <strong>same column</strong> as the
+			empty space:</p>
+		<ul>
+			<li><strong>With the mouse or touch</strong> &mdash; click a tile next to the empty square to slide it in.
+				If you click a tile further away in the same row or column as the gap, all the tiles in between slide
+				together in a single move.</li>
+			<li><strong>With the keyboard</strong> &mdash; use the four <strong>arrow keys</strong> to slide an
+				adjacent tile into the empty space in the direction of the arrow you press.</li>
+		</ul>
+		<p>The tiles come in two alternating colours (red and ivory) so that when the board is in order from 1 to 15
+			they form a neat <strong>checkerboard</strong> pattern. In addition, tiles that are already in their final
+			home square have a <strong>gold</strong> border, so you can see at a glance which squares are settled.</p>
+
+		<h2>The three shuffle levels</h2>
+		<p>Not every random arrangement of fifteen tiles can be solved: half of all permutations are mathematically
+			impossible. On this page every game starts from the solved board and performs a sequence of valid random
+			moves, so <strong>every board is guaranteed to be solvable</strong>.</p>
+		<ul>
+			<li><strong>Easy</strong> &mdash; the board is shuffled with 15 valid moves from the solved position:
+				great for warming up or playing a quick round.</li>
+			<li><strong>Normal</strong> &mdash; 35 shuffle moves: enough to scatter the tiles across the frame without
+				wandering too far.</li>
+			<li><strong>Full</strong> &mdash; 100 deep shuffle moves: the classic full 15 Puzzle challenge.</li>
+		</ul>
+
+		<h2>How to solve it every time: the row-by-row method</h2>
+		<p>The trick to never undoing what you have already built is to work from the top down, one row at a time:</p>
+		<ol>
+			<li><strong>First row (1, 2, 3, 4)</strong> &mdash; put <strong>1</strong> and <strong>2</strong> in place
+				first, which is straightforward. For <strong>3</strong> and <strong>4</strong>, do not push 3 into its
+				corner on its own: instead park <strong>4</strong> in square 3 and bring <strong>3</strong> right below
+				it, then slide both of them into the top-right corner as a train. From then on, never touch the first
+				row again.</li>
+			<li><strong>Second row (5, 6, 7, 8)</strong> &mdash; repeat the exact same technique in the remaining
+				3&times;4 rectangle: place <strong>5</strong> and <strong>6</strong>, then pair up <strong>7</strong>
+				and <strong>8</strong> to rotate them together into the right end of the second row.</li>
+			<li><strong>Last two rows (9&ndash;15)</strong> &mdash; only eight squares remain. Settle the leftmost
+				column first by pairing <strong>9</strong> and <strong>13</strong> (park 13 in square 9's corner and
+				bring 9 next to it so both rotate into place together), then do the same for <strong>10</strong> and
+				<strong>14</strong>. The last three tiles (<strong>11, 12, 15</strong>) simply cycle around the final
+				2&times;2 corner and fall into place in two or three moves.</li>
+		</ol>
+
+		<p style="text-align: center;"><a href="quindici-en.html" onclick="goBack(); return false;"
+				class="play-btn">Close</a></p>
+	</div>
+
+	<div class="striscia"></div>
+
+	<div class="nav-links" data-comune></div>
+
+	<p class="copyright">
+		&copy; 2026 Luciano Manenti
+	</p>
+
+	<script>
+		// Dove va questa pagina quando si preme "indietro": il gioco di cui parla.
+		var PAGINA_GIOCO = 'quindici-en.html';
+
+		function goBack() {
+			if (window.history.length > 1) {
+				window.location.href = PAGINA_GIOCO;
+				return;
+			}
+			window.close();
+		}
+	</script>
+</body>
+
+</html>

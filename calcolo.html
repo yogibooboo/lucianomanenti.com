@@ -2,75 +2,45 @@
 <html lang="it">
 
 <head>
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9335537153013492"
-        crossorigin="anonymous"></script>
-    <script>
-        // Fix sicurezza per evitare crash da cross-origin su window.opener
-        (function() { try { if (!window.opener) return; var test = window.opener.document; if (!window.opener.game) { window.opener = null; } } catch(e) { window.opener = null; } })();
-    </script>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="utf-8">
+
+    <!-- Funzioni comuni del sito: GA, icone, audio, navigazione, riquadro di consenso -->
+    <script src="site.js"></script>
+
     <title>Calcolo Enigmatico Luciano Online Gratis - lucianomanenti.com</title>
     <link rel="canonical" href="https://www.lucianomanenti.com/calcolo.html">
     <link rel="alternate" hreflang="it" href="https://www.lucianomanenti.com/calcolo.html">
     <link rel="alternate" hreflang="en" href="https://www.lucianomanenti.com/calcolo-en.html">
     <link rel="alternate" hreflang="x-default" href="https://www.lucianomanenti.com/calcolo.html">
-    <link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
-    <link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
-    <link rel="shortcut icon" href="favicon/favicon.ico">
-    <link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
     <link rel="manifest" href="favicon/site.webmanifest">
 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="Description"
         content="Gioca gratis al Calcolo Enigmatico: nove numeri in una matrice 3x3, ogni cifra nascosta da una lettera. Deduci la corrispondenza e fai tornare tutte le operazioni.">
-    <meta http-Equiv="Cache-Control" Content="no-cache">
-    <meta http-Equiv="Pragma" Content="no-cache">
-    <meta http-Equiv="Expires" Content="0">
 
-    <link rel="stylesheet" href="calcolo.css?v=4.7" />
+    <link rel="stylesheet" href="calcolo.css?v=4.8" />
 
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
     <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag() { dataLayer.push(arguments); }
-        gtag('js', new Date());
-        gtag('config', 'G-WRBDRDQ4L8');
-    </script>
-    <script>
-        window.gameConfig = {
-            gaPrefix: 'CALCOLO_',
-            hideLegalFooter: true,
-            adsenseActive: true,
-            adsenseSlots: {
-                '300x600': '5266697442',
-                '160x600': '1167670336',
-                '300x250': '8471445288',
-                '160x250': '8663016975'
-            }
-        };
-        window.currentLang = 'it';
+        window.gameConfig = { gaPrefix: 'CALCOLO_' };
     </script>
 </head>
 
 <body>
 
     <div class="main-container">
-        <!-- Sidebar per annunci (gestite dal layout engine) -->
-        <div id="sidebar-left" class="sidebar"></div>
-        <div id="sidebar-right" class="sidebar"></div>
-
         <!-- Campo di gioco principale centrato e riscalato -->
         <div id="campogioco">
             <!-- Schermo overlay per modali -->
             <div id="schermo"></div>
 
-            <!-- Titolo del gioco -->
-            <div class="lang-switch-header">
-                <a href="calcolo.html" class="active">IT</a>
-                <a href="calcolo-en.html">EN</a>
+            <!-- Selettore delle lingue e audio: in alto a sinistra -->
+            <div id="lang-switcher">
+                <a href="calcolo.html" class="btn-lang active" id="btn-lang-it" title="Italiano">IT</a>
+                <a href="calcolo-en.html" class="btn-lang" id="btn-lang-en" title="English">EN</a>
                 <div id="btn-audio" class="btn-audio-game" aria-label="Audio"></div>
             </div>
+
+            <!-- Titolo del gioco -->
             <div id="titolo-gioco">Calcolo Enigmatico<br>Luciano</div>
 
             <!-- ================= PANNELLO RECORD ================= -->
@@ -114,15 +84,14 @@
                 <div class="legenda-titolo">Matrice delle possibilità</div>
                 <!-- Annulla sta qui e non nella colonna dei comandi: si preme
                      subito dopo un click sbagliato sulla matrice, quindi la mano
-                     e' gia' da questa parte dello schermo. Di fianco la
-                     calcolatrice, che serve nello stesso momento: si sta
-                     verificando un conto sulla griglia. -->
+                     e' gia' da questa parte dello schermo. Di fianco il
+                     suggerimento, che serve nello stesso momento: si e' fermi
+                     davanti alla matrice e non si sa piu' dove andare. -->
                 <div id="riga-annulla">
                     <!-- Simboli scelti fra quelli che il font di sistema disegna
-                         davvero: la calcolatrice tascabile (&#128425;) e la freccia
-                         &#8630; uscivano come rettangoli vuoti. -->
+                         davvero: la freccia &#8630; usciva come un rettangolo vuoto. -->
                     <button id="btn-annulla" class="btn-azione"><span class="btn-icona">&#8634;</span>Annulla</button>
-                    <button id="btn-calcolatrice" class="btn-azione"><span class="btn-icona">&#128290;</span>Calcolatrice</button>
+                    <button id="btn-hint" class="btn-azione"><span class="btn-icona">&#128161;</span>Suggerimento</button>
                 </div>
                 <div id="modo-click">
                     <label class="modo-opzione" id="modo-escludi">
@@ -159,10 +128,6 @@
                     </div>
                 </div>
 
-                <div id="azioni">
-                    <button id="btn-hint" class="btn-azione btn-azione-larga">&#128161; Suggerimento</button>
-                </div>
-
                 <div id="opzioni-errori">
                     <label><input type="checkbox" id="chk-errori"> Segnala subito le esclusioni e le assegnazioni sbagliate</label>
                     <label><input type="checkbox" id="chk-sbarra-assenti"> Sbarra le colonne delle cifre non presenti nello schema</label>
@@ -170,29 +135,11 @@
 
                 <button id="btn-nuova-partita">NUOVA PARTITA</button>
 
-                <!-- Riquadro affiliati rotante: qui si resta anche mezz'ora sullo
-                     stesso schema, quindi un banner fisso verrebbe ignorato dopo
-                     pochi minuti. Ruota da solo ogni minuto (vedi calcolo.js).
-                     NON e' uno slot AdSense: gli annunci Google non vanno mai
-                     rinfrescati senza un gesto dell'utente, i link affiliati si'. -->
-                <div id="banner-rotante"></div>
-
-                <!-- Pannello del suggerimento: copre la colonna dei tasti quando attivo -->
-                <div id="pannello-hint">
-                    <div class="hint-titolo">&#128161; Suggerimento</div>
-                    <div id="hint-testo"></div>
-                    <div id="hint-penalita"></div>
-                    <div id="hint-bottoni">
-                        <button id="btn-hint-spiega">SPIEGAZIONE</button>
-                        <button id="btn-hint-applica">ASSEGNA LA CIFRA</button>
-                        <button id="btn-hint-chiudi">CHIUDI</button>
-                    </div>
-                </div>
-
-                <!-- Calcolatrice: si apre sopra la colonna dei tasti come il
-                     suggerimento. Serve per un conto isolato (una moltiplicazione
-                     a quattro cifre, una divisione) e si richiude subito, quindi
-                     coprire tempo ed errori per quei pochi secondi non pesa. -->
+                <!-- Calcolatrice fissa in fondo alla colonna, dove prima stava il
+                     riquadro a rotazione (tolto il 17/11/2026 con la pubblicita').
+                     Sempre a schermo: la tastiera la prende quando ci si clicca
+                     dentro e la lascia con un click fuori o con Esc (vedi
+                     === CALCOLATRICE === in calcolo.js). -->
                 <div id="pannello-calc">
                     <!-- Senza simbolo: nel titolo la parola basta, e l'emoji a
                          colori stonava col resto del pannello. -->
@@ -222,7 +169,18 @@
                         <button class="calc-t" data-calc=",">,</button>
                         <button class="calc-t calc-uguale" data-calc="=">=</button>
                     </div>
-                    <button id="btn-calc-chiudi">CHIUDI</button>
+                </div>
+
+                <!-- Pannello del suggerimento: copre la colonna dei tasti quando attivo -->
+                <div id="pannello-hint">
+                    <div class="hint-titolo">&#128161; Suggerimento</div>
+                    <div id="hint-testo"></div>
+                    <div id="hint-penalita"></div>
+                    <div id="hint-bottoni">
+                        <button id="btn-hint-spiega">SPIEGAZIONE</button>
+                        <button id="btn-hint-applica">ASSEGNA LA CIFRA</button>
+                        <button id="btn-hint-chiudi">CHIUDI</button>
+                    </div>
                 </div>
             </div>
 
@@ -265,8 +223,8 @@
                     <a href="calcolo.html" class="active" id="btn-lang-it-modale" title="Italiano">IT</a>
                     <a href="calcolo-en.html" id="btn-lang-en-modale" title="English">EN</a>
                 </div>
-                <a href="regole-calcolo.html" target="_blank" rel="opener" id="btn-regole-modale"
-                    class="btn-angolo-modale sinistra">ISTRUZIONI</a>
+                <a href="regole-calcolo.html" target="_blank" id="btn-regole-modale"
+                    class="btn-angolo-modale sinistra">REGOLE</a>
                 <a href="index.html" id="btn-home-modale" class="btn-angolo-modale destra home">TUTTI I GIOCHI</a>
             </div>
 
@@ -276,7 +234,7 @@
                 <div id="vittoria-record"></div>
                 <div id="vittoria-dettagli" style="color: #ffd700; font-size: 15px; font-weight: bold; text-align: center; margin-bottom: 16px; text-shadow: 1px 1px 2px #000;"></div>
                 <div class="conferma-bottoni">
-                    <button onclick="location.reload()" class="btn-continua" style="width: 260px; height: 44px; font-size: 16px;">NUOVA PARTITA</button>
+                    <button onclick="ricaricaPerNuovaPartita()" class="btn-continua" style="width: 260px; height: 44px; font-size: 16px;">NUOVA PARTITA</button>
                     <button id="btn-vedi-schema" class="btn-continua" style="width: 260px; height: 44px; font-size: 16px; background-color: #f0f0f0; color: #333; border-color: #bbb;">VEDI LO SCHEMA</button>
                 </div>
             </div>
@@ -293,13 +251,12 @@
             <!-- Link di navigazione ed utilità a fondo pagina -->
             <div class="link-utility-bottom">
                 <a href="aboutme.html" target="_blank" id="btn-scrivetemi-calcolo" class="pulsante-top">Scrivetemi</a>
-                <a href="regole-calcolo.html" target="_blank" rel="opener" id="btn-regole-top" class="pulsante-top">Istruzioni</a>
+                <a href="regole-calcolo.html" target="_blank" id="btn-regole-top" class="pulsante-top">REGOLE</a>
             </div>
 
             <!-- Link Legali (Privacy e Cookie) -->
             <div class="legal-links-calcolo">
                 <a href="privacy.html" target="_blank" id="btn-privacy-calcolo">Privacy Policy</a>
-                <span class="sep">•</span>
                 <a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)" id="btn-cookie-calcolo">Gestisci Cookie</a>
             </div>
 
@@ -320,30 +277,8 @@
         </div><!-- /campogioco -->
     </div>
 
-    <!-- Script condivisi dal sito -->
-    <script src="site.js?v=1.1"></script>
-    <!-- Layout engine per ridimensionare la finestra del gioco -->
-    <script src="game-layout.js?v=4.6"></script>
     <!-- Logica del Calcolo Enigmatico -->
-    <script src="calcolo.js?v=4.0"></script>
-    <script>
-        (function () {
-            var nascosto = false;
-            var observer = new MutationObserver(function () {
-                if (nascosto) return;
-                var divs = document.querySelectorAll('body > div');
-                for (var i = 0; i < divs.length; i++) {
-                    if (divs[i].shadowRoot && !divs[i].className && (divs[i].getAttribute('style') || '').length > 5000) {
-                        divs[i].style.setProperty('display', 'none', 'important');
-                        nascosto = true;
-                        observer.disconnect();
-                        return;
-                    }
-                }
-            });
-            observer.observe(document.body, { childList: true });
-        })();
-    </script>
+    <script src="calcolo.js?v=4.2"></script>
 </body>
 
 </html>

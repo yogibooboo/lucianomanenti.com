@@ -335,7 +335,7 @@ function initScopa() {
                 timerMossaGiocatore = null;
             }
             if (statoGioco === 'inizio' || statoGioco === 'finito') {
-                location.reload();
+                ricaricaPartita();
             } else {
                 confirmModalOpen = true;
                 aggiornaStatoUndoUI();
@@ -447,7 +447,8 @@ function initScopa() {
         btnSiTermina.addEventListener('click', () => {
             confirmModalOpen = false;
             document.getElementById('confermatermina').style.display = 'none';
-            location.reload();
+            if (window.sitoPartita) window.sitoPartita.fine('abandoned');
+            ricaricaPartita();
         });
     }
     
@@ -495,6 +496,7 @@ function initScopa() {
         if (s.temaCorrente) selezionaMazzo(s.temaCorrente);
         tempMode = modalitaGioco;
         tempTarget = puntiTarget;
+        if (window.sitoPartita) window.sitoPartita.riprende(varianteGA());
         confermaEAvviaRoundDiretto();
     }
 
@@ -669,20 +671,26 @@ function selezionaVariante(v) {
     }
 }
 
+// La variante per Analytics (sitoPartita, in site.js): variante, modalita' e
+// traguardo, per esempio "bresciana/4P/21".
+function varianteGA() { return variante + '/' + modalitaGioco + '/' + puntiTarget; }
+
+// La ricarica che apre una partita nuova passa da site.js, che decide se
+// mostrare prima l'interstiziale. Quella tra una mano e l'altra no.
+function ricaricaPartita() {
+    if (typeof window.reloadWithInterstitial === 'function') {
+        window.reloadWithInterstitial();
+    } else {
+        location.reload();
+    }
+}
+
 function confermaEAvviaPartita() {
     modalitaGioco = tempMode;
     puntiTarget = tempTarget;
     variante = tempVariante;
 
-    // Con variante bresciana inviamo l'evento analytics
-    if (variante === 'bresciana') {
-        if (typeof gtag === 'function') {
-            gtag('event', 'start_game_bresciana', {
-                'game_mode': modalitaGioco,
-                'target_score': puntiTarget
-            });
-        }
-    }
+    if (window.sitoPartita) window.sitoPartita.inizio(varianteGA());
 
     // Salva le selezioni in localStorage
     localStorage.setItem('scopa-game-mode', modalitaGioco);
@@ -2281,6 +2289,7 @@ function mostraModalePunteggiGenerica({ righe, ptRoundTu, ptRoundPC, ptMatchTu, 
         statoGioco = 'finito';
         const partitaVinta = puntiPartitaTu > puntiPartitaPC;
         finePartitaStato = partitaVinta ? 'vinto' : 'perso';
+        if (window.sitoPartita) window.sitoPartita.fine(partitaVinta ? 'won' : 'lost');
         
         let testoTitolo = '';
         if (window.currentLang === 'en') {
@@ -2546,7 +2555,7 @@ function continuaProssimoRound() {
     document.getElementById('schermo').style.display = 'none';
 
     if (statoGioco === 'finito') {
-        location.reload();
+        ricaricaPartita();
         return;
     }
 

@@ -129,7 +129,8 @@ html, body {
     align-items: center;
     gap: 6px;
 }
-.lang-switch-header a {
+.lang-switch-header a,
+.modale-inizio-lang a {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -145,12 +146,14 @@ html, body {
     transition: all 0.2s;
     box-sizing: border-box;
 }
-.lang-switch-header a.active {
+.lang-switch-header a.active,
+.modale-inizio-lang a.active {
     background: #ffd700;
     color: #1a1a2e;
     border-color: #b8860b;
 }
-.lang-switch-header a:hover:not(.active) {
+.lang-switch-header a:hover:not(.active),
+.modale-inizio-lang a:hover:not(.active) {
     background: rgba(255, 255, 255, 0.3);
 }
 
@@ -202,7 +205,7 @@ a.pulsante-top {
     text-decoration: none;
 }
 
-/* Scrivetemi e Come si Gioca: in alto a sinistra, prima del selettore lingua */
+/* Scrivetemi e REGOLE: in alto a sinistra, prima del selettore lingua */
 .link-utility-bottom {
     position: absolute;
     top: 8px;
@@ -210,6 +213,40 @@ a.pulsante-top {
     display: flex;
     gap: 6px;
     z-index: 10001;
+}
+
+/* REGOLE e Scrivetemi hanno lo stesso aspetto in tutti i giochi, quello di
+   rummy (.pulsante2 e #btn-scrivetemi di rummy.css): cambiano solo posto e
+   misure, che restano quelli di questa pagina. Regola in doc/testa-canonica.md,
+   lista A. */
+#btn-regole-top,
+#btn-scrivetemi-sudoku {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    color: #fff;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    white-space: nowrap;
+}
+#btn-regole-top {
+    background: linear-gradient(180deg, #4a7c59 0%, #2d5a3d 100%);
+    border: 2px solid #6b9b7a;
+}
+#btn-regole-top:hover {
+    background: linear-gradient(180deg, #5a8c69 0%, #3d6a4d 100%);
+    border-color: #6b9b7a;
+    transform: scale(1.05);
+}
+#btn-regole-top:active { transform: scale(0.95); }
+#btn-scrivetemi-sudoku {
+    background: #3a3a5a;
+    border: 2px solid #888;
+}
+#btn-scrivetemi-sudoku:hover {
+    background: #3a3a5a;
+    border-color: #888;
+    transform: scale(1.1);
 }
 
 /* === PANNELLO RECORD === */
@@ -726,7 +763,33 @@ a.pulsante-top {
 }
 
 #modale-inizio {
+    height: 550px;
+    top: 100px;
+    padding-bottom: 50px;
     justify-content: center;
+}
+
+/* Angoli della modale iniziale: lingua in alto a destra, regole in basso a
+   sinistra, uscita verso il sito in basso a destra. */
+.modale-inizio-lang {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.modale-inizio-regole {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+}
+.modale-inizio-home {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    text-decoration: none;
+    white-space: nowrap;
 }
 
 .btn-opzione-sel {
@@ -841,6 +904,8 @@ a.pulsante-top {
     color: rgba(255, 255, 255, 0.3);
     font-size: 11px;
 }
+/* "Gestisci Cookie" lo toglie site.js a pubblicita' spenta: il pallino non resta solo */
+.legal-links-sudoku .sep:last-child { display: none; }
 
 .link-giochi-sudoku {
     position: absolute;

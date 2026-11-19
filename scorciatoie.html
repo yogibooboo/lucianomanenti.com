@@ -2,70 +2,41 @@
 <html lang="it">
 
 <head>
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9335537153013492"
-        crossorigin="anonymous"></script>
-    <script>
-        // Fix sicurezza per evitare crash da cross-origin su window.opener
-        (function() { try { if (!window.opener) return; var test = window.opener.document; if (!window.opener.game) { window.opener = null; } } catch(e) { window.opener = null; } })();
-    </script>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="utf-8">
+
+    <!-- Funzioni comuni del sito: GA, icone, audio, navigazione, riquadro di consenso -->
+    <script src="site.js"></script>
+
     <title>Scorciatoie Luciano - Il Gioco da Tavolo su Foglio a Quadretti A3</title>
     <link rel="canonical" href="https://www.lucianomanenti.com/scorciatoie.html">
     <link rel="alternate" hreflang="it" href="https://www.lucianomanenti.com/scorciatoie.html">
     <link rel="alternate" hreflang="en" href="https://www.lucianomanenti.com/scorciatoie-en.html">
     <link rel="alternate" hreflang="x-default" href="https://www.lucianomanenti.com/scorciatoie.html">
-    <link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
-    <link rel="shortcut icon" href="favicon/favicon.ico">
+    <link rel="manifest" href="favicon/site.webmanifest">
 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="Description"
         content="Gioca gratis online a Scorciatoie, il gioco da tavolo su foglio a quadretti: percorsi a serpentone, scorciatoie, allungatoie, trappole a ritroso e pedine con indicatore di direzione.">
-    <meta http-Equiv="Cache-Control" Content="no-cache">
-    <meta http-Equiv="Pragma" Content="no-cache">
-    <meta http-Equiv="Expires" Content="0">
 
-    <link rel="stylesheet" href="scorciatoie.css?v=2.3" />
+    <link rel="stylesheet" href="scorciatoie.css?v=2.4" />
 
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
     <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag() { dataLayer.push(arguments); }
-        gtag('js', new Date());
-        gtag('config', 'G-WRBDRDQ4L8');
-    </script>
-    <script>
-        window.gameConfig = {
-            gaPrefix: 'SCORCIATOIE_',
-            hideLegalFooter: true,
-            adsenseActive: true,
-            adsenseSlots: {
-                '300x600': '5266697442',
-                '160x600': '1167670336',
-                '300x250': '8471445288',
-                '160x250': '8663016975'
-            }
-        };
-        window.currentLang = 'it';
+        window.gameConfig = { gaPrefix: 'SCORCIATOIE_' };
     </script>
 </head>
 
 <body>
 
     <div class="main-container">
-        <!-- Sidebar per annunci gestite dal layout engine (game-layout.js) -->
-        <div id="sidebar-left" class="sidebar"></div>
-        <div id="sidebar-right" class="sidebar"></div>
-
         <!-- Campo di gioco principale centrato e riscalato -->
         <div id="campogioco">
             <!-- Schermo overlay per modali -->
             <div id="schermo"></div>
 
             <!-- Header Campogioco -->
-            <div class="lang-switch-header">
-                <a href="scorciatoie.html" class="active">IT</a>
-                <a href="scorciatoie-en.html">EN</a>
+            <div id="lang-switcher">
+                <a href="scorciatoie.html" class="btn-lang active" id="btn-lang-it" title="Italiano">IT</a>
+                <a href="scorciatoie-en.html" class="btn-lang" id="btn-lang-en" title="English">EN</a>
                 <div id="btn-audio" class="btn-audio-game" aria-label="Audio"></div>
                 <!-- Totale attuale punteggi in orizzontale in alto a sinistra -->
                 <div id="header-totale-punti" class="header-badge-group"></div>
@@ -114,7 +85,7 @@
 
                 <!-- 3. Azioni e Apertura Modali di Dettaglio -->
                 <div class="right-actions-group">
-                    <a href="guida-scorciatoie.html" target="_blank" rel="opener" id="btn-istruzioni-gioco" class="btn-action-bar" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">📖 Istruzioni</a>
+                    <a href="regole-scorciatoie.html" target="_blank" id="btn-regole-top" class="btn-action-bar" style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">REGOLE</a>
                     <button id="btn-opzioni-gioco" class="btn-action-bar">⚙️ Opzioni</button>
                     <button id="btn-nuova-partita" class="btn-action-bar gold">✨ Nuova Partita</button>
                 </div>
@@ -196,7 +167,7 @@
                     <button class="btn-continua" style="background: #475569; border-color: #64748b; color: white; position: absolute; right: 0;" onclick="ScorciatoieGame.closeModals()">Annulla</button>
                 </div>
 
-                <a href="guida-scorciatoie.html" target="_blank" rel="opener" id="btn-regole-modale" class="btn-angolo-modale sinistra">ISTRUZIONI</a>
+                <a href="regole-scorciatoie.html" target="_blank" id="btn-regole-modale" class="btn-angolo-modale sinistra">REGOLE</a>
                 <a href="index.html" id="btn-home-modale" class="btn-angolo-modale destra home">TUTTI I GIOCHI</a>
             </div>
 
@@ -227,10 +198,8 @@
             <!-- Link Legali (Privacy e Cookie) e Scrivetemi -->
             <div class="legal-links-scorciatoie">
                 <a href="privacy.html" target="_blank">Privacy Policy</a>
-                <span class="sep">&#8226;</span>
                 <a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)">Gestisci Cookie</a>
-                <span class="sep">&#8226;</span>
-                <a href="aboutme.html" target="_blank" class="pulsante-link-scorc">Scrivetemi</a>
+                <a href="aboutme.html" target="_blank" id="btn-scrivetemi-scorc" class="pulsante-link-scorc">Scrivetemi</a>
             </div>
 
             <!-- Link ad Altri Giochi -->
@@ -278,30 +247,8 @@
         }
     </script>
 
-    <!-- Script condivisi dal sito -->
-    <script src="site.js?v=1.1"></script>
-    <!-- Layout engine per ridimensionare il campogioco a schermo e gestire sidebars -->
-    <script src="game-layout.js?v=4.6"></script>
-    <!-- Logica di gioco Scorciatoie -->
-    <script src="scorciatoie.js?v=2.5"></script>
-    <script>
-        (function () {
-            var nascosto = false;
-            var observer = new MutationObserver(function () {
-                if (nascosto) return;
-                var divs = document.querySelectorAll('body > div');
-                for (var i = 0; i < divs.length; i++) {
-                    if (divs[i].shadowRoot && !divs[i].className && (divs[i].getAttribute('style') || '').length > 5000) {
-                        divs[i].style.setProperty('display', 'none', 'important');
-                        nascosto = true;
-                        observer.disconnect();
-                        return;
-                    }
-                }
-            });
-            observer.observe(document.body, { childList: true });
-        })();
-    </script>
+    <!-- Motore di gioco di Scorciatoie -->
+    <script src="scorciatoie.js?v=2.6"></script>
 </body>
 
 </html>

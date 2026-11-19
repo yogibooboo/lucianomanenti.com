@@ -104,13 +104,13 @@ dialog textarea{width:100%;background:#15181c;color:var(--testo);border:1px soli
 
 <header>
   <h1>Editor quadri woowoo2</h1>
-  <button id="bSalva" disabled title="riscrive il woowoo2-mie.js del sito: se non sa dov'e', te lo chiede">Salva</button>
+  <button id="bSalva" disabled title="riscrive il woowoo-mie.js del sito: se non sa dov'e', te lo chiede">Salva</button>
   <b>da</b>
   <select id="selSorg" disabled title="il quadro di partenza: uno del dischetto (M..X) oppure uno dei tuoi (A..L)"></select>
   <b>a</b>
-  <select id="selDest" disabled title="la casella di woowoo2-mie.js dove si lavora: e' l'unica che l'editor scrive"></select>
+  <select id="selDest" disabled title="la casella di woowoo-mie.js dove si lavora: e' l'unica che l'editor scrive"></select>
   <button id="bAnnulla" disabled title="Ctrl+Z">Annulla</button>
-  <button id="bBlocco" disabled title="genera il blocco JS da incollare in woowoo2-mie.js">Blocco JS...</button>
+  <button id="bBlocco" disabled title="genera il blocco JS da incollare in woowoo-mie.js">Blocco JS...</button>
   <button id="bAzzera" disabled title="mette prato in tutte e le caselle">Azzera tutto</button>
   <span class="sp"></span>
   <button id="bControlla" class="acc" disabled>Controlla</button>
@@ -124,7 +124,7 @@ dialog textarea{width:100%;background:#15181c;color:var(--testo);border:1px soli
     <option value="nostra">dipinto + piastrelle nostre</option>
   </select>
   <span id="sfondoNome">&mdash;</span>
-  <button id="bSfondo" disabled title="scegli il jpeg del dipinto: dove va lo so io, images/woowoo2 del sito">Sfondo...</button>
+  <button id="bSfondo" disabled title="scegli il jpeg del dipinto: dove va lo so io, images/woowoo del sito">Sfondo...</button>
   <button id="bSfondoVia" disabled title="toglie di mezzo il dipinto per guardare bene binari e stazioni: non cambia i dati, ma il PNG esce come lo vedi">Nascondi sfondo</button>
   <span class="sp"></span>
   <button id="bPng" disabled title="scarica il quadro come lo vedi, senza reticolo ne lettere, da dare in pasto al disegnatore">PNG del quadro</button>
@@ -132,8 +132,8 @@ dialog textarea{width:100%;background:#15181c;color:var(--testo);border:1px soli
 
 <dialog id="dlgCartella">
   <h3>Dove vanno i dipinti</h3>
-  <p class="leg">I dati nominano sempre <code>images/woowoo2/</code>, quindi la
-    cartella e' una sola: <code>images/woowoo2</code> dentro la cartella del
+  <p class="leg">I dati nominano sempre <code>images/woowoo/</code>, quindi la
+    cartella e' una sola: <code>images/woowoo</code> dentro la cartella del
     sito. Te la chiedo una volta, poi il browser se la ricorda e i dipinti ce
     li metto io.</p>
   <p class="leg">Il browser non mi lascia leggere il nome della cartella che
@@ -167,7 +167,7 @@ dialog textarea{width:100%;background:#15181c;color:var(--testo);border:1px soli
   <h3>Il quadro non e' ancora su disco</h3>
   <p id="dspChi" class="leg"></p>
   <p><label>casella dove salvarlo <select id="dspSlot"></select></label></p>
-  <p class="leg"><b>Salva</b> riscrive <code>woowoo2-mie.js</code>, volendo in
+  <p class="leg"><b>Salva</b> riscrive <code>woowoo-mie.js</code>, volendo in
     un'altra casella. <b>Butta via</b> rimette la casella com'era sul file e la
     modifica si perde. <b>Annulla</b> lascia tutto com'e' e non cambia quadro.</p>
   <div class="fondo">
@@ -178,14 +178,14 @@ dialog textarea{width:100%;background:#15181c;color:var(--testo);border:1px soli
 </dialog>
 
 <dialog id="dlgBlocco">
-  <h3>Blocco JS per <code>woowoo2-mie.js</code></h3>
+  <h3>Blocco JS per <code>woowoo-mie.js</code></h3>
   <p>
     <label>nome <input id="blkNome" size="14"></label>
     <label>livello <select id="blkLiv"></select></label>
     <label>schema <select id="blkIdx"></select></label>
   </p>
   <textarea id="blkTesto" readonly rows="16" spellcheck="false"></textarea>
-  <p class="leg">Da incollare dentro la IIFE di <code>woowoo2-mie.js</code>. I parametri
+  <p class="leg">Da incollare dentro la IIFE di <code>woowoo-mie.js</code>. I parametri
     dei sottolivelli restano quelli del file: si scrivono a parte con un array <code>sub</code>.</p>
   <div class="fondo"><button id="blkNo">Chiudi</button><button id="blkCopia" class="acc">Copia negli appunti</button></div>
 </dialog>
@@ -270,8 +270,8 @@ dialog textarea{width:100%;background:#15181c;color:var(--testo);border:1px soli
 </main>
 
 <script src="woowoo2-dati.js"></script>
-<script src="../woowoo2-codici.js"></script>
-<script src="../woowoo2-binari.js"></script>
+<script src="../woowoo-codici.js"></script>
+<script src="../woowoo-binari.js"></script>
 <script>
 (function () {
 'use strict';
@@ -393,7 +393,7 @@ atl.src = ATL;
 
 // ---- lettura del file --------------------------------------------------
 // Due forme. `woowoo2-dati.js` e' una riga di JSON: si riscrive con
-// JSON.stringify. Gli altri (woowoo2-mie.js, schema-*.js) sono JS scritto a
+// JSON.stringify. Gli altri (woowoo-mie.js, schema-*.js) sono JS scritto a
 // mano: li' si sostituiscono SOLO le cifre, cosi' commenti e formattazione
 // restano intatti.
 // una riga di quadro: COLS numeri fra parentesi quadre, il prato si puo'
@@ -472,20 +472,20 @@ function etichetta(testo, i) {
 // ---- avvio: i due file si aprono da soli -------------------------------
 // Il tasto "Apri" non c'e' piu'. All'accensione l'editor si tira su da solo
 // il dischetto (dev/woowoo2-dati.js, che si guarda e si copia ma non si scrive
-// mai: e' l'estrazione dell'originale) e i quadri nostri (woowoo2-mie.js,
+// mai: e' l'estrazione dell'originale) e i quadri nostri (woowoo-mie.js,
 // l'unico file che questo editor riscrive).
 var FD = null;           // il dischetto, solo da guardare
 
 async function avvio() {
     try {
         var td = await (await fetch('woowoo2-dati.js', { cache: 'no-store' })).text();
-        var tm = await (await fetch('../woowoo2-mie.js', { cache: 'no-store' })).text();
+        var tm = await (await fetch('../woowoo-mie.js', { cache: 'no-store' })).text();
         FD = analizza(td, 'woowoo2-dati.js');
         // Dal 9/10/2026 le lettere del dischetto sono M..X: A..L sono i quadri
         // nostri, quelli che si giocano. Il filtro resta per sicurezza, se nel
         // file si dovesse ritrovare qualche cella di servizio.
         FD.elenco = FD.elenco.filter(function (e) { return e.liv >= 'M' && e.liv <= 'X'; });
-        apriTesto(tm, 'woowoo2-mie.js');
+        apriTesto(tm, 'woowoo-mie.js');
     } catch (e) {
         document.getElementById('stato').textContent = 'non riesco ad aprire i file: ' + e.message;
     }
@@ -524,7 +524,7 @@ function abilita(on) {
 // ---- sorgente e destinazione -------------------------------------------
 // Due tendine, non una. La prima dice DA DOVE si parte: un quadro del
 // dischetto (M..X) oppure uno dei nostri (A..L). La seconda dice DOVE si
-// lavora, e le caselle sono soltanto le nostre, perche' woowoo2-mie.js e'
+// lavora, e le caselle sono soltanto le nostre, perche' woowoo-mie.js e'
 // l'unico file che questo editor riscrive: il dischetto si guarda e si copia,
 // ma non si tocca mai. Con una tendina sola non si capiva quale dei due ruoli
 // stesse facendo la scelta.
@@ -608,7 +608,7 @@ function applicaSorgente(k) {
     versa(F.elenco[j].g, src.g);
     stileSlot(j, st || null);
     scegli(j);
-    // woowoo2-mie.js nasce come copia del dischetto, quindi spesso la casella
+    // woowoo-mie.js nasce come copia del dischetto, quindi spesso la casella
     // gemella contiene gia' quel quadro: in quel caso non c'e' niente da
     // salvare e non ha senso far comparire la guardia al prossimo cambio.
     if (cambia) segnaSporco();
@@ -761,7 +761,7 @@ function versa(dest, sorg) {
 function vuota(g) {
     return g.every(function (r) { return r.every(function (v) { return v === 0; }); });
 }
-// ---- blocco JS per woowoo2-mie.js --------------------------------------
+// ---- blocco JS per woowoo-mie.js --------------------------------------
 // Le dodici lettere del gioco. Fino al 9/10/2026 qui c'erano le quindici del
 // dischetto (A..L piu' M, W e X) perche' i quadri nostri si chiamavano M..X.
 var LETTERE = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'];
@@ -808,9 +808,9 @@ document.getElementById('blkCopia').onclick = async function () {
     setTimeout(function () { b.textContent = vecchio; }, 1200);
 };
 
-// Si salva un file solo, woowoo2-mie.js. Siccome i file l'editor se li apre
+// Si salva un file solo, woowoo-mie.js. Siccome i file l'editor se li apre
 // da solo, un permesso di scrittura non ce l'ha: il primo Salva lo chiede una
-// volta - si indica woowoo2-mie.js e si conferma la sovrascrittura - e poi il
+// volta - si indica woowoo-mie.js e si conferma la sovrascrittura - e poi il
 // manico se lo tiene in IndexedDB. Nelle sessioni dopo il browser chiede solo
 // di riconfermare il permesso, che non si porta dietro da una visita all'altra.
 var manico = null;
@@ -888,7 +888,7 @@ function chiediFile(titolo, spiega) {
             try {
                 ris(await window.showSaveFilePicker({
                     id: 'woowoo2mie',   // Chrome riapre dove si e' scelto l'ultima volta
-                    suggestedName: 'woowoo2-mie.js',
+                    suggestedName: 'woowoo-mie.js',
                     types: [{ description: 'Schemi woowoo2', accept: { 'text/javascript': ['.js'] } }]
                 }));
             } catch (e) {
@@ -902,7 +902,7 @@ function chiediFile(titolo, spiega) {
 
 // ---- la modale del salvataggio ----------------------------------------
 // Il Salva tocca due posti diversi e non si vede da fuori: il dipinto in
-// attesa finisce in images/woowoo2 del sito, e i dati vengono riscritti TUTTI
+// attesa finisce in images/woowoo del sito, e i dati vengono riscritti TUTTI
 // nel file aperto, non solo il quadro che hai sotto gli occhi. Prima di
 // muovere qualcosa lo si dice per esteso, con l'elenco di cosa e' cambiato e
 // la via d'uscita.
@@ -986,7 +986,7 @@ async function salvaSuDisco() {
         if (manico && !(await permesso(manico))) manico = null;
 
         var titolo = 'In che file scrivo';
-        var spiega = 'Devo sapere dov\'e\' il woowoo2-mie.js del sito: il browser non mi '
+        var spiega = 'Devo sapere dov\'e\' il woowoo-mie.js del sito: il browser non mi '
             + 'lascia scrivere da nessuna parte finche\' non me lo indichi tu. Te lo '
             + 'chiedo adesso, poi se lo ricorda.';
 
@@ -999,7 +999,7 @@ async function salvaSuDisco() {
             titolo = 'Quello non e\' il file del sito';
             spiega = 'Il file che il browser si ricordava non e\' quello che ho aperto dal '
                 + 'sito: o sta in un\'altra cartella, o qualcuno l\'ha cambiato nel '
-                + 'frattempo. Non l\'ho riscritto. Indicami il woowoo2-mie.js che sta '
+                + 'frattempo. Non l\'ho riscritto. Indicami il woowoo-mie.js che sta '
                 + 'nella cartella del sito.';
         }
 
@@ -1272,8 +1272,8 @@ function costruisciTavolozza() {
 // e le piastrelle, trasparenti, portano solo binari, scambi, segnali, ponte e
 // stazioni. Il campo c'e' solo nei file JSON: negli schemi scritti a mano no,
 // e li' la barra resta spenta.
-var ATL_NOSTRO = '../images/woowoo2/tiles-nuove.png';
-var CARTELLA = 'images/woowoo2/';   // dove stanno i dipinti e i fogli di piastrelle
+var ATL_NOSTRO = '../images/woowoo/tiles-nuove.png';
+var CARTELLA = 'images/woowoo/';   // dove stanno i dipinti e i fogli di piastrelle
 var CEL_NOSTRA = 64;
 
 // La stazione disegnata da Luciano, come nel gioco: una piastrella sola, col
@@ -1281,7 +1281,7 @@ var CEL_NOSTRA = 64;
 // lato scritto in D.staz, e vanno a coprire nell'atlante nostro le quattro
 // colonne delle stazioni del dischetto. Qui il quadrato della lettera non si
 // ridisegna sopra: nell'editor non ci sono treni da nascondere.
-var STAZ_SRC = '../images/woowoo2/stazione-tua.png';
+var STAZ_SRC = '../images/woowoo/stazione-tua.png';
 var STAZ_VERSO = 'E';               // da che parte entra il binario nel file
 var ANG_STAZ = { O: 0, E: Math.PI, N: Math.PI / 2, S: -Math.PI / 2 };
 
@@ -1448,7 +1448,7 @@ document.getElementById('selStile').onchange = function () {
 };
 
 // ---- la cartella dei dipinti: si indica una volta sola ------------------
-// Nei dati il percorso e' sempre images/woowoo2/<nome>, quindi la destinazione non
+// Nei dati il percorso e' sempre images/woowoo/<nome>, quindi la destinazione non
 // e' una scelta: e' una sola. Chiederla a ogni dipinto serviva solo a
 // sbagliarla, ed e' successo - il jpeg finiva altrove e il gioco cercava un
 // file che non c'era. Qui la cartella si indica una volta, il browser se la
@@ -1460,7 +1460,7 @@ var cartella = null;
 // cartella del sito e non un'altra che si chiama uguale. Il segno di
 // riconoscimento era tiles.png, che adesso sta in dev/ e qui non si trova
 // piu'; tiles-nuove.png e' il nostro foglio di piastrelle, sta in
-// images/woowoo2 e lo serve il sito, quindi fa lo stesso lavoro.
+// images/woowoo e lo serve il sito, quindi fa lo stesso lavoro.
 async function cartellaGiusta(dir) {
     try {
         var qui = await (await dir.getFileHandle('tiles-nuove.png')).getFile();
@@ -1492,7 +1492,7 @@ async function cartellaDipinti() {
     if (!dir) return null;
 
     if (!(await cartellaGiusta(dir))) {
-        alert('Quella non e\' la images/woowoo2 del sito: qui dentro non c\'e\' il '
+        alert('Quella non e\' la images/woowoo del sito: qui dentro non c\'e\' il '
             + 'tiles-nuove.png che serve il server.\n\nNon ho salvato niente.');
         return null;
     }

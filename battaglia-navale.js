@@ -61,8 +61,8 @@
     let aiHuntDirection = null; // 'N', 'S', 'E', 'W'
     let aiPendingTargets = []; // celle candidate da colpire
 
-    // Audio & Suoni
-    let audioEnabled = localStorage.getItem('navale2_audio') !== '0';
+    // Audio & Suoni. Acceso e spento li decide il pulsante comune del sito
+    // (site.js, window.audioMuted): vale per tutti i giochi insieme.
     let audioCtx = null;
 
     // Statistiche globali salvate
@@ -84,7 +84,9 @@
     }
 
     function playSound(type) {
-        if (!audioEnabled) return;
+        // I suoni sono sintetizzati qui con Web Audio, non sono elementi
+        // <audio>: il silenziatore di site.js non li ferma da solo.
+        if (window.audioMuted) return;
         try {
             const ctx = getAudioContext();
             if (!ctx) return;
@@ -722,6 +724,10 @@
             : 'La battaglia ha inizio! È il tuo turno: fai fuoco sul Radar Nemico.');
         aggiornaTurnoUI();
 
+        // La partita per Analytics comincia qui, al primo colpo possibile: lo
+        // schieramento da solo non e' una partita (testa-canonica 10.9).
+        if (window.sitoPartita) window.sitoPartita.inizio(aiDifficulty);
+
         renderPlayerGrid();
         renderOpponentGrid();
         renderFleetStatusList('lista-navi-enemy', opponentShips, FLEET_DEF);
@@ -1075,6 +1081,11 @@
         const tempoStr = `${min}:${sec < 10 ? '0' : ''}${sec}`;
         const precisione = statsPartita.playerShots > 0 ? Math.round((statsPartita.playerHits / statsPartita.playerShots) * 100) : 0;
 
+        if (window.sitoPartita) {
+            window.sitoPartita.fine(isPlayerWinner ? 'won' : 'lost',
+                { dettagli: 'colpi=' + statsPartita.playerShots + ';precisione=' + precisione });
+        }
+
         const msgTitolo = isPlayerWinner
             ? (isEn ? '🏆 VICTORY! ENEMY FLEET DESTROYED!' : '🏆 VITTORIA! FLOTTA NEMICA DISTRUTTA!')
             : (isEn ? '💥 DEFEAT! YOUR FLEET HAS SUNK!' : '💥 SCONFITTA! LA TUA FLOTTA È AFFONDATA!');
@@ -1185,11 +1196,25 @@
         const logBox = document.getElementById('log-tiri');
         if (logBox) logBox.innerHTML = '';
 
-        setMessaggioStato('Fase di Schieramento: posiziona le tue 10 navi sulla griglia o premi "Disponi a caso".');
+        setMessaggioStato(isEn
+            ? 'Deployment phase: place your 10 ships on the grid or press "Randomize".'
+            : 'Fase di Schieramento: posiziona le tue 10 navi sulla griglia o premi "Disponi a caso".');
         buildGridDOM('griglia-giocatore', true);
         buildGridDOM('griglia-nemica', false);
         updatePlacementUI();
     }
+
+    // Un'altra partita = ricaricare la pagina, passando dall'interstitial come
+    // negli altri giochi del sito. Il livello resta in localStorage. Globale
+    // perche' la chiama l'onclick della modale di fine partita.
+    function ricaricaPerNuovaPartita() {
+        if (typeof window.reloadWithInterstitial === 'function') {
+            window.reloadWithInterstitial();
+        } else {
+            location.reload();
+        }
+    }
+    window.ricaricaPerNuovaPartita = ricaricaPerNuovaPartita;
 
     // === RIQUADRO AFFILIATI ROTANTE (COME CALCOLO ENIGMATICO) ===
     function avviaBannerRotante() {
@@ -1206,15 +1231,8 @@
         caricaStatistiche();
 
         // Bottone Audio
-        const btnAudio = document.getElementById('btn-audio');
-        if (btnAudio) {
-            if (!audioEnabled) btnAudio.classList.add('muted');
-            btnAudio.addEventListener('click', () => {
-                audioEnabled = !audioEnabled;
-                localStorage.setItem('navale2_audio', audioEnabled ? '1' : '0');
-                btnAudio.classList.toggle('muted', !audioEnabled);
-                if (audioEnabled) playSound('splash');
-            });
+        if (typeof window.initAudioToggle === 'function') {
+            window.initAudioToggle('#btn-audio');
         }
 
         // Tasti Schieramento
@@ -1257,6 +1275,10 @@
                             leftOffset: 0
                         });
                     }
+                } else if (gamePhase === 'finished') {
+                    // Partita chiusa (dopo GUARDA LE GRIGLIE): si riparte
+                    // ricaricando, come dalla modale di fine partita
+                    ricaricaPerNuovaPartita();
                 } else {
                     apriModaleInizio();
                 }
@@ -1266,7 +1288,8 @@
         const btnSiTermina = document.getElementById('btn-si-termina');
         if (btnSiTermina) {
             btnSiTermina.addEventListener('click', () => {
-                location.reload();
+                if (window.sitoPartita) window.sitoPartita.fine('abandoned');
+                ricaricaPerNuovaPartita();
             });
         }
 

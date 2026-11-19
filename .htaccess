@@ -13,6 +13,64 @@ RedirectMatch 301 ^/scala40[vV]1\.html$ /scala40.html
 RedirectMatch 301 ^/tetra-en\.html$ /mattoncini-en.html
 RedirectMatch 301 ^/tetra\.html$ /mattoncini.html
 
+# 1d. WooWoo: i file woowoo2 prendono il nome del gioco, e la guida
+# diventa regole (17/11/2026)
+RedirectMatch 301 ^/woowoo2-en\.html$ /woowoo-en.html
+RedirectMatch 301 ^/woowoo2\.html$ /woowoo.html
+RedirectMatch 301 ^/guida-woowoo-en\.html$ /regole-woowoo-en.html
+RedirectMatch 301 ^/guida-woowoo\.html$ /regole-woowoo.html
+
+# 1e. Quadrati: la guida diventa regole (17/11/2026)
+RedirectMatch 301 ^/guida-quadrati-en\.html$ /regole-quadrati-en.html
+RedirectMatch 301 ^/guida-quadrati\.html$ /regole-quadrati.html
+
+# 1f. Battaglia navale: la guida diventa regole (17/11/2026)
+RedirectMatch 301 ^/guida-battaglia-navale-en\.html$ /regole-battaglia-navale-en.html
+RedirectMatch 301 ^/guida-battaglia-navale\.html$ /regole-battaglia-navale.html
+
+# 1g. Navale solitario: la guida diventa regole (18/11/2026)
+RedirectMatch 301 ^/guida-navale-en\.html$ /regole-navale-en.html
+RedirectMatch 301 ^/guida-navale\.html$ /regole-navale.html
+
+# 1h. Mahjong: la guida diventa regole (18/11/2026)
+RedirectMatch 301 ^/guida-mahjong-en\.html$ /regole-mahjong-en.html
+RedirectMatch 301 ^/guida-mahjong\.html$ /regole-mahjong.html
+
+# 1i. Domino: la guida diventa regole (18/11/2026)
+RedirectMatch 301 ^/guida-domino-en\.html$ /regole-domino-en.html
+RedirectMatch 301 ^/guida-domino\.html$ /regole-domino.html
+
+# 1j. Campo minato: la guida diventa regole (18/11/2026)
+RedirectMatch 301 ^/guida-minato-en\.html$ /regole-minato-en.html
+RedirectMatch 301 ^/guida-minato\.html$ /regole-minato.html
+
+# 1k. Mattoncini: la guida diventa regole (18/11/2026)
+RedirectMatch 301 ^/guida-mattoncini-en\.html$ /regole-mattoncini-en.html
+RedirectMatch 301 ^/guida-mattoncini\.html$ /regole-mattoncini.html
+
+# 1l. Scorciatoie: la guida diventa regole (18/11/2026)
+RedirectMatch 301 ^/guida-scorciatoie-en\.html$ /regole-scorciatoie-en.html
+RedirectMatch 301 ^/guida-scorciatoie\.html$ /regole-scorciatoie.html
+
+# 1m. Musica, intervalli: la guida diventa regole (18/11/2026)
+RedirectMatch 301 ^/musica/intervalli/guida-intervalli-en\.html$ /musica/intervalli/regole-intervalli-en.html
+RedirectMatch 301 ^/musica/intervalli/guida-intervalli\.html$ /musica/intervalli/regole-intervalli.html
+
+# 1n. Musica, accordi: la guida diventa regole (18/11/2026)
+RedirectMatch 301 ^/musica/accordi/guida-accordi-en\.html$ /musica/accordi/regole-accordi-en.html
+RedirectMatch 301 ^/musica/accordi/guida-accordi\.html$ /musica/accordi/regole-accordi.html
+
+# 1o. Musica, scale: la guida diventa regole (18/11/2026)
+RedirectMatch 301 ^/musica/scale/guida-scale-en\.html$ /musica/scale/regole-scale-en.html
+RedirectMatch 301 ^/musica/scale/guida-scale\.html$ /musica/scale/regole-scale.html
+
+# 1p. Metronomo: va in musica/metronomo/ come gli altri strumenti, e la guida
+# diventa regole (18/11/2026)
+RedirectMatch 301 ^/metronome-en\.html$ /musica/metronomo/index-en.html
+RedirectMatch 301 ^/metronome\.html$ /musica/metronomo/
+RedirectMatch 301 ^/guida-metronomo-en\.html$ /musica/metronomo/regole-metronomo-en.html
+RedirectMatch 301 ^/guida-metronomo\.html$ /musica/metronomo/regole-metronomo.html
+
 # 2. Optimized Caching Rules
 <IfModule mod_expires.c>
     ExpiresActive On
@@ -20,6 +78,7 @@ RedirectMatch 301 ^/tetra\.html$ /mattoncini.html
     ExpiresByType text/html "access plus 0 seconds"
     # Static assets: cache long (versioned with ?v=x.x in URLs)
     ExpiresByType application/javascript "access plus 1 month"
+    ExpiresByType text/javascript "access plus 1 month"
     ExpiresByType text/css "access plus 1 month"
     ExpiresByType image/x-icon "access plus 1 year"
     ExpiresByType image/jpeg "access plus 1 year"
@@ -35,9 +94,34 @@ RedirectMatch 301 ^/tetra\.html$ /mattoncini.html
     Header set Expires "0"
 </FilesMatch>
 
-# Force no-cache for game-layout.js (config flags changed without versioning)
-<FilesMatch "^game-layout\.js$">
-    Header set Cache-Control "no-cache, no-store, must-revalidate"
+# Force no-cache for the files shared by many pages: they change without a
+# page-by-page bump, so there is no ?v= to raise.
+# Not no-store: that would mean "re-download it whole every time", 40 KB a
+# visit. no-cache gives the same freshness guarantee -- the browser asks the
+# server every time, so an upload reaches everybody at once -- but it lets the
+# browser keep its copy, so an unchanged file answers 304 with an empty body.
+# Expires "0" stays on purpose: without it mod_expires would put a +1 month
+# Expires on these files, and an old HTTP/1.0 proxy would trust that.
+# Verified on 10 November 2026 on the two .js: Aruba sends Last-Modified (no
+# ETag) on both and answers 304 Not Modified to a conditional request.
+# testo.css joined the list on 10 November 2026: it is the one stylesheet of the
+# 62 text pages, and a ?v= on it would have to be raised in 62 pages at once --
+# exactly the work the shared file is there to remove.
+<FilesMatch "^(game-layout|site|pubblicita|promozioni)\.js$|^testo\.css$">
+    Header set Cache-Control "no-cache, must-revalidate"
     Header set Pragma "no-cache"
     Header set Expires "0"
 </FilesMatch>
+
+# 3. Compression (added 9 November 2026)
+# Aruba already compresses html, css, json and svg by itself, but NOT
+# JavaScript: it serves .js as text/javascript, and the default DEFLATE list
+# only carries application/javascript. Same mismatch as the Expires block
+# above, where text/javascript had to be spelled out next to the other one.
+# Measured on 9 November 2026: game-layout.js 144 KB -> 39 KB, site.js
+# 12,5 KB -> 4 KB, burraco-core.js 195 KB -> 46 KB.
+# The IfModule wrapper is not decoration: without it, a host that lacks
+# mod_deflate answers 500 on every page of the site.
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/javascript application/javascript application/x-javascript
+</IfModule>

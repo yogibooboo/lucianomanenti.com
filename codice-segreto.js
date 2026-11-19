@@ -1012,6 +1012,27 @@ function riprendiPartita(s) {
     aggiornaTutto();
     renderRecord();
     avviaTimer();
+    // Partita gia' contata prima della ricarica: niente game_start, ma la
+    // fine deve sapere di che partita si tratta.
+    if (window.sitoPartita) window.sitoPartita.riprende(varianteGA());
+}
+
+/* === EVENTI DI ANALYTICS (testa-canonica 10.9) ===
+   La variante e' la configurazione che ha i suoi record: livello e regola
+   delle ripetizioni. Tentativi e tempo vanno nei dettagli della fine. */
+function varianteGA() {
+    return livello + '/' + (conRipetizioni ? 'ripetizioni' : 'senza-ripetizioni');
+}
+function dettagliGA() {
+    return 'tentativi=' + tentativi.length + ';tempo=' + secondi;
+}
+
+// NUOVA PARTITA dalle finestre di fine: si ricarica la pagina, come negli
+// altri giochi. Livello e ripetizioni stanno in localStorage (codice-config),
+// e la finestra di inizio si riapre su quelli.
+function ricaricaPerNuovaPartita() {
+    if (typeof window.reloadWithInterstitial === 'function') window.reloadWithInterstitial();
+    else location.reload();
 }
 
 function creaMatriceVuota() {
@@ -1045,14 +1066,7 @@ function vittoria() {
     badge.style.display = conRecord ? 'block' : 'none';
     modale.classList.toggle('con-record', conRecord);
 
-    if (typeof gtag === 'function') {
-        gtag('event', (window.gameConfig && window.gameConfig.gaPrefix ? window.gameConfig.gaPrefix : '') + 'game_won', {
-            livello: livello,
-            ripetizioni: conRipetizioni ? 'si' : 'no',
-            tentativi: tentativi.length,
-            tempo: secondi
-        });
-    }
+    if (window.sitoPartita) window.sitoPartita.fine('won', { dettagli: dettagliGA() });
 
     modaleFineAperta = 'haivinto';
     modale.style.display = 'flex';
@@ -1081,13 +1095,7 @@ function sconfitta() {
     svelato.innerHTML = '';
     for (let i = 0; i < nPos; i++) svelato.appendChild(creaPiolo(codice[i]));
 
-    if (typeof gtag === 'function') {
-        gtag('event', (window.gameConfig && window.gameConfig.gaPrefix ? window.gameConfig.gaPrefix : '') + 'game_lost', {
-            livello: livello,
-            ripetizioni: conRipetizioni ? 'si' : 'no',
-            tempo: secondi
-        });
-    }
+    if (window.sitoPartita) window.sitoPartita.fine('lost', { dettagli: dettagliGA() });
 
     modaleFineAperta = 'haiperso';
     elem('haiperso').style.display = 'flex';
@@ -1211,6 +1219,7 @@ function nuovaPartita() {
     renderRecord();
     aggiornaTutto();
     avviaTimer();
+    if (window.sitoPartita) window.sitoPartita.inizio(varianteGA());
 }
 
 function richiediNuovaPartita() {
@@ -1232,6 +1241,13 @@ function richiediNuovaPartita() {
             });
         }
     } else {
+        // Partita aperta ma senza tentativi: si lascia senza chiedere, ed e'
+        // comunque un abbandono (altrimenti il suo game_start resta senza fine).
+        if (partitaInCorso) {
+            partitaInCorso = false;
+            cancellaSalvataggio();
+            if (window.sitoPartita) window.sitoPartita.fine('abandoned', { dettagli: dettagliGA() });
+        }
         apriModaleInizio(false);
     }
 }
@@ -1368,11 +1384,6 @@ function initCodice() {
     if (typeof window.initAudioToggle === 'function') window.initAudioToggle('#btn-audio');
     if (typeof window.adjustLayout === 'function') window.adjustLayout();
 
-    const banner = document.getElementById('banner-rotante');
-    if (banner && typeof window.setupRotatingAffiliateBanner === 'function') {
-        window.setupRotatingAffiliateBanner(banner, { intervalMs: 45000 });
-    }
-
     // Opzioni: si ricordano fra una partita e l'altra, sono preferenze d'uso.
     try {
         const opt = JSON.parse(localStorage.getItem('codice-opzioni')) || {};
@@ -1429,6 +1440,7 @@ function initCodice() {
     elem('btn-conferma-si').addEventListener('click', () => {
         partitaInCorso = false;
         cancellaSalvataggio();
+        if (window.sitoPartita) window.sitoPartita.fine('abandoned', { dettagli: dettagliGA() });
         apriModaleInizio(false);
     });
     elem('btn-conferma-no').addEventListener('click', () => {
@@ -1436,8 +1448,8 @@ function initCodice() {
         if (partitaInCorso) avviaTimer();
     });
 
-    elem('btn-rivincita').addEventListener('click', () => { chiudiModali(); nuovaPartita(); });
-    elem('btn-rivincita-perso').addEventListener('click', () => { chiudiModali(); nuovaPartita(); });
+    elem('btn-rivincita').addEventListener('click', ricaricaPerNuovaPartita);
+    elem('btn-rivincita-perso').addEventListener('click', ricaricaPerNuovaPartita);
     elem('btn-vedi-schema').addEventListener('click', vediSchema);
     elem('btn-vedi-schema-perso').addEventListener('click', vediSchema);
 

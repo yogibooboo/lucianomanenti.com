@@ -2,99 +2,40 @@
 <html lang="it">
 
 <head>
+    <meta charset="utf-8">
+
+    <!-- Funzioni comuni del sito: GA, icone, audio, navigazione, riquadro di consenso -->
+    <script src="site.js"></script>
+
+    <!-- Qui resta, a differenza degli altri giochi: il motore e le finestre di
+         diagnostica leggono window.opener (burraco-core.js, burraco-ui.js). Se
+         la pagina e' stata aperta da un'altra pagina, opener va azzerato, o il
+         gioco cercherebbe "game" nella finestra sbagliata. -->
     <script>
-        // Fix sicurezza per evitare crash da cross-origin su window.opener
         (function() { try { if (!window.opener) return; var test = window.opener.document; if (!window.opener.game) { window.opener = null; } } catch(e) { window.opener = null; } })();
     </script>
-    <script>
-        // AdSense caricato via JS e non con un tag statico: in dev_mode la libreria
-        // non deve partire affatto. Serve leggere localStorage qui, prima del tag,
-        // perche' game-layout.js (che definisce devMode) viene caricato molto dopo.
-        // Senza questo, adsbygoogle.js si carica comunque e inserisce da se' uno slot
-        // "auto ads": in locale Google lo rifiuta con 403, ma nei test ONLINE quello
-        // slot verrebbe servito davvero, con impression reali sulle nostre pagine.
-        (function () {
-            try { if (localStorage.getItem('dev_mode') === '1') return; } catch (e) { }
-            var s = document.createElement('script');
-            s.async = true;
-            s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9335537153013492';
-            s.crossOrigin = 'anonymous';
-            document.head.appendChild(s);
-        })();
-    </script>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    	<title>Gioco del Burraco Online Gratis - lucianomanenti.com</title>
-	<link rel="canonical" href="https://www.lucianomanenti.com/burraco.html">
-	<link rel="alternate" hreflang="it" href="https://www.lucianomanenti.com/burraco.html">
-	<link rel="alternate" hreflang="en" href="https://www.lucianomanenti.com/burraco-en.html">
-	<link rel="alternate" hreflang="x-default" href="https://www.lucianomanenti.com/burraco.html">
-	<link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
-    <link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
-    <link rel="shortcut icon" href="favicon/favicon.ico">
-    <link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+
+    <title>Gioco del Burraco Online Gratis - lucianomanenti.com</title>
+    <link rel="canonical" href="https://www.lucianomanenti.com/burraco.html">
+    <link rel="alternate" hreflang="it" href="https://www.lucianomanenti.com/burraco.html">
+    <link rel="alternate" hreflang="en" href="https://www.lucianomanenti.com/burraco-en.html">
+    <link rel="alternate" hreflang="x-default" href="https://www.lucianomanenti.com/burraco.html">
     <link rel="manifest" href="favicon/site.webmanifest">
 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="Description"
         content="Gioca a Burraco gratis online senza registrazione. Sfida il computer in modalità 1v1 o 2v2. Realizzato con passione da Luciano Manenti.">
-    <meta http-Equiv="Cache-Control" Content="no-cache">
-    <meta http-Equiv="Pragma" Content="no-cache">
-    <meta http-Equiv="Expires" Content="0">
 
-    <link rel="stylesheet" href="burraco.css?v=4.19" />
+    <link rel="stylesheet" href="burraco.css?v=4.20" />
 
-    <!-- Google tag (gtag.js) -->
     <script>
-        // Come per AdSense: in dev_mode la libreria non viene caricata, cosi' le
-        // sessioni di test non finiscono nelle statistiche GA4. gtag() viene pero'
-        // definita SEMPRE, perche' il resto del codice la chiama per gli eventi:
-        // in dev_mode resta una funzione inerte che accumula solo in dataLayer.
-        window.dataLayer = window.dataLayer || [];
-        function gtag() { dataLayer.push(arguments); }
-        (function () {
-            try { if (localStorage.getItem('dev_mode') === '1') return; } catch (e) { }
-            var s = document.createElement('script');
-            s.async = true;
-            s.src = 'https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8';
-            document.head.appendChild(s);
-            gtag('js', new Date());
-            gtag('config', 'G-WRBDRDQ4L8');
-        })();
+        window.gameConfig = { gaPrefix: 'BUR_' };
     </script>
-    <script>
-        window.gameConfig = {
-            gaPrefix: 'BUR_',
-            hideLegalFooter: true,
-            adsenseActive: true,
-            adsenseSlots: {
-                '300x600': '5266697442',
-                '160x600': '1167670336',
-                '300x250': '8471445288',
-                '160x250': '8663016975'
-            },
-            messages: {
-                it: '<!-- MESSAGGIO_IT_PLACEHOLDER -->',
-                en: '<!-- MESSAGE_EN_PLACEHOLDER -->'
-            }
-        };
-        window.currentLang = 'it';
-    </script>
-    <!-- Sopprimi AdSense al cold load (prima della conferma modal): evita doppia impression -->
-    <script>window.adsenseShouldNotLoad = !localStorage.getItem('burraco_nuova');</script>
-    <!-- Layout engine -->
-    <script src="game-layout.js?v=4.6"></script>
 </head>
 
 <body>
 
     <div class="main-container">
-        <div id="sidebar-left" class="sidebar">
-            <!-- Banner verranno inseriti qui da JS -->
-        </div>
-        <div id="sidebar-right" class="sidebar">
-            <!-- Banner verranno inseriti qui da JS -->
-        </div>
-
         <div id="campogioco">
             <!-- Schermo overlay per modali -->
             <div id="schermo"></div>
@@ -217,18 +158,16 @@
             </div>
 
             <!-- === PULSANTI === -->
-            <div style="position: absolute; top: 10px; left: 10px; z-index: 2000; display: flex; gap: 4px;">
-                <button onclick="window.location.href='burraco.html'" class="btn-lang active" id="btn-lang-it" title="Italiano"
-                    style="background: #ffd700 !important; border: 1px solid #ffd700 !important; color: #2c3e50 !important; border-radius: 4px; padding: 4px 10px; cursor: pointer; font-size: 14px; font-weight: bold; height: 32px; transition: all 0.2s;">IT</button>
-                <button onclick="window.location.href='burraco-en.html'" class="btn-lang" id="btn-lang-en" title="English"
-                    style="background: rgba(0,0,0,0.4); border: 1px solid #6b9b7a; color: white; border-radius: 4px; padding: 4px 10px; cursor: pointer; font-size: 14px; font-weight: bold; height: 32px; transition: all 0.2s;">EN</button>
+            <div id="lang-switcher">
+                <a href="burraco.html" class="btn-lang active" id="btn-lang-it" title="Italiano">IT</a>
+                <a href="burraco-en.html" class="btn-lang" id="btn-lang-en" title="English">EN</a>
+                <div id="btn-audio" class="btn-audio-game" aria-label="Audio"></div>
             </div>
             <div id="btn-nuova" class="pulsante2">NUOVA</div>
             <div id="btn-undo" class="pulsante2"></div>
             <div id="btn-scoperte" class="pulsante2">SCOPERTE</div>
 
             <!-- === PULSANTI ORDINAMENTO === -->
-            <div id="btn-audio" class="pulsante-ordina" aria-label="Audio"></div>
             <div id="btn-ordina-numero" class="pulsante-ordina">123</div>
             <div id="btn-ordina-seme" class="pulsante-ordina">&hearts;&spades;</div>
 
@@ -267,7 +206,7 @@
 
             <div id="btn-istruzioni" class="pulsante2"
                 style="bottom: 88px; left: 4px; top: auto; right: auto; width: 95px; height: 32px; line-height: 32px; font-size: 14px;">
-                ISTRUZIONI</div>
+                REGOLE</div>
 
             <div class="legal-links-text" style="right: 10px; bottom: 10px; gap: 15px;">
                 <a href="privacy.html" id="label-privacy" target="_blank">Privacy Policy</a>
@@ -309,18 +248,14 @@
                      (btn-lang-it/en, btn-istruzioni, btn-home-left): due elementi con lo
                      stesso id romperebbero getElementById e la validita' del documento. -->
                 <!-- Selettori di lingua in alto a destra, sopra il titolo. -->
-                <div style="position:absolute;right:12px;top:10px;display:flex;gap:4px">
-                    <button onclick="window.location.href='burraco.html'" class="btn-lang active" id="btn-lang-it-modal"
-                        title="Italiano"
-                        style="background:#ffd700;border:1px solid #ffd700;color:#2c3e50;border-radius:4px;padding:0 8px;cursor:pointer;font-size:11px;font-weight:bold;height:24px;line-height:22px;transition:all 0.2s">IT</button>
-                    <button onclick="window.location.href='burraco-en.html'" class="btn-lang" id="btn-lang-en-modal"
-                        title="English"
-                        style="background:rgba(0,0,0,0.4);border:1px solid #6b9b7a;color:white;border-radius:4px;padding:0 8px;cursor:pointer;font-size:11px;font-weight:bold;height:24px;line-height:22px;transition:all 0.2s">EN</button>
+                <div class="lang-switch-modale">
+                    <a href="burraco.html" class="active" id="btn-lang-it-modale" title="Italiano">IT</a>
+                    <a href="burraco-en.html" id="btn-lang-en-modale" title="English">EN</a>
                 </div>
-                <!-- Copia rimpicciolita di ISTRUZIONI: qui basta un <a>, la versione in
+                <!-- Copia rimpicciolita di REGOLE: qui basta un <a>, la versione in
                      campo e' un div solo perche' burraco-ui.js le aggancia un handler. -->
                 <a href="regole-burraco.html" target="_blank" id="btn-istruzioni-modal" class="pulsante-link"
-                    style="position:absolute;left:12px;bottom:10px;width:88px;height:24px;line-height:20px;font-size:9px;margin:0;background:linear-gradient(180deg,#4a7c59 0%,#2d5a3d 100%);border-color:#6b9b7a">ISTRUZIONI</a>
+                    style="position:absolute;left:12px;bottom:10px;width:88px;height:24px;line-height:20px;font-size:9px;margin:0;background:linear-gradient(180deg,#4a7c59 0%,#2d5a3d 100%);border-color:#6b9b7a">REGOLE</a>
                 <a href="index.html" id="btn-home-modal" class="pulsante-link pulsante-home"
                     style="position:absolute;right:12px;bottom:10px;width:88px;height:24px;line-height:20px;font-size:9px;margin:0">TUTTI I GIOCHI</a>
                 <button class="btn-modal" id="btn-avvia-automa" style="background:rgba(0,0,0,0.3);font-size:11px;padding:6px 16px;margin-top:4px;color:#aaa;border-color:#555">AVVIA AUTOMA</button>
@@ -391,39 +326,20 @@
     <audio id="snd-dindon" src="sounds/scala40/ding.mp3"></audio>
 
     <!-- JS Files -->
-    <script src="site.js?v=1.1"></script>
-    <script src="burraco-core.js?v=10.7"></script>
+    <script src="burraco-core.js?v=10.8"></script>
     <script src="burraco-engine-default.coeffs.js?v=1.5"></script>
     <script src="burraco-engine-default.js?v=1.0"></script>
     <script src="burraco-engine-b.coeffs.js?v=1.6"></script>
     <script src="burraco-engine-b.js?v=1.0"></script>
     <script src="burraco-mazzi-seed.js?v=1.0"></script>
-    <script src="burraco-game.js?v=9.15"></script>
+    <script src="burraco-game.js?v=9.16"></script>
     <!-- Raccolta delle statistiche CHIUSA il 2 novembre 2026: ogni mano faceva un
          POST a stats/burraco.php, e SmarterStats lo contava come pagina vista.
          Il file resta dov'e', non lo chiede nessuno. Per riaprire la raccolta si
          toglie questo commento; per riaprire anche l'esperimento A/B/C serve
          in piu' rimettere AB_ATTIVO a true in burraco-game.js (vedi il commento la').
     <script src="burraco-stats.js?v=1.9"></script> -->
-    <script src="burraco-ui.js?v=12.7"></script>
-    <script>
-        (function () {
-            var nascosto = false;
-            var observer = new MutationObserver(function () {
-                if (nascosto) return;
-                var divs = document.querySelectorAll('body > div');
-                for (var i = 0; i < divs.length; i++) {
-                    if (divs[i].shadowRoot && !divs[i].className && (divs[i].getAttribute('style') || '').length > 5000) {
-                        divs[i].style.setProperty('display', 'none', 'important');
-                        nascosto = true;
-                        observer.disconnect();
-                        return;
-                    }
-                }
-            });
-            observer.observe(document.body, { childList: true });
-        })();
-    </script>
+    <script src="burraco-ui.js?v=12.8"></script>
 
 </body>
 

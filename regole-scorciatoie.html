@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+	<meta charset="utf-8">
+
+	<!-- Funzioni comuni del sito: GA, icone, navigazione, riquadro di consenso -->
+	<script src="site.js" defer></script>
+
+	<title>Regole di Scorciatoie Luciano - Come si gioca e strategie - lucianomanenti.com</title>
+	<link rel="canonical" href="https://www.lucianomanenti.com/regole-scorciatoie.html">
+	<link rel="alternate" hreflang="it" href="https://www.lucianomanenti.com/regole-scorciatoie.html">
+	<link rel="alternate" hreflang="en" href="https://www.lucianomanenti.com/regole-scorciatoie-en.html">
+	<link rel="alternate" hreflang="x-default" href="https://www.lucianomanenti.com/regole-scorciatoie.html">
+	<link rel="manifest" href="/favicon/site.webmanifest">
+
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="Description"
+		content="Guida completa e regole di Scorciatoie Luciano: il gioco da tavolo su carta a quadretti con bivi, scorciatoie, trappole, frecce direzionali e partita a punti.">
+
+	<link rel="stylesheet" href="/testo.css">
+
+	<!-- Quello che testo.css non ha: i titoletti, la tabella dei percorsi, i colori e i riquadri delle regole chiave -->
+	<style>
+		h3 {
+			color: #2c3e50;
+			font-size: 1.1em;
+			margin-top: 20px;
+		}
+
+		.track-legend-table {
+			width: 100%;
+			border-collapse: collapse;
+			margin: 15px 0;
+		}
+
+		.track-legend-table th, .track-legend-table td {
+			border: 1px solid #ddd;
+			padding: 8px 12px;
+			text-align: left;
+		}
+
+		.track-legend-table th {
+			background-color: #f2f2f2;
+			color: #2c3e50;
+		}
+
+		.color-badge {
+			display: inline-block;
+			width: 14px;
+			height: 14px;
+			border-radius: 3px;
+			vertical-align: middle;
+			margin-right: 6px;
+			border: 1px solid rgba(0,0,0,0.3);
+		}
+
+		.regola-chiave {
+			background: #eef7ee;
+			border-left: 4px solid #27ae60;
+			padding: 12px 18px;
+			margin: 18px 0;
+		}
+	</style>
+</head>
+
+<body>
+
+	<div class="top-bar">
+		<a href="scorciatoie.html" id="btn-back" class="back-btn" onclick="goBack(); return false;">&#x2190;
+			Indietro</a>
+		<div class="lang-switch">
+			<a href="regole-scorciatoie.html" id="btn-it" class="active">Italiano</a>
+			<a href="regole-scorciatoie-en.html" id="btn-en">English</a>
+		</div>
+	</div>
+
+	<div class="striscia"></div>
+
+	<div class="content-box">
+		<h1>Scorciatoie Luciano &mdash; Regole e Guida di Gioco</h1>
+
+		<div style="background: #fdfaf3; border-left: 4px solid #f59e0b; padding: 14px 18px; margin: 18px 0; font-style: italic; border-radius: 0 8px 8px 0; line-height: 1.65; color: #475569;">
+			<p style="margin-top: 0;">Questo gioco nasce da un ricordo di giovent&ugrave; a cui sono molto legato. L'ho inventato da ragazzino per giocare insieme ai miei fratelli e agli amici: prendevo i classici fogli di protocollo a quadretti, impugnavo penne colorate e righello e passavo il tempo a tracciare piste piene di bivi, scorciatoie vantaggiose e trappole beffarde.</p>
+			<p>A volte incollavo insieme pi&ugrave; fogli con lo scotch per creare tabelloni enormi, su cui poi passavamo interi pomeriggi tra risate, sfide all'ultimo lancio di dadi e rimonte spettacolari.</p>
+			<p style="margin-bottom: 0;">Rivedere e pubblicare oggi questo gioco in formato digitale &egrave; per me una potente e bellissima ondata di nostalgia. Spero davvero di cuore che possa regalare anche a voi lo stesso genuino divertimento di quei pomeriggi spensierati.</p>
+		</div>
+
+		<p><strong>Scorciatoie</strong> &egrave; un gioco da tavolo strategico su carta a quadretti (layout grafico 3&times;3 blocchi). I giocatori si sfidano lanciando i dadi e muovendo le proprie pedine lungo un percorso ricco di bivi, scorciatoie vantaggiose, anelli insidiosi e trappole che possono rispedire la pedina indietro!</p>
+
+		<h2>1. Il Tabellone e i Percorsi</h2>
+		<p>Il circuito &egrave; disegnato su una griglia millimetrata a blocchi ed &egrave; composto da vari percorsi colorati:</p>
+
+		<table class="track-legend-table">
+			<thead>
+				<tr>
+					<th>Percorso</th>
+					<th>Colore</th>
+					<th>Caratteristica &amp; Effetto</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td><strong>Percorso Principale</strong></td>
+					<td><span class="color-badge" style="background: #1e293b;"></span> Nero / Bianco</td>
+					<td>La via maestra di 100 caselle (da 0 al traguardo 99).</td>
+				</tr>
+				<tr>
+					<td><strong>Scorciatoia Verde</strong></td>
+					<td><span class="color-badge" style="background: #16a34a;"></span> Verde Smeraldo / Lime</td>
+					<td>Taglia curve e anelli permettendo di guadagnare molte caselle di vantaggio.</td>
+				</tr>
+				<tr>
+					<td><strong>Allungatoia Arancione</strong></td>
+					<td><span class="color-badge" style="background: #ea580c;"></span> Arancione</td>
+					<td>Un anello pi&ugrave; lungo che rallenta l'avanzata verso il traguardo.</td>
+				</tr>
+				<tr>
+					<td><strong>Trappola Rossa</strong></td>
+					<td><span class="color-badge" style="background: #dc2626;"></span> Rosso</td>
+					<td>Anello ingannevole che rispedisce la pedina indietro verso le caselle di partenza!</td>
+				</tr>
+				<tr>
+					<td><strong>Raccordo Viola</strong></td>
+					<td><span class="color-badge" style="background: #9333ea;"></span> Viola</td>
+					<td>Innesto trasversale che unisce sezioni diverse del tabellone.</td>
+				</tr>
+				<tr>
+					<td><strong>Turbo Ciano</strong></td>
+					<td><span class="color-badge" style="background: #06b6d4;"></span> Ciano Brillante</td>
+					<td>Tratto veloce ad alto scorrimento verso il rettilineo finale.</td>
+				</tr>
+				<tr>
+					<td><strong>Raccordo Rosa &amp; Ambra</strong></td>
+					<td><span class="color-badge" style="background: #ec4899;"></span> Rosa / Ambra</td>
+					<td>Scorciatoie diagonali e raccordi rapidi di collegamento.</td>
+				</tr>
+			</tbody>
+		</table>
+
+		<h2>2. Come si Gioca</h2>
+		<ol>
+			<li>A ogni turno, il giocatore lancia <strong>due dadi</strong> da 6 facce.</li>
+			<li>La pedina avanza di un numero di caselle pari alla <strong>somma dei due dadi</strong>.</li>
+			<li><strong>Tiro Doppio:</strong> se entrambi i dadi mostrano lo stesso valore (es. 4-4, 5-5), il giocatore ottiene immediatamente un tiro supplementare!</li>
+		</ol>
+
+		<div class="regola-chiave">
+			<h3 style="margin-top:0;">3. La Regola dei Bivi &amp; Incroci</h3>
+			<p>Sulla griglia sono presenti bivi e incroci a 4 vie segnalati da <strong>frecce sottili disegnate nelle caselle</strong>:</p>
+			<ul>
+				<li>Se una pedina <strong>si ferma esattamente sopra la casella con la freccia</strong> al termine del lancio, al turno successivo seguir&agrave; la direzione indicata dall'incrocio!</li>
+				<li>Se invece la pedina transita oltre la casella senza fermarvisi, continuer&agrave; dritta sul tracciato su cui sta viaggiando.</li>
+				<li><strong>Direzione visibile:</strong> La punta triangolare colorata della pedina indica in ogni istante la direzione verso cui compir&agrave; il prossimo passo.</li>
+			</ul>
+		</div>
+
+		<h2>4. Modalit&agrave; Partita e Sistema di Punteggio</h2>
+		<p>Il gioco &egrave; organizzato in una <strong>Partita a Punti</strong> con limite prefissato (ad esempio 1000 punti):</p>
+		<ul>
+			<li><strong>Punti al Vincitore:</strong> Il primo giocatore che taglia il traguardo a scacchi (casella 99) vince la mano e riceve <strong>100 punti</strong>.</li>
+			<li><strong>Punti agli Avversari:</strong> A ciascun altro giocatore viene assegnato un punteggio pari al <strong>valore dell'ultima casella nera del percorso principale toccata</strong> durante la mano (da 0 a 98).</li>
+			<li><strong>Vincitore della Partita:</strong> I punti si accumulano di mano in mano. Il primo giocatore che raggiunge o supera il punteggio target (es. 1000 pt) viene incoronato <strong>Vincitore della Partita</strong>!</li>
+		</ul>
+
+		<h2>5. Opzioni e Personalizzazione della Partita</h2>
+		<p>All'avvio del gioco o cliccando sui pulsanti <strong>⚙️ Opzioni</strong> e <strong>✨ Nuova Partita</strong> nella barra inferiore &egrave; possibile personalizzare ogni aspetto della sfida:</p>
+
+		<div class="regola-chiave">
+			<h3 style="margin-top:0;">👥 Giocatori &amp; Partecipanti</h3>
+			<ul>
+				<li><strong>Numero di giocatori:</strong> Da 2 a 4 giocatori contemporaneamente sul tabellone.</li>
+				<li><strong>Umani e Bot:</strong> Ciascun giocatore pu&ograve; essere impostato come <strong>Umano (👤)</strong> oppure <strong>Computer / Bot (🤖)</strong>, con possibilit&agrave; di personalizzare il nome di ciascun partecipante.</li>
+			</ul>
+		</div>
+
+		<div class="regola-chiave">
+			<h3 style="margin-top:0;">🏆 Obiettivo della Partita</h3>
+			<ul>
+				<li><strong>Partita a 1000 Punti (Predefinito):</strong> La formula classica, vince chi raggiunge per primo 1000 punti.</li>
+				<li><strong>Partita a 500 Punti:</strong> Sfida di media durata (circa 5 mani).</li>
+				<li><strong>Partita Sprint a 300 Punti:</strong> Sfida breve e intensa (circa 3 mani).</li>
+				<li><strong>Partita Marathon a 2000 Punti:</strong> Una lunga maratona a tappe.</li>
+				<li><strong>Mano Singola:</strong> Nessun punteggio cumulativo; la partita si conclude appena un giocatore taglia il traguardo.</li>
+			</ul>
+		</div>
+
+		<div class="regola-chiave">
+			<h3 style="margin-top:0;">⚙️ Varianti di Regolamento</h3>
+			<ul>
+				<li><strong>Tiro Doppio Supplementare (Attivo di default):</strong> Se ottieni lo stesso valore su entrambi i dadi (es. 4-4, 6-6), hai diritto a un lancio extra consecutivo. Disattivando l'opzione, il turno passa normalmente all'avversario.</li>
+				<li><strong>Arrivo con Punteggio Esatto (Rimbalzo):</strong> Se attivato, per tagliare il traguardo occorre fare la cifra esatta per finire sulla casella 99. Se il punteggio dei dadi supera la casella finale, la pedina avanza fino al 99 e <em>rimbalza indietro</em> per i passi in eccesso! Se disattivato, basta eguagliare o superare il 99.</li>
+				<li><strong>Regola di Sosta su Bivi &amp; Incroci:</strong>
+					<ul>
+						<li><em>Svolta sul percorso incrociato (Predefinito):</em> Fermandosi esattamente su un incrocio si imbocca il percorso traversale/incrociato (es. dal percorso nero si svolta sulla diramazione colorata; arrivando dalla diramazione ci si innesta sul nero).</li>
+						<li><em>Segui la freccia del proprio colore:</em> Fermandosi sull'incrocio si segue la freccia contrassegnata con il colore del tracciato da cui si &egrave; arrivati.</li>
+					</ul>
+				</li>
+			</ul>
+		</div>
+
+		<h2>6. Comandi e Barra di Stato</h2>
+		<ul>
+			<li><strong>In alto a sinistra:</strong> Mostra in tempo reale la mano in corso e la classifica orizzontale sintetica con i punti cumulativi di tutti i giocatori.</li>
+			<li><strong>In alto a destra:</strong> Mostra in tempo reale il valore dell'ultima casella nera del percorso principale toccata da ciascuna pedina.</li>
+			<li><strong>🎲 Lancia i Dadi:</strong> Per i giocatori umani &egrave; possibile premere o tenere premuto il pulsante per scuotere e lanciare i dadi (supporta anche la tastiera con <em>Spazio</em> o <em>Invio</em>).</li>
+			<li><strong>Auto-play (Barra inferiore):</strong> Casella di spunta per far scorrere automaticamente tutti i turni e le mosse, ideale per osservare partite tra bot o simulare mani veloci.</li>
+			<li><strong>⚙️ Opzioni &amp; ✨ Nuova Partita:</strong> Per modificare le impostazioni dei giocatori o iniziare una nuova sfida in qualsiasi momento.</li>
+			<li><strong>Audio (In alto a sinistra):</strong> Icona per silenziare o riattivare gli effetti sonori.</li>
+			<li><strong>Cronaca in tempo reale:</strong> Nel box in basso a sinistra viene registrata la cronologia di tutti i tiri, bivi imboccati e vittorie.</li>
+		</ul>
+
+		<p style="text-align: center;"><a href="scorciatoie.html" onclick="goBack(); return false;" class="play-btn">Chiudi</a></p>
+	</div>
+
+	<div class="striscia"></div>
+
+	<div class="nav-links" data-comune></div>
+
+	<p class="copyright">
+		© 2026 Luciano Manenti
+	</p>
+
+	<script>
+		// Dove va questa pagina quando si preme "indietro": il gioco di cui parla.
+		var PAGINA_GIOCO = 'scorciatoie.html';
+
+		function goBack() {
+			// Cronologia lunga: siamo arrivati da fuori, tipicamente da Google.
+			// Portiamolo al gioco, che da qui altrimenti non raggiungerebbe: la
+			// pagina delle istruzioni, trovata con una ricerca, e' un vicolo cieco.
+			if (window.history.length > 1) {
+				window.location.href = PAGINA_GIOCO;
+				return;
+			}
+			// Scheda nuova: l'ha aperta il gioco con target="_blank". Si chiude,
+			// e il gioco rimasto sotto torna in primo piano. Se invece la scheda
+			// l'ha aperta l'utente (Ctrl+clic da Google) il browser rifiuta la
+			// chiusura in silenzio: caso raro, lasciato scoperto apposta.
+			window.close();
+		}
+	</script>
+</body>
+
+</html>

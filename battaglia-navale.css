@@ -70,47 +70,58 @@ html, body {
 }
 
 /* === BARRA SUPERIORE & TITOLO === */
-.lang-switch-header {
+/* Selettore delle lingue sul campo, nella forma comune del sito
+   (testa-canonica 11.2): chiaro, la lingua accesa in oro */
+#lang-switcher {
     position: absolute;
-    top: 8px;
-    left: 15px;
+    top: 10px;
+    left: 10px;
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    z-index: 2000;
+}
+.btn-lang {
     display: flex;
     align-items: center;
-    gap: 8px;
-    z-index: 1001;
-}
-
-.lang-switch-header a {
-    color: rgba(255, 255, 255, 0.7);
+    justify-content: center;
+    height: 32px;
+    padding: 4px 10px;
+    box-sizing: border-box;
     text-decoration: none;
-    font-size: 13px;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    color: white;
+    font-size: 14px;
     font-weight: bold;
-    padding: 3px 8px;
-    border: 1px solid rgba(255, 255, 255, 0.25);
-    border-radius: 4px;
-    background: rgba(0, 30, 20, 0.4);
-    transition: all 0.2s;
-}
-
-.lang-switch-header a:hover,
-.lang-switch-header a.active {
-    color: #ffd700;
-    border-color: #ffd700;
-    background: rgba(0, 50, 30, 0.7);
-}
-
-.btn-audio-game {
-    width: 28px;
-    height: 28px;
-    background: rgba(0, 30, 20, 0.5) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ffd700'%3E%3Cpath d='M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z'/%3E%3C/svg%3E") center/18px no-repeat;
-    border: 1px solid rgba(255, 215, 0, 0.4);
-    border-radius: 4px;
     cursor: pointer;
     transition: all 0.2s;
 }
+.btn-lang.active { background: #ffd700; color: #1a1a2e; border-color: #b8860b; }
+.btn-lang:hover:not(.active) { background: rgba(255, 255, 255, 0.3); }
+
+/* Pulsante dell'audio: le tre regole di rummy.css, copiate senza toccarle */
+.btn-audio-game {
+    display: inline-block;
+    width: 28px;
+    height: 28px;
+    border-radius: 4px;
+    cursor: pointer;
+    background-color: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='white' d='M3 9v6h4l5 5V4L7 9H3z'/><path fill='white' d='M16.5 12c0-1.77-1.02-3.29-2.5-4.03v8.06c1.48-.73 2.5-2.25 2.5-4.03z'/><path fill='white' fill-opacity='0.65' d='M14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z'/></svg>");
+    background-size: 18px;
+    background-repeat: no-repeat;
+    background-position: center;
+    transition: background-color 0.2s;
+    flex-shrink: 0;
+}
+.btn-audio-game:hover {
+    background-color: rgba(255, 255, 255, 0.25);
+}
 .btn-audio-game.muted {
-    background: rgba(0, 30, 20, 0.5) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ff5555'%3E%3Cpath d='M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z'/%3E%3C/svg%3E") center/18px no-repeat;
-    border-color: rgba(255, 85, 85, 0.5);
+    background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='white' fill-opacity='0.45' d='M3 9v6h4l5 5V4L7 9H3z'/><path fill='white' fill-opacity='0.2' d='M16.5 12c0-1.77-1.02-3.29-2.5-4.03v8.06c1.48-.73 2.5-2.25 2.5-4.03z'/><path fill='white' fill-opacity='0.2' d='M14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z'/><line x1='3' y1='21' x2='21' y2='3' stroke='%23ee1111' stroke-width='2.5' stroke-linecap='round'/></svg>");
 }
 
 #titolo-gioco {
@@ -846,19 +857,50 @@ html, body {
     z-index: 100;
     align-items: center;
 }
-.legal-links-calcolo a:not(.pulsante-link-calcolo) {
+.legal-links-calcolo a:not(.pulsante-top) {
     color: rgba(255, 255, 255, 0.6);
     text-decoration: none;
     font-size: 11px;
     font-family: sans-serif;
     transition: color 0.2s;
 }
-.legal-links-calcolo a:not(.pulsante-link-calcolo):hover {
+.legal-links-calcolo a:not(.pulsante-top):hover {
     color: #ffd700;
 }
-.legal-links-calcolo .sep {
-    color: rgba(255, 255, 255, 0.3);
+
+/* I due pulsanti di servizio con l'aspetto comune a tutti i giochi
+   (testa-canonica, sezione A): REGOLE verde come .pulsante2 di rummy,
+   Scrivetemi blu notte come #btn-scrivetemi. Bassi quanto basta a stare
+   in riga coi pulsanti dei giochi a destra. */
+a.pulsante-top {
+    display: inline-block;
+    height: 24px;
+    line-height: 20px;   /* 24 meno i due bordi da 2px */
+    padding: 0 10px;
+    color: white;
     font-size: 11px;
+    font-weight: bold;
+    font-family: sans-serif;
+    text-decoration: none;
+    border-radius: 8px;
+    box-sizing: border-box;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+    transition: all 0.2s;
+}
+#btn-regole-top {
+    background: linear-gradient(180deg, #4a7c59 0%, #2d5a3d 100%);
+    border: 2px solid #6b9b7a;
+}
+#btn-regole-top:hover {
+    background: linear-gradient(180deg, #5a8c69 0%, #3d6a4d 100%);
+    transform: scale(1.05);
+}
+#btn-scrivetemi-navale {
+    background: #3a3a5a;
+    border: 2px solid #888;
+}
+#btn-scrivetemi-navale:hover {
+    transform: scale(1.1);
 }
 
 .link-giochi-calcolo {

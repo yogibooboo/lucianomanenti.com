@@ -2,25 +2,21 @@
 <html lang="it">
 
 <head>
-	<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9335537153013492"
-		crossorigin="anonymous"></script>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta charset="utf-8">
+
+	<!-- Funzioni comuni del sito: GA, icone, audio, navigazione, riquadro di consenso -->
+	<script src="site.js"></script>
+
 	<title>Gioca a Scala 40 Gratis Online - lucianomanenti.com</title>
-	<link rel="alternate" hreflang="it" href="scala40.html">
-	<link rel="alternate" hreflang="en" href="scala40-en.html">
-	<link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
-	<link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
-	<link rel="shortcut icon" href="favicon/favicon.ico">
-	<link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+	<link rel="canonical" href="https://www.lucianomanenti.com/scala40.html">
+	<link rel="alternate" hreflang="it" href="https://www.lucianomanenti.com/scala40.html">
+	<link rel="alternate" hreflang="en" href="https://www.lucianomanenti.com/scala40-en.html">
+	<link rel="alternate" hreflang="x-default" href="https://www.lucianomanenti.com/scala40.html">
 	<link rel="manifest" href="favicon/site.webmanifest">
 
-	<!-- Meta tags from original game -->
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta name="Description"
 		content="Play free Scala40 card game online, no registration. Play against the computer. Choose between one, two or three opponents. Gioca Scala 40 gratis online senza registrazione">
-	<meta http-Equiv="Cache-Control" Content="no-cache">
-	<meta http-Equiv="Pragma" Content="no-cache">
-	<meta http-Equiv="Expires" Content="0">
 
 	<!-- Caricamento condizionale versione classica/nuova: la preferenza è in
 	     localStorage ('scala40_versione'); default e QUALSIASI errore =>
@@ -41,58 +37,46 @@
 		<link rel="stylesheet" href="scala40V1.css?v=2.7" />
 	</noscript>
 
-	<!-- Google tag (gtag.js) -->
-	<script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
-	<script>
-		window.dataLayer = window.dataLayer || [];
-		function gtag() { dataLayer.push(arguments); }
-		gtag('js', new Date());
-		gtag('config', 'G-WRBDRDQ4L8');
-		if (window.scala40versione === 'nuova') {
-			var lg = function (k) { try { return localStorage.getItem(k); } catch (e) { return null; } };
-			gtag('event', 'scala40_versione_nuova', {
-				opt_jolly_immediato: lg('scala40tris_jollyimmediato') === '1',
-				opt_scarto_immediato: lg('scala40tris_scartoimmediato') === '1',
-				opt_non_scartare_attaccanti: lg('scala40tris_nonscartareattaccanti') === '1',
-				opt_una_carta_basta: lg('scala40tris_unacartabasta') !== '0',
-				opt_asso_singolo: lg('scala40tris_assosingolo') === '1',
-				opt_escludi_avversari_limite: lg('scala40tris_escludiavversariesuperano') === '1'
-			});
-		} else {
-			gtag('event', 'scala40_versione_classica');
+	<!-- Pulsante Scrivetemi nella forma canonica (aspetto di #btn-scrivetemi di
+	     rummy.css): posto e larghezza restano quelli di .pulsantecomments (136
+	     fuori tutto), l'altezza e' quella dei pulsanti degli altri giochi
+	     (.pulsante-link: 30 + bordo 2 = 34), allineato in basso con loro.
+	     Qui e non nei due CSS del gioco, cosi' vale per tutte e due le versioni. -->
+	<style>
+		#btn-scrivetemi-scala40 {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			border: 2px solid #888;
+			border-radius: 8px;
+			padding: 0 5px;
+			width: 122px;
+			height: 30px;
+			font-size: 14px;
+			background: #3a3a5a;
+			color: #fff;
+			font-family: Arial, Helvetica, sans-serif;
+			font-weight: bold;
+			text-decoration: none;
+			text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+			white-space: nowrap;
+			transition: transform 0.2s;
 		}
-	</script>
+		#btn-scrivetemi-scala40:hover {
+			background: #3a3a5a;
+			border-color: #888;
+			transform: scale(1.1);
+		}
+	</style>
+
 	<script>
-		window.gameConfig = {
-			gaPrefix: '',
-			messages: {
-				it: '<!-- MESSAGGIO_IT_PLACEHOLDER -->',
-				en: '<!-- MESSAGE_EN_PLACEHOLDER -->'
-			},
-			adsenseActive: true,
-			adsenseSlots: {
-				'300x600': '5266697442',
-				'160x600': '1167670336',
-				'300x250': '8471445288',
-				'160x250': '8663016975'
-			},
-			hideLegalFooter: true
-		};
-		window.currentLang = 'it';
+		window.gameConfig = { gaPrefix: '' };
 	</script>
-	<script src="game-layout.js?v=4.6"></script>
 </head>
 
 <body>
 
 	<div class="main-container">
-		<div id="sidebar-left" class="sidebar">
-			<!-- Banner verranno inseriti qui da JS -->
-		</div>
-		<div id="sidebar-right" class="sidebar">
-			<!-- Banner verranno inseriti qui da JS -->
-		</div>
-
 		<div id="campogioco">
 			<!-- Schermo overlay per modali -->
 			<div id="schermo"></div>
@@ -125,8 +109,9 @@
 
 			<!-- Selettore Lingua + Versione -->
 			<div class="lang-switch-game" style="position: absolute; top: 10px; left: 10px; z-index: 10001; display: flex; align-items: center; gap: 6px;">
-				<a href="scala40.html" class="active" style="display: inline-block; padding: 4px 10px; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 12px; background: #ffd700; color: #2c3e50; border: 1px solid #ffd700;">IT</a>
-				<a href="scala40-en.html" style="display: inline-block; padding: 4px 10px; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 12px; background: rgba(255, 255, 255, 0.2); color: white; border: 1px solid rgba(255, 255, 255, 0.3);">EN</a>
+				<!-- Alti 30px come il pulsante dell'audio (28 + bordo). -->
+				<a href="scala40.html" class="active" style="display: flex; align-items: center; justify-content: center; box-sizing: border-box; height: 30px; padding: 0 10px; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 14px; background: #ffd700; color: #2c3e50; border: 1px solid #ffd700;">IT</a>
+				<a href="scala40-en.html" style="display: flex; align-items: center; justify-content: center; box-sizing: border-box; height: 30px; padding: 0 10px; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 14px; background: rgba(255, 255, 255, 0.2); color: white; border: 1px solid rgba(255, 255, 255, 0.3);">EN</a>
 				<div id="btn-audio" class="btn-audio-game" aria-label="Audio"></div>
 			</div>
 
@@ -151,24 +136,20 @@
 
 			<div id="haivinto" class="form" style="background-image:url(images/scala40/haivinto.jpg)">
 				<button class="bottone1" type="button" style="left: 90px; width: 140px; background-color: #ffd700; color: #000; font-weight: bold; border-color: #cca300;">NUOVA PARTITA</button>
-				<button class="bottone3" type="button" style="left: 270px; width: 140px; font-size: 11px;" onclick="window.open('aboutme.html#pubblicita', '_blank')">PERCHÉ LA PUBBLICITÀ?</button>
 			</div>
 
 			<div id="haiperso" class="form" style="background-image:url(images/scala40/haiperso.jpg)">
 				<button class="bottone1" type="button" style="left: 90px; width: 140px; background-color: #ffd700; color: #000; font-weight: bold; border-color: #cca300;">NUOVA PARTITA</button>
-				<button class="bottone3" type="button" style="left: 270px; width: 140px; font-size: 11px;" onclick="window.open('aboutme.html#pubblicita', '_blank')">PERCHÉ LA PUBBLICITÀ?</button>
 			</div>
 
 			<div id="haipersotorneo" class="form" style="background-image:url(images/scala40/haipersotorneo.jpg)">
 				<button class="bottone1" type="button" style="left: 20px; width: 120px; font-size: 11px; background-color: #ffd700; color: #000; font-weight: bold; border-color: #cca300;">NUOVO TORNEO</button>
 				<button class="bottone2" type="button" style="left: 150px; width: 120px; font-size: 11px;">GIOCA ANCORA</button>
-				<button class="bottone3" type="button" style="left: 290px; width: 190px; font-size: 11px;" onclick="window.open('aboutme.html#pubblicita', '_blank')">PERCHÉ LA PUBBLICITÀ?</button>
 			</div>
 
 			<div id="haivintotorneo" class="form" style="background-image:url(images/scala40/haivintotorneo.jpg)">
 				<button class="bottone1" type="button" style="left: 20px; width: 120px; font-size: 11px; background-color: #ffd700; color: #000; font-weight: bold; border-color: #cca300;">NUOVO TORNEO</button>
 				<button class="bottone2" type="button" style="left: 150px; width: 120px; font-size: 11px;">GIOCA ANCORA</button>
-				<button class="bottone3" type="button" style="left: 290px; width: 190px; font-size: 11px;" onclick="window.open('aboutme.html#pubblicita', '_blank')">PERCHÉ LA PUBBLICITÀ?</button>
 			</div>
 
 			<div id="oltre40" class="form" style="background-image:url(images/scala40/achtung.jpg)">
@@ -200,9 +181,7 @@
 			<div id="scarti"><span>scarti</span></div>
 
 			<div class="pulsantehelp" style="top: 705px; left:10px; "></div>
-			<a href="aboutme.html" target="_blank">
-				<div class="pulsantecomments" style="top: 702px; left: 150px; "></div>
-			</a>
+			<a href="aboutme.html" target="_blank" id="btn-scrivetemi-scala40" class="pulsantecomments" style="top: 708px; left: 150px;">Scrivetemi</a>
 			<a href="privacy.html" target="_blank"
 				style="position: absolute; top: 730px; left: 290px; color: white; text-decoration: none; font-size: 14px; font-family: sans-serif; z-index: 1000;">Privacy
 				Policy</a>
@@ -256,13 +235,12 @@
 	<!-- Scripts for game logic: il motore viene scelto dal bootstrap in head
 	     (window.scala40versione); il ramo classico carica ESATTAMENTE gli
 	     stessi file di prima. -->
-	<script src="site.js?v=1.2"></script>
 	<script>
 		if (window.scala40versione === 'nuova') {
-			document.write('<script src="scala40tris.js?v=1.88"><\/script>');
+			document.write('<script src="scala40tris.js?v=1.89"><\/script>');
 		} else {
 			document.write('<script src="jquery-2.1.1.js"><\/script>');
-			document.write('<script src="scala40codeV1.js?v=3.16"><\/script>');
+			document.write('<script src="scala40codeV1.js?v=3.17"><\/script>');
 		}
 	</script>
 	<script>
@@ -278,6 +256,10 @@
 			var bn = document.getElementById('btn-vnuova');
 			if (!bc || !bn) return;
 			try {
+				/* La memoria finta di site.js (browser che blocca i cookie)
+				   non passa le ricariche: la scelta andrebbe persa ogni volta
+				   e il benvenuto tornerebbe all'infinito. Vale come bloccata. */
+				if (localStorage.finta) throw new Error('memoria finta');
 				localStorage.setItem('scala40_versione_test', '1');
 				localStorage.removeItem('scala40_versione_test');
 			} catch (e) {
@@ -313,23 +295,6 @@
 		document.addEventListener('DOMContentLoaded', function () {
 			window.initAudioToggle('#btn-audio');
 		});
-
-		(function () {
-			var nascosto = false;
-			var observer = new MutationObserver(function () {
-				if (nascosto) return;
-				var divs = document.querySelectorAll('body > div');
-				for (var i = 0; i < divs.length; i++) {
-					if (divs[i].shadowRoot && !divs[i].className && (divs[i].getAttribute('style') || '').length > 5000) {
-						divs[i].style.setProperty('display', 'none', 'important');
-						nascosto = true;
-						observer.disconnect();
-						return;
-					}
-				}
-			});
-			observer.observe(document.body, { childList: true });
-		})();
 	</script>
 
 </body>

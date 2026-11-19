@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 750">
+  <!-- la pagina di ricerca: la barra con "Briscola Luciano", sotto il primo
+       risultato con la lente sopra -->
+  <g transform="rotate(-4 512 375)">
+    <rect x="96" y="96" width="832" height="560" rx="28" fill="#fdf6e3" stroke="#c9b98a" stroke-width="10"/>
+
+    <!-- la barra di ricerca -->
+    <rect x="140" y="150" width="744" height="120" rx="60" fill="#fff" stroke="#c9b98a" stroke-width="8"/>
+    <text x="512" y="233" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="68" font-weight="bold" fill="#2c2e32">Briscola Luciano</text>
+
+    <!-- il primo risultato: una carta e due righe -->
+    <rect x="140" y="320" width="744" height="280" rx="18" fill="#fff" stroke="#e3dcc4" stroke-width="6"/>
+    <g transform="rotate(-8 250 460)">
+      <rect x="190" y="372" width="120" height="172" rx="10" fill="#fff" stroke="#d9d3c0" stroke-width="4"/>
+      <path d="M250 492 c-40 -29 -46 -53 -29 -67 c12 -10 26 -4 29 9 c3 -13 17 -19 29 -9 c17 14 11 38 -29 67z" fill="#cc0c39"/>
+    </g>
+    <rect x="352" y="380" width="300" height="28" rx="14" fill="#2f80ed"/>
+    <rect x="352" y="432" width="400" height="18" rx="9" fill="#d9d3c0"/>
+    <rect x="352" y="466" width="340" height="18" rx="9" fill="#d9d3c0"/>
+    <rect x="352" y="516" width="140" height="44" rx="22" fill="#ffd700"/>
+    <path d="M412 527 l18 11 -18 11z" fill="#2c2e32"/>
+  </g>
+
+  <!-- la lente, sul risultato -->
+  <g>
+    <path d="M816 532 L920 660" stroke="#fff" stroke-width="72" stroke-linecap="round"/>
+    <path d="M816 532 L920 660" stroke="#8a5a2b" stroke-width="50" stroke-linecap="round"/>
+    <circle cx="738" cy="440" r="112" fill="#bfe3ff" fill-opacity="0.4" stroke="#fff" stroke-width="44"/>
+    <circle cx="738" cy="440" r="112" fill="none" stroke="#2c2e32" stroke-width="26"/>
+    <path d="M674 386 a82 82 0 0 1 66 -38" fill="none" stroke="#fff" stroke-width="16" stroke-linecap="round"/>
+  </g>
+</svg>

@@ -141,63 +141,58 @@ html, body {
     color: #ff7b72;
 }
 
-.lang-switch-header {
+/* Selettore delle lingue sul campo, nella forma comune del sito
+   (testa-canonica 11.2): chiaro, la lingua accesa in oro */
+#lang-switcher {
     position: absolute;
-    top: 8px;
-    left: 230px;
-    z-index: 10001;
+    top: 10px;
+    left: 10px;
     display: flex;
+    gap: 4px;
     align-items: center;
-    gap: 6px;
+    z-index: 2000;
 }
-.lang-switch-header a {
+.btn-lang {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0 10px;
     height: 32px;
-    text-decoration: none;
-    border-radius: 4px;
-    font-weight: bold;
-    font-size: 12px;
-    background: rgba(255, 255, 255, 0.15);
-    color: white;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    transition: all 0.2s;
+    padding: 4px 10px;
     box-sizing: border-box;
-}
-.lang-switch-header a.active {
-    background: #ffd700;
-    color: #1a1a2e;
-    border-color: #b8860b;
-}
-.lang-switch-header a:hover:not(.active) {
-    background: rgba(255, 255, 255, 0.3);
-}
-
-.btn-audio-game {
-    width: 32px;
-    height: 32px;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: 20px;
-    background-color: rgba(255, 255, 255, 0.15);
+    text-decoration: none;
+    background: rgba(255, 255, 255, 0.15);
     border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.btn-lang.active { background: #ffd700; color: #1a1a2e; border-color: #b8860b; }
+.btn-lang:hover:not(.active) { background: rgba(255, 255, 255, 0.3); }
+
+/* Pulsante dell'audio: le tre regole di rummy.css, copiate senza toccarle */
+.btn-audio-game {
+    display: inline-block;
+    width: 28px;
+    height: 28px;
     border-radius: 4px;
     cursor: pointer;
+    background-color: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='white' d='M3 9v6h4l5 5V4L7 9H3z'/><path fill='white' d='M16.5 12c0-1.77-1.02-3.29-2.5-4.03v8.06c1.48-.73 2.5-2.25 2.5-4.03z'/><path fill='white' fill-opacity='0.65' d='M14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z'/></svg>");
+    background-size: 18px;
+    background-repeat: no-repeat;
+    background-position: center;
     transition: background-color 0.2s;
+    flex-shrink: 0;
 }
 .btn-audio-game:hover {
     background-color: rgba(255, 255, 255, 0.25);
 }
 .btn-audio-game.muted {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.21.05-.42.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z'/%3E%3C/svg%3E");
-}
-
-#btn-audio {
-    position: relative;
-    z-index: 10001;
+    background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='white' fill-opacity='0.45' d='M3 9v6h4l5 5V4L7 9H3z'/><path fill='white' fill-opacity='0.2' d='M16.5 12c0-1.77-1.02-3.29-2.5-4.03v8.06c1.48-.73 2.5-2.25 2.5-4.03z'/><path fill='white' fill-opacity='0.2' d='M14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z'/><line x1='3' y1='21' x2='21' y2='3' stroke='%23ee1111' stroke-width='2.5' stroke-linecap='round'/></svg>");
 }
 
 .pulsante-top {
@@ -223,11 +218,39 @@ a.pulsante-top {
     text-decoration: none;
 }
 
-/* Scrivetemi e Come si Gioca: in alto a sinistra, prima del selettore lingua */
+/* I due pulsanti di servizio, nell'aspetto comune del sito (testa-canonica,
+   checklist A): REGOLE come .pulsante2 di rummy.css, Scrivetemi come il suo
+   #btn-scrivetemi. Posto e misure restano quelli di .pulsante-top. */
+#btn-regole-top {
+    background: linear-gradient(180deg, #4a7c59 0%, #2d5a3d 100%);
+    border: 2px solid #6b9b7a;
+    border-radius: 8px;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+#btn-regole-top:hover {
+    background: linear-gradient(180deg, #5a8c69 0%, #3d6a4d 100%);
+    border-color: #6b9b7a;
+    transform: scale(1.05);
+}
+#btn-scrivetemi-calcolo {
+    background: #3a3a5a;
+    border: 2px solid #888;
+    border-radius: 8px;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+#btn-scrivetemi-calcolo:hover {
+    background: #3a3a5a;
+    border-color: #888;
+    transform: scale(1.1);
+}
+
+/* Scrivetemi e REGOLE: in alto a sinistra, prima del selettore lingua */
+/* REGOLE e Scrivetemi in alto, subito a destra del selettore delle lingue
+   e dell'audio (#lang-switcher), che ha l'angolo nella forma comune */
 .link-utility-bottom {
     position: absolute;
-    top: 8px;
-    left: 15px;
+    top: 10px;
+    left: 130px;
     display: flex;
     gap: 6px;
     z-index: 10001;
@@ -565,6 +588,9 @@ a.pulsante-top {
     height: 30px;
     font-size: 11px;
     padding: 0;
+    /* SUGGERIMENTO e' la parola lunga della coppia: senza questo il simbolo
+       andava a capo e restava sopra la scritta */
+    white-space: nowrap;
 }
 
 /* Modo di click: i due radio decidono cosa fa il click su un incrocio.
@@ -924,11 +950,6 @@ a.pulsante-top {
     margin-top: 2px;
 }
 
-#azioni {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-}
 .btn-azione {
     height: 44px;
     font-size: 13px;
@@ -944,9 +965,6 @@ a.pulsante-top {
 .btn-azione:hover {
     background: rgba(0, 60, 20, 0.8);
     border-color: rgba(255, 255, 255, 0.5);
-}
-.btn-azione-larga {
-    grid-column: 1 / -1;
 }
 
 /* Pannello del suggerimento: copre l'intera colonna dei tasti quando aperto */
@@ -1035,32 +1053,32 @@ a.pulsante-top {
 }
 
 /* === CALCOLATRICE ===
-   Stessa meccanica del pannello del suggerimento (copre la colonna finche' e'
-   aperta) ma tirata piu' in alto: parte dal bordo superiore del riquadro dei
-   record invece che da sotto. Sale perche' il rettangolo libero in fondo alla
-   colonna e' destinato alla pubblicita' e va lasciato scoperto; quello che
-   copre salendo (record e NUOVA PARTITA) non serve mentre si fa un conto, anzi
-   NUOVA PARTITA sotto un tastierino premuto a raffica e' meglio nascosto.
-   -108 e' la distanza fra il top di #pannello-controlli (118) e quello di
-   #pannello-record (10). */
+   Fissa in fondo alla colonna dei comandi, dove fino al 17/11/2026 stava il
+   riquadro a rotazione (300x250). Il tasto Suggerimento e' passato di fianco ad
+   Annulla, e i 56px liberati sopra (44 del tasto + 12 di gap) vanno a lei: in
+   tutto ha 304px, quanti ne restano fra NUOVA PARTITA e il fondo della matrice.
+   Le misure qui sotto (padding, display, tasti da 35) sono fatte per starci.
+   Il bordo e' smorzato finche' la calcolatrice non ha la tastiera, e si
+   accende (.attiva) quando ci si clicca dentro: e' l'unico segno che le cifre
+   battute finiscono nel display e non sulle lettere. */
 #pannello-calc {
-    display: none;
-    position: absolute;
-    top: -108px;
-    left: 0;
-    right: 0;
-    z-index: 60;
+    height: 304px;
+    box-sizing: border-box;
     background: #10331c;
-    border: 2px solid #7fd4ff;
+    border: 2px solid rgba(127, 212, 255, 0.35);
     border-radius: 10px;
-    padding: 12px;
+    padding: 10px 12px;
+    display: flex;
     flex-direction: column;
-    gap: 10px;
-    box-shadow: 0 0 25px rgba(0, 0, 0, 0.6);
+    gap: 8px;
+    transition: border-color 0.15s, box-shadow 0.15s;
 }
-#pannello-calc.aperto { display: flex; }
+#pannello-calc.attiva {
+    border-color: #7fd4ff;
+    box-shadow: 0 0 14px rgba(127, 212, 255, 0.45);
+}
 #pannello-calc .calc-titolo {
-    font-size: 14px;
+    font-size: 13px;
     font-weight: bold;
     color: #7fd4ff;
     text-transform: uppercase;
@@ -1074,7 +1092,7 @@ a.pulsante-top {
     background: rgba(0, 0, 0, 0.45);
     border: 2px solid rgba(127, 212, 255, 0.35);
     border-radius: 8px;
-    padding: 6px 10px;
+    padding: 4px 10px;
     text-align: right;
     overflow: hidden;
 }
@@ -1097,17 +1115,16 @@ a.pulsante-top {
 #calc-tasti {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 6px;
+    gap: 5px;
 }
 /* Vedi .segno-calcolo.segno-divisione: stesso segno, stessa ragione. */
 .calc-t.calc-div {
     font-size: 22px;
 }
 .calc-t {
-    /* 41 e non 38: il pannello deve arrivare a coprire NUOVA PARTITA (che finisce
-       a 414 nel campo) e i px mancanti si danno ai tasti invece che ai margini,
-       cosi' l'altezza in piu' si traduce in bersagli piu' comodi. */
-    height: 41px;
+    /* 35: cinque file devono stare nei 304px del pannello fisso, col display
+       sopra (vedi #pannello-calc) */
+    height: 35px;
     font-size: 16px;
     font-weight: bold;
     color: #fff;
@@ -1130,18 +1147,6 @@ a.pulsante-top {
     color: #1a1a2e;
 }
 .calc-t.calc-uguale:hover { filter: brightness(1.1); background: linear-gradient(180deg, #ffd700 0%, #b8860b 100%); }
-#btn-calc-chiudi {
-    height: 36px;
-    font-size: 13px;
-    font-weight: bold;
-    color: #fff;
-    background: rgba(0, 40, 10, 0.6);
-    border: 2px solid #990022;
-    border-radius: 8px;
-    cursor: pointer;
-    text-transform: uppercase;
-}
-#btn-calc-chiudi:hover { background: rgba(0, 60, 20, 0.8); }
 
 #opzioni-errori {
     background: rgba(0, 40, 10, 0.55);
@@ -1227,7 +1232,7 @@ a.pulsante-top {
 }
 
 /* Cambio lingua nell'angolo alto a destra della modale d'avvio: stessi colori
-   del selettore in cima al campo (.lang-switch-header), solo piu' basso — 24px
+   del selettore in cima al campo (#lang-switcher), solo piu' basso — 24px
    invece di 32 — per stare in riga con i due pulsanti d'angolo in fondo. */
 .lang-switch-modale {
     position: absolute;
@@ -1576,21 +1581,4 @@ a.pulsante-top {
 }
 #sprite-assegna.visibile {
     opacity: 1;
-}
-
-/* ================= RIQUADRO AFFILIATI ROTANTE =================
-   Sotto NUOVA PARTITA, in fondo alla colonna dei comandi. La colonna e' larga
-   300px, quindi il riquadro sta esattamente nel formato 300x250 senza margini
-   laterali. L'altezza e' fissa: il contenuto viene ridisegnato a ogni rotazione
-   e senza un'altezza dichiarata la colonna ballerebbe a ogni cambio prodotto. */
-#banner-rotante {
-    width: 300px;
-    height: 250px;
-    box-sizing: border-box;
-    border-radius: 6px;
-    overflow: hidden;
-    /* Fondo scuro come gli altri pannelli: si vede nell'istante fra il
-       caricamento della pagina e il primo prodotto disegnato. */
-    background: rgba(0, 40, 10, 0.55);
-    border: 2px solid rgba(100, 160, 110, 0.35);
 }

@@ -1,4 +1,4 @@
-// accordi.js v1.0
+// accordi.js v1.1
 
 (function () {
     'use strict';
@@ -634,5 +634,9 @@
             this.textContent = state.autoAdvance ? T.auto : T.manual;
         });
     }
+
+    // Analytics: un game_start all'accesso alla pagina, nient'altro. Un
+    // allenatore dell'orecchio non ha una fine partita; conta chi entra.
+    if (window.sitoPartita) window.sitoPartita.inizio('accesso');
 
 })();

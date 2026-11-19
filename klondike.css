@@ -1,4 +1,4 @@
-/* klondike.css v1.1 */
+/* klondike.css */
 
 /* === AUDIO TOGGLE BUTTON === */
 .btn-audio-game {
@@ -439,6 +439,10 @@ img { border-style: none; }
 .legal-links-left .sep {
     color: rgba(255, 255, 255, 0.3);
     font-size: 11px;
+}
+/* Il pallino resta solo quando site.js toglie "Gestisci Cookie" (pubblicita' spenta) */
+.legal-links-left .sep:last-child {
+    display: none;
 }
 
 /* Testo pulsanti ingrandito su smartphone (corrisponde a _isPhone in klondike.js) */

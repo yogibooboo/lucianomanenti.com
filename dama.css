@@ -120,63 +120,58 @@ html, body {
     box-shadow: 0 0 15px rgba(204, 12, 57, 0.5);
 }
 
-.lang-switch-header {
+/* Selettore delle lingue sul campo, nella forma comune del sito
+   (testa-canonica 11.2): chiaro, la lingua accesa in oro */
+#lang-switcher {
     position: absolute;
-    top: 8px;
-    left: 230px;
-    z-index: 10001;
+    top: 10px;
+    left: 10px;
     display: flex;
+    gap: 4px;
     align-items: center;
-    gap: 6px;
+    z-index: 2000;
 }
-.lang-switch-header a {
+.btn-lang {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0 10px;
     height: 32px;
-    text-decoration: none;
-    border-radius: 4px;
-    font-weight: bold;
-    font-size: 12px;
-    background: rgba(255, 255, 255, 0.15);
-    color: white;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    transition: all 0.2s;
+    padding: 4px 10px;
     box-sizing: border-box;
-}
-.lang-switch-header a.active {
-    background: #ffd700;
-    color: #1a1a2e;
-    border-color: #b8860b;
-}
-.lang-switch-header a:hover:not(.active) {
-    background: rgba(255, 255, 255, 0.3);
-}
-
-.btn-audio-game {
-    width: 32px;
-    height: 32px;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: 20px;
-    background-color: rgba(255, 255, 255, 0.15);
+    text-decoration: none;
+    background: rgba(255, 255, 255, 0.15);
     border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.btn-lang.active { background: #ffd700; color: #1a1a2e; border-color: #b8860b; }
+.btn-lang:hover:not(.active) { background: rgba(255, 255, 255, 0.3); }
+
+/* Pulsante dell'audio: le tre regole di rummy.css, copiate senza toccarle */
+.btn-audio-game {
+    display: inline-block;
+    width: 28px;
+    height: 28px;
     border-radius: 4px;
     cursor: pointer;
+    background-color: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='white' d='M3 9v6h4l5 5V4L7 9H3z'/><path fill='white' d='M16.5 12c0-1.77-1.02-3.29-2.5-4.03v8.06c1.48-.73 2.5-2.25 2.5-4.03z'/><path fill='white' fill-opacity='0.65' d='M14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z'/></svg>");
+    background-size: 18px;
+    background-repeat: no-repeat;
+    background-position: center;
     transition: background-color 0.2s;
+    flex-shrink: 0;
 }
 .btn-audio-game:hover {
     background-color: rgba(255, 255, 255, 0.25);
 }
 .btn-audio-game.muted {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.21.05-.42.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z'/%3E%3C/svg%3E");
-}
-
-#btn-audio {
-    position: relative;
-    z-index: 10001;
+    background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='white' fill-opacity='0.45' d='M3 9v6h4l5 5V4L7 9H3z'/><path fill='white' fill-opacity='0.2' d='M16.5 12c0-1.77-1.02-3.29-2.5-4.03v8.06c1.48-.73 2.5-2.25 2.5-4.03z'/><path fill='white' fill-opacity='0.2' d='M14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z'/><line x1='3' y1='21' x2='21' y2='3' stroke='%23ee1111' stroke-width='2.5' stroke-linecap='round'/></svg>");
 }
 
 .pulsante-top {
@@ -202,11 +197,41 @@ a.pulsante-top {
     text-decoration: none;
 }
 
-/* Scrivetemi e Come si Gioca: in alto a sinistra, prima del selettore lingua */
+/* I due pulsanti di servizio con l'aspetto comune a tutti i giochi
+   (testa-canonica, sezione A): REGOLE verde come .pulsante2 di rummy,
+   Scrivetemi blu notte come #btn-scrivetemi. Posto e misure restano qui. */
+#btn-regole-top {
+    line-height: 28px;   /* 32 meno i due bordi da 2px */
+    background: linear-gradient(180deg, #4a7c59 0%, #2d5a3d 100%);
+    border: 2px solid #6b9b7a;
+    border-radius: 8px;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+#btn-regole-top:hover {
+    background: linear-gradient(180deg, #5a8c69 0%, #3d6a4d 100%);
+    border-color: #6b9b7a;
+    transform: scale(1.05);
+}
+#btn-scrivetemi-dama {
+    line-height: 28px;   /* 32 meno i due bordi da 2px */
+    background: #3a3a5a;
+    border: 2px solid #888;
+    border-radius: 8px;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+#btn-scrivetemi-dama:hover {
+    background: #3a3a5a;
+    border-color: #888;
+    transform: scale(1.1);
+}
+
+/* Scrivetemi e Regole: in alto a sinistra, prima del selettore lingua */
+/* REGOLE e Scrivetemi in alto, subito a destra del selettore delle lingue
+   e dell'audio (#lang-switcher), che ha l'angolo nella forma comune */
 .link-utility-bottom {
     position: absolute;
-    top: 8px;
-    left: 15px;
+    top: 10px;
+    left: 130px;
     display: flex;
     gap: 6px;
     z-index: 10001;
@@ -521,6 +546,83 @@ a.pulsante-top {
     justify-content: center;
 }
 
+/* Vie di fuga dalla modale d'inizio: la modale copre il campo, quindi il
+   cambio lingua e i due link della fascia in basso vanno replicati qui dentro,
+   altrimenti chi arriva sulla pagina non li vede finche' non inizia a giocare.
+   Gli id nell'HTML sono distinti da quelli in campo: due elementi con lo
+   stesso id romperebbero getElementById e la validita' del documento. */
+.lang-switch-modale {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    display: flex;
+    gap: 4px;
+    z-index: 1;
+}
+.lang-switch-modale a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 9px;
+    height: 24px;
+    text-decoration: none;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 11px;
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    transition: all 0.2s;
+    box-sizing: border-box;
+}
+.lang-switch-modale a.active {
+    background: #ffd700;
+    color: #1a1a2e;
+    border-color: #b8860b;
+}
+.lang-switch-modale a:hover:not(.active) {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.btn-angolo-modale {
+    position: absolute;
+    bottom: 10px;
+    height: 24px;
+    line-height: 22px;
+    padding: 0 10px;
+    font-size: 10px;
+    font-weight: bold;
+    text-decoration: none;
+    text-align: center;
+    border-radius: 4px;
+    box-sizing: border-box;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid #6b9b7a;
+    color: white;
+    transition: all 0.2s;
+}
+.btn-angolo-modale:hover {
+    background: rgba(0, 60, 20, 0.7);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+.btn-angolo-modale.sinistra { left: 12px; }
+.btn-angolo-modale.destra   { right: 12px; }
+
+/* TUTTI I GIOCHI si riconosce dal colore anche qui dentro: stesso arancio
+   del gemello nella fascia in fondo alla pagina (.pulsante-home-dama). */
+.btn-angolo-modale.home {
+    background: linear-gradient(135deg, #c9720f, #8a4a08);
+    border-color: #ffd700;
+    color: #fff;
+    white-space: nowrap;
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.35);
+}
+.btn-angolo-modale.home:hover {
+    background: linear-gradient(135deg, #e08514, #a3580a);
+    border-color: #ffd700;
+    box-shadow: 0 0 14px rgba(255, 215, 0, 0.65);
+}
+
 .btn-opzione-sel {
     background: #1f4068;
     border: 2px solid rgba(255, 255, 255, 0.2);
@@ -629,7 +731,6 @@ a.pulsante-top {
     color: #ffd700;
     text-decoration: underline;
 }
-.legal-links-dama .sep { color: #6b9b7a; }
 
 .link-giochi-dama {
     position: absolute;

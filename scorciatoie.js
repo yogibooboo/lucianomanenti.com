@@ -28,6 +28,9 @@
         computerWaiting: isEn ? 'Computer...' : 'Computer...',
         extraRollDouble: isEn ? 'gets an extra roll thanks to the double!' : 'rigioca grazie al doppio!',
         doubleTag: isEn ? ' (DOUBLE!)' : ' (DOPPIO!)',
+        // Fumetto accanto alla pedina dopo un doppio: invito per l'umano, avviso per il bot
+        fumettoDoppioUmano: isEn ? '🎲 DOUBLE! Roll again' : '🎲 DOPPIO! Tira ancora',
+        fumettoDoppioBot: isEn ? '🎲 DOUBLE! Rolls again' : '🎲 DOPPIO! Rigioca',
         isAtJunction: isEn ? 'is on' : 'è su',
         willFollow: isEn ? 'Will follow:' : 'Seguirà:',
         ownArrow: isEn ? 'own color arrow' : 'freccia del proprio colore',
@@ -846,6 +849,11 @@
         playMatchLoss() {
             this.stopAllAudio();
             this.playAudioFile('sounds/scala40/lacrimosa.mp3');
+        },
+
+        // Insieme al fumetto del doppio
+        playDouble() {
+            this.playAudioFile('sounds/scala40/dindon.mp3');
         }
     };
 
@@ -938,11 +946,17 @@
                 return;
             }
 
-            this.startNewGame([
-                { name: TXT.defaultPlayer1, color: PLAYER_COLORS[0], isBot: false },
-                { name: TXT.defaultComputer + '1', color: PLAYER_COLORS[1], isBot: true },
-                { name: TXT.defaultComputer + '2', color: PLAYER_COLORS[2], isBot: true }
-            ]);
+            // Le scelte dell'ultima partita tornano nella finestra d'inizio, e la
+            // partita che si vede dietro e' gia' quella
+            if (this.caricaScelte()) {
+                this.startNewGame(this.leggiForm());
+            } else {
+                this.startNewGame([
+                    { name: TXT.defaultPlayer1, color: PLAYER_COLORS[0], isBot: false },
+                    { name: TXT.defaultComputer + '1', color: PLAYER_COLORS[1], isBot: true },
+                    { name: TXT.defaultComputer + '2', color: PLAYER_COLORS[2], isBot: true }
+                ]);
+            }
 
             this.startRenderLoop();
 
@@ -1000,6 +1014,7 @@
 
                 // Supporto tastiera (Spazio o Invio)
                 btnRoll.addEventListener('keydown', (e) => {
+                    if (e.altKey) return;
                     if (e.code === 'Space' || e.code === 'Enter') {
                         if (!e.repeat) {
                             SoundEngine.ensureUnlocked();
@@ -1009,6 +1024,7 @@
                 });
 
                 btnRoll.addEventListener('keyup', (e) => {
+                    if (e.altKey) return;
                     if (e.code === 'Space' || e.code === 'Enter') {
                         this.releaseRoll();
                     }
@@ -1158,6 +1174,7 @@
         },
 
         confirmRestart() {
+            this.abbandonoGA();
             try {
                 sessionStorage.removeItem('scorciatoie_torneo_in_corso');
             } catch (e) {}
@@ -1178,6 +1195,8 @@
                 this.tournament.scores = {};
                 this.tournament.isFinished = false;
                 this.tournament.champion = null;
+                this.tournament.inizioGA = false;
+                this.tournament.chiusoGA = false;
                 playersConfig.forEach(p => {
                     this.tournament.scores[p.name] = 0;
                 });
@@ -1206,6 +1225,8 @@
                 p.renderY = pos.y;
                 p.headingAngle = this.calculateHeading(p.trackId, p.stepIdx);
             });
+
+            this.manoGA = { aperta: false };
 
             this.currentPlayerIdx = 0;
             this.dice1 = 3;
@@ -1250,9 +1271,19 @@
         },
 
         startCustomGameFromForm() {
+            // Una partita in corso lasciata per una nuova
+            this.abbandonoGA();
             try {
                 sessionStorage.removeItem('scorciatoie_torneo_in_corso');
             } catch (e) {}
+            const newPlayers = this.leggiForm();
+            this.salvaScelte(newPlayers);
+            this.closeModals();
+            this.startNewGame(newPlayers, false);
+        },
+
+        // Legge la finestra d'inizio: imposta opzioni e obiettivo, restituisce i giocatori
+        leggiForm() {
             const count = parseInt(document.getElementById('numPlayersSelect').value, 10);
             const doubleRoll = document.getElementById('chkDoubleExtra').checked;
             const exactFin = document.getElementById('chkExactFinish').checked;
@@ -1288,9 +1319,116 @@
                     isBot
                 });
             }
+            return newPlayers;
+        },
 
-            this.closeModals();
-            this.startNewGame(newPlayers, false);
+        // Le scelte della finestra d'inizio restano per la prossima partita,
+        // che parte da una ricarica
+        salvaScelte(players) {
+            try {
+                localStorage.setItem('scorciatoie-config', JSON.stringify({
+                    giocatori: players.map(p => ({ nome: p.name, bot: p.isBot })),
+                    obiettivo: this.tournament.enabled ? this.tournament.targetPoints : 0,
+                    doppio: this.options.doubleRollExtra,
+                    esatto: this.options.exactFinish,
+                    bivi: this.options.branchExitMode,
+                    autoPlay: this.autoPlay
+                }));
+            } catch (e) { }
+        },
+
+        // Rimette nella finestra d'inizio le scelte salvate; false se non ce ne sono
+        caricaScelte() {
+            let cfg = null;
+            try {
+                cfg = JSON.parse(localStorage.getItem('scorciatoie-config'));
+            } catch (e) { }
+            if (!cfg || !Array.isArray(cfg.giocatori) || cfg.giocatori.length < 2 || cfg.giocatori.length > 4) return false;
+
+            const numSelect = document.getElementById('numPlayersSelect');
+            if (numSelect) numSelect.value = String(cfg.giocatori.length);
+            if (typeof updatePlayerConfigRows === 'function') updatePlayerConfigRows();
+            cfg.giocatori.forEach((g, i) => {
+                const nameInput = document.getElementById(`pname_${i}`);
+                const typeSelect = document.getElementById(`ptype_${i}`);
+                if (nameInput && typeof g.nome === 'string' && g.nome) nameInput.value = g.nome;
+                if (typeSelect) typeSelect.value = g.bot ? 'bot' : 'human';
+            });
+            const selTarget = document.getElementById('selTournamentTarget');
+            if (selTarget && [0, 300, 500, 1000, 2000].indexOf(cfg.obiettivo) !== -1) selTarget.value = String(cfg.obiettivo);
+            const chkDouble = document.getElementById('chkDoubleExtra');
+            if (chkDouble && typeof cfg.doppio === 'boolean') chkDouble.checked = cfg.doppio;
+            const chkExact = document.getElementById('chkExactFinish');
+            if (chkExact && typeof cfg.esatto === 'boolean') chkExact.checked = cfg.esatto;
+            const selBranch = document.getElementById('selBranchExitMode');
+            if (selBranch && (cfg.bivi === 'cross' || cfg.bivi === 'own')) selBranch.value = cfg.bivi;
+            if (typeof cfg.autoPlay === 'boolean') {
+                this.autoPlay = cfg.autoPlay;
+                const chkAuto = document.getElementById('chkAutoPlayMini');
+                if (chkAuto) chkAuto.checked = cfg.autoPlay;
+            }
+            return true;
+        },
+
+        // ─── EVENTI DI ANALYTICS ───
+        // Ogni mano e' una partita (mano_torneo: mano). La prima mano di un
+        // torneo manda invece l'inizio del torneo, e la mano che lo chiude la
+        // fine del torneo: un evento solo, che cominci o finisca anche la mano
+        // e' sottinteso (come il burraco). Le partite fra soli computer non
+        // contano. La variante e' giocatori/obiettivo: 3/1000, 2/singola.
+        varianteGA() {
+            const n = this.players ? this.players.length : 0;
+            return n + '/' + (this.tournament.enabled ? this.tournament.targetPoints : 'singola');
+        },
+
+        conUmanoGA() {
+            return !!(this.players && this.players.some(p => !p.isBot));
+        },
+
+        dettagliGA() {
+            const umano = this.players.find(p => !p.isBot);
+            const punti = (umano && this.tournament.enabled) ? (this.tournament.scores[umano.name] || 0) : 0;
+            return 'mano=' + (this.tournament.enabled ? this.tournament.currentMatch : 1) + ';punti=' + punti;
+        },
+
+        // Alla prima mossa della mano: da li' la partita e' cominciata davvero
+        inizioManoGA() {
+            if (!this.manoGA || this.manoGA.aperta) return;
+            this.manoGA.aperta = true;
+            if (!window.sitoPartita || !this.conUmanoGA()) return;
+            if (this.tournament.enabled && this.tournament.currentMatch === 1) {
+                this.tournament.inizioGA = true;
+                window.sitoPartita.torneo.inizio(this.varianteGA());
+            } else {
+                window.sitoPartita.inizio(this.varianteGA());
+            }
+        },
+
+        // A mano finita: esito per i giocatori umani
+        fineManoGA(winner, isChampion, champion) {
+            if (!window.sitoPartita || !this.conUmanoGA() || !this.manoGA || !this.manoGA.aperta) return;
+            if (isChampion && this.tournament.enabled) {
+                if (this.tournament.chiusoGA) return;
+                this.tournament.chiusoGA = true;
+                window.sitoPartita.torneo.fine(champion.isBot ? 'lost' : 'won', this.varianteGA());
+            } else {
+                window.sitoPartita.fine(winner.isBot ? 'lost' : 'won', { dettagli: this.dettagliGA() });
+            }
+        },
+
+        // Partita lasciata per una nuova: la mano a meta', oppure il torneo
+        // fra una mano e l'altra (la mano li' ha gia' avuto la sua fine)
+        abbandonoGA() {
+            if (!window.sitoPartita || !this.conUmanoGA()) return;
+            const torneoAperto = this.tournament.enabled && this.tournament.inizioGA &&
+                !this.tournament.chiusoGA && !this.tournament.isFinished;
+            const manoAperta = this.manoGA && this.manoGA.aperta && !this.isGameOver;
+            if (torneoAperto && (manoAperta || this.isGameOver)) {
+                this.tournament.chiusoGA = true;
+                window.sitoPartita.torneo.fine('abandoned', this.varianteGA());
+            } else if (manoAperta) {
+                window.sitoPartita.fine('abandoned', { dettagli: this.dettagliGA() });
+            }
         },
 
         getCellCenterPx(trackId, stepIdx) {
@@ -1498,6 +1636,8 @@
         },
 
         executeMove(player, totalSteps, isDouble) {
+            this.inizioManoGA();
+            this.fumettoDoppio = null; // il tiro nuovo spegne l'invito del doppio
             this.isMoving = true;
             let stepsRemaining = totalSteps;
             const stepDuration = 180;
@@ -1674,9 +1814,17 @@
 
             if (isDouble && this.options.doubleRollExtra && !this.isGameOver) {
                 this.logEvent(`🎯 ${player.name} ${TXT.extraRollDouble}`, 'success');
+                const tiraDaSolo = player.isBot || this.autoPlay;
+                this.fumettoDoppio = {
+                    player: player,
+                    testo: tiraDaSolo ? TXT.fumettoDoppioBot : TXT.fumettoDoppioUmano,
+                    start: performance.now()
+                };
+                SoundEngine.playDouble();
                 this.updateTurnUI();
-                if (player.isBot || this.autoPlay) {
-                    setTimeout(() => this.triggerBotOrAutoTurn(), 600);
+                if (tiraDaSolo) {
+                    // Pausa più lunga del solito, perché il fumetto si faccia leggere
+                    setTimeout(() => this.triggerBotOrAutoTurn(), 1300);
                 }
             } else if (!this.isGameOver) {
                 this.currentPlayerIdx = (this.currentPlayerIdx + 1) % this.players.length;
@@ -1730,6 +1878,7 @@
                 const topScore = this.tournament.scores[topPlayer.name] || 0;
                 const isChampion = topScore >= this.tournament.targetPoints;
                 const isHumanChampion = !topPlayer.isBot;
+                this.fineManoGA(winner, isChampion, topPlayer);
 
                 if (isChampion) {
                     this.tournament.isFinished = true;
@@ -1812,6 +1961,7 @@
                     leaderboardBox.innerHTML = tableHtml;
                 }
             } else {
+                this.fineManoGA(winner, false, null);
                 if (btnNextMatch) btnNextMatch.style.display = 'none';
                 if (leaderboardBox) leaderboardBox.style.display = 'none';
 
@@ -1971,6 +2121,83 @@
             this.drawStartFinishMarkers(ctx);
             this.drawPlayers(ctx);
             this.drawFloatingSprites(ctx);
+            this.drawFumettoDoppio(ctx);
+        },
+
+        // Fumetto dorato sotto la pedina che ha fatto doppio; segue la pedina
+        // e resta finché non parte il tiro successivo (executeMove lo spegne).
+        // Sta sotto, e non sopra, per non coprire il cartellino "+N passi"
+        // di un bivio preso con lo stesso tiro.
+        fumettoDoppio: null,
+
+        drawFumettoDoppio(ctx) {
+            const f = this.fumettoDoppio;
+            if (!f || this.isGameOver) return;
+            const p = f.player;
+            const t = performance.now() - f.start;
+
+            // Comparsa con rimbalzo, poi un respiro lento
+            let scale;
+            if (t < 180) scale = 0.4 + (t / 180) * 0.75;
+            else if (t < 300) scale = 1.15 - ((t - 180) / 120) * 0.15;
+            else scale = 1 + Math.sin((t - 300) / 260) * 0.04;
+
+            ctx.save();
+            ctx.font = 'bold 13px system-ui, -apple-system, sans-serif';
+            const badgeW = ctx.measureText(f.testo).width + 24;
+            const badgeH = 26;
+            const gap = 22; // dal centro della pedina alla punta del fumetto
+
+            // Sotto la pedina; sopra se in fondo al tabellone non c'è posto
+            const sotto = (p.renderY + gap + badgeH + 6) <= BOARD_HEIGHT;
+            const x = Math.max(badgeW / 2 + 4, Math.min(BOARD_WIDTH - badgeW / 2 - 4, p.renderX));
+
+            ctx.translate(x, p.renderY);
+            ctx.scale(scale, scale);
+
+            const bx = -badgeW / 2;
+            const by = sotto ? gap + 5 : -gap - 5 - badgeH;
+            const r = 13;
+
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.45)';
+            ctx.shadowBlur = 8;
+            ctx.shadowOffsetY = 3;
+
+            ctx.beginPath();
+            if (ctx.roundRect) {
+                ctx.roundRect(bx, by, badgeW, badgeH, r);
+            } else {
+                ctx.rect(bx, by, badgeW, badgeH);
+            }
+            ctx.fillStyle = '#ffd700';
+            ctx.fill();
+            ctx.shadowColor = 'transparent';
+            ctx.lineWidth = 1.8;
+            ctx.strokeStyle = '#b8860b';
+            ctx.stroke();
+
+            // Punta del fumetto verso la pedina (spostata se il fumetto è stato
+            // accostato al bordo)
+            const px = Math.max(bx + r, Math.min(bx + badgeW - r, p.renderX - x));
+            ctx.beginPath();
+            if (sotto) {
+                ctx.moveTo(px - 6, by + 1);
+                ctx.lineTo(px, by - 6);
+                ctx.lineTo(px + 6, by + 1);
+            } else {
+                ctx.moveTo(px - 6, by + badgeH - 1);
+                ctx.lineTo(px, by + badgeH + 6);
+                ctx.lineTo(px + 6, by + badgeH - 1);
+            }
+            ctx.closePath();
+            ctx.fillStyle = '#ffd700';
+            ctx.fill();
+
+            ctx.fillStyle = '#1a1a2e';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(f.testo, 0, by + badgeH / 2 + 1);
+            ctx.restore();
         },
 
         drawGridBackground(ctx, w, h) {

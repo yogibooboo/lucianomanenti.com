@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+	<meta charset="utf-8">
+
+	<!-- Funzioni comuni del sito: GA, icone, audio, navigazione, riquadro di consenso -->
+	<script src="../../site.js"></script>
+
+	<title>Metronomo Online Gratis - Semplice e Preciso - lucianomanenti.com</title>
+	<link rel="canonical" href="https://www.lucianomanenti.com/musica/metronomo/">
+	<link rel="alternate" hreflang="it" href="https://www.lucianomanenti.com/musica/metronomo/">
+	<link rel="alternate" hreflang="en" href="https://www.lucianomanenti.com/musica/metronomo/index-en.html">
+	<link rel="alternate" hreflang="x-default" href="https://www.lucianomanenti.com/musica/metronomo/">
+	<link rel="manifest" href="/favicon/site.webmanifest">
+
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="Description" content="Metronomo online gratuito con funzioni avanzate: design a pendolo, diverse metriche e suddivisioni.">
+
+	<link rel="stylesheet" href="metro.css?v=1.5">
+
+	<script>
+		// spazi: false = niente promozioni ai lati: le pagine di musica restano pulite
+		window.gameConfig = { gaPrefix: 'MET_', spazi: false };
+	</script>
+</head>
+
+
+<body>
+
+	<div class="main-container">
+
+		<div id="campogioco">
+			<div class="lang-switch-game">
+				<a href="index.html" class="active">IT</a>
+				<a href="index-en.html">EN</a>
+			</div>
+
+			<div id="metronomo">
+				<canvas id="canvasmetronomo" width="400" height="700">
+				</canvas>
+				<canvas id="canvasimposta" width="600" height="700">
+				</canvas>
+
+				<!-- Volume Slider -->
+				<div class="volume-container">
+					<input type="range" id="volume-control" min="0" max="1" step="0.01" value="0.8">
+					<div class="volume-label">Volume</div>
+				</div>
+
+				<div id="bstart" class="pulsante2" style="top: 640px; left: 400px;">AVVIA</div>
+
+			</div> <!--metronomo-->
+
+			<div id="bottom-nav">
+				<div class="btn-nav-group">
+					<a href="regole-metronomo.html" target="_blank" class="btn-nav btn-nav-help">Istruzioni</a>
+					<a href="../index.html" class="btn-nav btn-nav-music">&#9834; Musica</a>
+					<a href="../../index.html" class="btn-nav btn-nav-home">TUTTI I GIOCHI</a>
+					<a href="../../aboutme.html" target="_blank" class="btn-nav btn-nav-contact">Scrivetemi</a>
+				</div>
+				<div class="nav-links-small">
+					<a href="../../privacy.html" target="_blank">Privacy</a>
+					<a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)">Gestisci Cookie</a>
+				</div>
+			</div>
+
+		</div> <!-- campogioco-->
+	</div> <!-- main-container -->
+
+	<canvas id="wc" width="512" height="256">
+	</canvas>
+
+	<script src="../../jquery-2.1.1.js"></script>
+	<script src="metrocode.js?v=1.4"></script>
+</body>
+
+</html>

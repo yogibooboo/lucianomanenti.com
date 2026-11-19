@@ -2,50 +2,26 @@
 <html lang="it">
 
 <head>
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9335537153013492"
-        crossorigin="anonymous"></script>
-    <script>
-        // Fix sicurezza per evitare crash da cross-origin su window.opener
-        (function() { try { if (!window.opener) return; var test = window.opener.document; if (!window.opener.game) { window.opener = null; } } catch(e) { window.opener = null; } })();
-    </script>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="utf-8">
+
+    <!-- Funzioni comuni del sito: GA, icone, audio, navigazione, riquadro di consenso -->
+    <script src="site.js"></script>
+
     <title>Sudoku Luciano Online Gratis - lucianomanenti.com</title>
-    <link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
-    <link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
-    <link rel="shortcut icon" href="favicon/favicon.ico">
-    <link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+    <link rel="canonical" href="https://www.lucianomanenti.com/sudoku.html">
+    <link rel="alternate" hreflang="it" href="https://www.lucianomanenti.com/sudoku.html">
+    <link rel="alternate" hreflang="en" href="https://www.lucianomanenti.com/sudoku-en.html">
+    <link rel="alternate" hreflang="x-default" href="https://www.lucianomanenti.com/sudoku.html">
     <link rel="manifest" href="favicon/site.webmanifest">
 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="Description"
         content="Gioca a Sudoku gratis online senza registrazione. Tre livelli di difficoltà, note a matita, suggerimenti e soluzione sempre unica garantita.">
-    <meta http-Equiv="Cache-Control" Content="no-cache">
-    <meta http-Equiv="Pragma" Content="no-cache">
-    <meta http-Equiv="Expires" Content="0">
 
-    <link rel="stylesheet" href="sudoku.css?v=2.9" />
+    <link rel="stylesheet" href="sudoku.css?v=2.10" />
 
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
     <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag() { dataLayer.push(arguments); }
-        gtag('js', new Date());
-        gtag('config', 'G-WRBDRDQ4L8');
-    </script>
-    <script>
-        window.gameConfig = {
-            gaPrefix: 'SUDOKU_',
-            hideLegalFooter: true,
-            adsenseActive: true,
-            adsenseSlots: {
-                '300x600': '5266697442',
-                '160x600': '1167670336',
-                '300x250': '8471445288',
-                '160x250': '8663016975'
-            }
-        };
-        window.currentLang = 'it';
+        window.gameConfig = { gaPrefix: 'SUDOKU_' };
     </script>
 </head>
 
@@ -56,10 +32,6 @@
     <div id="sprite-cursore"></div>
 
     <div class="main-container">
-        <!-- Sidebar per annunci (gestite dal layout engine) -->
-        <div id="sidebar-left" class="sidebar"></div>
-        <div id="sidebar-right" class="sidebar"></div>
-
         <!-- Campo di gioco principale centrato e riscalato -->
         <div id="campogioco">
             <!-- Schermo overlay per modali -->
@@ -105,7 +77,6 @@
 
             <!-- Richiamo a Calcolo Enigmatico: stesso pubblico da enigmistica -->
             <a href="calcolo.html" id="promo-calcolo" title="Calcolo Enigmatico Luciano">
-                <span class="promo-badge">NUOVO</span>
                 <span class="promo-testo">Ti piace il Sudoku? Prova <strong>Calcolo Enigmatico</strong></span>
                 <span class="promo-freccia">&rsaquo;</span>
             </a>
@@ -170,6 +141,12 @@
 
             <!-- 1. Modale Inizio Gioco -->
             <div id="modale-inizio" class="form-sudoku">
+                <div class="modale-inizio-lang">
+                    <a href="sudoku.html" class="active">IT</a>
+                    <a href="sudoku-en.html">EN</a>
+                </div>
+                <a href="regole-sudoku.html" target="_blank" class="pulsante-top modale-inizio-regole">REGOLE</a>
+                <a href="index.html" class="pulsante-top pulsante-home-sudoku modale-inizio-home">TUTTI I GIOCHI</a>
                 <button id="btn-riprendi" class="btn-continua" style="display: none; width: 100%; max-width: 250px; margin: 0 auto 20px auto; background: #27ae60; border-color: #1e8449; color: white;">RIPRENDI LA PARTITA PRECEDENTE</button>
 
                 <div class="form-sudoku-title">Nuova Partita a Sudoku</div>
@@ -196,7 +173,7 @@
             <div id="haivinto" class="form-sudoku modale-vittoria">
                 <div class="confirm-message" id="vittoria-messaggio" style="margin: 0 0 8px 0; line-height: 1.3;">COMPLIMENTI!<br>Schema completato!</div>
                 <div id="vittoria-dettagli" style="color: #ffd700; font-size: 15px; font-weight: bold; text-align: center; margin-bottom: 16px; text-shadow: 1px 1px 2px #000;"></div>
-                <button onclick="location.reload()" class="btn-continua" style="width: 280px; height: 44px; font-size: 16px; margin: 0 auto;">NUOVA PARTITA</button>
+                <button onclick="ricaricaPartita()" class="btn-continua" style="width: 280px; height: 44px; font-size: 16px; margin: 0 auto;">NUOVA PARTITA</button>
             </div>
 
             <!-- 3. Modale di Conferma Abbandono Partita (bassa e larga, banner sopra) -->
@@ -208,29 +185,10 @@
                 </div>
             </div>
 
-            <!-- 4. Modale Regole -->
-            <div id="modale-regole" class="form-sudoku" style="justify-content: flex-start;">
-                <div class="form-sudoku-title">Come si Gioca</div>
-                <div style="font-size: 14px; line-height: 1.7; color: #e8e8e8; text-align: left; overflow-y: auto; padding: 0 10px;">
-                    <p style="margin-top: 0;">Riempi la griglia in modo che ogni <b>riga</b>, ogni <b>colonna</b> e ogni <b>riquadro 3&times;3</b> contenga tutti i numeri da 1 a 9, senza ripetizioni.</p>
-                    <p><b>Seleziona una casella vuota</b> e inserisci un numero con la tastiera o con i pulsanti a destra. I numeri segnalati come errati vengono mostrati in rosso e contati come errori: le due opzioni sotto i pulsanti scelgono se segnalare solo i conflitti evidenti con i numeri visibili (default) o tutti gli errori rispetto alla soluzione. Ogni errore segnalato aggiunge una <b>penalit&agrave; al tempo</b>: <b>10 secondi</b> se in conflitto con numeri gi&agrave; visibili, <b>30 secondi</b> se emerge solo dal confronto con la soluzione.</p>
-                    <p><b>Numero armato</b>: clicca un pulsante numerico, un tasto 1-9 o una casella gi&agrave; piena per "armare" quel numero (resta agganciato al cursore). Le caselle con quel numero si colorano verde scuro, righe/colonne/riquadri collegati verde chiaro, e le altre caselle piene grigie: un colpo d'occhio su dove pu&ograve; andare. Clicca una casella vuota per piazzarlo subito (resta armato per i successivi); ricliccando l'ultima casella piazzata, se il numero &egrave; risultato errato, lo toglie. Se hai armato cliccando una casella gi&agrave; piena, questa resta gialla: &egrave; quella che Cancella svuoter&agrave;.</p>
-                    <p><b>&#9999;&#65039; Matita</b>: attiva le note per annotare i candidati possibili in una casella (disarma automaticamente un eventuale numero armato).<br>
-                    <b>&#10060; Cancella</b>: svuota la casella selezionata (o quella gialla in modalit&agrave; armata).<br>
-                    <b>&#8630; Annulla</b>: annulla l'ultima mossa (anche Ctrl+Z).<br>
-                    <b>&#128161; Suggerimento</b>: evidenzia una casella deducibile dai numeri visibili (o un errore, se presente) e apre un pannello con tre scelte: <b>Spiegazione</b> mostra il ragionamento logico, <b>Inserisci il numero</b> riempie la casella, <b>Chiudi</b> annulla senza modificare nulla. Aprire un suggerimento (casella evidenziata) costa <b>10 secondi</b>; chiedere la <b>Spiegazione</b> o <b>Inserire il numero</b> aggiunge <b>altri 20 secondi</b> (una sola volta, anche se le usi entrambe).</p>
-                    <p style="color: #aaa; font-size: 12px;">La partita viene salvata automaticamente: se chiudi la pagina puoi riprendere da dove eri rimasto.</p>
-                </div>
-                <div style="display: flex; gap: 12px; margin-top: 15px; align-items: center;">
-                    <a href="regole-sudoku.html" target="_blank" rel="opener" class="btn-continua" style="text-decoration: none; display: inline-block; background: #27ae60; border-color: #1e8449; color: white;">GUIDA COMPLETA</a>
-                    <button onclick="chiudiModali()" class="btn-continua">CHIUDI</button>
-                </div>
-            </div>
-
-            <!-- Link di navigazione ed utilità a fondo pagina -->
+            <!-- Link di navigazione ed utilità in alto a sinistra -->
             <div class="link-utility-bottom">
                 <a href="aboutme.html" target="_blank" id="btn-scrivetemi-sudoku" class="pulsante-top">Scrivetemi</a>
-                <button id="btn-regole-top" class="pulsante-top">Come si Gioca</button>
+                <a href="regole-sudoku.html" target="_blank" id="btn-regole-top" class="pulsante-top">REGOLE</a>
             </div>
 
             <!-- Link Legali (Privacy e Cookie) -->
@@ -257,30 +215,8 @@
         </div><!-- /campogioco -->
     </div>
 
-    <!-- Script condivisi dal sito -->
-    <script src="site.js?v=1.1"></script>
-    <!-- Layout engine per ridimensionare la finestra del gioco -->
-    <script src="game-layout.js?v=4.6"></script>
     <!-- Logica del Sudoku -->
-    <script src="sudoku.js?v=2.14"></script>
-    <script>
-        (function () {
-            var nascosto = false;
-            var observer = new MutationObserver(function () {
-                if (nascosto) return;
-                var divs = document.querySelectorAll('body > div');
-                for (var i = 0; i < divs.length; i++) {
-                    if (divs[i].shadowRoot && !divs[i].className && (divs[i].getAttribute('style') || '').length > 5000) {
-                        divs[i].style.setProperty('display', 'none', 'important');
-                        nascosto = true;
-                        observer.disconnect();
-                        return;
-                    }
-                }
-            });
-            observer.observe(document.body, { childList: true });
-        })();
-    </script>
+    <script src="sudoku.js?v=2.17"></script>
 </body>
 
 </html>

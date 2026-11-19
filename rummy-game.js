@@ -1,4 +1,4 @@
-// rummy-game.js v1.0
+// rummy-game.js
 // Gin Rummy — game state management, AI opponent
 
 'use strict';

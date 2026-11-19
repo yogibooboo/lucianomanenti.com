@@ -180,7 +180,7 @@ let ultimoMouseX = -1;
 let ultimoMouseY = -1;
 let timerId = null;
 let cronologia = [];       // stack per undo: { lettera, cifraPrec }
-let calcAperta = false;    // calcolatrice a schermo: dirotta la tastiera (vedi === CALCOLATRICE ===)
+let calcAttiva = false;    // la calcolatrice ha la tastiera (vedi === CALCOLATRICE ===)
 let partitaFinita = false;
 
 // Opzione di segnalazione errori (persistente in localStorage)
@@ -606,6 +606,7 @@ function nuovaPartita(diff) {
         renderTutto();
         avviaTimer();
         salvaPartita();
+        if (window.sitoPartita) window.sitoPartita.inizio(difficolta);
         setMessaggio(CALC_LANG.partitaInCorso);
         riproduciAudio('sounds/scala40/ding.mp3');
     }, 50);
@@ -1376,8 +1377,6 @@ function suggerimento() {
 }
 
 function apriPannelloHint() {
-    // Occupano lo stesso spazio: vedi apriCalcolatrice()
-    if (calcAperta) chiudiCalcolatrice();
     const pann = document.getElementById('pannello-hint');
     document.getElementById('hint-testo').innerHTML =
         (hintTarget.tipo === 'errore') ? CALC_LANG.hintErrore : CALC_LANG.hintDeduzione;
@@ -1449,13 +1448,16 @@ function applicaHint() {
 
 // === CALCOLATRICE ===
 // Serve per i conti che a mente costano davvero: una moltiplicazione 2x2 cifre,
-// una divisione, quando manca un solo numero per chiudere una riga. Si apre, si
-// fa il conto e si chiude, quindi non ha memoria e non si salva da nessuna
-// parte: al reload riparte da zero come qualunque calcolatrice spenta.
+// una divisione, quando manca un solo numero per chiudere una riga. Dal
+// 17/11/2026 e' fissa in fondo alla colonna dei comandi, al posto del riquadro
+// a rotazione; prima si apriva con un tasto sopra la colonna. Non ha memoria e
+// non si salva da nessuna parte: al reload riparte da zero.
 // Non e' un aiuto e non entra nelle statistiche: non dice niente sullo schema,
 // fa solo l'aritmetica che il giocatore farebbe su un foglio.
-// (calcAperta e' dichiarata con le altre globali in cima: la leggono anche
-// apriPannelloHint e il gestore della tastiera, che stanno piu' su.)
+// La tastiera e' una sola e le cifre servono anche a assegnare le lettere:
+// la calcolatrice la prende quando ci si clicca dentro (bordo acceso) e la
+// rende con un click fuori o con Esc. (calcAttiva e' dichiarata con le altre
+// globali in cima: la legge il gestore della tastiera, che sta piu' su.)
 let calcCorrente = '0';    // numero in digitazione, come stringa
 let calcAccumulato = null; // primo operando in attesa
 let calcOperatore = null;  // operatore in attesa
@@ -1538,26 +1540,10 @@ function calcTasto(t) {
     calcMostra();
 }
 
-function apriCalcolatrice() {
-    // Calcolatrice e suggerimento occupano lo stesso spazio: l'ultimo che si
-    // apre chiude l'altro, altrimenti si sovrappongono e non si capisce quale
-    // dei due sta rispondendo ai tasti.
-    annullaSuggerimento(true);
-    // annullaSuggerimento esce subito se non c'e' un hint in corso, ma il pannello
-    // puo' essere aperto lo stesso: qui lo chiudo comunque, altrimenti i due
-    // riquadri finiscono uno sopra l'altro nello stesso posto.
-    chiudiPannelloHint();
-    calcAperta = true;
-    calcCorrente = '0'; calcAccumulato = null; calcOperatore = null; calcNuovoNumero = true;
-    document.getElementById('pannello-calc').classList.add('aperto');
-    calcMostra();
-    renderTutto();
-}
-
-function chiudiCalcolatrice() {
-    calcAperta = false;
-    document.getElementById('pannello-calc').classList.remove('aperto');
-    renderTutto();
+function attivaCalcolatrice(si) {
+    calcAttiva = !!si;
+    const p = document.getElementById('pannello-calc');
+    if (p) p.classList.toggle('attiva', calcAttiva);
 }
 
 // === PENALITÀ SUL TEMPO ===
@@ -1625,18 +1611,7 @@ function controllaVittoria() {
     fascia.style.display = record ? 'block' : 'none';
     document.getElementById('haivinto').classList.toggle('con-record', !!record);
 
-    // Analytics fine partita
-    if (typeof gtag === 'function') {
-        const prefix = (window.gameConfig && window.gameConfig.gaPrefix) || '';
-        gtag('event', prefix + 'game_won', {
-            'event_category': 'CalcoloEnigmatico',
-            'difficulty': difficolta,
-            'time_seconds': secondi,
-            'mistakes': erroriCount,
-            'hints': hintCount,
-            'version': window.scriptVersion || 'unknown'
-        });
-    }
+    if (window.sitoPartita) window.sitoPartita.fine('won', { dettagli: dettagliGA() });
 
     setTimeout(function () {
         document.getElementById('schermo').style.display = 'block';
@@ -1678,7 +1653,7 @@ function vediSchema() {
             '<button type="button" class="btn-min-2">' +
             (window.currentLang === 'en' ? 'BACK TO RESULT' : 'TORNA AL RISULTATO') + '</button>';
         document.getElementById('campogioco').appendChild(pannello);
-        pannello.querySelector('.btn-min-1').addEventListener('click', function () { location.reload(); });
+        pannello.querySelector('.btn-min-1').addEventListener('click', ricaricaPerNuovaPartita);
         pannello.querySelector('.btn-min-2').addEventListener('click', tornaAlRisultato);
     }
     pannello.style.display = 'flex';
@@ -1692,7 +1667,23 @@ function tornaAlRisultato() {
     document.getElementById('haivinto').style.display = 'flex';
 }
 
+// Il parametro `dettagli' di game_end: chiave=valore unite da ';'. Il tempo
+// c'e' perche' lo portava il vecchio CALCOLO_game_won, ed e' la misura del gioco.
+function dettagliGA() {
+    return 'tempo=' + secondi + ';errori=' + erroriCount + ';aiuti=' + hintCount;
+}
+
 // === MODALI ===
+// Un'altra partita = ricaricare la pagina, passando dall'interstitial come
+// negli altri giochi del sito. Il livello scelto resta in localStorage.
+function ricaricaPerNuovaPartita() {
+    if (typeof window.reloadWithInterstitial === 'function') {
+        window.reloadWithInterstitial();
+    } else {
+        location.reload();
+    }
+}
+
 function chiudiModali() {
     document.getElementById('schermo').style.display = 'none';
     document.getElementById('modale-inizio').style.display = 'none';
@@ -1701,7 +1692,7 @@ function chiudiModali() {
     const minimal = document.getElementById('calcolo-minimal-win-panel');
     if (minimal) minimal.style.display = 'none';
     // Rimuove i banner delle modali per evitare annunci obsoleti alla riapertura
-    document.querySelectorAll('#campogioco .finish-banner').forEach(function (b) { b.remove(); });
+    document.querySelectorAll('#campogioco .finish-banner, #campogioco .spazio-sito').forEach(function (b) { b.remove(); });
 }
 
 function apriModaleInizio(mostraRiprendi) {
@@ -1717,6 +1708,7 @@ function apriModaleInizio(mostraRiprendi) {
 
 function riprendiPartita() {
     chiudiModali();
+    if (window.sitoPartita) window.sitoPartita.riprende(difficolta);
     avviaTimer();
     setMessaggio(CALC_LANG.partitaInCorso);
 }
@@ -1732,6 +1724,14 @@ function selezionaDifficolta(diff) {
         const b = document.getElementById('btn-diff-' + d);
         if (b) b.classList.toggle('attiva', d === diff);
     });
+    // Senza una partita in corso il riquadro dei record segue la scelta della
+    // modale: prima restava sul livello predefinito (medi) anche quando la
+    // modale proponeva l'ultimo livello giocato, e mostrava i record sbagliati.
+    // Con una partita in corso (anche solo da riprendere) resta sul suo livello.
+    if (!lettere.length || partitaFinita) {
+        difficolta = diff;
+        renderRecord();
+    }
 }
 
 function confermaEAvviaPartita() {
@@ -1771,7 +1771,7 @@ document.addEventListener('keydown', function (e) {
     // Con la calcolatrice aperta la tastiera e' sua: le cifre finiscono nel
     // display, non sulle lettere dello schema. Chi ha le mani sui tasti per
     // digitare un conto non deve passare al mouse.
-    if (calcAperta) {
+    if (calcAttiva) {
         const k = e.key;
         let t = null;
         if (k >= '0' && k <= '9') t = k;
@@ -1783,7 +1783,7 @@ document.addEventListener('keydown', function (e) {
         else if (k === 'Enter' || k === '=') t = '=';
         else if (k === 'Backspace') t = 'back';
         else if (k === 'Delete' || k.toLowerCase() === 'c') t = 'C';
-        else if (k === 'Escape') { chiudiCalcolatrice(); e.preventDefault(); return; }
+        else if (k === 'Escape') { attivaCalcolatrice(false); e.preventDefault(); return; }
         if (t !== null) { e.preventDefault(); calcTasto(t); }
         return;
     }
@@ -1867,17 +1867,6 @@ function initCalcolo() {
         adjustLayout();
     }
 
-    // Riquadro affiliati sotto NUOVA PARTITA. Parte da qui e non da
-    // DOMContentLoaded perche' initCalcolo attende la chiusura dell'interstitial:
-    // ruotare mentre l'overlay copre la pagina conterebbe impression mai viste.
-    // Non e' AdSense, quindi la rotazione automatica e' legittima.
-    if (typeof setupRotatingAffiliateBanner === 'function') {
-        const boxAff = document.getElementById('banner-rotante');
-        if (boxAff) {
-            setupRotatingAffiliateBanner(boxAff, { intervalMs: 60000 });
-        }
-    }
-
     // Radio button del modo: decidono cosa fa il click su un incrocio
     document.querySelectorAll('input[name="modo-matrice"]').forEach(function (r) {
         r.addEventListener('change', function () {
@@ -1896,13 +1885,17 @@ function initCalcolo() {
     document.getElementById('btn-hint-spiega').addEventListener('click', mostraSpiegazioneHint);
     document.getElementById('btn-hint-applica').addEventListener('click', applicaHint);
     document.getElementById('btn-hint-chiudi').addEventListener('click', function () { annullaSuggerimento(); });
-    document.getElementById('btn-calcolatrice').addEventListener('click', function () {
-        if (calcAperta) chiudiCalcolatrice(); else apriCalcolatrice();
-    });
-    document.getElementById('btn-calc-chiudi').addEventListener('click', chiudiCalcolatrice);
     document.querySelectorAll('#calc-tasti .calc-t').forEach(function (b) {
         b.addEventListener('click', function () { calcTasto(b.dataset.calc); });
     });
+    // La calcolatrice prende la tastiera quando ci si clicca dentro e la lascia
+    // al primo click fuori: in fase di cattura, cosi' arriva prima dei gestori
+    // della matrice e della griglia, che a volte fermano la propagazione.
+    document.addEventListener('mousedown', function (e) {
+        const dentro = !!(e.target.closest && e.target.closest('#pannello-calc'));
+        if (dentro !== calcAttiva) attivaCalcolatrice(dentro);
+    }, true);
+    calcMostra();
     document.getElementById('btn-vedi-schema').addEventListener('click', vediSchema);
     document.getElementById('btn-nuova-partita').addEventListener('click', richiediNuovaPartita);
     document.getElementById('btn-riprendi').addEventListener('click', riprendiPartita);
@@ -1919,7 +1912,8 @@ function initCalcolo() {
     document.getElementById('btn-si-termina').addEventListener('click', function () {
         if (timerId) clearInterval(timerId); // evita che il salvataggio periodico ricrei la partita
         localStorage.removeItem('calcolo-save');
-        location.reload();
+        if (window.sitoPartita) window.sitoPartita.fine('abandoned', { dettagli: dettagliGA() });
+        ricaricaPerNuovaPartita();
     });
 
     // Opzione segnalazione errori (persistente)

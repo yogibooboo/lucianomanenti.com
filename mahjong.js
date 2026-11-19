@@ -412,8 +412,9 @@
         highScore: 0
     };
 
-    // Audio Web Audio API
-    let audioEnabled = localStorage.getItem('mahjong_audio') !== '0';
+    // Audio Web Audio API. Il silenzio lo decide il pulsante del sito
+    // (site.js, window.audioMuted), uguale per tutti i giochi: i suoni qui sono
+    // sintetizzati, quindi il gioco guarda la bandierina da se'.
     let audioCtx = null;
 
     // Dimensioni di rendering
@@ -437,7 +438,7 @@
     }
 
     function playSound(type) {
-        if (window.audioMuted || !audioEnabled) return;
+        if (window.audioMuted) return;
         try {
             const ctx = getAudioContext();
             if (!ctx) return;
@@ -1285,6 +1286,8 @@
             }
             saveGlobalStats();
 
+            if (window.sitoPartita) window.sitoPartita.fine('won', { dettagli: dettagliGA() });
+
             // Mostra modale vittoria
             showVictoryModal();
         }
@@ -1435,7 +1438,24 @@
         // Rendering e avvio timer
         renderBoard(solvableBoard);
         startTimer();
+
+        if (window.sitoPartita) window.sitoPartita.inizio(activeLayout);
     }
+
+    // Dettagli della partita per game_end (Analytics)
+    function dettagliGA() {
+        return 'tempo=' + secondsElapsed + ';punti=' + gameScore;
+    }
+
+    // Nuova partita: si ricarica la pagina passando dal sito, che decide se
+    // mostrare prima un intermezzo (oggi spento, con la pubblicita')
+    window.ricaricaPerNuovaPartita = function () {
+        if (typeof window.reloadWithInterstitial === 'function') {
+            window.reloadWithInterstitial();
+        } else {
+            location.reload();
+        }
+    };
 
     // === GESTIONE MODALI & VIE DI FUGA ===
     window.apriModaleInizio = function () {
@@ -1521,19 +1541,11 @@
         if (typeof window.initAudioToggle === 'function') {
             window.initAudioToggle('#btn-audio');
         }
+        // Riaccendendo l'audio, un suono breve conferma che funziona
         const btnAudio = document.getElementById('btn-audio');
         if (btnAudio) {
             btnAudio.addEventListener('click', () => {
-                if (typeof window.audioMuted !== 'undefined') {
-                    audioEnabled = !window.audioMuted;
-                } else {
-                    audioEnabled = !audioEnabled;
-                    btnAudio.classList.toggle('muted', !audioEnabled);
-                }
-                localStorage.setItem('mahjong_audio', audioEnabled ? '1' : '0');
-                if (audioEnabled) {
-                    playSound('select');
-                }
+                if (!window.audioMuted) playSound('select');
             });
         }
 
@@ -1607,10 +1619,10 @@
 
         const btnSiTermina = document.getElementById('btn-si-termina');
         if (btnSiTermina) {
+            // La conferma compare solo a partita in corso: e' un abbandono
             btnSiTermina.addEventListener('click', () => {
-                document.querySelectorAll('#campogioco .finish-banner').forEach(b => b.remove());
-                document.getElementById('confermatermina').style.display = 'none';
-                window.apriModaleInizio();
+                if (window.sitoPartita) window.sitoPartita.fine('abandoned', { dettagli: dettagliGA() });
+                window.ricaricaPerNuovaPartita();
             });
         }
 
@@ -1653,6 +1665,7 @@
 
         // Tasti di scelta rapida da tastiera
         window.addEventListener('keydown', (e) => {
+            if (e.altKey) return; // Alt+lettera resta al browser
             if (e.key === 'h' || e.key === 'H') provideHint();
             if (e.key === 'z' || e.key === 'Z' || (e.ctrlKey && e.key === 'z')) undoMove();
             if (e.key === 's' || e.key === 'S') onShuffleButtonClick();

@@ -58,6 +58,37 @@ var INTERSTITIAL_SLOT_FLEXIBLE  = '5075879034';   // slot "interflex" (Display r
 var ADSENSE_GLOBAL_ENABLED =false; //Interruttore di sicurezza principale
 var ADSENSE_ONLY_LEFT = true;       // Se true, AdSense carica solo a sinistra
 
+// I quattro identificativi di slot AdSense erano scritti a mano in 58 pagine,
+// con gli stessi quattro numeri in tutte: nessuna eccezione misurata. Da qui
+// valgono per difetto, e una pagina puo' ancora scavalcarli dichiarando il suo
+// gameConfig.adsenseSlots, come gia' si puo' fare con adsenseClient.
+// machiavelli.html e machiavelli-en.html dichiarano adsenseSlots: {} di
+// proposito: sono senza colonne e senza pubblicita', e senza quella riga
+// erediterebbero questi slot e comincerebbero a chiedere annunci.
+var ADSENSE_SLOT_DEFAULT = {
+    '300x600': '5266697442',
+    '160x600': '1167670336',
+    '300x250': '8471445288',
+    '160x250': '8663016975'
+};
+
+// adsenseActive era dichiarato a mano in tutte e 60 le pagine che caricano
+// questo file, e in tutte e 60 valeva true: non distingueva niente. Da qui
+// vale "si" per difetto, e una pagina lo spegne dichiarando
+// gameConfig.adsenseActive: false.
+// Resta la richiesta che gameConfig esista: una pagina che carichi questo file
+// senza dichiararlo non chiede annunci, esattamente come prima. Oggi in
+// perimetro non ce n'e' nessuna (l'unica che lo caricava senza gameConfig era
+// hanon/hanon.html, e li' il tag punta a un file che non esiste), ma la guardia
+// resta perche' basta una pagina nuova per cominciare a chiedere annunci senza
+// volerlo.
+// Attenzione: questo campo non ha mai voluto dire "questa pagina ha gli
+// annunci". machiavelli.html non ne ha e teneva adsenseActive: true. Chi li
+// toglie di proposito usa adsenseSlots: {}, come fa machiavelli.
+function adsenseVoluto() {
+    return !!(window.gameConfig && window.gameConfig.adsenseActive !== false);
+}
+
 // Controllo attivazione blocco annunci su richiesta
 var adsDisabled = localStorage.getItem('ads_disabled') === '1';
 if (adsDisabled) {
@@ -148,6 +179,46 @@ function isAdSenseShieldActive() {
     return Date.now() < parseInt(shieldUntil);
 }
 
+// ─── CARICATORE ADSENSE ──────────────────────────────────────────────────────
+// Era un tag <script async> scritto a mano nell'<head> di 62 pagine, con un
+// solo identificativo cliente. Sei pagine (burraco, codice-segreto, woowoo2,
+// IT ed EN) avevano invece un caricatore da codice che in dev_mode non parte:
+// senza quello, adsbygoogle.js si carica comunque e si inserisce da se' uno
+// slot "auto ads", che nei test ONLINE verrebbe servito davvero, con
+// impression vere sulle pagine di prova. Quella forma e' questa, e da qui vale
+// per tutte le pagine man mano che vengono convertite.
+//
+// Sta in game-layout.js e non in site.js per tre motivi:
+//  1. qui c'e' ADSENSE_GLOBAL_ENABLED, quindi durante un bando nessuna pagina
+//     contatta Google, e si riaccende tutto con un booleano in un file solo;
+//  2. site.js e' la PRIMA cosa dell'<head>: il tag di una pagina non ancora
+//     convertita sta piu' sotto e non e' ancora nel DOM, quindi la guardia di
+//     coesistenza qui sotto non potrebbe funzionare, e si caricherebbe una
+//     seconda copia della libreria;
+//  3. i confini restano netti: site.js vale per tutto il sito (comprese le
+//     pagine di testo, che non devono avere pubblicita'), game-layout.js vale
+//     solo per le pagine coi banner.
+//
+// La condizione e' la stessa che decide gli slot piu' sotto (var adsenseActive),
+// piu' la guardia di coesistenza. Il pezzo che riguarda la pagina sta in
+// adsenseVoluto() qui sopra: il valore per difetto e' "si", ma serve che la
+// pagina abbia un gameConfig, perche' basta una pagina che carichi questo file
+// senza definirlo per cominciare a chiedere annunci senza volerlo. Oggi in
+// perimetro non ce n'e' nessuna: l'unica che lo carica senza gameConfig e'
+// hanon/hanon.html, e li' il tag punta a hanon/game-layout.js, che non esiste,
+// quindi il file non gira nemmeno. Una prima stesura di questo commento diceva
+// che erano tre pagine: le altre due (banner/demo-banner-rotante.html e
+// doc/ga4-events-reference.html) nominano il file nel testo, non lo caricano.
+if (ADSENSE_GLOBAL_ENABLED && !devMode && !isAdSenseShieldActive() &&
+    adsenseVoluto() &&
+    !document.querySelector('script[src*="adsbygoogle.js"]')) {
+    var tagAdsense = document.createElement('script');
+    tagAdsense.async = true;
+    tagAdsense.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9335537153013492';
+    tagAdsense.crossOrigin = 'anonymous';
+    document.head.appendChild(tagAdsense);
+}
+
 // Rifa' le colonne dei banner a pagina aperta, rompendo il sigillo.
 // Serve quando lo scudo cambia stato: finche' non c'era, lo scudo scattava ma
 // non toccava niente, perche' `populateSidebar' esce subito se la colonna e'
@@ -182,7 +253,6 @@ function activateAdSenseShield(isReal) {
             'event_category': 'AdSense_Shield',
             'event_label': isReal ? 'Real_Click' : 'Simulated_Click',
             'internal_user_id': getInternalUserId(),
-            'version': window.scriptVersion || 'unknown',
             'transport_type': 'beacon'
         });
     }
@@ -261,22 +331,6 @@ document.addEventListener('keydown', function (event) {
 // ─────────────────────────────────────────────────────────────────────────────
 // ─────────────────────────────────────────────────────────────────────────────
 
-// Function to get version from the script tag and store it globally
-function getAndStoreScriptVersion() {
-    var scriptTag = document.currentScript;
-    if (scriptTag && scriptTag.src) {
-        var match = scriptTag.src.match(/[?&]v=([^&]+)/);
-        if (match) {
-            window.scriptVersion = match[1];
-            return;
-        }
-    }
-    window.scriptVersion = 'unknown'; // fallback
-}
-
-// Call the function to set the version on script load
-getAndStoreScriptVersion();
-
 // Global function to store language preference and allow the navigation to proceed
 window.setLanguage = function (lang) {
     localStorage.setItem('userLanguage', lang);
@@ -298,10 +352,9 @@ function sendAnalyticsEvent(bannerElement, triggerType) {
             'event_category': 'Banner_Simulation',
             'event_label': dimensions,
             'trigger_type': triggerType,
-            'version': window.scriptVersion || 'unknown',
             'non_interaction': true
         });
-        console.log('GA Evento Inviato: ' + eventName + ' - ' + dimensions + ' - Trigger: ' + triggerType + ' - Version: ' + window.scriptVersion);
+        console.log('GA Evento Inviato: ' + eventName + ' - ' + dimensions + ' - Trigger: ' + triggerType);
     } else {
         console.warn('Funzione gtag non trovata. Google Analytics potrebbe non essere inizializzato.');
     }
@@ -315,37 +368,6 @@ function trackVisibleBanners(triggerType) {
         if (banner.offsetWidth > 0 && banner.offsetHeight > 0) {
             sendAnalyticsEvent(banner, triggerType);
         }
-    }
-}
-function injectLegalLinks() {
-    if (window.gameConfig && window.gameConfig.hideLegalFooter) return;
-    var footer = document.getElementById('game-legal-links');
-    if (!footer) {
-        footer = document.createElement('div');
-        footer.id = 'game-legal-links';
-        footer.style.cssText = 'position: fixed; bottom: 10px; right: 10px; font-size: 11px; font-family: sans-serif; z-index: 10000; color: rgba(255,255,255,0.6); pointer-events: auto; text-align: right; line-height: 1.4;';
-
-        var langSuffix = (window.currentLang === 'en') ? '-en.html' : '.html';
-        var homeUrl = (window.currentLang === 'en') ? 'index-en.html' : 'index.html';
-        var aboutMeUrl = 'aboutme' + langSuffix;
-        var privacyUrl = 'privacy' + langSuffix;
-        var homeLabel = (window.currentLang === 'en') ? 'Home' : 'Home'; // Same for both
-        var aboutMeLabel = (window.currentLang === 'en') ? 'About Me' : 'Chi Sono';
-        var privacyLabel = (window.currentLang === 'en') ? 'Privacy Policy' : 'Privacy Policy';
-
-        footer.innerHTML = '<div style="margin-bottom: 2px;">' +
-            '<a href="' + homeUrl + '" style="color: inherit; text-decoration: none;">' + homeLabel + '</a>' +
-            '<span style="margin: 0 6px; opacity: 0.5;">•</span>' +
-            '<a href="' + aboutMeUrl + '" style="color: inherit; text-decoration: none;">' + aboutMeLabel + '</a>' +
-            '</div>' +
-            '<div>' +
-            '<a href="' + privacyUrl + '" style="color: inherit; text-decoration: none;">' + privacyLabel + '</a>' +
-            '</div>';
-        document.body.appendChild(footer);
-
-        // Add hover effect
-        footer.onmouseover = function () { this.style.color = 'rgba(255,255,255,0.9)'; };
-        footer.onmouseout = function () { this.style.color = 'rgba(255,255,255,0.6)'; };
     }
 }
 
@@ -446,7 +468,7 @@ function showInterstitialIfDue(onClose) {
         var useAdSense = ENABLE_ADSENSE_ON_FINISH &&
                          ADSENSE_GLOBAL_ENABLED &&
                          !isAdSenseShieldActive() &&
-                         window.gameConfig && window.gameConfig.adsenseActive;
+                         adsenseVoluto();
 
         if (useAdSense) {
             // Dimensioni ESPLICITE (vedi commento _adBoxW/_adBoxH sopra): il flex
@@ -782,7 +804,7 @@ function showInterstitialIfDue(onClose) {
         ['🎵 ' + (_isEn ? 'Intervals' : 'Intervalli'), 'musica/intervalli/' + (_isEn ? 'index-en.html' : '')],
         ['🎹 ' + (_isEn ? 'Chords' : 'Accordi'), 'musica/accordi/' + (_isEn ? 'index-en.html' : '')],
         ['🎶 ' + (_isEn ? 'Scales' : 'Scale'), 'musica/scale/' + (_isEn ? 'index-en.html' : '')],
-        ['⏱️ ' + (_isEn ? 'Metronome' : 'Metronomo'), 'metronome' + _suffix]
+        ['⏱️ ' + (_isEn ? 'Metronome' : 'Metronomo'), 'musica/metronomo/' + (_isEn ? 'index-en.html' : '')]
     ];
     musicPages.forEach(function (g) { gridMusic.appendChild(makeNavLink(g[0], g[1])); });
     colOther.appendChild(gridMusic);
@@ -932,6 +954,33 @@ function showInterstitialIfDue(onClose) {
 })();
 // ─────────────────────────────────────────────────────────────────────────────
 
+// Crea le due colonne dei banner se la pagina non le ha nel suo HTML.
+// Il segnale e' .main-container: c'e' esattamente sulle pagine di gioco con le
+// colonne, e non su index, machiavelli e le pagine di testo, quindi qui non si
+// crea niente dove le colonne non ci devono essere.
+// Le pagine che hanno ancora i due div scritti a mano continuano a funzionare:
+// si creano solo quelli che mancano, quindi le due forme dell'HTML valgono
+// insieme e non serve un giorno X per il passaggio.
+function creaSidebarSeMancano() {
+    var contenitore = document.querySelector('.main-container');
+    if (!contenitore) return;
+    if (!contenitore.querySelector('#campogioco')) return;
+
+    var sinistra = document.getElementById('sidebar-left');
+    if (!sinistra) {
+        sinistra = document.createElement('div');
+        sinistra.id = 'sidebar-left';
+        sinistra.className = 'sidebar';
+        contenitore.insertBefore(sinistra, contenitore.firstChild);
+    }
+    if (!document.getElementById('sidebar-right')) {
+        var destra = document.createElement('div');
+        destra.id = 'sidebar-right';
+        destra.className = 'sidebar';
+        contenitore.insertBefore(destra, sinistra.nextSibling);
+    }
+}
+
 function adjustLayout() {
     // Badge STATISTICHE & SHIELD
     if (window.showBannerDimensions) {
@@ -979,7 +1028,6 @@ function adjustLayout() {
         var _lowBadge = document.getElementById('dev-mode-badge-small');
         if (_lowBadge) _lowBadge.remove();
     }
-    injectLegalLinks();
     var gameWidth = 1024;
     var gameHeight = 750;
     // [INIZIO FIX SURFACE PRO / DPI ALTO]
@@ -992,6 +1040,7 @@ function adjustLayout() {
     var windowHeight = viewportHeight;
     // [FINE FIX SURFACE PRO]
 
+    creaSidebarSeMancano();
     var campogioco = document.getElementById('campogioco');
     var sidebarLeft = document.getElementById('sidebar-left');
     var sidebarRight = document.getElementById('sidebar-right');
@@ -1110,7 +1159,7 @@ function adjustLayout() {
             // Il primo posto va al gioco piu' recente: prima era Calcolo
             // Enigmatico, dal 6/10/2026 e' WooWoo. Il nome da solo non dice
             // niente a chi non c'e' mai stato, e allora porta dietro due parole.
-            var promoLink = en ? '/woowoo2-en.html' : '/woowoo2.html';
+            var promoLink = en ? '/woowoo-en.html' : '/woowoo.html';
             var promoTesto = en ? 'WOOWOO - trains and switches' : 'WOOWOO - treni e scambi';
             // Seconda riga del pulsante, sotto il nome: i quadri nuovi. Le
             // lettere sono scritte grosse perche' sono quelle che si cercano
@@ -1277,9 +1326,9 @@ function adjustLayout() {
     };
 
     var createBanner = function (width, height, side, isFirst) {
-        var adsenseActive = ADSENSE_GLOBAL_ENABLED && !devMode && !isAdSenseShieldActive() && window.gameConfig && window.gameConfig.adsenseActive;
+        var adsenseActive = ADSENSE_GLOBAL_ENABLED && !devMode && !isAdSenseShieldActive() && adsenseVoluto();
         // In dev_mode su giochi con AdSense, disabilita anche i message banner (verrebbero creati al posto di AdSense)
-        var isMessageBanner = isFirst && width >= 160 && !(devMode && window.gameConfig && window.gameConfig.adsenseActive);
+        var isMessageBanner = isFirst && width >= 160 && !(devMode && adsenseVoluto());
         var slotId = null;
         var amazonBannerUrl = null;
         var amazonGeneric = false;
@@ -1307,9 +1356,10 @@ function adjustLayout() {
         }
 
         // Map fixed sizes to provided AdSense Slot IDs
-        if (adsenseActive && window.gameConfig.adsenseSlots) {
+        if (adsenseActive) {
             var key = width + 'x' + height;
-            slotId = window.gameConfig.adsenseSlots[key];
+            var slots = window.gameConfig.adsenseSlots || ADSENSE_SLOT_DEFAULT;
+            slotId = slots[key];
         }
 
         // When ADSENSE_ONLY_LEFT is true, suppress AdSense on the right sidebar
@@ -1323,7 +1373,7 @@ function adjustLayout() {
         // If AdSense is active for this game, we skip the message banner in the top slot
         // to give full priority to the ad units.
         // Exception: when AdSense is suppressed on right (ADSENSE_ONLY_LEFT), still create the banner.
-        var isAdSenseSimulation = devMode && window.gameConfig && window.gameConfig.adsenseActive && (!ADSENSE_ONLY_LEFT || side === 'left');
+        var isAdSenseSimulation = devMode && adsenseVoluto() && (!ADSENSE_ONLY_LEFT || side === 'left');
         if (!window.showBannerDimensions && !isMessageBanner && !slotId && !amazonBannerUrl && !amazonGeneric && !adsenseSuppressed && !isAdSenseSimulation) {
             return null;
         }
@@ -1393,7 +1443,7 @@ function adjustLayout() {
             }
         } else {
             // Simulation/Debug Mode
-            var isAdSensePotential = (slotId || (window.gameConfig && window.gameConfig.adsenseActive));
+            var isAdSensePotential = (slotId || (adsenseVoluto()));
 
             if (devMode && isAdSensePotential && !isAdSenseShieldActive()) {
                 // SPECIAL: Clickable Simulation for AdSense Shield testing
@@ -1836,7 +1886,7 @@ function setupAmazonFinishBanner(formId, options) {
                      ADSENSE_GLOBAL_ENABLED &&
                      !devMode &&
                      !shieldActive &&
-                     window.gameConfig && window.gameConfig.adsenseActive &&
+                     adsenseVoluto() &&
                      scaleOk;
 
     console.log('[setupAmazonFinishBanner] Decision logic for ' + formId + ':', {
@@ -1845,7 +1895,7 @@ function setupAmazonFinishBanner(formId, options) {
         ADSENSE_GLOBAL_ENABLED: ADSENSE_GLOBAL_ENABLED,
         notDevMode: !devMode,
         isAdSenseShieldActive: shieldActive,
-        gameConfigActive: !!(window.gameConfig && window.gameConfig.adsenseActive),
+        gameConfigActive: !!(adsenseVoluto()),
         gameScale: window.gameScale,
         scaleOk: scaleOk,
         threshold: ADSENSE_FINISH_SCALE_THRESHOLD
@@ -1860,7 +1910,7 @@ function setupAmazonFinishBanner(formId, options) {
     // (simulazione) né quando AdSense viene effettivamente servito.
     if (!useAdSense && !devMode && typeof gtag === 'function') {
         var _adsOff = !ENABLE_ADSENSE_ON_FINISH || !ADSENSE_GLOBAL_ENABLED ||
-                      !(window.gameConfig && window.gameConfig.adsenseActive);
+                      !(adsenseVoluto());
         var _reason = _adsOff ? 'disabled' : (shieldActive ? 'shield' : (!scaleOk ? 'too_small' : 'other'));
         gtag('event', 'AdSense_Finish_Skipped', Object.assign({
             'event_category': 'AdSense',
@@ -1880,7 +1930,7 @@ function setupAmazonFinishBanner(formId, options) {
         oldBanner.remove();
     }
 
-    if (useAdSense || (devMode && !shieldActive && ENABLE_ADSENSE_ON_FINISH && window.gameConfig && window.gameConfig.adsenseActive)) {
+    if (useAdSense || (devMode && !shieldActive && ENABLE_ADSENSE_ON_FINISH && adsenseVoluto())) {
         var adContainer = document.createElement('div');
         adContainer.className = 'finish-banner';
 

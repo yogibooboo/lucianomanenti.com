@@ -71,7 +71,8 @@ html, body {
 }
 
 /* === BARRA SUPERIORE & HEADER === */
-.lang-switch-header {
+/* Selettore delle lingue, audio e punteggi in alto a sinistra */
+#lang-switcher {
     position: absolute;
     top: 4px;
     left: 14px;
@@ -81,7 +82,7 @@ html, body {
     align-items: center;
     gap: 6px;
 }
-.lang-switch-header a {
+.btn-lang {
     display: inline-block;
     padding: 0 8px;
     height: 32px;
@@ -96,12 +97,12 @@ html, body {
     transition: all 0.2s;
     box-sizing: border-box;
 }
-.lang-switch-header a.active {
+.btn-lang.active {
     background: #ffd700;
     color: #1a1a2e;
     border-color: #b8860b;
 }
-.lang-switch-header a:hover:not(.active) {
+.btn-lang:hover:not(.active) {
     background: rgba(255, 255, 255, 0.3);
 }
 
@@ -421,6 +422,23 @@ html, body {
     background: linear-gradient(135deg, #e08514, #a3580a);
 }
 
+/* REGOLE: l'aspetto comune a tutti i giochi, posto e misure restano quelli
+   della barra in basso */
+#btn-regole-top {
+    background: linear-gradient(180deg, #4a7c59 0%, #2d5a3d 100%);
+    border: 2px solid #6b9b7a;
+    border-radius: 8px;
+    color: #ffffff;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+#btn-regole-top:hover {
+    background: linear-gradient(180deg, #5a8c69 0%, #3d6a4d 100%);
+    border-color: #6b9b7a;
+    transform: scale(1.05);
+}
+
 /* === LINK LEGALI E GIOCHI A FONDO PAGINA === */
 .legal-links-scorciatoie {
     position: absolute;
@@ -442,11 +460,6 @@ html, body {
 
 .legal-links-scorciatoie a:hover {
     color: #ffd700;
-}
-
-.legal-links-scorciatoie .sep {
-    color: rgba(255, 255, 255, 0.3);
-    font-size: 11px;
 }
 
 .link-giochi-scorciatoie {
@@ -481,6 +494,32 @@ html, body {
     border-color: #ffd700;
     color: #fff;
     font-weight: bold;
+    white-space: nowrap;
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.35);
+}
+
+.pulsante-home-scorc:hover {
+    color: #fff;
+    background: linear-gradient(135deg, #e08514, #a3580a);
+    border-color: #ffd700;
+    box-shadow: 0 0 14px rgba(255, 215, 0, 0.65);
+}
+
+/* Scrivetemi: l'aspetto comune a tutti i giochi, posto e misure restano
+   quelli della fila dei link legali */
+#btn-scrivetemi-scorc {
+    background: #3a3a5a;
+    border: 2px solid #888;
+    border-radius: 8px;
+    color: #fff;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+#btn-scrivetemi-scorc:hover {
+    background: #3a3a5a;
+    border-color: #888;
+    color: #fff;
+    transform: scale(1.1);
 }
 
 /* === MODALI FORM GIOCO (Stile uniforme del sito) === */
@@ -670,7 +709,8 @@ html, body {
 .btn-angolo-modale.home {
     background: linear-gradient(135deg, #c9720f, #8a4a08);
     border: 1px solid #ffd700;
-    color: #ffd700;
+    color: #ffffff;
+    white-space: nowrap;
     box-shadow: 0 0 8px rgba(255, 215, 0, 0.35);
 }
 

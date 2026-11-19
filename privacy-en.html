@@ -2,100 +2,28 @@
 <html lang="en">
 
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<!-- Google tag (gtag.js) -->
-	<script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
-	<script>
-		window.dataLayer = window.dataLayer || [];
-		function gtag() { dataLayer.push(arguments); }
-		gtag('js', new Date());
-		gtag('config', 'G-WRBDRDQ4L8');
-		window.currentLang = 'en';
-	</script>
-	<meta name="Description"
-		content="Privacy Policy of lucianomanenti.com. Learn how we handle data, cookies, and information when using our online games.">
+	<meta charset="utf-8">
+
+	<!-- Funzioni comuni del sito: GA, icone, navigazione, riquadro di consenso -->
+	<script src="site.js" defer></script>
+
 	<title>Privacy Policy - lucianomanenti.com</title>
-	<link rel="alternate" hreflang="it" href="privacy.html">
-	<link rel="alternate" hreflang="en" href="privacy-en.html">
-	<link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
-	<style>
-		body {
-			font-family: sans-serif;
-			line-height: 1.6;
-			max-width: 800px;
-			margin: 0 auto;
-			padding: 20px;
-			color: #333;
-			background-color: #f9f9f9;
-		}
+	<link rel="canonical" href="https://www.lucianomanenti.com/privacy-en.html">
+	<link rel="alternate" hreflang="it" href="https://www.lucianomanenti.com/privacy.html">
+	<link rel="alternate" hreflang="en" href="https://www.lucianomanenti.com/privacy-en.html">
+	<link rel="alternate" hreflang="x-default" href="https://www.lucianomanenti.com/privacy.html">
+	<link rel="manifest" href="/favicon/site.webmanifest">
 
-		h1 {
-			color: #2c3e50;
-			border-bottom: 2px solid #ffd700;
-			padding-bottom: 10px;
-		}
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="Description"
+		content="Privacy Policy of lucianomanenti.com. Learn how we handle data, browser local storage, and traffic statistics when using our online games.">
 
-		h2 {
-			color: #2c3e50;
-			border-bottom: 1px solid #eee;
-			padding-bottom: 5px;
-			margin-top: 30px;
-		}
-
-		.lang-switch {
-			text-align: right;
-		}
-
-		.lang-switch a {
-			display: inline-block;
-			padding: 6px 16px;
-			margin-left: 5px;
-			text-decoration: none;
-			border-radius: 5px;
-			font-weight: bold;
-			font-size: 14px;
-		}
-
-		.lang-switch a.active {
-			background: #2c3e50;
-			color: white;
-		}
-
-		.lang-switch a:not(.active) {
-			background: #ddd;
-			color: #333;
-			cursor: pointer;
-		}
-
-		.content-section {
-			background: white;
-			padding: 30px;
-			border-radius: 8px;
-			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-			margin-bottom: 20px;
-		}
-
-		.footer-links {
-			text-align: center;
-			margin-top: 40px;
-			padding-top: 20px;
-			border-top: 1px solid #eee;
-			font-size: 14px;
-		}
-
-		.footer-links a {
-			color: #3498db;
-			text-decoration: none;
-			margin: 0 15px;
-		}
-	</style>
+	<link rel="stylesheet" href="/testo.css">
 </head>
 
 <body>
-	<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-		<a href="#" onclick="window.close(); return false;" id="btn-back"
-			style="display: inline-block; padding: 6px 16px; background: #e74c3c; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 14px;">&#x2190;
+	<div class="top-bar">
+		<a href="index-en.html" id="btn-back" class="back-btn" onclick="chiudiOIndietro(); return false;">&#x2190;
 			Close</a>
 		<div class="lang-switch">
 			<a href="privacy.html" id="btn-it">Italiano</a>
@@ -103,53 +31,77 @@
 		</div>
 	</div>
 
-	<div class="content-section">
+	<div class="striscia"></div>
+
+	<div class="content-box">
 		<div id="lang-en">
 			<h1>Privacy Policy</h1>
 			<p>Your privacy is important to me. This policy explains how information is managed on
-				<strong>lucianomanenti.com</strong>.</p>
+				<strong>lucianomanenti.com</strong> in accordance with EU Regulation 2016/679 (GDPR).</p>
 
-			<h2>1. Data Collection</h2>
-			<p>This site is a collection of static tools and games: there are no accounts, registrations or contact
-				forms, and your game preferences are stored only in your own browser. The only archive I maintain
-				directly is the gameplay statistics described in section 3, which contains neither your IP address nor
-				any data that directly identifies you.</p>
-			<p>The site does, however, use third-party services &mdash; Google AdSense for advertising and Google
-				Analytics for statistics &mdash; which process some data relating to your visit, as described in the
-				sections below.</p>
+			<h2>1. Data Controller and Data Collection</h2>
+			<p>The data controller is <strong>Luciano Manenti</strong> (<a
+					href="mailto:postmaster@lucianomanenti.com">postmaster@lucianomanenti.com</a>).</p>
+			<p>This site is a free, non-commercial collection of static tools and games: there are no accounts,
+				registrations, contact forms or user databases on the site's servers, and your game preferences are
+				stored only in your own browser.</p>
+			<p class="solo-noad">The site does not display advertisements. It uses Google Analytics 4 for visit and
+				game statistics, as described in the sections below.</p>
+			<p class="solo-ad" hidden>The site uses third-party services &mdash; Google AdSense for advertising and
+				Google Analytics for visit statistics &mdash; which process some data relating to your visit, as
+				described in the sections below.</p>
 
-			<h2>2. Cookies and Advertising</h2>
-			<p>I use <strong>Google AdSense</strong> to display advertisements. Google and its partners use cookies to
-				serve ads based on your previous visits to this website or other websites.</p>
-			<p>In order to select the ads to display, Google shares certain technical information about the visit with
-				its advertising partners: device and browser type, page visited, approximate location data and IP
-				address. This information may be used to personalise ads and to measure their performance.</p>
-			<p>If you do not consent to personalised advertising, Google serves non-personalised ads and limits the
-				information shared accordingly. The full list of advertising partners, and your choices for each
-				purpose, can be reviewed and changed at any time from the <strong>Manage Cookies</strong> panel,
-				available at the bottom of every page of the site.</p>
+			<h2 class="solo-noad">2. Cookies and Browser Local Storage</h2>
+			<h2 class="solo-ad" hidden>2. Cookies, Local Storage and Advertising</h2>
 
-			<h2>3. Analytics and Gameplay Statistics</h2>
-			<p><strong>Google Analytics.</strong> I use Google Analytics to monitor site traffic and improve the user experience. The
-				service collects information such as your IP address, browser type, device and pages visited. Under
-				European law the IP address is considered personal data; Google Analytics 4 uses it to determine
-				approximate location and does not store it in the reports.</p>
-			<p><strong>Gameplay statistics.</strong> Some games send the outcome of each completed game to my server
-				(result, score, duration and game configuration) in order to assess how well the game algorithms
-				perform. Your IP address is not recorded, and the outcome of a game contains nothing that concerns
-				you: it is the bare facts of a hand of cards.</p>
-			<p>If you have given consent for the relevant purposes in the <strong>Manage Cookies</strong> panel, a
-				random identifier is added to the result: your browser generates it once and keeps it internally, and
-				it makes it possible to recognise games coming from the same browser &mdash; not from the same person.
-				It is not shared with anyone and is not used for advertising purposes. You can withdraw your consent
-				at any time from the same panel: the identifier is deleted from your browser and later games are
-				recorded without it, that is, anonymously. The data is kept only for as long as is strictly
-				necessary to compare the game algorithms, and is then deleted.</p>
+			<p><strong>Technical browser storage (<code>localStorage</code> / <code>sessionStorage</code>).</strong> To
+				work properly, the games save certain technical preferences solely on your device (such as sound
+				effects mute state, chosen variants, current game state or personal best scores on your device). This
+				data never leaves your browser and is never transmitted to the server.</p>
 
-			<h2>4. Managing Privacy Choices</h2>
-			<p>You can manage or withdraw your consent preferences at any time through the
-				<strong>Manage Cookies</strong> link, available at the bottom of every page of the site next to the link
-				to this policy. The panel that opens lets you choose purpose by purpose and partner by partner.</p>
+			<div class="solo-noad">
+				<p><strong>No advertising cookies.</strong> This site does not display advertisements and does not
+					use advertising or profiling cookies. The only cookies set are those of Google Analytics 4
+					(<code>_ga</code>, <code>_ga_*</code>), described in section 3.</p>
+			</div>
+			<div class="solo-ad" hidden>
+				<p><strong>Advertising (Google AdSense).</strong> I use Google AdSense to display advertisements.
+					Google and its partners use cookies to serve ads based on your previous visits to this website or
+					other websites.</p>
+				<p>In order to select the ads to display, Google shares certain technical information about the visit
+					with its advertising partners: device and browser type, page visited, approximate location data and
+					IP address. This information may be used to personalise ads and to measure their performance.</p>
+				<p>If you do not consent to personalised advertising, Google serves non-personalised ads and limits the
+					information shared accordingly. The full list of advertising partners, and your choices for each
+					purpose, can be reviewed and changed at any time from the <strong>Manage Cookies</strong> panel,
+					available at the bottom of every page of the site.</p>
+			</div>
+
+			<h2>3. Visit and Game Statistics (Google Analytics 4)</h2>
+			<p>I use <strong>Google Analytics 4</strong> to find out how much the site and each game are used, and
+				to improve them. The service collects technical information about your visit: browser and device
+				type, approximate location, pages visited, games started and finished with their outcome and
+				duration, and any errors that occur while the pages are running.</p>
+			<p><strong>The browser identifier.</strong> Google Analytics assigns each browser a random identifier,
+				stored in the <code>_ga</code> cookie. It is used to tell one visitor from another and to count
+				visits and games; the same browser is recognised when it comes back. It does not contain your
+				name, your email address or any other data that would reveal who you are.</p>
+			<p>Data linked to this identifier is kept for 14 months. According to Google, Analytics 4 does not log
+				or store IP addresses. The <em>Google Signals</em> feature is turned off. The data is processed by
+				Google, which may also handle it on servers located outside the European Union.</p>
+			<p><strong>Fonts.</strong> Some pages load their fonts from Google Fonts: to do so, your browser
+				connects to Google's servers, which receive its IP address.</p>
+			<h2>4. Managing Cookies and Privacy Choices</h2>
+			<p class="solo-noad">You can block or delete cookies and local storage data at any time directly from your
+				browser settings. You can also opt out of Google Analytics by installing the <a
+					href="https://tools.google.com/dlpage/gaoptout" target="_blank" rel="noopener">Google Analytics
+					Opt-out Browser Add-on</a> provided by Google.</p>
+			<p class="solo-ad" hidden>You can manage or withdraw your consent preferences at any time through the
+				<strong>Manage Cookies</strong> link, available at the bottom of every page of the site next to the
+				link to this policy. The panel that opens lets you choose purpose by purpose and partner by partner.
+				You can also opt out of Google Analytics via the <a
+					href="https://tools.google.com/dlpage/gaoptout" target="_blank" rel="noopener">Google Analytics
+					Opt-out Browser Add-on</a>.</p>
 			<p>For more information on how Google processes data, see the
 				<a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google Privacy Policy</a>
 				and the page
@@ -159,12 +111,11 @@
 			<h2>5. Your Rights</h2>
 			<p>Under the European General Data Protection Regulation (GDPR) you have the right to access your personal
 				data, to request its rectification or erasure, to object to processing and to withdraw any consent you
-				have given. For requests concerning data processed by Google, please contact Google directly through
-				the links in the previous section.</p>
-			<p>The gameplay statistics described in section 3 contain no data that identifies you, and I have no means
-				of tracing them back to you. By withdrawing your consent from the <strong>Manage Cookies</strong>
-				panel, the identifier kept in your browser is deleted and later games are recorded anonymously.</p>
-			<p>You are also entitled to lodge a complaint with your national data protection authority.</p>
+				may have given. For requests concerning data processed by Google, please contact Google directly
+				through the links in the previous section.</p>
+			<p>You are also entitled to lodge a complaint with your national data protection authority (in Italy, the
+				<em>Garante per la protezione dei dati personali</em>, <a href="https://www.garanteprivacy.it"
+					target="_blank" rel="noopener">www.garanteprivacy.it</a>).</p>
 
 			<h2>6. Contact</h2>
 			<p>For any questions regarding this policy, you can contact me at: <a
@@ -172,33 +123,28 @@
 		</div>
 	</div>
 
-	<div class="footer-links">
-		<a href="aboutme-en.html">About Me</a> |
-		<a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)">Manage Cookies</a> |
-		<a href="#" onclick="window.close(); return false;" id="footer-back">Close this page</a>
+	<div class="striscia"></div>
+
+	<div class="nav-links">
+		<a href="index-en.html">Home</a> |
+		<a href="aboutme-en.html">About Me</a>
+		<span class="solo-ad" hidden>| <a
+				href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)">Manage Cookies</a></span> |
+		<a href="index-en.html" id="footer-back" onclick="chiudiOIndietro(); return false;">Close this page</a>
 	</div>
 
-	<p style="text-align: center; font-size: 0.8em; color: #999; margin-top: 25px;">
+	<p class="copyright">
 		© 2026 Luciano Manenti
 	</p>
 
 	<script>
-		(function() {
-			var nascosto = false;
-			var observer = new MutationObserver(function() {
-				if (nascosto) return;
-				var divs = document.querySelectorAll('body > div');
-				for (var i = 0; i < divs.length; i++) {
-					if (divs[i].shadowRoot && !divs[i].className && (divs[i].getAttribute('style')||'').length > 5000) {
-						divs[i].style.setProperty('display', 'none', 'important');
-						nascosto = true;
-						observer.disconnect();
-						return;
-					}
-				}
-			});
-			observer.observe(document.body, { childList: true });
-		})();
+		function chiudiOIndietro() {
+			if (window.history.length > 1) {
+				window.history.back();
+				return;
+			}
+			window.close();
+		}
 	</script>
 </body>
 

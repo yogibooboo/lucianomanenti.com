@@ -1,4 +1,4 @@
-// klondike.js v1.18
+// klondike.js
 
 var CUORI = 'C', QUADRI = 'Q', FIORI = 'F', PICCHE = 'P';
 var SEMI = [FIORI, QUADRI, CUORI, PICCHE];
@@ -219,6 +219,7 @@ function initialDealStep(ts) {
 }
 
 function initGame() {
+    if (window.sitoPartita) window.sitoPartita.inizio('');
     anim = null; autoCompleting = false; acDrawsSincePlay = 0;
     isInitialDealing = false; // Interrompe eventuale smazzata precedente in corso
     var deck = [];
@@ -598,6 +599,7 @@ function buildWinRecordHtml(newFlags) {
 function checkWin() {
     for (var fi = 0; fi < 4; fi++) if (foundations[fi].length < 13) return;
     gameWon = true;
+    if (window.sitoPartita) window.sitoPartita.fine('won');
     if (timerInterval) clearInterval(timerInterval);
     var newFlags = saveRecords(seconds, moves);
     playSound('tada');
@@ -658,9 +660,18 @@ function checkWin() {
         box.style.display = 'block';
     }, 800);
 }
+// La ricarica passa da site.js, che decide se mostrare prima l'interstiziale
+function ricaricaPartita() {
+    if (typeof window.reloadWithInterstitial === 'function') {
+        window.reloadWithInterstitial();
+    } else {
+        location.reload();
+    }
+}
+
 function confirmNewGame() {
     if (moves === 0) {
-        location.reload();
+        ricaricaPartita();
         return;
     }
 
@@ -1160,10 +1171,12 @@ function initKlondike() {
     var btnSi = document.querySelector('#confermatermina .btn-si-termina');
     if (btnSi) {
         btnSi.addEventListener('click', function() {
-            location.reload();
+            // Partita lasciata a meta', confermata dal giocatore
+            if (window.sitoPartita) window.sitoPartita.fine('abandoned');
+            ricaricaPartita();
         });
     }
 
     var winBtn = document.querySelector('#haivinto .bottone1');
-    if (winBtn) winBtn.addEventListener('click', function() { location.reload(); });
+    if (winBtn) winBtn.addEventListener('click', ricaricaPartita);
 }

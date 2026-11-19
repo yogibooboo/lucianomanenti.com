@@ -2,65 +2,37 @@
 <html lang="it">
 
 <head>
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9335537153013492"
-        crossorigin="anonymous"></script>
-    <script>
-        // Fix sicurezza per evitare crash da cross-origin su window.opener
-        (function() { try { if (!window.opener) return; var test = window.opener.document; if (!window.opener.game) { window.opener = null; } } catch(e) { window.opener = null; } })();
-    </script>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="utf-8">
+
+    <!-- Funzioni comuni del sito: GA, icone, audio, navigazione, riquadro di consenso -->
+    <script src="site.js"></script>
+
     <title>Tressette e Traversone (Ciapanò) Online Gratis contro il Computer - lucianomanenti.com</title>
-    <link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
-    <link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
-    <link rel="shortcut icon" href="favicon/favicon.ico">
-    <link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+    <link rel="canonical" href="https://www.lucianomanenti.com/tressette.html">
+    <link rel="alternate" hreflang="it" href="https://www.lucianomanenti.com/tressette.html">
+    <link rel="alternate" hreflang="en" href="https://www.lucianomanenti.com/tressette-en.html">
+    <link rel="alternate" hreflang="x-default" href="https://www.lucianomanenti.com/tressette.html">
     <link rel="manifest" href="favicon/site.webmanifest">
 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="Description"
         content="Gioca a Tressette e Traversone (Ciapanò) gratis online contro il computer a coppie 2 contro 2 o tutti contro tutti a 4. Carte napoletane, bresciane o francesi con intelligenza artificiale avanzata a livello Esperto.">
-    <meta http-Equiv="Cache-Control" Content="no-cache">
-    <meta http-Equiv="Pragma" Content="no-cache">
-    <meta http-Equiv="Expires" Content="0">
 
-    <link rel="stylesheet" href="tressette.css?v=1.38" />
+    <link rel="stylesheet" href="tressette.css?v=1.39" />
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Slackey&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
     <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag() { dataLayer.push(arguments); }
-        gtag('js', new Date());
-        gtag('config', 'G-WRBDRDQ4L8');
-    </script>
-    <script>
-        window.gameConfig = {
-            gaPrefix: 'TRESSETTE_',
-            hideLegalFooter: true,
-            adsenseActive: true,
-            adsenseSlots: {
-                '300x600': '5266697442',
-                '160x600': '1167670336',
-                '300x250': '8471445288',
-                '160x250': '8663016975'
-            }
-        };
-        window.currentLang = 'it';
+        window.gameConfig = { gaPrefix: 'TRESSETTE_' };
     </script>
 </head>
 
 <body>
 
     <div class="main-container">
-        <!-- Sidebar per annunci (gestite dal layout engine) -->
-        <div id="sidebar-left" class="sidebar"></div>
-        <div id="sidebar-right" class="sidebar"></div>
-
         <!-- Campo di gioco principale centrato e riscalato -->
         <div id="campogioco">
             <!-- Filigrana di sfondo -->
@@ -209,7 +181,7 @@
 
                 <button type="button" onclick="confermaEAvviaPartita()" class="btn-continua" style="width: 100%; max-width: 250px; margin: 8px auto 0 auto; display: block;">INIZIA A GIOCARE</button>
 
-                <a href="regole-tressette.html" target="_blank" class="pulsante-link-tressette modale-inizio-regole">Come si Gioca</a>
+                <a href="regole-tressette.html" target="_blank" class="pulsante-link-tressette modale-inizio-regole">REGOLE</a>
                 <a href="index.html" class="pulsante-link-tressette pulsante-home-tressette modale-inizio-home">TUTTI I GIOCHI</a>
             </div>
 
@@ -217,7 +189,7 @@
             <div id="finepartita" class="form-tressette modale-fine">
                 <div class="confirm-message" id="fine-messaggio" style="margin: 0 0 6px 0; line-height: 1.2;">HAI VINTO!</div>
                 <div id="fine-dettagli" style="color: #ffd700; font-size: 13px; font-weight: bold; text-align: center; margin-bottom: 12px; text-shadow: 1px 1px 2px #000;"></div>
-                <button onclick="location.reload()" class="btn-continua" style="width: 280px; height: 42px; font-size: 16px; margin: 0 auto;">NUOVA PARTITA 🔄</button>
+                <button onclick="ricaricaPagina()" class="btn-continua" style="width: 280px; height: 42px; font-size: 16px; margin: 0 auto;">NUOVA PARTITA 🔄</button>
             </div>
 
             <!-- 2b. Modale Fine Smazzata Intermedia (bassa e larga, banner sopra) -->
@@ -238,8 +210,8 @@
 
             <!-- Link di navigazione ed utilità in basso a sinistra -->
             <div class="link-utility-bottom">
-                <a href="aboutme.html" target="_blank" class="pulsante-link-tressette">Scrivetemi</a>
-                <a href="regole-tressette.html" target="_blank" class="pulsante-link-tressette">Come si Gioca</a>
+                <a href="aboutme.html" target="_blank" id="btn-scrivetemi-tressette" class="pulsante-link-tressette">Scrivetemi</a>
+                <a href="regole-tressette.html" target="_blank" id="btn-regole-tressette" class="pulsante-link-tressette">REGOLE</a>
                 <div class="legal-links-tressette">
                     <a href="privacy.html" target="_blank">Privacy Policy</a>
                     <a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)">Gestisci Cookie</a>
@@ -263,30 +235,8 @@
         </div><!-- /campogioco -->
     </div>
 
-    <!-- Script condivisi dal sito -->
-    <script src="site.js?v=1.1"></script>
-    <!-- Layout engine per ridimensionare la finestra del gioco -->
-    <script src="game-layout.js?v=4.6"></script>
     <!-- Logica del Tressette e Traversone -->
-    <script src="tressette.js?v=1.30"></script>
-    <script>
-        (function () {
-            var nascosto = false;
-            var observer = new MutationObserver(function () {
-                if (nascosto) return;
-                var divs = document.querySelectorAll('body > div');
-                for (var i = 0; i < divs.length; i++) {
-                    if (divs[i].shadowRoot && !divs[i].className && (divs[i].getAttribute('style') || '').length > 5000) {
-                        divs[i].style.setProperty('display', 'none', 'important');
-                        nascosto = true;
-                        observer.disconnect();
-                        return;
-                    }
-                }
-            });
-            observer.observe(document.body, { childList: true });
-        })();
-    </script>
+    <script src="tressette.js?v=1.33"></script>
 </body>
 
 </html>

@@ -1309,6 +1309,11 @@
             }
         }
 
+        if (isMatchFinished && window.sitoPartita) {
+            window.sitoPartita.fine(matchWinner === 'player' ? 'won' : (matchWinner === 'cpu' ? 'lost' : 'draw'),
+                { dettagli: dettagliGA() });
+        }
+
         showRoundEndModal(modalMsg, modalDetail, isMatchFinished, matchWinner, scoreData);
     }
 
@@ -1361,7 +1366,7 @@
             if (isMatchOver) {
                 btnNext.textContent = isEn ? 'NEW MATCH 🔄' : 'NUOVA PARTITA 🔄';
                 btnNext.onclick = function () {
-                    location.reload();
+                    window.ricaricaPerNuovaPartita();
                 };
             } else {
                 btnNext.textContent = isEn ? 'NEXT ROUND ➡️' : 'PROSSIMA MANCHE ➡️';
@@ -1574,7 +1579,37 @@
             btnScoperte.textContent = isEn ? '👁 Face Up' : '👁 Scoperte';
         }
 
+        if (window.sitoPartita) window.sitoPartita.inizio(varianteGA());
         distributeTiles();
+    };
+
+    // La partita per Analytics: modalita'/difficolta'/formato,
+    // per esempio "pesca/medio/50" o "chiusura/difficile/singola"
+    function varianteGA() {
+        return (CONFIG.mode === 'block' ? 'chiusura' : 'pesca') + '/' + CONFIG.difficulty + '/' +
+            (CONFIG.targetScore === 1 ? 'singola' : CONFIG.targetScore);
+    }
+
+    // Dettagli della partita per game_end: manche giocate e punti dei due
+    function dettagliGA() {
+        return 'manche=' + STATE.roundNumber + ';tu=' + STATE.playerScore + ';cpu=' + STATE.cpuScore;
+    }
+
+    // Nuova partita: si ricarica la pagina passando dal sito, che decide se
+    // mostrare prima un intermezzo (oggi spento, con la pubblicita')
+    window.ricaricaPerNuovaPartita = function () {
+        if (typeof window.reloadWithInterstitial === 'function') {
+            window.reloadWithInterstitial();
+        } else {
+            location.reload();
+        }
+    };
+
+    // SI', NUOVA PARTITA: quella in corso conta come abbandonata. A partita
+    // gia' finita (o mai cominciata) site.js non manda niente.
+    window.confermaNuovaPartita = function () {
+        if (window.sitoPartita) window.sitoPartita.fine('abandoned', { dettagli: dettagliGA() });
+        window.ricaricaPerNuovaPartita();
     };
 
     window.apriConfermaNuova = function () {
@@ -1605,25 +1640,11 @@
         }
     };
 
-    // Toggle Audio
+    // Tasto Audio: quello del sito (site.js), lo stesso per tutti i giochi
     function setupAudioButton() {
-        var btnAudio = document.getElementById('btn-audio');
-        if (!btnAudio) return;
-
-        function updateAudioUI() {
-            if (window.audioMuted) {
-                btnAudio.classList.add('muted');
-            } else {
-                btnAudio.classList.remove('muted');
-            }
+        if (typeof window.initAudioToggle === 'function') {
+            window.initAudioToggle('#btn-audio');
         }
-        updateAudioUI();
-
-        btnAudio.onclick = function () {
-            window.audioMuted = !window.audioMuted;
-            localStorage.setItem('site-audio-muted', window.audioMuted ? 'true' : 'false');
-            updateAudioUI();
-        };
     }
 
     // Init al caricamento pagina
@@ -1638,6 +1659,7 @@
 
         // Tasti di scelta rapida (Z = Undo, H = Hint)
         document.addEventListener('keydown', function (e) {
+            if (e.altKey) return;
             if (e.key === 'z' || e.key === 'Z') {
                 if (e.ctrlKey || e.metaKey) {
                     e.preventDefault();

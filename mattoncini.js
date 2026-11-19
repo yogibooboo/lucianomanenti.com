@@ -11,7 +11,7 @@
     var isEn = lang === 'en';
 
     var TXT = {
-        title: isEn ? 'Mattoncini' : 'Mattoncini',
+        title: isEn ? 'Bricks' : 'Mattoncini',
         modeMarathon: isEn ? 'Marathon' : 'Maratona',
         modeSprint: isEn ? 'Sprint (40 Lines)' : 'Sprint 40 Righe',
         modeUltra: isEn ? 'Ultra (2 Min)' : 'Ultra (2 Minuti)',
@@ -408,7 +408,9 @@
 
         var badgeMode = document.getElementById('record-mode-lbl');
         if (badgeMode) {
-            badgeMode.textContent = (mode === 'marathon' ? 'MARATONA' : (mode === 'sprint' ? 'SPRINT (40 R)' : 'ULTRA (2 MIN)'));
+            badgeMode.textContent = isEn
+                ? (mode === 'marathon' ? 'MARATHON' : (mode === 'sprint' ? '40 LINES' : 'ULTRA (2 MIN)'))
+                : (mode === 'marathon' ? 'MARATONA' : (mode === 'sprint' ? '40 RIGHE' : 'ULTRA (2 MIN)'));
         }
 
         var elOggi = document.getElementById('record-oggi');
@@ -1225,6 +1227,23 @@
         }, 100);
     }
 
+    // ─── EVENTI DI ANALYTICS ──────────────────────────────────────────────
+    // La variante e' modalita'/livello di partenza (es. maratona/1, sprint/5).
+    // Sprint completato e Ultra arrivato in fondo ai due minuti sono vinte;
+    // i pezzi che escono dall'alto sono una persa (la Maratona finisce solo cosi').
+    var NOMI_MODALITA = { marathon: 'maratona', sprint: 'sprint', ultra: 'ultra' };
+
+    function variantePartita() {
+        return (NOMI_MODALITA[CONFIG.mode] || CONFIG.mode) + '/' + CONFIG.startLevel;
+    }
+
+    function fineEvento(esito) {
+        if (!window.sitoPartita) return;
+        window.sitoPartita.fine(esito, {
+            dettagli: 'punti=' + STATE.score + ';righe=' + STATE.lines + ';livello=' + STATE.level
+        });
+    }
+
     // ─── GESTIONE FINE PARTITA & RECORD ───────────────────────────────────
     function triggerGameOver() {
         STATE.isGameOver = true;
@@ -1232,6 +1251,7 @@
         clearInterval(STATE.timerInterval);
         clearLockTimer();
         SFX.gameOver();
+        fineEvento('lost');
 
         var isNewRecord = false;
         if (CONFIG.mode === 'marathon' || CONFIG.mode === 'ultra') {
@@ -1247,6 +1267,8 @@
         clearLockTimer();
         SFX.levelUp();
 
+        fineEvento('won');
+
         var timeTaken = parseFloat(STATE.elapsedTime.toFixed(2));
         var isNewRecord = aggiornaRecords('sprint', timeTaken);
 
@@ -1258,6 +1280,8 @@
         clearInterval(STATE.timerInterval);
         clearLockTimer();
         SFX.levelUp();
+
+        fineEvento('won');
 
         var isNewRecord = aggiornaRecords('ultra', STATE.score);
 
@@ -1367,6 +1391,23 @@
         if (schermo) schermo.style.display = 'block';
     };
 
+    function ricarica() {
+        if (typeof window.reloadWithInterstitial === 'function') window.reloadWithInterstitial();
+        else location.reload();
+    }
+
+    // GIOCA ANCORA nella finestra di fine: la partita e' gia' contata
+    window.giocaAncora = function () {
+        ricarica();
+    };
+
+    // NUOVA PARTITA nella conferma: se una partita era in corso e' abbandonata
+    // (sitoPartita.fine non conta niente se la partita era gia' finita)
+    window.confermaNuovaPartita = function () {
+        if (STATE.isPlaying && !STATE.isGameOver) fineEvento('abandoned');
+        ricarica();
+    };
+
     window.apriModaleControlli = function () {
         chiudiModali();
         var modale = document.getElementById('modale-controlli');
@@ -1383,8 +1424,16 @@
         document.querySelectorAll('#campogioco .finish-banner').forEach(function (b) { b.remove(); });
     };
 
+    // La scritta sopra il campo: il gioco e la modalita' (Mattoncini Maratona)
+    function titoloCampo() {
+        var nomi = { marathon: TXT.modeMarathon, sprint: TXT.modeSprint, ultra: TXT.modeUltra };
+        return TXT.title + ' ' + (nomi[CONFIG.mode] || '');
+    }
+
     window.selezionaModalita = function (mode) {
         CONFIG.mode = mode;
+        var msgCampo = document.getElementById('messaggio-stato-mattoncini');
+        if (msgCampo && !STATE.isPlaying) msgCampo.textContent = titoloCampo();
         var btns = document.querySelectorAll('#modale-inizio .opzione-gruppo:nth-child(2) .btn-opzione-sel');
         btns.forEach(function (b) { b.classList.remove('attiva'); });
         var activeBtn = document.getElementById('btn-mode-' + mode);
@@ -1415,6 +1464,11 @@
     window.avviaNuovaPartita = function () {
         chiudiModali();
 
+        // La scelta resta per la prossima partita, che parte da una ricarica
+        try {
+            localStorage.setItem('mattoncini-config', JSON.stringify({ modalita: CONFIG.mode, livello: CONFIG.startLevel }));
+        } catch (e) { }
+
         STATE.grid = createEmptyGrid();
         STATE.bag = [];
         STATE.nextQueue = [];
@@ -1438,8 +1492,10 @@
         updateStatsUI();
         startModeTimer();
 
+        if (window.sitoPartita) window.sitoPartita.inizio(variantePartita());
+
         var msgStato = document.getElementById('messaggio-stato-mattoncini');
-        if (msgStato) msgStato.textContent = TXT.title;
+        if (msgStato) msgStato.textContent = titoloCampo();
 
         if (animFrameId) cancelAnimationFrame(animFrameId);
         animFrameId = requestAnimationFrame(gameLoop);
@@ -1447,7 +1503,13 @@
 
     // ─── GESTIONE EVENTI TASTIERA ─────────────────────────────────────────
     var keyState = {};
+    // Ripetizione dei tasti tenuti premuti (sinistra, destra, giu'): prima
+    // l'attesa, poi un passo ogni 45 ms. Senza queste due variabili il primo
+    // clearTimeout dava errore e la ripetizione non partiva mai.
+    var dasTimeout = null;
+    var dasInterval = null;
     window.addEventListener('keydown', function (e) {
+        if (e.altKey) return;
         var code = e.code || '';
         var key = (e.key || '').toLowerCase();
 
@@ -1657,6 +1719,13 @@
                 setupRotatingAffiliateBanner(boxAff, { intervalMs: 60000 });
             }
         }
+
+        // La finestra d'inizio si riapre sulla scelta dell'ultima partita
+        try {
+            var cfg = JSON.parse(localStorage.getItem('mattoncini-config'));
+            if (cfg && NOMI_MODALITA[cfg.modalita]) window.selezionaModalita(cfg.modalita);
+            if (cfg && [1, 5, 10, 15].indexOf(cfg.livello) !== -1) window.selezionaLivelloIniziale(cfg.livello);
+        } catch (e) { }
 
         var modaleInizio = document.getElementById('modale-inizio');
         var schermo = document.getElementById('schermo');

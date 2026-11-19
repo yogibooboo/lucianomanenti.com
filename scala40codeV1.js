@@ -181,6 +181,7 @@ var scala = {
 		this.shuffle();   //provo a mescolare 2 volte
 		this.createDeckElements();
 		this.givecards();
+		this.containizio();
 		return;
 	},
 
@@ -1218,6 +1219,34 @@ var scala = {
 
 	},
 
+	/* Analytics. Il gioco non chiama gtag: chiama sitoPartita di site.js, che
+	   manda game_start e game_end. Ogni mano e' una partita; la prima mano di
+	   un torneo (contatore delle mani a zero) e la mano che lo chiude mandano
+	   l'evento del torneo AL POSTO di quello della mano. Tutto dentro try e
+	   con la guardia su sitoPartita: qualunque cosa vada storta qui, il gioco
+	   non se ne deve accorgere. */
+	variantega: function () {
+		return 'classica/' + this.numeroavversari + 'avv';
+	},
+	containizio: function () {
+		try {
+			if (!window.sitoPartita) return;
+			if (this.totalepartite > 0) window.sitoPartita.inizio(this.variantega());
+			else window.sitoPartita.torneo.inizio(this.variantega());
+		} catch (e) { }
+	},
+	contafine: function (id) {
+		try {
+			if (!window.sitoPartita || this.finecontata) return;
+			if (id === 'haivinto') window.sitoPartita.fine('won');
+			else if (id === 'haiperso') window.sitoPartita.fine('lost');
+			else if (id === 'haivintotorneo') window.sitoPartita.torneo.fine('won', this.variantega());
+			else if (id === 'haipersotorneo') window.sitoPartita.torneo.fine('lost', this.variantega());
+			else return;
+			this.finecontata = true;
+		} catch (e) { }
+	},
+
 	mostradialogo: function (dialogo) {
 		var selector = (dialogo.indexOf('#') === 0) ? dialogo : '#' + dialogo;
 		$(selector).css({ "z-index": "50000" }).show();
@@ -1225,6 +1254,9 @@ var scala = {
 		$("#schermo").css({ "width": $(window).width() / window.gameScale });
 		$("#schermo").show();
 		this.fmodale = true;
+
+		// Analytics: la mano, o il torneo, che finisce (vedi contafine).
+		scala.contafine(dialogo.replace('#', ''));
 
 		// Gestione Amazon Finish Banner per Scala 40
 		if (window.ENABLE_BANNER_ON_FINISH && typeof setupAmazonFinishBanner === 'function') {
@@ -1561,7 +1593,8 @@ var scala = {
 			tp: this.totalepartite,
 			na: this.numeroavversari
 		}));
-		location.reload();
+		if (typeof window.reloadWithInterstitial === 'function') window.reloadWithInterstitial();
+		else location.reload();
 	},
 
 	azzeratotale: function () {
@@ -3224,7 +3257,7 @@ var scala = {
 
 		var vintot = true;
 
-		if ((totaleavversario1 >= this.totalelimite)
+		if ((this.totaleavversario1 >= this.totalelimite)
 			&& ((this.numeroavversari < 2) || (this.totaleavversario2 >= this.totalelimite))
 			&& ((this.numeroavversari < 3) || (this.totaleavversario3 >= this.totalelimite))
 		) vintot = false;

@@ -1,0 +1,33 @@
+# robots.txt di lucianomanenti.com
+#
+# Creato il 9 novembre 2026 per una ragione misurata: nel rapporto
+# "Statistiche di scansione" di Search Console il 9,6% delle scansioni
+# del sito se ne andava in file audio, che nella ricerca non valgono
+# niente. Nello stesso periodo Google aveva marcato l'host come
+# "Problemi in passato" e aveva dimezzato le scansioni.
+#
+# Il file fa due cose sole: toglie dalla scansione i suoni dei giochi
+# e dichiara dove sta il sitemap. Non vieta nient'altro: tutto il resto
+# del sito resta permesso come prima, quando il file non esisteva.
+#
+# Le note del pianoforte in musica/sounds/piano/ sono apposta NON
+# vietate. Le pagine di musica ne chiedono nove al caricamento (le
+# altre Tone.Sampler le ricava interpolando) e la cartella non espone
+# l'elenco, quindi costano quasi niente; in cambio, vietarle farebbe
+# fallire il campionatore proprio mentre Google renderizza la pagina,
+# e intervalli.js scriverebbe il suo messaggio d'errore a video.
+
+User-agent: *
+Disallow: /sounds/
+
+# I robot della pubblicita' ignorano per progetto il gruppo "User-agent: *"
+# (documentato da Google nella lista dei crawler speciali), quindi la regola
+# qui sopra non li tocca. Questi due gruppi lo mettono comunque per iscritto,
+# cosi' nessuno in futuro puo' credere che il Disallow spenga gli annunci.
+User-agent: AdsBot-Google
+Allow: /
+
+User-agent: Mediapartners-Google
+Allow: /
+
+Sitemap: https://www.lucianomanenti.com/sitemap.xml

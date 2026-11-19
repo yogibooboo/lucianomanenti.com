@@ -565,8 +565,14 @@ body {
 /* Pulsante Offerte Amazon, in basso a destra.
    Volutamente piccolo e defilato: non e' un contenuto del sito, serve solo a
    tenere un link Amazon raggiungibile in home per eventuali verifiche del
-   programma di affiliazione. Deve restare VISIBILE: nasconderlo via CSS lo
-   renderebbe invisibile a crawler e revisori, che e' l'opposto dello scopo. */
+   programma di affiliazione. A pubblicita' accesa deve restare VISIBILE:
+   nasconderlo lo renderebbe invisibile a crawler e revisori, che e' l'opposto
+   dello scopo. A pubblicita' spenta porta l'attributo hidden (classe solo-ad,
+   la commuta site.js): Amazon segue la sorte di AdSense. */
+.amazon-btn[hidden] {
+	display: none;
+}
+
 .amazon-btn {
 	position: absolute;
 	bottom: 8px;

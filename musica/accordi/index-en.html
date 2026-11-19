@@ -1,51 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9335537153013492" crossorigin="anonymous"></script>
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag() { dataLayer.push(arguments); }
-        gtag('js', new Date());
-        gtag('config', 'G-WRBDRDQ4L8');
-        window.currentLang = 'en';
-    </script>
+    <meta charset="utf-8">
+
+    <!-- Site-wide functions: GA, icons, audio, navigation, consent box -->
+    <script src="../../site.js"></script>
 
     <title>Musical Chords - Ear Training - lucianomanenti.com</title>
-    <meta charset="utf-8">
+    <link rel="canonical" href="https://www.lucianomanenti.com/musica/accordi/index-en.html">
+    <link rel="alternate" hreflang="it" href="https://www.lucianomanenti.com/musica/accordi/">
+    <link rel="alternate" hreflang="en" href="https://www.lucianomanenti.com/musica/accordi/index-en.html">
+    <link rel="alternate" hreflang="x-default" href="https://www.lucianomanenti.com/musica/accordi/">
+    <link rel="manifest" href="/favicon/site.webmanifest">
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="alternate" hreflang="it" href="index.html">
-    <link rel="alternate" hreflang="en" href="index-en.html">
-    <link rel="icon" type="image/png" href="../../favicon/favicon-96x96.png" sizes="96x96">
-    <link rel="icon" type="image/svg+xml" href="../../favicon/favicon.svg">
-    <link rel="shortcut icon" href="../../favicon/favicon.ico">
-    <link rel="apple-touch-icon" sizes="180x180" href="../../favicon/apple-touch-icon.png">
-    <link rel="manifest" href="../../favicon/site.webmanifest">
-    <link rel="stylesheet" href="../musica.css?v=1.2">
-    <link rel="stylesheet" href="accordi.css?v=1.2">
     <meta name="Description" content="Train your musical ear by identifying chords: major, minor, dominant 7th and more. Free online ear training.">
 
+    <link rel="stylesheet" href="../musica.css?v=1.2">
+    <link rel="stylesheet" href="accordi.css?v=1.2">
+
     <script>
-        window.gameConfig = {
-            gaPrefix: 'MUSACC_',
-            hideLegalFooter: true,
-            adsenseActive: true,
-            adsenseSlots: {
-                '300x600': '5266697442',
-                '160x600': '1167670336',
-                '300x250': '8471445288',
-                '160x250': '8663016975'
-            }
-        };
+        // spazi: false = no promotions in the side columns: the music pages stay clean
+        window.gameConfig = { gaPrefix: 'MUSACC_', spazi: false };
     </script>
-    <script src="../../game-layout.js?v=4.6"></script>
 </head>
 <body>
 
 <div class="main-container">
-    <div id="sidebar-left" class="sidebar"></div>
-    <div id="sidebar-right" class="sidebar"></div>
-
     <div id="campogioco">
 
         <div class="lang-switch-game">
@@ -58,7 +39,7 @@
             <div class="altri-musicali">
                 <a href="../intervalli/index-en.html">&#127925; Intervals</a>
                 <a href="../scale/index-en.html">&#127926; Scales</a>
-                <a href="../../metronome-en.html">&#9201; Metronome</a>
+                <a href="../metronomo/index-en.html">&#9201; Metronome</a>
             </div>
             <span class="title">&#9834; Chords</span>
             <div id="score-area">
@@ -148,14 +129,14 @@
         <!-- Bottom nav -->
         <div id="bottom-nav">
             <div class="btn-nav-group">
-                <a href="guida-accordi-en.html" target="_blank" class="btn-nav btn-nav-help">Instructions</a>
+                <a href="regole-accordi-en.html" target="_blank" class="btn-nav btn-nav-help">Instructions</a>
 
                 <a href="../index-en.html" class="btn-nav btn-nav-music">&#9834; Music</a>
                 <a href="../../index-en.html" class="btn-nav btn-nav-home">ALL GAMES</a>
                 <a href="../../aboutme-en.html" target="_blank" class="btn-nav btn-nav-contact">Write to me</a>
             </div>
             <div class="nav-links-small">
-                <a href="../../privacy.html" target="_blank">Privacy</a>
+                <a href="../../privacy-en.html" target="_blank">Privacy</a>
                 <a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)">Manage Cookies</a>
             </div>
         </div>
@@ -163,26 +144,7 @@
     </div><!-- campogioco -->
 </div>
 
-<script src="../../site.js?v=1.1"></script>
 <script src="../lib/tone.js"></script>
-<script src="accordi.js?v=1.0"></script>
-<script>
-    (function() {
-        var nascosto = false;
-        var observer = new MutationObserver(function() {
-            if (nascosto) return;
-            var divs = document.querySelectorAll('body > div');
-            for (var i = 0; i < divs.length; i++) {
-                if (divs[i].shadowRoot && !divs[i].className && (divs[i].getAttribute('style')||'').length > 5000) {
-                    divs[i].style.setProperty('display', 'none', 'important');
-                    nascosto = true;
-                    observer.disconnect();
-                    return;
-                }
-            }
-        });
-        observer.observe(document.body, { childList: true });
-    })();
-</script>
+<script src="accordi.js?v=1.1"></script>
 </body>
 </html>

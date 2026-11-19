@@ -2,64 +2,32 @@
 <html lang="it">
 
 <head>
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9335537153013492"
-        crossorigin="anonymous"></script>
-    <script>
-        // Fix sicurezza per evitare crash da cross-origin su window.opener
-        (function() { try { if (!window.opener) return; var test = window.opener.document; if (!window.opener.game) { window.opener = null; } } catch(e) { window.opener = null; } })();
-    </script>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="utf-8">
+
+    <!-- Funzioni comuni del sito: GA, icone, audio, navigazione, riquadro di consenso -->
+    <script src="site.js"></script>
+
     <title>Domino Luciano - Gioco Gratis Online - lucianomanenti.com</title>
     <link rel="canonical" href="https://www.lucianomanenti.com/domino.html">
     <link rel="alternate" hreflang="it" href="https://www.lucianomanenti.com/domino.html">
     <link rel="alternate" hreflang="en" href="https://www.lucianomanenti.com/domino-en.html">
     <link rel="alternate" hreflang="x-default" href="https://www.lucianomanenti.com/domino.html">
-    <link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
-    <link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
-    <link rel="shortcut icon" href="favicon/favicon.ico">
-    <link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
     <link rel="manifest" href="favicon/site.webmanifest">
 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="Description"
         content="Gioca gratis online a Domino Luciano: sfida il computer a Domino a Pesca o a Chiusura. Tessere 3D realistiche, 3 livelli di difficoltà, suggerimenti e salvataggio automatico.">
-    <meta http-Equiv="Cache-Control" Content="no-cache">
-    <meta http-Equiv="Pragma" Content="no-cache">
-    <meta http-Equiv="Expires" Content="0">
 
-    <link rel="stylesheet" href="domino.css?v=2.1" />
+    <link rel="stylesheet" href="domino.css?v=2.2" />
 
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
     <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag() { dataLayer.push(arguments); }
-        gtag('js', new Date());
-        gtag('config', 'G-WRBDRDQ4L8');
-    </script>
-    <script>
-        window.gameConfig = {
-            gaPrefix: 'DOMINO_',
-            hideLegalFooter: true,
-            adsenseActive: true,
-            adsenseSlots: {
-                '300x600': '5266697442',
-                '160x600': '1167670336',
-                '300x250': '8471445288',
-                '160x250': '8663016975'
-            }
-        };
-        window.currentLang = 'it';
+        window.gameConfig = { gaPrefix: 'DOMINO_' };
     </script>
 </head>
 
 <body>
 
     <div class="main-container">
-        <!-- Sidebar per annunci AdSense & Amazon (gestite dal layout engine) -->
-        <div id="sidebar-left" class="sidebar"></div>
-        <div id="sidebar-right" class="sidebar"></div>
-
         <!-- Campo di gioco principale 1024x750 -->
         <div id="campogioco">
             <!-- Schermo overlay per modali -->
@@ -94,9 +62,10 @@
                     <button id="btn-undo" onclick="annullaUltimaMossa()" class="btn-azione-top" title="Annulla l'ultima mossa (Z)" disabled>↩️ Annulla</button>
                     <button id="btn-new-game" onclick="apriConfermaNuova()" class="btn-azione-top" style="border-color: #ffd700; color: #ffd700;">Nuova</button>
 
-                    <div class="lang-switch-header">
-                        <a href="domino.html" class="active">IT</a>
-                        <a href="domino-en.html">EN</a>
+                    <!-- Selettore delle lingue e audio, nella forma comune del sito -->
+                    <div id="lang-switcher">
+                        <a href="domino.html" class="btn-lang active" id="btn-lang-it" title="Italiano">IT</a>
+                        <a href="domino-en.html" class="btn-lang" id="btn-lang-en" title="English">EN</a>
                         <div id="btn-audio" class="btn-audio-game" aria-label="Audio"></div>
                     </div>
                 </div>
@@ -168,10 +137,10 @@
                 <button onclick="confermaEAvviaPartita()" class="btn-continua" style="width: 220px;">INIZIA A GIOCARE 🁠</button>
 
                 <div class="lang-switch-modale">
-                    <a href="domino.html" class="active" title="Italiano">IT</a>
-                    <a href="domino-en.html" title="English">EN</a>
+                    <a href="domino.html" class="active" id="btn-lang-it-modale" title="Italiano">IT</a>
+                    <a href="domino-en.html" id="btn-lang-en-modale" title="English">EN</a>
                 </div>
-                <a href="guida-domino.html" target="_blank" rel="opener" id="btn-regole-modale" class="btn-angolo-modale sinistra">ISTRUZIONI</a>
+                <a href="regole-domino.html" target="_blank" id="btn-regole-modale" class="btn-angolo-modale sinistra">REGOLE</a>
                 <a href="index.html" id="btn-home-modale" class="btn-angolo-modale destra home">TUTTI I GIOCHI</a>
             </div>
 
@@ -190,7 +159,7 @@
                 <div class="confirm-message" style="margin: 0 0 18px 0; line-height: 1.4; font-size: 20px;">Vuoi davvero iniziare una nuova partita?</div>
                 <div class="conferma-bottoni">
                     <button onclick="chiudiModali()" class="btn-continua" style="width: 240px; height: 42px; font-size: 15px; background: #555; border-color: #777; color: white;">NO, CONTINUA</button>
-                    <button onclick="location.reload()" class="btn-continua" style="width: 240px; height: 42px; font-size: 15px; background-color: #cc0c39; color: white; border-color: #990022;">SÌ, NUOVA PARTITA</button>
+                    <button onclick="confermaNuovaPartita()" class="btn-continua" style="width: 240px; height: 42px; font-size: 15px; background-color: #cc0c39; color: white; border-color: #990022;">SÌ, NUOVA PARTITA</button>
                 </div>
             </div>
 
@@ -200,8 +169,8 @@
                 <span class="sep">•</span>
                 <a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)">Gestisci Cookie</a>
                 <span class="sep">•</span>
-                <a href="guida-domino.html" target="_blank" rel="opener" class="pulsante-link-domino">Istruzioni</a>
-                <a href="aboutme.html" target="_blank" class="pulsante-link-domino">Scrivetemi</a>
+                <a href="regole-domino.html" target="_blank" id="btn-regole-domino" class="pulsante-link-domino">REGOLE</a>
+                <a href="aboutme.html" target="_blank" id="btn-scrivetemi-domino" class="pulsante-link-domino">Scrivetemi</a>
             </div>
 
             <div class="link-giochi-domino">
@@ -217,30 +186,8 @@
         </div><!-- /campogioco -->
     </div>
 
-    <!-- Script condivisi dal sito -->
-    <script src="site.js?v=1.1"></script>
-    <!-- Layout engine per ridimensionamento responsivo -->
-    <script src="game-layout.js?v=4.6"></script>
-    <!-- Motore di Gioco Domino -->
-    <script src="domino.js?v=2.7"></script>
-    <script>
-        (function () {
-            var nascosto = false;
-            var observer = new MutationObserver(function () {
-                if (nascosto) return;
-                var divs = document.querySelectorAll('body > div');
-                for (var i = 0; i < divs.length; i++) {
-                    if (divs[i].shadowRoot && !divs[i].className && (divs[i].getAttribute('style') || '').length > 5000) {
-                        divs[i].style.setProperty('display', 'none', 'important');
-                        nascosto = true;
-                        observer.disconnect();
-                        return;
-                    }
-                }
-            });
-            observer.observe(document.body, { childList: true });
-        })();
-    </script>
+    <!-- Motore di gioco del Domino -->
+    <script src="domino.js?v=2.8"></script>
 </body>
 
 </html>

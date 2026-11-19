@@ -2,37 +2,28 @@
 <html lang="en">
 
 <head>
-	<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9335537153013492"
-		crossorigin="anonymous"></script>
+	<meta charset="utf-8">
 
-	<!-- Google tag (gtag.js) -->
-	<script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
-	<script>
-		window.dataLayer = window.dataLayer || [];
-		function gtag() { dataLayer.push(arguments); }
-		gtag('js', new Date());
-		gtag('config', 'G-WRBDRDQ4L8');
-		window.currentLang = 'en';
-	</script>
+	<!-- Funzioni comuni del sito: GA, icone, navigazione, riquadro di consenso.
+	     La libreria AdSense non e' scritta qui: a pubblicita' accesa la carica
+	     site.js (vedi data-pubblicita sul body) -->
+	<script src="site.js"></script>
 
 	<title>lucianomanenti.com - Free Games, Web Tools and more</title>
-
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<link rel="stylesheet" href="home.css?v=3.6" />
-
-	<meta name="google-site-verification" content="HczGE3blChW6QEkClRXFQMJc3Z_9fl8feUwWl6LpX6I" />
-
-	<link rel="alternate" hreflang="it" href="index.html">
-	<link rel="alternate" hreflang="en" href="index-en.html">
-	<link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
-	<link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
-	<link rel="shortcut icon" href="favicon/favicon.ico">
-	<link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+	<link rel="canonical" href="https://www.lucianomanenti.com/index-en.html">
+	<link rel="alternate" hreflang="it" href="https://www.lucianomanenti.com/">
+	<link rel="alternate" hreflang="en" href="https://www.lucianomanenti.com/index-en.html">
+	<link rel="alternate" hreflang="x-default" href="https://www.lucianomanenti.com/">
 	<link rel="manifest" href="favicon/site.webmanifest">
 
+	<!-- Verifica della proprieta' in Search Console: non toglierla mai -->
+	<meta name="google-site-verification" content="HczGE3blChW6QEkClRXFQMJc3Z_9fl8feUwWl6LpX6I" />
+
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="home.css?v=3.7" />
+
 	<meta name="Description"
-		content="Play free online against the computer: Tressette & Traversone (Ciapanò), Shortcuts, Bricks, Domino, Scala 40, Klondike and Spider Solitaire, Gin Rummy, Machiavelli, Burraco, Scopa, Briscola, Sudoku, Cross Figure puzzles, Secret Code, Minesweeper, Battleship Solitaire, Dots and Boxes, Italian Checkers, Chess and Nine Men's Morris. Also featuring music ear training and an advanced metronome.">
+		content="Play free online against the computer: Tressette & Traversone (Ciapanò), Shortcuts, Bricks, Domino, Scala 40, Klondike and Spider Solitaire, Gin Rummy, Machiavelli, Burraco, Scopa, Briscola, WooWoo, Sudoku, Mahjong, Cross Figure puzzles, Secret Code, Minesweeper, Battleship, Battleship Solitaire, Dots and Boxes, Italian Checkers, Chess and Nine Men's Morris. Also featuring music ear training and an advanced metronome.">
 
 	<!-- Google Fonts -->
 	<link rel="preconnect" href="https://fonts.googleapis.com">
@@ -41,7 +32,9 @@
 
 </head>
 
-<body>
+<!-- data-pubblicita="libreria": a pubblicita' accesa site.js chiede pubblicita.js,
+     che qui carica soltanto la libreria AdSense (niente colonne ne' riquadri) -->
+<body data-pubblicita="libreria">
 
 	<div id="campogioco">
 
@@ -68,13 +61,13 @@
 			<a href="burraco-en.html" class="game-btn" id="btn-burraco">Burraco</a>
 			<a href="scopa-en.html" class="game-btn" id="btn-scopa">Scopa</a>
 			<a href="briscola-en.html" class="game-btn" id="btn-briscola">Briscola</a>
-			<a href="tressette-en.html" class="game-btn" id="btn-tressette">Tressette / Traversone (Ciapanò) <span class="new-tag">NEW</span></a>
+			<a href="tressette-en.html" class="game-btn" id="btn-tressette">Tressette / Traversone (Ciapanò)</a>
 		</div>
 
 		<!-- Other Games -->
 		<div class="other-games-container">
 			<div class="menu-title">Other Games</div>
-			<a href="woowoo2-en.html" class="game-btn larga" id="btn-woowoo">WooWoo <span class="new-tag livelli">NEW LEVEL <span class="lettera">F</span>(SPACE)</span></a>
+			<a href="woowoo-en.html" class="game-btn larga" id="btn-woowoo">WooWoo</a>
 			<a href="sudoku-en.html" class="game-btn" id="btn-sudoku">Sudoku</a>
 			<a href="calcolo-en.html" class="game-btn" id="btn-calcolo">Cross Figure</a>
 			<a href="quadrati-en.html" class="game-btn" id="btn-quadrati">Dots and Boxes</a>
@@ -87,8 +80,8 @@
 			<a href="domino-en.html" class="game-btn" id="btn-domino">Domino</a>
 			<a href="minato-en.html" class="game-btn" id="btn-minato">Minesweeper</a>
 			<a href="codice-segreto-en.html" class="game-btn" id="btn-codice">Secret Code</a>
-			<a href="mattoncini-en.html" class="game-btn" id="btn-mattoncini">Bricks <span class="new-tag">NEW</span></a>
-			<a href="scorciatoie-en.html" class="game-btn" id="btn-shortcuts">Shortcuts <span class="new-tag">NEW</span></a>
+			<a href="mattoncini-en.html" class="game-btn" id="btn-mattoncini">Bricks</a>
+			<a href="scorciatoie-en.html" class="game-btn" id="btn-shortcuts">Shortcuts</a>
 		</div>
 
 		<!-- Music / Ear Training -->
@@ -97,17 +90,18 @@
 			<a href="musica/intervalli/index-en.html" class="music-btn" id="btn-intervals">🎵 Intervals</a>
 			<a href="musica/accordi/index-en.html" class="music-btn" id="btn-chords">🎹 Chords</a>
 			<a href="musica/scale/index-en.html" class="music-btn" id="btn-scales">🎶 Scales</a>
-			<a href="metronome-en.html" class="music-btn" id="btn-metronome">⏱️ Metronome</a>
+			<a href="musica/metronomo/index-en.html" class="music-btn" id="btn-metronome">⏱️ Metronome</a>
 		</div>
 
 		<div id="footer"
 			style="position: absolute; bottom: 8px; left: 0; width: 100%; text-align: center; color: white; font-family: sans-serif; font-size: 14px; text-shadow: 1px 1px 2px black;">
 			<div>
-				<a href="privacy-en.html" target="_blank" rel="opener"
+				<a href="privacy-en.html" target="_blank"
 					style="color: #ffd700; text-decoration: none; margin: 0 15px;">Privacy Policy</a> |
-				<a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)"
-					style="color: #ffd700; text-decoration: none; margin: 0 15px;">Manage Cookies</a> |
-				<a href="aboutme-en.html" target="_blank" rel="opener"
+				<!-- Il gestore dei cookie arriva con la libreria AdSense: il link c'e' solo a pubblicita' accesa -->
+				<span class="solo-ad" hidden><a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)"
+					style="color: #ffd700; text-decoration: none; margin: 0 15px;">Manage Cookies</a> |</span>
+				<a href="aboutme-en.html" target="_blank"
 					style="color: #ffd700; text-decoration: none; margin: 0 15px;">About Me</a> |
 				<span>© 2026 Luciano Manenti</span>
 			</div>
@@ -115,9 +109,10 @@
 
 		<a href="info-en.html" class="info-btn" id="btn-info"><span class="info-icon">ⓘ</span> Info</a>
 
-		<!-- Amazon Deals Button (Bottom Right) -->
+		<!-- Pulsante Offerte Amazon (in basso a destra): resta sempre nel sorgente,
+		     si vede solo a pubblicita' accesa (site.js toglie hidden ai .solo-ad) -->
 		<a href="https://www.amazon.it/deals?&linkCode=ll2&tag=lucianomane0f-21&linkId=d542031952a47db9f26b8cc6c38762cb&ref_=as_li_ss_tl"
-		   target="_blank" rel="sponsored noopener" class="amazon-btn" id="btn-amazon">🛒 Amazon Deals</a>
+		   target="_blank" rel="sponsored noopener" class="amazon-btn solo-ad" id="btn-amazon" hidden>🛒 Amazon Deals</a>
 
 	</div> <!-- campogioco-->
 
@@ -135,23 +130,6 @@
 		$(window).resize(function () {
 			adjustscreen();
 		});
-
-		(function () {
-			var nascosto = false;
-			var observer = new MutationObserver(function () {
-				if (nascosto) return;
-				var divs = document.querySelectorAll('body > div');
-				for (var i = 0; i < divs.length; i++) {
-					if (divs[i].shadowRoot && !divs[i].className && (divs[i].getAttribute('style') || '').length > 5000) {
-						divs[i].style.setProperty('display', 'none', 'important');
-						nascosto = true;
-						observer.disconnect();
-						return;
-					}
-				}
-			});
-			observer.observe(document.body, { childList: true });
-		})();
 	</script>
 </body>
 

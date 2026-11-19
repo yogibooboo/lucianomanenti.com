@@ -180,16 +180,16 @@ html, body {
     gap: 6px;
 }
 .lang-switch-header a, .modale-inizio-lang a {
-    color: #ffd700;
+    color: white;
     text-decoration: none;
     font-size: 12px;
     font-weight: bold;
     padding: 0 8px;
     height: 28px;
     line-height: 26px;
-    border: 1px solid rgba(255, 215, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.3);
     border-radius: 4px;
-    background: rgba(0, 0, 0, 0.4);
+    background: rgba(255, 255, 255, 0.15);
     transition: all 0.2s;
     box-sizing: border-box;
     display: inline-flex;
@@ -202,7 +202,7 @@ html, body {
     border-color: #b8860b;
 }
 .lang-switch-header a:hover:not(.active), .modale-inizio-lang a:hover:not(.active) {
-    background: rgba(255, 215, 0, 0.2);
+    background: rgba(255, 255, 255, 0.3);
 }
 
 .btn-audio-game {
@@ -1626,4 +1626,33 @@ html, body {
 .pulsante-home-tressette:hover {
     background: linear-gradient(135deg, #e08514, #a3580a);
     box-shadow: 0 0 14px rgba(255, 215, 0, 0.65);
+}
+
+/* REGOLE e Scrivetemi sul campo: aspetto comune del sito (testa-canonica 11.2).
+   Posto e misure restano quelli della fila */
+#btn-regole-tressette,
+#btn-scrivetemi-tressette {
+    border-radius: 8px;
+    color: #fff;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+}
+#btn-regole-tressette {
+    background: linear-gradient(180deg, #4a7c59 0%, #2d5a3d 100%);
+    border: 2px solid #6b9b7a;
+}
+#btn-regole-tressette:hover {
+    background: linear-gradient(180deg, #5a8c69 0%, #3d6a4d 100%);
+    border-color: #6b9b7a;
+    transform: scale(1.05);
+}
+#btn-regole-tressette:active { transform: scale(0.95); }
+#btn-scrivetemi-tressette {
+    background: #3a3a5a;
+    border: 2px solid #888;
+}
+#btn-scrivetemi-tressette:hover {
+    background: #3a3a5a;
+    border-color: #888;
+    transform: scale(1.1);
 }

@@ -1,4 +1,4 @@
-// intervalli.js v1.3
+// intervalli.js v1.4
 
 (function () {
     'use strict';
@@ -601,5 +601,9 @@
             localStorage.setItem('lm_volume', this.value);
         });
     }
+
+    // Analytics: un game_start all'accesso alla pagina, nient'altro. Un
+    // allenatore dell'orecchio non ha una fine partita; conta chi entra.
+    if (window.sitoPartita) window.sitoPartita.inizio('accesso');
 
 })();

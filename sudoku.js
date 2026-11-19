@@ -346,6 +346,7 @@ function nuovaPartita(diff) {
         renderTutto();
         avviaTimer();
         salvaPartita();
+        if (window.sitoPartita) window.sitoPartita.inizio(diff);
         setMessaggio(SUDOKU_LANG.partitaInCorso);
         riproduciAudio('sounds/scala40/ding.mp3');
     }, 50);
@@ -1121,17 +1122,8 @@ function controllaVittoria() {
         (nuovoRecordAssoluto ? SUDOKU_LANG.nuovoRecord : '');
 
     // Analytics fine partita
-    if (typeof gtag === 'function') {
-        const prefix = (window.gameConfig && window.gameConfig.gaPrefix) || '';
-        gtag('event', prefix + 'game_won', {
-            'event_category': 'Sudoku',
-            'difficulty': difficolta,
-            'time_seconds': secondi,
-            'mistakes': erroriCount,
-            'hints': hintCount,
-            'version': window.scriptVersion || 'unknown'
-        });
-    }
+    // Errori e suggerimenti nel parametro comune `dettagli' (testa-canonica 10.9)
+    if (window.sitoPartita) window.sitoPartita.fine('won', { dettagli: dettagliGA() });
 
     setTimeout(function () {
         document.getElementById('schermo').style.display = 'block';
@@ -1150,15 +1142,27 @@ function controllaVittoria() {
     }, 800);
 }
 
+// Il parametro `dettagli' di game_end: chiave=valore unite da ';'
+function dettagliGA() {
+    return 'errori=' + erroriCount + ';aiuti=' + hintCount;
+}
+
 // === MODALI ===
+function ricaricaPartita() {
+    if (typeof window.reloadWithInterstitial === 'function') {
+        window.reloadWithInterstitial();
+    } else {
+        location.reload();
+    }
+}
+
 function chiudiModali() {
     document.getElementById('schermo').style.display = 'none';
     document.getElementById('modale-inizio').style.display = 'none';
     document.getElementById('confermatermina').style.display = 'none';
     document.getElementById('haivinto').style.display = 'none';
-    document.getElementById('modale-regole').style.display = 'none';
     // Rimuove i banner delle modali per evitare annunci obsoleti alla riapertura
-    document.querySelectorAll('#campogioco .finish-banner').forEach(function (b) { b.remove(); });
+    document.querySelectorAll('#campogioco .finish-banner, #campogioco .spazio-sito').forEach(function (b) { b.remove(); });
 }
 
 function apriModaleInizio(mostraRiprendi) {
@@ -1170,6 +1174,7 @@ function apriModaleInizio(mostraRiprendi) {
 
 function riprendiPartita() {
     chiudiModali();
+    if (window.sitoPartita) window.sitoPartita.riprende(difficolta);
     avviaTimer();
     setMessaggio(SUDOKU_LANG.partitaInCorso);
 }
@@ -1205,11 +1210,6 @@ function richiediNuovaPartita() {
             leftOffset: 0
         });
     }
-}
-
-function apriRegole() {
-    document.getElementById('schermo').style.display = 'block';
-    document.getElementById('modale-regole').style.display = 'flex';
 }
 
 // === TASTIERA ===
@@ -1295,7 +1295,6 @@ function initSudoku() {
     document.getElementById('btn-hint-applica').addEventListener('click', applicaHint);
     document.getElementById('btn-hint-chiudi').addEventListener('click', annullaSuggerimento);
     document.getElementById('btn-nuova-partita').addEventListener('click', richiediNuovaPartita);
-    document.getElementById('btn-regole-top').addEventListener('click', apriRegole);
     document.getElementById('btn-riprendi').addEventListener('click', riprendiPartita);
     document.querySelectorAll('.btn-reset-record').forEach(function (btn) {
         btn.addEventListener('click', azzeraRecordSingolo);
@@ -1310,7 +1309,8 @@ function initSudoku() {
     document.getElementById('btn-si-termina').addEventListener('click', function () {
         if (timerId) clearInterval(timerId); // evita che il salvataggio periodico ricrei la partita
         localStorage.removeItem('sudoku-save');
-        location.reload();
+        if (window.sitoPartita) window.sitoPartita.fine('abandoned', { dettagli: dettagliGA() });
+        ricaricaPartita();
     });
 
     // Opzioni segnalazione errori (persistenti)

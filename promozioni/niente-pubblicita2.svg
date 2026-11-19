@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 750">
+  <!-- la pagina del gioco con i tre banner, ognuno con la sua croce sopra -->
+  <g transform="rotate(-3 512 375)">
+    <rect x="112" y="80" width="800" height="590" rx="28" fill="#fdf6e3" stroke="#c9b98a" stroke-width="10"/>
+    <path d="M117 150 H907" stroke="#c9b98a" stroke-width="8"/>
+    <circle cx="158" cy="116" r="12" fill="#c9b98a"/>
+    <circle cx="196" cy="116" r="12" fill="#c9b98a"/>
+    <circle cx="234" cy="116" r="12" fill="#c9b98a"/>
+
+    <!-- il tavolo -->
+    <rect x="296" y="296" width="432" height="340" rx="14" fill="#2e7d4f"/>
+    <g transform="rotate(-12 462 466)">
+      <rect x="400" y="378" width="124" height="176" rx="12" fill="#fff" stroke="#d9d3c0" stroke-width="4"/>
+      <path d="M462 502 c-44 -32 -50 -59 -32 -74 c13 -11 28 -4 32 10 c4 -14 19 -21 32 -10 c18 15 12 42 -32 74z" fill="#cc0c39"/>
+    </g>
+    <g transform="rotate(10 562 462)">
+      <rect x="500" y="374" width="124" height="176" rx="12" fill="#fff" stroke="#d9d3c0" stroke-width="4"/>
+      <path d="M562 418 c44 32 50 59 32 74 c-12 10 -25 6 -30 -4 l8 25 h-20 l8 -25 c-5 10 -18 14 -30 4 c-18 -15 -12 -42 32 -74z" fill="#2c2e32"/>
+    </g>
+
+    <!-- banner in alto: viola, lo sconto -->
+    <rect x="296" y="180" width="432" height="92" rx="10" fill="#8e44c9"/>
+    <circle cx="346" cy="226" r="32" fill="#ffd700"/>
+    <path d="M332 240 L360 212" stroke="#8e44c9" stroke-width="7" stroke-linecap="round"/>
+    <circle cx="334" cy="214" r="7" fill="#8e44c9"/>
+    <circle cx="358" cy="238" r="7" fill="#8e44c9"/>
+    <rect x="398" y="204" width="170" height="16" rx="8" fill="#fff"/>
+    <rect x="398" y="232" width="120" height="12" rx="6" fill="#d9b8f2"/>
+    <rect x="602" y="204" width="104" height="44" rx="22" fill="#ffd700"/>
+    <path d="M642 216 l16 10 -16 10z" fill="#8e44c9"/>
+
+    <!-- banner a sinistra: arancione, la borsa della spesa -->
+    <rect x="146" y="180" width="124" height="456" rx="10" fill="#ff9d1c"/>
+    <path d="M176 272 h64 l8 96 h-80z" fill="#fff"/>
+    <path d="M192 284 v-18 a16 16 0 0 1 32 0 v18" fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round"/>
+    <path d="M208 300 l6 13 14 2 -10 10 2 14 -12 -7 -12 7 2 -14 -10 -10 14 -2z" fill="#ff9d1c"/>
+    <rect x="166" y="404" width="84" height="16" rx="8" fill="#fff"/>
+    <rect x="166" y="432" width="84" height="12" rx="6" fill="#ffd9a3"/>
+    <rect x="166" y="454" width="56" height="12" rx="6" fill="#ffd9a3"/>
+    <rect x="162" y="540" width="92" height="44" rx="22" fill="#2c2e32"/>
+    <path d="M200 552 l16 10 -16 10z" fill="#fff"/>
+    <circle cx="208" cy="218" r="14" fill="#fff"/>
+
+    <!-- banner a destra: azzurro, il pacco regalo -->
+    <rect x="754" y="180" width="124" height="456" rx="10" fill="#2f80ed"/>
+    <rect x="778" y="296" width="76" height="66" rx="6" fill="#ffd700"/>
+    <rect x="772" y="276" width="88" height="24" rx="6" fill="#ffe45c"/>
+    <rect x="808" y="276" width="16" height="86" fill="#cc0c39"/>
+    <path d="M816 276 c-30 -34 -44 -4 0 0 c30 -34 44 -4 0 0" fill="none" stroke="#cc0c39" stroke-width="8" stroke-linejoin="round"/>
+    <rect x="774" y="404" width="84" height="16" rx="8" fill="#fff"/>
+    <rect x="774" y="432" width="84" height="12" rx="6" fill="#b5d2fa"/>
+    <rect x="774" y="454" width="56" height="12" rx="6" fill="#b5d2fa"/>
+    <rect x="770" y="540" width="92" height="44" rx="22" fill="#ffd700"/>
+    <path d="M808 552 l16 10 -16 10z" fill="#2f80ed"/>
+    <circle cx="816" cy="218" r="14" fill="#fff"/>
+
+    <!-- le croci: sotto un bordo bianco, sopra il rosso -->
+    <g fill="none" stroke-linecap="round">
+      <g stroke="#fff" stroke-width="40">
+        <path d="M124 300 L292 516 M292 300 L124 516"/>
+        <path d="M732 300 L900 516 M900 300 L732 516"/>
+        <path d="M440 156 L584 296 M584 156 L440 296"/>
+      </g>
+      <g stroke="#cc0c39" stroke-width="26">
+        <path d="M124 300 L292 516 M292 300 L124 516"/>
+        <path d="M732 300 L900 516 M900 300 L732 516"/>
+        <path d="M440 156 L584 296 M584 156 L440 296"/>
+      </g>
+    </g>
+  </g>
+</svg>

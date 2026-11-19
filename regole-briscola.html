@@ -2,154 +2,60 @@
 <html lang="it">
 
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
-	<script>
-		window.dataLayer = window.dataLayer || [];
-		function gtag() { dataLayer.push(arguments); }
-		gtag('js', new Date());
-		gtag('config', 'G-WRBDRDQ4L8');
-		window.currentLang = 'it';
-	</script>
+	<meta charset="utf-8">
+
+	<!-- Funzioni comuni del sito: GA, icone, navigazione, riquadro di consenso -->
+	<script src="site.js" defer></script>
+
 	<title>Regole Briscola - Come giocare - lucianomanenti.com</title>
-	<link rel="alternate" hreflang="it" href="regole-briscola.html">
-	<link rel="alternate" hreflang="en" href="regole-briscola-en.html">
+	<link rel="canonical" href="https://www.lucianomanenti.com/regole-briscola.html">
+	<link rel="alternate" hreflang="it" href="https://www.lucianomanenti.com/regole-briscola.html">
+	<link rel="alternate" hreflang="en" href="https://www.lucianomanenti.com/regole-briscola-en.html">
+	<link rel="alternate" hreflang="x-default" href="https://www.lucianomanenti.com/regole-briscola.html">
+	<link rel="manifest" href="/favicon/site.webmanifest">
+
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta name="Description"
 		content="Regole e istruzioni per giocare a Briscola online gratis: punteggi, la presa, i segnali del compagno e come giocare in 1 contro 1 o 2 contro 2.">
-	<link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
-	<link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
-	<link rel="shortcut icon" href="favicon/favicon.ico">
-	<link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
+
+	<link rel="stylesheet" href="/testo.css">
+
+	<!-- Due regole che testo.css non ha: i titoletti e la tabella dei punti -->
 	<style>
-		body {
-			font-family: sans-serif;
-			line-height: 1.7;
-			max-width: 800px;
-			margin: 40px auto;
-			padding: 20px;
-			color: #333;
-			background-color: #f9f9f9;
-		}
-
-		h1 {
-			color: #2c3e50;
-			border-bottom: 2px solid #ffd700;
-			padding-bottom: 10px;
-		}
-
-		h2 {
-			color: #2c3e50;
-			margin-top: 30px;
-		}
-
 		h3 {
 			color: #2c3e50;
 			font-size: 1.1em;
 			margin-top: 20px;
 		}
 
-		.lang-switch {
-			text-align: right;
-			margin-bottom: 20px;
-		}
-
-		.lang-switch a {
-			display: inline-block;
-			padding: 6px 16px;
-			margin-left: 5px;
-			text-decoration: none;
-			border-radius: 5px;
-			font-weight: bold;
-			font-size: 14px;
-		}
-
-		.lang-switch a.active {
-			background: #2c3e50;
-			color: white;
-		}
-
-		.lang-switch a:not(.active) {
-			background: #ddd;
-			color: #333;
-			cursor: pointer;
-		}
-
-		.content-box {
-			background: white;
-			padding: 30px;
-			border-radius: 8px;
-			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-		}
-
-		.play-btn {
-			display: inline-block;
-			margin-top: 25px;
-			padding: 12px 30px;
-			background: #27ae60;
-			color: white;
-			text-decoration: none;
-			border-radius: 8px;
-			font-size: 18px;
-			font-weight: bold;
-		}
-
-		.nav-links {
-			text-align: center;
-			margin-top: 30px;
-			font-size: 14px;
-		}
-
-		.nav-links a {
-			color: #3498db;
-			text-decoration: none;
-			margin: 0 10px;
-		}
-
-		.banner {
-			width: 100%;
-			height: 150px;
-			background-image: url('images/home/castagne.jpg');
-			background-size: cover;
-			background-position: center;
-			border-radius: 8px;
-			margin: 20px 0;
-			box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-		}
-
 		.score-table {
-			width: 100%;
-			border-collapse: collapse;
 			margin-top: 10px;
 			margin-bottom: 20px;
 		}
 
 		.score-table th,
 		.score-table td {
-			border: 1px solid #ddd;
 			padding: 8px;
-			text-align: left;
 		}
 
 		.score-table th {
 			background-color: #f2f2f2;
-			font-weight: bold;
+			color: inherit;
 		}
 	</style>
 </head>
 
 <body>
-	<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-		<a href="#" id="btn-back" onclick="goBack(); return false;"
-			style="display: inline-block; padding: 6px 16px; background: #e74c3c; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 14px;">&#x2190;
+	<div class="top-bar">
+		<a href="briscola.html" id="btn-back" class="back-btn" onclick="goBack(); return false;">&#x2190;
 			Indietro</a>
-		<div class="lang-switch" style="margin-bottom: 0;">
+		<div class="lang-switch">
 			<a href="regole-briscola.html" id="btn-it" class="active">Italiano</a>
 			<a href="regole-briscola-en.html" id="btn-en">English</a>
 		</div>
 	</div>
 
-	<div class="banner"></div>
+	<div class="striscia"></div>
 
 	<div class="content-box">
 		<div id="lang-it">
@@ -230,54 +136,42 @@
 				&mdash; il tuo feedback &egrave; prezioso!
 			</p>
 
-			<p style="text-align: center;"><a href="#" onclick="goBack(); return false;" class="play-btn">Chiudi</a></p>
+			<p style="text-align: center;"><a href="briscola.html" onclick="goBack(); return false;" class="play-btn">Chiudi</a></p>
 		</div>
 
 	</div>
 
-	<div class="banner"></div>
+	<div class="striscia"></div>
 
-	<div class="nav-links">
-		<a href="index.html">Home</a> |
-		<a href="scopa.html">Scopa</a> |
-		<a href="regole-scopa.html">Regole Scopa</a> |
-		<a href="regole-burraco.html">Burraco</a> |
-		<a href="regole-scala40.html">Scala 40</a> |
-		<a href="regole-machiavelli.html">Machiavelli</a> |
-		<a href="regole-rummy.html">Gin Rummy</a> |
-		<a href="privacy.html">Privacy</a> |
-		<a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)">Gestisci Cookie</a>
-	</div>
+	<div class="nav-links" data-comune></div>
 
 	<p style="text-align: center; font-size: 0.8em; color: #888; max-width: 600px; margin: 20px auto 10px; line-height: 1.5;">
 		Le immagini delle carte Bresciane sono basate sull'opera <a href="https://commons.wikimedia.org/wiki/File:Carte_bresciane_al_completo.svg" target="_blank" style="color: #3498db; text-decoration: none;">Carte bresciane al completo.svg</a> di <strong>ZZandro</strong> (Wikimedia Commons), modificate e utilizzate sotto licenza <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.it" target="_blank" style="color: #3498db; text-decoration: none;">CC BY-SA 4.0</a>.<br>
 		Le immagini delle carte Napoletane sono basate sui disegni vettoriali di <strong>Florixc</strong> (Wikimedia Commons), modificate e utilizzate sotto licenza <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.it" target="_blank" style="color: #3498db; text-decoration: none;">CC BY-SA 4.0</a>.
 	</p>
 
-	<p style="text-align: center; font-size: 0.8em; color: #999; margin-top: 10px;">
+	<p class="copyright">
 		© 2026 Luciano Manenti
 	</p>
 
 	<script>
+		// Dove va questa pagina quando si preme "indietro": il gioco di cui parla.
+		var PAGINA_GIOCO = 'briscola.html';
+
 		function goBack() {
+			// Cronologia lunga: siamo arrivati da fuori, tipicamente da Google.
+			// Portiamolo al gioco, che da qui altrimenti non raggiungerebbe: la
+			// pagina delle istruzioni, trovata con una ricerca, e' un vicolo cieco.
+			if (window.history.length > 1) {
+				window.location.href = PAGINA_GIOCO;
+				return;
+			}
+			// Scheda nuova: l'ha aperta il gioco con target="_blank". Si chiude,
+			// e il gioco rimasto sotto torna in primo piano. Se invece la scheda
+			// l'ha aperta l'utente (Ctrl+clic da Google) il browser rifiuta la
+			// chiusura in silenzio: caso raro, lasciato scoperto apposta.
 			window.close();
 		}
-		(function() {
-			var nascosto = false;
-			var observer = new MutationObserver(function() {
-				if (nascosto) return;
-				var divs = document.querySelectorAll('body > div');
-				for (var i = 0; i < divs.length; i++) {
-					if (divs[i].shadowRoot && !divs[i].className && (divs[i].getAttribute('style')||'').length > 5000) {
-						divs[i].style.setProperty('display', 'none', 'important');
-						nascosto = true;
-						observer.disconnect();
-						return;
-					}
-				}
-			});
-			observer.observe(document.body, { childList: true });
-		})();
 	</script>
 </body>
 

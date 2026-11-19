@@ -1025,3 +1025,15 @@ transform: scale(1.1);
     color: rgba(255, 255, 255, 0.3);
     font-size: 11px;
 }
+/* Il pallino resta solo quando site.js toglie "Gestisci Cookie" (pubblicita' spenta) */
+.legal-links-left .sep:last-child {
+    display: none;
+}
+
+/* AIUTO / HELP e Scrivetemi: sopra il canvas delle carte, che arriva fino in
+   fondo al campo e altrimenti si prende il clic al posto loro */
+.pulsanteaiuto,
+.pulsantehelp,
+.pulsantecomments {
+    z-index: 200;
+}

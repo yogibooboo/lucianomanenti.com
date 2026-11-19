@@ -1,4 +1,4 @@
-// rummy-core.js v1.2
+// rummy-core.js
 // Gin Rummy — card definitions, meld detection, deadwood calculation
 
 'use strict';
@@ -381,6 +381,8 @@ var TRANSLATIONS = {
 
         // Istruzioni
         'btn-istruzioni':          'REGOLE',
+        'btn-scoperte':            'SCOPERTE',
+        'btn-coperte':             'COPERTE',
 
         // Link giochi
         'link-burraco':     'Burraco',
@@ -486,6 +488,8 @@ var TRANSLATIONS = {
         'label-totale-partita':    'Match total:',
 
         'btn-istruzioni':          'RULES',
+        'btn-scoperte':            'FACE UP',
+        'btn-coperte':             'FACE DOWN',
 
         'link-burraco':     'Burraco',
         'link-scala40':     'Scala 40',

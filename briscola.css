@@ -213,6 +213,40 @@ a.pulsante-top {
     z-index: 10001;
 }
 
+/* REGOLE e Scrivetemi hanno lo stesso aspetto in tutti i giochi, quello di
+   rummy (.pulsante2 e #btn-scrivetemi di rummy.css): cambiano solo posto e
+   misure, che restano quelli di questa pagina. Regola in doc/testa-canonica.md,
+   lista A. */
+#btn-regole-top,
+#btn-scrivetemi-briscola {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    color: #fff;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    white-space: nowrap;
+}
+#btn-regole-top {
+    background: linear-gradient(180deg, #4a7c59 0%, #2d5a3d 100%);
+    border: 2px solid #6b9b7a;
+}
+#btn-regole-top:hover {
+    background: linear-gradient(180deg, #5a8c69 0%, #3d6a4d 100%);
+    border-color: #6b9b7a;
+    transform: scale(1.05);
+}
+#btn-regole-top:active { transform: scale(0.95); }
+#btn-scrivetemi-briscola {
+    background: #3a3a5a;
+    border: 2px solid #888;
+}
+#btn-scrivetemi-briscola:hover {
+    background: #3a3a5a;
+    border-color: #888;
+    transform: scale(1.1);
+}
+
 /* === PULSANTI IN ALTO A DESTRA (Undo, Scoperte, Mazzo) === */
 .pulsanti-top-destra {
     position: absolute;
@@ -1023,6 +1057,8 @@ a.pulsante-top {
     text-decoration: underline;
 }
 .legal-links-briscola .sep { color: #6b9b7a; }
+/* "Gestisci Cookie" lo toglie site.js a pubblicita' spenta: il pallino non resta solo */
+.legal-links-briscola .sep:last-child { display: none; }
 
 .link-giochi-briscola {
     position: absolute;

@@ -276,6 +276,11 @@ function registraMossa(azione, dettagli = {}) {
 // GESTIONE PARTITA
 // ============================================================================
 
+// La variante per Analytics: "2v2/torneo/1005" oppure "2v2/singola".
+function _varianteGA() {
+    return game.modalita + (game.torneo ? '/torneo/' + game.torneo.limite : '/singola');
+}
+
 function iniziaPartita() {
     console.log('Nuova partita');
     chiudiModals();
@@ -382,6 +387,14 @@ function iniziaPartita() {
     salvaStato('inizio-partita');
 
     // Notifica UI per animazione distribuzione e avvio AI se il primo giocatore non è umano
+    // Analytics: ogni mano e' una partita (mano_torneo: mano); la prima mano di un
+    // torneo manda invece l'inizio del torneo (mano_torneo: torneo), un evento
+    // solo: che cominci anche la mano e' sottinteso. L'automa non conta.
+    if (window.sitoPartita && !game.autoRun && !game.tuttiAI) {
+        if (game.torneo && game.torneo.mano === 1) window.sitoPartita.torneo.inizio(_varianteGA());
+        else window.sitoPartita.inizio(_varianteGA());
+    }
+
     if (typeof window.burracoOnInizio === 'function') {
         window.burracoOnInizio();
     } else if (!game.giocatori[game.giocatoreCorrente].isUmano) {
@@ -1803,6 +1816,22 @@ function finePartita(haVintoNoi) {
         try { localStorage.setItem('burraco_torneo', JSON.stringify(game.torneo)); } catch (e) { }
     }
 
+    // ===== ANALYTICS =====
+    // La mano finita; se questa mano chiude il torneo parte invece la fine del
+    // torneo, un evento solo (che finisca anche la mano e' sottinteso). Stessi
+    // conti del titolo piu' sotto: a pari punti la mano e' vinta, come dice lo
+    // schermo.
+    if (window.sitoPartita && !game.autoRun) {
+        var _tGA = game.torneo;
+        if (_tGA && (_tGA.totNoi >= _tGA.limite || _tGA.totLoro >= _tGA.limite) && !game._torneoChiusoGA) {
+            game._torneoChiusoGA = true;
+            window.sitoPartita.torneo.fine(
+                (_tGA.totNoi >= _tGA.limite && _tGA.totNoi >= _tGA.totLoro) ? 'won' : 'lost', _varianteGA());
+        } else {
+            window.sitoPartita.fine(vinceNoi ? 'won' : 'lost');
+        }
+    }
+
     // ===== STATISTICHE =====
     // Solo partite vere: l'automa macina migliaia di mani e falserebbe ogni
     // confronto. L'unica eccezione e' il modo prova, che esiste solo in casa e
@@ -2078,6 +2107,11 @@ function mostraRisultatoFinale(risultato, vinceNoi) {
         });
         // Abbandona torneo
         modalEl.querySelector('.btn-abbandona-torneo').addEventListener('click', () => {
+            // Analytics: la mano e' gia' finita, qui si lascia solo il torneo.
+            if (window.sitoPartita && !game.autoRun && game.torneo && !game._torneoChiusoGA) {
+                game._torneoChiusoGA = true;
+                window.sitoPartita.torneo.fine('abandoned', _varianteGA());
+            }
             try { localStorage.removeItem('burraco_torneo'); } catch (e) { }
             var nGA = game.giocatori.length;
             try { localStorage.setItem('burraco_mazziere', (game.mazziere - 1 + nGA) % nGA); } catch (e) { }

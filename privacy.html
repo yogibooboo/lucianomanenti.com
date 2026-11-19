@@ -2,100 +2,28 @@
 <html lang="it">
 
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<!-- Google tag (gtag.js) -->
-	<script async src="https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8"></script>
-	<script>
-		window.dataLayer = window.dataLayer || [];
-		function gtag() { dataLayer.push(arguments); }
-		gtag('js', new Date());
-		gtag('config', 'G-WRBDRDQ4L8');
-		window.currentLang = 'it';
-	</script>
-	<meta name="Description"
-		content="Informativa sulla privacy di lucianomanenti.com. Scopri come gestiamo i dati, i cookie e le informazioni nell'uso dei nostri giochi online.">
+	<meta charset="utf-8">
+
+	<!-- Funzioni comuni del sito: GA, icone, navigazione, riquadro di consenso -->
+	<script src="site.js" defer></script>
+
 	<title>Privacy Policy - lucianomanenti.com</title>
-	<link rel="alternate" hreflang="it" href="privacy.html">
-	<link rel="alternate" hreflang="en" href="privacy-en.html">
-	<link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
-	<style>
-		body {
-			font-family: sans-serif;
-			line-height: 1.6;
-			max-width: 800px;
-			margin: 0 auto;
-			padding: 20px;
-			color: #333;
-			background-color: #f9f9f9;
-		}
+	<link rel="canonical" href="https://www.lucianomanenti.com/privacy.html">
+	<link rel="alternate" hreflang="it" href="https://www.lucianomanenti.com/privacy.html">
+	<link rel="alternate" hreflang="en" href="https://www.lucianomanenti.com/privacy-en.html">
+	<link rel="alternate" hreflang="x-default" href="https://www.lucianomanenti.com/privacy.html">
+	<link rel="manifest" href="/favicon/site.webmanifest">
 
-		h1 {
-			color: #2c3e50;
-			border-bottom: 2px solid #ffd700;
-			padding-bottom: 10px;
-		}
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="Description"
+		content="Informativa sulla privacy di lucianomanenti.com. Scopri come vengono gestiti i dati, la memoria locale del browser e le statistiche di visita nell'uso dei giochi online.">
 
-		h2 {
-			color: #2c3e50;
-			border-bottom: 1px solid #eee;
-			padding-bottom: 5px;
-			margin-top: 30px;
-		}
-
-		.lang-switch {
-			text-align: right;
-		}
-
-		.lang-switch a {
-			display: inline-block;
-			padding: 6px 16px;
-			margin-left: 5px;
-			text-decoration: none;
-			border-radius: 5px;
-			font-weight: bold;
-			font-size: 14px;
-		}
-
-		.lang-switch a.active {
-			background: #2c3e50;
-			color: white;
-		}
-
-		.lang-switch a:not(.active) {
-			background: #ddd;
-			color: #333;
-			cursor: pointer;
-		}
-
-		.content-section {
-			background: white;
-			padding: 30px;
-			border-radius: 8px;
-			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-			margin-bottom: 20px;
-		}
-
-		.footer-links {
-			text-align: center;
-			margin-top: 40px;
-			padding-top: 20px;
-			border-top: 1px solid #eee;
-			font-size: 14px;
-		}
-
-		.footer-links a {
-			color: #3498db;
-			text-decoration: none;
-			margin: 0 15px;
-		}
-	</style>
+	<link rel="stylesheet" href="/testo.css">
 </head>
 
 <body>
-	<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-		<a href="#" onclick="window.close(); return false;" id="btn-back"
-			style="display: inline-block; padding: 6px 16px; background: #e74c3c; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 14px;">&#x2190;
+	<div class="top-bar">
+		<a href="index.html" id="btn-back" class="back-btn" onclick="chiudiOIndietro(); return false;">&#x2190;
 			Chiudi</a>
 		<div class="lang-switch">
 			<a href="privacy.html" id="btn-it" class="active">Italiano</a>
@@ -103,57 +31,81 @@
 		</div>
 	</div>
 
-	<div class="content-section">
+	<div class="striscia"></div>
+
+	<div class="content-box">
 		<div id="lang-it">
 			<h1>Informativa sulla Privacy</h1>
 			<p>La tua privacy è importante per me. Questa informativa spiega come vengono gestite le informazioni su
-				<strong>lucianomanenti.com</strong>.</p>
+				<strong>lucianomanenti.com</strong> ai sensi del Regolamento UE 2016/679 (GDPR).</p>
 
-			<h2>1. Raccolta dati</h2>
-			<p>Questo sito è una raccolta di strumenti e giochi statici: non esistono account, registrazioni o moduli
-				di contatto, e le preferenze di gioco restano salvate soltanto nel tuo browser. L'unico archivio che
-				gestisco direttamente è quello delle statistiche di gioco descritto alla sezione 3, che non contiene
-				il tuo indirizzo IP né alcun dato che ti identifichi direttamente.</p>
-			<p>Il sito utilizza però servizi di terze parti &mdash; Google AdSense per la pubblicità e Google Analytics
-				per le statistiche &mdash; che trattano alcuni dati relativi alla tua visita, descritti nelle sezioni
-				seguenti.</p>
+			<h2>1. Titolare e raccolta dati</h2>
+			<p>Il titolare del trattamento è <strong>Luciano Manenti</strong> (<a
+					href="mailto:postmaster@lucianomanenti.com">postmaster@lucianomanenti.com</a>).</p>
+			<p>Questo sito è una raccolta amatoriale e gratuita di strumenti e giochi statici: non esistono account,
+				registrazioni, moduli di contatto o archivi di dati degli utenti sui server del sito, e le preferenze
+				di gioco restano salvate soltanto nel tuo browser.</p>
+			<p class="solo-noad">Il sito non mostra annunci pubblicitari. Utilizza Google Analytics 4 per le
+				statistiche di visita e di gioco, come descritto nelle sezioni seguenti.</p>
+			<p class="solo-ad" hidden>Il sito utilizza servizi di terze parti &mdash; Google AdSense per la pubblicità
+				e Google Analytics per le statistiche di visita &mdash; che trattano alcuni dati relativi alla tua
+				visita, descritti nelle sezioni seguenti.</p>
 
-			<h2>2. Cookie e Pubblicità</h2>
-			<p>Utilizzo <strong>Google AdSense</strong> per visualizzare annunci pubblicitari. Google e i suoi partner
-				utilizzano i cookie per pubblicare annunci sulla base delle tue precedenti visite a questo sito o ad
-				altri siti web.</p>
-			<p>Per selezionare gli annunci da mostrare, Google trasmette ai propri partner pubblicitari alcune
-				informazioni tecniche relative alla visita: tipo di dispositivo e browser, pagina visitata, dati di
-				localizzazione approssimativa e indirizzo IP. Queste informazioni possono essere utilizzate per
-				personalizzare gli annunci e misurarne il rendimento.</p>
-			<p>Se non acconsenti agli annunci personalizzati, Google mostra annunci non personalizzati e limita di
-				conseguenza le informazioni condivise. L'elenco completo dei partner pubblicitari e le tue scelte per
-				ciascuna finalità sono consultabili e modificabili in qualsiasi momento dal pannello
-				<strong>Gestisci Cookie</strong>, disponibile in fondo a ogni pagina del sito.</p>
+			<h2 class="solo-noad">2. Cookie e memoria locale del browser</h2>
+			<h2 class="solo-ad" hidden>2. Cookie, memoria locale e pubblicità</h2>
 
-			<h2>3. Analytics e statistiche di gioco</h2>
-			<p><strong>Google Analytics.</strong> Utilizzo Google Analytics per monitorare il traffico del sito e migliorare l'esperienza
-				d'uso. Il servizio raccoglie informazioni come l'indirizzo IP, il tipo di browser, il dispositivo e le
-				pagine visitate. L'indirizzo IP è considerato un dato personale dalla normativa europea; Google
-				Analytics 4 lo utilizza per determinare la localizzazione approssimativa e non lo memorizza nei
-				report.</p>
-			<p><strong>Statistiche di gioco.</strong> Alcuni giochi inviano al mio server il risultato di ogni partita
-				conclusa (esito, punteggio, durata e configurazione di gioco) per valutare l'efficacia degli algoritmi
-				di gioco. Il tuo indirizzo IP non viene registrato, e il risultato di una partita non contiene nulla
-				che ti riguardi: sono i fatti di una mano di carte.</p>
-			<p>Se hai dato il consenso alle relative finalità nel pannello <strong>Gestisci Cookie</strong>, al
-				risultato viene aggiunto un identificatore casuale che il tuo browser genera una volta e conserva al
-				proprio interno: permette di riconoscere le partite provenienti dallo stesso browser, non dalla stessa
-				persona, e non è condiviso con nessuno né usato per finalità pubblicitarie. Puoi revocare il consenso
-				in qualsiasi momento dallo stesso pannello: l'identificatore viene cancellato dal tuo browser e le
-				partite successive vengono registrate senza, cioè in forma anonima. I dati sono conservati per il
-				tempo strettamente necessario a confrontare gli algoritmi di gioco, poi vengono cancellati.</p>
+			<p><strong>Memoria locale tecnica (<code>localStorage</code> / <code>sessionStorage</code>).</strong> Per
+				funzionare correttamente, i giochi salvano esclusivamente sul tuo dispositivo alcune preferenze tecniche
+				(ad esempio l'attivazione o disattivazione degli effetti sonori, le varianti scelte, lo stato della
+				partita in corso o i punteggi migliori ottenuti sul tuo dispositivo). Questi dati non lasciano mai il
+				tuo browser e non vengono trasmessi al server.</p>
 
-			<h2>4. Gestione delle scelte sulla privacy</h2>
-			<p>Puoi gestire o revocare le tue preferenze di consenso in qualsiasi momento tramite il link
-				<strong>Gestisci Cookie</strong>, presente in fondo a ogni pagina del sito accanto al link a questa
-				informativa. Il pannello che si apre ti permette di scegliere finalità per finalità e partner per
-				partner.</p>
+			<div class="solo-noad">
+				<p><strong>Nessun cookie pubblicitario.</strong> Questo sito non mostra annunci pubblicitari e non
+					utilizza cookie pubblicitari o di profilazione. Gli unici cookie presenti sono quelli di Google
+					Analytics 4 (<code>_ga</code>, <code>_ga_*</code>), descritti alla sezione 3.</p>
+			</div>
+			<div class="solo-ad" hidden>
+				<p><strong>Pubblicità (Google AdSense).</strong> Utilizzo Google AdSense per visualizzare annunci
+					pubblicitari. Google e i suoi partner utilizzano i cookie per pubblicare annunci sulla base delle
+					tue precedenti visite a questo sito o ad altri siti web.</p>
+				<p>Per selezionare gli annunci da mostrare, Google trasmette ai propri partner pubblicitari alcune
+					informazioni tecniche relative alla visita: tipo di dispositivo e browser, pagina visitata, dati di
+					localizzazione approssimativa e indirizzo IP. Queste informazioni possono essere utilizzate per
+					personalizzare gli annunci e misurarne il rendimento.</p>
+				<p>Se non acconsenti agli annunci personalizzati, Google mostra annunci non personalizzati e limita di
+					conseguenza le informazioni condivise. L'elenco completo dei partner pubblicitari e le tue scelte
+					per ciascuna finalità sono consultabili e modificabili in qualsiasi momento dal pannello
+					<strong>Gestisci Cookie</strong>, disponibile in fondo a ogni pagina del sito.</p>
+			</div>
+
+			<h2>3. Statistiche di visita e di gioco (Google Analytics 4)</h2>
+			<p>Utilizzo <strong>Google Analytics 4</strong> per sapere quanto vengono usati il sito e i singoli
+				giochi e per migliorarli. Il servizio raccoglie informazioni tecniche sulla visita: il tipo di browser
+				e di dispositivo, la località approssimativa, le pagine visitate, le partite iniziate e finite con il
+				loro esito e la loro durata, e gli eventuali errori di funzionamento delle pagine.</p>
+			<p><strong>L'identificativo del browser.</strong> Google Analytics assegna a ogni browser un
+				identificativo casuale, salvato nel cookie <code>_ga</code>. Serve a distinguere un visitatore
+				dall'altro e a contare le visite e le partite; lo stesso browser viene riconosciuto quando torna.
+				Non contiene il nome, l'indirizzo email né altri dati che permettano di sapere chi sei.</p>
+			<p>I dati collegati a questo identificativo vengono conservati per 14 mesi. Secondo quanto dichiara
+				Google, Analytics 4 non registra né memorizza gli indirizzi IP. La funzione <em>Google Signals</em>
+				è disattivata. I dati sono trattati da Google, che può elaborarli anche su server situati fuori
+				dall'Unione Europea.</p>
+			<p><strong>Caratteri tipografici.</strong> Alcune pagine caricano i caratteri da Google Fonts: per
+				farlo il tuo browser si collega ai server di Google, che ne ricevono l'indirizzo IP.</p>
+			<h2>4. Gestione dei cookie e delle scelte sulla privacy</h2>
+			<p class="solo-noad">Puoi bloccare o cancellare in qualsiasi momento i cookie e i dati salvati nella
+				memoria locale direttamente dalle impostazioni del tuo browser. Puoi inoltre disattivare la raccolta
+				dati di Google Analytics installando nel browser il <a
+					href="https://tools.google.com/dlpage/gaoptout" target="_blank" rel="noopener">Componente
+					aggiuntivo per la disattivazione di Google Analytics</a> fornito da Google.</p>
+			<p class="solo-ad" hidden>Puoi gestire o revocare le tue preferenze di consenso in qualsiasi momento
+				tramite il link <strong>Gestisci Cookie</strong>, presente in fondo a ogni pagina del sito accanto al
+				link a questa informativa. Il pannello che si apre ti permette di scegliere finalità per finalità e
+				partner per partner. Puoi inoltre disattivare Google Analytics tramite il <a
+					href="https://tools.google.com/dlpage/gaoptout" target="_blank" rel="noopener">Componente
+					aggiuntivo per la disattivazione di Google Analytics</a>.</p>
 			<p>Per maggiori informazioni su come Google tratta i dati puoi consultare le
 				<a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Norme sulla privacy di
 					Google</a> e la pagina
@@ -163,14 +115,11 @@
 			<h2>5. I tuoi diritti</h2>
 			<p>In base al Regolamento europeo sulla protezione dei dati (GDPR) hai diritto di accedere ai tuoi dati
 				personali, chiederne la rettifica o la cancellazione, opporti al trattamento e revocare il consenso
-				prestato. Per le richieste relative ai dati trattati da Google ti invito a rivolgerti direttamente a
-				Google tramite i link della sezione precedente.</p>
-			<p>Le statistiche di gioco descritte alla sezione 3 non contengono dati che ti identifichino e non dispongo
-				di alcun mezzo per ricondurle a te. Revocando il consenso dal pannello
-				<strong>Gestisci Cookie</strong> l'identificatore conservato nel tuo browser viene cancellato e le
-				partite successive vengono registrate in forma anonima.</p>
-			<p>È inoltre riconosciuto il diritto di reclamo all'Autorità Garante per la protezione dei dati
-				personali.</p>
+				eventualmente prestato. Per le richieste relative ai dati trattati da Google ti invito a rivolgerti
+				direttamente a Google tramite i link della sezione precedente.</p>
+			<p>È inoltre riconosciuto il diritto di proporre reclamo all'Autorità Garante per la protezione dei dati
+				personali (<a href="https://www.garanteprivacy.it" target="_blank"
+					rel="noopener">www.garanteprivacy.it</a>).</p>
 
 			<h2>6. Contatti</h2>
 			<p>Per qualsiasi domanda relativa a questa informativa, puoi contattarmi a: <a
@@ -178,33 +127,28 @@
 		</div>
 	</div>
 
-	<div class="footer-links">
-		<a href="aboutme.html">Chi Sono</a> |
-		<a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)">Gestisci Cookie</a> |
-		<a href="#" onclick="window.close(); return false;" id="footer-back">Chiudi questa pagina</a>
+	<div class="striscia"></div>
+
+	<div class="nav-links">
+		<a href="index.html">Home</a> |
+		<a href="aboutme.html">Chi Sono</a>
+		<span class="solo-ad" hidden>| <a
+				href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)">Gestisci Cookie</a></span> |
+		<a href="index.html" id="footer-back" onclick="chiudiOIndietro(); return false;">Chiudi questa pagina</a>
 	</div>
 
-	<p style="text-align: center; font-size: 0.8em; color: #999; margin-top: 25px;">
+	<p class="copyright">
 		© 2026 Luciano Manenti
 	</p>
 
 	<script>
-		(function() {
-			var nascosto = false;
-			var observer = new MutationObserver(function() {
-				if (nascosto) return;
-				var divs = document.querySelectorAll('body > div');
-				for (var i = 0; i < divs.length; i++) {
-					if (divs[i].shadowRoot && !divs[i].className && (divs[i].getAttribute('style')||'').length > 5000) {
-						divs[i].style.setProperty('display', 'none', 'important');
-						nascosto = true;
-						observer.disconnect();
-						return;
-					}
-				}
-			});
-			observer.observe(document.body, { childList: true });
-		})();
+		function chiudiOIndietro() {
+			if (window.history.length > 1) {
+				window.history.back();
+				return;
+			}
+			window.close();
+		}
 	</script>
 </body>
 

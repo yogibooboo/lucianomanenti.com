@@ -2,100 +2,45 @@
 <html lang="en">
 
 <head>
-    <script>
-        // Fix sicurezza per evitare crash da cross-origin su window.opener
-        (function() { try { if (!window.opener) return; var test = window.opener.document; if (!window.opener.game) { window.opener = null; } } catch(e) { window.opener = null; } })();
-    </script>
-    <script>
-        // AdSense caricato via JS e non con un tag statico: in dev_mode la libreria
-        // non deve partire affatto. Serve leggere localStorage qui, prima del tag,
-        // perche' game-layout.js (che definisce devMode) viene caricato molto dopo.
-        // Senza questo, adsbygoogle.js si carica comunque e inserisce da se' uno slot
-        // "auto ads": in locale Google lo rifiuta con 403, ma nei test ONLINE quello
-        // slot verrebbe servito davvero, con impression reali sulle nostre pagine.
-        (function () {
-            try { if (localStorage.getItem('dev_mode') === '1') return; } catch (e) { }
-            var s = document.createElement('script');
-            s.async = true;
-            s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9335537153013492';
-            s.crossOrigin = 'anonymous';
-            document.head.appendChild(s);
-        })();
-    </script>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="utf-8">
+
+    <!-- Site-wide functions: GA, icons, audio, navigation, consent box -->
+    <script src="site.js"></script>
+
     <title>Secret Code Game Online Free - lucianomanenti.com</title>
     <link rel="canonical" href="https://www.lucianomanenti.com/codice-segreto-en.html">
     <link rel="alternate" hreflang="it" href="https://www.lucianomanenti.com/codice-segreto.html">
     <link rel="alternate" hreflang="en" href="https://www.lucianomanenti.com/codice-segreto-en.html">
     <link rel="alternate" hreflang="x-default" href="https://www.lucianomanenti.com/codice-segreto.html">
-    <link rel="icon" type="image/png" href="favicon/favicon-96x96.png" sizes="96x96">
-    <link rel="icon" type="image/svg+xml" href="favicon/favicon.svg">
-    <link rel="shortcut icon" href="favicon/favicon.ico">
-    <link rel="apple-touch-icon" sizes="180x180" href="favicon/apple-touch-icon.png">
     <link rel="manifest" href="favicon/site.webmanifest">
 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="Description"
         content="Play Secret Code free online: the computer hides a row of colours and you crack it by deduction. Every guess tells you how many colours are right and how many are in the right place.">
-    <meta http-Equiv="Cache-Control" Content="no-cache">
-    <meta http-Equiv="Pragma" Content="no-cache">
-    <meta http-Equiv="Expires" Content="0">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Slackey&display=swap" rel="stylesheet">
 
-    <link rel="stylesheet" href="codice-segreto.css?v=1.7" />
+    <link rel="stylesheet" href="codice-segreto.css?v=1.8" />
 
-    <!-- Google tag (gtag.js) -->
     <script>
-        // Come per AdSense: in dev_mode la libreria non viene caricata, cosi' le
-        // sessioni di test non finiscono nelle statistiche GA4. gtag() viene pero'
-        // definita SEMPRE, perche' il resto del codice la chiama per gli eventi:
-        // in dev_mode resta una funzione inerte che accumula solo in dataLayer.
-        window.dataLayer = window.dataLayer || [];
-        function gtag() { dataLayer.push(arguments); }
-        (function () {
-            try { if (localStorage.getItem('dev_mode') === '1') return; } catch (e) { }
-            var s = document.createElement('script');
-            s.async = true;
-            s.src = 'https://www.googletagmanager.com/gtag/js?id=G-WRBDRDQ4L8';
-            document.head.appendChild(s);
-            gtag('js', new Date());
-            gtag('config', 'G-WRBDRDQ4L8');
-        })();
-    </script>
-    <script>
-        window.gameConfig = {
-            gaPrefix: 'CODICE_',
-            hideLegalFooter: true,
-            adsenseActive: true,
-            adsenseSlots: {
-                '300x600': '5266697442',
-                '160x600': '1167670336',
-                '300x250': '8471445288',
-                '160x250': '8663016975'
-            }
-        };
-        window.currentLang = 'en';
+        window.gameConfig = { gaPrefix: 'CODICE_' };
     </script>
 </head>
 
 <body>
 
     <div class="main-container">
-        <!-- Sidebar per annunci (gestite dal layout engine) -->
-        <div id="sidebar-left" class="sidebar"></div>
-        <div id="sidebar-right" class="sidebar"></div>
-
         <!-- Campo di gioco principale centrato e riscalato -->
         <div id="campogioco">
             <!-- Schermo overlay per modali -->
             <div id="schermo"></div>
 
-            <div class="lang-switch-header">
-                <a href="codice-segreto.html">IT</a>
-                <a href="codice-segreto-en.html" class="active">EN</a>
+            <!-- Language and audio selector -->
+            <div id="lang-switcher">
+                <a href="codice-segreto.html" class="btn-lang" id="btn-lang-it" title="Italiano">IT</a>
+                <a href="codice-segreto-en.html" class="btn-lang active" id="btn-lang-en" title="English">EN</a>
                 <div id="btn-audio" class="btn-audio-game" aria-label="Audio"></div>
             </div>
             <div id="titolo-gioco">Secret Code<br>Luciano</div>
@@ -224,10 +169,6 @@
                 </div>
 
                 <button id="btn-nuova-partita">NEW GAME</button>
-
-                <!-- Riquadro affiliati rotante: NON e' uno slot AdSense, quindi
-                     puo' cambiare da solo senza violare nessuna policy. -->
-                <div id="banner-rotante"></div>
             </div>
 
             <!-- ================= MODALI ================= -->
@@ -262,8 +203,8 @@
                     <a href="codice-segreto.html" id="btn-lang-it-modale" title="Italiano">IT</a>
                     <a href="codice-segreto-en.html" class="active" id="btn-lang-en-modale" title="English">EN</a>
                 </div>
-                <a href="regole-codice-segreto-en.html" target="_blank" rel="opener" id="btn-regole-modale"
-                    class="btn-angolo-modale sinistra">HOW TO PLAY</a>
+                <a href="regole-codice-segreto-en.html" target="_blank" id="btn-regole-modale"
+                    class="btn-angolo-modale sinistra">RULES</a>
                 <a href="index-en.html" id="btn-home-modale" class="btn-angolo-modale destra home">ALL GAMES</a>
             </div>
 
@@ -300,14 +241,13 @@
 
             <!-- Link di navigazione ed utilità a fondo pagina -->
             <div class="link-utility-bottom">
-                <a href="aboutme-en.html" target="_blank" id="btn-scrivetemi-codice" class="pulsante-top">Write to Me</a>
-                <a href="regole-codice-segreto-en.html" target="_blank" rel="opener" id="btn-regole-top" class="pulsante-top">How to Play</a>
+                <a href="aboutme-en.html" target="_blank" id="btn-scrivetemi-codice" class="pulsante-top">Write to me</a>
+                <a href="regole-codice-segreto-en.html" target="_blank" id="btn-regole-top" class="pulsante-top">RULES</a>
             </div>
 
             <!-- Link Legali (Privacy e Cookie) -->
             <div class="legal-links-codice">
                 <a href="privacy-en.html" target="_blank" id="btn-privacy-codice">Privacy Policy</a>
-                <span class="sep">•</span>
                 <a href="javascript:googlefc.callbackQueue.push(googlefc.showRevocationMessage)" id="btn-cookie-codice">Manage Cookies</a>
             </div>
 
@@ -330,30 +270,8 @@
     <!-- Pallino appeso al puntatore quando il modo "assegna" e' armato -->
     <div id="sprite-assegna">●</div>
 
-    <!-- Script condivisi dal sito -->
-    <script src="site.js?v=1.1"></script>
-    <!-- Layout engine per ridimensionare la finestra del gioco -->
-    <script src="game-layout.js?v=4.6"></script>
-    <!-- Logica del Codice Segreto -->
-    <script src="codice-segreto.js?v=2.1"></script>
-    <script>
-        (function () {
-            var nascosto = false;
-            var observer = new MutationObserver(function () {
-                if (nascosto) return;
-                var divs = document.querySelectorAll('body > div');
-                for (var i = 0; i < divs.length; i++) {
-                    if (divs[i].shadowRoot && !divs[i].className && (divs[i].getAttribute('style') || '').length > 5000) {
-                        divs[i].style.setProperty('display', 'none', 'important');
-                        nascosto = true;
-                        observer.disconnect();
-                        return;
-                    }
-                }
-            });
-            observer.observe(document.body, { childList: true });
-        })();
-    </script>
+    <!-- Secret Code logic -->
+    <script src="codice-segreto.js?v=2.2"></script>
 </body>
 
 </html>

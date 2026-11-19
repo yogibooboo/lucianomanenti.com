@@ -716,6 +716,7 @@ function nuovaPartita(diff) {
         renderTutto();
         avviaTimer();
         salvaPartita();
+        if (window.sitoPartita) window.sitoPartita.inizio(difficolta);
         setMessaggio(NAV_LANG.partitaInCorso);
         riproduciAudio('sounds/scala40/ding.mp3');
     }, 50);
@@ -1575,18 +1576,7 @@ function controllaVittoria() {
         NAV_LANG.riepilogo(difficolta, formattaTempo(secondi), erroriCount, hintCount) +
         (nuovoRecordAssoluto ? NAV_LANG.nuovoRecord : '');
 
-    // Analytics fine partita
-    if (typeof gtag === 'function') {
-        const prefix = (window.gameConfig && window.gameConfig.gaPrefix) || '';
-        gtag('event', prefix + 'game_won', {
-            'event_category': 'BattagliaNavale',
-            'difficulty': difficolta,
-            'time_seconds': secondi,
-            'mistakes': erroriCount,
-            'hints': hintCount,
-            'version': window.scriptVersion || 'unknown'
-        });
-    }
+    if (window.sitoPartita) window.sitoPartita.fine('won', { dettagli: dettagliGA() });
 
     setTimeout(function () {
         document.getElementById('schermo').style.display = 'block';
@@ -1621,7 +1611,7 @@ function vediSchema() {
             '<button type="button" class="btn-min-2">' +
             (window.currentLang === 'en' ? 'BACK TO RESULT' : 'TORNA AL RISULTATO') + '</button>';
         document.getElementById('campogioco').appendChild(pannello);
-        pannello.querySelector('.btn-min-1').addEventListener('click', function () { location.reload(); });
+        pannello.querySelector('.btn-min-1').addEventListener('click', ricaricaPerNuovaPartita);
         pannello.querySelector('.btn-min-2').addEventListener('click', tornaAlRisultato);
     }
     pannello.style.display = 'flex';
@@ -1634,7 +1624,23 @@ function tornaAlRisultato() {
     document.getElementById('haivinto').style.display = 'flex';
 }
 
+// Il parametro `dettagli' di game_end: chiave=valore unite da ';'. Sono i tre
+// numeri che portava il vecchio NAVALE_game_won (tempo, errori, aiuti).
+function dettagliGA() {
+    return 'tempo=' + secondi + ';errori=' + erroriCount + ';aiuti=' + hintCount;
+}
+
 // === MODALI ===
+// Un'altra partita = ricaricare la pagina, passando dall'interstitial come
+// negli altri giochi del sito. Il livello scelto resta in localStorage.
+function ricaricaPerNuovaPartita() {
+    if (typeof window.reloadWithInterstitial === 'function') {
+        window.reloadWithInterstitial();
+    } else {
+        location.reload();
+    }
+}
+
 function chiudiModali() {
     document.getElementById('schermo').style.display = 'none';
     document.getElementById('modale-inizio').style.display = 'none';
@@ -1656,6 +1662,7 @@ function apriModaleInizio(mostraRiprendi) {
 
 function riprendiPartita() {
     chiudiModali();
+    if (window.sitoPartita) window.sitoPartita.riprende(difficolta);
     avviaTimer();
     setMessaggio(NAV_LANG.partitaInCorso);
 }
@@ -1668,6 +1675,14 @@ function selezionaDifficolta(diff) {
         const b = document.getElementById('btn-diff-' + d);
         if (b) b.classList.toggle('attiva', d === diff);
     });
+    // Senza una partita in corso il riquadro dei record segue la scelta della
+    // modale: prima restava sul livello predefinito (media) anche quando la
+    // modale proponeva l'ultimo livello giocato, e mostrava i record sbagliati.
+    // Con una partita in corso (anche solo da riprendere) resta sul suo livello.
+    if (!soluzione.length || partitaFinita) {
+        difficolta = diff;
+        renderRecord();
+    }
 }
 
 function confermaEAvviaPartita() {
@@ -1775,7 +1790,8 @@ function initNavale() {
     document.getElementById('btn-si-termina').addEventListener('click', function () {
         if (timerId) clearInterval(timerId);   // evita che il salvataggio periodico ricrei la partita
         localStorage.removeItem('navale-save');
-        location.reload();
+        if (window.sitoPartita) window.sitoPartita.fine('abandoned', { dettagli: dettagliGA() });
+        ricaricaPerNuovaPartita();
     });
 
     // Opzione segnalazione errori (persistente)

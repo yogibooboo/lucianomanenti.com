@@ -8,8 +8,6 @@
    Supporto mazzi: Napoletane, Bresciane, Francesi.
    ============================================================================ */
 
-window.scriptVersion = '1.30';
-
 // === TESTI MULTILINGUA ===
 const TRESSETTE_LANG = (window.currentLang === 'en') ? {
     titoloTressette: 'Luciano\'s Tressette',
@@ -707,6 +705,19 @@ function scegliCartaCiapano(g, legali) {
 }
 
 // === GESTIONE PARTITA E DISTRIBUZIONE ===
+// La variante per Analytics (sitoPartita, in site.js): gioco e traguardo.
+function varianteGA() { return varianteGioco + '/' + targetPunti; }
+
+// Ogni ricarica passa da site.js, che guarda da se' se l'interstitial e'
+// abilitato e armato; senza site.js si ricarica e basta.
+function ricaricaPagina() {
+    if (typeof window.reloadWithInterstitial === 'function') {
+        window.reloadWithInterstitial();
+    } else {
+        location.reload();
+    }
+}
+
 function avviaNuovaPartita() {
     partitaFinita = false;
     animando = false;
@@ -740,6 +751,7 @@ function avviaNuovaPartita() {
     scegliNomi();
     aggiornaTitoloGioco();
     renderStatisticheUI();
+    if (window.sitoPartita) window.sitoPartita.inizio(varianteGA());
     iniziaNuovaSmazzata();
 }
 
@@ -1334,7 +1346,7 @@ function continuaProssimaSmazzata() {
     } catch (e) {
         console.warn('Errore salvataggio sessione smazzata:', e);
     }
-    location.reload();
+    ricaricaPagina();
 }
 
 // Conclusione partita Tressette
@@ -1346,6 +1358,7 @@ function concludiPartitaTressette() {
     const patta = puntiTorneo[0] === puntiTorneo[1];
 
     aggiornaStatistiche(vinte ? 'vinta' : (patta ? 'patta' : 'persa'));
+    if (window.sitoPartita) window.sitoPartita.fine(vinte ? 'won' : (patta ? 'draw' : 'lost'));
 
     const msgFine = document.getElementById('fine-messaggio');
     const dettFine = document.getElementById('fine-dettagli');
@@ -1363,7 +1376,7 @@ function concludiPartitaTressette() {
 
     if (dettFine) {
         dettFine.innerHTML = formattaRiepilogoHTML(ultimoDatiSmazzata, true) +
-            '<div style="font-size: 11px; color: #aed6ae; margin-top: 3px;">Smazzate giocate: ' + smazzataNumero + '</div>';
+            '<div style="font-size: 11px; color: #aed6ae; margin-top: 3px;">' + (window.currentLang === 'en' ? 'Hands played: ' : 'Smazzate giocate: ') + smazzataNumero + '</div>';
     }
 
     setTimeout(function () {
@@ -1401,6 +1414,7 @@ function concludiPartitaCiapano() {
 
     const vinte = (vincitore === 0);
     aggiornaStatistiche(vinte ? 'vinta' : 'persa', vincitore);
+    if (window.sitoPartita) window.sitoPartita.fine(vinte ? 'won' : 'lost');
 
     const msgFine = document.getElementById('fine-messaggio');
     const dettFine = document.getElementById('fine-dettagli');
@@ -1415,7 +1429,7 @@ function concludiPartitaCiapano() {
 
     if (dettFine) {
         dettFine.innerHTML = formattaRiepilogoHTML(ultimoDatiSmazzata, true) +
-            '<div style="font-size: 11px; color: #aed6ae; margin-top: 3px;">Smazzate giocate: ' + smazzataNumero + '</div>';
+            '<div style="font-size: 11px; color: #aed6ae; margin-top: 3px;">' + (window.currentLang === 'en' ? 'Hands played: ' : 'Smazzate giocate: ') + smazzataNumero + '</div>';
     }
 
     setTimeout(function () {
@@ -2271,7 +2285,7 @@ function richiediNuovaPartita() {
     // Partita conclusa: il reload rinnova pubblicità, interstitial e statistiche
     if (partitaFinita) {
         try { sessionStorage.removeItem('tressette-partita-in-corso'); } catch (e) {}
-        location.reload();
+        ricaricaPagina();
         return;
     }
     // Se la partita non è ancora iniziata o le mani sono vuote
@@ -2461,7 +2475,7 @@ function initTressette() {
     addEv('btn-no-continua', 'click', function (e) { e.stopPropagation(); chiudiModali(); });
     addEv('btn-si-termina', 'click', function () {
         try { sessionStorage.removeItem('tressette-partita-in-corso'); } catch (e) {}
-        location.reload();
+        ricaricaPagina();
     });
     addEv('btn-undo', 'click', function (e) { e.stopPropagation(); annullaMossa(); });
     addEv('btn-scoperte', 'click', toggleScoperte);
@@ -2493,7 +2507,7 @@ function initTressette() {
         const linkHtml = isEn
             ? '<a href="aboutme-en.html" target="_blank">write to me</a> for suggestions or to report errors'
             : '<a href="aboutme.html" target="_blank">scrivetemi</a> per suggerimenti o per segnalare errori';
-        elFil.innerHTML = `${txtBase} (v. ${window.scriptVersion})<br>${linkHtml}`;
+        elFil.innerHTML = `${txtBase}<br>${linkHtml}`;
     }
 
     // Ripristino partita da sessionStorage (reload tra smazzate per refresh banner pubblicitari)
@@ -2519,6 +2533,7 @@ function initTressette() {
 
             aggiornaTitoloGioco();
             chiudiModali();
+            if (window.sitoPartita) window.sitoPartita.riprende(varianteGA());
             iniziaNuovaSmazzata();
 
             window.addEventListener('resize', posizionaAvatarDinamici);
