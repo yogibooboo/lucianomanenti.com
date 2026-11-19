@@ -6,78 +6,82 @@ RewriteEngine On
 RewriteCond %{HTTPS} off
 RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
+# Le destinazioni dei RedirectMatch sono scritte per intero (https://www...):
+# con il solo percorso Apache su Aruba rimandava a http://, e il visitatore
+# faceva due salti (https -> http -> https) invece di uno (19/11/2026).
+
 # 1b. Permanent Redirection for old Scala40 V1 (Case native and V1)
-RedirectMatch 301 ^/scala40[vV]1\.html$ /scala40.html
+RedirectMatch 301 ^/scala40[vV]1\.html$ https://www.lucianomanenti.com/scala40.html
 
 # 1c. Permanent Redirection for Tetra, renamed Mattoncini / Bricks (6/10/2026)
-RedirectMatch 301 ^/tetra-en\.html$ /mattoncini-en.html
-RedirectMatch 301 ^/tetra\.html$ /mattoncini.html
+RedirectMatch 301 ^/tetra-en\.html$ https://www.lucianomanenti.com/mattoncini-en.html
+RedirectMatch 301 ^/tetra\.html$ https://www.lucianomanenti.com/mattoncini.html
 
 # 1d. WooWoo: i file woowoo2 prendono il nome del gioco, e la guida
 # diventa regole (17/11/2026)
-RedirectMatch 301 ^/woowoo2-en\.html$ /woowoo-en.html
-RedirectMatch 301 ^/woowoo2\.html$ /woowoo.html
-RedirectMatch 301 ^/guida-woowoo-en\.html$ /regole-woowoo-en.html
-RedirectMatch 301 ^/guida-woowoo\.html$ /regole-woowoo.html
+RedirectMatch 301 ^/woowoo2-en\.html$ https://www.lucianomanenti.com/woowoo-en.html
+RedirectMatch 301 ^/woowoo2\.html$ https://www.lucianomanenti.com/woowoo.html
+RedirectMatch 301 ^/guida-woowoo-en\.html$ https://www.lucianomanenti.com/regole-woowoo-en.html
+RedirectMatch 301 ^/guida-woowoo\.html$ https://www.lucianomanenti.com/regole-woowoo.html
 
 # 1e. Quadrati: la guida diventa regole (17/11/2026)
-RedirectMatch 301 ^/guida-quadrati-en\.html$ /regole-quadrati-en.html
-RedirectMatch 301 ^/guida-quadrati\.html$ /regole-quadrati.html
+RedirectMatch 301 ^/guida-quadrati-en\.html$ https://www.lucianomanenti.com/regole-quadrati-en.html
+RedirectMatch 301 ^/guida-quadrati\.html$ https://www.lucianomanenti.com/regole-quadrati.html
 
 # 1f. Battaglia navale: la guida diventa regole (17/11/2026)
-RedirectMatch 301 ^/guida-battaglia-navale-en\.html$ /regole-battaglia-navale-en.html
-RedirectMatch 301 ^/guida-battaglia-navale\.html$ /regole-battaglia-navale.html
+RedirectMatch 301 ^/guida-battaglia-navale-en\.html$ https://www.lucianomanenti.com/regole-battaglia-navale-en.html
+RedirectMatch 301 ^/guida-battaglia-navale\.html$ https://www.lucianomanenti.com/regole-battaglia-navale.html
 
 # 1g. Navale solitario: la guida diventa regole (18/11/2026)
-RedirectMatch 301 ^/guida-navale-en\.html$ /regole-navale-en.html
-RedirectMatch 301 ^/guida-navale\.html$ /regole-navale.html
+RedirectMatch 301 ^/guida-navale-en\.html$ https://www.lucianomanenti.com/regole-navale-en.html
+RedirectMatch 301 ^/guida-navale\.html$ https://www.lucianomanenti.com/regole-navale.html
 
 # 1h. Mahjong: la guida diventa regole (18/11/2026)
-RedirectMatch 301 ^/guida-mahjong-en\.html$ /regole-mahjong-en.html
-RedirectMatch 301 ^/guida-mahjong\.html$ /regole-mahjong.html
+RedirectMatch 301 ^/guida-mahjong-en\.html$ https://www.lucianomanenti.com/regole-mahjong-en.html
+RedirectMatch 301 ^/guida-mahjong\.html$ https://www.lucianomanenti.com/regole-mahjong.html
 
 # 1i. Domino: la guida diventa regole (18/11/2026)
-RedirectMatch 301 ^/guida-domino-en\.html$ /regole-domino-en.html
-RedirectMatch 301 ^/guida-domino\.html$ /regole-domino.html
+RedirectMatch 301 ^/guida-domino-en\.html$ https://www.lucianomanenti.com/regole-domino-en.html
+RedirectMatch 301 ^/guida-domino\.html$ https://www.lucianomanenti.com/regole-domino.html
 
 # 1j. Campo minato: la guida diventa regole (18/11/2026)
-RedirectMatch 301 ^/guida-minato-en\.html$ /regole-minato-en.html
-RedirectMatch 301 ^/guida-minato\.html$ /regole-minato.html
+RedirectMatch 301 ^/guida-minato-en\.html$ https://www.lucianomanenti.com/regole-minato-en.html
+RedirectMatch 301 ^/guida-minato\.html$ https://www.lucianomanenti.com/regole-minato.html
 
 # 1k. Mattoncini: la guida diventa regole (18/11/2026)
-RedirectMatch 301 ^/guida-mattoncini-en\.html$ /regole-mattoncini-en.html
-RedirectMatch 301 ^/guida-mattoncini\.html$ /regole-mattoncini.html
+RedirectMatch 301 ^/guida-mattoncini-en\.html$ https://www.lucianomanenti.com/regole-mattoncini-en.html
+RedirectMatch 301 ^/guida-mattoncini\.html$ https://www.lucianomanenti.com/regole-mattoncini.html
 
 # 1l. Scorciatoie: la guida diventa regole (18/11/2026)
-RedirectMatch 301 ^/guida-scorciatoie-en\.html$ /regole-scorciatoie-en.html
-RedirectMatch 301 ^/guida-scorciatoie\.html$ /regole-scorciatoie.html
+RedirectMatch 301 ^/guida-scorciatoie-en\.html$ https://www.lucianomanenti.com/regole-scorciatoie-en.html
+RedirectMatch 301 ^/guida-scorciatoie\.html$ https://www.lucianomanenti.com/regole-scorciatoie.html
 
 # 1m. Musica, intervalli: la guida diventa regole (18/11/2026)
-RedirectMatch 301 ^/musica/intervalli/guida-intervalli-en\.html$ /musica/intervalli/regole-intervalli-en.html
-RedirectMatch 301 ^/musica/intervalli/guida-intervalli\.html$ /musica/intervalli/regole-intervalli.html
+RedirectMatch 301 ^/musica/intervalli/guida-intervalli-en\.html$ https://www.lucianomanenti.com/musica/intervalli/regole-intervalli-en.html
+RedirectMatch 301 ^/musica/intervalli/guida-intervalli\.html$ https://www.lucianomanenti.com/musica/intervalli/regole-intervalli.html
 
 # 1n. Musica, accordi: la guida diventa regole (18/11/2026)
-RedirectMatch 301 ^/musica/accordi/guida-accordi-en\.html$ /musica/accordi/regole-accordi-en.html
-RedirectMatch 301 ^/musica/accordi/guida-accordi\.html$ /musica/accordi/regole-accordi.html
+RedirectMatch 301 ^/musica/accordi/guida-accordi-en\.html$ https://www.lucianomanenti.com/musica/accordi/regole-accordi-en.html
+RedirectMatch 301 ^/musica/accordi/guida-accordi\.html$ https://www.lucianomanenti.com/musica/accordi/regole-accordi.html
 
 # 1o. Musica, scale: la guida diventa regole (18/11/2026)
-RedirectMatch 301 ^/musica/scale/guida-scale-en\.html$ /musica/scale/regole-scale-en.html
-RedirectMatch 301 ^/musica/scale/guida-scale\.html$ /musica/scale/regole-scale.html
+RedirectMatch 301 ^/musica/scale/guida-scale-en\.html$ https://www.lucianomanenti.com/musica/scale/regole-scale-en.html
+RedirectMatch 301 ^/musica/scale/guida-scale\.html$ https://www.lucianomanenti.com/musica/scale/regole-scale.html
 
 # 1p. Metronomo: va in musica/metronomo/ come gli altri strumenti, e la guida
 # diventa regole (18/11/2026)
-RedirectMatch 301 ^/metronome-en\.html$ /musica/metronomo/index-en.html
-RedirectMatch 301 ^/metronome\.html$ /musica/metronomo/
-RedirectMatch 301 ^/guida-metronomo-en\.html$ /musica/metronomo/regole-metronomo-en.html
-RedirectMatch 301 ^/guida-metronomo\.html$ /musica/metronomo/regole-metronomo.html
+RedirectMatch 301 ^/metronome-en\.html$ https://www.lucianomanenti.com/musica/metronomo/index-en.html
+RedirectMatch 301 ^/metronome\.html$ https://www.lucianomanenti.com/musica/metronomo/
+RedirectMatch 301 ^/guida-metronomo-en\.html$ https://www.lucianomanenti.com/musica/metronomo/regole-metronomo-en.html
+RedirectMatch 301 ^/guida-metronomo\.html$ https://www.lucianomanenti.com/musica/metronomo/regole-metronomo.html
 
 # 1q. Indirizzi vecchi che Search Console vede ancora e oggi danno 404
 # (19/11/2026): la guida del vecchio Tetra, la vecchia pagina personale e i
 # percorsi con la cartella del sito ripetuta davanti.
-RedirectMatch 301 ^/guida-tetra-en\.html$ /regole-mattoncini-en.html
-RedirectMatch 301 ^/guida-tetra\.html$ /regole-mattoncini.html
-RedirectMatch 301 ^/lucianomanenti\.html$ /
-RedirectMatch 301 ^/lucianomanenti(\.com)?/(.*)$ /$2
+RedirectMatch 301 ^/guida-tetra-en\.html$ https://www.lucianomanenti.com/regole-mattoncini-en.html
+RedirectMatch 301 ^/guida-tetra\.html$ https://www.lucianomanenti.com/regole-mattoncini.html
+RedirectMatch 301 ^/lucianomanenti\.html$ https://www.lucianomanenti.com/
+RedirectMatch 301 ^/lucianomanenti(\.com)?/(.*)$ https://www.lucianomanenti.com/$2
 
 # 2. Optimized Caching Rules
 <IfModule mod_expires.c>
