@@ -17,7 +17,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="Description" content="Play the classic 15 Puzzle online for free. Slide the fifteen numbered tiles into order from 1 to 15 in the fewest moves and shortest time. Three shuffle levels, no registration required.">
 
-    <link rel="stylesheet" href="quindici.css?v=1.0" />
+    <link rel="stylesheet" href="quindici.css?v=1.1" />
 
     <script>
         window.gameConfig = { gaPrefix: 'QUINDICI_' };
@@ -37,7 +37,7 @@
                 <div id="btn-audio" class="btn-audio-game" aria-label="Audio"></div>
             </div>
 
-            <div id="titolo">15 PUZZLE</div>
+            <div id="titolo">15 PUZZLE<span id="titolo-firma">LUCIANO</span></div>
 
             <div id="messaggio"></div>
 
@@ -142,7 +142,7 @@
                     <p>
                         <label><input type="radio" name="difficolta" value="facile"> Easy (15 moves from the solved board)</label><br>
                         <label><input type="radio" name="difficolta" value="normale" checked> Normal (35 moves)</label><br>
-                        <label><input type="radio" name="difficolta" value="difficile"> Full (deep shuffle)</label>
+                        <label><input type="radio" name="difficolta" value="difficile"> Full (tiles fully at random)</label>
                     </p>
                 </div>
 
@@ -176,7 +176,7 @@
     <audio id="snd-mossa" src="sounds/scala40/cardplace1.mp3" preload="auto"></audio>
     <audio id="snd-vinta" src="sounds/scala40/tada.mp3" preload="auto"></audio>
 
-    <script src="quindici.js?v=1.0"></script>
+    <script src="quindici.js?v=1.2"></script>
     <script>
         window.initAudioToggle('#btn-audio');
     </script>

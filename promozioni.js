@@ -124,6 +124,11 @@
             it: { nome: 'WooWoo', testo: 'Gira gli scambi e porta ogni treno alla sua stazione prima che scada il tempo, senza farli scontrare.' },
             en: { nome: 'WooWoo', testo: 'Turn the switches and bring every train to its station before time runs out, without letting them crash.' }
         },
+        quindici: {
+            immagini: 1, inLingua: { en: [1] }, regole: 'regole-quindici',
+            it: { nome: 'Gioco del 15', testo: 'Fai scorrere le tessere nel vuoto e rimettile in ordine da 1 a 15, con meno mosse che puoi.' },
+            en: { nome: '15 Puzzle', testo: 'Slide the tiles into the gap and put them back in order from 1 to 15, in as few moves as you can.' }
+        },
         sudoku: {
             immagini: 1, inLingua: { en: [1] }, regole: 'regole-sudoku',
             it: { nome: 'Sudoku', testo: 'Tre livelli, la matita per gli appunti e i suggerimenti quando servono.' },
@@ -241,6 +246,7 @@
         { id: 'briscola',         tipo: 'gioco', gioco: 'briscola',         peso: 1, dove: ['colonne', 'fine'] },
         { id: 'tressette',        tipo: 'gioco', gioco: 'tressette',        peso: 1, dove: ['colonne', 'fine'] },
         { id: 'woowoo',           tipo: 'gioco', gioco: 'woowoo',           peso: 1, dove: ['colonne', 'fine'] },
+        { id: 'quindici',         tipo: 'gioco', gioco: 'quindici',         peso: 1, dove: ['colonne', 'fine'] },
         { id: 'sudoku',           tipo: 'gioco', gioco: 'sudoku',           peso: 1, dove: ['colonne', 'fine'] },
         { id: 'calcolo',          tipo: 'gioco', gioco: 'calcolo',          peso: 1, dove: ['colonne', 'fine'] },
         { id: 'quadrati',         tipo: 'gioco', gioco: 'quadrati',         peso: 1, dove: ['colonne', 'fine'] },

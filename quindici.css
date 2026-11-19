@@ -373,7 +373,8 @@ html, body {
 
 #titolo {
     position: absolute;
-    top: 16px;
+    top: 8px;
+    line-height: 1.1;
     left: 0;
     width: 100%;
     text-align: center;
@@ -384,9 +385,17 @@ html, body {
     text-shadow: 1px 2px 4px rgba(0, 0, 0, 0.6);
 }
 
+/* Il nome su una seconda riga, piu' piccolo: la riga del messaggio
+   scende di conseguenza, fino a poco sopra il tabellone (top 104). */
+#titolo-firma {
+    display: block;
+    font-size: 20px;
+    letter-spacing: 6px;
+}
+
 #messaggio {
     position: absolute;
-    top: 64px;
+    top: 72px;
     left: 0;
     width: 100%;
     text-align: center;

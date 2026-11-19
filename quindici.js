@@ -1,8 +1,9 @@
 // quindici.js -- Gioco del 15 (15 puzzle).
 //
-// Ogni schema nasce dalla posizione risolta applicando mosse valide a caso
-// senza mai annullare la mossa appena fatta: cosi' la parita' delle permutazioni
-// e' sempre quella giusta e ogni partita e' risolvibile per costruzione.
+// Facile e Normale nascono dalla posizione risolta applicando mosse valide a
+// caso senza mai annullare la mossa appena fatta. Completo dispone le tessere
+// del tutto a caso e corregge la parita' quando lo schema verrebbe
+// impossibile. In tutti e due i casi ogni partita e' risolvibile.
 
 (function () {
     'use strict';
@@ -39,11 +40,11 @@
     // ── Stato ────────────────────────────────────────────────────────────
 
     // Quante mosse casuali (senza inversione immediata) si fanno dallo schema
-    // ordinato per ciascun livello.
+    // ordinato per ciascun livello. Completo non ha passi: e' una disposizione
+    // a caso (mescolaCompleto).
     var PASSI_MESCOLA = {
         facile: 15,
-        normale: 35,
-        difficile: 100
+        normale: 35
     };
 
     // tavolo[0..15]: da 1 a 15 per le tessere, 0 per la casella vuota.
@@ -132,6 +133,48 @@
             tav[vuoto] = tav[v0];
             tav[v0] = 0;
         }
+        return tav;
+    }
+
+    // Completo: le quindici tessere in un ordine qualsiasi con il vuoto in
+    // basso a destra. Con il vuoto li' lo schema e' risolvibile solo se il
+    // numero di inversioni (coppie di tessere in ordine sbagliato) e' pari:
+    // se e' dispari basta scambiare due tessere. Poi il vuoto fa qualche passo
+    // a caso, che non cambia la risolvibilita', per non stare sempre nello
+    // stesso angolo.
+    function mescolaCompleto() {
+        var tessere = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
+        for (var i = tessere.length - 1; i > 0; i--) {
+            var j = Math.floor(Math.random() * (i + 1));
+            var x = tessere[i]; tessere[i] = tessere[j]; tessere[j] = x;
+        }
+        var inversioni = 0;
+        for (var a = 0; a < 15; a++) {
+            for (var b = a + 1; b < 15; b++) {
+                if (tessere[a] > tessere[b]) inversioni++;
+            }
+        }
+        if (inversioni % 2 === 1) {
+            var y = tessere[0]; tessere[0] = tessere[1]; tessere[1] = y;
+        }
+        var tav = tessere.concat([0]);
+        var vuoto = 15, precedente = -1;
+        // 20 o 21 passi: con un numero fisso il vuoto starebbe sempre su
+        // caselle dello stesso colore della scacchiera.
+        var passi = 20 + Math.floor(Math.random() * 2);
+        for (var p = 0; p < passi; p++) {
+            var vicini = viciniDi(vuoto), candidati = [];
+            for (var k = 0; k < vicini.length; k++) {
+                if (vicini[k] !== precedente) candidati.push(vicini[k]);
+            }
+            var scelto = candidati[Math.floor(Math.random() * candidati.length)];
+            tav[vuoto] = tav[scelto];
+            tav[scelto] = 0;
+            precedente = vuoto;
+            vuoto = scelto;
+        }
+        // Lo schema gia' risolto per caso: si rifa'.
+        if (eRisolto(tav)) return mescolaCompleto();
         return tav;
     }
 
@@ -296,19 +339,21 @@
         return difficolta;
     }
 
+    // La partita comincia davvero alla prima mossa: li' partono il
+    // cronometro e game_start (eseguiMossa). Uno schema aperto e lasciato li'
+    // senza toccarlo non conta come partita.
     function nuovaPartita() {
-        var passi = PASSI_MESCOLA[difficolta] || 35;
-        tavolo = mescolaTavolo(passi);
+        fermaTimer();
+        tavolo = (difficolta === 'difficile')
+            ? mescolaCompleto()
+            : mescolaTavolo(PASSI_MESCOLA[difficolta] || 35);
         finita = false;
         mosse = 0;
         secondi = 0;
 
-        if (window.sitoPartita) window.sitoPartita.inizio(variante());
-
         scriviPannelli();
         disegna(false);
         scriviMessaggio(t('istruzioni'));
-        avviaTimer();
     }
 
     // Ripartenza dalla finestra di fine partita tramite reloadWithInterstitial
@@ -343,6 +388,10 @@
         if (finita || modaleAperta()) return;
         if (!scorriVersoVuoto(idx)) return;
 
+        if (mosse === 0) {
+            if (window.sitoPartita) window.sitoPartita.inizio(variante());
+            avviaTimer();
+        }
         mosse++;
         suona('snd-mossa');
 
@@ -384,7 +433,20 @@
             });
         }
 
-        setTimeout(function () { apri('modal-fine'); }, 700);
+        setTimeout(function () {
+            if (typeof window.setupAmazonFinishBanner === 'function') {
+                window.setupAmazonFinishBanner('modal-fine', {
+                    modalStyle: { overflow: 'visible' },
+                    targetTop: 375,
+                    applyModalTop: false,
+                    bannerWidth: 700,
+                    bannerHeight: 250,
+                    bannerTopOffset: 265,
+                    leftOffset: -150
+                });
+            }
+            apri('modal-fine');
+        }, 700);
     }
 
     // ── Tastiera ─────────────────────────────────────────────────────────
@@ -468,19 +530,6 @@
             impostaRadio('difficolta', difficolta);
             apri('modal-nuova');
         });
-
-        // Riquadro di fine partita sopra la finestra dei risultati (11.3).
-        if (typeof window.setupAmazonFinishBanner === 'function') {
-            window.setupAmazonFinishBanner('modal-fine', {
-                modalStyle: { overflow: 'visible' },
-                targetTop: 375,
-                applyModalTop: false,
-                bannerWidth: 700,
-                bannerHeight: 250,
-                bannerTopOffset: 265,
-                leftOffset: -150
-            });
-        }
     }
 
     function init() {

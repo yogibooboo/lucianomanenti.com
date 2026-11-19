@@ -17,7 +17,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="Description" content="Gioca al Gioco del 15 online gratis. Riordina le quindici tessere da 1 a 15 nel minor numero di mosse e nel minor tempo. Tre livelli di mescolamento, nessuna registrazione.">
 
-    <link rel="stylesheet" href="quindici.css?v=1.0" />
+    <link rel="stylesheet" href="quindici.css?v=1.1" />
 
     <script>
         window.gameConfig = { gaPrefix: 'QUINDICI_' };
@@ -37,7 +37,7 @@
                 <div id="btn-audio" class="btn-audio-game" aria-label="Audio"></div>
             </div>
 
-            <div id="titolo">GIOCO DEL 15</div>
+            <div id="titolo">GIOCO DEL 15<span id="titolo-firma">LUCIANO</span></div>
 
             <div id="messaggio"></div>
 
@@ -142,7 +142,7 @@
                     <p>
                         <label><input type="radio" name="difficolta" value="facile"> Facile (15 mosse dallo schema ordinato)</label><br>
                         <label><input type="radio" name="difficolta" value="normale" checked> Normale (35 mosse)</label><br>
-                        <label><input type="radio" name="difficolta" value="difficile"> Completo (mescolamento profondo)</label>
+                        <label><input type="radio" name="difficolta" value="difficile"> Completo (tessere tutte a caso)</label>
                     </p>
                 </div>
 
@@ -176,7 +176,7 @@
     <audio id="snd-mossa" src="sounds/scala40/cardplace1.mp3" preload="auto"></audio>
     <audio id="snd-vinta" src="sounds/scala40/tada.mp3" preload="auto"></audio>
 
-    <script src="quindici.js?v=1.0"></script>
+    <script src="quindici.js?v=1.2"></script>
     <script>
         window.initAudioToggle('#btn-audio');
     </script>
