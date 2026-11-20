@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 750">
+  <!-- una locomotiva a vapore, di profilo, con la faccia sul davanti della
+       caldaia: piange, e le lacrime cadono sul binario -->
+  <rect width="1024" height="750" fill="#cfe8f7"/>
+  <rect y="560" width="1024" height="190" fill="#a8cf8e"/>
+
+  <!-- il binario -->
+  <rect x="0" y="618" width="1024" height="16" fill="#7a5a3a"/>
+  <g fill="#8b6a48">
+    <rect x="30" y="634" width="60" height="18" rx="4"/><rect x="150" y="634" width="60" height="18" rx="4"/>
+    <rect x="270" y="634" width="60" height="18" rx="4"/><rect x="390" y="634" width="60" height="18" rx="4"/>
+    <rect x="510" y="634" width="60" height="18" rx="4"/><rect x="630" y="634" width="60" height="18" rx="4"/>
+    <rect x="750" y="634" width="60" height="18" rx="4"/><rect x="870" y="634" width="60" height="18" rx="4"/>
+  </g>
+  <rect x="0" y="608" width="1024" height="12" fill="#9aa0a6"/>
+
+  <!-- il fumo, grigio e floscio -->
+  <g fill="#ffffff" fill-opacity="0.85">
+    <circle cx="640" cy="150" r="44"/><circle cx="590" cy="110" r="52"/><circle cx="520" cy="96" r="44"/>
+    <circle cx="460" cy="110" r="36"/>
+  </g>
+  <g fill="#9aa0a6">
+    <circle cx="560" cy="104" r="10"/><circle cx="600" cy="130" r="8"/>
+  </g>
+
+  <!-- la cabina -->
+  <rect x="150" y="250" width="230" height="300" rx="14" fill="#c0392b" stroke="#2c2e32" stroke-width="10"/>
+  <rect x="130" y="226" width="270" height="44" rx="12" fill="#2c2e32"/>
+  <rect x="190" y="300" width="150" height="110" rx="12" fill="#fdf6e3" stroke="#2c2e32" stroke-width="8"/>
+
+  <!-- la caldaia -->
+  <rect x="370" y="350" width="400" height="200" rx="24" fill="#2f80ed" stroke="#2c2e32" stroke-width="10"/>
+  <rect x="440" y="350" width="22" height="200" fill="#ffd700"/>
+  <rect x="580" y="350" width="22" height="200" fill="#ffd700"/>
+
+  <!-- il comignolo -->
+  <path d="M610 350 L600 220 L700 220 L690 350 Z" fill="#2c2e32"/>
+  <rect x="588" y="200" width="124" height="34" rx="8" fill="#2c2e32"/>
+
+  <!-- il davanti: la faccia -->
+  <g transform="translate(800 398) scale(0.9) translate(-790 -430)">
+  <circle cx="790" cy="430" r="140" fill="#fdf6e3" stroke="#2c2e32" stroke-width="12"/>
+  <!-- sopracciglia tristi -->
+  <path d="M712 362 Q742 340 770 352" fill="none" stroke="#2c2e32" stroke-width="12" stroke-linecap="round"/>
+  <path d="M818 352 Q846 340 876 362" fill="none" stroke="#2c2e32" stroke-width="12" stroke-linecap="round"/>
+  <!-- occhi -->
+  <ellipse cx="748" cy="400" rx="22" ry="28" fill="#2c2e32"/>
+  <ellipse cx="838" cy="400" rx="22" ry="28" fill="#2c2e32"/>
+  <circle cx="755" cy="390" r="8" fill="#fff"/>
+  <circle cx="845" cy="390" r="8" fill="#fff"/>
+  <!-- bocca all'ingiu' -->
+  <path d="M740 500 Q793 455 846 500" fill="none" stroke="#2c2e32" stroke-width="14" stroke-linecap="round"/>
+  <!-- guance -->
+  <circle cx="712" cy="460" r="18" fill="#f4a6a6" fill-opacity="0.7"/>
+  <circle cx="874" cy="460" r="18" fill="#f4a6a6" fill-opacity="0.7"/>
+  <!-- lacrime -->
+  <g fill="#4aa8ff" stroke="#1f6fbf" stroke-width="4">
+    <path d="M736 432 C724 456 722 476 736 482 C750 476 748 456 736 432 Z"/>
+    <path d="M850 432 C838 456 836 476 850 482 C864 476 862 456 850 432 Z"/>
+    <path d="M722 520 C712 540 710 556 722 561 C734 556 732 540 722 520 Z"/>
+    <path d="M866 532 C856 552 854 568 866 573 C878 568 876 552 866 532 Z"/>
+  </g>
+  </g>
+  <!-- la pozzanghera sul binario -->
+  <ellipse cx="800" cy="604" rx="90" ry="10" fill="#4aa8ff" fill-opacity="0.7"/>
+
+  <!-- le ruote -->
+  <g stroke="#2c2e32" stroke-width="12" fill="#c0392b">
+    <circle cx="250" cy="560" r="62"/>
+    <circle cx="470" cy="572" r="44"/>
+    <circle cx="580" cy="572" r="44"/>
+    <circle cx="690" cy="572" r="44"/>
+  </g>
+  <g fill="#2c2e32">
+    <circle cx="250" cy="560" r="14"/><circle cx="470" cy="572" r="10"/>
+    <circle cx="580" cy="572" r="10"/><circle cx="690" cy="572" r="10"/>
+  </g>
+  <rect x="460" y="564" width="240" height="16" rx="8" fill="#9aa0a6" stroke="#2c2e32" stroke-width="4"/>
+</svg>

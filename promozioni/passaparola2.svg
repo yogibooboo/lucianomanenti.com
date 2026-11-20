@@ -1,0 +1,117 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 750">
+  <!-- un giocatore, visto di spalle, davanti al computer con la homepage
+       del sito; dalla testa salgono i cuoricini -->
+  <rect width="1024" height="750" fill="#fff3d6"/>
+  <g fill="#ffe2a0">
+    <circle cx="90" cy="110" r="60"/><circle cx="975" cy="120" r="45"/>
+  </g>
+
+  <!-- la scrivania -->
+  <rect x="0" y="585" width="1024" height="165" fill="#c8915a"/>
+  <rect x="0" y="585" width="1024" height="18" fill="#a8743f"/>
+
+  <!-- il monitor -->
+  <rect x="590" y="500" width="80" height="70" fill="#4a4d52"/>
+  <rect x="520" y="560" width="220" height="26" rx="10" fill="#3a3c40"/>
+  <rect x="320" y="70" width="620" height="440" rx="26" fill="#2c2e32"/>
+
+  <!-- lo schermo: la homepage -->
+  <svg x="345" y="95" width="570" height="390" viewBox="0 0 570 390">
+    <!-- le foglie ai lati -->
+    <rect width="570" height="390" fill="#6b5a3a"/>
+    <g fill="#3f8a2a">
+      <circle cx="20" cy="40" r="26"/><circle cx="60" cy="130" r="30"/><circle cx="18" cy="220" r="24"/>
+      <circle cx="70" cy="300" r="28"/><circle cx="30" cy="370" r="26"/>
+      <circle cx="520" cy="60" r="30"/><circle cx="555" cy="160" r="24"/><circle cx="505" cy="250" r="28"/>
+      <circle cx="555" cy="330" r="26"/>
+    </g>
+    <g fill="#c96a3a">
+      <circle cx="45" cy="80" r="12"/><circle cx="25" cy="300" r="10"/><circle cx="540" cy="110" r="12"/>
+      <circle cx="530" cy="380" r="12"/>
+    </g>
+    <!-- il prato al centro -->
+    <rect x="90" y="0" width="390" height="390" fill="#3a9a1e"/>
+    <!-- l'intestazione -->
+    <rect x="110" y="10" width="350" height="76" rx="14" fill="#0f7a12" stroke="#ffffff" stroke-width="4"/>
+    <g font-family="Arial Black, Arial, sans-serif" font-weight="900" text-anchor="middle"
+       fill="#f7a21b" stroke="#7a3d00" stroke-width="1.5" paint-order="stroke">
+      <text x="285" y="48" font-size="34">Luciano Manenti</text>
+      <text x="265" y="76" font-size="20">home page</text>
+    </g>
+    <rect x="378" y="60" width="30" height="18" rx="4" fill="#0f7a12" stroke="#ffd700" stroke-width="2"/>
+    <rect x="414" y="60" width="30" height="18" rx="4" fill="#0f7a12" stroke="#cfcfcf" stroke-width="2"/>
+    <!-- i titoli delle colonne -->
+    <g fill="#ffd700">
+      <rect x="140" y="100" width="90" height="8" rx="4"/>
+      <rect x="330" y="100" width="90" height="8" rx="4"/>
+    </g>
+    <!-- i pulsanti -->
+    <g fill="#0d5c0d" stroke="#ffffff" stroke-width="2.5">
+      <rect x="102" y="118" width="166" height="24" rx="7"/><rect x="102" y="148" width="166" height="24" rx="7"/>
+      <rect x="102" y="178" width="166" height="24" rx="7"/><rect x="102" y="208" width="166" height="24" rx="7"/>
+      <rect x="102" y="238" width="166" height="24" rx="7"/><rect x="102" y="268" width="166" height="24" rx="7"/>
+      <rect x="102" y="298" width="166" height="24" rx="7"/><rect x="102" y="328" width="166" height="24" rx="7"/>
+      <rect x="290" y="118" width="84" height="24" rx="7"/><rect x="382" y="118" width="84" height="24" rx="7"/>
+      <rect x="290" y="148" width="84" height="24" rx="7"/><rect x="382" y="148" width="84" height="24" rx="7"/>
+      <rect x="290" y="178" width="84" height="24" rx="7"/><rect x="382" y="178" width="84" height="24" rx="7"/>
+      <rect x="290" y="208" width="84" height="24" rx="7"/><rect x="382" y="208" width="84" height="24" rx="7"/>
+      <rect x="290" y="238" width="84" height="24" rx="7"/><rect x="382" y="238" width="84" height="24" rx="7"/>
+      <rect x="290" y="268" width="84" height="24" rx="7"/><rect x="382" y="268" width="84" height="24" rx="7"/>
+    </g>
+    <g fill="#e8e8e8">
+      <rect x="150" y="127" width="70" height="6" rx="3"/><rect x="155" y="157" width="60" height="6" rx="3"/>
+      <rect x="160" y="187" width="50" height="6" rx="3"/><rect x="145" y="217" width="80" height="6" rx="3"/>
+      <rect x="155" y="247" width="60" height="6" rx="3"/><rect x="140" y="277" width="90" height="6" rx="3"/>
+      <rect x="140" y="307" width="90" height="6" rx="3"/><rect x="155" y="337" width="60" height="6" rx="3"/>
+      <rect x="310" y="127" width="44" height="6" rx="3"/><rect x="400" y="127" width="48" height="6" rx="3"/>
+      <rect x="312" y="157" width="40" height="6" rx="3"/><rect x="398" y="157" width="52" height="6" rx="3"/>
+      <rect x="310" y="187" width="44" height="6" rx="3"/><rect x="406" y="187" width="36" height="6" rx="3"/>
+      <rect x="312" y="217" width="40" height="6" rx="3"/><rect x="398" y="217" width="52" height="6" rx="3"/>
+      <rect x="306" y="247" width="52" height="6" rx="3"/><rect x="398" y="247" width="52" height="6" rx="3"/>
+      <rect x="310" y="277" width="44" height="6" rx="3"/><rect x="402" y="277" width="44" height="6" rx="3"/>
+    </g>
+    <!-- la musica, coi pulsanti di legno -->
+    <rect x="330" y="302" width="90" height="7" rx="3" fill="#ffd700"/>
+    <g fill="#7a3414" stroke="#ffffff" stroke-width="2.5">
+      <rect x="290" y="316" width="84" height="24" rx="7"/><rect x="382" y="316" width="84" height="24" rx="7"/>
+      <rect x="290" y="346" width="84" height="24" rx="7"/><rect x="382" y="346" width="84" height="24" rx="7"/>
+    </g>
+    <g fill="#ffd27a">
+      <rect x="312" y="325" width="40" height="6" rx="3"/><rect x="404" y="325" width="40" height="6" rx="3"/>
+      <rect x="316" y="355" width="32" height="6" rx="3"/><rect x="400" y="355" width="48" height="6" rx="3"/>
+    </g>
+  </svg>
+  <!-- il riflesso sul vetro -->
+  <path d="M370 110 L470 110 L380 300 Z" fill="#ffffff" fill-opacity="0.08"/>
+
+  <!-- tastiera e mouse -->
+  <rect x="470" y="610" width="320" height="50" rx="10" fill="#e6e6e6" stroke="#2c2e32" stroke-width="6"/>
+  <g fill="#b8b8b8">
+    <rect x="488" y="622" width="284" height="8" rx="3"/><rect x="488" y="638" width="284" height="8" rx="3"/>
+  </g>
+  <ellipse cx="860" cy="640" rx="28" ry="38" fill="#e6e6e6" stroke="#2c2e32" stroke-width="6"/>
+
+  <!-- il giocatore, di spalle -->
+  <path d="M340 610 C390 600 430 610 470 630" fill="none" stroke="#2c2e32" stroke-width="58" stroke-linecap="round"/>
+  <path d="M340 610 C390 600 430 610 470 630" fill="none" stroke="#2f80ed" stroke-width="44" stroke-linecap="round"/>
+  <path d="M60 750 C60 600 120 545 230 540 C340 545 400 600 400 750 Z" fill="#2f80ed" stroke="#2c2e32" stroke-width="10"/>
+  <path d="M195 545 Q230 575 265 545" fill="none" stroke="#2c2e32" stroke-width="8" stroke-linecap="round"/>  <circle cx="480" cy="632" r="24" fill="#f2c29b" stroke="#2c2e32" stroke-width="6"/>
+  <rect x="205" y="505" width="50" height="45" fill="#f2c29b" stroke="#2c2e32" stroke-width="8"/>
+  <ellipse cx="160" cy="455" rx="16" ry="24" fill="#f2c29b" stroke="#2c2e32" stroke-width="7"/>
+  <ellipse cx="300" cy="455" rx="16" ry="24" fill="#f2c29b" stroke="#2c2e32" stroke-width="7"/>
+  <circle cx="230" cy="440" r="75" fill="#6b4226" stroke="#2c2e32" stroke-width="10"/>
+  <path d="M180 395 Q230 370 280 395" fill="none" stroke="#8a5a36" stroke-width="10" stroke-linecap="round"/>
+
+  <!-- i cuoricini -->
+  <g fill="#e74c3c" stroke="#2c2e32" stroke-width="6" stroke-linejoin="round">
+    <path d="M230 330 C180 298 172 262 196 248 C214 238 230 252 230 266 C230 252 246 238 264 248 C288 262 280 298 230 330 Z"/>
+  </g>
+  <g fill="#e74c3c" stroke="#2c2e32" stroke-width="5" stroke-linejoin="round">
+    <path d="M150 230 C122 212 118 192 131 184 C141 178 150 186 150 194 C150 186 159 178 169 184 C182 192 178 212 150 230 Z"/>
+    <path d="M290 190 C262 172 258 152 271 144 C281 138 290 146 290 154 C290 146 299 138 309 144 C322 152 318 172 290 190 Z"/>
+  </g>
+  <g fill="#f78fb3" stroke="#2c2e32" stroke-width="4" stroke-linejoin="round">
+    <path d="M200 120 C182 108 179 95 188 90 C194 86 200 91 200 96 C200 91 206 86 212 90 C221 95 218 108 200 120 Z"/>
+    <path d="M985 300 C967 288 964 275 973 270 C979 266 985 271 985 276 C985 271 991 266 997 270 C1006 275 1003 288 985 300 Z"/>
+  </g>
+</svg>

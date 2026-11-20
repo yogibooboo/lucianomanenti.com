@@ -305,7 +305,7 @@ function scriviMessaggi(M) {
         }
         if (pieno(m.immaginiSpente)) righe.push('immaginiSpente: ' + elencoJs(m.immaginiSpente));
         if (pieno(m.link)) righe.push('link: ' + q(m.link));
-        r.push('        {');
+        if (pieno(m.regole)) righe.push('regole: ' + q(m.regole));        r.push('        {');
         var blocchi = [];
         LINGUE.forEach(function (l) {
             var x = m[l] || {}, campi = [];
@@ -355,7 +355,7 @@ function componi(t, S) {
 // allora lo si dice subito.
 var NOTI_GIOCO = ['immagini', 'immaginiSpente', 'inLingua', 'regole', 'pagina', 'strumento'].concat(LINGUE);
 var NOTI_MESS = ['id', 'tipo', 'gioco', 'peso', 'dove', 'spento', 'dal', 'al', 'soloSu', 'nonSu',
-    'immagine', 'immaginiSpente', 'link'].concat(LINGUE);
+    'immagine', 'immaginiSpente', 'link', 'regole'].concat(LINGUE);
 function campiIgnoti(S) {
     var f = [];
     Object.keys(S.giochi).forEach(function (k) {
@@ -646,7 +646,8 @@ function disegnaScheda() {
         ])]));
         D.appendChild(campo('Collegamento', 'testo', m, 'link',
             'Dove porta il clic: una pagina (/info.html), un indirizzo, un mailto:. Vuoto: non si clicca.'));
-        LINGUE.forEach(function (l) {
+        D.appendChild(campo('Regole', 'testo', m, 'regole',
+            'Facoltativo: una pagina (/regole-woowoo.html). Aggiunge il pulsante REGOLE.'));        LINGUE.forEach(function (l) {
             D.appendChild(crea('h2', { testo: l === 'it' ? 'Italiano' : 'English' }));
             D.appendChild(campo('Titolo', 'testo', m[l], 'titolo'));
             D.appendChild(campo('Testo', 'area', m[l], 'testo'));
@@ -751,8 +752,9 @@ async function controlla(m) {
             if (g.regole) cose.push('/' + g.regole + s + '.html');
         });
         ((g.inLingua || {}).en || []).forEach(function (n) { cose.push(CARTELLA + m.gioco + n + '-en.jpg'); });
-    } else if (m.link && m.link.charAt(0) === '/') {
-        cose.push(m.link);
+    } else {
+        if (m.link && m.link.charAt(0) === '/') cose.push(m.link);
+        if (m.regole && m.regole.charAt(0) === '/') cose.push(m.regole);
     }
     nomiImmagini(m).forEach(function (n) { cose.push(CARTELLA + n); });
     var mancano = [];

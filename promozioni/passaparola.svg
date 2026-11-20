@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 750">
+  <!-- il passaparola: un megafono da cui escono fumetti con cuori, una
+       stella, il simbolo della condivisione e un pollice in su. Niente
+       loghi veri: il pulsante CONDIVIDI apre le app di chi gioca -->
+  <rect width="1024" height="750" fill="#fff3d6"/>
+  <g fill="#ffe2a0">
+    <circle cx="90" cy="110" r="60"/><circle cx="960" cy="660" r="80"/><circle cx="930" cy="90" r="40"/>
+  </g>
+
+  <!-- le onde del suono -->
+  <g fill="none" stroke="#f4b400" stroke-width="14" stroke-linecap="round">
+    <path d="M520 300 Q560 375 520 450"/>
+    <path d="M565 260 Q625 375 565 490"/>
+    <path d="M610 220 Q690 375 610 530"/>
+  </g>
+
+  <!-- il megafono -->
+  <g stroke="#2c2e32" stroke-width="12" stroke-linejoin="round">
+    <path d="M150 330 L470 200 L470 550 L150 420 Z" fill="#e74c3c"/>
+    <rect x="100" y="320" width="70" height="110" rx="16" fill="#c0392b"/>
+    <ellipse cx="470" cy="375" rx="40" ry="175" fill="#f39c8f"/>
+    <path d="M200 425 L230 560 L300 560 L285 450 Z" fill="#c0392b"/>
+  </g>
+  <path d="M190 350 L440 250" stroke="#ffffff" stroke-opacity="0.45" stroke-width="14" stroke-linecap="round"/>
+
+  <!-- il fumetto col cuore -->
+  <g stroke="#2c2e32" stroke-width="10" stroke-linejoin="round">
+    <path d="M690 80 h200 a30 30 0 0 1 30 30 v120 a30 30 0 0 1 -30 30 h-130 l-50 45 l10 -45 h-30 a30 30 0 0 1 -30 -30 v-120 a30 30 0 0 1 30 -30 Z" fill="#ffffff"/>
+    <path d="M790 225 C730 185 720 145 750 128 C772 116 790 132 790 146 C790 132 808 116 830 128 C860 145 850 185 790 225 Z" fill="#e74c3c"/>
+  </g>
+
+  <!-- il fumetto della condivisione -->
+  <g stroke="#2c2e32" stroke-width="10" stroke-linejoin="round">
+    <path d="M760 330 h190 a28 28 0 0 1 28 28 v110 a28 28 0 0 1 -28 28 h-150 l-55 40 l15 -40 a28 28 0 0 1 -28 -28 v-110 a28 28 0 0 1 28 -28 Z" fill="#2f80ed"/>
+  </g>
+  <g stroke="#ffffff" stroke-width="10">
+    <line x1="820" y1="413" x2="900" y2="373"/><line x1="820" y1="413" x2="900" y2="453"/>
+  </g>
+  <g fill="#ffffff">
+    <circle cx="820" cy="413" r="20"/><circle cx="900" cy="373" r="20"/><circle cx="900" cy="453" r="20"/>
+  </g>
+
+  <!-- il fumetto col pollice in su -->
+  <g stroke="#2c2e32" stroke-width="10" stroke-linejoin="round">
+    <path d="M640 560 h170 a28 28 0 0 1 28 28 v100 a28 28 0 0 1 -28 28 h-170 a28 28 0 0 1 -28 -28 v-100 a28 28 0 0 1 28 -28 Z" fill="#27ae60"/>  </g>
+  <g fill="#ffffff" stroke="#2c2e32" stroke-width="6" stroke-linejoin="round">
+    <rect x="672" y="620" width="30" height="70" rx="6"/>
+    <path d="M708 620 L740 580 C752 566 772 572 766 594 L758 616 L792 616 C808 616 812 632 802 640 C812 648 810 662 798 666 C806 674 802 688 788 690 L708 690 Z"/>
+  </g>
+
+  <!-- stelline e cuoricini che volano -->
+  <g fill="#f4b400" stroke="#2c2e32" stroke-width="6" stroke-linejoin="round">
+    <path d="M600 130 l14 30 l32 4 l-24 22 l7 32 l-29 -16 l-29 16 l7 -32 l-24 -22 l32 -4 Z"/>
+    <path d="M940 560 l9 19 l21 3 l-15 14 l4 21 l-19 -10 l-19 10 l4 -21 l-15 -14 l21 -3 Z"/>
+  </g>
+  <g fill="#e74c3c" stroke="#2c2e32" stroke-width="5">
+    <path d="M660 300 C635 284 630 266 643 258 C652 253 660 260 660 266 C660 260 668 253 677 258 C690 266 685 284 660 300 Z"/>
+    <path d="M560 640 C535 624 530 606 543 598 C552 593 560 600 560 606 C560 600 568 593 577 598 C590 606 585 624 560 640 Z"/>
+  </g>
+</svg>

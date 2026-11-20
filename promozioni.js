@@ -91,7 +91,7 @@
         },
         'scopa-bresciana': {
             immagini: [3], inLingua: { en: [3] }, pagina: 'scopa', regole: 'regole-scopa',
-            it: { nome: 'Scopa Bresciana', testo: 'La scopa bresciana è molto più ricca della scopa normale... Ci sono piccate, simili, quadriglie, napola... Provatela.' },
+            it: { nome: 'Scopa Bresciana', testo: 'La scopa bresciana è molto più ricca della scopa normale... Ci sono piccate, simili, quadriglie, napola... Provatela. Dalle mie parti si chiama "QUATTRO IN TAVOLA".' },
             en: { nome: 'Brescian Scopa', testo: 'Brescian Scopa is much richer than ordinary Scopa... There are Piccate, Simili, Quadriglie, Napola... Give it a try.' }
         },
         machiavelli: {
@@ -236,7 +236,8 @@
     //                  e si apre in una scheda nuova come gli altri link a
     //                  aboutme del sito (il suo CHIUDI la richiude). Anche qui
     //                  "immaginiSpente" e' il promemoria dell'editor.
-    // Per tutti:
+    //                  "regole" (facoltativo, scritto come "link") aggiunge
+    //                  il secondo pulsante, REGOLE, come nei messaggi gioco.    // Per tutti:
     //   id       il nome con cui il messaggio finisce in Analytics
     //   peso     quante probabilita' ha di uscire rispetto agli altri
     //   dove     ['colonne', 'fine']: in quali posti puo' uscire
@@ -248,7 +249,7 @@
         { id: 'scala40',          tipo: 'gioco', gioco: 'scala40',          peso: 2, dove: ['colonne', 'fine'] },
         { id: 'burraco',          tipo: 'gioco', gioco: 'burraco',          peso: 4, dove: ['colonne', 'fine'] },
         { id: 'scopa',            tipo: 'gioco', gioco: 'scopa',            peso: 2, dove: ['colonne', 'fine'] },
-        { id: 'scopa-bresciana',  tipo: 'gioco', gioco: 'scopa-bresciana',  peso: 2, dove: ['colonne', 'fine'], nonSu: ['scopa'] },
+        { id: 'scopa-bresciana',  tipo: 'gioco', gioco: 'scopa-bresciana',  peso: 3, dove: ['colonne', 'fine'], nonSu: ['scopa'] },
         { id: 'machiavelli',      tipo: 'gioco', gioco: 'machiavelli',      peso: 4, dove: ['colonne', 'fine'] },
         { id: 'rummy',            tipo: 'gioco', gioco: 'rummy',            peso: 1, dove: ['colonne', 'fine'] },
         { id: 'spider',           tipo: 'gioco', gioco: 'spider',           peso: 3, dove: ['colonne', 'fine'] },
@@ -301,6 +302,47 @@
             en: {
                 titolo: 'No more advertising',
                 testo: 'I have decided to remove the advertising, but the site goes on. I took the chance to clean up the code. If something does not work, please let me know. postmaster@lucianomanenti.com',
+                pulsante: 'WRITE TO ME'
+            }
+        },
+        {
+            id: 'woowoo-piange', tipo: 'testo', peso: 4, dove: ['colonne', 'fine'], nonSu: ['woowoo'],
+            immagine: 'woowoo-piange.svg',
+            link: '/woowoo.html',
+            regole: '/regole-woowoo.html',
+            it: {
+                titolo: 'Ma perché così pochi giocano a WooWoo?',
+                pulsante: 'PROVA'
+            },
+            en: {
+                titolo: 'But why do so few people play WooWoo?',
+                pulsante: 'TRY IT'
+            }
+        },
+        {
+            id: 'passaparola', tipo: 'testo', peso: 4, dove: ['colonne', 'fine'],
+            immagine: ['passaparola.svg', 'passaparola2.svg'],
+            it: {
+                titolo: 'Passaparola',
+                testo: 'Dopo avere tolto la pubblicità, la mia più grande soddisfazione è vedere che giocate in tanti. Fatemi voi pubblicità sui vostri social!'
+            },
+            en: {
+                titolo: 'Spread the word',
+                testo: 'Since I removed the advertising, my greatest satisfaction is seeing so many of you play. Be my advertising on your social media!'
+            }
+        },
+        {
+            id: 'diamoci-del-tu', tipo: 'testo', peso: 4, dove: ['colonne', 'fine'],
+            immagine: 'diamoci-del-tu-2.jpg',
+            link: '/aboutme.html',
+            it: {
+                titolo: 'Diamoci del tu',
+                testo: 'Per favore, se mi scrivete, diamoci del tu...',
+                pulsante: 'SCRIVIMI'
+            },
+            en: {
+                titolo: 'Call me Luciano',
+                testo: 'Please, if you write to me, no need to be formal: just call me Luciano...',
                 pulsante: 'WRITE TO ME'
             }
         },
@@ -526,7 +568,7 @@
                 principale = linkTesto(m.link);
                 if (t.pulsante) pulsanti.push({ etichetta: t.pulsante, href: principale, azione: 'pulsante', classe: 'promo-pulsante promo-primo' });
             }
-        }
+            if (m.regole) pulsanti.push({ etichetta: et.regole, href: linkTesto(m.regole), azione: 'regole', classe: 'promo-pulsante' });        }
 
         var immagini = immaginiDi(m);
         if (immagini.length) {
