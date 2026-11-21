@@ -1328,25 +1328,25 @@
     window.togglePause = function () {
         if (!STATE.isPlaying || STATE.isGameOver) return;
         STATE.isPaused = !STATE.isPaused;
+        segnaPausa();
 
-        var btn = document.getElementById('btn-pausa');
-        var modalePausa = document.getElementById('modale-pausa');
-        var schermo = document.getElementById('schermo');
         var msgStato = document.getElementById('messaggio-stato-mattoncini');
-
         if (STATE.isPaused) {
-            if (btn) btn.classList.add('attivo');
-            if (modalePausa) modalePausa.style.display = 'flex';
-            if (schermo) schermo.style.display = 'block';
             if (msgStato) msgStato.textContent = TXT.paused;
         } else {
-            if (btn) btn.classList.remove('attivo');
-            if (modalePausa) modalePausa.style.display = 'none';
-            if (schermo) schermo.style.display = 'none';
             if (msgStato) msgStato.textContent = TXT.resumed;
             STATE.lastDropTime = Date.now();
         }
     };
+
+    // La pausa non apre nessuna finestra: il pulsante resta premuto e
+    // lampeggia finche' non lo si ripreme (o P / Esc).
+    function segnaPausa() {
+        var btn = document.getElementById('btn-pausa');
+        if (!btn) return;
+        btn.classList.toggle('attivo', STATE.isPaused);
+        btn.classList.toggle('lampeggia', STATE.isPaused);
+    }
 
     window.toggleGhost = function () {
         CONFIG.ghostEnabled = !CONFIG.ghostEnabled;
@@ -1361,6 +1361,7 @@
         chiudiModali();
         STATE.isPlaying = false;
         STATE.isPaused = false;
+        segnaPausa();
         clearInterval(STATE.timerInterval);
         clearLockTimer();
         if (animFrameId) cancelAnimationFrame(animFrameId);
@@ -1482,6 +1483,7 @@
         STATE.stats = { I: 0, J: 0, L: 0, O: 0, S: 0, T: 0, Z: 0 };
         STATE.isPlaying = true;
         STATE.isPaused = false;
+        segnaPausa();
         STATE.isGameOver = false;
         STATE.clearingLines = [];
         STATE.particles = [];
