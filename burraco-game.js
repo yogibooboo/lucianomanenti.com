@@ -1386,6 +1386,7 @@ async function turnoAI() {
     }
 
     const giocatore = game.giocatori[game.giocatoreCorrente];
+    if (giocatore.isUmano) _anomalia('ia-su-umano');   // solo osservazione, vedi _anomalia
     const selettoreCarte = getSelettoreCarteGiocatore(giocatore);
     const isLaterale = giocatore.posizione === 'left' || giocatore.posizione === 'right';
 
@@ -2544,8 +2545,50 @@ function _automaPersonaggiDaConfig(cfg) {
 // UNDO
 // ============================================================================
 
+// Diagnostica (23/11/2026): quante volte il giocatore agisce nei momenti in cui
+// il gioco non se lo aspetta, cioe' mentre il suo scarto e' in volo o mentre un
+// turno IA aspetta di partire. Osserva soltanto: non deve MAI cambiare la
+// partita, percio' sta tutta in try/catch e non restituisce niente.
+// In Analytics: evento anomalia, con dove e dettagli. Al massimo tre per pagina.
+// _scartoInVolo e' l'ora di partenza dell'animazione dello scarto, 0 se non c'e'.
+let _scartoInVolo = 0;
+let _ultimaAzione = { nome: 'nessuna', ora: 0 };
+let _anomalieMandate = 0;
+
+function _segnaAzione(nome) {
+    _ultimaAzione = { nome: nome, ora: Date.now() };
+}
+
+// Dopo un secondo l'animazione (300 ms) e' certo finita: un'ora rimasta segnata
+// per un errore non deve far contare anomalie per tutta la partita.
+function _scartoVola() {
+    return _scartoInVolo > 0 && Date.now() - _scartoInVolo < 1000;
+}
+
+function _anomalia(dove) {
+    try {
+        if (_anomalieMandate >= 3 || game.autoRun || game.tuttiAI || !window.gtag) return;
+        _anomalieMandate++;
+        window.gtag('event', 'anomalia', {
+            game: 'burraco',
+            variant: _varianteGA(),
+            dove: dove,
+            dettagli: 'turno=' + game.turno + ';ultima=' + _ultimaAzione.nome +
+                      ';ms=' + (_ultimaAzione.ora ? Date.now() - _ultimaAzione.ora : -1),
+            non_interaction: true
+        });
+    } catch (e) { }
+}
+
 // Salva uno snapshot PRIMA di ogni azione del giocatore umano
 function salvaStato(azione) {
+    if (azione.indexOf('inizio-') !== 0) {
+        if (_scartoVola()) {
+            if (azione === 'scarta') _anomalia('doppio-scarto');
+            else if (azione === 'combinazione' || azione === 'aggiungi-carta') _anomalia('calata-in-volo');
+        }
+        _segnaAzione(azione);
+    }
     if (!game.undoStack) game.undoStack = [];
     game.undoStack.push({
         azione: azione,
@@ -2559,6 +2602,9 @@ function undo() {
     if (game.fase === 'finito') return;
     // Serve almeno 2 elementi: lo stato base + almeno un'azione
     if (!game.undoStack || game.undoStack.length <= 1) return;
+
+    if (_scartoVola()) _anomalia('annulla-in-volo');
+    _segnaAzione('undo');
 
     // Undo durante il turno di una AI: capita quando ci si accorge di aver
     // sbagliato scarto mentre gli avversari stanno gia' giocando. Si abortisce

@@ -1531,7 +1531,9 @@ async function scartaCarta(carta, fromRect = null) {
             fakePartenza.style.height = '1px';
             document.body.appendChild(fakePartenza);
 
+            _scartoInVolo = Date.now();   // diagnostica, vedi _anomalia
             await animaCarta(carta, fakePartenza, cartaElFinale, { mostraFronte: true });
+            _scartoInVolo = 0;
 
             fakePartenza.remove();
             cartaElFinale.style.visibility = 'visible';

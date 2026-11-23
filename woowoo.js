@@ -176,7 +176,8 @@
         C: EN ? 'desert' : 'deserto',
         D: EN ? 'arctic' : 'artico',
         E: EN ? 'jurassic' : 'giurassico',
-        F: EN ? 'space' : 'spazio'
+        F: EN ? 'space' : 'spazio',
+        G: EN ? 'aquarium' : 'acquario'
     };
     function t(k, v) {
         return T[k].replace(/\{(\w+)\}/g, function (m, n) { return v && v[n] !== undefined ? v[n] : m; });
@@ -2028,7 +2029,10 @@
             '</div>' +
             '<div class="w2-bottoni">' +
             '<button id="w2-fine-ripeti">' + T.ripeti + '</button>' +
-            (avanti ? '<button id="w2-fine-avanti" class="giallo">' + T.avanti + '</button>' : '') +
+            // Sul bottone anche quale quadro viene dopo, scritto come sotto il
+            // titolo: chi gioca sa dove va prima di cliccare.
+            (avanti ? '<button id="w2-fine-avanti" class="giallo">' + T.avanti + ': ' +
+                      dopo[0] + ' · ' + (dopo[1] + 1) + '</button>' : '') +
             '<button id="w2-fine-scegli">' + T.scegli + '</button>' +
             '</div>' +
             '<div class="w2-angolo sx"></div><div class="w2-angolo dx"></div>' +
