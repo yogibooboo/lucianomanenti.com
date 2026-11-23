@@ -328,7 +328,7 @@
             },
             en: {
                 titolo: 'Spread the word',
-                testo: 'Since I removed the advertising, my greatest satisfaction is seeing so many of you play. Be my advertising with your friwnds and on your social media!'
+                testo: 'Since I removed the advertising, my greatest satisfaction is seeing so many of you play. Be my advertising with your friends and on your social media!'
             }
         },
         {
