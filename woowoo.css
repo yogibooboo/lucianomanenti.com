@@ -655,6 +655,9 @@ html, body {
     color: #2a1a00;
     box-shadow: 0 0 8px rgba(240, 192, 0, 0.35);
 }
+/* Su due righe nella stessa altezza degli altri: sotto, il quadro e il grado. */
+#w2-fine-avanti { line-height: 15px; }
+#w2-fine-avanti span { display: block; text-transform: uppercase; }
 .w2-riquadro button.giallo:hover { background: #ffd720; }
 /* I due rimandi copiati dal piedino, negli angoli in basso del riquadro. */
 .w2-angolo { position: absolute; bottom: 10px; }

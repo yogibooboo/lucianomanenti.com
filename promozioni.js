@@ -324,11 +324,11 @@
             immagine: ['passaparola.svg', 'passaparola2.svg'],
             it: {
                 titolo: 'Passaparola',
-                testo: 'Dopo avere tolto la pubblicità, la mia più grande soddisfazione è vedere che giocate in tanti. Fatemi voi pubblicità sui vostri social!'
+                testo: 'Dopo avere tolto la pubblicità, la mia più grande soddisfazione è vedere che giocate in tanti. Fatemi voi pubblicità con gli amici e sui vostri social!'
             },
             en: {
                 titolo: 'Spread the word',
-                testo: 'Since I removed the advertising, my greatest satisfaction is seeing so many of you play. Be my advertising on your social media!'
+                testo: 'Since I removed the advertising, my greatest satisfaction is seeing so many of you play. Be my advertising with your friwnds and on your social media!'
             }
         },
         {

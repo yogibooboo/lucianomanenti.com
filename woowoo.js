@@ -14,8 +14,12 @@
    L'estrazione resta in dev/woowoo2-dati.js, dove le lettere sono spostate a
    M..X, e la apre soltanto l'editor come punto di partenza da cui copiare.
    Lo stile di ogni schema sta nel campo `stile` dei file di dati (vedi
-   stileDi): un quadro senza dipinto si gioca ma non si vede, perche' non c'e'
-   nessun atlante di riserva.
+   stileDi): un quadro senza dipinto si gioca sul prato nudo.
+
+   DAL 23/11/2026 NON SI CARICA PIU' NESSUN ATLANTE. Binari, scambi, segnali
+   e stazioni si disegnano da soli, un pezzo alla volta e una volta sola per
+   tutti i quadri (vedi pezzo); il resto del paesaggio sta nel dipinto.
+   tiles-nuove.png serve ormai soltanto all'editor.
    =========================================================================== */
 (function () {
     'use strict';
@@ -52,16 +56,17 @@
     //   "orig"  = le piastrelle del dischetto. Ogni piastrella contiene il suo
     //             pezzo di paesaggio (casella 32, disegnata al doppio a video).
     //   oggetto = grafica nostra: un dipinto steso su tutto il quadro e sopra
-    //             solo binari, scambi, segnali, ponte e stazioni, a fondo
-    //             trasparente. I campi sono `atlante`, `cella` e `sfondo`.
+    //             solo binari, scambi, segnali e stazioni, a fondo
+    //             trasparente. Conta il solo campo `sfondo`; `atlante` e
+    //             `cella` li scrive l'editor e qui non li legge nessuno.
     // Il dipinto e' fatto su misura per quel tracciato: se sposti un binario
     // va ridipinto, e per questo lo stile sta sullo schema e non sulla lettera.
     function stileDi(L, n) {
         var liv = D.liv[L];
         var st = liv && liv.stile && liv.stile[n];
         if (!st || typeof st !== 'object') return null;
-        // Se atlante o dipinto non sono arrivati lo schema si disegna
-        // spoglio: non c'e' nessun atlante di riserva, ma almeno si gioca.
+        // Se il dipinto non e' arrivato lo schema si disegna sul prato
+        // nudo: almeno si gioca.
         // Prima si provava a stenderlo lo stesso e drawImage buttava fuori un
         // errore che fermava il ciclo: il quadro restava congelato
         // sull'ultimo fotogramma e sembrava che il gioco non cambiasse mai
@@ -83,13 +88,13 @@
     // caricamento si ricopia sui gemelli.
     function spargiStili(stili) {
         var per = {};
-        stili.forEach(function (x) { per[x.atlante + '|' + x.sfondo] = x; });
+        stili.forEach(function (x) { per[x.sfondo] = x; });
         Object.keys(D.liv).forEach(function (L) {
             (D.liv[L].stile || []).forEach(function (x) {
                 if (!x || typeof x !== 'object') return;
-                var s = per[x.atlante + '|' + x.sfondo];
+                var s = per[x.sfondo];
                 if (!s || s === x) return;
-                x.img = s.img; x.fondoImg = s.fondoImg; x.rotto = s.rotto;
+                x.fondoImg = s.fondoImg; x.rotto = s.rotto;
             });
         });
     }
@@ -110,7 +115,7 @@
             var st = D.liv[L].stile || [];
             st.forEach(function (x) {
                 if (!x || typeof x !== 'object') return;
-                var chiave = x.atlante + '|' + x.sfondo;
+                var chiave = x.sfondo;
                 if (visti[chiave]) return;
                 visti[chiave] = 1; fuori.push(x);
             });
@@ -1396,7 +1401,7 @@
         return cv;
     }
 
-    // La piastrella girata, su una tela di 64: serve sia per l'atlante sia
+    // La piastrella girata, su una tela di 64: serve sia per la casella sia
     // per ritagliarne il quadrato. Il raccordo si rimette dopo il giro, gia'
     // nel verso della bocca: e' roba disegnata, non pescata dall'immagine,
     // e girarla non avrebbe cambiato niente se non i bordi.
@@ -1469,21 +1474,6 @@
         });
     }
 
-    // Le quattro stazioni entrano nell'atlante dello stile nostro al posto di
-    // quelle del dischetto. Solo li': dove si gioca con le piastrelle del
-    // dischetto il disegno e' un altro e questa stonerebbe in mezzo.
-    function montaStazioni(tela, cella) {
-        if (!quadri) return;
-        var g = tela.getContext('2d');
-        g.imageSmoothingEnabled = false;
-        Object.keys(quadri).forEach(function (k) {
-            var x = (+k) * cella;
-            if (x + cella > tela.width) return;
-            g.clearRect(x, 0, cella, cella);
-            g.drawImage(quadri[+k].piena, x, 0, cella, cella);
-        });
-    }
-
     // I secondi che mancano alla comparsa del treno annunciato in questa
     // stazione. Si legge dalla coda e non da `s.annuncio', che quando la
     // stazione e' ancora occupata resta inchiodato a 0,01 per tenere la
@@ -1495,18 +1485,15 @@
         return 0;
     }
 
-    // ---- un quadro senza dipinto ------------------------------------------
-    // Serve a giocare uno schema appena disegnato nell'editor, prima che il
-    // dipinto esista. Rotaie, scambi e segnali li ridisegna W2BINARI dai
-    // codici - sono le stesse piastrelle che poi vanno sopra il dipinto - e
-    // la stazione e' il disegno a parte, girato una volta sola all'avvio.
-    // Il resto del tabellone resta prato: alberi, acqua, case e tabellone
-    // stanno nel dipinto, e senza dipinto non ci sono.
+    // ---- i pezzi della rete -----------------------------------------------
+    // Rotaie, scambi e segnali li disegna W2BINARI dai codici, tenendo in
+    // cassetto quelli gia' fatti; la stazione e' il disegno a parte, girato
+    // una volta sola all'avvio. Lo stesso pezzo vale per tutti i quadri.
+    // Senza il disegno della stazione resta lo spezzone di binario.
     var PONTE = 7;          // il solo codice con una rotta che W2BINARI non disegna
     var RETTO_EO = 1;       // al suo posto si stende il rettilineo: la linea non si spezza
-    var COLONNE = (D.colonne || 31);   // quante ne hanno le tavole di piastrelle
-    function cellaNuda(cod, st) {
-        if (D.staz[cod]) return quadri ? quadri[cod].piena : null;
+    function pezzo(cod, st) {
+        if (D.staz[cod]) return quadri ? quadri[cod].piena : (raccordi ? raccordi[cod] : null);
         if (!D.rotta[cod] || !window.W2BINARI) return null;
         return W2BINARI.cella(cod === PONTE ? RETTO_EO : cod, st);
     }
@@ -1524,10 +1511,6 @@
         // casi: non e' decorazione, e' quello che si gioca.
         var pp = parametri();
         var disStaz = !pp || Number(pp.amb) !== 0;
-        // Niente atlante di riserva: il dischetto non si carica piu'. Uno
-        // schema senza dipinto resta spoglio (vedi il controllo in avvia()).
-        var atl = sty ? sty.img : null;
-        var cel = sty ? sty.cella : 32;
         ctx.setTransform(SCALA, 0, 0, SCALA, 0, 0);
         ctx.imageSmoothingEnabled = false;
 
@@ -1560,8 +1543,7 @@
                     continue;
                 }
                 var st = (D.scambio.indexOf(cod) >= 0 || D.segnale.indexOf(cod) >= 0) ? S.stato[r][c] : 0;
-                // Scambio in movimento: la piastrella non viene dall'atlante
-                // ma da un fotogramma disegnato. La massicciata sta ferma, si
+                // Scambio in movimento: un fotogramma a mezza strada. La massicciata sta ferma, si
                 // spostano rotaie e traversine, incernierate sulla punta.
                 // Lo stile del dischetto non arriva piu' qui, percio' la
                 // piastrella disegnata non stona con niente: vale anche sui
@@ -1574,23 +1556,8 @@
                                   c * CELLA, r * CELLA, CELLA, CELLA);
                     continue;
                 }
-                // I codici oltre le colonne delle tavole non si ritagliano da
-                // nessun atlante: la colonna non c'e'. Sono i pezzi nuovi
-                // nostri, e il fotogramma lo fa W2BINARI dalle rotte.
-                if (cod >= COLONNE) {
-                    var pz = window.W2BINARI ? W2BINARI.cella(cod, st) : null;
-                    if (pz) ctx.drawImage(pz, c * CELLA, r * CELLA, CELLA, CELLA);
-                    continue;
-                }
-                // Senza atlante non c'e' niente da ritagliare: lo schema non
-                // ha un dipinto, o un file non e' arrivato. La rete si
-                // disegna comunque, sul prato nudo.
-                if (!atl) {
-                    var nd = cellaNuda(cod, st);
-                    if (nd) ctx.drawImage(nd, c * CELLA, r * CELLA, CELLA, CELLA);
-                    continue;
-                }
-                ctx.drawImage(atl, cod * cel, st * cel, cel, cel, c * CELLA, r * CELLA, CELLA, CELLA);
+                var pz = pezzo(cod, st);
+                if (pz) ctx.drawImage(pz, c * CELLA, r * CELLA, CELLA, CELLA);
             }
         }
 
@@ -2030,9 +1997,11 @@
             '<div class="w2-bottoni">' +
             '<button id="w2-fine-ripeti">' + T.ripeti + '</button>' +
             // Sul bottone anche quale quadro viene dopo, scritto come sotto il
-            // titolo: chi gioca sa dove va prima di cliccare.
-            (avanti ? '<button id="w2-fine-avanti" class="giallo">' + T.avanti + ': ' +
-                      dopo[0] + ' · ' + (dopo[1] + 1) + '</button>' : '') +
+            // titolo, e quanto e' difficile: chi gioca sa dove va prima di
+            // cliccare.
+            (avanti ? '<button id="w2-fine-avanti" class="giallo">' + T.avanti +
+                      '<span>' + dopo[0] + ' · ' + (dopo[1] + 1) + ' · ' +
+                      (T.grado[Math.floor(dopo[1] / TERZINA)] || '') + '</span></button>' : '') +
             '<button id="w2-fine-scegli">' + T.scegli + '</button>' +
             '</div>' +
             '<div class="w2-angolo sx"></div><div class="w2-angolo dx"></div>' +
@@ -2741,39 +2710,27 @@
             return;
         }
 
-        // Si parte quando sono arrivate tutte: atlante e dipinto di ogni
-        // stile nominato nei dati, piu' la stazione.
+        // Si parte quando sono arrivati tutti: il dipinto di ogni stile
+        // nominato nei dati, piu' la stazione.
         var stili = stiliUsati();
-        var lista = [];
-        stili.forEach(function (x) { lista.push(x.atlante, x.sfondo); });
+        var lista = stili.map(function (x) { return x.sfondo; });
         lista.push(STAZ_SRC);               // la stazione di Luciano, ultima
         immagini(lista, function (im) {
-            preparaStazioni(im[stili.length * 2]);
+            preparaStazioni(im[stili.length]);
             stili.forEach(function (x, i) {
-                x.img = im[i * 2];
-                x.fondoImg = im[1 + i * 2];
+                x.fondoImg = im[i];
                 // immagini() richiama anche quando un file non c'e': una
                 // figura mai arrivata ha larghezza zero.
-                x.rotto = !x.img.naturalWidth || !x.fondoImg.naturalWidth;
-                if (x.rotto) console.warn('WooWoo: manca ' +
-                    (x.img.naturalWidth ? x.sfondo : x.atlante) +
-                    ', e non c\'e\' nessun atlante di riserva');
-                // I binari non vengono piu' dall'immagine: le loro colonne si
-                // ridisegnano sopra una copia dell'atlante, partendo dalla
-                // rotta scritta nei codici. Dell'immagine resta tutto il
-                // resto - prato, ponte, stazioni, paesaggio.
-                if (!x.rotto && window.W2BINARI) x.img = W2BINARI.rifaiAtlante(x.img, x.cella);
-                // e sopra la copia dell'atlante vanno le quattro stazioni
-                if (!x.rotto && x.img.getContext) montaStazioni(x.img, x.cella);
+                x.rotto = !x.fondoImg.naturalWidth;
+                if (x.rotto) console.warn('WooWoo: manca ' + x.sfondo);
             });
             spargiStili(stili);
-            // Uno schema senza dipinto si gioca ma non si vede: le
-            // piastrelle del dischetto non si caricano piu'. Lo si dice qui,
-            // se no si guarda un quadro nero senza capire perche'.
+            // Uno schema senza dipinto si gioca sul prato nudo. Lo si dice
+            // qui, se no si guarda un quadro spoglio senza capire perche'.
             CAMPAGNA.forEach(function (L) {
                 D.liv[L].schemi.forEach(function (_, m) {
                     if (!haDipinto(L, m)) console.warn('WooWoo: ' + L +
-                        ' schema ' + m + ' non ha un dipinto: si gioca ma non si vede');
+                        ' schema ' + m + ' non ha un dipinto: si gioca sul prato nudo');
                 });
             });
             // Si riprende dal quadro dove si era: ci si arriva da una
